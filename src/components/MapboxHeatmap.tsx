@@ -2329,8 +2329,8 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
           width: '140px',
           minWidth: '140px',
           maxWidth: '140px',
-          // Strict containment prevents any layout shifts from propagating
-          contain: 'strict',
+          // Use layout paint containment - NOT strict, as strict includes size which causes 0x0 dimensions
+          contain: 'layout paint',
           opacity: !selectedVenue ? 1 : 0,
           pointerEvents: !selectedVenue ? 'auto' : 'none',
           transform: 'translateZ(0)',
