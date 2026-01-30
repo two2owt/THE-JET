@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { storeLastKnownLocation } from "@/lib/tile-prefetch";
 import type * as MapboxGL from "mapbox-gl";
 
@@ -2058,7 +2059,9 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
         width: '100%',
         height: '100%',
         minHeight: '100%',
-        contain: 'strict',
+        // Use layout + style containment only - not size which clips overflow
+        // This allows absolute positioned elements like layer controls to be visible
+        contain: 'layout style',
         isolation: 'isolate',
       }}
     >
@@ -2314,12 +2317,14 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       )}
 
       {/* CLS fix: Only render layer controls after initial paint to prevent layout shifts */}
-      {controlsReady && (
+      {/* Use portal to escape containment restrictions from parent containers */}
+      {controlsReady && typeof document !== 'undefined' && createPortal(
       <div 
         className="fixed z-[60] flex flex-col-reverse gap-2 sm:gap-2.5"
         style={{
-          bottom: 'var(--map-fixed-bottom)',
-          right: 'var(--map-ui-inset-right)',
+          // Position above bottom nav with safe area support
+          bottom: 'calc(var(--bottom-nav-total-height, 60px) + 0.75rem)',
+          right: 'var(--map-ui-inset-right, 0.75rem)',
           // CLS fix: Fixed width prevents layout shifts when controls render
           width: '140px',
           minWidth: '140px',
@@ -2525,7 +2530,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
 
       {/* Desktop Controls Toggle Button */}
       {!isMobile && (

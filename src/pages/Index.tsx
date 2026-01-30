@@ -340,9 +340,10 @@ const Index = () => {
               inset: 0,
               height: '100%',
               width: '100%',
-              contain: 'strict',
+              // Use layout + style containment to allow absolute positioned controls to be visible
+              contain: 'layout style',
               transform: 'translateZ(0)',
-              overflow: 'hidden',
+              overflow: 'visible',
               // Ensure map stays below header/nav z-index
               zIndex: 0,
             }}
