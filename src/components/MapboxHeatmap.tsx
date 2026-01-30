@@ -2320,15 +2320,15 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* Use portal to escape containment restrictions from parent containers */}
       {controlsReady && typeof document !== 'undefined' && createPortal(
       <div 
-        className="fixed z-[60] flex flex-col-reverse gap-[var(--space-sm)]"
+        className="fixed z-[60] flex flex-col-reverse gap-2 sm:gap-2.5"
         style={{
-          // Consistent adaptive spacing using CSS variables
-          bottom: 'var(--map-fixed-bottom)',
-          right: 'var(--map-ui-inset-right)',
+          // Position above bottom nav with safe area support
+          bottom: 'calc(var(--bottom-nav-total-height, 60px) + 0.75rem)',
+          right: 'var(--map-ui-inset-right, 0.75rem)',
           // CLS fix: Fixed width prevents layout shifts when controls render
-          width: 'var(--map-control-max-width)',
-          minWidth: 'var(--map-control-max-width)',
-          maxWidth: 'var(--map-control-max-width)',
+          width: '140px',
+          minWidth: '140px',
+          maxWidth: '140px',
           // Strict containment prevents any layout shifts from propagating
           contain: 'strict',
           opacity: !selectedVenue ? 1 : 0,
@@ -2341,14 +2341,14 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
             onClick={() => { triggerHaptic('medium'); setShowMovementPaths(!showMovementPaths); }}
             variant={showMovementPaths ? "default" : "outline"}
             size="sm"
-            className={`w-full min-h-[var(--touch-target-min)] h-[var(--map-btn-md)] text-[var(--text-sm)] font-semibold rounded-xl shadow-lg transition-all duration-200 active:scale-95 touch-manipulation ${
+            className={`w-full h-12 text-sm font-semibold rounded-xl shadow-lg transition-all duration-200 active:scale-95 touch-manipulation ${
               showMovementPaths 
                 ? 'bg-primary text-primary-foreground shadow-primary/30' 
                 : 'bg-card/95 backdrop-blur-xl text-foreground border-border'
             }`}
           >
-            <Route className="w-4 h-4 sm:w-4.5 sm:h-4.5 mr-1.5 sm:mr-2 flex-shrink-0" />
-            <span className="truncate">{showMovementPaths ? "Paths On" : "Paths Off"}</span>
+            <Route className="w-4.5 h-4.5 mr-2" />
+            {showMovementPaths ? "Paths On" : "Paths Off"}
           </Button>
 
           {/* Heat Button - appears above Paths visually due to flex-col-reverse */}
@@ -2365,14 +2365,14 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
             }}
             variant={showDensityLayer ? "default" : "outline"}
             size="sm"
-            className={`w-full min-h-[var(--touch-target-min)] h-[var(--map-btn-md)] text-[var(--text-sm)] font-semibold rounded-xl shadow-lg transition-all duration-200 active:scale-95 touch-manipulation ${
+            className={`w-full h-12 text-sm font-semibold rounded-xl shadow-lg transition-all duration-200 active:scale-95 touch-manipulation ${
               showDensityLayer 
                 ? 'bg-primary text-primary-foreground shadow-primary/30' 
                 : 'bg-card/95 backdrop-blur-xl text-foreground border-border'
             }`}
           >
-            <Layers className="w-4 h-4 sm:w-4.5 sm:h-4.5 mr-1.5 sm:mr-2 flex-shrink-0" />
-            <span className="truncate">{showDensityLayer ? "Heat On" : "Heat Off"}</span>
+            <Layers className="w-4.5 h-4.5 mr-2" />
+            {showDensityLayer ? "Heat On" : "Heat Off"}
           </Button>
 
           {/* Both Button - Toggle both layers at once for comparison */}
@@ -2391,15 +2391,15 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
             }}
             variant={(showDensityLayer && showMovementPaths) ? "default" : "outline"}
             size="sm"
-            className={`w-full min-h-[var(--touch-target-min)] h-[var(--map-btn-sm)] text-[var(--text-xs)] font-semibold rounded-xl shadow-lg transition-all duration-200 active:scale-95 touch-manipulation ${
+            className={`w-full h-10 text-xs font-semibold rounded-xl shadow-lg transition-all duration-200 active:scale-95 touch-manipulation ${
               (showDensityLayer && showMovementPaths)
                 ? 'bg-gradient-to-r from-primary to-orange-500 text-primary-foreground shadow-primary/30' 
                 : 'bg-card/95 backdrop-blur-xl text-foreground border-border'
             }`}
             aria-label={showDensityLayer && showMovementPaths ? "Turn off both Heat and Paths layers" : "Turn on both Heat and Paths layers"}
           >
-            <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5 flex-shrink-0" />
-            <span className="truncate">{(showDensityLayer && showMovementPaths) ? "Both On" : "Both Off"}</span>
+            <TrendingUp className="w-4 h-4 mr-1.5" />
+            {(showDensityLayer && showMovementPaths) ? "Both On" : "Both Off"}
           </Button>
 
           {/* Mobile Path Filter Controls - Show when Paths layer is active */}
@@ -2536,13 +2536,12 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {!isMobile && (
         <button
           onClick={() => { triggerHaptic('light'); setControlsCollapsed(!controlsCollapsed); }}
-          className="absolute z-30 bg-card backdrop-blur-xl rounded-full p-[var(--space-sm)] border border-border shadow-lg transition-all duration-300 hover:bg-card/90 active:scale-95 min-w-[var(--touch-target-min)] min-h-[var(--touch-target-min)] flex items-center justify-center touch-manipulation"
+          className="absolute z-30 bg-card backdrop-blur-xl rounded-full p-2.5 border border-border shadow-lg transition-all duration-300 hover:bg-card/90 active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
           style={{
-            // Consistent adaptive spacing using CSS variables
             bottom: 'var(--map-ui-inset-bottom)',
             right: controlsCollapsed 
               ? 'var(--map-ui-inset-right)'
-              : 'calc(var(--map-ui-inset-right) + var(--map-control-max-width) + var(--space-sm))',
+              : 'calc(var(--map-ui-inset-right) + var(--map-control-max-width) + 0.5rem)',
           }}
           aria-label={controlsCollapsed ? "Show map controls" : "Hide map controls"}
         >
@@ -2559,13 +2558,11 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* CRITICAL: Uses only opacity transition to avoid CLS - no translate/scale animations */}
       {(showDensityLayer || showMovementPaths) && (densityData || pathData) && (
         <div 
-          className={`${isMobile ? 'fixed' : 'absolute'} bg-card/95 backdrop-blur-xl rounded-xl border border-border z-30 shadow-lg px-[var(--space-sm)] py-[var(--space-xs)] sm:px-[var(--space-md)] sm:py-[var(--space-sm)]`}
+          className={`${isMobile ? 'fixed' : 'absolute'} bg-card/95 backdrop-blur-xl rounded-xl border border-border z-30 shadow-lg px-3 py-2`}
           style={{
-            // Consistent adaptive spacing using CSS variables
-            top: isMobile ? 'calc(var(--header-total-height) + var(--space-md, 0.75rem))' : 'calc(var(--map-ui-inset-top) + 60px)',
+            top: isMobile ? 'calc(env(safe-area-inset-top, 0px) + 70px)' : '80px',
             right: 'var(--map-ui-inset-right)',
-            minWidth: 'var(--map-control-max-width)',
-            maxWidth: 'calc(var(--map-control-max-width) + 40px)',
+            minWidth: '140px',
             // Use opacity-only transition to avoid CLS
             opacity: mapLoaded ? 1 : 0,
             visibility: mapLoaded ? 'visible' : 'hidden',
@@ -2637,12 +2634,11 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* Enhanced Legend - Bottom left, responsive for all devices, collapsible on mobile */}
       {/* CRITICAL: Uses only opacity transition to avoid CLS - no translate animations */}
       <div 
-        className={`${isMobile ? 'fixed' : 'absolute'} bg-card/95 backdrop-blur-xl rounded-xl border border-border z-30 shadow-lg px-[var(--space-sm)] py-[var(--space-xs)] sm:px-[var(--space-md)] sm:py-[var(--space-sm)] md:px-[var(--space-lg)] md:py-[var(--space-md)]`}
+        className={`${isMobile ? 'fixed' : 'absolute'} bg-card/95 backdrop-blur-xl rounded-xl border border-border z-30 shadow-lg ${isMobile ? 'px-2 py-1.5' : 'px-3 py-2 md:px-4 md:py-3'}`}
         style={{
-          // Consistent adaptive spacing using CSS variables
           bottom: isMobile ? 'var(--map-fixed-bottom)' : 'var(--map-ui-inset-bottom)',
           left: 'var(--map-ui-inset-left)',
-          maxWidth: 'calc(var(--map-control-max-width) + 60px)',
+          maxWidth: 'var(--map-control-max-width)',
           // Use opacity-only transition to avoid CLS
           opacity: mapLoaded && (isMobile ? !selectedVenue : !controlsCollapsed) ? 1 : 0,
           visibility: mapLoaded && (isMobile ? !selectedVenue : !controlsCollapsed) ? 'visible' : 'hidden',
