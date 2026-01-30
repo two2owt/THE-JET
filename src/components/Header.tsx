@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Search } from "lucide-react";
 import { Input } from "./ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -7,8 +7,12 @@ import type { Venue } from "./MapboxHeatmap";
 import type { Database } from "@/integrations/supabase/types";
 import { supabase } from "@/integrations/supabase/client";
 import { useSearchHistory } from "@/hooks/useSearchHistory";
-import { SearchResults } from "./SearchResults";
-import { SyncStatusIndicator } from "./SyncStatusIndicator";
+
+// Lazy load search results - only needed when user searches
+const SearchResults = lazy(() => import("./SearchResults").then(m => ({ default: m.SearchResults })));
+
+// Lazy load sync status - not critical for initial render
+const SyncStatusIndicator = lazy(() => import("./SyncStatusIndicator").then(m => ({ default: m.SyncStatusIndicator })));
 
 type Deal = Database['public']['Tables']['deals']['Row'];
 
@@ -161,28 +165,32 @@ export const Header = ({
               className="w-full pl-7 sm:pl-8 md:pl-9 pr-2 sm:pr-3 h-8 sm:h-9 md:h-10 rounded-full bg-secondary/50 border-border/50 focus:bg-secondary focus:border-primary/50 transition-colors text-xs sm:text-sm md:text-base text-foreground placeholder:text-muted-foreground" 
             />
             
-            {/* Search results */}
-            <SearchResults 
-              query={searchQuery} 
-              venues={venues} 
-              deals={deals} 
-              onVenueSelect={onVenueSelect} 
-              onClose={handleCloseResults} 
-              isVisible={showResults} 
-            />
+            {/* Lazy-loaded search results - only loads when user searches */}
+            <Suspense fallback={null}>
+              <SearchResults 
+                query={searchQuery} 
+                venues={venues} 
+                deals={deals} 
+                onVenueSelect={onVenueSelect} 
+                onClose={handleCloseResults} 
+                isVisible={showResults} 
+              />
+            </Suspense>
           </div>
 
           {/* Sync Status - Takes remaining width between search and avatar */}
           <div className="flex-1 min-w-0 px-1 sm:px-2 md:px-3 flex items-center">
-            <SyncStatusIndicator 
-              isLoading={isLoading} 
-              lastUpdated={lastUpdated} 
-              onRefresh={onRefresh} 
-              showTimestamp={true} 
-              compact={true} 
-              cityName={cityName} 
-              isInitializing={!lastUpdated && !isLoading} 
-            />
+            <Suspense fallback={null}>
+              <SyncStatusIndicator 
+                isLoading={isLoading} 
+                lastUpdated={lastUpdated} 
+                onRefresh={onRefresh} 
+                showTimestamp={true} 
+                compact={true} 
+                cityName={cityName} 
+                isInitializing={!lastUpdated && !isLoading} 
+              />
+            </Suspense>
           </div>
 
           {/* Avatar - FIXED dimensions, renders immediately with fallback */}
