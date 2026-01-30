@@ -2370,6 +2370,33 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
             {showDensityLayer ? "Heat On" : "Heat Off"}
           </Button>
 
+          {/* Both Button - Toggle both layers at once for comparison */}
+          <Button
+            onClick={() => {
+              triggerHaptic('heavy');
+              const bothActive = showDensityLayer && showMovementPaths;
+              const newState = !bothActive;
+              setShowDensityLayer(newState);
+              setShowMovementPaths(newState);
+              if (newState) {
+                setTimeFilter('all');
+                setHourFilter(undefined);
+                setDayFilter(undefined);
+              }
+            }}
+            variant={(showDensityLayer && showMovementPaths) ? "default" : "outline"}
+            size="sm"
+            className={`w-full h-10 text-xs font-semibold rounded-xl shadow-lg transition-all duration-200 active:scale-95 touch-manipulation ${
+              (showDensityLayer && showMovementPaths)
+                ? 'bg-gradient-to-r from-primary to-orange-500 text-primary-foreground shadow-primary/30' 
+                : 'bg-card/95 backdrop-blur-xl text-foreground border-border'
+            }`}
+            aria-label={showDensityLayer && showMovementPaths ? "Turn off both Heat and Paths layers" : "Turn on both Heat and Paths layers"}
+          >
+            <TrendingUp className="w-4 h-4 mr-1.5" />
+            {(showDensityLayer && showMovementPaths) ? "Both On" : "Both Off"}
+          </Button>
+
           {/* Mobile Path Filter Controls - Show when Paths layer is active */}
           <div 
             className={`overflow-hidden transition-all duration-200 ${
