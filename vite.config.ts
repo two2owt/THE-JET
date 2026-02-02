@@ -1,4 +1,4 @@
-import { defineConfig, Plugin } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
@@ -10,13 +10,52 @@ import Critters from "critters";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  // Development server configuration
   server: {
     host: "::",
     port: 8080,
+    // Vite 6: Improved HMR with faster file change detection
+    watch: {
+      usePolling: false, // Native file watching (faster than polling)
+    },
+    // Vite 6: Warmup frequently used files for faster initial loads
+    warmup: {
+      clientFiles: [
+        "./src/App.tsx",
+        "./src/pages/Index.tsx",
+        "./src/components/BottomNav.tsx",
+        "./src/components/Header.tsx",
+      ],
+    },
   },
+  // Preview server (production build preview)
+  preview: {
+    host: "::",
+    port: 8080,
+  },
+  // Vite 6: Optimize dependency pre-bundling
+  optimizeDeps: {
+    // Include frequently used deps for faster cold starts
+    include: [
+      "react",
+      "react-dom",
+      "react-router-dom",
+      "@tanstack/react-query",
+      "lucide-react",
+      "clsx",
+      "tailwind-merge",
+      "sonner",
+    ],
+    // Exclude large deps that are rarely used on initial load
+    exclude: ["mapbox-gl"],
+  },
+  // Production build configuration
   build: {
-    // Enable modulepreload for critical chunks - improves LCP by reducing request chain depth
-    // Vite will inject <link rel="modulepreload"> for these in the HTML
+    // Vite 6: Use baseline-widely-available target (modern browsers from 2.5+ years ago)
+    // This provides better optimization than explicit browser versions
+    target: "baseline-widely-available",
+    // Enable source maps for production debugging (optional, can be disabled)
+    sourcemap: mode === "development",
     modulePreload: {
       polyfill: true,
       // Aggressively preload critical path chunks to reduce 8.8s chain latency
@@ -189,16 +228,23 @@ export default defineConfig(({ mode }) => ({
         },
       },
     },
-    // Target modern browsers only - avoids unnecessary polyfills for ES6+ features
-    target: ['es2022', 'chrome100', 'firefox100', 'safari15'],
+    // Vite 6: Use default browser targets (baseline-widely-available)
+    // Removed explicit target array - Vite 6 defaults are better optimized
+    // Previous: target: ['es2022', 'chrome100', 'firefox100', 'safari15'],
+    
     // Increase chunk size warning limit
     chunkSizeWarningLimit: 600,
-    // Enable minification optimizations
-    minify: 'esbuild',
-    // Enable tree shaking
+    // Enable minification with esbuild (default and fastest)
+    minify: "esbuild",
+    // Vite 6: CSS minification enabled by default for all builds
+    cssMinify: "esbuild",
+    // Enable tree shaking (always on in production)
     treeshake: true,
   },
+  // CSS configuration
   css: {
+    // Vite 6: DevSourcemap for better debugging in development
+    devSourcemap: mode === "development",
     postcss: {
       plugins: [
         cssnano({
@@ -213,6 +259,12 @@ export default defineConfig(({ mode }) => ({
         }),
       ],
     },
+  },
+  // Vite 6: JSON handling improvements
+  json: {
+    // Auto-stringify large JSON files for better performance
+    stringify: "auto",
+    namedExports: true,
   },
   plugins: [
     react(),
