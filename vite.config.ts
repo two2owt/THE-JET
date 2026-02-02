@@ -51,10 +51,10 @@ export default defineConfig(({ mode }) => ({
   },
   // Production build configuration
   build: {
-    // Vite 6: Use baseline-widely-available target (modern browsers from 2.5+ years ago)
-    // This provides better optimization than explicit browser versions
-    target: "baseline-widely-available",
-    // Enable source maps for production debugging (optional, can be disabled)
+    // Target modern browsers - esbuild requires explicit targets
+    // Vite 6 defaults: Chrome 107+, Firefox 104+, Safari 16+, Edge 107+
+    target: ["es2022", "chrome107", "firefox104", "safari16", "edge107"],
+    // Enable source maps for development builds only
     sourcemap: mode === "development",
     modulePreload: {
       polyfill: true,
