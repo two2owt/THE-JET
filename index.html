@@ -1,19 +1,15 @@
 <!doctype html>
-<!-- Build: 2026-02-04T11:20 -->
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     
-    <!-- Cache control for HTML - forces revalidation on every visit -->
+    <!-- Cache control -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-    <!-- Prevent stale cached versions -->
-    <meta http-equiv="Last-Modified" content="" />
-    <meta name="build-time" content="__BUILD_TIME__" />
     
-    <!-- PWA Meta Tags -->
+    <!-- PWA -->
     <meta name="theme-color" content="#0f0f0f" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -27,31 +23,21 @@
     <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
     <link rel="manifest" href="/manifest.webmanifest" />
     
-    <!-- Fonts loaded via @fontsource/kanit in main.tsx - no preloads needed -->
-    
-    <!-- Minified: Boost priority of critical JS chunks -->
+    <!-- Boost priority of critical JS chunks -->
     <script>!function(){var e=function(){document.querySelectorAll('link[rel="modulepreload"]').forEach(function(l){(l.href.includes("vendor-react")||l.href.includes("vendor-router")||l.href.includes("index-"))&&!l.getAttribute("fetchpriority")&&l.setAttribute("fetchpriority","high")})};document.readyState==="loading"?document.addEventListener("DOMContentLoaded",e):requestAnimationFrame(e)}();</script>
     
-    <!-- Preconnect hints - establish early connections to critical origins -->
-    <!-- PRIORITY ORDER: Most impactful for map loading first -->
-    
-    <!-- 1. Mapbox API - style definitions, sprites, glyphs (HIGHEST priority) -->
+    <!-- Preconnect hints -->
     <link rel="preconnect" href="https://api.mapbox.com" crossorigin>
-    
-    <!-- 2. Mapbox tiles - map imagery loads from these subdomains -->
     <link rel="preconnect" href="https://a.tiles.mapbox.com" crossorigin>
     <link rel="preconnect" href="https://b.tiles.mapbox.com" crossorigin>
     <link rel="preconnect" href="https://c.tiles.mapbox.com" crossorigin>
     <link rel="preconnect" href="https://d.tiles.mapbox.com" crossorigin>
-    
-    <!-- 3. Supabase - data fetching for deals/venues -->
     <link rel="preconnect" href="https://zbrscuoqmkdbmdimdnqu.supabase.co" crossorigin>
-    
-    <!-- DNS prefetch only - lower priority origins -->
     <link rel="dns-prefetch" href="https://tiles.mapbox.com">
     <link rel="dns-prefetch" href="https://events.mapbox.com">
     <link rel="dns-prefetch" href="https://maps.googleapis.com">
-    <!-- SEO Meta Tags -->
+    
+    <!-- SEO -->
     <title>JET - Discover What&#39;s Hot Right Now</title>
     <meta name="description" content="Find trending venues, live events, and exclusive deals in your area with real-time heatmaps. Your guide to what's happening now.">
     <meta name="author" content="JET" />
@@ -61,9 +47,8 @@
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://jet-around.com" />
-    
-    
-    <!-- Social images - using local optimized WebP for better performance -->
+    <meta property="og:title" content="JET - Discover What&#39;s Hot Right Now">
+    <meta property="og:description" content="Find trending venues, live events, and exclusive deals in your area with real-time heatmaps. Your guide to what&#39;s happening now.">
     <meta property="og:image" content="https://jet-around.com/pwa-512x512.png">
     <meta property="og:image:width" content="512" />
     <meta property="og:image:height" content="512" />
@@ -72,34 +57,28 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@JETaround" />
+    <meta name="twitter:title" content="JET - Discover What&#39;s Hot Right Now">
+    <meta name="twitter:description" content="Find trending venues, live events, and exclusive deals in your area with real-time heatmaps. Your guide to what&#39;s happening now.">
     <meta name="twitter:image" content="https://jet-around.com/pwa-512x512.png">
     
-    <!-- CRITICAL: Theme initialization script - MUST run before any rendering -->
-    <!-- Prevents flash of wrong theme by reading localStorage before React hydrates -->
+    <!-- Theme initialization -->
     <script>
       (function() {
-        var theme = 'dark'; // Default theme
+        var theme = 'dark';
         try {
           var stored = localStorage.getItem('theme');
           if (stored === 'light' || stored === 'dark') {
             theme = stored;
-          } else if (stored === 'system' || !stored) {
-            // For system preference or no stored value, default to dark
-            theme = 'dark';
           }
         } catch (e) {}
-        
-        // Apply theme class immediately
         document.documentElement.classList.remove('light', 'dark');
         document.documentElement.classList.add(theme);
         document.documentElement.style.colorScheme = theme;
       })();
     </script>
     
-    <!-- CRITICAL CSS - Minimal inlined styles for ZERO FOUC -->
-    <!-- Only essential pre-hydration styles - full design system in index.css -->
+    <!-- Critical CSS -->
     <style>
-      /* Minimal CSS variables for pre-hydration rendering */
       :root {
         --background: 0 0% 98%;
         --foreground: 0 0% 10%;
@@ -112,8 +91,6 @@
         --card: 0 0% 10%;
         --border: 0 0% 20%;
       }
-      
-      /* Essential base styles for instant rendering */
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
       html { height: 100%; background: hsl(var(--background)); }
       body { 
@@ -134,8 +111,6 @@
         overflow: hidden;
         background: hsl(var(--background));
       }
-      
-      /* FOUC prevention - hide empty root until React hydrates */
       #root:empty::before {
         content: '';
         position: fixed;
@@ -143,8 +118,6 @@
         background: hsl(var(--background));
         z-index: 99999;
       }
-      
-      /* Skip link accessibility */
       .skip-link { position: absolute; left: -9999px; z-index: 10000; }
       .skip-link:focus {
         position: fixed; top: 10px; left: 10px;
@@ -156,36 +129,20 @@
       }
     </style>
     
-    <!-- Fonts loaded via @fontsource/kanit in main.tsx - no external requests needed -->
-    
-    <!-- Mapbox GL CSS - loaded async to not block rendering -->
+    <!-- Mapbox CSS -->
     <link rel="preload" href="https://api.mapbox.com/mapbox-gl-js/v3.18.1/mapbox-gl.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link href="https://api.mapbox.com/mapbox-gl-js/v3.18.1/mapbox-gl.css" rel="stylesheet"></noscript>
-    <!-- Mapbox GL JS - defer load until after LCP to prioritize brand text rendering -->
-    <!-- Removed fetchpriority="high" - mapbox should NOT compete with LCP element -->
-    <meta property="og:title" content="JET - Discover What&#39;s Hot Right Now">
-  <meta name="twitter:title" content="JET - Discover What&#39;s Hot Right Now">
-  <meta property="og:description" content="Find trending venues, live events, and exclusive deals in your area with real-time heatmaps. Your guide to what&#39;s happening now.">
-  <meta name="twitter:description" content="Find trending venues, live events, and exclusive deals in your area with real-time heatmaps. Your guide to what&#39;s happening now.">
-</head>
+  </head>
   
   <body>
-    <!-- Skip link -->
     <a href="#main-content" class="skip-link">Skip to main content</a>
-    
-    
-    <!-- React mount point -->
     <div id="root"></div>
     
-    
-    <!-- CRITICAL: Preload Mapbox token before React hydration - eliminates resource load delay -->
+    <!-- Mapbox token preload -->
     <script>!function(){var k="mapbox_token_cache_v2",c=localStorage.getItem(k);if(c){try{var d=JSON.parse(c);if(d.token&&d.token.startsWith("pk.")&&Date.now()-d.timestamp<864e5)return}catch(e){}}window.__mapboxTokenPromise=fetch("https://zbrscuoqmkdbmdimdnqu.supabase.co/functions/v1/get-mapbox-token",{headers:{"apikey":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpicnNjdW9xbWtkYm1kaW1kbnF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMyMDkwODgsImV4cCI6MjA3ODc4NTA4OH0.LtDrHXcgQF4OrNVpKYXNTX9fdvTsscaMy35jK77qk2c"}}).then(function(r){return r.json()}).then(function(d){if(d&&d.token){localStorage.setItem(k,JSON.stringify({token:d.token,timestamp:Date.now()}));sessionStorage.setItem(k,JSON.stringify({token:d.token,timestamp:Date.now()}));window.__mapboxToken=d.token}}).catch(function(){})}();</script>
     
-    <!-- Main app script - Vite will transform this -->
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- Minified: Mapbox JS loading on demand -->
+    <!-- Mapbox JS on-demand -->
     <script>!function(){var m=!1,l=function(){if(!m){m=!0;var s=document.createElement("script");s.src="https://api.mapbox.com/mapbox-gl-js/v3.18.1/mapbox-gl.js";s.async=!0;document.head.appendChild(s)}},d=function(){typeof requestIdleCallback!=="undefined"?requestIdleCallback(l,{timeout:4e3}):setTimeout(l,3e3)};document.readyState==="complete"?d():window.addEventListener("load",function(){setTimeout(d,100)},{once:!0});if("IntersectionObserver"in window){var o=new IntersectionObserver(function(e){e[0].isIntersecting&&(l(),o.disconnect())},{rootMargin:"200px"}),b=function(){var e=document.querySelector("[data-map-container]");e&&o.observe(e)};document.readyState==="loading"?document.addEventListener("DOMContentLoaded",b):b()}}();</script>
-
   </body>
 </html>
