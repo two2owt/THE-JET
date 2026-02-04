@@ -52,6 +52,10 @@ All colors MUST be HSL.
     --map-ui-inset-right: 0.75rem;
     --map-ui-inset-bottom: 0.75rem;
     --map-ui-inset-left: 0.75rem;
+
+    /* Map UI safe zones (keep overlays clear of Header/BottomNav) */
+    --map-safe-top: calc(var(--header-total-height) + var(--map-ui-inset-top));
+    --map-safe-bottom: calc(var(--bottom-nav-total-height) + var(--map-ui-inset-bottom));
     
     /* For fixed positioned elements that need to clear bottom nav */
     --map-fixed-bottom: calc(var(--bottom-nav-total-height) + 0.75rem);
@@ -780,6 +784,28 @@ All colors MUST be HSL.
   /* Deal marker animations - removed */
 
   /* Mobile map controls - responsive based on device */
+  /* Offset Mapbox built-in controls so they never sit under Header/BottomNav */
+  .mapboxgl-ctrl-top-left,
+  .mapboxgl-ctrl-top-right {
+    top: var(--map-safe-top) !important;
+  }
+
+  .mapboxgl-ctrl-bottom-left,
+  .mapboxgl-ctrl-bottom-right {
+    bottom: var(--map-safe-bottom) !important;
+  }
+
+  /* Respect notches / landscape safe areas */
+  .mapboxgl-ctrl-top-left,
+  .mapboxgl-ctrl-bottom-left {
+    left: var(--safe-area-inset-left) !important;
+  }
+
+  .mapboxgl-ctrl-top-right,
+  .mapboxgl-ctrl-bottom-right {
+    right: var(--safe-area-inset-right) !important;
+  }
+
   .mapboxgl-ctrl-group {
     border-radius: 8px !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;

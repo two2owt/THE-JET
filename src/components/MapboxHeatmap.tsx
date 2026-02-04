@@ -2145,7 +2145,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       <div 
         className="absolute z-10"
         style={{
-          top: 'var(--map-ui-inset-top)',
+          top: 'var(--map-safe-top)',
           left: 'var(--map-ui-inset-left)',
           // CLS fix: Fixed dimensions prevent layout shift when "Locating..." changes
           // Increased width to accommodate longer city names
@@ -2263,7 +2263,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       <div 
         className="absolute z-10 space-y-2 sm:space-y-2.5 md:space-y-3"
         style={{
-          top: isMobile ? 'calc(var(--map-ui-inset-top) + 3.5rem)' : 'calc(var(--map-ui-inset-top) + 4rem)',
+          top: isMobile ? 'calc(var(--map-safe-top) + 3.5rem)' : 'calc(var(--map-safe-top) + 4rem)',
           left: 'var(--map-ui-inset-left)',
           maxWidth: isMobile ? 'calc(50vw - 0.75rem)' : 'var(--map-control-max-width)',
           contain: 'layout style',
@@ -2625,7 +2625,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
           onClick={() => { triggerHaptic('light'); setControlsCollapsed(!controlsCollapsed); }}
           className="absolute z-30 bg-card backdrop-blur-xl rounded-full p-2.5 border border-border shadow-lg transition-all duration-300 hover:bg-card/90 active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
           style={{
-            bottom: 'var(--map-ui-inset-bottom)',
+            bottom: 'var(--map-fixed-bottom)',
             right: controlsCollapsed 
               ? 'var(--map-ui-inset-right)'
               : 'calc(var(--map-ui-inset-right) + var(--map-control-max-width) + 0.5rem)',
@@ -2647,7 +2647,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
         <div 
           className={`${isMobile ? 'fixed' : 'absolute'} bg-card/95 backdrop-blur-xl rounded-xl border border-border z-30 shadow-lg px-3 py-2`}
           style={{
-            top: isMobile ? 'calc(env(safe-area-inset-top, 0px) + 70px)' : '80px',
+            top: 'calc(var(--map-safe-top) + 1rem)',
             right: 'var(--map-ui-inset-right)',
             minWidth: '140px',
             // Use opacity-only transition to avoid CLS
@@ -2723,7 +2723,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       <div 
         className={`${isMobile ? 'fixed' : 'absolute'} bg-card/95 backdrop-blur-xl rounded-xl border border-border z-30 shadow-lg ${isMobile ? 'px-2 py-1.5' : 'px-3 py-2 md:px-4 md:py-3'}`}
         style={{
-          bottom: isMobile ? 'var(--map-fixed-bottom)' : 'var(--map-ui-inset-bottom)',
+          bottom: 'var(--map-fixed-bottom)',
           left: 'var(--map-ui-inset-left)',
           maxWidth: 'var(--map-control-max-width)',
           // Use opacity-only transition to avoid CLS
