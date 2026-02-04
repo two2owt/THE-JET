@@ -1703,7 +1703,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
         ${shouldAnimate ? `animation: markerRingPulse ${pulseSpeed} ease-in-out infinite;` : ''}
       `;
 
-      // Create teardrop shape - simplified without backdrop-filter to avoid rendering artifacts
+      // Create teardrop shape - glassmorphic design with frosted glass effect
       const teardropEl = document.createElement('div');
       const isDarkTheme = document.documentElement.classList.contains('dark');
       teardropEl.style.cssText = `
@@ -1713,16 +1713,23 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
         width: ${markerSize}px;
         height: ${markerSize}px;
         background: ${isDarkTheme 
-          ? 'linear-gradient(145deg, #3a3a45, #25252d)' 
-          : 'linear-gradient(145deg, #ffffff, #f0f0f5)'};
+          ? 'rgba(30, 30, 35, 0.75)' 
+          : 'rgba(255, 255, 255, 0.8)'};
+        backdrop-filter: blur(12px) saturate(180%);
+        -webkit-backdrop-filter: blur(12px) saturate(180%);
         border-radius: 50% 50% 50% 0;
         transform: rotate(-45deg);
         transform-origin: center center;
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 2px solid ${color};
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        border: 1.5px solid ${isDarkTheme 
+          ? `rgba(255, 255, 255, 0.15)` 
+          : `rgba(0, 0, 0, 0.08)`};
+        box-shadow: 
+          0 4px 16px rgba(0, 0, 0, ${isDarkTheme ? '0.4' : '0.15'}),
+          inset 0 1px 0 rgba(255, 255, 255, ${isDarkTheme ? '0.1' : '0.5'}),
+          0 0 0 1px ${color}40;
       `;
       
       // Add inner icon/dot to indicate activity level
@@ -1744,18 +1751,26 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       pinEl.appendChild(teardropEl);
       el.appendChild(pinEl);
 
-      // Hover effects - scale and enhanced shadow
+      // Hover effects - scale and enhanced glassmorphic shadow
       el.addEventListener("mouseenter", () => {
         el.style.zIndex = "100";
         pinEl.style.transform = "scale(1.15)";
-        teardropEl.style.boxShadow = `0 6px 16px rgba(0, 0, 0, 0.4)`;
+        teardropEl.style.boxShadow = `
+          0 8px 24px rgba(0, 0, 0, ${isDarkTheme ? '0.5' : '0.2'}),
+          inset 0 1px 0 rgba(255, 255, 255, ${isDarkTheme ? '0.15' : '0.6'}),
+          0 0 0 2px ${color}60
+        `;
         ringEl.style.opacity = '1';
       });
 
       el.addEventListener("mouseleave", () => {
         el.style.zIndex = "";
         pinEl.style.transform = "scale(1)";
-        teardropEl.style.boxShadow = `0 4px 12px rgba(0, 0, 0, 0.3)`;
+        teardropEl.style.boxShadow = `
+          0 4px 16px rgba(0, 0, 0, ${isDarkTheme ? '0.4' : '0.15'}),
+          inset 0 1px 0 rgba(255, 255, 255, ${isDarkTheme ? '0.1' : '0.5'}),
+          0 0 0 1px ${color}40
+        `;
         ringEl.style.opacity = pulseOpacity;
       });
 
