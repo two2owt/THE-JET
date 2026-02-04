@@ -11,9 +11,6 @@ import { useSearchHistory } from "@/hooks/useSearchHistory";
 // Lazy load search results - only needed when user searches
 const SearchResults = lazy(() => import("./SearchResults").then(m => ({ default: m.SearchResults })));
 
-// Lazy load sync status - not critical for initial render
-const SyncStatusIndicator = lazy(() => import("./SyncStatusIndicator").then(m => ({ default: m.SyncStatusIndicator })));
-
 type Deal = Database['public']['Tables']['deals']['Row'];
 
 // Simple validation without zod - avoids loading 13KB library
@@ -178,20 +175,8 @@ export const Header = ({
             </Suspense>
           </div>
 
-          {/* Sync Status - Takes remaining width between search and avatar */}
-          <div className="flex-1 min-w-0 px-1 sm:px-2 md:px-3 flex items-center">
-            <Suspense fallback={null}>
-              <SyncStatusIndicator 
-                isLoading={isLoading} 
-                lastUpdated={lastUpdated} 
-                onRefresh={onRefresh} 
-                showTimestamp={true} 
-                compact={true} 
-                cityName={cityName} 
-                isInitializing={!lastUpdated && !isLoading} 
-              />
-            </Suspense>
-          </div>
+          {/* Spacer - Takes remaining width between search and avatar */}
+          <div className="flex-1 min-w-0" />
 
           {/* Avatar - FIXED dimensions, renders immediately with fallback */}
           <div 
