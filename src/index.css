@@ -401,21 +401,16 @@ All colors MUST be HSL.
     position: relative;
     flex: 1;
     background-color: hsl(var(--background));
-    /* Strict containment - prevents all layout recalculations from affecting parent */
-    contain: strict;
+    /* IMPORTANT: No 'contain', 'transform', or 'filter' properties here! */
+    /* These create new containing blocks that break fixed positioning for Header/BottomNav */
     overflow: hidden;
-    /* Force GPU layer to prevent repaints causing shifts */
-    transform: translateZ(0);
     /* Explicit sizing prevents browser recalculation */
     box-sizing: border-box;
-    /* Create isolated stacking context to prevent shift propagation */
-    isolation: isolate;
   }
   
   /* Prevent pseudo-element animations from causing layout shifts in app-wrapper only */
   .app-wrapper::before,
   .app-wrapper::after {
-    contain: strict;
     position: absolute;
     pointer-events: none;
     /* Ensure they don't contribute to layout */
