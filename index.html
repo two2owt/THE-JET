@@ -206,6 +206,7 @@
         flex-shrink: 0;
         background: hsl(var(--card) / 0.98);
         border-bottom: 1px solid hsl(var(--border) / 0.5);
+        width: 100%;
       }
       
       /* ===== MAIN CONTENT ===== */
@@ -215,16 +216,24 @@
         height: var(--main-height);
         overflow: hidden;
         background: hsl(var(--background));
+        width: 100%;
       }
       
       /* ===== BOTTOM NAV SHELL ===== */
-      nav[aria-label="Main navigation"], .bottom-nav-contained {
+      nav[aria-label="Main navigation"], .nav-contained, .bottom-nav-contained {
         height: var(--bottom-nav-total-height);
         min-height: var(--bottom-nav-total-height);
         max-height: var(--bottom-nav-total-height);
         flex-shrink: 0;
         background: hsl(var(--card) / 0.98);
         border-top: 1px solid hsl(var(--border) / 0.5);
+        width: 100%;
+      }
+      
+      /* Ensure flex layout works correctly in header and nav */
+      .header-contained > div,
+      .nav-contained > div {
+        width: 100%;
       }
       
       /* ===== ACCESSIBILITY ===== */
