@@ -314,7 +314,7 @@ export default defineConfig(({ mode }) => ({
       },
     },
     VitePWA({
-      registerType: "prompt",
+      registerType: "autoUpdate",
       // Defer service worker registration to avoid render-blocking
       injectRegister: null,
       includeAssets: ["favicon.ico", "robots.txt", "jet-email-logo.png"],
