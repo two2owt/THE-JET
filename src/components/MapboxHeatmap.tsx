@@ -2148,14 +2148,13 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
           top: 'var(--map-ui-inset-top)',
           left: 'var(--map-ui-inset-left)',
           // CLS fix: Fixed dimensions prevent layout shift when "Locating..." changes
-          width: '172px',
-          height: '36px',
-          minWidth: '172px',
+          // Increased width to accommodate longer city names
+          width: 'auto',
+          height: 'auto',
+          minWidth: '200px',
           minHeight: '36px',
-          maxWidth: '172px',
-          maxHeight: '36px',
-          contain: 'strict',
-          overflow: 'hidden',
+          maxWidth: '280px',
+          contain: 'layout style',
         }}
       >
         <Select
@@ -2197,23 +2196,23 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
           }}
         >
           <SelectTrigger 
-            className="w-auto text-[10px] sm:text-xs md:text-sm lg:text-base h-9 sm:h-10 md:h-11 lg:h-12 px-2.5 sm:px-3 md:px-4 rounded-xl shadow-lg bg-card/95 backdrop-blur-xl border-border"
+            className="w-full text-[11px] sm:text-xs md:text-sm lg:text-base h-9 sm:h-10 md:h-11 lg:h-12 px-3 sm:px-3.5 md:px-4 rounded-xl shadow-lg bg-card/95 backdrop-blur-xl border-border"
             aria-label="Select city location"
             style={{
               // CLS fix: Reserve stable width to prevent layout shift when "Locating..." changes to city name
-              minWidth: '160px',
+              minWidth: '200px',
+              maxWidth: '280px',
               contain: 'layout style',
             }}
           >
-            <div className="flex items-center gap-1.5 sm:gap-2 md:gap-2.5">
-              <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-primary flex-shrink-0" />
+            <div className="flex items-center gap-2 sm:gap-2.5 md:gap-3 w-full">
+              <MapPin className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 text-primary flex-shrink-0" />
               <span 
-                className="font-semibold truncate"
+                className="font-semibold truncate flex-1 text-left"
                 style={{
-                  // CLS fix: Fixed width prevents layout shift when text content changes
-                  width: '110px',
-                  minWidth: '110px',
-                  maxWidth: '110px',
+                  // CLS fix: Min width ensures stable layout, flex-1 allows growth
+                  minWidth: '140px',
+                  maxWidth: '200px',
                 }}
               >
                 {isUsingCurrentLocation 
@@ -2221,7 +2220,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
                   : `${selectedCity.name}, ${selectedCity.state}`}
               </span>
               {isUsingCurrentLocation && (detectedLocationName || detectedCity) && (
-                <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-primary rounded-full animate-pulse" />
+                <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-primary rounded-full animate-pulse flex-shrink-0" />
               )}
             </div>
           </SelectTrigger>
