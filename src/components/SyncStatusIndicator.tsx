@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { RefreshCw, Check, WifiOff, Cloud, Plane, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
-import { Skeleton } from "./ui/skeleton";
 
 interface SyncStatusIndicatorProps {
   isLoading?: boolean;

@@ -45,6 +45,9 @@ import { Button } from "@/components/ui/button";
 // Check for cached token synchronously to determine if we can skip loading state
 const hasCachedToken = getMapboxTokenFromCache() !== null;
 
+// Mapbox is always ready - no deferral needed (direct-rendering architecture)
+const MAPBOX_ALWAYS_READY = true;
+
 // Top 10 most popular venues in Charlotte, NC metropolitan area with real addresses
 const charlotteVenues: Venue[] = [
   { id: "merchant-trade", name: "Merchant & Trade", lat: 35.2271, lng: -80.8393, activity: 95, category: "Rooftop Bar", neighborhood: "Uptown", address: "201 S College St, Charlotte, NC 28202" },
@@ -65,8 +68,8 @@ const Index = () => {
   
   // Use shared navigation hook for consistent tab handling
   const { activeTab, setActiveTab, handleTabChange } = useBottomNavigation({ defaultTab: "map" });
-  // Defer Mapbox loading until browser is idle to reduce TBT while keeping map as primary
-  const [isMapboxReady, setIsMapboxReady] = useState(false);
+  // Direct rendering - Mapbox loads immediately (no deferral)
+  const [isMapboxReady, setIsMapboxReady] = useState(MAPBOX_ALWAYS_READY);
   const [mapUIResetKey, setMapUIResetKey] = useState(0); // Increments when switching to map tab to reset collapsed UI
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [selectedCity, setSelectedCity] = useState<City>(CITIES[0]); // Default to Charlotte
@@ -199,25 +202,8 @@ const Index = () => {
     }
   }, [activeTab]);
 
-  // Defer Mapbox initialization until after initial paint to reduce TBT
-  useEffect(() => {
-    if (activeTab === "map" && !isMapboxReady) {
-      // Use requestIdleCallback with 500ms timeout to push loading after LCP
-      const scheduleMapboxLoad = () => {
-        if ('requestIdleCallback' in window) {
-          (window as any).requestIdleCallback(() => {
-            setIsMapboxReady(true);
-          }, { timeout: 800 }); // 800ms delay to allow LCP to complete
-        } else {
-          // Fallback for Safari - use setTimeout after paint
-          requestAnimationFrame(() => {
-            setTimeout(() => setIsMapboxReady(true), 100);
-          });
-        }
-      };
-      scheduleMapboxLoad();
-    }
-  }, [activeTab, isMapboxReady]);
+  // Direct rendering - no deferral needed for Mapbox initialization
+  // (requestIdleCallback delays removed per direct-rendering architecture)
 
   const handleCityChange = useCallback((city: City) => {
     setSelectedCity(city);
@@ -407,7 +393,7 @@ const Index = () => {
                     <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
                   </div>
                 )}
-                <Suspense fallback={<div className="h-32 bg-muted/50 rounded-xl" />}>
+                <Suspense fallback={null}>
                   <JetCard 
                     venue={selectedVenue} 
                     onGetDirections={handleGetDirections}
@@ -471,7 +457,7 @@ const Index = () => {
                   <p className="text-xs sm:text-sm mt-1 sm:mt-2">Enable location tracking to receive deal alerts</p>
                 </div>
               ) : (
-                <Suspense fallback={<div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-20 bg-muted/50 rounded-lg" />)}</div>}>
+                <Suspense fallback={null}>
                   {notifications.map((notification) => (
                     <div key={notification.id}>
                       <NotificationCard 
