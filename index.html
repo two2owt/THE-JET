@@ -96,188 +96,63 @@
       })();
     </script>
     
-    <!-- CRITICAL CSS - Inlined for ZERO FOUC -->
-    <!-- This CSS renders BEFORE any JavaScript executes -->
+    <!-- CRITICAL CSS - Minimal inlined styles for ZERO FOUC -->
+    <!-- Only essential pre-hydration styles - full design system in index.css -->
     <style>
-      /* ===== FONTS - handled by @fontsource/kanit in main.tsx ===== */
-      /* Fallback font with matched metrics - prevents CLS during font swap */
-      @font-face {
-        font-family: 'Kanit Fallback';
-        src: local('Arial'), local('Helvetica Neue'), local('Helvetica'), local('sans-serif');
-        font-display: swap;
-        ascent-override: 105%;
-        descent-override: 35%;
-        line-gap-override: 0%;
-        size-adjust: 97%;
-      }
-      
-      /* ===== CSS VARIABLES ===== */
+      /* Minimal CSS variables for pre-hydration rendering */
       :root {
-        --header-height: 52px;
-        --header-total-height: calc(52px + env(safe-area-inset-top, 0px));
-        --bottom-nav-height: 60px;
-        --bottom-nav-total-height: calc(60px + env(safe-area-inset-bottom, 0px));
-        --safe-area-inset-top: env(safe-area-inset-top, 0px);
-        --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
-        --main-height: calc(100dvh - var(--header-total-height) - var(--bottom-nav-total-height));
-        --primary: 24 100% 50%;
-        --primary-foreground: 0 0% 100%;
-        --radius: 1rem;
-      }
-      
-      /* Light theme */
-      :root.light, html.light {
-        color-scheme: light;
         --background: 0 0% 98%;
         --foreground: 0 0% 10%;
-        --muted: 0 0% 94%;
-        --muted-foreground: 0 0% 40%;
-        --border: 0 0% 85%;
-        --secondary: 0 0% 92%;
         --card: 0 0% 100%;
-        --card-foreground: 0 0% 10%;
+        --border: 0 0% 85%;
       }
-      
-      /* Dark theme (default) */
-      :root.dark, :root:not(.light), html.dark, html:not(.light) {
-        color-scheme: dark;
+      :root.dark, html.dark, :root:not(.light) {
         --background: 0 0% 6%;
         --foreground: 0 0% 98%;
-        --muted: 0 0% 17%;
-        --muted-foreground: 0 0% 65%;
-        --border: 0 0% 20%;
-        --secondary: 0 0% 17%;
         --card: 0 0% 10%;
-        --card-foreground: 0 0% 10%;
+        --border: 0 0% 20%;
       }
       
-      /* ===== BASE STYLES ===== */
+      /* Essential base styles for instant rendering */
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      
-      html { 
-        height: 100%; 
-        background: hsl(var(--background)); 
-        font-family: 'Kanit', 'Kanit Fallback', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      }
-      
+      html { height: 100%; background: hsl(var(--background)); }
       body { 
         height: 100dvh; 
-        min-height: 100dvh;
-        max-height: 100dvh;
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
+        margin: 0; 
+        overflow: hidden; 
         background: hsl(var(--background)); 
-        color: hsl(var(--foreground)); 
-        font-family: 'Kanit', 'Kanit Fallback', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        text-rendering: optimizeLegibility;
+        color: hsl(var(--foreground));
+        font-family: system-ui, -apple-system, sans-serif;
         position: fixed;
         inset: 0;
-        display: flex;
-        flex-direction: column;
       }
-      
       #root { 
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        width: 100%;
-        height: 100dvh;
+        display: flex; 
+        flex-direction: column; 
+        flex: 1; 
+        height: 100dvh; 
         overflow: hidden;
         background: hsl(var(--background));
       }
       
-      /* ===== APP WRAPPER ===== */
-      .app-wrapper {
-        display: flex;
-        flex-direction: column;
-        height: 100dvh;
-        width: 100%;
-        overflow: hidden;
-        background: hsl(var(--background));
-      }
-      
-      /* ===== HEADER SHELL - Overlay on top of map ===== */
-      header, .header-contained {
-        height: var(--header-total-height);
-        min-height: var(--header-total-height);
-        max-height: var(--header-total-height);
-        flex-shrink: 0;
-        background: hsl(var(--card) / 0.9);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border-bottom: 1px solid hsl(var(--border) / 0.3);
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        width: 100%;
-        position: sticky;
-        top: 0;
-        z-index: 60;
-      }
-      
-      /* ===== MAIN CONTENT ===== */
-      main, [role="main"] {
-        flex: 1;
-        min-height: 0;
-        height: var(--main-height);
-        overflow: hidden;
-        background: hsl(var(--background));
-        width: 100%;
-      }
-      
-      /* ===== BOTTOM NAV SHELL - Overlay on top of map ===== */
-      nav[aria-label="Main navigation"], .nav-contained, .bottom-nav-contained {
-        height: var(--bottom-nav-total-height);
-        min-height: var(--bottom-nav-total-height);
-        max-height: var(--bottom-nav-total-height);
-        flex-shrink: 0;
-        background: hsl(var(--card) / 0.9);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border-top: 1px solid hsl(var(--border) / 0.3);
-        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-        width: 100%;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 50;
-      }
-      
-      /* Ensure flex layout works correctly in header and nav */
-      .header-contained > div,
-      .nav-contained > div {
-        width: 100%;
-      }
-      
-      /* ===== ACCESSIBILITY ===== */
-      .skip-link {
-        position: absolute;
-        left: -9999px;
-        z-index: 10000;
-      }
-      .skip-link:focus {
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        padding: 12px 24px;
-        background: hsl(var(--background));
-        color: hsl(var(--foreground));
-        border: 2px solid hsl(var(--foreground));
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 600;
-      }
-      
-      /* ===== PREVENT FOUC ===== */
-      /* Hide content until React hydrates - prevents flash of unstyled content */
+      /* FOUC prevention - hide empty root until React hydrates */
       #root:empty::before {
         content: '';
         position: fixed;
         inset: 0;
         background: hsl(var(--background));
         z-index: 99999;
+      }
+      
+      /* Skip link accessibility */
+      .skip-link { position: absolute; left: -9999px; z-index: 10000; }
+      .skip-link:focus {
+        position: fixed; top: 10px; left: 10px;
+        padding: 12px 24px;
+        background: hsl(var(--background));
+        color: hsl(var(--foreground));
+        border: 2px solid hsl(var(--foreground));
+        border-radius: 8px;
       }
     </style>
     
