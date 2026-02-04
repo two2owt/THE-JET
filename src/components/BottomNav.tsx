@@ -28,7 +28,7 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 3, onPre
 
   return (
     <nav 
-      className="fixed left-0 right-0 bg-card/98 backdrop-blur-xl border-t border-border/50 z-50 nav-contained text-foreground"
+      className="fixed left-0 right-0 bg-card/90 backdrop-blur-xl border-t border-border/30 z-50 nav-contained text-foreground shadow-[0_-2px_10px_rgba(0,0,0,0.1)]"
       role="navigation"
       aria-label="Main navigation"
       style={{

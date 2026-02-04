@@ -33,23 +33,23 @@
     <script>!function(){var e=function(){document.querySelectorAll('link[rel="modulepreload"]').forEach(function(l){(l.href.includes("vendor-react")||l.href.includes("vendor-router")||l.href.includes("index-"))&&!l.getAttribute("fetchpriority")&&l.setAttribute("fetchpriority","high")})};document.readyState==="loading"?document.addEventListener("DOMContentLoaded",e):requestAnimationFrame(e)}();</script>
     
     <!-- Preconnect hints - establish early connections to critical origins -->
-    <link rel="preconnect" href="https://zbrscuoqmkdbmdimdnqu.supabase.co" crossorigin>
+    <!-- PRIORITY ORDER: Most impactful for map loading first -->
     
-    <!-- Mapbox critical origins - ordered by impact on LCP -->
+    <!-- 1. Mapbox API - style definitions, sprites, glyphs (HIGHEST priority) -->
     <link rel="preconnect" href="https://api.mapbox.com" crossorigin>
-    <!-- Mapbox fonts endpoint - required for map labels, high LCP impact -->
-    <link rel="preconnect" href="https://fonts.mapbox.com" crossorigin>
-    <!-- Primary tile subdomain - most tiles load from here first -->
+    
+    <!-- 2. Mapbox tiles - map imagery loads from these subdomains -->
     <link rel="preconnect" href="https://a.tiles.mapbox.com" crossorigin>
     <link rel="preconnect" href="https://b.tiles.mapbox.com" crossorigin>
-    <!-- Tiles parent domain for sprite/style resources -->
-    <link rel="preconnect" href="https://tiles.mapbox.com" crossorigin>
-    <!-- Events/telemetry - lower priority but still preconnect to avoid delays -->
-    <link rel="preconnect" href="https://events.mapbox.com" crossorigin>
+    <link rel="preconnect" href="https://c.tiles.mapbox.com" crossorigin>
+    <link rel="preconnect" href="https://d.tiles.mapbox.com" crossorigin>
     
-    <!-- DNS prefetch - resolve DNS for secondary tile subdomains -->
-    <link rel="dns-prefetch" href="https://c.tiles.mapbox.com">
-    <link rel="dns-prefetch" href="https://d.tiles.mapbox.com">
+    <!-- 3. Supabase - data fetching for deals/venues -->
+    <link rel="preconnect" href="https://zbrscuoqmkdbmdimdnqu.supabase.co" crossorigin>
+    
+    <!-- DNS prefetch only - lower priority origins -->
+    <link rel="dns-prefetch" href="https://tiles.mapbox.com">
+    <link rel="dns-prefetch" href="https://events.mapbox.com">
     <link rel="dns-prefetch" href="https://maps.googleapis.com">
     <!-- SEO Meta Tags -->
     <title>JET - Discover What&#39;s Hot Right Now</title>
@@ -199,15 +199,21 @@
         background: hsl(var(--background));
       }
       
-      /* ===== HEADER SHELL ===== */
+      /* ===== HEADER SHELL - Overlay on top of map ===== */
       header, .header-contained {
         height: var(--header-total-height);
         min-height: var(--header-total-height);
         max-height: var(--header-total-height);
         flex-shrink: 0;
-        background: hsl(var(--card) / 0.98);
-        border-bottom: 1px solid hsl(var(--border) / 0.5);
+        background: hsl(var(--card) / 0.9);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid hsl(var(--border) / 0.3);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         width: 100%;
+        position: sticky;
+        top: 0;
+        z-index: 60;
       }
       
       /* ===== MAIN CONTENT ===== */
@@ -220,15 +226,23 @@
         width: 100%;
       }
       
-      /* ===== BOTTOM NAV SHELL ===== */
+      /* ===== BOTTOM NAV SHELL - Overlay on top of map ===== */
       nav[aria-label="Main navigation"], .nav-contained, .bottom-nav-contained {
         height: var(--bottom-nav-total-height);
         min-height: var(--bottom-nav-total-height);
         max-height: var(--bottom-nav-total-height);
         flex-shrink: 0;
-        background: hsl(var(--card) / 0.98);
-        border-top: 1px solid hsl(var(--border) / 0.5);
+        background: hsl(var(--card) / 0.9);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-top: 1px solid hsl(var(--border) / 0.3);
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
         width: 100%;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 50;
       }
       
       /* Ensure flex layout works correctly in header and nav */

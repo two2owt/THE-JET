@@ -92,7 +92,7 @@ export const Header = ({
   };
   return (
     <header 
-      className="bg-card/98 backdrop-blur-xl border-b border-border/50 sticky top-0 z-[60] header-contained text-foreground" 
+      className="bg-card/90 backdrop-blur-xl border-b border-border/30 sticky top-0 z-[60] header-contained text-foreground shadow-sm" 
       role="banner" 
       style={{
         paddingTop: 'var(--safe-area-inset-top)',
