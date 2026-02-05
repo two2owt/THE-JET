@@ -305,6 +305,8 @@ const Index = () => {
         flex: '1 1 0%',
         minHeight: 0,
         overflow: 'hidden',
+        // Reserve space for fixed header at top
+        paddingTop: 'var(--header-total-height)',
         // Create stacking context for overlay architecture
         isolation: 'isolate',
       }}
@@ -318,6 +320,9 @@ const Index = () => {
             zIndex: 0,
             contain: 'strict',
             transform: 'translateZ(0)',
+            // Offset for the header padding on parent
+            top: 'calc(-1 * var(--header-total-height))',
+            height: 'calc(100% + var(--header-total-height))',
           }}
         >
           {/* Error state - only show if there's a definite error */}

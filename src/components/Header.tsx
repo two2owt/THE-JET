@@ -86,7 +86,7 @@ export const Header = ({
 
   return (
     <header 
-      className="sticky top-0 z-[60] text-foreground"
+      className="fixed top-0 left-0 right-0 z-[60] text-foreground"
       role="banner" 
       style={{
         paddingTop: 'var(--safe-area-inset-top)',

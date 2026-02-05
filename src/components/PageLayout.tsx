@@ -76,7 +76,16 @@ export function PageLayout({
   } = headerConfig;
 
   return (
-    <>
+    <div
+      className="relative w-full h-full"
+      style={{
+        flex: '1 1 0%',
+        minHeight: 0,
+        overflow: 'hidden',
+        // Reserve space for fixed header at top
+        paddingTop: 'var(--header-total-height)',
+      }}
+    >
       <Header
         venues={venues}
         deals={deals}
@@ -115,6 +124,6 @@ export function PageLayout({
         notificationCount={unreadCount}
         onPrefetch={onPrefetch}
       />
-    </>
+    </div>
   );
 }
