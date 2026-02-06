@@ -98,7 +98,7 @@ export default function Social() {
   if (!user) {
     return (
       <PageLayout defaultTab="social" notificationCount={0}>
-        <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="max-w-7xl mx-auto px-fluid-md py-fluid-lg">
           <EmptyState
             icon={Users}
             title="Sign in to connect"
@@ -115,7 +115,7 @@ export default function Social() {
   if (!canAccessSocialFeatures()) {
     return (
       <PageLayout defaultTab="social">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="max-w-7xl mx-auto px-fluid-md py-fluid-lg">
           <EmptyState
             icon={Crown}
             title="Unlock Social Features"
@@ -136,14 +136,14 @@ export default function Social() {
 
   return (
     <PageLayout defaultTab="social">
-      <div className="max-w-7xl mx-auto px-fluid-md py-fluid-lg gap-fluid-xl">
+      <div className="max-w-7xl mx-auto px-fluid-md py-fluid-lg space-y-fluid-xl">
         {/* Pending Requests */}
         {pendingRequests.length > 0 && (
           <div>
-            <h2 className="text-2xl font-bold text-foreground mb-4">
+            <h2 className="text-fluid-xl sm:text-fluid-2xl font-bold text-foreground mb-fluid-md">
               Friend Requests ({pendingRequests.length})
             </h2>
-            <div className="space-y-3">
+            <div className="space-y-fluid-sm">
               {pendingRequests.map((request) => (
                 <div
                   key={request.id}
@@ -191,7 +191,7 @@ export default function Social() {
 
         {/* My Friends */}
         <div>
-          <h2 className="text-2xl font-bold text-foreground mb-4">
+          <h2 className="text-fluid-xl sm:text-fluid-2xl font-bold text-foreground mb-fluid-md">
             My Friends ({connections.length})
           </h2>
           {connections.length === 0 ? (
@@ -242,7 +242,7 @@ export default function Social() {
 
         {/* Discover People */}
         <div>
-          <h2 className="text-2xl font-bold text-foreground mb-4">
+          <h2 className="text-fluid-xl sm:text-fluid-2xl font-bold text-foreground mb-fluid-md">
             Discover People
           </h2>
           <VirtualGrid

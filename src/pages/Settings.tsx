@@ -222,10 +222,10 @@ const Settings = () => {
       <div className="flex flex-col min-h-dvh bg-background">
         <SettingsHeader />
         <main className="flex-1 overflow-auto">
-          <div className="max-w-lg mx-auto px-4 py-6">
-            <Card className="p-6 text-center">
-              <Bell className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-muted-foreground mb-4">Please sign in to access settings</p>
+          <div className="max-w-lg mx-auto px-fluid-md py-fluid-lg">
+            <Card className="p-fluid-lg text-center">
+              <Bell className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-fluid-md text-muted-foreground" />
+              <p className="text-fluid-sm text-muted-foreground mb-fluid-md">Please sign in to access settings</p>
               <Button onClick={() => navigate("/auth")}>
                 Sign In
               </Button>
@@ -242,7 +242,7 @@ const Settings = () => {
 
       {/* Content */}
       <main className="flex-1 overflow-auto">
-        <div className="max-w-3xl mx-auto px-fluid-md py-fluid-lg space-y-4 sm:space-y-6">
+        <div className="max-w-3xl mx-auto px-fluid-md py-fluid-lg space-y-fluid-lg">
         {/* Profile Link */}
         <Card className="p-4 sm:p-5 md:p-6">
           <Button

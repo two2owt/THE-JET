@@ -395,19 +395,21 @@ const Auth = () => {
 
   return (
     <div 
-      className="min-h-screen min-h-[100dvh] flex items-center justify-center p-4 relative bg-background"
+      className="min-h-screen min-h-[100dvh] flex items-center justify-center px-fluid-md py-fluid-lg relative bg-background"
       style={{
         backgroundImage: `url(${authBackground})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
+        paddingTop: 'max(env(safe-area-inset-top, 0px), var(--space-lg))',
+        paddingBottom: 'max(env(safe-area-inset-bottom, 0px), var(--space-lg))',
       }}
     >
       {/* Animated matte black/grey gradient overlay */}
       <div className="absolute inset-0 auth-gradient-overlay" />
       <div className="w-full max-w-md relative z-10">
         {/* Glassmorphic Card */}
-        <div className="backdrop-blur-xl bg-background/20 border border-border/30 rounded-2xl p-8 shadow-2xl space-y-6">
+        <div className="backdrop-blur-xl bg-background/20 border border-border/30 rounded-2xl p-fluid-lg shadow-2xl space-y-fluid-md">
           {/* Header */}
           <div className="text-center space-y-3">
             <div className="w-24 h-24 flex items-center justify-center mx-auto">

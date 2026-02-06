@@ -336,7 +336,7 @@ export default function Profile() {
   if (!user) {
     return (
       <PageLayout defaultTab="map" notificationCount={0}>
-        <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="max-w-7xl mx-auto px-fluid-md py-fluid-lg">
           <EmptyState icon={User} title="Sign in to view profile" description="Create an account to access your profile, manage settings, and track your activity" actionLabel="Sign In" onAction={() => navigate("/auth")} />
         </div>
       </PageLayout>
@@ -345,7 +345,7 @@ export default function Profile() {
   // Direct rendering - no loading fallback per architecture requirements
   return (
     <PageLayout defaultTab="map">
-      <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-4xl mx-auto px-fluid-md py-fluid-lg space-y-fluid-lg">
           {/* Profile Header */}
           <Card className="p-6 bg-card/90 backdrop-blur-sm">
             <div className="flex items-start justify-between mb-6">

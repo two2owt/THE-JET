@@ -68,7 +68,7 @@ export default function Favorites() {
   if (!user) {
     return (
       <PageLayout defaultTab="favorites" notificationCount={0}>
-        <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="max-w-7xl mx-auto px-fluid-md py-fluid-lg">
           <EmptyState
             icon={Heart}
             title="Sign in to view favorites"
@@ -84,9 +84,9 @@ export default function Favorites() {
   return (
     <PageLayout defaultTab="favorites">
       <div className="max-w-7xl mx-auto px-fluid-md py-fluid-lg">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-foreground mb-2">My Favorites</h1>
-          <p className="text-muted-foreground">
+        <div className="mb-fluid-lg">
+          <h1 className="text-fluid-2xl sm:text-fluid-3xl font-bold text-foreground mb-fluid-xs">My Favorites</h1>
+          <p className="text-fluid-sm text-muted-foreground">
             {deals.length} {deals.length === 1 ? "deal" : "deals"} saved
           </p>
         </div>

@@ -254,15 +254,21 @@ const Onboarding = () => {
 
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div 
+      className="min-h-screen min-h-[100dvh] bg-background flex items-center justify-center px-fluid-md py-fluid-lg"
+      style={{
+        paddingTop: 'max(env(safe-area-inset-top, 0px), var(--space-lg))',
+        paddingBottom: 'max(env(safe-area-inset-bottom, 0px), var(--space-lg))',
+      }}
+    >
       <div className="w-full max-w-md">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-r from-primary to-primary-glow rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-[var(--shadow-glow)]">
-            <Zap className="w-10 h-10 text-primary-foreground" />
+        <div className="text-center mb-fluid-lg">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-r from-primary to-primary-glow rounded-2xl flex items-center justify-center mx-auto mb-fluid-md shadow-[var(--shadow-glow)]">
+            <Zap className="w-8 h-8 sm:w-10 sm:h-10 text-primary-foreground" />
           </div>
-          <div className="flex items-center justify-center gap-4 mb-2">
-            <h1 className="text-3xl font-bold text-foreground">
+          <div className="flex items-center justify-center gap-fluid-md mb-fluid-xs">
+            <h1 className="text-fluid-2xl sm:text-fluid-3xl font-bold text-foreground">
               {step === 1 && "Create User Profile"}
               {step === 2 && "Set Personal Preferences"}
               {step === 3 && "Review Suggestions"}
@@ -272,13 +278,13 @@ const Onboarding = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setStep(3)}
-                className="text-muted-foreground hover:text-foreground text-sm"
+                className="text-muted-foreground hover:text-foreground text-fluid-sm"
               >
                 Skip
               </Button>
             )}
           </div>
-          <div className="flex justify-center gap-2 mt-4">
+          <div className="flex justify-center gap-2 mt-fluid-md">
             {[1, 2, 3].map((s) => (
               <div
                 key={s}
@@ -292,10 +298,10 @@ const Onboarding = () => {
 
         {/* Step 1: Profile */}
         {step === 1 && (
-          <div className="space-y-6 bg-card border border-border rounded-2xl p-6">
-            <div className="flex flex-col items-center mb-6">
+          <div className="space-y-fluid-lg bg-card border border-border rounded-2xl p-fluid-lg">
+            <div className="flex flex-col items-center mb-fluid-lg">
               <div className="relative">
-                <div className="w-24 h-24 rounded-full bg-muted border-2 border-border flex items-center justify-center overflow-hidden">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-muted border-2 border-border flex items-center justify-center overflow-hidden">
                   {avatarPreview ? (
                     <img src={avatarPreview} alt="Avatar" width={96} height={96} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                   ) : (
@@ -405,36 +411,36 @@ const Onboarding = () => {
 
         {/* Step 3: Suggestions */}
         {step === 3 && (
-          <div className="space-y-6 bg-card border border-border rounded-2xl p-6">
-            <div className="space-y-4">
-              <div className="bg-gradient-to-br from-primary/20 to-primary-glow/20 rounded-xl p-6 border border-primary/30">
-                <Sparkles className="w-12 h-12 text-primary mb-4 mx-auto" />
-                <h3 className="text-xl font-bold text-center mb-2">All Set!</h3>
-                <p className="text-center text-muted-foreground">
+          <div className="space-y-fluid-lg bg-card border border-border rounded-2xl p-fluid-lg">
+            <div className="space-y-fluid-md">
+              <div className="bg-gradient-to-br from-primary/20 to-primary-glow/20 rounded-xl p-fluid-lg border border-primary/30">
+                <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 text-primary mb-fluid-md mx-auto" />
+                <h3 className="text-fluid-lg sm:text-fluid-xl font-bold text-center mb-fluid-xs">All Set!</h3>
+                <p className="text-center text-fluid-sm text-muted-foreground">
                   Based on your preferences, we'll show you the best deals in Charlotte
                 </p>
               </div>
 
               {savedPreferences && (
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-sm">Your Preferences:</h4>
-                  <div className="flex flex-wrap gap-2">
+                <div className="space-y-fluid-sm">
+                  <h4 className="font-semibold text-fluid-sm">Your Preferences:</h4>
+                  <div className="flex flex-wrap gap-fluid-xs">
                     {savedPreferences.categories.map((type) => (
                       <span
                         key={type}
-                        className="px-3 py-1 bg-primary/20 text-primary text-xs font-medium rounded-full"
+                        className="px-3 py-1 bg-primary/20 text-primary text-fluid-xs font-medium rounded-full"
                       >
                         {type}
                       </span>
                     ))}
                   </div>
                   {savedPreferences.trendingVenues && (
-                    <p className="text-sm text-muted-foreground flex items-center gap-2">
+                    <p className="text-fluid-sm text-muted-foreground flex items-center gap-fluid-xs">
                       <Sparkles className="w-4 h-4" /> Trending venues enabled
                     </p>
                   )}
                   {savedPreferences.activityInArea && (
-                    <p className="text-sm text-muted-foreground flex items-center gap-2">
+                    <p className="text-fluid-sm text-muted-foreground flex items-center gap-fluid-xs">
                       <Sparkles className="w-4 h-4" /> Location-based alerts enabled
                     </p>
                   )}
