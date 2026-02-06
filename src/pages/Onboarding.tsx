@@ -255,7 +255,7 @@ const Onboarding = () => {
 
   return (
     <div 
-      className="min-h-screen min-h-[100dvh] bg-background flex items-center justify-center px-fluid-md py-fluid-lg"
+      className="min-h-screen min-h-[100dvh] bg-background flex items-center justify-center px-page py-fluid-lg"
       style={{
         paddingTop: 'max(env(safe-area-inset-top, 0px), var(--space-lg))',
         paddingBottom: 'max(env(safe-area-inset-bottom, 0px), var(--space-lg))',

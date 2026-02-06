@@ -199,7 +199,7 @@ const Settings = () => {
   // Shared header component for Settings page
   const SettingsHeader = () => (
     <header className="bg-card border-b border-border sticky top-0 z-40 safe-area-top">
-      <div className="max-w-3xl mx-auto px-fluid-md py-fluid-sm">
+      <div className="max-w-3xl mx-auto px-page py-fluid-sm">
         <div className="flex items-center gap-fluid-sm">
           <Button
             variant="ghost"
@@ -222,7 +222,7 @@ const Settings = () => {
       <div className="flex flex-col min-h-dvh bg-background">
         <SettingsHeader />
         <main className="flex-1 overflow-auto">
-          <div className="max-w-lg mx-auto px-fluid-md py-fluid-lg">
+          <div className="max-w-lg mx-auto px-page py-fluid-lg">
             <Card className="p-fluid-lg text-center">
               <Bell className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-fluid-md text-muted-foreground" />
               <p className="text-fluid-sm text-muted-foreground mb-fluid-md">Please sign in to access settings</p>
@@ -242,7 +242,7 @@ const Settings = () => {
 
       {/* Content */}
       <main className="flex-1 overflow-auto">
-        <div className="max-w-3xl mx-auto px-fluid-md py-fluid-lg space-y-fluid-lg">
+        <div className="max-w-3xl mx-auto px-page py-fluid-lg space-y-fluid-lg">
         {/* Profile Link */}
         <Card className="p-4 sm:p-5 md:p-6">
           <Button
