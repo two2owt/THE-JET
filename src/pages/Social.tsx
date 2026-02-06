@@ -98,7 +98,7 @@ export default function Social() {
   if (!user) {
     return (
       <PageLayout defaultTab="social" notificationCount={0}>
-        <div className="max-w-7xl mx-auto px-fluid-md py-fluid-lg">
+        <div className="max-w-7xl mx-auto px-page py-fluid-lg">
           <EmptyState
             icon={Users}
             title="Sign in to connect"
@@ -115,7 +115,7 @@ export default function Social() {
   if (!canAccessSocialFeatures()) {
     return (
       <PageLayout defaultTab="social">
-        <div className="max-w-7xl mx-auto px-fluid-md py-fluid-lg">
+        <div className="max-w-7xl mx-auto px-page py-fluid-lg">
           <EmptyState
             icon={Crown}
             title="Unlock Social Features"
@@ -136,7 +136,7 @@ export default function Social() {
 
   return (
     <PageLayout defaultTab="social">
-      <div className="max-w-7xl mx-auto px-fluid-md py-fluid-lg space-y-fluid-xl">
+      <div className="max-w-7xl mx-auto px-page py-fluid-lg space-y-fluid-xl">
         {/* Pending Requests */}
         {pendingRequests.length > 0 && (
           <div>

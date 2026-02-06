@@ -395,7 +395,7 @@ const Auth = () => {
 
   return (
     <div 
-      className="min-h-screen min-h-[100dvh] flex items-center justify-center px-fluid-md py-fluid-lg relative bg-background"
+      className="min-h-screen min-h-[100dvh] flex items-center justify-center px-page py-fluid-lg relative bg-background"
       style={{
         backgroundImage: `url(${authBackground})`,
         backgroundSize: 'cover',
