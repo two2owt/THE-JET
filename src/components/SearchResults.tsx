@@ -25,11 +25,12 @@ export const SearchResults = ({
 }: SearchResultsProps) => {
   if (!isVisible || !query.trim()) return null;
 
-  // Filter venues by name, category, or neighborhood
+  // Filter venues by name, category, or neighborhood (handle optional neighborhood)
   const filteredVenues = venues.filter(venue => 
     venue.name.toLowerCase().includes(query.toLowerCase()) ||
     venue.category.toLowerCase().includes(query.toLowerCase()) ||
-    venue.neighborhood.toLowerCase().includes(query.toLowerCase())
+    (venue.neighborhood && venue.neighborhood.toLowerCase().includes(query.toLowerCase())) ||
+    (venue.address && venue.address.toLowerCase().includes(query.toLowerCase()))
   );
 
   // Filter deals by title, description, or venue name
@@ -95,10 +96,12 @@ export const SearchResults = ({
                           <Badge variant="outline" className="text-xs">
                             {venue.category}
                           </Badge>
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {venue.neighborhood}
-                          </span>
+                          {(venue.neighborhood || venue.address) && (
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <MapPin className="w-3 h-3" />
+                              {venue.neighborhood || venue.address?.split(',')[0]}
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="flex-shrink-0">
