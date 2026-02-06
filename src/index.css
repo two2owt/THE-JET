@@ -487,6 +487,15 @@ All colors MUST be HSL.
     /* Match parent intrinsic size instead of fixed viewport */
     contain-intrinsic-size: auto;
   }
+  
+  /* Scrollbar hide utility - allows scrolling without visible scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari, Opera */
+  }
 
   /* Map wrapper - isolates map from parent layout changes */
   .map-wrapper {
