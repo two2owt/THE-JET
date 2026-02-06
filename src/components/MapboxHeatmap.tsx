@@ -2282,144 +2282,37 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* Layer Toggle Controls - Always visible on map */}
       {controlsReady && (
       <div 
-        className="fixed z-[60] flex flex-col-reverse gap-2 sm:gap-2.5"
+        className="fixed z-[60] flex flex-col justify-end gap-2 sm:gap-2.5 scrollbar-hide"
         style={{
+          // Position from bottom, above the bottom nav
           bottom: 'var(--map-fixed-bottom)',
           right: 'var(--map-ui-inset-right)',
           // CLS fix: Fixed width prevents layout shifts when controls render
           width: '140px',
           minWidth: '140px',
           maxWidth: '140px',
-          // Strict containment prevents any layout shifts from propagating
-          contain: 'strict',
+          // Constrain height to stay within safe zone (between header and bottom nav)
+          maxHeight: 'calc(100dvh - var(--map-safe-top) - var(--map-fixed-bottom) - 1rem)',
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          // Layout containment prevents shifts
+          contain: 'layout style',
           // Always visible - toggles should stay accessible regardless of venue selection
           opacity: 1,
           pointerEvents: 'auto',
           transform: 'translateZ(0)',
         }}
       >
-          {/* Paths Button - appears below Heat visually due to flex-col-reverse */}
-          <Button
-            onClick={() => { triggerHaptic('medium'); setShowMovementPaths(!showMovementPaths); }}
-            variant={showMovementPaths ? "default" : "outline"}
-            size="sm"
-            className={`w-full h-12 text-sm font-semibold rounded-xl shadow-lg transition-all duration-200 active:scale-95 touch-manipulation ${
-              showMovementPaths 
-                ? 'bg-primary text-primary-foreground shadow-primary/30' 
-                : 'bg-card/95 backdrop-blur-xl text-foreground border-border'
-            }`}
-          >
-            <Route className="w-4.5 h-4.5 mr-2" />
-            {showMovementPaths ? "Paths On" : "Paths Off"}
-          </Button>
-
-          {/* Heat Button - appears above Paths visually due to flex-col-reverse */}
-          <Button
-            onClick={() => {
-              triggerHaptic('medium');
-              const newState = !showDensityLayer;
-              setShowDensityLayer(newState);
-              if (newState) {
-                setTimeFilter('all');
-                setHourFilter(undefined);
-                setDayFilter(undefined);
-              }
-            }}
-            variant={showDensityLayer ? "default" : "outline"}
-            size="sm"
-            className={`w-full h-12 text-sm font-semibold rounded-xl shadow-lg transition-all duration-200 active:scale-95 touch-manipulation ${
-              showDensityLayer 
-                ? 'bg-primary text-primary-foreground shadow-primary/30' 
-                : 'bg-card/95 backdrop-blur-xl text-foreground border-border'
-            }`}
-          >
-            <Layers className="w-4.5 h-4.5 mr-2" />
-            {showDensityLayer ? "Heat On" : "Heat Off"}
-          </Button>
-
-          {/* Mobile Path Filter Controls - Show when Paths layer is active */}
+          {/* Heat Filter Controls - Expands above buttons */}
           <div 
             className={`overflow-hidden transition-all duration-200 ${
-              showMovementPaths 
+              showDensityLayer 
                 ? 'max-h-[240px]' 
                 : 'max-h-0'
             }`}
-            style={{ contain: 'strict' }}
+            style={{ contain: 'layout style' }}
           >
-            <div className="bg-card/95 backdrop-blur-xl rounded-xl border border-border p-2.5 shadow-lg space-y-2.5">
-              <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
-                <span>Flow Filters</span>
-                {pathsLoading && (
-                  <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                )}
-              </div>
-
-              {/* Error UI */}
-              {pathsError && (
-                <div className="flex items-center gap-2 p-2 bg-destructive/10 rounded-lg text-xs">
-                  <AlertCircle className="w-3.5 h-3.5 text-destructive flex-shrink-0" />
-                  <span className="text-destructive truncate">Load failed</span>
-                  <Button onClick={refreshPaths} variant="ghost" size="sm" className="h-6 text-xs px-2 ml-auto">
-                    Retry
-                  </Button>
-                </div>
-              )}
-
-              {/* Time filter */}
-              <Select value={pathTimeFilter} onValueChange={(v: any) => setPathTimeFilter(v)}>
-                <SelectTrigger className="h-8 text-[10px] bg-background/80 transition-all duration-200" aria-label="Filter paths by time period">
-                  <SelectValue placeholder="Time" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Time</SelectItem>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="this_week">This Week</SelectItem>
-                  <SelectItem value="this_hour">This Hour</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Frequency slider */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-[10px]">
-                  <label htmlFor="path-frequency-slider" className="text-muted-foreground">Min. Frequency</label>
-                  <span className="font-semibold text-primary" aria-live="polite">{minPathFrequency}</span>
-                </div>
-                <input
-                  id="path-frequency-slider"
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={minPathFrequency}
-                  onChange={(e) => setMinPathFrequency(parseInt(e.target.value))}
-                  className="path-flow-slider w-full"
-                  aria-label={`Minimum path frequency: ${minPathFrequency}`}
-                  aria-valuemin={1}
-                  aria-valuemax={10}
-                  aria-valuenow={minPathFrequency}
-                />
-              </div>
-
-              {/* Stats */}
-              {pathData && (
-                <div className="flex items-center gap-2 text-[9px] text-muted-foreground pt-1 border-t border-border/30">
-                  <span>{pathData.stats.total_paths} paths</span>
-                  <span>•</span>
-                  <span>{pathData.stats.unique_users} users</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Mobile Filter Controls - Show when Heat layer is active */}
-          <div 
-            className={`overflow-hidden transition-all duration-200 ${
-              showDensityLayer 
-                ? 'max-h-[280px]' 
-                : 'max-h-0'
-            }`}
-            style={{ contain: 'strict' }}
-          >
-            <div className="bg-card/95 backdrop-blur-xl rounded-xl border border-border p-2 shadow-lg space-y-2">
+            <div className="bg-card/95 backdrop-blur-xl rounded-xl border border-border p-2 shadow-lg space-y-2 mb-2">
               {/* Time-lapse toggle */}
               <Button
                 onClick={() => {
@@ -2574,8 +2467,123 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
                   </Select>
                 </div>
               </div>
+            </div>
           </div>
-        </div>
+
+          {/* Path Filter Controls - Expands above buttons */}
+          <div 
+            className={`overflow-hidden transition-all duration-200 ${
+              showMovementPaths 
+                ? 'max-h-[200px]' 
+                : 'max-h-0'
+            }`}
+            style={{ contain: 'layout style' }}
+          >
+            <div className="bg-card/95 backdrop-blur-xl rounded-xl border border-border p-2.5 shadow-lg space-y-2.5 mb-2">
+              <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+                <span>Flow Filters</span>
+                {pathsLoading && (
+                  <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                )}
+              </div>
+
+              {/* Error UI */}
+              {pathsError && (
+                <div className="flex items-center gap-2 p-2 bg-destructive/10 rounded-lg text-xs">
+                  <AlertCircle className="w-3.5 h-3.5 text-destructive flex-shrink-0" />
+                  <span className="text-destructive truncate">Load failed</span>
+                  <Button onClick={refreshPaths} variant="ghost" size="sm" className="h-6 text-xs px-2 ml-auto">
+                    Retry
+                  </Button>
+                </div>
+              )}
+
+              {/* Time filter */}
+              <Select value={pathTimeFilter} onValueChange={(v: any) => setPathTimeFilter(v)}>
+                <SelectTrigger className="h-8 text-[10px] bg-background/80 transition-all duration-200" aria-label="Filter paths by time period">
+                  <SelectValue placeholder="Time" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Time</SelectItem>
+                  <SelectItem value="today">Today</SelectItem>
+                  <SelectItem value="this_week">This Week</SelectItem>
+                  <SelectItem value="this_hour">This Hour</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Frequency slider */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-[10px]">
+                  <label htmlFor="path-frequency-slider" className="text-muted-foreground">Min. Frequency</label>
+                  <span className="font-semibold text-primary" aria-live="polite">{minPathFrequency}</span>
+                </div>
+                <input
+                  id="path-frequency-slider"
+                  type="range"
+                  min="1"
+                  max="10"
+                  value={minPathFrequency}
+                  onChange={(e) => setMinPathFrequency(parseInt(e.target.value))}
+                  className="path-flow-slider w-full"
+                  aria-label={`Minimum path frequency: ${minPathFrequency}`}
+                  aria-valuemin={1}
+                  aria-valuemax={10}
+                  aria-valuenow={minPathFrequency}
+                />
+              </div>
+
+              {/* Stats */}
+              {pathData && (
+                <div className="flex items-center gap-2 text-[9px] text-muted-foreground pt-1 border-t border-border/30">
+                  <span>{pathData.stats.total_paths} paths</span>
+                  <span>•</span>
+                  <span>{pathData.stats.unique_users} users</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Toggle Buttons - Always at the bottom */}
+          <div className="flex flex-col gap-2">
+            {/* Heat Button */}
+            <Button
+              onClick={() => {
+                triggerHaptic('medium');
+                const newState = !showDensityLayer;
+                setShowDensityLayer(newState);
+                if (newState) {
+                  setTimeFilter('all');
+                  setHourFilter(undefined);
+                  setDayFilter(undefined);
+                }
+              }}
+              variant={showDensityLayer ? "default" : "outline"}
+              size="sm"
+              className={`w-full h-12 text-sm font-semibold rounded-xl shadow-lg transition-all duration-200 active:scale-95 touch-manipulation ${
+                showDensityLayer 
+                  ? 'bg-primary text-primary-foreground shadow-primary/30' 
+                  : 'bg-card/95 backdrop-blur-xl text-foreground border-border'
+              }`}
+            >
+              <Layers className="w-4.5 h-4.5 mr-2" />
+              {showDensityLayer ? "Heat On" : "Heat Off"}
+            </Button>
+
+            {/* Paths Button */}
+            <Button
+              onClick={() => { triggerHaptic('medium'); setShowMovementPaths(!showMovementPaths); }}
+              variant={showMovementPaths ? "default" : "outline"}
+              size="sm"
+              className={`w-full h-12 text-sm font-semibold rounded-xl shadow-lg transition-all duration-200 active:scale-95 touch-manipulation ${
+                showMovementPaths 
+                  ? 'bg-primary text-primary-foreground shadow-primary/30' 
+                  : 'bg-card/95 backdrop-blur-xl text-foreground border-border'
+              }`}
+            >
+              <Route className="w-4.5 h-4.5 mr-2" />
+              {showMovementPaths ? "Paths On" : "Paths Off"}
+            </Button>
+          </div>
       </div>
       )}
 
