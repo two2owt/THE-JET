@@ -6,20 +6,23 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Bell, MapPin, Radio, Loader2, Save, Sun, Moon, Monitor, Smartphone, User, Heart, Shield, Trash2, CreditCard, ShieldCheck } from "lucide-react";
+import { Bell, MapPin, Radio, Loader2, Save, Sun, Moon, Monitor, Smartphone, User, Heart, Shield, Trash2, CreditCard, ShieldCheck } from "lucide-react";
 
 import { toast } from "sonner";
 import { z } from "zod";
 import { useTheme } from "next-themes";
 import { ReportIssueDialog } from "@/components/ReportIssueDialog";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
-import { Footer } from "@/components/Footer";
+
 import PreferencesEditor from "@/components/settings/PreferencesEditor";
 import PrivacySettings from "@/components/settings/PrivacySettings";
 import { DeleteAccountDialog } from "@/components/settings/DeleteAccountDialog";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { isMonetizationEnabled } from "@/lib/monetization";
+import { Header } from "@/components/Header";
+import { BottomNav } from "@/components/BottomNav";
+import { useBottomNavigation } from "@/hooks/useBottomNavigation";
 const preferencesSchema = z.object({
   notifications_enabled: z.boolean(),
   location_tracking_enabled: z.boolean(),
@@ -41,7 +44,9 @@ const Settings = () => {
   const { isRegistered: isPushRegistered, isNative, initializePushNotifications, unregister: unregisterPush } = usePushNotifications();
   const { isAdmin } = useIsAdmin();
   const showSubscriptionSection = isMonetizationEnabled() || isAdmin;
-
+  
+  // Use shared navigation hook for consistent tab handling
+  const { activeTab, handleTabChange } = useBottomNavigation({ defaultTab: "map" });
 
   // Handle subscription success/cancel from Stripe redirect
   useEffect(() => {
@@ -196,53 +201,70 @@ const Settings = () => {
     }
   };
 
-  // Shared header component for Settings page
-  const SettingsHeader = () => (
-    <header className="bg-card border-b border-border sticky top-0 z-40 safe-area-top">
-      <div className="max-w-3xl mx-auto px-fluid-md py-fluid-sm">
-        <div className="flex items-center gap-fluid-sm">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/")}
-            className="hover:bg-muted w-8 h-8 sm:w-9 sm:h-9"
-          >
-            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
-          </Button>
-          <h1 className="text-fluid-xl font-bold text-foreground">Settings</h1>
-        </div>
-      </div>
-    </header>
+  // Consistent layout wrapper for Settings page
+  const SettingsLayout = ({ children }: { children: React.ReactNode }) => (
+    <div 
+      className="relative w-full h-full"
+      style={{
+        flex: '1 1 0%',
+        minHeight: 0,
+        overflow: 'hidden',
+        paddingTop: 'var(--header-total-height)',
+      }}
+    >
+      <Header 
+        venues={[]}
+        deals={[]}
+        onVenueSelect={() => {}}
+      />
+      
+      <main
+        role="main"
+        className="page-container"
+        style={{
+          flex: '1 1 auto',
+          height: 'var(--main-height)',
+          minHeight: 'var(--main-height)',
+          maxHeight: 'var(--main-height)',
+          contain: 'layout style',
+          transform: 'translateZ(0)',
+          boxSizing: 'border-box',
+          width: '100%',
+          overflow: 'auto',
+        }}
+      >
+        {children}
+      </main>
+
+      <BottomNav
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        notificationCount={0}
+      />
+    </div>
   );
 
   // Direct rendering - no loading fallback per architecture requirements
 
   if (!preferences) {
     return (
-      <div className="flex flex-col min-h-dvh bg-background">
-        <SettingsHeader />
-        <main className="flex-1 overflow-auto">
-          <div className="max-w-lg mx-auto px-fluid-md py-fluid-lg">
-            <Card className="p-fluid-lg text-center">
-              <Bell className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-fluid-md text-muted-foreground" />
-              <p className="text-fluid-sm text-muted-foreground mb-fluid-md">Please sign in to access settings</p>
-              <Button onClick={() => navigate("/auth")}>
-                Sign In
-              </Button>
-            </Card>
-          </div>
-        </main>
-      </div>
+      <SettingsLayout>
+        <div className="max-w-lg mx-auto px-fluid-md py-fluid-lg">
+          <Card className="p-fluid-lg text-center">
+            <Bell className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-fluid-md text-muted-foreground" />
+            <p className="text-fluid-sm text-muted-foreground mb-fluid-md">Please sign in to access settings</p>
+            <Button onClick={() => navigate("/auth")}>
+              Sign In
+            </Button>
+          </Card>
+        </div>
+      </SettingsLayout>
     );
   }
 
   return (
-    <div className="flex flex-col min-h-dvh bg-background">
-      <SettingsHeader />
-
-      {/* Content */}
-      <main className="flex-1 overflow-auto">
-        <div className="max-w-3xl mx-auto px-fluid-md py-fluid-lg space-y-fluid-lg">
+    <SettingsLayout>
+      <div className="max-w-3xl mx-auto px-fluid-md py-fluid-lg space-y-fluid-lg">
         {/* Profile Link */}
         <Card className="p-4 sm:p-5 md:p-6">
           <Button
@@ -581,11 +603,8 @@ const Settings = () => {
             </>
           )}
         </Button>
-        </div>
-      </main>
-
-      <Footer />
-    </div>
+      </div>
+    </SettingsLayout>
   );
 };
 
