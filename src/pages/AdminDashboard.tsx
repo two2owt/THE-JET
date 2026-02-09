@@ -10,7 +10,6 @@ const DealManagement = lazy(() => import("@/components/admin/DealManagement").th
 const UserAnalytics = lazy(() => import("@/components/admin/UserAnalytics").then(m => ({ default: m.UserAnalytics })));
 const NeighborhoodManagement = lazy(() => import("@/components/admin/NeighborhoodManagement").then(m => ({ default: m.NeighborhoodManagement })));
 const MonetizationToggle = lazy(() => import("@/components/admin/MonetizationToggle").then(m => ({ default: m.MonetizationToggle })));
-const AppStoreChecklist = lazy(() => import("@/components/admin/AppStoreChecklist").then(m => ({ default: m.AppStoreChecklist })));
 
 export default function AdminDashboard() {
   const { isAdmin, loading } = useIsAdmin();
@@ -55,11 +54,10 @@ export default function AdminDashboard() {
 
       <main className="max-w-7xl mx-auto px-4 py-6 pb-24">
         <Tabs defaultValue="deals" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-6">
+          <TabsList className="grid w-full grid-cols-4 mb-6">
             <TabsTrigger value="deals">Deals</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="neighborhoods">Areas</TabsTrigger>
-            <TabsTrigger value="appstore">App Store</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
@@ -78,12 +76,6 @@ export default function AdminDashboard() {
           <TabsContent value="neighborhoods">
             <Suspense fallback={<div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
               <NeighborhoodManagement />
-            </Suspense>
-          </TabsContent>
-
-          <TabsContent value="appstore">
-            <Suspense fallback={<div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
-              <AppStoreChecklist />
             </Suspense>
           </TabsContent>
 
