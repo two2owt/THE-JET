@@ -22,8 +22,8 @@ import { useVenueActivity } from "@/hooks/useVenueActivity";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useBottomNavigation, type NavTab } from "@/hooks/useBottomNavigation";
 
-// Direct import for MapboxHeatmap
-import { MapboxHeatmap } from "@/components/MapboxHeatmap";
+// Lazy load heavy components - deferred until needed
+const MapboxHeatmap = lazy(() => import("@/components/MapboxHeatmap").then(m => ({ default: m.MapboxHeatmap })));
 
 // Direct imports for visible content - no lazy loading needed
 import { JetCard } from "@/components/JetCard";
@@ -359,19 +359,21 @@ const Index = () => {
             }}
           >
             {mapboxToken && (
-              <MapboxHeatmap
-                onVenueSelect={handleVenueSelect} 
-                venues={venues} 
-                mapboxToken={mapboxToken}
-                selectedCity={selectedCity}
-                onCityChange={handleCityChange}
-                onNearestCityDetected={handleNearestCityDetected}
-                onDetectedLocationNameChange={handleDetectedLocationNameChange}
-                isLoadingVenues={venuesLoading}
-                selectedVenue={selectedVenue}
-                resetUIKey={mapUIResetKey}
-                isTokenLoading={false}
-              />
+              <Suspense fallback={null}>
+                <MapboxHeatmap
+                  onVenueSelect={handleVenueSelect} 
+                  venues={venues} 
+                  mapboxToken={mapboxToken}
+                  selectedCity={selectedCity}
+                  onCityChange={handleCityChange}
+                  onNearestCityDetected={handleNearestCityDetected}
+                  onDetectedLocationNameChange={handleDetectedLocationNameChange}
+                  isLoadingVenues={venuesLoading}
+                  selectedVenue={selectedVenue}
+                  resetUIKey={mapUIResetKey}
+                  isTokenLoading={false}
+                />
+              </Suspense>
             )}
           </div>
 
