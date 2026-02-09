@@ -94,9 +94,6 @@ export const Header = ({
         minHeight: 'var(--header-total-height)',
         maxHeight: 'var(--header-total-height)',
         flexShrink: 0,
-        contain: 'layout paint',
-        overflow: 'hidden',
-        color: 'inherit',
       }}
     >
       {/* Glassmorphic background layer */}
