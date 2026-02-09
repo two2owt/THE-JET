@@ -1,1 +1,60 @@
 project_id = "flvhduntedvorikonuvy"
+
+# Disable gateway-level JWT verification (incompatible with signing-keys).
+# Auth is validated in-code via getClaims() where needed.
+[functions.search-google-places-venues]
+verify_jwt = false
+
+[functions.get-google-places-data]
+verify_jwt = false
+
+[functions.get-location-density]
+verify_jwt = false
+
+[functions.get-movement-paths]
+verify_jwt = false
+
+[functions.get-mapbox-token]
+verify_jwt = false
+
+[functions.check-geofence]
+verify_jwt = false
+
+[functions.check-subscription]
+verify_jwt = false
+
+[functions.create-checkout]
+verify_jwt = false
+
+[functions.customer-portal]
+verify_jwt = false
+
+[functions.generate-deal-image]
+verify_jwt = false
+
+[functions.notify-admin-new-deal]
+verify_jwt = false
+
+[functions.scrape-venue-images]
+verify_jwt = false
+
+[functions.send-admin-notification]
+verify_jwt = false
+
+[functions.send-friend-accepted-email]
+verify_jwt = false
+
+[functions.send-friend-request-email]
+verify_jwt = false
+
+[functions.send-push-notification]
+verify_jwt = false
+
+[functions.send-verification-email]
+verify_jwt = false
+
+[functions.send-web-push]
+verify_jwt = false
+
+[functions.sync-merchant-deals]
+verify_jwt = false
