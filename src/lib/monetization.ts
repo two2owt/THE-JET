@@ -8,13 +8,12 @@
  */
 
 const MONETIZATION_OVERRIDE_KEY = "jet_monetization_override";
-const MONETIZATION_RELEASE_DATE = new Date("2026-01-01");
 
-export type MonetizationOverride = "auto" | "enabled" | "disabled";
+export type MonetizationOverride = "enabled" | "disabled";
 
 export const getMonetizationOverride = (): MonetizationOverride => {
-  if (typeof window === "undefined") return "auto";
-  return (localStorage.getItem(MONETIZATION_OVERRIDE_KEY) as MonetizationOverride) || "auto";
+  if (typeof window === "undefined") return "disabled";
+  return (localStorage.getItem(MONETIZATION_OVERRIDE_KEY) as MonetizationOverride) || "disabled";
 };
 
 export const setMonetizationOverride = (value: MonetizationOverride): void => {
@@ -22,13 +21,5 @@ export const setMonetizationOverride = (value: MonetizationOverride): void => {
 };
 
 export const isMonetizationEnabled = (): boolean => {
-  const override = getMonetizationOverride();
-  
-  if (override === "enabled") return true;
-  if (override === "disabled") return false;
-  
-  // Auto mode: check release date
-  return new Date() >= MONETIZATION_RELEASE_DATE;
+  return getMonetizationOverride() === "enabled";
 };
-
-export const getMonetizationReleaseDate = (): Date => MONETIZATION_RELEASE_DATE;

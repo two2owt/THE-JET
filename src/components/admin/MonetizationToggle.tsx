@@ -5,22 +5,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
-// Import from the lightweight utility module (no UI dependencies)
 import {
   type MonetizationOverride,
   getMonetizationOverride,
   setMonetizationOverride,
   isMonetizationEnabled,
-  getMonetizationReleaseDate,
 } from "@/lib/monetization";
 
-// Re-export for backwards compatibility with any code that imports from this file
 export { isMonetizationEnabled, getMonetizationOverride, type MonetizationOverride };
 
 export const MonetizationToggle = () => {
-  const [override, setOverride] = useState<MonetizationOverride>("auto");
-  const releaseDate = getMonetizationReleaseDate();
-  const isBeforeRelease = new Date() < releaseDate;
+  const [override, setOverride] = useState<MonetizationOverride>("disabled");
 
   useEffect(() => {
     setOverride(getMonetizationOverride());
@@ -29,32 +24,10 @@ export const MonetizationToggle = () => {
   const handleToggle = (value: MonetizationOverride) => {
     setOverride(value);
     setMonetizationOverride(value);
-    toast.success(`Monetization ${value === "auto" ? "set to auto" : value}`, {
-      description: value === "auto" 
-        ? `Will activate on ${releaseDate.toLocaleDateString()}`
-        : `Feature gating is now ${value}`,
+    toast.success(`Monetization ${value}`, {
+      description: `Feature gating is now ${value}`,
     });
-    // Trigger a page reload to apply changes
     window.location.reload();
-  };
-
-  const getStatusBadge = () => {
-    const isActive = isMonetizationEnabled();
-    if (override === "auto") {
-      return isActive ? (
-        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Active (Auto)</Badge>
-      ) : (
-        <Badge variant="secondary">Inactive (Auto)</Badge>
-      );
-    }
-    return override === "enabled" ? (
-      <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
-        <AlertTriangle className="w-3 h-3 mr-1" />
-        Test Mode
-      </Badge>
-    ) : (
-      <Badge variant="outline">Disabled</Badge>
-    );
   };
 
   return (
@@ -72,45 +45,28 @@ export const MonetizationToggle = () => {
               </CardDescription>
             </div>
           </div>
-          {getStatusBadge()}
+          {override === "enabled" ? (
+            <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Active</Badge>
+          ) : (
+            <Badge variant="outline">Disabled</Badge>
+          )}
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-sm text-muted-foreground">
-          Scheduled release: <span className="font-medium text-foreground">{releaseDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>
-          {isBeforeRelease && " (not yet active)"}
-        </p>
-
         <div className="space-y-3">
-          {/* Auto Mode */}
           <div 
             className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
-              override === "auto" ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/50"
-            }`}
-            onClick={() => handleToggle("auto")}
-          >
-            <div>
-              <p className="font-medium text-foreground">Auto (Recommended)</p>
-              <p className="text-sm text-muted-foreground">Activates on release date</p>
-            </div>
-            <Switch checked={override === "auto"} />
-          </div>
-
-          {/* Force Enable */}
-          <div 
-            className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
-              override === "enabled" ? "border-yellow-500 bg-yellow-500/5" : "border-border hover:border-muted-foreground/50"
+              override === "enabled" ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/50"
             }`}
             onClick={() => handleToggle("enabled")}
           >
             <div>
-              <p className="font-medium text-foreground">Enable for Testing</p>
-              <p className="text-sm text-muted-foreground">Force subscription gating now</p>
+              <p className="font-medium text-foreground">Enabled</p>
+              <p className="text-sm text-muted-foreground">Subscription gating is active</p>
             </div>
             <Switch checked={override === "enabled"} />
           </div>
 
-          {/* Force Disable */}
           <div 
             className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
               override === "disabled" ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/50"
@@ -118,7 +74,7 @@ export const MonetizationToggle = () => {
             onClick={() => handleToggle("disabled")}
           >
             <div>
-              <p className="font-medium text-foreground">Disable</p>
+              <p className="font-medium text-foreground">Disabled</p>
               <p className="text-sm text-muted-foreground">All features accessible to everyone</p>
             </div>
             <Switch checked={override === "disabled"} />
@@ -129,7 +85,7 @@ export const MonetizationToggle = () => {
           <div className="flex items-start gap-2 p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
             <AlertTriangle className="w-4 h-4 text-yellow-500 mt-0.5 flex-shrink-0" />
             <p className="text-sm text-yellow-200">
-              Test mode active. Users without subscriptions will see upgrade prompts for JET+ and JETx features.
+              Monetization active. Users without subscriptions will see upgrade prompts for JET+ and JETx features.
             </p>
           </div>
         )}
