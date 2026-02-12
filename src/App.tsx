@@ -7,6 +7,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { HeaderProvider } from "@/contexts/HeaderContext";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { NavigationShell } from "@/components/NavigationShell";
 
 
@@ -57,7 +58,7 @@ const App = () => (
             <Sonner />
             <PageTracker />
             
-            {/* Header is now global, outside route Suspense */}
+            {/* Header & Footer are global, outside route Suspense */}
             <Header />
             
             <Suspense fallback={<NavigationShell />}>
@@ -79,6 +80,8 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
+            
+            <Footer />
           </div>
         </TooltipProvider>
       </HeaderProvider>
