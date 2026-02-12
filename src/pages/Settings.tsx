@@ -208,7 +208,7 @@ const Settings = () => {
   if (!preferences) {
     return (
       <SettingsLayout>
-        <div className="max-w-lg mx-auto px-fluid-md py-fluid-lg">
+        <div className="max-w-lg mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg">
           <Card className="p-fluid-lg text-center">
             <Bell className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-fluid-md text-muted-foreground" />
             <p className="text-fluid-sm text-muted-foreground mb-fluid-md">Please sign in to access settings</p>
@@ -223,7 +223,7 @@ const Settings = () => {
 
   return (
     <SettingsLayout>
-      <div className="max-w-3xl mx-auto px-fluid-md py-fluid-lg space-y-fluid-lg">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg space-y-fluid-lg">
         {/* Profile Link */}
         <Card className="p-4 sm:p-5 md:p-6">
           <Button

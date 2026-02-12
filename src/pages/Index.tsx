@@ -451,7 +451,7 @@ const Index = () => {
           }}
         >
           {activeTab === "notifications" && (
-            <div className="animate-fade-in px-fluid-sm sm:px-fluid-md py-fluid-sm sm:py-fluid-md space-y-fluid-md">
+            <div className="animate-fade-in px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-sm sm:py-fluid-md space-y-fluid-md">
               <div>
                 <h2 className="text-fluid-2xl font-bold text-foreground mb-1 sm:mb-2">Notifications</h2>
                 <p className="text-fluid-sm text-muted-foreground">Stay updated with nearby deals and events</p>
@@ -479,7 +479,7 @@ const Index = () => {
           )}
 
           {activeTab === "explore" && (
-            <div className="px-fluid-sm sm:px-fluid-md py-fluid-sm sm:py-fluid-md">
+            <div className="px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-sm sm:py-fluid-md">
               <Suspense fallback={null}>
                 <ExploreTab onVenueSelect={handleVenueSelect} />
               </Suspense>
