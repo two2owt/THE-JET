@@ -191,9 +191,9 @@ export const useMapboxToken = (options: UseMapboxTokenOptions = {}) => {
     // This is a safety net in case the fetch promise never resolves
     timeoutRef.current = setTimeout(() => {
       if (loading && !token) {
-        console.error('useMapboxToken: Backup timeout triggered after 12 seconds');
-        setLoading(false);
-        setError("Map loading timed out. Please refresh the page.");
+        console.warn('useMapboxToken: Backup timeout triggered after 12 seconds, retrying silently');
+        fetchStartedRef.current = false;
+        fetchToken();
       }
     }, 12000);
     

@@ -785,18 +785,25 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
                 console.log('MapboxHeatmap: Map was actually loaded, finalizing');
                 finalizeMapLoad();
               } else {
-                console.error('MapboxHeatmap: Map load timeout - checking WebGL support');
-                // Check for WebGL support
+                console.warn('MapboxHeatmap: Map load timeout - silently retrying');
+                // Check for WebGL support - only show error for hard failures
                 const canvas = document.createElement('canvas');
                 const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
                 if (!gl) {
                   setMapError('WebGL is not supported or disabled. Please enable it in your browser settings.');
+                  setMapInitializing(false);
                 } else {
-                  setMapError(
-                    'Map loading timed out. If this only happens on production, check your Mapbox token URL restrictions.'
-                  );
+                  // Silent retry instead of showing error overlay
+                  console.log('MapboxHeatmap: Auto-retrying map load...');
+                  setMapInitializing(false);
+                  setTimeout(() => {
+                    setMapError(null);
+                    setMapInitializing(true);
+                    setTileProgress(0);
+                    mapboxLoadPromise = null;
+                    setRetryCount(c => c + 1);
+                  }, 1000);
                 }
-                setMapInitializing(false);
               }
             } else {
               setMapError('Map failed to initialize. Please refresh and try again.');
