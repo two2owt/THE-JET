@@ -61,7 +61,7 @@ export const useWebPushNotifications = () => {
       const registration = await getPushRegistrationIfExists();
       if (!registration) return;
 
-      const existingSubscription = await registration.pushManager.getSubscription();
+      const existingSubscription = await (registration as any).pushManager.getSubscription();
 
       if (existingSubscription) {
         setSubscription(existingSubscription);
@@ -117,7 +117,7 @@ export const useWebPushNotifications = () => {
       const registration = await registerServiceWorker();
 
       // Subscribe to push notifications using VAPID key
-      const pushSubscription = await registration.pushManager.subscribe({
+      const pushSubscription = await (registration as any).pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource
       });
