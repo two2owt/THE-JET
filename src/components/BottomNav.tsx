@@ -61,7 +61,7 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
         style={{ zIndex: -1 }}
       />
 
-      <div className="max-w-lg mx-auto px-fluid-xs sm:px-fluid-sm h-full flex items-center">
+      <div className="max-w-lg mx-auto px-4 sm:px-6 md:px-8 lg:px-10 h-full flex items-center">
         <div className="flex items-center justify-around w-full gap-fluid-xs">
           {navItems.map((item) => {
             const isActive = activeTab === item.id;
