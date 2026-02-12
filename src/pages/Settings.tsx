@@ -20,9 +20,7 @@ import { DeleteAccountDialog } from "@/components/settings/DeleteAccountDialog";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { isMonetizationEnabled } from "@/lib/monetization";
-import { Header } from "@/components/Header";
-import { BottomNav } from "@/components/BottomNav";
-import { useBottomNavigation } from "@/hooks/useBottomNavigation";
+import { PageLayout } from "@/components/PageLayout";
 const preferencesSchema = z.object({
   notifications_enabled: z.boolean(),
   location_tracking_enabled: z.boolean(),
@@ -44,9 +42,6 @@ const Settings = () => {
   const { isRegistered: isPushRegistered, isNative, initializePushNotifications, unregister: unregisterPush } = usePushNotifications();
   const { isAdmin } = useIsAdmin();
   const showSubscriptionSection = isMonetizationEnabled() || isAdmin;
-  
-  // Use shared navigation hook for consistent tab handling
-  const { activeTab, handleTabChange } = useBottomNavigation({ defaultTab: "map" });
 
   // Handle subscription success/cancel from Stripe redirect
   useEffect(() => {
@@ -203,46 +198,9 @@ const Settings = () => {
 
   // Consistent layout wrapper for Settings page
   const SettingsLayout = ({ children }: { children: React.ReactNode }) => (
-    <div 
-      className="relative w-full h-full"
-      style={{
-        flex: '1 1 0%',
-        minHeight: 0,
-        overflow: 'hidden',
-        paddingTop: 'var(--header-total-height)',
-      }}
-    >
-      <Header 
-        venues={[]}
-        deals={[]}
-        onVenueSelect={() => {}}
-        hideSearch
-      />
-      
-      <main
-        role="main"
-        className="page-container"
-        style={{
-          flex: '1 1 auto',
-          height: 'var(--main-height)',
-          minHeight: 'var(--main-height)',
-          maxHeight: 'var(--main-height)',
-          contain: 'layout style',
-          transform: 'translateZ(0)',
-          boxSizing: 'border-box',
-          width: '100%',
-          overflow: 'auto',
-        }}
-      >
-        {children}
-      </main>
-
-      <BottomNav
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-        notificationCount={0}
-      />
-    </div>
+    <PageLayout defaultTab="map" headerConfig={{ hideSearch: true }}>
+      {children}
+    </PageLayout>
   );
 
   // Direct rendering - no loading fallback per architecture requirements

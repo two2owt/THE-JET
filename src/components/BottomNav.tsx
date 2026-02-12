@@ -61,8 +61,8 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
         style={{ zIndex: -1 }}
       />
 
-      <div className="max-w-lg mx-auto px-2 sm:px-4 h-full flex items-center">
-        <div className="flex items-center justify-around w-full gap-1">
+      <div className="max-w-lg mx-auto px-fluid-xs sm:px-fluid-sm h-full flex items-center">
+        <div className="flex items-center justify-around w-full gap-fluid-xs">
           {navItems.map((item) => {
             const isActive = activeTab === item.id;
             const Icon = item.icon;

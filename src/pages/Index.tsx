@@ -436,7 +436,7 @@ const Index = () => {
         <main 
           role="main"
           id="main-content"
-          className="page-fade-in max-w-7xl mx-auto px-fluid-sm sm:px-fluid-md md:px-fluid-lg py-fluid-sm sm:py-fluid-md overflow-y-auto"
+          className="page-fade-in page-container max-w-7xl mx-auto"
           style={{ 
             flex: '1 1 auto',
             height: 'var(--main-height)',
@@ -451,7 +451,7 @@ const Index = () => {
           }}
         >
           {activeTab === "notifications" && (
-            <div className="gap-fluid-md animate-fade-in px-fluid-md py-fluid-md">
+            <div className="animate-fade-in px-fluid-sm sm:px-fluid-md py-fluid-sm sm:py-fluid-md space-y-fluid-md">
               <div>
                 <h2 className="text-fluid-2xl font-bold text-foreground mb-1 sm:mb-2">Notifications</h2>
                 <p className="text-fluid-sm text-muted-foreground">Stay updated with nearby deals and events</p>
@@ -479,7 +479,7 @@ const Index = () => {
           )}
 
           {activeTab === "explore" && (
-            <div className="px-fluid-md py-fluid-md">
+            <div className="px-fluid-sm sm:px-fluid-md py-fluid-sm sm:py-fluid-md">
               <Suspense fallback={null}>
                 <ExploreTab onVenueSelect={handleVenueSelect} />
               </Suspense>

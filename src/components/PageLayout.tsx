@@ -109,8 +109,8 @@ export function PageLayout({
           height: 'var(--main-height)',
           minHeight: 'var(--main-height)',
           maxHeight: 'var(--main-height)',
-          // Strict containment prevents CLS propagation
-          contain: 'strict',
+          // CSS containment for performance - use layout+style (not strict) to allow scrolling
+          contain: 'layout style',
           // GPU layer for smooth transitions
           transform: 'translateZ(0)',
           boxSizing: 'border-box',
