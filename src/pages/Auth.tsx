@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
-import { Footer } from "@/components/Footer";
+// Footer is now rendered globally in App.tsx
 // Use the new JET logo for auth page
 import jetLogo from "@/assets/jet-auth-logo.png";
 import authBackground from "@/assets/auth-background.webp";
@@ -664,7 +664,7 @@ const Auth = () => {
           </div>
         </div>
 
-        <Footer />
+        {/* Footer now rendered globally */}
       </div>
     </div>
   );
