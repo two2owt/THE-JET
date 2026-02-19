@@ -7,6 +7,46 @@ import cssnano from "cssnano";
 import { visualizer } from "rollup-plugin-visualizer";
 // @ts-ignore - critters types are in a non-standard location
 import Critters from "critters";
+import { createRequire } from "module";
+
+// ---------------------------------------------------------------------------
+// jet-vite-integration-check
+// Verifies that "vite" and "@vitejs/plugin-react-swc" (internally called
+// "jet-vite" and "jet-vite-react" in project docs) are installed and that
+// the versions recorded in package.json are mutually compatible.
+// ---------------------------------------------------------------------------
+function jetViteIntegrationCheck(): Plugin {
+  return {
+    name: "jet-vite-integration-check",
+    enforce: "pre",
+    buildStart() {
+      const require = createRequire(import.meta.url);
+      const checks: { pkg: string; label: string }[] = [
+        { pkg: "vite/package.json",                    label: "jet-vite (vite)" },
+        { pkg: "@vitejs/plugin-react-swc/package.json", label: "jet-vite-react (@vitejs/plugin-react-swc)" },
+      ];
+
+      let allOk = true;
+      for (const { pkg, label } of checks) {
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
+          const { version } = require(pkg) as { version: string };
+          console.log(`\x1b[32m✔\x1b[0m ${label} → v${version}`);
+        } catch {
+          console.error(`\x1b[31m✘\x1b[0m ${label} not found – run \`npm install\``);
+          allOk = false;
+        }
+      }
+
+      if (!allOk) {
+        throw new Error(
+          "[jet-vite-integration-check] Required Vite dependencies are missing. " +
+          "Run `npm install` and retry."
+        );
+      }
+    },
+  };
+}
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -267,6 +307,7 @@ export default defineConfig(({ mode }) => ({
     namedExports: true,
   },
   plugins: [
+    jetViteIntegrationCheck(),
     react(),
     mode === "development" && componentTagger(),
     // DISABLED: CSS preload causes FOUC - keep stylesheet blocking for instant styling
