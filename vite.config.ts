@@ -7,32 +7,36 @@ import cssnano from "cssnano";
 import { visualizer } from "rollup-plugin-visualizer";
 // @ts-ignore - critters types are in a non-standard location
 import Critters from "critters";
-import { createRequire } from "module";
+import fs from "fs";
 
 // ---------------------------------------------------------------------------
 // jet-vite-integration-check
-// Verifies that "vite" and "@vitejs/plugin-react-swc" (internally called
-// "jet-vite" and "jet-vite-react" in project docs) are installed and that
-// the versions recorded in package.json are mutually compatible.
+// Verifies that "vite" (jet-vite) and "@vitejs/plugin-react-swc"
+// (jet-vite-react) are installed by reading their package.json directly
+// from node_modules — avoids exports-map resolution issues with require().
 // ---------------------------------------------------------------------------
 function jetViteIntegrationCheck(): Plugin {
   return {
     name: "jet-vite-integration-check",
     enforce: "pre",
     buildStart() {
-      const require = createRequire(import.meta.url);
-      const checks: { pkg: string; label: string }[] = [
-        { pkg: "vite/package.json",                    label: "jet-vite (vite)" },
-        { pkg: "@vitejs/plugin-react-swc/package.json", label: "jet-vite-react (@vitejs/plugin-react-swc)" },
+      const checks: { pkgPath: string; label: string }[] = [
+        {
+          pkgPath: path.resolve("node_modules/vite/package.json"),
+          label: "jet-vite (vite)",
+        },
+        {
+          pkgPath: path.resolve("node_modules/@vitejs/plugin-react-swc/package.json"),
+          label: "jet-vite-react (@vitejs/plugin-react-swc)",
+        },
       ];
 
       let allOk = true;
-      for (const { pkg, label } of checks) {
-        try {
-          // eslint-disable-next-line @typescript-eslint/no-require-imports
-          const { version } = require(pkg) as { version: string };
+      for (const { pkgPath, label } of checks) {
+        if (fs.existsSync(pkgPath)) {
+          const { version } = JSON.parse(fs.readFileSync(pkgPath, "utf-8")) as { version: string };
           console.log(`\x1b[32m✔\x1b[0m ${label} → v${version}`);
-        } catch {
+        } else {
           console.error(`\x1b[31m✘\x1b[0m ${label} not found – run \`npm install\``);
           allOk = false;
         }
