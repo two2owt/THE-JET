@@ -104,8 +104,6 @@ export function PageLayout({
         flex: '1 1 0%',
         minHeight: 0,
         overflow: 'hidden',
-        // Reserve space for fixed header at top
-        paddingTop: 'var(--header-total-height)',
       }}
     >
       <main

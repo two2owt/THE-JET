@@ -61,6 +61,21 @@ const App = () => (
             {/* Header & Footer are global, outside route Suspense */}
             <Header />
             
+            {/* Spacer reserves header height in document flow during font/asset load,
+                preventing content from jumping when the fixed header paints late */}
+            <div
+              aria-hidden="true"
+              style={{
+                width: '100%',
+                height: 'var(--header-total-height)',
+                minHeight: 'var(--header-total-height)',
+                maxHeight: 'var(--header-total-height)',
+                flexShrink: 0,
+                visibility: 'hidden',
+                pointerEvents: 'none',
+              }}
+            />
+            
             <Suspense fallback={<NavigationShell />}>
               <Routes>
                 {/* Main route - eagerly loaded for fastest render */}

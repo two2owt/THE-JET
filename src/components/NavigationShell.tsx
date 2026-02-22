@@ -16,7 +16,6 @@ export function NavigationShell() {
         flex: '1 1 0%',
         minHeight: 0,
         overflow: 'hidden',
-        paddingTop: 'var(--header-total-height)',
       }}
     >
       <main
