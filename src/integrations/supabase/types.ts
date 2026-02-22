@@ -138,6 +138,50 @@ export type Database = {
           },
         ]
       }
+      messages: {
+        Row: {
+          content: string | null
+          conversation_id: string
+          created_at: string
+          deal_id: string | null
+          id: string
+          image_url: string | null
+          read_at: string | null
+          recipient_id: string
+          sender_id: string
+        }
+        Insert: {
+          content?: string | null
+          conversation_id: string
+          created_at?: string
+          deal_id?: string | null
+          id?: string
+          image_url?: string | null
+          read_at?: string | null
+          recipient_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string | null
+          conversation_id?: string
+          created_at?: string
+          deal_id?: string | null
+          id?: string
+          image_url?: string | null
+          read_at?: string | null
+          recipient_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       neighborhoods: {
         Row: {
           active: boolean | null

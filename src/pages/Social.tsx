@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useConnections } from "@/hooks/useConnections";
-import { Users, UserPlus, Check, X, UserX, Crown } from "lucide-react";
+import { Users, UserPlus, Check, X, UserX, Crown, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +11,9 @@ import { EmptyState } from "@/components/EmptyState";
 import { ConnectionProfileDialog } from "@/components/ConnectionProfileDialog";
 import { UpgradePrompt, useFeatureAccess } from "@/components/UpgradePrompt";
 import { VirtualGrid } from "@/components/ui/virtual-list";
+import { ChatDialog } from "@/components/ChatDialog";
+import { useUnreadCounts } from "@/hooks/useMessages";
+import { Badge } from "@/components/ui/badge";
 
 interface Profile {
   id: string;
@@ -24,6 +27,8 @@ export default function Social() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
+  const [chatFriend, setChatFriend] = useState<{ id: string; name: string; avatar?: string | null } | null>(null);
+  const unreadCounts = useUnreadCounts(user?.id);
   const { canAccessSocialFeatures } = useFeatureAccess();
 
   useEffect(() => {
@@ -228,6 +233,23 @@ export default function Social() {
                     <Button
                       size="sm"
                       variant="ghost"
+                      onClick={() => setChatFriend({
+                        id: friendId,
+                        name: connection.profile?.display_name || "Friend",
+                        avatar: connection.profile?.avatar_url,
+                      })}
+                      className="flex-shrink-0 h-8 sm:h-9 w-8 sm:w-9 p-0 relative"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      {unreadCounts[friendId] > 0 && (
+                        <Badge className="absolute -top-1 -right-1 h-4 min-w-[16px] px-1 text-[10px] bg-destructive text-destructive-foreground">
+                          {unreadCounts[friendId]}
+                        </Badge>
+                      )}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
                       onClick={() => handleRemoveConnection(connection.id)}
                       className="flex-shrink-0 h-8 sm:h-9 w-8 sm:w-9 p-0"
                     >
@@ -284,6 +306,18 @@ export default function Social() {
         isOpen={!!selectedProfileId}
         onClose={() => setSelectedProfileId(null)}
       />
+
+      {/* Chat Dialog */}
+      {chatFriend && user && (
+        <ChatDialog
+          isOpen={!!chatFriend}
+          onClose={() => setChatFriend(null)}
+          userId={user.id}
+          friendId={chatFriend.id}
+          friendName={chatFriend.name}
+          friendAvatar={chatFriend.avatar}
+        />
+      )}
     </PageLayout>
   );
 }
