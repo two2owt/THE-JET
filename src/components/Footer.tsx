@@ -1,8 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { Mail, Shield, FileText } from "lucide-react";
 
-// Routes where the footer should be hidden
-const HIDDEN_ROUTES = ["/auth", "/onboarding"];
+// Routes where the footer should be hidden (pages with BottomNav or special layouts)
+const HIDDEN_ROUTES = ["/auth", "/onboarding", "/social", "/messages", "/favorites", "/settings", "/profile"];
 
 export const Footer = () => {
   const location = useLocation();
