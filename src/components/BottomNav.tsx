@@ -61,8 +61,8 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
         style={{ zIndex: -1 }}
       />
 
-      <div className="max-w-lg sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 h-full flex items-center">
-        <div className="flex items-center justify-around w-full gap-fluid-xs">
+      <div className="max-w-lg sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 h-full flex items-center" style={{ display: 'flex', alignItems: 'center', height: '100%', paddingLeft: '1rem', paddingRight: '1rem', maxWidth: '32rem', marginLeft: 'auto', marginRight: 'auto' }}>
+        <div className="flex items-center justify-around w-full gap-fluid-xs" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', width: '100%' }}>
           {navItems.map((item) => {
             const isActive = activeTab === item.id;
             const Icon = item.icon;

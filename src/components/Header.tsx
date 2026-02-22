@@ -99,8 +99,8 @@ export const Header = () => {
         className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border/60 to-transparent"
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 h-full flex items-center">
-        <div className="flex items-center gap-fluid-sm sm:gap-fluid-md w-full">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 h-full flex items-center" style={{ display: 'flex', alignItems: 'center', height: '100%', paddingLeft: '1rem', paddingRight: '1rem' }}>
+        <div className="flex items-center gap-fluid-sm sm:gap-fluid-md w-full" style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '0.5rem' }}>
           
           {/* Logo with enhanced styling */}
           <a 
@@ -155,7 +155,7 @@ export const Header = () => {
           )}
 
           {/* Spacer */}
-          <div className="flex-1 min-w-0" />
+          <div className="flex-1 min-w-0" style={{ flex: '1 1 0%', minWidth: 0 }} />
 
           {/* Enhanced avatar */}
           <button 
