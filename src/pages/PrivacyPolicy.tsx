@@ -7,11 +7,11 @@ const PrivacyPolicy = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg pb-fluid-2xl">
         <Button
           onClick={() => navigate(-1)}
           variant="ghost"
-          className="mb-6 gap-2"
+          className="mb-fluid-lg gap-2"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
