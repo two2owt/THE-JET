@@ -75,11 +75,17 @@ export const Header = () => {
       className="fixed top-0 left-0 right-0 z-[60] text-foreground"
       role="banner" 
       style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 60,
         paddingTop: 'var(--safe-area-inset-top)',
         height: 'var(--header-total-height)',
         minHeight: 'var(--header-total-height)',
         maxHeight: 'var(--header-total-height)',
         flexShrink: 0,
+        color: 'hsl(var(--foreground))',
       }}
     >
       {/* Glassmorphic background layer */}
