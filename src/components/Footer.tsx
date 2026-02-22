@@ -34,8 +34,8 @@ export const Footer = () => {
         className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border/60 to-transparent"
       />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-5 sm:py-6">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-muted-foreground">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-5 sm:py-6" style={{ maxWidth: '56rem', marginLeft: 'auto', marginRight: 'auto', padding: '1.25rem 1rem' }}>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-muted-foreground" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
           <p className="font-medium">© {new Date().getFullYear()} Jet Mobile App</p>
           <div className="flex gap-5 sm:gap-6">
             <a 

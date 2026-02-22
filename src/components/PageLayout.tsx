@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useCallback } from "react";
 import { BottomNav } from "./BottomNav";
 import { useBottomNavigation, type NavTab } from "@/hooks/useBottomNavigation";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -51,6 +51,11 @@ interface PageLayoutProps {
  * 
  * Uses CSS variables from index.css for fixed dimensions to prevent layout shifts.
  */
+// Stable default references to prevent re-render loops from new refs each render
+const defaultVenues: Venue[] = [];
+const defaultDeals: Deal[] = [];
+const defaultOnVenueSelect = () => {};
+
 export function PageLayout({
   children,
   defaultTab = "map",
@@ -68,17 +73,19 @@ export function PageLayout({
   const unreadCount = notificationCount ?? notifications.filter(n => !n.read).length;
 
   // Sync header config to context whenever it changes
+  // Use stable default references to avoid re-render loops from new function/array refs
   useEffect(() => {
     setHeaderConfig({
-      venues: headerConfig.venues ?? [],
-      deals: headerConfig.deals ?? [],
-      onVenueSelect: headerConfig.onVenueSelect ?? (() => {}),
+      venues: headerConfig.venues ?? defaultVenues,
+      deals: headerConfig.deals ?? defaultDeals,
+      onVenueSelect: headerConfig.onVenueSelect ?? defaultOnVenueSelect,
       isLoading: headerConfig.isLoading,
       lastUpdated: headerConfig.lastUpdated,
       onRefresh: headerConfig.onRefresh,
       cityName: headerConfig.cityName,
       hideSearch: headerConfig.hideSearch ?? false,
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     headerConfig.venues,
     headerConfig.deals,
@@ -88,7 +95,6 @@ export function PageLayout({
     headerConfig.onRefresh,
     headerConfig.cityName,
     headerConfig.hideSearch,
-    setHeaderConfig,
   ]);
 
   return (
