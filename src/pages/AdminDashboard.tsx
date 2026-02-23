@@ -36,7 +36,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-background overflow-y-auto">
       <header className="bg-card border-b border-border sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-4">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
@@ -52,7 +52,7 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-6 pb-24">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg pb-fluid-2xl">
         <Tabs defaultValue="deals" className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-6">
             <TabsTrigger value="deals">Deals</TabsTrigger>
