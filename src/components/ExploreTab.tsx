@@ -393,7 +393,7 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">Explore Deals</h2>
+        <h2 className="text-2xl font-black bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent mb-2">Explore Deals</h2>
         <div className="flex items-center gap-2 flex-wrap">
           <p className="text-sm text-muted-foreground">
             {userLocation 
@@ -469,15 +469,19 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
-        <Card className="p-4 text-center bg-card/90 backdrop-blur-sm hover-scale shadow-none">
-          <TrendingUp className="w-6 h-6 mx-auto mb-2 text-primary" />
+        <Card className="p-4 text-center bg-card/90 backdrop-blur-sm hover-scale shadow-card border-primary/10">
+          <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center ring-1 ring-primary/20">
+            <TrendingUp className="w-5 h-5 text-primary" />
+          </div>
           <p className="text-2xl font-bold text-foreground">{filteredDeals.length}</p>
           <p className="text-xs text-muted-foreground">
             {userLocation ? "Nearby Deals" : "Active Deals"}
           </p>
         </Card>
-        <Card className="p-4 text-center bg-card/90 backdrop-blur-sm hover-scale shadow-none">
-          <MapPin className="w-6 h-6 mx-auto mb-2 text-accent" />
+        <Card className="p-4 text-center bg-card/90 backdrop-blur-sm hover-scale shadow-card border-primary/10">
+          <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-gradient-to-br from-accent/15 to-primary/15 flex items-center justify-center ring-1 ring-accent/20">
+            <MapPin className="w-5 h-5 text-accent" />
+          </div>
           <p className="text-2xl font-bold text-foreground">
             {new Set(filteredDeals.map(d => d.venue_name)).size}
           </p>
@@ -485,8 +489,10 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
             {userLocation ? "Nearby Venues" : "Venues"}
           </p>
         </Card>
-        <Card className="p-4 text-center bg-card/90 backdrop-blur-sm hover-scale shadow-none">
-          <Clock className="w-6 h-6 mx-auto mb-2 text-secondary" />
+        <Card className="p-4 text-center bg-card/90 backdrop-blur-sm hover-scale shadow-card border-primary/10">
+          <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-gradient-to-br from-secondary/15 to-primary/15 flex items-center justify-center ring-1 ring-secondary/20">
+            <Clock className="w-5 h-5 text-secondary" />
+          </div>
           <p className="text-2xl font-bold text-foreground">{filteredDeals.length}</p>
           <p className="text-xs text-muted-foreground">
             {searchQuery || selectedCategories.length > 0 ? "Results" : "Available"}

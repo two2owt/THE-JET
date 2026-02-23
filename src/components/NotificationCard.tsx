@@ -57,7 +57,7 @@ export const NotificationCard = memo(({ notification, onVenueClick, onRead }: No
       onClick={handleClick}
     >
       <div className="flex items-start gap-2 sm:gap-3">
-        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-card rounded-full flex items-center justify-center flex-shrink-0 border border-border">
+        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary/10 to-accent/10 rounded-full flex items-center justify-center flex-shrink-0 border border-primary/20 ring-1 ring-primary/10">
           {getIcon()}
         </div>
         

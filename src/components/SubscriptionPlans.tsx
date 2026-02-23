@@ -68,10 +68,10 @@ export const SubscriptionPlans = () => {
           return (
             <Card
               key={tierKey}
-              className={`relative transition-all ${
+              className={`relative transition-all bg-card/90 backdrop-blur-sm shadow-card ${
                 isCurrentTier
                   ? "border-primary ring-2 ring-primary/20"
-                  : "border-border hover:border-primary/50"
+                  : "border-border/60 hover:border-primary/50 hover:shadow-glow"
               }`}
             >
               {isCurrentTier && (

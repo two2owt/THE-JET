@@ -423,7 +423,7 @@ const Auth = () => {
                 decoding="async"
               />
             </div>
-            <h1 className="text-3xl font-bold text-foreground drop-shadow-sm">Welcome to JET</h1>
+            <h1 className="text-3xl font-black bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent drop-shadow-sm">Welcome to JET</h1>
             <p className="text-muted-foreground">
               {isResettingPassword
                 ? "Set your new password"

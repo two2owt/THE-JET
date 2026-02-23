@@ -45,7 +45,7 @@ export const SearchResults = ({
   return (
     <>
       <div className="fixed sm:absolute top-[60px] sm:top-full left-2 right-2 sm:left-auto sm:right-0 mt-0 sm:mt-2 z-[70] animate-fade-in sm:min-w-[320px] sm:max-w-[400px]">
-        <Card className="max-h-[60vh] sm:max-h-[70vh] overflow-y-auto shadow-glow w-full">
+        <Card className="max-h-[60vh] sm:max-h-[70vh] overflow-y-auto shadow-glow w-full bg-card/95 backdrop-blur-xl border-primary/20">
         <CardContent className="p-4 space-y-4">
           {/* Header */}
           <div className="flex items-center justify-between sticky top-0 bg-card pb-2 border-b border-border">

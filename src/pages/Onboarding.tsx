@@ -268,7 +268,7 @@ const Onboarding = () => {
             <Zap className="w-8 h-8 sm:w-10 sm:h-10 text-primary-foreground" />
           </div>
           <div className="flex items-center justify-center gap-fluid-md mb-fluid-xs">
-            <h1 className="text-fluid-2xl sm:text-fluid-3xl font-bold text-foreground">
+            <h1 className="text-fluid-2xl sm:text-fluid-3xl font-black bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
               {step === 1 && "Create User Profile"}
               {step === 2 && "Set Personal Preferences"}
               {step === 3 && "Review Suggestions"}
