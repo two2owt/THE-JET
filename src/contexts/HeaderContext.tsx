@@ -54,7 +54,12 @@ export const HeaderProvider = ({ children }: HeaderProviderProps) => {
   const [config, setConfig] = useState<HeaderConfig>(defaultConfig);
 
   const setHeaderConfig = useCallback((partial: Partial<HeaderConfig>) => {
-    setConfig(prev => ({ ...prev, ...partial }));
+    setConfig(prev => {
+      // Shallow-compare each key to avoid unnecessary state updates (and infinite loops)
+      const keys = Object.keys(partial) as (keyof HeaderConfig)[];
+      const hasChange = keys.some(k => prev[k] !== partial[k]);
+      return hasChange ? { ...prev, ...partial } : prev;
+    });
   }, []);
 
   // Memoize the full context value so consumers only re-render when config actually changes,

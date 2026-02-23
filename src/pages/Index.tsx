@@ -317,10 +317,7 @@ const Index = () => {
       cityName,
       hideSearch: false,
     });
-  // setHeaderConfig is a stable useCallback — omitting it from deps intentionally
-  // to avoid infinite re-render loop caused by context value recreation.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [venues, deals, handleVenueSelect, dealsLoading, venuesLoading, dealsLastUpdated, venuesLastUpdated, refreshBoth, cityName]);
+  }, [setHeaderConfig, venues, deals, handleVenueSelect, dealsLoading, venuesLoading, dealsLastUpdated, venuesLastUpdated, refreshBoth, cityName]);
 
   return (
     <div 
