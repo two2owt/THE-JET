@@ -525,21 +525,6 @@ All colors MUST be HSL.
     contain: layout style paint;
   }
 
-  /* Header containment - prevents header updates from affecting body */
-  /* Uses 'layout paint' instead of 'layout style' to preserve color inheritance for SVG icons */
-  .header-contained {
-    contain: layout paint;
-    /* Ensure text color is inherited for SVG currentColor */
-    color: inherit;
-  }
-
-  /* Bottom nav containment */
-  /* Uses 'layout paint' instead of strict to preserve color inheritance for SVG icons */
-  .nav-contained {
-    contain: layout paint;
-    /* Ensure text color is inherited for SVG currentColor */
-    color: inherit;
-  }
 }
 
 @layer utilities {
