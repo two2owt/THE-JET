@@ -105,23 +105,24 @@ export const Header = () => {
         className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border/60 to-transparent"
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 h-full flex items-center" style={{ display: 'flex', alignItems: 'center', height: '100%', paddingLeft: '1rem', paddingRight: '1rem' }}>
-        <div className="flex items-center gap-fluid-sm sm:gap-fluid-md w-full" style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '0.5rem' }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 h-full flex items-center" style={{ display: 'flex', alignItems: 'center', height: '100%', paddingLeft: '1rem', paddingRight: '1rem', overflow: 'hidden' }}>
+        <div className="flex items-center gap-fluid-sm sm:gap-fluid-md w-full" style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', width: '100%', gap: '0.5rem', overflow: 'hidden' }}>
           
           {/* Logo with enhanced styling */}
           <a 
             href="/" 
             className="group flex items-center gap-1.5 flex-shrink-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-lg px-1 -ml-1"
-            style={{ minWidth: '48px', height: '32px' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', minWidth: '48px', height: '32px', flexShrink: 0, whiteSpace: 'nowrap' }}
             onClick={e => {
               e.preventDefault();
               navigate('/');
             }} 
             aria-label="JET - Go to home"
           >
-            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary opacity-80 group-hover:opacity-100 transition-opacity" />
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary opacity-80 group-hover:opacity-100 transition-opacity" style={{ width: '16px', height: '16px', flexShrink: 0 }} />
             <h1 
               className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight bg-gradient-to-r from-foreground via-foreground to-primary bg-clip-text leading-none group-hover:from-primary group-hover:to-accent transition-all duration-300"
+              style={{ fontSize: '1.25rem', fontWeight: 900, lineHeight: 1, margin: 0 }}
               // @ts-expect-error - elementtiming is a valid HTML attribute for LCP tracking
               elementtiming="lcp-brand"
             >
@@ -133,10 +134,13 @@ export const Header = () => {
           {!hideSearch && (
           <div 
             className="relative flex-1 max-w-xs sm:max-w-sm"
-            style={{ minWidth: '120px' }}
+            style={{ position: 'relative', flex: '1 1 0%', maxWidth: '20rem', minWidth: '120px' }}
           >
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
-              <Search className="w-4 h-4 text-muted-foreground/70" />
+            <div 
+              className="absolute left-3 top-1/2 -translate-y-1/2 z-10 pointer-events-none"
+              style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', zIndex: 10, pointerEvents: 'none' }}
+            >
+              <Search className="w-4 h-4 text-muted-foreground/70" style={{ width: '16px', height: '16px' }} />
             </div>
             <Input 
               type="text" 
@@ -147,6 +151,7 @@ export const Header = () => {
               maxLength={100} 
               aria-label="Search venues and deals" 
               className="w-full pl-9 pr-3 h-9 sm:h-10 rounded-xl bg-secondary/40 border-border/40 hover:bg-secondary/60 focus:bg-secondary/80 focus:border-primary/40 focus:ring-1 focus:ring-primary/20 transition-all duration-200 text-sm placeholder:text-muted-foreground/60" 
+              style={{ width: '100%', paddingLeft: '2.25rem', height: '36px', boxSizing: 'border-box' }}
             />
             
             <SearchResults 

@@ -71,10 +71,11 @@ export const Footer = () => {
         }}
       >
         {/* Top row: equally spaced icon links */}
-        <div
+      <div
           className="flex items-center justify-around gap-4 sm:gap-6"
           style={{
             display: 'flex',
+            flexWrap: 'nowrap',
             alignItems: 'center',
             justifyContent: 'space-around',
             gap: '1rem',
