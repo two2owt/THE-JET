@@ -23,7 +23,7 @@ export default function VerificationSuccess() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 sm:px-6 md:px-8 lg:px-10">
       <div className="max-w-md w-full text-center space-y-6">
         <div className="flex justify-center">
           <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
