@@ -680,6 +680,55 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
           // Finalize immediately for fastest LCP
           finalizeMapLoad();
           
+          // Add parking lot icons from Mapbox vector tiles
+          if (map.current) {
+            try {
+              // Add a symbol layer for parking POIs using built-in Mapbox data
+              map.current.addLayer({
+                id: 'parking-icons',
+                type: 'symbol',
+                source: 'composite',
+                'source-layer': 'poi_label',
+                filter: [
+                  'any',
+                  ['==', ['get', 'maki'], 'parking'],
+                  ['==', ['get', 'maki'], 'parking-garage'],
+                ],
+                layout: {
+                  'icon-image': 'parking',
+                  'icon-size': [
+                    'interpolate', ['linear'], ['zoom'],
+                    12, 0.5,
+                    16, 0.9,
+                  ],
+                  'icon-allow-overlap': false,
+                  'icon-ignore-placement': false,
+                  'text-field': ['step', ['zoom'], '', 15, ['get', 'name']],
+                  'text-font': ['DIN Pro Medium', 'Arial Unicode MS Regular'],
+                  'text-size': 10,
+                  'text-offset': [0, 1.2],
+                  'text-anchor': 'top',
+                  'text-optional': true,
+                  'visibility': 'visible',
+                },
+                paint: {
+                  'icon-opacity': [
+                    'interpolate', ['linear'], ['zoom'],
+                    12, 0.6,
+                    15, 0.9,
+                  ],
+                  'text-color': 'hsl(210, 20%, 70%)',
+                  'text-halo-color': 'hsl(0, 0%, 10%)',
+                  'text-halo-width': 1,
+                },
+                minzoom: 13,
+              });
+              console.log('MapboxHeatmap: Parking icons layer added');
+            } catch (e) {
+              console.warn('MapboxHeatmap: Could not add parking layer:', e);
+            }
+          }
+          
           // Trigger geolocation quickly after load
           if (geolocateControlRef.current) {
             setTimeout(() => {
