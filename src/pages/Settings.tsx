@@ -252,7 +252,7 @@ const Settings = () => {
               <div>
                 <div className="flex items-center gap-2 mb-1 sm:mb-2">
                   <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                  <h2 className="text-base sm:text-lg font-bold text-foreground">Subscription</h2>
+                  <h2 className="text-base sm:text-lg font-black bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">Subscription</h2>
                 </div>
                 <p className="text-xs sm:text-sm text-muted-foreground">
                   Manage your JET subscription plan
@@ -278,7 +278,7 @@ const Settings = () => {
             <div>
               <div className="flex items-center gap-2 mb-1 sm:mb-2">
                 <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                <h2 className="text-base sm:text-lg font-bold text-foreground">Personal Preferences</h2>
+                <h2 className="text-base sm:text-lg font-black bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">Personal Preferences</h2>
               </div>
               <p className="text-xs sm:text-sm text-muted-foreground">
                 Customize your interests for personalized recommendations
@@ -297,7 +297,7 @@ const Settings = () => {
             <div>
               <div className="flex items-center gap-2 mb-1 sm:mb-2">
                 <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                <h2 className="text-base sm:text-lg font-bold text-foreground">Privacy Settings</h2>
+                <h2 className="text-base sm:text-lg font-black bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">Privacy Settings</h2>
               </div>
               <p className="text-xs sm:text-sm text-muted-foreground">
                 Control what information is visible to your connections
@@ -315,7 +315,7 @@ const Settings = () => {
           <div>
             <div className="flex items-center gap-2 mb-1 sm:mb-2">
               <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-              <h2 className="text-base sm:text-lg font-bold text-foreground">Notifications</h2>
+              <h2 className="text-base sm:text-lg font-black bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">Notifications</h2>
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground">
               Manage how you receive alerts and updates
@@ -372,7 +372,7 @@ const Settings = () => {
           <div>
             <div className="flex items-center gap-2 mb-1 sm:mb-2">
               <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-              <h2 className="text-base sm:text-lg font-bold text-foreground">Appearance</h2>
+              <h2 className="text-base sm:text-lg font-black bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">Appearance</h2>
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground">
               Choose how the app looks
@@ -449,7 +449,7 @@ const Settings = () => {
           <div>
             <div className="flex items-center gap-2 mb-1 sm:mb-2">
               <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-              <h2 className="text-base sm:text-lg font-bold text-foreground">Location</h2>
+              <h2 className="text-base sm:text-lg font-black bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">Location</h2>
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground">
               Control how the app uses your location
@@ -513,7 +513,7 @@ const Settings = () => {
         {/* Support Section */}
         <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-foreground">Support</h2>
+            <h2 className="text-base sm:text-lg font-black bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">Support</h2>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">
               Need help or found an issue?
             </p>
@@ -528,7 +528,7 @@ const Settings = () => {
 
         {/* Danger Zone - Account Deletion */}
         {userId && (
-          <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 border-destructive/50 bg-card/90 backdrop-blur-sm shadow-card">
+          <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 border-destructive/30 bg-card/90 backdrop-blur-xl shadow-card">
             <div>
               <div className="flex items-center gap-2 mb-1 sm:mb-2">
                 <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />

@@ -347,10 +347,10 @@ export default function Profile() {
     <PageLayout defaultTab="map" headerConfig={{ hideSearch: true }}>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg space-y-fluid-lg">
           {/* Profile Header */}
-          <Card className="p-6 bg-card/90 backdrop-blur-sm shadow-card">
+          <Card className="p-6 bg-card/90 backdrop-blur-xl shadow-card border-primary/10">
             <div className="flex items-start justify-between mb-6">
               <div>
-                <h1 className="text-2xl font-bold text-foreground mb-1">Profile</h1>
+                <h1 className="text-2xl font-black bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent mb-1">Profile</h1>
                 <p className="text-sm text-muted-foreground">Manage your account and preferences</p>
               </div>
               {!isEditing && <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
@@ -362,7 +362,7 @@ export default function Profile() {
             {/* Avatar Section */}
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-6">
               <div className="relative">
-                <Avatar className="w-24 h-24">
+                <Avatar className="w-24 h-24 ring-2 ring-primary/30 shadow-glow">
                   <AvatarImage src={profile?.avatar_url || undefined} />
                   <AvatarFallback className="text-2xl bg-gradient-to-r from-primary to-primary-glow text-primary-foreground">
                     {displayName.charAt(0).toUpperCase() || 'U'}
@@ -602,7 +602,7 @@ export default function Profile() {
           </div>
 
           {/* Sign Out */}
-          <Card className="p-4 bg-card/90 backdrop-blur-sm shadow-card">
+          <Card className="p-4 bg-card/90 backdrop-blur-xl shadow-card border-primary/10">
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" className="w-full">
