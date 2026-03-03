@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Search, Sparkles } from "lucide-react";
 import { Input } from "./ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useSearchHistory } from "@/hooks/useSearchHistory";
-import { SearchResults } from "./SearchResults";
 import { useHeaderContext } from "@/contexts/HeaderContext";
+
+// Lazy-load SearchResults - only needed when user starts typing
+const SearchResults = lazy(() => import("./SearchResults").then(m => ({ default: m.SearchResults })));
 
 const validateSearchQuery = (value: string): boolean => {
   return typeof value === 'string' && value.length <= 100;
@@ -154,14 +156,18 @@ export const Header = () => {
               style={{ width: '100%', paddingLeft: '2.25rem', height: '36px', boxSizing: 'border-box' }}
             />
             
-            <SearchResults 
-              query={searchQuery} 
-              venues={venues} 
-              deals={deals} 
-              onVenueSelect={onVenueSelect} 
-              onClose={handleCloseResults} 
-              isVisible={showResults} 
-            />
+            {showResults && (
+              <Suspense fallback={null}>
+                <SearchResults 
+                  query={searchQuery} 
+                  venues={venues} 
+                  deals={deals} 
+                  onVenueSelect={onVenueSelect} 
+                  onClose={handleCloseResults} 
+                  isVisible={showResults} 
+                />
+              </Suspense>
+            )}
           </div>
           )}
 
