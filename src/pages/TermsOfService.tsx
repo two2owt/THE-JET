@@ -18,7 +18,7 @@ const TermsOfService = () => {
         </Button>
 
         <div className="prose prose-sm sm:prose lg:prose-lg dark:prose-invert max-w-none">
-          <h1 className="text-4xl font-black bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent mb-2">Terms of Service</h1>
+          <h1 className="text-4xl font-black mb-2" style={{ backgroundImage: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary)), hsl(var(--accent)))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Terms of Service</h1>
           <p className="text-muted-foreground mb-2">Jet Mobile App</p>
           <p className="text-muted-foreground mb-8">Last updated: January 3, 2025</p>
 

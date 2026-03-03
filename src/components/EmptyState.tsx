@@ -18,7 +18,7 @@ export const EmptyState = ({
   onAction 
 }: EmptyStateProps) => {
   return (
-    <Card className="p-fluid-xl text-center bg-card/90 backdrop-blur-sm shadow-card border-dashed border-border/50">
+    <Card className="p-fluid-xl text-center bg-card/90 backdrop-blur-xl shadow-card border border-primary/15 ring-1 ring-primary/10">
       <div className="mx-auto w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center mb-fluid-md ring-1 ring-primary/20">
         <Icon className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-primary" />
       </div>
