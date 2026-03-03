@@ -393,7 +393,7 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-black bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent mb-2">Explore Deals</h2>
+        <h2 className="text-2xl font-black bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent mb-2">Explore Deals</h2>
         <div className="flex items-center gap-2 flex-wrap">
           <p className="text-sm text-muted-foreground">
             {userLocation 
@@ -468,7 +468,7 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
         <Card className="p-4 text-center bg-card/90 backdrop-blur-sm hover-scale shadow-card border-primary/10">
           <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center ring-1 ring-primary/20">
             <TrendingUp className="w-5 h-5 text-primary" />
