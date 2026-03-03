@@ -306,18 +306,30 @@ const Index = () => {
   }, [refreshDeals, refreshVenues]);
   const cityName = detectedLocationName || `${selectedCity.name}, ${selectedCity.state}`;
 
+  // Use refs for callbacks to avoid infinite loop: setHeaderConfig detects
+  // new function references as "changes", triggering re-render, which creates
+  // new refs, which triggers setHeaderConfig again.
+  const handleVenueSelectRef = useRef(handleVenueSelect);
+  handleVenueSelectRef.current = handleVenueSelect;
+  const refreshBothRef = useRef(refreshBoth);
+  refreshBothRef.current = refreshBoth;
+
+  // Stable wrappers that never change identity
+  const stableOnVenueSelect = useMemo(() => ((v: Venue | string) => handleVenueSelectRef.current(v)) as (v: Venue | string) => void, []);
+  const stableOnRefresh = useMemo(() => (() => refreshBothRef.current()), []);
+
   useEffect(() => {
     setHeaderConfig({
       venues,
       deals,
-      onVenueSelect: handleVenueSelect,
+      onVenueSelect: stableOnVenueSelect,
       isLoading: dealsLoading || venuesLoading,
       lastUpdated: dealsLastUpdated || venuesLastUpdated,
-      onRefresh: refreshBoth,
+      onRefresh: stableOnRefresh,
       cityName,
       hideSearch: false,
     });
-  }, [setHeaderConfig, venues, deals, handleVenueSelect, dealsLoading, venuesLoading, dealsLastUpdated, venuesLastUpdated, refreshBoth, cityName]);
+  }, [setHeaderConfig, venues, deals, stableOnVenueSelect, dealsLoading, venuesLoading, dealsLastUpdated, venuesLastUpdated, stableOnRefresh, cityName]);
 
   return (
     <div 
