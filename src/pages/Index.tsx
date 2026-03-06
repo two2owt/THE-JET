@@ -434,11 +434,13 @@ const Index = () => {
                     <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
                   </div>
                 )}
-                <JetCard 
-                  venue={selectedVenue} 
-                  onGetDirections={handleGetDirections}
-                  onClose={() => setSelectedVenue(null)}
-                />
+                <Suspense fallback={null}>
+                  <JetCard 
+                    venue={selectedVenue} 
+                    onGetDirections={handleGetDirections}
+                    onClose={() => setSelectedVenue(null)}
+                  />
+                </Suspense>
               </div>
             </div>
           )}
@@ -487,11 +489,13 @@ const Index = () => {
                 <>
                   {notifications.map((notification) => (
                     <div key={notification.id}>
-                      <NotificationCard 
-                        notification={notification} 
-                        onVenueClick={handleVenueSelect}
-                        onRead={() => markAsRead(notification.id)}
-                      />
+                      <Suspense fallback={null}>
+                        <NotificationCard 
+                          notification={notification} 
+                          onVenueClick={handleVenueSelect}
+                          onRead={() => markAsRead(notification.id)}
+                        />
+                      </Suspense>
                     </div>
                   ))}
                 </>
