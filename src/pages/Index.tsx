@@ -25,9 +25,9 @@ import { useBottomNavigation, type NavTab } from "@/hooks/useBottomNavigation";
 // Lazy load heavy components - deferred until needed
 const MapboxHeatmap = lazy(() => import("@/components/MapboxHeatmap").then(m => ({ default: m.MapboxHeatmap })));
 
-// Direct imports for visible content - no lazy loading needed
-import { JetCard } from "@/components/JetCard";
-import { NotificationCard } from "@/components/NotificationCard";
+// Lazy load interaction-triggered components - not needed for first paint
+const JetCard = lazy(() => import("@/components/JetCard").then(m => ({ default: m.JetCard })));
+const NotificationCard = lazy(() => import("@/components/NotificationCard").then(m => ({ default: m.NotificationCard })));
 
 // Lazy load tab content and dialogs - user-triggered
 const ExploreTab = lazy(() => import("@/components/ExploreTab").then(m => ({ default: m.ExploreTab })));
