@@ -278,5 +278,8 @@
         }
       ]
     }
+  ],
+  "rewrites": [
+    { "source": "/((?!api|_next|assets|fonts|sw|workbox|.*\\..*).*)", "destination": "/index.html" }
   ]
 }
