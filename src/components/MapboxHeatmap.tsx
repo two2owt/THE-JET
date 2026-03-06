@@ -2154,21 +2154,13 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
         }}
       />
 
-      {/* City Selector with Current Location option - responsive for all devices */}
-      {/* City Selector - CLS fix: Defer render until after initial paint */}
+      {/* Unified Top-Left Controls: Location + Map Style in one compact row */}
       {controlsReady && (
       <div 
-        className="absolute z-10"
+        className="absolute z-10 flex items-center gap-1.5"
         style={{
           top: 'var(--map-safe-top-controls-in-map, var(--map-safe-top-controls, var(--map-safe-top)))',
           left: 'var(--map-ui-inset-left)',
-          // CLS fix: Fixed dimensions prevent layout shift when "Locating..." changes
-          // Increased width to accommodate longer city names
-          width: 'auto',
-          height: 'auto',
-          minWidth: '200px',
-          minHeight: '36px',
-          maxWidth: '280px',
           contain: 'layout style',
         }}
       >
