@@ -2249,8 +2249,6 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
             })}
           </SelectContent>
         </Select>
-      </div>
-      )}
 
         {/* Map Style - compact icon button */}
         <Collapsible defaultOpen={false}>
