@@ -2203,31 +2203,19 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
           }}
         >
           <SelectTrigger 
-            className="w-full text-[11px] sm:text-xs md:text-sm lg:text-base h-9 sm:h-10 md:h-11 lg:h-12 px-3 sm:px-3.5 md:px-4 rounded-xl shadow-lg bg-card/95 backdrop-blur-xl border-border"
+            className="text-[11px] sm:text-xs h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl shadow-lg bg-card/95 backdrop-blur-xl border-border"
             aria-label="Select city location"
-            style={{
-              // CLS fix: Reserve stable width to prevent layout shift when "Locating..." changes to city name
-              minWidth: '200px',
-              maxWidth: '280px',
-              contain: 'layout style',
-            }}
+            style={{ minWidth: '140px', maxWidth: '220px', contain: 'layout style' }}
           >
-            <div className="flex items-center gap-2 sm:gap-2.5 md:gap-3 w-full">
-              <MapPin className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 text-primary flex-shrink-0" />
-              <span 
-                className="font-semibold truncate flex-1 text-left"
-                style={{
-                  // CLS fix: Min width ensures stable layout, flex-1 allows growth
-                  minWidth: '140px',
-                  maxWidth: '200px',
-                }}
-              >
+            <div className="flex items-center gap-1.5 w-full">
+              <MapPin className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+              <span className="font-semibold truncate flex-1 text-left" style={{ minWidth: '80px' }}>
                 {isUsingCurrentLocation 
                   ? (detectedLocationName || (detectedCity ? `${detectedCity.name}, ${detectedCity.state}` : "Locating..."))
                   : `${selectedCity.name}, ${selectedCity.state}`}
               </span>
               {isUsingCurrentLocation && (detectedLocationName || detectedCity) && (
-                <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-primary rounded-full animate-pulse flex-shrink-0" />
+                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse flex-shrink-0" />
               )}
             </div>
           </SelectTrigger>
@@ -2264,46 +2252,30 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       </div>
       )}
 
-      {/* Map Controls - Top left below city selector */}
-      {/* CLS fix: Defer render until after initial paint to prevent layout shifts */}
-      {controlsReady && (
-      <div 
-        className="absolute z-10 space-y-2 sm:space-y-2.5 md:space-y-3"
-        style={{
-          top: isMobile 
-            ? 'calc(var(--map-safe-top-controls-in-map, var(--map-safe-top-controls, var(--map-safe-top))) + 3.5rem)'
-            : 'calc(var(--map-safe-top-controls-in-map, var(--map-safe-top-controls, var(--map-safe-top))) + 4rem)',
-          left: 'var(--map-ui-inset-left)',
-          maxWidth: isMobile ? 'calc(50vw - 0.75rem)' : 'var(--map-control-max-width)',
-          contain: 'layout style',
-        }}
-      >
+        {/* Map Style - compact icon button */}
         <Collapsible defaultOpen={false}>
           <CollapsibleTrigger asChild>
             <Button
               variant="secondary"
               size="sm"
-              className="bg-card/95 backdrop-blur-xl border border-border text-[10px] sm:text-xs md:text-sm shadow-lg h-9 sm:h-10 md:h-11 px-2.5 sm:px-3 md:px-4 rounded-xl transition-all duration-200"
-              aria-label="Toggle map style options"
+              className="bg-card/95 backdrop-blur-xl border border-border shadow-lg h-8 sm:h-9 w-8 sm:w-9 p-0 rounded-xl"
+              aria-label="Map style options"
             >
-              <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-1 sm:mr-1.5" aria-hidden="true" />
-              <span>Map Style</span>
+              <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
             </Button>
           </CollapsibleTrigger>
-          <CollapsibleContent className="mt-2 sm:mt-2.5 overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
-            <div className="bg-card/95 backdrop-blur-xl rounded-xl border border-border p-2 sm:p-2.5 md:p-3 shadow-lg space-y-2.5 sm:space-y-3">
-              {/* Map Style Options */}
-              <div className="space-y-1.5" role="group" aria-label="Map base style options">
-                <span id="base-style-label" className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground font-medium uppercase tracking-wider">Base Style</span>
-                <div className="grid grid-cols-4 gap-1.5 sm:gap-2" role="radiogroup" aria-labelledby="base-style-label">
+          <CollapsibleContent className="absolute top-full left-0 mt-1.5 z-20 overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
+            <div className="bg-card/95 backdrop-blur-xl rounded-xl border border-border p-2 shadow-lg space-y-2" style={{ minWidth: '200px' }}>
+              <div className="space-y-1.5" role="group" aria-label="Map base style">
+                <span className="text-[9px] text-muted-foreground font-medium uppercase tracking-wider">Style</span>
+                <div className="grid grid-cols-4 gap-1" role="radiogroup">
                   {(['light', 'dark', 'streets', 'satellite'] as const).map((style) => (
                     <Button
                       key={style}
                       onClick={() => { triggerHaptic('light'); setMapStyle(style); }}
                       variant={mapStyle === style ? "default" : "outline"}
                       size="sm"
-                      className="h-7 sm:h-8 md:h-9 text-[9px] sm:text-[10px] md:text-xs px-1.5 sm:px-2 capitalize"
-                      aria-label={`Set map style to ${style}`}
+                      className="h-7 text-[9px] px-1.5 capitalize"
                       aria-pressed={mapStyle === style}
                     >
                       {style}
@@ -2311,23 +2283,19 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
                   ))}
                 </div>
               </div>
-              
-              {/* 3D Terrain Toggle */}
               <Button
                 onClick={() => { triggerHaptic('medium'); setShow3DTerrain(!show3DTerrain); }}
                 variant={show3DTerrain ? "default" : "outline"}
                 size="sm"
-                className="w-full h-8 sm:h-9 md:h-10 text-[10px] sm:text-xs md:text-sm"
-                aria-label={show3DTerrain ? "Disable 3D terrain view" : "Enable 3D terrain view"}
+                className="w-full h-7 text-[10px]"
                 aria-pressed={show3DTerrain}
               >
-                {show3DTerrain ? "Disable" : "Enable"} 3D Terrain
+                {show3DTerrain ? "3D On" : "3D Off"}
               </Button>
             </div>
           </CollapsibleContent>
         </Collapsible>
       </div>
-      )}
 
       {/* Layer Toggle Controls - Always visible on map */}
       {controlsReady && (
