@@ -25,9 +25,9 @@ import { useBottomNavigation, type NavTab } from "@/hooks/useBottomNavigation";
 // Lazy load heavy components - deferred until needed
 const MapboxHeatmap = lazy(() => import("@/components/MapboxHeatmap").then(m => ({ default: m.MapboxHeatmap })));
 
-// Direct imports for visible content - no lazy loading needed
-import { JetCard } from "@/components/JetCard";
-import { NotificationCard } from "@/components/NotificationCard";
+// Lazy load interaction-triggered components - not needed for first paint
+const JetCard = lazy(() => import("@/components/JetCard").then(m => ({ default: m.JetCard })));
+const NotificationCard = lazy(() => import("@/components/NotificationCard").then(m => ({ default: m.NotificationCard })));
 
 // Lazy load tab content and dialogs - user-triggered
 const ExploreTab = lazy(() => import("@/components/ExploreTab").then(m => ({ default: m.ExploreTab })));
@@ -434,11 +434,13 @@ const Index = () => {
                     <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
                   </div>
                 )}
-                <JetCard 
-                  venue={selectedVenue} 
-                  onGetDirections={handleGetDirections}
-                  onClose={() => setSelectedVenue(null)}
-                />
+                <Suspense fallback={null}>
+                  <JetCard 
+                    venue={selectedVenue} 
+                    onGetDirections={handleGetDirections}
+                    onClose={() => setSelectedVenue(null)}
+                  />
+                </Suspense>
               </div>
             </div>
           )}
@@ -487,11 +489,13 @@ const Index = () => {
                 <>
                   {notifications.map((notification) => (
                     <div key={notification.id}>
-                      <NotificationCard 
-                        notification={notification} 
-                        onVenueClick={handleVenueSelect}
-                        onRead={() => markAsRead(notification.id)}
-                      />
+                      <Suspense fallback={null}>
+                        <NotificationCard 
+                          notification={notification} 
+                          onVenueClick={handleVenueSelect}
+                          onRead={() => markAsRead(notification.id)}
+                        />
+                      </Suspense>
                     </div>
                   ))}
                 </>
