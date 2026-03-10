@@ -162,7 +162,7 @@ export default function Social() {
         {/* Pending Requests */}
         {pendingRequests.length > 0 && (
           <div>
-            <h2 className="text-fluid-xl sm:text-fluid-2xl font-black bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent mb-fluid-md">
+            <h2 className="text-fluid-xl sm:text-fluid-2xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent mb-fluid-md">
               Friend Requests ({pendingRequests.length})
             </h2>
             <div className="space-y-fluid-sm">
