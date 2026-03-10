@@ -440,7 +440,7 @@ const Index = () => {
             </div>
           )}
         </div>
-      )}
+      </div>
 
       {/* Header config is set via context (useEffect below) */}
 
