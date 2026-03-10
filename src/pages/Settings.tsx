@@ -315,7 +315,7 @@ const Settings = () => {
           <div>
             <div className="flex items-center gap-2 mb-1 sm:mb-2">
               <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-              <h2 className="text-base sm:text-lg font-black bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">Notifications</h2>
+              <h2 className="text-base sm:text-lg font-extrabold bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">Notifications</h2>
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground">
               Manage how you receive alerts and updates
