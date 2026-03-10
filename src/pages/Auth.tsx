@@ -641,7 +641,7 @@ const Auth = () => {
                 setDataProcessingConsent(false);
                 setLocationConsent(false);
               }}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors min-h-[44px] flex items-center justify-center w-full touch-manipulation"
             >
               {isForgotPassword 
                 ? "Back to sign in"
