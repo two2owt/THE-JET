@@ -51,10 +51,13 @@ export const NotificationCard = memo(({ notification, onVenueClick, onRead }: No
 
   return (
     <div 
-      className={`bg-gradient-to-r ${getGradient()} rounded-lg sm:rounded-xl p-3 sm:p-4 border border-border/50 hover-scale transition-all ${
-        onVenueClick ? 'cursor-pointer' : ''
+      className={`bg-gradient-to-r ${getGradient()} rounded-lg sm:rounded-xl p-3 sm:p-4 border border-border/50 hover-scale transition-all touch-manipulation ${
+        onVenueClick ? 'cursor-pointer active:scale-[0.98]' : ''
       } ${notification.read ? 'opacity-60' : ''}`}
       onClick={handleClick}
+      role={onVenueClick ? "button" : undefined}
+      tabIndex={onVenueClick ? 0 : undefined}
+      onKeyDown={onVenueClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(); } } : undefined}
     >
       <div className="flex items-start gap-2 sm:gap-3">
         <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary/10 to-accent/10 rounded-full flex items-center justify-center flex-shrink-0 border border-primary/20 ring-1 ring-primary/10">

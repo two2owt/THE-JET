@@ -187,22 +187,24 @@ export default function Social() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-shrink-0">
                     <Button
                       size="sm"
                       onClick={() => handleAcceptRequest(request.id)}
-                      className="bg-primary"
+                      className="bg-primary min-h-[44px] px-3"
                     >
                       <Check className="w-4 h-4 mr-1" />
-                      Accept
+                      <span className="hidden sm:inline">Accept</span>
+                      <span className="sm:hidden">OK</span>
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => handleRemoveConnection(request.id)}
+                      className="min-h-[44px] px-3"
                     >
                       <X className="w-4 h-4 mr-1" />
-                      Decline
+                      <span className="hidden sm:inline">Decline</span>
                     </Button>
                   </div>
                 </div>

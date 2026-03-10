@@ -478,7 +478,7 @@ const Auth = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -511,7 +511,7 @@ const Auth = () => {
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
                     >
                       {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -624,7 +624,7 @@ const Auth = () => {
             {!isForgotPassword && !isSignUp && (
               <button
                 onClick={() => setIsForgotPassword(true)}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors block w-full"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors block w-full min-h-[44px] flex items-center justify-center touch-manipulation"
               >
                 Forgot password?
               </button>
@@ -641,7 +641,7 @@ const Auth = () => {
                 setDataProcessingConsent(false);
                 setLocationConsent(false);
               }}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors min-h-[44px] flex items-center justify-center w-full touch-manipulation"
             >
               {isForgotPassword 
                 ? "Back to sign in"

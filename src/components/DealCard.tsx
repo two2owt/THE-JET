@@ -131,7 +131,7 @@ export const DealCard = memo(({ deal, index = 0 }: DealCardProps) => {
         {/* Favorite Button */}
         <button
           onClick={handleFavoriteToggle}
-          className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-background/90 backdrop-blur-md p-2 sm:p-2.5 rounded-full hover:bg-background transition-colors"
+          className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-background/90 backdrop-blur-md p-2.5 sm:p-2.5 rounded-full hover:bg-background transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
           aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
         >
           <Heart

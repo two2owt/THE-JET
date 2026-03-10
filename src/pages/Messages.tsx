@@ -323,7 +323,12 @@ function ChatView({
       </ScrollArea>
 
       {/* Input bar */}
-      <div className="px-4 py-3 border-t border-border/60 bg-card/60 backdrop-blur-sm flex items-center gap-2">
+      <div
+        className="px-4 py-3 border-t border-border/60 bg-card/60 backdrop-blur-sm flex items-center gap-2"
+        style={{
+          paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 12px)',
+        }}
+      >
         <input
           type="file"
           accept="image/*"
