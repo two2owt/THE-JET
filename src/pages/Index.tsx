@@ -459,7 +459,8 @@ const Index = () => {
           id="main-content"
           className="page-fade-in page-container max-w-7xl mx-auto"
           style={{ 
-            flex: '1 1 auto',
+            /* Position below the fixed header */
+            marginTop: 'var(--header-total-height)',
             height: 'var(--main-height)',
             minHeight: 'var(--main-height)',
             maxHeight: 'var(--main-height)',
@@ -469,6 +470,7 @@ const Index = () => {
             width: '100%',
             zIndex: 1,
             position: 'relative',
+            overflow: 'auto',
           }}
         >
           {activeTab === "notifications" && (
