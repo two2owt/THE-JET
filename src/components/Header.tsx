@@ -137,8 +137,8 @@ export const Header = () => {
           >
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary drop-shadow-[0_0_6px_hsl(var(--primary)/0.5)] group-hover:scale-110 transition-all duration-300" style={{ width: '16px', height: '16px', flexShrink: 0 }} />
             <h1 
-              className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent leading-none group-hover:drop-shadow-[0_0_8px_hsl(var(--primary)/0.4)] transition-all duration-300"
-              style={{ fontSize: '1.25rem', fontWeight: 900, lineHeight: 1, margin: 0 }}
+              className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent leading-none group-hover:drop-shadow-[0_0_8px_hsl(var(--primary)/0.4)] transition-all duration-300"
+              style={{ fontSize: '1.25rem', fontWeight: 800, lineHeight: 1, margin: 0 }}
               // @ts-expect-error - elementtiming is a valid HTML attribute for LCP tracking
               elementtiming="lcp-brand"
             >
