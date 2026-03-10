@@ -342,6 +342,12 @@ All colors MUST be HSL.
     box-sizing: border-box;
   }
 
+  /* Heading hierarchy — leverage Plus Jakarta Sans Variable weight range */
+  h1 { @apply font-extrabold; /* 800 */ }
+  h2 { @apply font-bold;      /* 700 */ }
+  h3 { @apply font-semibold;  /* 600 */ }
+  h4 { @apply font-medium;    /* 500 */ }
+
   html {
     overflow-x: hidden;
     width: 100%;
