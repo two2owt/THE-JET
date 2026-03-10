@@ -345,64 +345,66 @@ const Index = () => {
         isolation: 'isolate',
       }}
     >
-      {/* FULL-SCREEN MAP LAYER - always rendered as page background */}
-      <div 
-        className="absolute inset-0 w-full h-full"
-        style={{
-          zIndex: 0,
-          transform: 'translateZ(0)',
-        }}
-      >
-        {/* Error state - only show if there's a definite error */}
-        {mapboxError && !mapboxLoading && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background">
-            <div className="text-center space-y-3 sm:space-y-4 p-6 sm:p-8">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 mx-auto rounded-full bg-destructive/10 flex items-center justify-center">
-                <MapIcon className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-destructive" />
-              </div>
-              <div className="space-y-1.5 sm:space-y-2">
-                <p className="text-sm sm:text-base md:text-lg font-medium text-foreground">Unable to load map</p>
-                <p className="text-xs sm:text-sm text-muted-foreground max-w-[200px] sm:max-w-[280px] mx-auto">{mapboxError}</p>
-              </div>
-              <Button 
-                variant="outline" 
-                size="default"
-                onClick={() => window.location.reload()}
-                className="mt-2 sm:mt-3"
-              >
-                Try Again
-              </Button>
-            </div>
-          </div>
-        )}
-        
-        {/* Map - renders immediately, full screen behind overlays */}
+      {/* FULL-SCREEN MAP LAYER - only on map tab */}
+      {activeTab === "map" && (
         <div 
           className="absolute inset-0 w-full h-full"
           style={{
-            opacity: isMapboxReady && mapboxToken ? 1 : 0,
-            transition: 'opacity 300ms ease-out',
+            zIndex: 0,
+            transform: 'translateZ(0)',
           }}
         >
-          {mapboxToken && (
-            <Suspense fallback={null}>
-              <MapboxHeatmap
-                onVenueSelect={handleVenueSelect} 
-                venues={venues} 
-                mapboxToken={mapboxToken}
-                selectedCity={selectedCity}
-                onCityChange={handleCityChange}
-                onNearestCityDetected={handleNearestCityDetected}
-                onDetectedLocationNameChange={handleDetectedLocationNameChange}
-                isLoadingVenues={venuesLoading}
-                selectedVenue={selectedVenue}
-                resetUIKey={mapUIResetKey}
-                isTokenLoading={false}
-              />
-            </Suspense>
+          {/* Error state */}
+          {mapboxError && !mapboxLoading && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-background">
+              <div className="text-center space-y-3 sm:space-y-4 p-6 sm:p-8">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 mx-auto rounded-full bg-destructive/10 flex items-center justify-center">
+                  <MapIcon className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-destructive" />
+                </div>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <p className="text-sm sm:text-base md:text-lg font-medium text-foreground">Unable to load map</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground max-w-[200px] sm:max-w-[280px] mx-auto">{mapboxError}</p>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="default"
+                  onClick={() => window.location.reload()}
+                  className="mt-2 sm:mt-3"
+                >
+                  Try Again
+                </Button>
+              </div>
+            </div>
           )}
+          
+          {/* Map canvas */}
+          <div 
+            className="absolute inset-0 w-full h-full"
+            style={{
+              opacity: isMapboxReady && mapboxToken ? 1 : 0,
+              transition: 'opacity 300ms ease-out',
+            }}
+          >
+            {mapboxToken && (
+              <Suspense fallback={null}>
+                <MapboxHeatmap
+                  onVenueSelect={handleVenueSelect} 
+                  venues={venues} 
+                  mapboxToken={mapboxToken}
+                  selectedCity={selectedCity}
+                  onCityChange={handleCityChange}
+                  onNearestCityDetected={handleNearestCityDetected}
+                  onDetectedLocationNameChange={handleDetectedLocationNameChange}
+                  isLoadingVenues={venuesLoading}
+                  selectedVenue={selectedVenue}
+                  resetUIKey={mapUIResetKey}
+                  isTokenLoading={false}
+                />
+              </Suspense>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Selected Venue Card - only on map tab, positioned above bottom nav */}
       {activeTab === "map" && selectedVenue && (
@@ -450,7 +452,7 @@ const Index = () => {
         <main 
           role="main"
           id="main-content"
-          className="page-fade-in page-container max-w-7xl mx-auto bg-background/85 backdrop-blur-md"
+          className="page-fade-in page-container max-w-7xl mx-auto bg-background"
           style={{ 
             /* Position below the fixed header */
             marginTop: 'var(--header-total-height)',
