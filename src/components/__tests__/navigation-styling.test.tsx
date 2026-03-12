@@ -110,15 +110,15 @@ describe("BottomNav – inline layout styles", () => {
   it("renders all 5 navigation tabs", () => {
     renderWithRouter(<BottomNav {...defaultProps} />);
     expect(screen.getByLabelText("Map")).toBeInTheDocument();
-    expect(screen.getByLabelText("Explore")).toBeInTheDocument();
+    expect(screen.getByLabelText("Hot")).toBeInTheDocument();
     expect(screen.getByLabelText("Alerts")).toBeInTheDocument();
     expect(screen.getByLabelText("Saved")).toBeInTheDocument();
-    expect(screen.getByLabelText("Friends")).toBeInTheDocument();
+    expect(screen.getByLabelText("Crew")).toBeInTheDocument();
   });
 
   it("marks the active tab with aria-current", () => {
     renderWithRouter(<BottomNav {...defaultProps} activeTab="explore" />);
-    expect(screen.getByLabelText("Explore")).toHaveAttribute("aria-current", "page");
+    expect(screen.getByLabelText("Hot")).toHaveAttribute("aria-current", "page");
     expect(screen.getByLabelText("Map")).not.toHaveAttribute("aria-current");
   });
 
@@ -146,18 +146,18 @@ describe("Footer – inline layout styles & visibility", () => {
   });
 
   it("renders on non-hidden routes", () => {
-    renderWithRouter(<Footer />, "/settings");
+    renderWithRouter(<Footer />, "/privacy-policy");
     expect(screen.getByRole("contentinfo")).toBeInTheDocument();
   });
 
   it("has inline position:relative", () => {
-    renderWithRouter(<Footer />, "/settings");
+    renderWithRouter(<Footer />, "/privacy-policy");
     const footer = screen.getByRole("contentinfo");
     expect(footer.style.position).toBe("relative");
   });
 
   it("icon links container uses flex + space-around via inline styles", () => {
-    renderWithRouter(<Footer />, "/settings");
+    renderWithRouter(<Footer />, "/privacy-policy");
     const footer = screen.getByRole("contentinfo");
     const flexRow = footer.querySelector("[style*='justify-content: space-around']");
     expect(flexRow).not.toBeNull();
@@ -166,20 +166,20 @@ describe("Footer – inline layout styles & visibility", () => {
   });
 
   it("renders all 3 footer links with icons", () => {
-    renderWithRouter(<Footer />, "/settings");
+    renderWithRouter(<Footer />, "/privacy-policy");
     expect(screen.getByLabelText("Contact")).toBeInTheDocument();
     expect(screen.getByLabelText("Privacy")).toBeInTheDocument();
     expect(screen.getByLabelText("Terms")).toBeInTheDocument();
   });
 
   it("Contact link points to the correct email", () => {
-    renderWithRouter(<Footer />, "/settings");
+    renderWithRouter(<Footer />, "/privacy-policy");
     const contactLink = screen.getByLabelText("Contact");
     expect(contactLink).toHaveAttribute("href", "mailto:creativebreakroominfo@gmail.com");
   });
 
   it("Privacy and Terms are internal router links", () => {
-    renderWithRouter(<Footer />, "/settings");
+    renderWithRouter(<Footer />, "/privacy-policy");
     const privacyLink = screen.getByLabelText("Privacy");
     const termsLink = screen.getByLabelText("Terms");
     expect(privacyLink).toHaveAttribute("href", "/privacy-policy");
@@ -187,7 +187,7 @@ describe("Footer – inline layout styles & visibility", () => {
   });
 
   it("displays current year in copyright", () => {
-    renderWithRouter(<Footer />, "/settings");
+    renderWithRouter(<Footer />, "/privacy-policy");
     const year = new Date().getFullYear().toString();
     expect(screen.getByText(new RegExp(`© ${year}`))).toBeInTheDocument();
   });
