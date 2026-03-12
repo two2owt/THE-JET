@@ -313,12 +313,11 @@ export default defineConfig(({ mode }) => ({
     jetViteIntegrationCheck(),
     // Auto-inject <link rel="preload"> for font files to break CSS→font waterfall
     // This eliminates the 1.5s LCP render delay caused by font discovery after CSS parse
-    {
+    ({
       name: 'font-preload-injector',
-      enforce: 'post',
-      transformIndexHtml(html: string, ctx) {
+      enforce: 'post' as const,
+      transformIndexHtml(html: string, ctx: { bundle?: Record<string, unknown> }) {
         if (mode === 'development') return html;
-        // Find font assets in the bundle
         const bundle = ctx.bundle;
         if (!bundle) return html;
         const fontFiles = Object.keys(bundle).filter(
@@ -331,7 +330,7 @@ export default defineConfig(({ mode }) => ({
         );
         return html.replace('</head>', `    ${preloadTags.join('\n    ')}\n  </head>`);
       },
-    },
+    }) as Plugin,
     react(),
     mode === "development" && componentTagger(),
     // DISABLED: CSS preload causes FOUC - keep stylesheet blocking for instant styling
