@@ -110,10 +110,10 @@ describe("BottomNav – inline layout styles", () => {
   it("renders all 5 navigation tabs", () => {
     renderWithRouter(<BottomNav {...defaultProps} />);
     expect(screen.getByLabelText("Map")).toBeInTheDocument();
-    expect(screen.getByLabelText("Explore")).toBeInTheDocument();
+    expect(screen.getByLabelText("Hot")).toBeInTheDocument();
     expect(screen.getByLabelText("Alerts")).toBeInTheDocument();
     expect(screen.getByLabelText("Saved")).toBeInTheDocument();
-    expect(screen.getByLabelText("Friends")).toBeInTheDocument();
+    expect(screen.getByLabelText("Crew")).toBeInTheDocument();
   });
 
   it("marks the active tab with aria-current", () => {
