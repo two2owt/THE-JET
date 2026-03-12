@@ -311,6 +311,27 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     jetViteIntegrationCheck(),
+    // Auto-inject <link rel="preload"> for font files to break CSS→font waterfall
+    // This eliminates the 1.5s LCP render delay caused by font discovery after CSS parse
+    {
+      name: 'font-preload-injector',
+      enforce: 'post',
+      transformIndexHtml(html: string, ctx) {
+        if (mode === 'development') return html;
+        // Find font assets in the bundle
+        const bundle = ctx.bundle;
+        if (!bundle) return html;
+        const fontFiles = Object.keys(bundle).filter(
+          (name) => name.endsWith('.woff2') || name.endsWith('.woff')
+        );
+        if (fontFiles.length === 0) return html;
+        const preloadTags = fontFiles.map(
+          (font) =>
+            `<link rel="preload" href="/${font}" as="font" type="font/${font.endsWith('.woff2') ? 'woff2' : 'woff'}" crossorigin>`
+        );
+        return html.replace('</head>', `    ${preloadTags.join('\n    ')}\n  </head>`);
+      },
+    },
     react(),
     mode === "development" && componentTagger(),
     // DISABLED: CSS preload causes FOUC - keep stylesheet blocking for instant styling
