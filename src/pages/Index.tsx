@@ -450,7 +450,7 @@ const Index = () => {
         <main 
           role="main"
           id="main-content"
-          className="page-fade-in page-container max-w-7xl mx-auto bg-gradient-to-b from-background via-background to-muted/30"
+          className="page-fade-in page-container max-w-7xl mx-auto bg-gradient-to-b from-background via-background to-muted/30 dot-grid-pattern"
           style={{ 
             /* Position below the fixed header */
             marginTop: 'var(--header-total-height)',
