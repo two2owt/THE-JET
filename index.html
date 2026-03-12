@@ -27,12 +27,14 @@
     <script>!function(){var e=function(){document.querySelectorAll('link[rel="modulepreload"]').forEach(function(l){(l.href.includes("vendor-react")||l.href.includes("vendor-router")||l.href.includes("index-"))&&!l.getAttribute("fetchpriority")&&l.setAttribute("fetchpriority","high")})};document.readyState==="loading"?document.addEventListener("DOMContentLoaded",e):requestAnimationFrame(e)}();</script>
     
     <!-- Preconnect hints -->
+    <!-- Only preconnect to origins used during initial load (max 4) -->
     <link rel="preconnect" href="https://api.mapbox.com" crossorigin>
     <link rel="preconnect" href="https://a.tiles.mapbox.com" crossorigin>
-    <link rel="preconnect" href="https://b.tiles.mapbox.com" crossorigin>
-    <link rel="preconnect" href="https://c.tiles.mapbox.com" crossorigin>
-    <link rel="preconnect" href="https://d.tiles.mapbox.com" crossorigin>
     <link rel="preconnect" href="https://zbrscuoqmkdbmdimdnqu.supabase.co" crossorigin>
+    <!-- DNS-prefetch for secondary tile origins (cheaper than preconnect) -->
+    <link rel="dns-prefetch" href="https://b.tiles.mapbox.com">
+    <link rel="dns-prefetch" href="https://c.tiles.mapbox.com">
+    <link rel="dns-prefetch" href="https://d.tiles.mapbox.com">
     <link rel="dns-prefetch" href="https://tiles.mapbox.com">
     <link rel="dns-prefetch" href="https://events.mapbox.com">
     <link rel="dns-prefetch" href="https://maps.googleapis.com">
