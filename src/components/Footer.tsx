@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router";
 import { Mail, Shield, FileText } from "lucide-react";
 
 // Routes where the footer should be hidden (pages with BottomNav or special layouts)
