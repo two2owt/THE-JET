@@ -311,6 +311,26 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     jetViteIntegrationCheck(),
+    // Auto-inject <link rel="preload"> for font files to break CSS→font waterfall
+    // This eliminates the 1.5s LCP render delay caused by font discovery after CSS parse
+    ({
+      name: 'font-preload-injector',
+      enforce: 'post' as const,
+      transformIndexHtml(html: string, ctx: { bundle?: Record<string, unknown> }) {
+        if (mode === 'development') return html;
+        const bundle = ctx.bundle;
+        if (!bundle) return html;
+        const fontFiles = Object.keys(bundle).filter(
+          (name) => name.endsWith('.woff2') || name.endsWith('.woff')
+        );
+        if (fontFiles.length === 0) return html;
+        const preloadTags = fontFiles.map(
+          (font) =>
+            `<link rel="preload" href="/${font}" as="font" type="font/${font.endsWith('.woff2') ? 'woff2' : 'woff'}" crossorigin>`
+        );
+        return html.replace('</head>', `    ${preloadTags.join('\n    ')}\n  </head>`);
+      },
+    }) as Plugin,
     react(),
     mode === "development" && componentTagger(),
     // DISABLED: CSS preload causes FOUC - keep stylesheet blocking for instant styling
@@ -370,9 +390,9 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff,woff2,jpg,jpeg}"],
         navigateFallback: "index.html",
         navigateFallbackDenylist: [/^\/api/, /^\/functions/],
-        // Stability: don't force-activate and claim clients (can create controller churn)
-        skipWaiting: false,
-        clientsClaim: false,
+        // Activate new SW immediately to prevent stale-asset FOUC on deployments
+        skipWaiting: true,
+        clientsClaim: true,
         cleanupOutdatedCaches: true,
 runtimeCaching: [
           // Cache all /assets/* files with immutable-like behavior
