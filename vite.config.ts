@@ -82,7 +82,7 @@ export default defineConfig(({ mode }) => ({
     include: [
       "react",
       "react-dom",
-      "react-router-dom",
+      "react-router",
       "@tanstack/react-query",
       "lucide-react",
       "clsx",
