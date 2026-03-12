@@ -538,6 +538,22 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
+  /* Subtle dot grid pattern for non-map tab backgrounds */
+  .dot-grid-pattern {
+    position: relative;
+  }
+  .dot-grid-pattern::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, hsl(var(--muted-foreground) / 0.07) 1px, transparent 1px);
+    background-size: 24px 24px;
+    pointer-events: none;
+    z-index: 0;
+    mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 70%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 70%, transparent 100%);
+  }
+
   /* Touch target utilities - ensures minimum 44px touch area for accessibility */
   .touch-target {
     min-width: 44px;
