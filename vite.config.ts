@@ -370,9 +370,9 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff,woff2,jpg,jpeg}"],
         navigateFallback: "index.html",
         navigateFallbackDenylist: [/^\/api/, /^\/functions/],
-        // Stability: don't force-activate and claim clients (can create controller churn)
-        skipWaiting: false,
-        clientsClaim: false,
+        // Activate new SW immediately to prevent stale-asset FOUC on deployments
+        skipWaiting: true,
+        clientsClaim: true,
         cleanupOutdatedCaches: true,
 runtimeCaching: [
           // Cache all /assets/* files with immutable-like behavior
