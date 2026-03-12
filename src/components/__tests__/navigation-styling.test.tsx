@@ -118,7 +118,7 @@ describe("BottomNav – inline layout styles", () => {
 
   it("marks the active tab with aria-current", () => {
     renderWithRouter(<BottomNav {...defaultProps} activeTab="explore" />);
-    expect(screen.getByLabelText("Explore")).toHaveAttribute("aria-current", "page");
+    expect(screen.getByLabelText("Hot")).toHaveAttribute("aria-current", "page");
     expect(screen.getByLabelText("Map")).not.toHaveAttribute("aria-current");
   });
 
