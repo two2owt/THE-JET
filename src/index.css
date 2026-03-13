@@ -185,7 +185,29 @@ All colors MUST be HSL.
     --input: 0 0% 17%;
     --ring: 24 100% 60%;
 
+    --hot: 0 85% 55%;
+    --warm: 45 100% 50%;
+    --cool: 210 100% 55%;
+    --cold: 0 0% 45%;
+
+    --gradient-hot: linear-gradient(135deg, hsl(0 85% 55%), hsl(0 85% 45%));
+    --gradient-warm: linear-gradient(135deg, hsl(45 100% 55%), hsl(35 100% 50%));
+    --gradient-cool: linear-gradient(135deg, hsl(210 100% 55%), hsl(220 100% 45%));
+    --gradient-primary: linear-gradient(135deg, hsl(24 100% 60%), hsl(320 80% 65%));
+    --gradient-jet: linear-gradient(135deg, hsl(0 0% 12%), hsl(0 0% 8%));
+
+    --shadow-glow: 0 0 45px hsl(24 100% 60% / 0.3);
     --shadow-card: 0 15px 40px -15px hsl(0 0% 0% / 0.7);
+    --shadow-jet: 0 8px 32px hsl(320 80% 65% / 0.2);
+
+    --sidebar-background: 0 0% 8%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 24 100% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 17%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 24 100% 60%;
   }
 
   .light {
