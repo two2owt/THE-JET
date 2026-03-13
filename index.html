@@ -29,7 +29,7 @@
     <!-- Preconnect hints -->
     <!-- Only preconnect to origins used during initial load (max 4) -->
     <link rel="preconnect" href="https://api.mapbox.com" crossorigin>
-    <link rel="preconnect" href="https://zbrscuoqmkdbmdimdnqu.supabase.co" crossorigin>
+    <link rel="preconnect" href="https://flvhduntedvorikonuvy.supabase.co" crossorigin>
     <!-- DNS-prefetch for secondary tile origins (cheaper than preconnect) -->
     <link rel="dns-prefetch" href="https://b.tiles.mapbox.com">
     <link rel="dns-prefetch" href="https://c.tiles.mapbox.com">
@@ -225,7 +225,7 @@
     <div id="root"></div>
     
     <!-- Mapbox token preload -->
-    <script>!function(){var k="mapbox_token_cache_v2",c=localStorage.getItem(k);if(c){try{var d=JSON.parse(c);if(d.token&&d.token.startsWith("pk.")&&Date.now()-d.timestamp<864e5)return}catch(e){}}window.__mapboxTokenPromise=fetch("https://zbrscuoqmkdbmdimdnqu.supabase.co/functions/v1/get-mapbox-token",{headers:{"apikey":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpicnNjdW9xbWtkYm1kaW1kbnF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMyMDkwODgsImV4cCI6MjA3ODc4NTA4OH0.LtDrHXcgQF4OrNVpKYXNTX9fdvTsscaMy35jK77qk2c"}}).then(function(r){return r.json()}).then(function(d){if(d&&d.token){localStorage.setItem(k,JSON.stringify({token:d.token,timestamp:Date.now()}));sessionStorage.setItem(k,JSON.stringify({token:d.token,timestamp:Date.now()}));window.__mapboxToken=d.token}}).catch(function(){})}();</script>
+    <script>!function(){var k="mapbox_token_cache_v2",c=localStorage.getItem(k);if(c){try{var d=JSON.parse(c);if(d.token&&d.token.startsWith("pk.")&&Date.now()-d.timestamp<864e5)return}catch(e){}}window.__mapboxTokenPromise=fetch("https://flvhduntedvorikonuvy.supabase.co/functions/v1/get-mapbox-token",{headers:{"apikey":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZsdmhkdW50ZWR2b3Jpa29udXZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2NTA0MTYsImV4cCI6MjA4NjIyNjQxNn0.7sAHhmXL_2c68FYDs27gd2dRP2V8ZvtTcovBKnU4FHw"}}).then(function(r){return r.json()}).then(function(d){if(d&&d.token){localStorage.setItem(k,JSON.stringify({token:d.token,timestamp:Date.now()}));sessionStorage.setItem(k,JSON.stringify({token:d.token,timestamp:Date.now()}));window.__mapboxToken=d.token}}).catch(function(){})}();</script>
     
     <script type="module" src="/src/main.tsx"></script>
     
