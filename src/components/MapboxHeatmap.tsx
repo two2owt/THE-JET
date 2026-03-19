@@ -695,6 +695,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
             map.current.resize();
             setMapLoaded(true);
             setMapInitializing(false);
+            setLoadingStage('ready');
           }
         };
 
