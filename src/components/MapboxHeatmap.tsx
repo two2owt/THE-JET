@@ -217,7 +217,11 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
     return 'night';
   };
   
-  const [mapStyle, setMapStyle] = useState<'light' | 'dark' | 'streets' | 'satellite'>('dark');
+  // Auto-detect theme for initial map style
+  const [mapStyle, setMapStyle] = useState<'light' | 'dark' | 'streets' | 'satellite'>(() => {
+    const isDark = document.documentElement.classList.contains('dark');
+    return isDark ? 'dark' : 'streets';
+  });
   const [lightPreset, setLightPreset] = useState<'dawn' | 'day' | 'dusk' | 'night'>(getTimeOfDayPreset);
   const [show3DTerrain, setShow3DTerrain] = useState(false);
   
@@ -264,6 +268,24 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
     }
   }, [detectedLocationName, isUsingCurrentLocation, onDetectedLocationNameChange]);
   
+  // Sync map style with theme changes
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.attributeName === 'class') {
+          const isDark = document.documentElement.classList.contains('dark');
+          setMapStyle(prev => {
+            // Only auto-switch if user hasn't manually picked satellite
+            if (prev === 'satellite') return prev;
+            return isDark ? 'dark' : 'streets';
+          });
+        }
+      }
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
   // Reset UI state when tab changes (resetUIKey increments)
   useEffect(() => {
     if (resetUIKey !== undefined) {
@@ -386,7 +408,10 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
         // Using Mapbox Standard Style for enhanced 3D buildings, dynamic lighting, and performance
         map.current = new mapboxgl.Map({
           container: mapContainer.current,
-          style: 'mapbox://styles/mapbox/dark-v11',
+          style: mapStyle === 'dark' ? 'mapbox://styles/mapbox/dark-v11' 
+                 : mapStyle === 'light' ? 'mapbox://styles/mapbox/light-v11'
+                 : mapStyle === 'satellite' ? 'mapbox://styles/mapbox/satellite-streets-v12'
+                 : 'mapbox://styles/mapbox/streets-v12',
           center: [selectedCity.lng, selectedCity.lat],
           zoom: selectedCity.zoom,
           pitch: settings.pitch,
