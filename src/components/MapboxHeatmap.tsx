@@ -2228,7 +2228,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
           }}
         >
           <SelectTrigger 
-            className="text-[11px] sm:text-xs h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl shadow-lg bg-card/95 backdrop-blur-xl border-border"
+            className="text-[11px] sm:text-xs h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl shadow-xl bg-card backdrop-blur-xl border-border ring-1 ring-black/5 dark:ring-white/10"
             aria-label="Select city location"
             style={{ minWidth: '140px', maxWidth: '220px', contain: 'layout style' }}
           >
@@ -2281,7 +2281,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
             <Button
               variant="secondary"
               size="sm"
-              className="bg-card/95 backdrop-blur-xl border border-border shadow-lg h-8 sm:h-9 w-8 sm:w-9 p-0 rounded-xl"
+              className="bg-card backdrop-blur-xl border border-border shadow-xl ring-1 ring-black/5 dark:ring-white/10 h-8 sm:h-9 w-8 sm:w-9 p-0 rounded-xl"
               aria-label="Map style options"
             >
               <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
@@ -2523,7 +2523,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
           className={`flex items-center justify-center rounded-xl shadow-xl transition-all duration-200 active:scale-95 touch-manipulation ${
             (showDensityLayer || showMovementPaths)
               ? 'bg-primary text-primary-foreground shadow-primary/40'
-              : 'bg-card/95 backdrop-blur-xl text-foreground border border-border'
+              : 'bg-card backdrop-blur-xl text-foreground border border-border ring-1 ring-black/5 dark:ring-white/10'
           }`}
           style={{ 
             width: '44px', 
@@ -2551,7 +2551,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* CRITICAL: Uses only opacity transition to avoid CLS - no translate/scale animations */}
       {(showDensityLayer || showMovementPaths) && (densityData || pathData) && (
         <div 
-          className={`${isMobile ? 'fixed' : 'absolute'} bg-card/95 backdrop-blur-xl rounded-xl border border-border z-30 shadow-lg px-3 py-2`}
+          className={`${isMobile ? 'fixed' : 'absolute'} bg-card backdrop-blur-xl rounded-xl border border-border ring-1 ring-black/5 dark:ring-white/10 z-30 shadow-xl px-3 py-2`}
           style={{
             top: 'calc(var(--map-safe-top-controls-in-map, var(--map-safe-top-controls)) + 1rem)',
             right: 'var(--map-ui-inset-right)',
