@@ -390,7 +390,10 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
         // Using Mapbox Standard Style for enhanced 3D buildings, dynamic lighting, and performance
         map.current = new mapboxgl.Map({
           container: mapContainer.current,
-          style: 'mapbox://styles/mapbox/dark-v11',
+          style: mapStyle === 'dark' ? 'mapbox://styles/mapbox/dark-v11' 
+                 : mapStyle === 'light' ? 'mapbox://styles/mapbox/light-v11'
+                 : mapStyle === 'satellite' ? 'mapbox://styles/mapbox/satellite-streets-v12'
+                 : 'mapbox://styles/mapbox/streets-v12',
           center: [selectedCity.lng, selectedCity.lat],
           zoom: selectedCity.zoom,
           pitch: settings.pitch,
