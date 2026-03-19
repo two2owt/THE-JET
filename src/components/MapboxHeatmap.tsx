@@ -783,35 +783,9 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
           }
         });
 
-        // Track tile loading progress
-        let tilesLoading = 0;
-        let tilesLoaded = 0;
-        
-        const updateProgress = () => {
-          if (tilesLoading === 0) {
-            setTileProgress(100);
-          } else {
-            const progress = Math.min(95, Math.round((tilesLoaded / tilesLoading) * 100));
-            setTileProgress(progress);
-          }
-        };
-        
-        map.current.on('dataloading', (e) => {
-          if (e.dataType === 'source' && e.tile) {
-            tilesLoading++;
-            updateProgress();
-          }
-        });
-        
-        map.current.on('data', (e) => {
-          if (e.dataType === 'source' && e.tile) {
-            tilesLoaded++;
-            updateProgress();
-          }
-        });
-        
-        map.current.on('idle', () => {
-          setTileProgress(100);
+        // Track tile loading (stage indicator only)
+        map.current.on('dataloading', () => {
+          setLoadingStage(prev => prev === 'init' ? 'style' : prev);
         });
 
         // Add error handler with retry tracking
