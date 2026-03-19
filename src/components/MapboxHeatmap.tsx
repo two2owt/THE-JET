@@ -848,7 +848,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
                   setTimeout(() => {
                     setMapError(null);
                     setMapInitializing(true);
-                    setTileProgress(0);
+                    setLoadingStage('module');
                     mapboxLoadPromise = null;
                     setRetryCount(c => c + 1);
                   }, 1000);
