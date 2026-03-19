@@ -2228,7 +2228,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
           }}
         >
           <SelectTrigger 
-            className="text-[11px] sm:text-xs h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl shadow-lg bg-card/95 backdrop-blur-xl border-border"
+            className="text-[11px] sm:text-xs h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl shadow-xl bg-card backdrop-blur-xl border-border ring-1 ring-black/5 dark:ring-white/10"
             aria-label="Select city location"
             style={{ minWidth: '140px', maxWidth: '220px', contain: 'layout style' }}
           >
