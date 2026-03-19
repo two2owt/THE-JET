@@ -166,7 +166,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
   const [mapboxLoaded, setMapboxLoaded] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapInitializing, setMapInitializing] = useState(true);
-  const [tileProgress, setTileProgress] = useState(0);
+  const [loadingStage, setLoadingStage] = useState<'module' | 'init' | 'style' | 'ready'>('module');
   const [mapError, setMapError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const userMarker = useRef<MapboxGL.Marker | null>(null);
@@ -185,6 +185,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       if (mounted) {
         mapboxglRef.current = mapboxgl;
         setMapboxLoaded(true);
+        setLoadingStage('init');
         console.log('MapboxHeatmap: mapbox-gl module loaded');
       }
     }).catch((err) => {
@@ -694,6 +695,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
             map.current.resize();
             setMapLoaded(true);
             setMapInitializing(false);
+            setLoadingStage('ready');
           }
         };
 
@@ -783,35 +785,9 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
           }
         });
 
-        // Track tile loading progress
-        let tilesLoading = 0;
-        let tilesLoaded = 0;
-        
-        const updateProgress = () => {
-          if (tilesLoading === 0) {
-            setTileProgress(100);
-          } else {
-            const progress = Math.min(95, Math.round((tilesLoaded / tilesLoading) * 100));
-            setTileProgress(progress);
-          }
-        };
-        
-        map.current.on('dataloading', (e) => {
-          if (e.dataType === 'source' && e.tile) {
-            tilesLoading++;
-            updateProgress();
-          }
-        });
-        
-        map.current.on('data', (e) => {
-          if (e.dataType === 'source' && e.tile) {
-            tilesLoaded++;
-            updateProgress();
-          }
-        });
-        
-        map.current.on('idle', () => {
-          setTileProgress(100);
+        // Track tile loading (stage indicator only)
+        map.current.on('dataloading', () => {
+          setLoadingStage(prev => prev === 'init' ? 'style' : prev);
         });
 
         // Add error handler with retry tracking
@@ -873,7 +849,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
                   setTimeout(() => {
                     setMapError(null);
                     setMapInitializing(true);
-                    setTileProgress(0);
+                    setLoadingStage('module');
                     mapboxLoadPromise = null;
                     setRetryCount(c => c + 1);
                   }, 1000);
@@ -2100,17 +2076,41 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
     <div 
       className="relative"
       style={{
-        // Match parent container exactly to prevent CLS
         position: 'absolute',
         inset: 0,
         width: '100%',
         height: '100%',
         minHeight: '100%',
-        contain: 'strict',
+        contain: 'layout style',
         isolation: 'isolate',
       }}
     >
-      {/* Map loads directly - no placeholder overlay */}
+      {/* Loading skeleton during map initialization */}
+      {mapInitializing && !mapError && (
+        <div 
+          className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-background"
+          style={{ transition: 'opacity 400ms ease-out', opacity: mapLoaded ? 0 : 1, pointerEvents: mapLoaded ? 'none' : 'auto' }}
+        >
+          <div className="flex flex-col items-center gap-4 text-center">
+            <div className="relative w-12 h-12">
+              <div className="absolute inset-0 rounded-full border-2 border-muted" />
+              <div className="absolute inset-0 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+            </div>
+            <div className="space-y-1.5">
+              <p className="text-sm font-medium text-foreground">
+                {loadingStage === 'module' ? 'Loading map engine…' 
+                  : loadingStage === 'init' ? 'Initializing map…' 
+                  : 'Loading tiles…'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {loadingStage === 'module' ? 'Preparing map resources' 
+                  : loadingStage === 'init' ? `Centering on ${selectedCity.name}` 
+                  : 'Almost ready'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Map Error State with Retry - deferred to not become LCP element */}
       {mapError && !mapInitializing && (
@@ -2138,7 +2138,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
                 onClick={() => {
                   setMapError(null);
                   setMapInitializing(true);
-                  setTileProgress(0);
+                  setLoadingStage('module');
                   // Reset the module promise to force a fresh load attempt
                   mapboxLoadPromise = null;
                   setRetryCount(c => c + 1);
