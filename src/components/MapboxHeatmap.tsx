@@ -217,7 +217,11 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
     return 'night';
   };
   
-  const [mapStyle, setMapStyle] = useState<'light' | 'dark' | 'streets' | 'satellite'>('dark');
+  // Auto-detect theme for initial map style
+  const [mapStyle, setMapStyle] = useState<'light' | 'dark' | 'streets' | 'satellite'>(() => {
+    const isDark = document.documentElement.classList.contains('dark');
+    return isDark ? 'dark' : 'streets';
+  });
   const [lightPreset, setLightPreset] = useState<'dawn' | 'day' | 'dusk' | 'night'>(getTimeOfDayPreset);
   const [show3DTerrain, setShow3DTerrain] = useState(false);
   
