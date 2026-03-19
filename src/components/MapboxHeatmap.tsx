@@ -2137,7 +2137,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
                 onClick={() => {
                   setMapError(null);
                   setMapInitializing(true);
-                  setTileProgress(0);
+                  setLoadingStage('module');
                   // Reset the module promise to force a fresh load attempt
                   mapboxLoadPromise = null;
                   setRetryCount(c => c + 1);
