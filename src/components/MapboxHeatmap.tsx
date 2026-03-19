@@ -2523,7 +2523,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
           className={`flex items-center justify-center rounded-xl shadow-xl transition-all duration-200 active:scale-95 touch-manipulation ${
             (showDensityLayer || showMovementPaths)
               ? 'bg-primary text-primary-foreground shadow-primary/40'
-              : 'bg-card/95 backdrop-blur-xl text-foreground border border-border'
+              : 'bg-card backdrop-blur-xl text-foreground border border-border ring-1 ring-black/5 dark:ring-white/10'
           }`}
           style={{ 
             width: '44px', 
