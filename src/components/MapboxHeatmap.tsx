@@ -268,6 +268,24 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
     }
   }, [detectedLocationName, isUsingCurrentLocation, onDetectedLocationNameChange]);
   
+  // Sync map style with theme changes
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.attributeName === 'class') {
+          const isDark = document.documentElement.classList.contains('dark');
+          setMapStyle(prev => {
+            // Only auto-switch if user hasn't manually picked satellite
+            if (prev === 'satellite') return prev;
+            return isDark ? 'dark' : 'streets';
+          });
+        }
+      }
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
   // Reset UI state when tab changes (resetUIKey increments)
   useEffect(() => {
     if (resetUIKey !== undefined) {
