@@ -2089,24 +2089,81 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {mapInitializing && !mapError && (
         <div 
           className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-background"
-          style={{ transition: 'opacity 400ms ease-out', opacity: mapLoaded ? 0 : 1, pointerEvents: mapLoaded ? 'none' : 'auto' }}
+          style={{ transition: 'opacity 500ms ease-out', opacity: mapLoaded ? 0 : 1, pointerEvents: mapLoaded ? 'none' : 'auto' }}
         >
-          <div className="flex flex-col items-center gap-4 text-center">
-            <div className="relative w-12 h-12">
-              <div className="absolute inset-0 rounded-full border-2 border-muted" />
-              <div className="absolute inset-0 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+          {/* Faux map grid skeleton */}
+          <div className="absolute inset-0 overflow-hidden opacity-[0.04]">
+            {Array.from({ length: 6 }).map((_, row) => (
+              <div key={row} className="flex w-full" style={{ height: `${100 / 6}%` }}>
+                {Array.from({ length: 8 }).map((_, col) => (
+                  <div
+                    key={col}
+                    className="border border-foreground/20 flex-1"
+                    style={{
+                      animationName: 'pulse',
+                      animationDuration: '2s',
+                      animationTimingFunction: 'ease-in-out',
+                      animationIterationCount: 'infinite',
+                      animationDelay: `${(row + col) * 120}ms`,
+                    }}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+
+          {/* Center content */}
+          <div className="relative flex flex-col items-center gap-5 text-center px-6">
+            {/* Animated map icon */}
+            <div className="relative w-14 h-14">
+              <div className="absolute inset-0 rounded-full bg-primary/10 animate-ping" style={{ animationDuration: '2s' }} />
+              <div className="absolute inset-0 rounded-full bg-primary/5 flex items-center justify-center">
+                <MapPin className="w-6 h-6 text-primary" />
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <p className="text-sm font-medium text-foreground">
+
+            {/* Stage text */}
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-foreground">
                 {loadingStage === 'module' ? 'Loading map engine…' 
                   : loadingStage === 'init' ? 'Initializing map…' 
                   : 'Loading tiles…'}
               </p>
               <p className="text-xs text-muted-foreground">
-                {loadingStage === 'module' ? 'Preparing map resources' 
+                {loadingStage === 'module' ? 'Preparing resources' 
                   : loadingStage === 'init' ? `Centering on ${selectedCity.name}` 
                   : 'Almost ready'}
               </p>
+            </div>
+
+            {/* Progress bar */}
+            <div className="w-48 sm:w-56">
+              <div className="h-1 w-full rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-primary transition-all duration-700 ease-out"
+                  style={{
+                    width: loadingStage === 'module' ? '25%' 
+                      : loadingStage === 'init' ? '55%' 
+                      : loadingStage === 'style' ? '80%' 
+                      : '100%',
+                  }}
+                />
+              </div>
+              <div className="flex justify-between mt-1.5">
+                {['Engine', 'Init', 'Tiles'].map((label, i) => {
+                  const stages = ['module', 'init', 'style'] as const;
+                  const stageIndex = stages.indexOf(loadingStage as any);
+                  const isActive = i <= stageIndex;
+                  return (
+                    <span
+                      key={label}
+                      className={`text-[10px] transition-colors duration-300 ${isActive ? 'text-primary font-medium' : 'text-muted-foreground/50'}`}
+                    >
+                      {label}
+                    </span>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
