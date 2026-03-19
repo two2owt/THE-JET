@@ -2229,7 +2229,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
           minHeight: '100%',
           touchAction: isMobile ? 'manipulation' : 'none',
           WebkitOverflowScrolling: 'touch',
-          contain: 'strict',
+          contain: 'layout style',
           // GPU acceleration for smooth canvas insertion
           transform: 'translateZ(0)',
           willChange: 'contents',
