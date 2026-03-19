@@ -185,6 +185,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       if (mounted) {
         mapboxglRef.current = mapboxgl;
         setMapboxLoaded(true);
+        setLoadingStage('init');
         console.log('MapboxHeatmap: mapbox-gl module loaded');
       }
     }).catch((err) => {
