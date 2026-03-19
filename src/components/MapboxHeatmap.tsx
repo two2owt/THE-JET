@@ -2109,7 +2109,32 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
         isolation: 'isolate',
       }}
     >
-      {/* Map loads directly - no placeholder overlay */}
+      {/* Loading skeleton during map initialization */}
+      {mapInitializing && !mapError && (
+        <div 
+          className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-background"
+          style={{ transition: 'opacity 400ms ease-out', opacity: mapLoaded ? 0 : 1, pointerEvents: mapLoaded ? 'none' : 'auto' }}
+        >
+          <div className="flex flex-col items-center gap-4 text-center">
+            <div className="relative w-12 h-12">
+              <div className="absolute inset-0 rounded-full border-2 border-muted" />
+              <div className="absolute inset-0 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+            </div>
+            <div className="space-y-1.5">
+              <p className="text-sm font-medium text-foreground">
+                {loadingStage === 'module' ? 'Loading map engine…' 
+                  : loadingStage === 'init' ? 'Initializing map…' 
+                  : 'Loading tiles…'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {loadingStage === 'module' ? 'Preparing map resources' 
+                  : loadingStage === 'init' ? `Centering on ${selectedCity.name}` 
+                  : 'Almost ready'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Map Error State with Retry - deferred to not become LCP element */}
       {mapError && !mapInitializing && (
