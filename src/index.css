@@ -443,7 +443,7 @@ All colors MUST be HSL.
     background-color: hsl(var(--background));
     /* IMPORTANT: No 'contain', 'transform', or 'filter' properties here! */
     /* These create new containing blocks that break fixed positioning for Header/BottomNav */
-    overflow: clip;
+    overflow: hidden;
     /* Explicit sizing prevents browser recalculation */
     box-sizing: border-box;
   }
