@@ -368,31 +368,30 @@ const Index = () => {
         </div>
       )}
 
-      {/* Selected Venue Card - rendered via portal to bypass ancestor clipping */}
-      {activeTab === "map" && selectedVenue && createPortal(
+      {/* Selected Venue Card - absolute within Index container, above bottom nav */}
+      {activeTab === "map" && selectedVenue && (
         <div 
           ref={jetCardRef} 
-          className="pointer-events-none"
+          className="absolute z-[60] animate-fade-in"
           style={{
-            position: 'fixed',
-            zIndex: 9999,
-            bottom: 'var(--map-fixed-bottom, 72px)',
-            left: 'var(--map-ui-inset-left, 8px)',
-            right: 'var(--map-ui-inset-right, 8px)',
+            bottom: 'var(--map-safe-bottom)',
+            left: 'var(--map-ui-inset-left)',
+            right: 'var(--map-ui-inset-right)',
             maxWidth: '480px',
             marginLeft: 'auto',
             marginRight: 'auto',
+            pointerEvents: 'none',
             ...(isMobile ? swipeStyle : {}),
           }}
           {...(isMobile ? swipeHandlers : {})}
         >
-          <div style={{ pointerEvents: 'auto' }}>
+          <div className="pointer-events-auto">
             {isMobile && (
               <div className="flex justify-center pb-2 sm:pb-2.5">
                 <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
               </div>
             )}
-            <Suspense fallback={<div style={{ background: 'hsl(0 0% 10%)', borderRadius: '1rem', height: '200px' }} />}>
+            <Suspense fallback={null}>
               <JetCard 
                 venue={selectedVenue} 
                 onGetDirections={handleGetDirections}
@@ -400,8 +399,7 @@ const Index = () => {
               />
             </Suspense>
           </div>
-        </div>,
-        document.body
+        </div>
       )}
 
       {/* Header config is set via context (useEffect below) */}
