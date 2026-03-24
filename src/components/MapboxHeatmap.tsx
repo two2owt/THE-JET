@@ -2251,15 +2251,12 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
         style={{ 
           width: '100%', 
           height: '100%',
-          // Fixed dimensions prevent 0.0655 CLS when Mapbox canvas loads
           minWidth: '100%',
           minHeight: '100%',
           touchAction: isMobile ? 'manipulation' : 'none',
           WebkitOverflowScrolling: 'touch',
-          contain: 'layout style',
-          // GPU acceleration for smooth canvas insertion
-          transform: 'translateZ(0)',
-          willChange: 'contents',
+          // DO NOT use transform or will-change here — breaks backdrop-filter on sibling overlays
+          // and creates a containing block that traps fixed-position children
         }}
       />
 
