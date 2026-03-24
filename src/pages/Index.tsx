@@ -452,8 +452,7 @@ const Index = () => {
           id="main-content"
           className="page-fade-in page-container max-w-7xl mx-auto bg-gradient-to-b from-background via-background to-muted/30 dot-grid-pattern"
           style={{ 
-            /* Position below the fixed header */
-            marginTop: 'var(--header-total-height)',
+            /* No marginTop needed - App.tsx spacer already reserves header space */
             height: 'var(--main-height)',
             minHeight: 'var(--main-height)',
             maxHeight: 'var(--main-height)',

@@ -270,7 +270,7 @@ export default function Social() {
                       size="sm"
                       variant="ghost"
                       onClick={() => handleRemoveConnection(connection.id)}
-                      className="flex-shrink-0 h-8 sm:h-9 w-8 sm:w-9 p-0"
+                      className="flex-shrink-0 min-h-[44px] min-w-[44px] h-9 w-9 p-0"
                     >
                       <X className="w-4 h-4" />
                     </Button>
