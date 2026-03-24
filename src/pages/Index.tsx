@@ -374,14 +374,13 @@ const Index = () => {
           ref={jetCardRef} 
           className="absolute z-[60] animate-fade-in"
           style={{
-            bottom: '0.5rem',
+            bottom: 'var(--map-safe-bottom)',
             left: 'var(--map-ui-inset-left)',
             right: 'var(--map-ui-inset-right)',
             maxWidth: '480px',
             marginLeft: 'auto',
             marginRight: 'auto',
             pointerEvents: 'none',
-            paddingBottom: 'var(--bottom-nav-total-height)',
             ...(isMobile ? swipeStyle : {}),
           }}
           {...(isMobile ? swipeHandlers : {})}
