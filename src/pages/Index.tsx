@@ -338,7 +338,6 @@ const Index = () => {
         /* Fill remaining space in the flex column after header spacer */
         flex: '1 1 0%',
         minHeight: 0,
-        overflow: 'hidden',
         /* Create stacking context for overlay architecture */
         isolation: 'isolate',
       }}
