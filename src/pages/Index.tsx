@@ -369,12 +369,13 @@ const Index = () => {
         </div>
       )}
 
-      {/* Selected Venue Card - only on map tab, positioned above bottom nav */}
+      {/* Selected Venue Card - rendered via portal to bypass ancestor clipping */}
       {activeTab === "map" && selectedVenue && createPortal(
         <div 
           ref={jetCardRef} 
-          className="fixed z-[9999] animate-fade-in"
           style={{
+            position: 'fixed',
+            zIndex: 99999,
             bottom: '72px',
             left: '8px',
             right: '8px',
@@ -382,16 +383,15 @@ const Index = () => {
             marginLeft: 'auto',
             marginRight: 'auto',
             pointerEvents: 'none',
-            ...(isMobile ? swipeStyle : {}),
+            backgroundColor: 'red',
+            padding: '20px',
+            color: 'white',
+            fontSize: '18px',
+            borderRadius: '12px',
           }}
-          {...(isMobile ? swipeHandlers : {})}
         >
-          <div className="pointer-events-auto">
-            {isMobile && (
-              <div className="flex justify-center pb-2 sm:pb-2.5">
-                <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
-              </div>
-            )}
+          DEBUG: JetCard for {selectedVenue.name}
+          <div style={{ pointerEvents: 'auto', marginTop: '8px' }}>
             <Suspense fallback={null}>
               <JetCard 
                 venue={selectedVenue} 
