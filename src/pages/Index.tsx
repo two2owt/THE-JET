@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, lazy, Suspense, useCallback, useMemo } from "react";
-import { createPortal } from "react-dom";
 import { useNavigate, useLocation } from "react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { type Venue } from "@/types/venue";
@@ -369,20 +368,19 @@ const Index = () => {
         </div>
       )}
 
-      {/* Selected Venue Card - rendered via portal to bypass ancestor clipping */}
-      {activeTab === "map" && selectedVenue && createPortal(
+      {/* Selected Venue Card - absolute within Index container, above bottom nav */}
+      {activeTab === "map" && selectedVenue && (
         <div 
           ref={jetCardRef} 
-          className="pointer-events-none"
+          className="absolute z-[60] animate-fade-in"
           style={{
-            position: 'fixed',
-            zIndex: 9999,
-            bottom: 'var(--map-fixed-bottom, 72px)',
-            left: 'var(--map-ui-inset-left, 8px)',
-            right: 'var(--map-ui-inset-right, 8px)',
+            bottom: 'var(--map-safe-bottom)',
+            left: 'var(--map-ui-inset-left)',
+            right: 'var(--map-ui-inset-right)',
             maxWidth: '480px',
             marginLeft: 'auto',
             marginRight: 'auto',
+            pointerEvents: 'none',
             ...(isMobile ? swipeStyle : {}),
           }}
           {...(isMobile ? swipeHandlers : {})}
@@ -401,8 +399,7 @@ const Index = () => {
               />
             </Suspense>
           </div>
-        </div>,
-        document.body
+        </div>
       )}
 
       {/* Header config is set via context (useEffect below) */}
