@@ -2085,14 +2085,32 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
         isolation: 'isolate',
       }}
     >
-      {/* Loading skeleton during map initialization */}
+      {/* Loading skeleton during map initialization — translucent so map shows through */}
       {mapInitializing && !mapError && (
         <div 
-          className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-background"
-          style={{ transition: 'opacity 500ms ease-out', opacity: mapLoaded ? 0 : 1, pointerEvents: mapLoaded ? 'none' : 'auto' }}
+          className="absolute inset-0 z-40 flex flex-col items-center justify-center"
+          style={{
+            transition: 'opacity 400ms ease-out, background-color 600ms ease-out, backdrop-filter 600ms ease-out',
+            opacity: mapLoaded ? 0 : 1,
+            pointerEvents: mapLoaded ? 'none' : 'auto',
+            // Progressive translucency: opaque during module load, semi-transparent once init starts, very translucent during tile load
+            backgroundColor: loadingStage === 'module'
+              ? 'hsl(var(--background))'
+              : loadingStage === 'init'
+              ? 'hsl(var(--background) / 0.85)'
+              : 'hsl(var(--background) / 0.5)',
+            backdropFilter: loadingStage === 'style' ? 'blur(4px)' : loadingStage === 'init' ? 'blur(8px)' : 'none',
+            WebkitBackdropFilter: loadingStage === 'style' ? 'blur(4px)' : loadingStage === 'init' ? 'blur(8px)' : 'none',
+          }}
         >
-          {/* Faux map grid skeleton */}
-          <div className="absolute inset-0 overflow-hidden opacity-[0.04]">
+          {/* Faux map grid skeleton — hidden once map canvas is painting behind */}
+          <div
+            className="absolute inset-0 overflow-hidden"
+            style={{
+              opacity: loadingStage === 'module' ? 0.04 : 0,
+              transition: 'opacity 400ms ease-out',
+            }}
+          >
             {Array.from({ length: 6 }).map((_, row) => (
               <div key={row} className="flex w-full" style={{ height: `${100 / 6}%` }}>
                 {Array.from({ length: 8 }).map((_, col) => (
@@ -2112,8 +2130,14 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
             ))}
           </div>
 
-          {/* Center content */}
-          <div className="relative flex flex-col items-center gap-5 text-center px-6">
+          {/* Center content — fades out as tiles load */}
+          <div
+            className="relative flex flex-col items-center gap-5 text-center px-6"
+            style={{
+              opacity: loadingStage === 'style' ? 0.7 : 1,
+              transition: 'opacity 300ms ease-out',
+            }}
+          >
             {/* Animated map icon */}
             <div className="relative w-14 h-14">
               <div className="absolute inset-0 rounded-full bg-primary/10 animate-ping" style={{ animationDuration: '2s' }} />
