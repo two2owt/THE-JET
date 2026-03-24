@@ -340,6 +340,7 @@ const Index = () => {
         minHeight: 0,
         /* Create stacking context for overlay architecture */
         isolation: 'isolate',
+        position: 'relative',
       }}
     >
       {/* FULL-SCREEN MAP LAYER - only on map tab */}
