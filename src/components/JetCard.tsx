@@ -82,7 +82,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
 
   return (
     <article 
-      className="relative bg-card rounded-2xl sm:rounded-3xl overflow-hidden border border-border shadow-[var(--shadow-card)] transition-all duration-300"
+      className="relative bg-card/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-primary/30 shadow-[0_8px_32px_rgba(0,0,0,0.4),0_0_0_1px_hsl(var(--primary)/0.15)] transition-all duration-300 ring-1 ring-primary/10"
       aria-label={`${venue.name} - ${venue.category} in ${venue.neighborhood}`}
     >
       {/* Image Header with Gradient Overlay - Always visible */}
