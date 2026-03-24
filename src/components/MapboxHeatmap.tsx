@@ -1838,8 +1838,8 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
         // Haptic feedback for venue selection
         triggerHaptic('medium');
         
-        // Open venue card
-        onVenueSelect(venue);
+        // Open venue card (use ref to avoid stale closure)
+        onVenueSelectRef.current(venue);
         
         // Show popup
         popup.addTo(mapInstance);
