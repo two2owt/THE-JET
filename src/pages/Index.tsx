@@ -387,13 +387,13 @@ const Index = () => {
           }}
           {...(isMobile ? swipeHandlers : {})}
         >
-          <div className="pointer-events-auto bg-card border-2 border-border rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl ring-1 ring-white/20">
+          <div style={{ pointerEvents: 'auto' }}>
             {isMobile && (
               <div className="flex justify-center pb-2 sm:pb-2.5">
                 <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
               </div>
             )}
-            <Suspense fallback={null}>
+            <Suspense fallback={<div style={{ background: 'hsl(0 0% 10%)', borderRadius: '1rem', height: '200px' }} />}>
               <JetCard 
                 venue={selectedVenue} 
                 onGetDirections={handleGetDirections}
