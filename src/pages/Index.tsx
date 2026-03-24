@@ -223,66 +223,29 @@ const Index = () => {
     setDetectedLocationName(name);
   }, []);
 
-  const handleVenueSelect = useCallback(async (venue: Venue | string) => {
-    // Handle both Venue object and venue name string
+  const handleVenueSelect = useCallback((venue: Venue | string) => {
     if (typeof venue === 'string') {
-      // Find the venue by name in real venues or mock venues
       const foundVenue = venues.find(v => v.name === venue);
       if (foundVenue) {
-        // Fetch address from deals table
-        const { data: dealData } = await supabase
-          .from('deals')
-          .select('venue_address')
-          .eq('venue_name', foundVenue.name)
-          .limit(1)
-          .maybeSingle();
-        
         const venueWithImage = {
           ...foundVenue,
           imageUrl: getVenueImage(foundVenue.name) || foundVenue.imageUrl,
-          address: dealData?.venue_address || undefined
         };
         setSelectedVenue(venueWithImage);
-        setActiveTab('map'); // Switch to map tab
+        setActiveTab('map');
         toast.success(`Selected ${foundVenue.name}`, {
           description: `${foundVenue.activity}% active in ${foundVenue.neighborhood}`
         });
-        
-        // Scroll to JetCard
-        setTimeout(() => {
-          jetCardRef.current?.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
-          });
-        }, 100);
       }
     } else {
-      // Fetch address from deals table for venue object
-      const { data: dealData } = await supabase
-        .from('deals')
-        .select('venue_address')
-        .eq('venue_name', venue.name)
-        .limit(1)
-        .maybeSingle();
-      
-      // Original venue object handling
       const venueWithImage = {
         ...venue,
         imageUrl: getVenueImage(venue.name) || venue.imageUrl,
-        address: dealData?.venue_address || venue.address
       };
       setSelectedVenue(venueWithImage);
       toast.success(`Selected ${venue.name}`, {
         description: `${venue.activity}% active in ${venue.neighborhood}`
       });
-      
-      // Scroll to JetCard
-      setTimeout(() => {
-        jetCardRef.current?.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'start' 
-        });
-      }, 100);
     }
   }, [venues, getVenueImage]);
 
@@ -338,9 +301,9 @@ const Index = () => {
         /* Fill remaining space in the flex column after header spacer */
         flex: '1 1 0%',
         minHeight: 0,
-        overflow: 'hidden',
         /* Create stacking context for overlay architecture */
         isolation: 'isolate',
+        position: 'relative',
       }}
     >
       {/* FULL-SCREEN MAP LAYER - only on map tab */}
@@ -409,9 +372,9 @@ const Index = () => {
       {activeTab === "map" && selectedVenue && (
         <div 
           ref={jetCardRef} 
-          className="fixed z-[60] animate-fade-in"
+          className="absolute z-[60] animate-fade-in"
           style={{
-            bottom: 'var(--map-fixed-bottom)',
+            bottom: 'var(--map-safe-bottom)',
             left: 'var(--map-ui-inset-left)',
             right: 'var(--map-ui-inset-right)',
             maxWidth: '480px',

@@ -173,6 +173,8 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
   const markersRef = useRef<MapboxGL.Marker[]>([]);
   const dealMarkersRef = useRef<MapboxGL.Marker[]>([]);
   const geolocateControlRef = useRef<MapboxGL.GeolocateControl | null>(null);
+  const onVenueSelectRef = useRef(onVenueSelect);
+  onVenueSelectRef.current = onVenueSelect;
   const flowAnimationRef = useRef<number | null>(null);
   const isMobile = useIsMobile();
   const initStartTime = useRef<number>(0);
@@ -1836,8 +1838,8 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
         // Haptic feedback for venue selection
         triggerHaptic('medium');
         
-        // Open venue card
-        onVenueSelect(venue);
+        // Open venue card (use ref to avoid stale closure)
+        onVenueSelectRef.current(venue);
         
         // Show popup
         popup.addTo(mapInstance);
