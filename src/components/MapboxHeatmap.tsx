@@ -2081,7 +2081,10 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
         width: '100%',
         height: '100%',
         minHeight: '100%',
-        contain: 'layout style',
+        // DO NOT use contain: layout — it creates a containing block for fixed children,
+        // breaking fixed positioning of overlay controls.
+        // DO NOT use transform or will-change: transform — breaks backdrop-filter rendering.
+        contain: 'style',
         isolation: 'isolate',
       }}
     >
