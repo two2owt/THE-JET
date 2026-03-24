@@ -375,13 +375,14 @@ const Index = () => {
           ref={jetCardRef} 
           className="pointer-events-none"
           style={{
+            position: 'fixed',
+            zIndex: 9999,
             bottom: 'var(--map-fixed-bottom, 72px)',
             left: 'var(--map-ui-inset-left, 8px)',
             right: 'var(--map-ui-inset-right, 8px)',
             maxWidth: '480px',
             marginLeft: 'auto',
             marginRight: 'auto',
-            pointerEvents: 'none',
             ...(isMobile ? swipeStyle : {}),
           }}
           {...(isMobile ? swipeHandlers : {})}
