@@ -111,7 +111,7 @@ export const Footer = () => {
                 <a
                   key={link.label}
                   href={link.href}
-                  className="focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-lg px-2 py-1"
+                  className="focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-lg px-2 py-1 min-h-[44px] flex items-center"
                   aria-label={link.label}
                 >
                   {content}
