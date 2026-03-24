@@ -405,8 +405,8 @@ const Index = () => {
         </div>
       )}
 
-      {/* Selected Venue Card - rendered via portal to escape overflow:hidden ancestors */}
-      {activeTab === "map" && selectedVenue && createPortal(
+      {/* Selected Venue Card - only on map tab, positioned above bottom nav */}
+      {activeTab === "map" && selectedVenue && (
         <div 
           ref={jetCardRef} 
           className="fixed z-[60] animate-fade-in"
@@ -436,8 +436,7 @@ const Index = () => {
               />
             </Suspense>
           </div>
-        </div>,
-        document.body
+        </div>
       )}
 
       {/* Header config is set via context (useEffect below) */}
