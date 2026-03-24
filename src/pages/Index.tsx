@@ -373,25 +373,25 @@ const Index = () => {
       {activeTab === "map" && selectedVenue && createPortal(
         <div 
           ref={jetCardRef} 
+          className="fixed z-[9999] animate-fade-in"
           style={{
-            position: 'fixed',
-            zIndex: 99999,
-            bottom: '72px',
-            left: '8px',
-            right: '8px',
+            bottom: 'var(--map-fixed-bottom, 72px)',
+            left: 'var(--map-ui-inset-left, 8px)',
+            right: 'var(--map-ui-inset-right, 8px)',
             maxWidth: '480px',
             marginLeft: 'auto',
             marginRight: 'auto',
             pointerEvents: 'none',
-            backgroundColor: 'red',
-            padding: '20px',
-            color: 'white',
-            fontSize: '18px',
-            borderRadius: '12px',
+            ...(isMobile ? swipeStyle : {}),
           }}
+          {...(isMobile ? swipeHandlers : {})}
         >
-          DEBUG: JetCard for {selectedVenue.name}
-          <div style={{ pointerEvents: 'auto', marginTop: '8px' }}>
+          <div className="pointer-events-auto">
+            {isMobile && (
+              <div className="flex justify-center pb-2 sm:pb-2.5">
+                <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
+              </div>
+            )}
             <Suspense fallback={null}>
               <JetCard 
                 venue={selectedVenue} 
