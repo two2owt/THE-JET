@@ -373,7 +373,7 @@ const Index = () => {
       {activeTab === "map" && selectedVenue && createPortal(
         <div 
           ref={jetCardRef} 
-          className="fixed z-[9999] animate-fade-in"
+          className="pointer-events-none"
           style={{
             bottom: 'var(--map-fixed-bottom, 72px)',
             left: 'var(--map-ui-inset-left, 8px)',
