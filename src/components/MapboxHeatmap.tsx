@@ -2632,7 +2632,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* CRITICAL: Uses only opacity transition to avoid CLS - no translate/scale animations */}
       {(showDensityLayer || showMovementPaths) && (densityData || pathData) && (
         <div 
-          className={`${isMobile ? 'fixed' : 'absolute'} bg-card backdrop-blur-xl rounded-xl border border-border ring-1 ring-black/5 dark:ring-white/10 z-30 shadow-xl px-3 py-2`}
+          className="absolute bg-card backdrop-blur-xl rounded-xl border border-border ring-1 ring-black/5 dark:ring-white/10 z-30 shadow-xl px-3 py-2"
           style={{
             top: 'calc(var(--map-safe-top-controls-in-map, var(--map-safe-top-controls)) + 1rem)',
             right: 'var(--map-ui-inset-right)',
