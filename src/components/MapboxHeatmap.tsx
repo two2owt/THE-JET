@@ -2708,7 +2708,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* Enhanced Legend - Bottom left, responsive for all devices, collapsible on mobile */}
       {/* CRITICAL: Uses only opacity transition to avoid CLS - no translate animations */}
       <div 
-        className={`${isMobile ? 'fixed' : 'absolute'} bg-card/95 backdrop-blur-xl rounded-xl border border-border z-30 shadow-lg ${isMobile ? 'px-2 py-1.5' : 'px-3 py-2 md:px-4 md:py-3'}`}
+        className={`absolute bg-card/95 backdrop-blur-xl rounded-xl border border-border z-30 shadow-lg ${isMobile ? 'px-2 py-1.5' : 'px-3 py-2 md:px-4 md:py-3'}`}
         style={{
           bottom: 'var(--map-fixed-bottom)',
           left: 'var(--map-ui-inset-left)',
