@@ -349,7 +349,8 @@ const Index = () => {
           className="absolute inset-0 w-full h-full"
           style={{
             zIndex: 0,
-            transform: 'translateZ(0)',
+            // DO NOT use transform here — it creates a containing block that
+            // traps fixed-position children and breaks backdrop-filter rendering
           }}
         >
           {/* Error state */}
@@ -456,8 +457,7 @@ const Index = () => {
             height: 'var(--main-height)',
             minHeight: 'var(--main-height)',
             maxHeight: 'var(--main-height)',
-            contain: 'layout style',
-            transform: 'translateZ(0)',
+            contain: 'style',
             boxSizing: 'border-box',
             width: '100%',
             zIndex: 1,

@@ -2081,7 +2081,10 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
         width: '100%',
         height: '100%',
         minHeight: '100%',
-        contain: 'layout style',
+        // DO NOT use contain: layout — it creates a containing block for fixed children,
+        // breaking fixed positioning of overlay controls.
+        // DO NOT use transform or will-change: transform — breaks backdrop-filter rendering.
+        contain: 'style',
         isolation: 'isolate',
       }}
     >
@@ -2248,15 +2251,12 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
         style={{ 
           width: '100%', 
           height: '100%',
-          // Fixed dimensions prevent 0.0655 CLS when Mapbox canvas loads
           minWidth: '100%',
           minHeight: '100%',
           touchAction: isMobile ? 'manipulation' : 'none',
           WebkitOverflowScrolling: 'touch',
-          contain: 'layout style',
-          // GPU acceleration for smooth canvas insertion
-          transform: 'translateZ(0)',
-          willChange: 'contents',
+          // DO NOT use transform or will-change here — breaks backdrop-filter on sibling overlays
+          // and creates a containing block that traps fixed-position children
         }}
       />
 
@@ -2405,7 +2405,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* Layers Panel - Unified FAB + expandable panel */}
       {controlsReady && (
       <div 
-        className="fixed z-[60]"
+        className="absolute z-[60]"
         style={{
           bottom: 'var(--map-fixed-bottom)',
           right: 'var(--map-ui-inset-right)',
@@ -2632,7 +2632,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* CRITICAL: Uses only opacity transition to avoid CLS - no translate/scale animations */}
       {(showDensityLayer || showMovementPaths) && (densityData || pathData) && (
         <div 
-          className={`${isMobile ? 'fixed' : 'absolute'} bg-card backdrop-blur-xl rounded-xl border border-border ring-1 ring-black/5 dark:ring-white/10 z-30 shadow-xl px-3 py-2`}
+          className="absolute bg-card backdrop-blur-xl rounded-xl border border-border ring-1 ring-black/5 dark:ring-white/10 z-30 shadow-xl px-3 py-2"
           style={{
             top: 'calc(var(--map-safe-top-controls-in-map, var(--map-safe-top-controls)) + 1rem)',
             right: 'var(--map-ui-inset-right)',
@@ -2708,7 +2708,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* Enhanced Legend - Bottom left, responsive for all devices, collapsible on mobile */}
       {/* CRITICAL: Uses only opacity transition to avoid CLS - no translate animations */}
       <div 
-        className={`${isMobile ? 'fixed' : 'absolute'} bg-card/95 backdrop-blur-xl rounded-xl border border-border z-30 shadow-lg ${isMobile ? 'px-2 py-1.5' : 'px-3 py-2 md:px-4 md:py-3'}`}
+        className={`absolute bg-card/95 backdrop-blur-xl rounded-xl border border-border z-30 shadow-lg ${isMobile ? 'px-2 py-1.5' : 'px-3 py-2 md:px-4 md:py-3'}`}
         style={{
           bottom: 'var(--map-fixed-bottom)',
           left: 'var(--map-ui-inset-left)',
