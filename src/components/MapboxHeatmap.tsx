@@ -2405,7 +2405,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* Layers Panel - Unified FAB + expandable panel */}
       {controlsReady && (
       <div 
-        className="fixed z-[60]"
+        className="absolute z-[60]"
         style={{
           bottom: 'var(--map-fixed-bottom)',
           right: 'var(--map-ui-inset-right)',
