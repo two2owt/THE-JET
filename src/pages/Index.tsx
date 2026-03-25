@@ -372,11 +372,11 @@ const Index = () => {
       {activeTab === "map" && selectedVenue && (
         <div 
           ref={jetCardRef} 
-          className="absolute z-[60] animate-fade-in"
+         className="fixed z-[9999] animate-fade-in"
           style={{
-            bottom: 'var(--map-safe-bottom)',
-            left: 'var(--map-ui-inset-left)',
-            right: 'var(--map-ui-inset-right)',
+            bottom: 'calc(var(--bottom-nav-height, 64px) + env(safe-area-inset-bottom, 0px) + 8px)',
+            left: 'var(--map-ui-inset-left, 12px)',
+            right: 'var(--map-ui-inset-right, 12px)',
             maxWidth: '480px',
             marginLeft: 'auto',
             marginRight: 'auto',
