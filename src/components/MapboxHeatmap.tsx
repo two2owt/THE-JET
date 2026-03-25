@@ -2219,10 +2219,9 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       <div 
         className="absolute flex items-center gap-1.5"
         style={{
-          top: 'var(--map-safe-top-controls-in-map, 66px)',
+          top: 'var(--map-ui-inset-top, 0.75rem)',
           left: 'var(--map-ui-inset-left, 0.75rem)',
           zIndex: 30,
-          contain: 'layout style',
         }}
       >
         <Select
@@ -2362,10 +2361,9 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       <div 
         className="absolute"
         style={{
-          bottom: 'var(--map-fixed-bottom, 72px)',
+          bottom: 'var(--map-ui-inset-bottom, 0.75rem)',
           right: 'var(--map-ui-inset-right, 0.75rem)',
           zIndex: 30,
-          contain: 'layout style',
         }}
       >
         {/* Expanded panel - slides up from FAB */}
