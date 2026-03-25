@@ -1,6 +1,5 @@
 import { LucideIcon } from "lucide-react";
 import { Button } from "./ui/button";
-import { Card } from "./ui/card";
 
 interface EmptyStateProps {
   icon: LucideIcon;
@@ -18,21 +17,59 @@ export const EmptyState = ({
   onAction 
 }: EmptyStateProps) => {
   return (
-    <Card className="p-fluid-xl text-center bg-card/90 backdrop-blur-xl shadow-card border border-primary/15 ring-1 ring-primary/10">
-      <div className="mx-auto w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center mb-fluid-md ring-1 ring-primary/20">
-        <Icon className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-primary" />
+    <div
+      style={{
+        padding: '40px 24px',
+        textAlign: 'center',
+        borderRadius: '16px',
+        backgroundColor: 'hsl(var(--card) / 0.9)',
+        border: '1px solid hsl(var(--primary) / 0.15)',
+        backdropFilter: 'blur(12px)',
+      }}
+    >
+      <div
+        style={{
+          width: '64px',
+          height: '64px',
+          margin: '0 auto 16px',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--accent) / 0.15))',
+          border: '1px solid hsl(var(--primary) / 0.2)',
+        }}
+      >
+        <Icon style={{ width: '28px', height: '28px', color: 'hsl(var(--primary))' }} />
       </div>
-      <h3 className="text-fluid-lg sm:text-fluid-xl font-bold text-foreground mb-fluid-xs">
+      <h3
+        style={{
+          fontSize: '18px',
+          fontWeight: 700,
+          color: 'hsl(var(--foreground))',
+          marginBottom: '6px',
+        }}
+      >
         {title}
       </h3>
-      <p className="text-fluid-sm text-muted-foreground mb-fluid-lg max-w-sm mx-auto">
+      <p
+        style={{
+          fontSize: '14px',
+          color: 'hsl(var(--muted-foreground))',
+          marginBottom: actionLabel ? '20px' : '0',
+          maxWidth: '320px',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          lineHeight: 1.5,
+        }}
+      >
         {description}
       </p>
       {actionLabel && onAction && (
-        <Button onClick={onAction} size="lg" variant="jet">
+        <Button onClick={onAction} size="lg" className="bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 text-primary-foreground font-semibold rounded-xl">
           {actionLabel}
         </Button>
       )}
-    </Card>
+    </div>
   );
 };

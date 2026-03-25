@@ -390,11 +390,19 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
         </Suspense>
       )}
 
-    <div className="space-y-6 animate-fade-in">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-extrabold bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent mb-2">Explore Deals</h2>
-        <div className="flex items-center gap-2 flex-wrap">
+        <h2 
+          style={{ 
+            fontSize: '24px', fontWeight: 800, marginBottom: '8px', lineHeight: 1.2,
+            background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+          }}
+        >
+          Explore Deals
+        </h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           <p className="text-sm text-muted-foreground">
             {userLocation 
               ? "Showing deals near you" 
@@ -420,14 +428,14 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
       </div>
 
       {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+      <div style={{ position: 'relative' }}>
+        <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '18px', height: '18px', color: 'hsl(var(--muted-foreground))' }} />
         <Input
           type="text"
           placeholder="Search venues, deals, or categories..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 bg-card/90 backdrop-blur-sm border-border focus:border-primary transition-colors"
+          className="pl-10 rounded-xl bg-muted/40 border-transparent hover:bg-muted/60 focus:bg-muted/70 focus:border-primary/30 focus:ring-1 focus:ring-primary/20 transition-all"
           aria-label="Search venues, deals, or categories"
         />
       </div>
@@ -468,36 +476,35 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
-        <Card className="p-4 text-center bg-card/90 backdrop-blur-sm hover-scale shadow-card border-primary/10">
-          <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center ring-1 ring-primary/20">
-            <TrendingUp className="w-5 h-5 text-primary" />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+        {[
+          { icon: TrendingUp, value: filteredDeals.length, label: userLocation ? "Nearby Deals" : "Active Deals", color: 'hsl(var(--primary))' },
+          { icon: MapPin, value: new Set(filteredDeals.map(d => d.venue_name)).size, label: userLocation ? "Nearby Venues" : "Venues", color: 'hsl(var(--accent))' },
+          { icon: Clock, value: filteredDeals.length, label: searchQuery || selectedCategories.length > 0 ? "Results" : "Available", color: 'hsl(var(--muted-foreground))' },
+        ].map((stat, i) => (
+          <div
+            key={i}
+            style={{
+              padding: '16px 8px',
+              textAlign: 'center',
+              borderRadius: '14px',
+              backgroundColor: 'hsl(var(--card) / 0.9)',
+              border: '1px solid hsl(var(--border) / 0.5)',
+              backdropFilter: 'blur(8px)',
+            }}
+          >
+            <div style={{
+              width: '40px', height: '40px', margin: '0 auto 8px',
+              borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: `linear-gradient(135deg, ${stat.color}15, ${stat.color}08)`,
+              border: `1px solid ${stat.color}30`,
+            }}>
+              <stat.icon style={{ width: '20px', height: '20px', color: stat.color }} />
+            </div>
+            <p style={{ fontSize: '22px', fontWeight: 700, color: 'hsl(var(--foreground))' }}>{stat.value}</p>
+            <p style={{ fontSize: '11px', color: 'hsl(var(--muted-foreground))' }}>{stat.label}</p>
           </div>
-          <p className="text-2xl font-bold text-foreground">{filteredDeals.length}</p>
-          <p className="text-xs text-muted-foreground">
-            {userLocation ? "Nearby Deals" : "Active Deals"}
-          </p>
-        </Card>
-        <Card className="p-4 text-center bg-card/90 backdrop-blur-sm hover-scale shadow-card border-primary/10">
-          <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-gradient-to-br from-accent/15 to-primary/15 flex items-center justify-center ring-1 ring-accent/20">
-            <MapPin className="w-5 h-5 text-accent" />
-          </div>
-          <p className="text-2xl font-bold text-foreground">
-            {new Set(filteredDeals.map(d => d.venue_name)).size}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {userLocation ? "Nearby Venues" : "Venues"}
-          </p>
-        </Card>
-        <Card className="p-4 text-center bg-card/90 backdrop-blur-sm hover-scale shadow-card border-primary/10">
-          <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-gradient-to-br from-secondary/15 to-primary/15 flex items-center justify-center ring-1 ring-secondary/20">
-            <Clock className="w-5 h-5 text-secondary" />
-          </div>
-          <p className="text-2xl font-bold text-foreground">{filteredDeals.length}</p>
-          <p className="text-xs text-muted-foreground">
-            {searchQuery || selectedCategories.length > 0 ? "Results" : "Available"}
-          </p>
-        </Card>
+        ))}
       </div>
 
 
