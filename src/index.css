@@ -161,6 +161,7 @@ All colors MUST be HSL.
 
     --card: 0 0% 10%;
     --card-foreground: 0 0% 98%;
+    --jetcard-bg: hsl(240 4% 16%);
 
     --popover: 0 0% 10%;
     --popover-foreground: 0 0% 98%;
