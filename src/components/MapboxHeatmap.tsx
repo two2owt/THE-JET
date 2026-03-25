@@ -2324,8 +2324,9 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
             <Button
               variant="secondary"
               size="sm"
-              className="bg-card backdrop-blur-xl border border-border shadow-xl ring-1 ring-black/5 dark:ring-white/10 h-8 sm:h-9 w-8 sm:w-9 p-0 rounded-xl"
-              aria-label="Map style options"
+              className="bg-card backdrop-blur-xl border border-border shadow-xl ring-1 ring-black/5 dark:ring-white/10 p-0 rounded-xl"
+              style={{ width: 'clamp(32px, 5vw, 40px)', height: 'clamp(32px, 5vw, 40px)' }}
+              aria-label="Map style options">
             >
               <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
             </Button>
