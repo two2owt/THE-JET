@@ -52,8 +52,8 @@ All colors MUST be HSL.
     /* Extra top clearance for Map UI controls to avoid glass header overlap across devices */
     --map-safe-top-controls: calc(var(--map-safe-top) + clamp(0.5rem, 1vw, 1rem));
 
-    /* Index map layer fills the full viewport (absolute inset-0).
-       Map UI controls inside it need header-height clearance from the CSS safe zone. */
+    /* Index map layer uses position:fixed to fill the full viewport.
+       Map UI controls inside it use these variables for clearance from fixed Header/BottomNav. */
     --map-safe-top-in-map: var(--map-safe-top);
     --map-safe-top-controls-in-map: var(--map-safe-top-controls);
 
