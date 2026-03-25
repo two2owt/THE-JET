@@ -373,15 +373,16 @@ const Index = () => {
       {activeTab === "map" && selectedVenue && createPortal(
         <div 
           ref={jetCardRef} 
-          className="fixed z-[9999]"
+           className="fixed z-[9999]"
           style={{
-            bottom: 'calc(var(--bottom-nav-total-height, 72px) + 8px)',
+            bottom: '80px',
             left: '12px',
             right: '12px',
             maxWidth: '480px',
             marginLeft: 'auto',
             marginRight: 'auto',
             pointerEvents: 'none',
+            background: 'red',
             ...(isMobile ? swipeStyle : {}),
           }}
           {...(isMobile ? swipeHandlers : {})}
