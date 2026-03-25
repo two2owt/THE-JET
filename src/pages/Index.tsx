@@ -371,19 +371,18 @@ const Index = () => {
           className="animate-fade-in"
           style={{
             position: 'fixed',
-            left: '12px',
-            right: '12px',
             bottom: 'calc(var(--bottom-nav-total-height, 60px) + 8px)',
+            left: '0',
+            width: '100vw',
             zIndex: 9999,
-            display: 'flex',
-            justifyContent: 'center',
-            pointerEvents: 'none',
+            padding: '0 12px',
             boxSizing: 'border-box',
+            pointerEvents: 'none',
             ...(isMobile ? swipeStyle : {}),
           }}
           {...(isMobile ? swipeHandlers : {})}
         >
-          <div style={{ pointerEvents: 'auto', width: '100%', maxWidth: '480px', boxSizing: 'border-box' }}>
+          <div style={{ pointerEvents: 'auto', width: '100%', maxWidth: '480px', margin: '0 auto', boxSizing: 'border-box' }}>
             {isMobile && (
               <div className="flex justify-center pb-2 sm:pb-2.5">
                 <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
