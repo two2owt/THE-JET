@@ -38,6 +38,7 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
         minHeight: 'var(--bottom-nav-total-height)',
         maxHeight: 'var(--bottom-nav-total-height)',
         flexShrink: 0,
+        contain: 'layout style',
       }}
     >
       {/* Glass background */}
