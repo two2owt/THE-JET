@@ -35,6 +35,7 @@ export const Header = () => {
     }
   }, []);
 
+  useEffect(() => {
     const fetchProfile = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
