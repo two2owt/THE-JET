@@ -61,16 +61,20 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
 
   const activityLevel = getActivityLevel(venue.activity);
 
+  const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+
   return (
     <article
       style={{
         position: 'relative',
         width: '100%',
-        backgroundColor: 'hsl(240 4% 22%)',
-        border: '2px solid hsl(24 100% 60% / 0.6)',
+        backgroundColor: isDark ? 'hsl(240 4% 22%)' : 'hsl(0 0% 100%)',
+        border: isDark ? '2px solid hsl(24 100% 60% / 0.6)' : '2px solid hsl(24 100% 50% / 0.4)',
         borderRadius: '16px',
         overflow: 'hidden',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.7), 0 0 24px hsl(24 100% 60% / 0.15)',
+        boxShadow: isDark
+          ? '0 8px 32px rgba(0,0,0,0.7), 0 0 24px hsl(24 100% 60% / 0.15)'
+          : '0 8px 32px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05)',
         maxHeight: '300px',
         fontFamily: "'Plus Jakarta Sans Variable', system-ui, sans-serif",
       }}
@@ -87,20 +91,21 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
         )}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.6), transparent)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: isDark ? 'linear-gradient(to top, rgba(0,0,0,0.6), transparent)' : 'linear-gradient(to top, rgba(0,0,0,0.3), transparent)' }} />
 
         {onClose && (
           <button
             onClick={onClose}
             style={{
               position: 'absolute', top: '8px', right: '8px', zIndex: 20,
-              background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
+              background: isDark ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.8)',
+              backdropFilter: 'blur(8px)',
               border: 'none', borderRadius: '50%', padding: '6px',
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
             aria-label="Close"
           >
-            <X style={{ width: '16px', height: '16px', color: '#fff' }} />
+            <X style={{ width: '16px', height: '16px', color: isDark ? '#fff' : '#333' }} />
           </button>
         )}
 
@@ -129,11 +134,11 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
       <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {/* Title */}
         <div>
-          <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#fafafa', margin: 0, lineHeight: 1.2 }}>{venue.name}</h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', color: '#a1a1aa', fontSize: '11px' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 700, color: isDark ? '#fafafa' : '#1a1a1a', margin: 0, lineHeight: 1.2 }}>{venue.name}</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', color: isDark ? '#a1a1aa' : '#6b7280', fontSize: '11px' }}>
             <MapPin style={{ width: '12px', height: '12px', flexShrink: 0 }} />
             <span>{venue.neighborhood}</span>
-            {venue.address && <span style={{ color: '#71717a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>· {venue.address}</span>}
+            {venue.address && <span style={{ color: isDark ? '#71717a' : '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>· {venue.address}</span>}
           </div>
         </div>
 
@@ -141,15 +146,15 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <TrendingUp style={{ width: '14px', height: '14px', color: activityLevel.color }} />
-            <span style={{ fontWeight: 600, color: '#fafafa' }}>{activityLevel.label.split(" ")[1]}</span>
+            <span style={{ fontWeight: 600, color: isDark ? '#fafafa' : '#1a1a1a' }}>{activityLevel.label.split(" ")[1]}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <Star style={{ width: '14px', height: '14px', color: '#eab308' }} />
-            <span style={{ fontWeight: 600, color: '#fafafa' }}>4.5</span>
+            <span style={{ fontWeight: 600, color: isDark ? '#fafafa' : '#1a1a1a' }}>4.5</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Users style={{ width: '14px', height: '14px', color: '#a1a1aa' }} />
-            <span style={{ fontWeight: 600, color: '#fafafa' }}>{Math.round(venue.activity / 10) * 10}+</span>
+            <Users style={{ width: '14px', height: '14px', color: isDark ? '#a1a1aa' : '#6b7280' }} />
+            <span style={{ fontWeight: 600, color: isDark ? '#fafafa' : '#1a1a1a' }}>{Math.round(venue.activity / 10) * 10}+</span>
           </div>
         </div>
 
