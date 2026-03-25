@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense, useCallback, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate, useLocation } from "react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { type Venue } from "@/types/venue";
@@ -360,35 +361,43 @@ const Index = () => {
             </div>
           </div>
 
-          {/* JetCard - fixed overlay above bottom nav */}
-          {selectedVenue && (
-            <div 
-              ref={jetCardRef} 
-              className="fixed left-0 right-0 z-[60] flex justify-center px-3 animate-fade-in"
-              style={{
-                bottom: 'calc(var(--bottom-nav-total-height, 60px) + 8px)',
-                pointerEvents: 'none',
-                ...(isMobile ? swipeStyle : {}),
-              }}
-              {...(isMobile ? swipeHandlers : {})}
-            >
-              <div className="w-full max-w-[480px]" style={{ pointerEvents: 'auto' }}>
-                {isMobile && (
-                  <div className="flex justify-center pb-2 sm:pb-2.5">
-                    <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
-                  </div>
-                )}
-                <Suspense fallback={null}>
-                  <JetCard 
-                    venue={selectedVenue} 
-                    onGetDirections={handleGetDirections}
-                    onClose={() => setSelectedVenue(null)}
-                  />
-                </Suspense>
-              </div>
-            </div>
-          )}
         </>
+      )}
+
+      {/* JetCard - portaled to body to bypass stacking contexts */}
+      {selectedVenue && activeTab === "map" && createPortal(
+        <div 
+          ref={jetCardRef} 
+          className="animate-fade-in"
+          style={{
+            position: 'fixed',
+            bottom: 'calc(var(--bottom-nav-total-height, 60px) + 8px)',
+            left: '0',
+            width: '100vw',
+            zIndex: 9999,
+            padding: '0 12px',
+            boxSizing: 'border-box',
+            pointerEvents: 'none',
+            ...(isMobile ? swipeStyle : {}),
+          }}
+          {...(isMobile ? swipeHandlers : {})}
+        >
+          <div style={{ pointerEvents: 'auto', width: '100%', maxWidth: '480px', margin: '0 auto', boxSizing: 'border-box' }}>
+            {isMobile && (
+              <div className="flex justify-center pb-2 sm:pb-2.5">
+                <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
+              </div>
+            )}
+            <Suspense fallback={null}>
+              <JetCard 
+                venue={selectedVenue} 
+                onGetDirections={handleGetDirections}
+                onClose={() => setSelectedVenue(null)}
+              />
+            </Suspense>
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* Header config is set via context (useEffect below) */}
