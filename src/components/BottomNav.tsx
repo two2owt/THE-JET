@@ -67,10 +67,9 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
       />
 
       <div
-        className="h-full mx-auto flex items-center justify-around"
+        className="h-full mx-auto flex items-center justify-around px-2 sm:px-3 md:px-4"
         style={{
-          maxWidth: '480px',
-          padding: '0 8px',
+          maxWidth: 'clamp(320px, 60vw, 560px)',
         }}
       >
         {navItems.map((item) => {
@@ -88,8 +87,8 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
               aria-current={isActive ? "page" : undefined}
               className="relative flex flex-col items-center justify-center touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
               style={{
-                minWidth: '56px',
-                height: '48px',
+                minWidth: 'clamp(48px, 12vw, 64px)',
+                height: 'clamp(40px, 6vw, 52px)',
                 gap: '2px',
                 transition: 'all 0.2s ease-out',
               }}

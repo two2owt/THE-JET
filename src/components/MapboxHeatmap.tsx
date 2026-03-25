@@ -2217,10 +2217,11 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* Unified Top-Left Controls: Location + Map Style in one compact row */}
       {controlsReady && (
       <div 
-        className="absolute flex items-center gap-1.5"
+        className="absolute flex items-center"
         style={{
           top: 'var(--map-ui-inset-top, 0.75rem)',
           left: 'var(--map-ui-inset-left, 0.75rem)',
+          gap: 'clamp(4px, 0.8vw, 8px)',
           zIndex: 30,
         }}
       >
@@ -2263,9 +2264,16 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
           }}
         >
           <SelectTrigger 
-            className="text-[11px] sm:text-xs h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl shadow-xl bg-card backdrop-blur-xl border-border ring-1 ring-black/5 dark:ring-white/10"
+            className="text-[11px] sm:text-xs rounded-xl shadow-xl bg-card backdrop-blur-xl border-border ring-1 ring-black/5 dark:ring-white/10"
             aria-label="Select city location"
-            style={{ minWidth: '140px', maxWidth: '220px', contain: 'layout style' }}
+            style={{
+              height: 'clamp(32px, 5vw, 40px)',
+              paddingLeft: 'clamp(8px, 1.5vw, 12px)',
+              paddingRight: 'clamp(8px, 1.5vw, 12px)',
+              minWidth: 'clamp(120px, 18vw, 220px)',
+              maxWidth: 'var(--map-control-max-width, 220px)',
+              contain: 'layout style',
+            }}
           >
             <div className="flex items-center gap-1.5 w-full">
               <MapPin className="w-3.5 h-3.5 text-primary flex-shrink-0" />
@@ -2316,7 +2324,8 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
             <Button
               variant="secondary"
               size="sm"
-              className="bg-card backdrop-blur-xl border border-border shadow-xl ring-1 ring-black/5 dark:ring-white/10 h-8 sm:h-9 w-8 sm:w-9 p-0 rounded-xl"
+              className="bg-card backdrop-blur-xl border border-border shadow-xl ring-1 ring-black/5 dark:ring-white/10 p-0 rounded-xl"
+              style={{ width: 'clamp(32px, 5vw, 40px)', height: 'clamp(32px, 5vw, 40px)' }}
               aria-label="Map style options"
             >
               <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
@@ -2560,8 +2569,8 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
               : 'bg-card backdrop-blur-xl text-foreground border border-border ring-1 ring-black/5 dark:ring-white/10'
           }`}
           style={{ 
-            width: '44px', 
-            height: '44px',
+            width: 'var(--touch-target-min, 44px)', 
+            height: 'var(--touch-target-min, 44px)',
             marginLeft: 'auto',
           }}
           aria-label={controlsCollapsed ? "Open layers panel" : "Close layers panel"}
