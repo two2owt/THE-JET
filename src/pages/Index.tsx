@@ -305,13 +305,12 @@ const Index = () => {
         position: 'relative',
       }}
     >
-      {/* FULL-SCREEN MAP LAYER - fixed to fill entire viewport so
-           CSS variables (--map-safe-top-controls-in-map etc.) position controls correctly
-           relative to Header/BottomNav which are also position:fixed */}
+      {/* FULL-SCREEN MAP LAYER - only on map tab */}
       {activeTab === "map" && (
         <>
           <div 
-            style={{ position: 'fixed', inset: 0, zIndex: 0 }}
+            className="absolute inset-0 w-full h-full"
+            style={{ zIndex: 0 }}
           >
             {mapboxError && !mapboxLoading && (
               <div className="absolute inset-0 z-10 flex items-center justify-center bg-background">
