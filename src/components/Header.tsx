@@ -20,6 +20,8 @@ export const Header = () => {
   const isMobile = useIsMobile();
   const [searchQuery, setSearchQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const mountedRef = useRef(false);
   const [searchExpanded, setSearchExpanded] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string>("JT");
