@@ -111,34 +111,30 @@ export const Header = () => {
       />
 
       <div
-        className="h-full mx-auto flex items-center"
-        style={{
-          maxWidth: '1280px',
-          padding: '0 16px',
-          gap: '10px',
-        }}
+        className="h-full mx-auto flex items-center px-3 sm:px-4 md:px-6 lg:px-8 gap-2 sm:gap-3 md:gap-4"
+        style={{ maxWidth: '1280px' }}
       >
-        {/* Logo */}
+        {/* Logo — always visible unless mobile search is expanded */}
         {!(isMobile && searchExpanded) && (
           <a
             href="/"
             className="group flex items-center gap-1.5 flex-shrink-0 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             onClick={e => { e.preventDefault(); navigate('/'); }}
             aria-label="JET - Go to home"
-            style={{ height: '36px', padding: '0 4px' }}
+            style={{ height: 'var(--touch-target-min, 44px)', padding: '0 2px' }}
           >
             <Sparkles
               className="text-primary transition-transform duration-300 group-hover:scale-110"
               style={{
-                width: '18px',
-                height: '18px',
+                width: 'clamp(16px, 2.5vw, 20px)',
+                height: 'clamp(16px, 2.5vw, 20px)',
                 filter: 'drop-shadow(0 0 6px hsl(var(--primary) / 0.5))',
               }}
             />
             <span
               className="font-extrabold tracking-tight bg-clip-text text-transparent"
               style={{
-                fontSize: '22px',
+                fontSize: 'clamp(18px, 3vw, 24px)',
                 lineHeight: 1,
                 backgroundImage: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))',
               }}
@@ -148,23 +144,26 @@ export const Header = () => {
           </a>
         )}
 
-        {/* Search icon (mobile collapsed) */}
+        {/* Search icon — mobile collapsed state */}
         {showSearchIcon && (
           <button
             onClick={() => setSearchExpanded(true)}
             className="flex-shrink-0 flex items-center justify-center rounded-full transition-colors hover:bg-muted/60"
-            style={{ width: '36px', height: '36px' }}
+            style={{ width: 'var(--touch-target-min, 44px)', height: 'var(--touch-target-min, 44px)' }}
             aria-label="Open search"
           >
-            <Search className="w-[18px] h-[18px] text-muted-foreground" />
+            <Search style={{ width: 'clamp(16px, 2.5vw, 20px)', height: 'clamp(16px, 2.5vw, 20px)' }} className="text-muted-foreground" />
           </button>
         )}
 
-        {/* Search bar */}
+        {/* Search bar — expands to fill remaining space */}
         {showSearchBar && (
           <div
             className="relative flex-1"
-            style={{ maxWidth: isMobile ? '100%' : '280px', minWidth: '120px' }}
+            style={{
+              maxWidth: isMobile ? '100%' : 'clamp(200px, 30vw, 360px)',
+              minWidth: '0',
+            }}
           >
             <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
               <Search className="w-4 h-4 text-muted-foreground/60" />
@@ -178,7 +177,8 @@ export const Header = () => {
               maxLength={100}
               aria-label="Search venues and deals"
               autoFocus={isMobile && searchExpanded}
-              className="w-full pl-9 pr-9 h-9 rounded-full bg-muted/40 border-transparent hover:bg-muted/60 focus:bg-muted/70 focus:border-primary/30 focus:ring-1 focus:ring-primary/20 transition-all duration-200 text-sm placeholder:text-muted-foreground/50"
+              className="w-full pl-9 pr-9 rounded-full bg-muted/40 border-transparent hover:bg-muted/60 focus:bg-muted/70 focus:border-primary/30 focus:ring-1 focus:ring-primary/20 transition-all duration-200 text-sm placeholder:text-muted-foreground/50"
+              style={{ height: 'clamp(32px, 5vw, 40px)' }}
             />
             {isMobile && searchExpanded && (
               <button
@@ -204,10 +204,10 @@ export const Header = () => {
           </div>
         )}
 
-        {/* Spacer */}
+        {/* Spacer — pushes avatar to the right */}
         <div className="flex-1 min-w-0" />
 
-        {/* Avatar */}
+        {/* Avatar — settings link */}
         <button
           onClick={() => navigate('/settings')}
           className="relative flex-shrink-0 group rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -222,12 +222,13 @@ export const Header = () => {
           />
           <Avatar
             className="relative ring-[1.5px] ring-primary/25 group-hover:ring-primary/50 transition-all duration-300"
-            style={{ width: '34px', height: '34px' }}
+            style={{ width: 'clamp(30px, 4.5vw, 38px)', height: 'clamp(30px, 4.5vw, 38px)' }}
           >
             <AvatarImage src={avatarUrl || ""} alt="Profile" className="object-cover" />
             <AvatarFallback
-              className="text-primary-foreground font-bold text-xs"
+              className="text-primary-foreground font-bold"
               style={{
+                fontSize: 'clamp(10px, 1.5vw, 13px)',
                 background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))',
               }}
             >
