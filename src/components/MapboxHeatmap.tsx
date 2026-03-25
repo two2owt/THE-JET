@@ -2569,8 +2569,8 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
               : 'bg-card backdrop-blur-xl text-foreground border border-border ring-1 ring-black/5 dark:ring-white/10'
           }`}
           style={{ 
-            width: '44px', 
-            height: '44px',
+            width: 'var(--touch-target-min, 44px)', 
+            height: 'var(--touch-target-min, 44px)',
             marginLeft: 'auto',
           }}
           aria-label={controlsCollapsed ? "Open layers panel" : "Close layers panel"}
