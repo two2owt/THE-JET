@@ -360,12 +360,13 @@ const Index = () => {
             </div>
           </div>
 
-          {/* JetCard - rendered as a separate layer above map, using inset for sizing */}
+          {/* JetCard - fixed overlay above bottom nav */}
           {selectedVenue && (
             <div 
               ref={jetCardRef} 
-              className="absolute inset-0 z-[60] flex items-end justify-center p-3 pb-2 animate-fade-in"
+              className="fixed left-0 right-0 z-[60] flex justify-center px-3 animate-fade-in"
               style={{
+                bottom: 'calc(var(--bottom-nav-total-height, 60px) + 8px)',
                 pointerEvents: 'none',
                 ...(isMobile ? swipeStyle : {}),
               }}
