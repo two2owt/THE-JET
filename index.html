@@ -132,12 +132,11 @@
       body {
         height: 100dvh;
         margin: 0;
-        overflow: hidden;
+        overflow-x: hidden;
+        overflow-y: auto;
         background: hsl(var(--background));
         color: hsl(var(--foreground));
         font-family: 'Plus Jakarta Sans Variable', system-ui, -apple-system, sans-serif;
-        position: fixed;
-        inset: 0;
         display: flex;
         flex-direction: column;
       }
@@ -145,8 +144,9 @@
         display: flex;
         flex-direction: column;
         flex: 1;
-        height: 100dvh;
-        overflow: hidden;
+        min-height: 100dvh;
+        overflow-x: hidden;
+        overflow-y: auto;
         background: hsl(var(--background));
         position: relative;
       }
