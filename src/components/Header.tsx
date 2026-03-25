@@ -29,6 +29,12 @@ export const Header = () => {
   const { addToSearchHistory } = useSearchHistory(userId);
 
   useEffect(() => {
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      requestAnimationFrame(() => setMounted(true));
+    }
+  }, []);
+
     const fetchProfile = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
