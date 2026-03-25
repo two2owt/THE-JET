@@ -6,8 +6,8 @@ const PrivacyPolicy = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg pb-fluid-2xl">
+    <div className="bg-background" style={{ position: 'fixed', inset: 0, zIndex: 40, paddingTop: 'var(--header-total-height, 52px)', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 pb-16">
         <Button
           onClick={() => navigate(-1)}
           variant="ghost"
