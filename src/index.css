@@ -556,10 +556,10 @@ All colors MUST be HSL.
 
   /* JetCard elevated background - distinct from dark map tiles */
   .jetcard-bg {
-    background-color: hsl(var(--card));
+    background-color: hsl(0 0% 100%);
   }
   .dark .jetcard-bg {
-    background-color: hsl(240 5% 18%);
+    background-color: hsl(240 4% 22%);
   }
 
   /* Card containment - prevents card updates from affecting layout */
