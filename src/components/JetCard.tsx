@@ -82,24 +82,25 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
 
   return (
     <article 
-      className="relative w-full backdrop-blur-xl rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl transition-all duration-300 jetcard-bg"
+      className="relative w-full backdrop-blur-xl rounded-2xl overflow-hidden shadow-xl transition-all duration-300 jetcard-bg"
       style={{
         border: '2px solid hsl(24 100% 60% / 0.5)',
         boxShadow: '0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px hsl(24 100% 60% / 0.2), 0 0 20px hsl(24 100% 60% / 0.1)',
+        maxHeight: '340px',
       }}
       aria-label={`${venue.name} - ${venue.category} in ${venue.neighborhood}`}
     >
-      {/* Image Header with Gradient Overlay - Always visible */}
-      <div className="relative h-28 sm:h-36 md:h-44 bg-gradient-to-br from-primary/30 via-accent/20 to-secondary/30 overflow-hidden">
+      {/* Compact Header */}
+      <div className="relative h-20 sm:h-28 bg-gradient-to-br from-primary/30 via-accent/20 to-secondary/30 overflow-hidden">
         {venue.imageUrl && (
           <OptimizedImage
             src={venue.imageUrl} 
             alt={venue.name}
             className="absolute inset-0 w-full h-full object-cover"
             responsive={true}
-            responsiveSizes={['small', 'medium', 'large']}
-            sizesConfig={{ mobile: '100vw', tablet: '640px', desktop: '800px' }}
-            quality={85}
+            responsiveSizes={['small', 'medium']}
+            sizesConfig={{ mobile: '100vw', tablet: '480px', desktop: '480px' }}
+            quality={80}
             aspectRatio="16/9"
             deferLoad={true}
             blurUp={true}
@@ -108,82 +109,74 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
             }}
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
         
-        {/* Close Button - Top right corner */}
         {onClose && (
           <button
             onClick={onClose}
-            className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 z-20 bg-background/80 backdrop-blur-sm p-1.5 sm:p-2 rounded-full hover:bg-background transition-colors touch-manipulation"
+            className="absolute top-2 right-2 z-20 bg-background/80 backdrop-blur-sm p-1.5 rounded-full hover:bg-background transition-colors touch-manipulation"
             aria-label="Close"
           >
-            <X className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
+            <X className="w-4 h-4 text-foreground" />
           </button>
         )}
         
-        {/* Activity Badge - Top left */}
-        <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 bg-background/80 backdrop-blur-sm px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full animate-pulse" />
-          <span className="text-[10px] sm:text-xs font-bold text-foreground">{venue.activity}% Active</span>
+        {/* Activity Badge */}
+        <div className="absolute top-2 left-2 bg-background/80 backdrop-blur-sm px-2 py-0.5 rounded-full flex items-center gap-1.5">
+          <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
+          <span className="text-[10px] font-bold text-foreground">{venue.activity}% Active</span>
         </div>
 
-        {/* Category Badge - Bottom left */}
-        <div className="absolute bottom-2.5 left-2.5 sm:bottom-3 sm:left-3 bg-muted/80 backdrop-blur-sm px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-full">
-          <span className="text-[10px] sm:text-xs font-semibold text-foreground">{venue.category}</span>
+        {/* Category Badge */}
+        <div className="absolute bottom-2 left-2 bg-muted/80 backdrop-blur-sm px-2 py-0.5 rounded-full">
+          <span className="text-[10px] font-semibold text-foreground">{venue.category}</span>
         </div>
       </div>
 
-      {/* Content Area */}
-      <div className="p-3 sm:p-4 md:p-5 space-y-3 sm:space-y-4">
-        {/* Title */}
+      {/* Content Area - Compact */}
+      <div className="p-3 space-y-2">
+        {/* Title + Location */}
         <div>
-          <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-1 sm:mb-1.5">{venue.name}</h3>
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-              <span className="text-xs sm:text-sm">{venue.neighborhood}</span>
-            </div>
+          <h3 className="text-base sm:text-lg font-bold text-foreground leading-tight">{venue.name}</h3>
+          <div className="flex items-center gap-1.5 text-muted-foreground mt-0.5">
+            <MapPin className="w-3 h-3 flex-shrink-0" />
+            <span className="text-[11px]">{venue.neighborhood}</span>
             {venue.address && (
-              <p className="text-[10px] sm:text-xs text-muted-foreground/80 pl-5 sm:pl-5.5 line-clamp-1">{venue.address}</p>
+              <span className="text-[10px] text-muted-foreground/70 truncate">· {venue.address}</span>
             )}
           </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
-          <div className="bg-muted/50 rounded-lg sm:rounded-xl p-2 sm:p-3 text-center">
-            <TrendingUp className={`w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-0.5 sm:mb-1 ${activityLevel.color}`} />
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground">Status</p>
-            <p className="text-xs sm:text-sm font-bold text-foreground">{activityLevel.label.split(" ")[1]}</p>
+        {/* Inline Stats */}
+        <div className="flex items-center gap-3 text-xs">
+          <div className="flex items-center gap-1">
+            <TrendingUp className={`w-3.5 h-3.5 ${activityLevel.color}`} />
+            <span className="font-semibold text-foreground">{activityLevel.label.split(" ")[1]}</span>
           </div>
-          
-          <div className="bg-muted/50 rounded-lg sm:rounded-xl p-2 sm:p-3 text-center">
-            <Star className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-0.5 sm:mb-1 text-warm" />
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground">Rating</p>
-            <p className="text-xs sm:text-sm font-bold text-foreground">4.5</p>
+          <div className="flex items-center gap-1">
+            <Star className="w-3.5 h-3.5 text-warm" />
+            <span className="font-semibold text-foreground">4.5</span>
           </div>
-          
-          <div className="bg-muted/50 rounded-lg sm:rounded-xl p-2 sm:p-3 text-center">
-            <Users className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-0.5 sm:mb-1 text-secondary" />
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground">Crowd</p>
-            <p className="text-xs sm:text-sm font-bold text-foreground">{Math.round(venue.activity / 10) * 10}+</p>
+          <div className="flex items-center gap-1">
+            <Users className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="font-semibold text-foreground">{Math.round(venue.activity / 10) * 10}+</span>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-2 sm:gap-3" role="group" aria-label="Venue actions">
+        <div className="grid grid-cols-2 gap-2" role="group" aria-label="Venue actions">
           <Button 
             onClick={handleShare}
             variant="outline"
-            className="w-full border-border/60 hover:border-primary/60 hover:bg-primary/5 font-semibold h-10 sm:h-12 text-xs sm:text-sm rounded-lg sm:rounded-xl transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary"
+            className="w-full border-border/60 hover:border-primary/60 hover:bg-primary/5 font-semibold h-9 text-xs rounded-lg transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary"
             aria-label={`Share ${venue.name}`}
           >
-            <Share2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5" aria-hidden="true" />
+            <Share2 className="w-3.5 h-3.5 mr-1.5" aria-hidden="true" />
             Share
           </Button>
           <Button 
             onClick={handleGetDirections}
-            className="w-full bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 text-primary-foreground font-semibold h-10 sm:h-12 text-xs sm:text-sm rounded-lg sm:rounded-xl shadow-[var(--shadow-glow)] transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary"
+            className="w-full bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 text-primary-foreground font-semibold h-9 text-xs rounded-lg shadow-[var(--shadow-glow)] transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary"
             aria-label={`Get directions to ${venue.name}`}
           >
             Get Directions
