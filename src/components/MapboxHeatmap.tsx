@@ -2219,8 +2219,8 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       <div 
         className="absolute z-10 flex items-center gap-1.5"
         style={{
-          top: 'var(--map-safe-top-controls-in-map, var(--map-safe-top-controls, var(--map-safe-top)))',
-          left: 'var(--map-ui-inset-left)',
+          top: 'var(--map-safe-top-controls-in-map, calc(52px + 0.75rem + 0.75rem))',
+          left: 'var(--map-ui-inset-left, 0.75rem)',
           contain: 'layout style',
         }}
       >
