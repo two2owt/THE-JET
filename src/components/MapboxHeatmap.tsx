@@ -2217,10 +2217,11 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* Unified Top-Left Controls: Location + Map Style in one compact row */}
       {controlsReady && (
       <div 
-        className="absolute z-10 flex items-center gap-1.5"
+        className="absolute flex items-center gap-1.5"
         style={{
-          top: 'var(--map-safe-top-controls-in-map, calc(52px + 0.75rem + 0.75rem))',
+          top: 'var(--map-safe-top-controls-in-map, 66px)',
           left: 'var(--map-ui-inset-left, 0.75rem)',
+          zIndex: 30,
           contain: 'layout style',
         }}
       >
@@ -2359,12 +2360,12 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* Layers Panel - Unified FAB + expandable panel */}
       {controlsReady && (
       <div 
-        className="absolute z-[60]"
+        className="absolute"
         style={{
-          bottom: 'var(--map-fixed-bottom)',
-          right: 'var(--map-ui-inset-right)',
+          bottom: 'var(--map-fixed-bottom, 72px)',
+          right: 'var(--map-ui-inset-right, 0.75rem)',
+          zIndex: 30,
           contain: 'layout style',
-          transform: 'translateZ(0)',
         }}
       >
         {/* Expanded panel - slides up from FAB */}
