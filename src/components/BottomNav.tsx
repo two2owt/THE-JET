@@ -82,10 +82,11 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
           maxWidth: 'clamp(320px, 60vw, 560px)',
         }}
       >
-        {navItems.map((item) => {
+        {navItems.map((item, index) => {
           const isActive = activeTab === item.id;
           const Icon = item.icon;
           const hasNotification = item.id === 'notifications' && notificationCount > 0;
+          const staggerDelay = `${0.05 + index * 0.06}s`;
 
           return (
             <button
@@ -100,7 +101,9 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
                 minWidth: 'clamp(48px, 12vw, 64px)',
                 height: 'clamp(40px, 6vw, 52px)',
                 gap: '2px',
-                transition: 'all 0.2s ease-out',
+                opacity: mounted ? 1 : 0,
+                transform: mounted ? 'translateY(0)' : 'translateY(8px)',
+                transition: `opacity 0.35s ease-out ${staggerDelay}, transform 0.35s ease-out ${staggerDelay}`,
               }}
             >
               {/* Active pill indicator */}
