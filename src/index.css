@@ -429,7 +429,8 @@ All colors MUST be HSL.
     position: relative;
   }
 
-  /* App wrapper - ensures consistent layout on all visits including session restore */
+  /* App wrapper — locked viewport, no overflow to keep fixed nav visible.
+     Must match index.html .app-wrapper shell exactly. */
   .app-wrapper {
     display: flex;
     flex-direction: column;
@@ -440,9 +441,10 @@ All colors MUST be HSL.
     position: relative;
     flex: 1;
     background-color: hsl(var(--background));
-    /* IMPORTANT: No 'contain', 'transform', or 'filter' properties here! */
-    /* No overflow: hidden/clip — would clip absolutely positioned overlays (JetCard) */
+    overflow: hidden;
     box-sizing: border-box;
+    /* No 'contain', 'transform', or 'filter' — would create containing block
+       and break backdrop-filter on fixed Header/BottomNav */
   }
   
   /* Prevent pseudo-element animations from causing layout shifts in app-wrapper only */
