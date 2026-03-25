@@ -298,12 +298,12 @@ const Index = () => {
     <div 
       className="relative w-full"
       style={{
-        /* Fill remaining space in the flex column after header spacer */
         flex: '1 1 0%',
         minHeight: 0,
-        /* Create stacking context for overlay architecture */
+        height: 'var(--main-height)',
         isolation: 'isolate',
         position: 'relative',
+        overflow: 'visible',
       }}
     >
       {/* FULL-SCREEN MAP LAYER - only on map tab */}
