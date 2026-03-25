@@ -368,15 +368,22 @@ const Index = () => {
       {selectedVenue && activeTab === "map" && createPortal(
         <div 
           ref={jetCardRef} 
-          className="fixed left-0 right-0 z-[9999] flex justify-center px-3 animate-fade-in"
+          className="animate-fade-in"
           style={{
+            position: 'fixed',
+            left: '12px',
+            right: '12px',
             bottom: 'calc(var(--bottom-nav-total-height, 60px) + 8px)',
+            zIndex: 9999,
+            display: 'flex',
+            justifyContent: 'center',
             pointerEvents: 'none',
+            boxSizing: 'border-box',
             ...(isMobile ? swipeStyle : {}),
           }}
           {...(isMobile ? swipeHandlers : {})}
         >
-          <div className="w-full max-w-[480px]" style={{ pointerEvents: 'auto' }}>
+          <div style={{ pointerEvents: 'auto', width: '100%', maxWidth: '480px', boxSizing: 'border-box' }}>
             {isMobile && (
               <div className="flex justify-center pb-2 sm:pb-2.5">
                 <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
