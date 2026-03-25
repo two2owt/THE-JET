@@ -365,40 +365,40 @@ const Index = () => {
               </Suspense>
             )}
           </div>
+        </div>
+      )}
 
-          {/* JetCard overlay - inside map container to share stacking context */}
-          {selectedVenue && (
-            <div 
-              ref={jetCardRef} 
-              className="absolute z-[60]"
-              style={{
-                bottom: 'calc(var(--bottom-nav-total-height, 72px) + 8px)',
-                left: '12px',
-                right: '12px',
-                maxWidth: '480px',
-                marginLeft: 'auto',
-                marginRight: 'auto',
-                pointerEvents: 'none',
-                ...(isMobile ? swipeStyle : {}),
-              }}
-              {...(isMobile ? swipeHandlers : {})}
-            >
-              <div className="pointer-events-auto">
-                {isMobile && (
-                  <div className="flex justify-center pb-2 sm:pb-2.5">
-                    <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
-                  </div>
-                )}
-                <Suspense fallback={null}>
-                  <JetCard 
-                    venue={selectedVenue} 
-                    onGetDirections={handleGetDirections}
-                    onClose={() => setSelectedVenue(null)}
-                  />
-                </Suspense>
+      {/* JetCard overlay - sibling to map, inside relative parent */}
+      {activeTab === "map" && selectedVenue && (
+        <div 
+          ref={jetCardRef} 
+          className="absolute z-[60]"
+          style={{
+            bottom: 'calc(var(--bottom-nav-total-height, 72px) + 8px)',
+            left: '12px',
+            right: '12px',
+            maxWidth: '480px',
+            marginLeft: 'auto',
+            marginRight: 'auto',
+            pointerEvents: 'none',
+            ...(isMobile ? swipeStyle : {}),
+          }}
+          {...(isMobile ? swipeHandlers : {})}
+        >
+          <div className="pointer-events-auto">
+            {isMobile && (
+              <div className="flex justify-center pb-2 sm:pb-2.5">
+                <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
               </div>
-            </div>
-          )}
+            )}
+            <Suspense fallback={null}>
+              <JetCard 
+                venue={selectedVenue} 
+                onGetDirections={handleGetDirections}
+                onClose={() => setSelectedVenue(null)}
+              />
+            </Suspense>
+          </div>
         </div>
       )}
 
