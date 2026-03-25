@@ -369,21 +369,14 @@ const Index = () => {
                 position: 'absolute',
                 zIndex: 60,
                 bottom: '8px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                width: 'calc(100% - 24px)',
-                maxWidth: '480px',
+                left: '12px',
+                right: '12px',
                 pointerEvents: 'none',
-                ...(isMobile ? {
-                  ...swipeStyle,
-                  transform: swipeStyle.transform 
-                    ? `translateX(-50%) ${swipeStyle.transform}` 
-                    : 'translateX(-50%)',
-                } : {}),
+                ...(isMobile ? swipeStyle : {}),
               }}
               {...(isMobile ? swipeHandlers : {})}
             >
-              <div style={{ pointerEvents: 'auto', width: '100%' }}>
+              <div style={{ pointerEvents: 'auto', width: '100%', maxWidth: '480px', margin: '0 auto' }}>
                 {isMobile && (
                   <div className="flex justify-center pb-2 sm:pb-2.5">
                     <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
