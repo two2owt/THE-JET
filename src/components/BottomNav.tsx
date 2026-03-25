@@ -67,10 +67,9 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
       />
 
       <div
-        className="h-full mx-auto flex items-center justify-around"
+        className="h-full mx-auto flex items-center justify-around px-2 sm:px-3 md:px-4"
         style={{
-          maxWidth: '480px',
-          padding: '0 8px',
+          maxWidth: 'clamp(320px, 60vw, 560px)',
         }}
       >
         {navItems.map((item) => {
