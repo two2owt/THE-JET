@@ -302,9 +302,6 @@ const Index = () => {
         minHeight: 0,
         isolation: 'isolate',
         position: 'relative',
-        overflow: 'clip', /* clip prevents horizontal overflow but doesn't affect fixed children */
-        overflowX: 'clip' as any,
-        overflowY: 'visible', /* allow JetCard to be visible */
       }}
     >
       {/* FULL-SCREEN MAP LAYER - only on map tab */}
