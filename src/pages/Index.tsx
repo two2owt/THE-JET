@@ -369,11 +369,11 @@ const Index = () => {
         </div>
       )}
 
-      {/* Selected Venue Card - absolute within Index container, above bottom nav */}
-      {activeTab === "map" && selectedVenue && (
+      {/* Selected Venue Card - portaled to body to escape all containing blocks */}
+      {activeTab === "map" && selectedVenue && createPortal(
         <div 
           ref={jetCardRef} 
-         className="fixed z-[9999]"
+          className="fixed z-[9999]"
           style={{
             bottom: 'calc(var(--bottom-nav-total-height, 72px) + 8px)',
             left: '12px',
@@ -400,7 +400,8 @@ const Index = () => {
               />
             </Suspense>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Header config is set via context (useEffect below) */}
