@@ -383,7 +383,7 @@ const Index = () => {
               }}
               {...(isMobile ? swipeHandlers : {})}
             >
-              <div style={{ pointerEvents: 'auto' }}>
+              <div style={{ pointerEvents: 'auto', width: '100%' }}>
                 {isMobile && (
                   <div className="flex justify-center pb-2 sm:pb-2.5">
                     <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
