@@ -84,13 +84,12 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
     <article 
       className="relative w-full backdrop-blur-xl rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-border dark:border-primary/40 shadow-xl dark:shadow-[0_8px_32px_rgba(0,0,0,0.6),0_0_0_1px_hsl(var(--primary)/0.25)] transition-all duration-300 dark:ring-1 dark:ring-primary/15 bg-background dark:bg-[#1e1e22]"
       style={{ 
-        boxSizing: 'border-box', 
-        display: 'block', 
-        width: '100%',
+        background: '#ff0000',
+        border: '4px solid #00ff00',
+        borderRadius: '16px',
         overflow: 'hidden',
-        borderRadius: '1rem',
-        backgroundColor: 'hsl(var(--background))',
-        border: '2px solid hsl(var(--border))',
+        width: '100%',
+        boxSizing: 'border-box',
       }}
       aria-label={`${venue.name} - ${venue.category} in ${venue.neighborhood}`}
     >
