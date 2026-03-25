@@ -87,8 +87,8 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
               aria-current={isActive ? "page" : undefined}
               className="relative flex flex-col items-center justify-center touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
               style={{
-                minWidth: '56px',
-                height: '48px',
+                minWidth: 'clamp(48px, 12vw, 64px)',
+                height: 'clamp(40px, 6vw, 52px)',
                 gap: '2px',
                 transition: 'all 0.2s ease-out',
               }}
