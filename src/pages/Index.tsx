@@ -374,7 +374,6 @@ const Index = () => {
                 width: 'calc(100% - 24px)',
                 maxWidth: '480px',
                 pointerEvents: 'none',
-                outline: '3px solid red', /* DEBUG: verify dimensions */
                 ...(isMobile ? {
                   ...swipeStyle,
                   transform: swipeStyle.transform 
