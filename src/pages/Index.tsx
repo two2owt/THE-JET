@@ -371,13 +371,17 @@ const Index = () => {
                 position: 'absolute',
                 zIndex: 60,
                 bottom: '8px',
-                left: '12px',
-                right: '12px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: 'calc(100% - 24px)',
                 maxWidth: '480px',
-                marginLeft: 'auto',
-                marginRight: 'auto',
                 pointerEvents: 'none',
-                ...(isMobile ? swipeStyle : {}),
+                ...(isMobile ? {
+                  ...swipeStyle,
+                  transform: swipeStyle.transform 
+                    ? `translateX(-50%) ${swipeStyle.transform}` 
+                    : 'translateX(-50%)',
+                } : {}),
               }}
               {...(isMobile ? swipeHandlers : {})}
             >
