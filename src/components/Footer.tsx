@@ -21,6 +21,8 @@ export const Footer = () => {
       className="relative"
       role="contentinfo"
       style={{
+        flexShrink: 0,
+        contain: 'layout style',
         background: 'hsl(var(--background) / 0.85)',
         backdropFilter: 'blur(16px) saturate(1.4)',
         WebkitBackdropFilter: 'blur(16px) saturate(1.4)',
