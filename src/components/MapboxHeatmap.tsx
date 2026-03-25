@@ -1786,52 +1786,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
         .setLngLat([venue.lng, venue.lat])
         .addTo(mapInstance);
 
-      // Create popup for the venue with enhanced information
-      const addressHTML = venue.address 
-        ? `<p style="margin: 4px 0 8px 0; font-size: ${isMobile ? '11px' : '12px'}; color: rgba(255, 255, 255, 0.65); line-height: 1.4;">${venue.address}</p>`
-        : '';
-        
-      const googleRatingHTML = venue.googleRating 
-        ? `<div style="display: flex; align-items: center; gap: 6px; margin-top: 8px;">
-             <span style="color: #FFD700; font-size: ${isMobile ? '14px' : '16px'};">★</span>
-             <span style="font-size: ${isMobile ? '13px' : '14px'}; font-weight: 700; color: white;">${venue.googleRating.toFixed(1)}</span>
-             <span style="font-size: ${isMobile ? '11px' : '12px'}; color: rgba(255, 255, 255, 0.6);">(${venue.googleTotalRatings?.toLocaleString() || 0} reviews)</span>
-           </div>`
-        : '';
-      
-      const isOpenHTML = venue.isOpen !== null && venue.isOpen !== undefined
-        ? `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.12);">
-             <span style="display: inline-flex; align-items: center; gap: 6px;">
-               <span style="display: inline-block; width: ${isMobile ? '10px' : '12px'}; height: ${isMobile ? '10px' : '12px'}; border-radius: 50%; background: ${venue.isOpen ? '#22c55e' : '#ef4444'}; box-shadow: 0 0 8px ${venue.isOpen ? '#22c55e' : '#ef4444'};"></span>
-               <span style="font-size: ${isMobile ? '12px' : '14px'}; font-weight: 700; color: ${venue.isOpen ? '#22c55e' : '#ef4444'};">${venue.isOpen ? 'Open Now' : 'Closed'}</span>
-             </span>
-           </div>`
-        : '';
-
-      const popup = new mapboxglRef.current.Popup({
-        offset: isMobile ? 20 : 28,
-        closeButton: true,
-        closeOnClick: true,
-        maxWidth: isMobile ? '280px' : '320px',
-        className: 'venue-popup'
-      }).setHTML(`
-        <div style="padding: ${isMobile ? '12px' : '16px'};">
-          <h4 style="margin: 0 0 6px 0; font-size: ${isMobile ? '15px' : '17px'}; font-weight: 700; color: white; line-height: 1.3;">${venue.name}</h4>
-          <p style="margin: 0 0 8px 0; font-size: ${isMobile ? '12px' : '13px'}; color: rgba(255, 255, 255, 0.75); font-weight: 500;">${venue.category}</p>
-          ${addressHTML}
-          <div style="display: flex; align-items: center; gap: 6px; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-            <div style="width: ${isMobile ? '10px' : '12px'}; height: ${isMobile ? '10px' : '12px'}; border-radius: 50%; background: ${color}; box-shadow: 0 0 8px ${color};"></div>
-            <span style="font-size: ${isMobile ? '12px' : '14px'}; font-weight: 700; color: white;">${venue.activity}% Active</span>
-          </div>
-          ${googleRatingHTML}
-          ${isOpenHTML}
-        </div>
-      `);
-
-      // Attach popup to marker
-      marker.setPopup(popup);
-
-      // Handle click on the marker element
+      // Handle click on the marker element — only trigger JetCard, no Mapbox popup
       el.addEventListener("click", (e) => {
         e.stopPropagation();
         
@@ -1840,9 +1795,6 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
         
         // Open venue card (use ref to avoid stale closure)
         onVenueSelectRef.current(venue);
-        
-        // Show popup
-        popup.addTo(mapInstance);
       });
 
       markersRef.current.push(marker);
