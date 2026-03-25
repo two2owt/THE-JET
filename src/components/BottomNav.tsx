@@ -1,5 +1,5 @@
 import { MapPinned, Flame, Bell, Heart, Users2 } from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type NavItem = "map" | "explore" | "notifications" | "favorites" | "social";
 
@@ -16,6 +16,16 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
       onPrefetch(tab);
     }
   }, [onPrefetch, activeTab]);
+
+  const [mounted, setMounted] = useState(false);
+  const mountedRef = useRef(false);
+
+  useEffect(() => {
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      requestAnimationFrame(() => setMounted(true));
+    }
+  }, []);
 
   const navItems = [
     { id: "map" as NavItem, icon: MapPinned, label: "Map" },
@@ -72,10 +82,11 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
           maxWidth: 'clamp(320px, 60vw, 560px)',
         }}
       >
-        {navItems.map((item) => {
+        {navItems.map((item, index) => {
           const isActive = activeTab === item.id;
           const Icon = item.icon;
           const hasNotification = item.id === 'notifications' && notificationCount > 0;
+          const staggerDelay = `${0.05 + index * 0.06}s`;
 
           return (
             <button
@@ -90,7 +101,9 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
                 minWidth: 'clamp(48px, 12vw, 64px)',
                 height: 'clamp(40px, 6vw, 52px)',
                 gap: '2px',
-                transition: 'all 0.2s ease-out',
+                opacity: mounted ? 1 : 0,
+                transform: mounted ? 'translateY(0)' : 'translateY(8px)',
+                transition: `opacity 0.35s ease-out ${staggerDelay}, transform 0.35s ease-out ${staggerDelay}`,
               }}
             >
               {/* Active pill indicator */}
