@@ -111,7 +111,7 @@ export const Header = () => {
       />
 
       <div
-        className="h-full mx-auto flex items-center px-3 sm:px-4 md:px-6 lg:px-8 gap-2 sm:gap-3 md:gap-4"
+        className="h-full mx-auto flex flex-row flex-nowrap items-center px-3 sm:px-4 md:px-6 lg:px-8 gap-2 sm:gap-3 md:gap-4 overflow-hidden"
         style={{ maxWidth: '1280px' }}
       >
         {/* Logo — always visible unless mobile search is expanded */}
@@ -222,7 +222,7 @@ export const Header = () => {
           />
           <Avatar
             className="relative ring-[1.5px] ring-primary/25 group-hover:ring-primary/50 transition-all duration-300"
-            style={{ width: 'clamp(30px, 4.5vw, 38px)', height: 'clamp(30px, 4.5vw, 38px)' }}
+            style={{ width: 'clamp(32px, 5vw, 40px)', height: 'clamp(32px, 5vw, 40px)' }}
           >
             <AvatarImage src={avatarUrl || ""} alt="Profile" className="object-cover" />
             <AvatarFallback
