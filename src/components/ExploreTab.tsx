@@ -390,11 +390,19 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
         </Suspense>
       )}
 
-    <div className="space-y-6 animate-fade-in">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-extrabold bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent mb-2">Explore Deals</h2>
-        <div className="flex items-center gap-2 flex-wrap">
+        <h2 
+          style={{ 
+            fontSize: '24px', fontWeight: 800, marginBottom: '8px', lineHeight: 1.2,
+            background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+          }}
+        >
+          Explore Deals
+        </h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           <p className="text-sm text-muted-foreground">
             {userLocation 
               ? "Showing deals near you" 
@@ -420,14 +428,14 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
       </div>
 
       {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+      <div style={{ position: 'relative' }}>
+        <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '18px', height: '18px', color: 'hsl(var(--muted-foreground))' }} />
         <Input
           type="text"
           placeholder="Search venues, deals, or categories..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 bg-card/90 backdrop-blur-sm border-border focus:border-primary transition-colors"
+          className="pl-10 rounded-xl bg-muted/40 border-transparent hover:bg-muted/60 focus:bg-muted/70 focus:border-primary/30 focus:ring-1 focus:ring-primary/20 transition-all"
           aria-label="Search venues, deals, or categories"
         />
       </div>
