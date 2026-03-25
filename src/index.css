@@ -398,7 +398,7 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground font-sans;
     overflow-x: hidden;
-    overflow-y: hidden; /* Prevent body scroll - app handles its own scrolling */
+    overflow-y: auto; /* Allow scrolling for long-form pages */
     width: 100%;
     max-width: 100vw;
     min-height: 100vh;
@@ -410,8 +410,6 @@ All colors MUST be HSL.
     margin: 0;
     padding: 0;
     /* Prevent layout shift on session restore */
-    position: fixed;
-    inset: 0;
     display: flex;
     flex-direction: column;
   }
