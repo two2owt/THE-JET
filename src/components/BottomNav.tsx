@@ -26,8 +26,8 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
   ];
 
   return (
-    <nav 
-      className="fixed left-0 right-0 bottom-0 z-50 text-foreground"
+    <nav
+      className="fixed left-0 right-0 bottom-0 z-50"
       role="navigation"
       aria-label="Main navigation"
       style={{
@@ -40,120 +40,137 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
         flexShrink: 0,
       }}
     >
-      {/* Glassmorphic background */}
-      <div 
-        className="absolute inset-0 bg-card/80 backdrop-blur-2xl saturate-150"
-        style={{ zIndex: -1 }}
+      {/* Glass background */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: 'hsl(var(--background) / 0.82)',
+          backdropFilter: 'blur(24px) saturate(1.6)',
+          WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
+        }}
       />
-      
-      {/* Brand gradient overlay */}
-      <div 
-        className="absolute inset-0 bg-gradient-to-t from-primary/5 via-transparent to-accent/5"
-        style={{ zIndex: -1 }}
+      {/* Top divider */}
+      <div
+        className="absolute top-0 left-0 right-0"
+        style={{
+          height: '1px',
+          background: 'linear-gradient(90deg, hsl(var(--primary) / 0.2), hsl(var(--accent) / 0.3), hsl(var(--primary) / 0.2))',
+        }}
       />
-      
-      {/* Top border with brand gradient */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-primary/30 via-accent/40 to-primary/30" />
-      
       {/* Soft shadow above */}
-      <div 
-        className="absolute -top-4 left-0 right-0 h-4 bg-gradient-to-t from-black/8 to-transparent pointer-events-none"
-        style={{ zIndex: -1 }}
+      <div
+        className="absolute -top-3 left-0 right-0 h-3 pointer-events-none"
+        style={{
+          background: 'linear-gradient(to top, hsl(var(--background) / 0.08), transparent)',
+        }}
       />
 
-      <div className="max-w-lg sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 h-full flex items-center" style={{ display: 'flex', alignItems: 'center', height: '100%', paddingLeft: '1rem', paddingRight: '1rem', maxWidth: '32rem', marginLeft: 'auto', marginRight: 'auto' }}>
-        <div className="flex items-center justify-around w-full gap-fluid-xs" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', width: '100%' }}>
-          {navItems.map((item) => {
-            const isActive = activeTab === item.id;
-            const Icon = item.icon;
-            const hasNotification = item.id === 'notifications' && notificationCount > 0;
-              
-            return (
-              <button
-                key={item.id}
-                onClick={() => onTabChange(item.id)}
-                onMouseEnter={() => handlePrefetch(item.id)}
-                onTouchStart={() => handlePrefetch(item.id)}
-                aria-label={`${item.label}${hasNotification ? `, ${notificationCount} unread` : ''}`}
-                aria-current={isActive ? "page" : undefined}
-                className={`
-                  relative flex flex-col items-center justify-center gap-0.5 
-                  px-3 sm:px-4 py-2 rounded-xl
-                  transition-all duration-200 ease-out
-                  touch-manipulation
-                  focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-card
-                  ${isActive 
-                    ? "text-primary" 
-                    : "text-muted-foreground hover:text-foreground"
-                  }
-                `}
+      <div
+        className="h-full mx-auto flex items-center justify-around"
+        style={{
+          maxWidth: '480px',
+          padding: '0 8px',
+        }}
+      >
+        {navItems.map((item) => {
+          const isActive = activeTab === item.id;
+          const Icon = item.icon;
+          const hasNotification = item.id === 'notifications' && notificationCount > 0;
+
+          return (
+            <button
+              key={item.id}
+              onClick={() => onTabChange(item.id)}
+              onMouseEnter={() => handlePrefetch(item.id)}
+              onTouchStart={() => handlePrefetch(item.id)}
+              aria-label={`${item.label}${hasNotification ? `, ${notificationCount} unread` : ''}`}
+              aria-current={isActive ? "page" : undefined}
+              className="relative flex flex-col items-center justify-center touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
+              style={{
+                minWidth: '56px',
+                height: '48px',
+                gap: '2px',
+                transition: 'all 0.2s ease-out',
+              }}
+            >
+              {/* Active pill indicator */}
+              {isActive && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '-2px',
+                    left: '12px',
+                    right: '12px',
+                    height: '3px',
+                    borderRadius: '2px',
+                    background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))',
+                    boxShadow: '0 0 10px hsl(var(--primary) / 0.5), 0 0 4px hsl(var(--accent) / 0.3)',
+                  }}
+                />
+              )}
+
+              {/* Active background glow */}
+              {isActive && (
+                <div
+                  className="absolute inset-1 rounded-lg"
+                  style={{
+                    background: 'linear-gradient(180deg, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.06))',
+                  }}
+                />
+              )}
+
+              {/* Notification badge */}
+              {hasNotification && (
+                <span
+                  className="absolute flex items-center justify-center bg-destructive text-destructive-foreground font-bold rounded-full"
+                  style={{
+                    top: '2px',
+                    right: '4px',
+                    minWidth: '16px',
+                    height: '16px',
+                    padding: '0 4px',
+                    fontSize: '9px',
+                    lineHeight: 1,
+                    boxShadow: '0 2px 6px hsl(var(--destructive) / 0.4)',
+                  }}
+                  aria-hidden="true"
+                >
+                  {notificationCount > 9 ? '9+' : notificationCount}
+                </span>
+              )}
+
+              {/* Icon */}
+              <Icon
+                className="relative z-10"
                 style={{
-                  minWidth: 'clamp(52px, 14vw, 68px)',
-                  minHeight: 'clamp(44px, 10vw, 52px)',
+                  width: '20px',
+                  height: '20px',
+                  color: isActive ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
+                  strokeWidth: isActive ? 2.4 : 1.8,
+                  transition: 'color 0.2s, transform 0.2s',
+                  transform: isActive ? 'scale(1.05)' : 'scale(1)',
+                }}
+                fill={isActive && item.id === 'favorites' ? 'currentColor' : 'none'}
+                aria-hidden="true"
+              />
+
+              {/* Label */}
+              <span
+                className="relative z-10"
+                style={{
+                  fontSize: '10px',
+                  fontWeight: isActive ? 600 : 500,
+                  color: isActive ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
+                  opacity: isActive ? 1 : 0.65,
+                  transition: 'all 0.2s',
+                  letterSpacing: '0.01em',
                 }}
               >
-                {/* Active indicator pill */}
-                {isActive && (
-                  <div 
-                    className="absolute inset-x-1.5 -top-0.5 h-[3px] rounded-full bg-gradient-to-r from-primary via-accent to-primary"
-                    style={{
-                      boxShadow: '0 0 12px hsl(var(--primary) / 0.6), 0 0 4px hsl(var(--accent) / 0.4)',
-                    }}
-                  />
-                )}
-                
-                {/* Hover/active background */}
-                <div 
-                  className={`
-                    absolute inset-1 rounded-lg transition-all duration-200
-                    ${isActive 
-                      ? "bg-gradient-to-b from-primary/15 to-accent/10" 
-                      : "bg-transparent hover:bg-primary/5"
-                    }
-                  `}
-                />
-                
-                {/* Notification badge */}
-                {hasNotification && (
-                  <span 
-                    className="absolute top-1 right-1 sm:right-2 flex items-center justify-center min-w-[16px] h-4 px-1 text-[9px] font-bold bg-destructive text-destructive-foreground rounded-full shadow-sm"
-                    aria-hidden="true"
-                  >
-                    {notificationCount > 9 ? '9+' : notificationCount}
-                  </span>
-                )}
-                
-                {/* Icon with enhanced styling */}
-                <div className="relative z-10">
-                  <Icon 
-                    className={`
-                      w-5 h-5 sm:w-6 sm:h-6 
-                      transition-transform duration-200
-                      ${isActive ? "scale-105" : "scale-100"}
-                    `}
-                    strokeWidth={isActive ? 2.5 : 2}
-                    fill={isActive && (item.id === 'favorites') ? 'currentColor' : 'none'}
-                    aria-hidden="true"
-                  />
-                </div>
-                
-                {/* Label with enhanced typography */}
-                <span 
-                  className={`
-                    relative z-10 text-[10px] sm:text-xs font-medium whitespace-nowrap
-                    transition-all duration-200
-                    ${isActive 
-                      ? "opacity-100 font-semibold" 
-                      : "opacity-60"
-                    }
-                  `}
-                >
-                  {item.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </nav>
   );

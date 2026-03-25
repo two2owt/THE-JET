@@ -8,7 +8,6 @@ import { useSearchHistory } from "@/hooks/useSearchHistory";
 import { useHeaderContext } from "@/contexts/HeaderContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-// Lazy-load SearchResults - only needed when user starts typing
 const SearchResults = lazy(() => import("./SearchResults").then(m => ({ default: m.SearchResults })));
 
 const validateSearchQuery = (value: string): boolean => {
@@ -16,13 +15,7 @@ const validateSearchQuery = (value: string): boolean => {
 };
 
 export const Header = () => {
-  const {
-    venues,
-    deals,
-    onVenueSelect,
-    hideSearch,
-  } = useHeaderContext();
-
+  const { venues, deals, onVenueSelect, hideSearch } = useHeaderContext();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [searchQuery, setSearchQuery] = useState("");
@@ -59,10 +52,8 @@ export const Header = () => {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     if (!validateSearchQuery(value)) return;
-    
     setSearchQuery(value);
     setShowResults(value.trim().length > 0);
-
     if (value.trim().length > 2) {
       const timeoutId = setTimeout(() => {
         addToSearchHistory(value.trim());
@@ -71,165 +62,178 @@ export const Header = () => {
     }
   };
 
-  const handleCloseResults = () => {
-    setShowResults(false);
-  };
-
+  const handleCloseResults = () => setShowResults(false);
   const handleCollapseSearch = () => {
     setSearchExpanded(false);
     setSearchQuery("");
     setShowResults(false);
   };
 
-  // On mobile, show search icon that expands; on desktop, always show search bar
   const showSearchBar = !hideSearch && (!isMobile || searchExpanded);
   const showSearchIcon = !hideSearch && isMobile && !searchExpanded;
 
   return (
-    <header 
-      className="fixed top-0 left-0 right-0 z-[60] text-foreground"
-      role="banner" 
+    <header
+      className="fixed top-0 left-0 right-0 z-[60]"
+      role="banner"
       style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 60,
         paddingTop: 'var(--safe-area-inset-top)',
         height: 'var(--header-total-height)',
         minHeight: 'var(--header-total-height)',
         maxHeight: 'var(--header-total-height)',
         flexShrink: 0,
-        color: 'hsl(var(--foreground))',
       }}
     >
-      {/* Glassmorphic background layer */}
-      <div 
-        className="absolute inset-0 bg-card/80 backdrop-blur-2xl saturate-150"
-        style={{ zIndex: -1 }}
+      {/* Glass background */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: 'var(--header-bg, hsl(var(--background) / 0.82))',
+          backdropFilter: 'blur(20px) saturate(1.6)',
+          WebkitBackdropFilter: 'blur(20px) saturate(1.6)',
+        }}
       />
-      
-      {/* Brand gradient overlay for depth */}
-      <div 
-        className="absolute inset-0 bg-gradient-to-r from-primary/8 via-transparent to-accent/8"
-        style={{ zIndex: -1 }}
+      {/* Subtle gradient sheen */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'linear-gradient(135deg, hsl(var(--primary) / 0.06) 0%, transparent 50%, hsl(var(--accent) / 0.06) 100%)',
+        }}
       />
-      
-      {/* Bottom border with brand gradient */}
-      <div 
-        className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-primary/30 via-accent/40 to-primary/30"
+      {/* Bottom divider */}
+      <div
+        className="absolute bottom-0 left-0 right-0"
+        style={{
+          height: '1px',
+          background: 'linear-gradient(90deg, hsl(var(--primary) / 0.25), hsl(var(--accent) / 0.35), hsl(var(--primary) / 0.25))',
+        }}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 h-full flex items-center" style={{ display: 'flex', alignItems: 'center', height: '100%', paddingLeft: '1rem', paddingRight: '1rem', overflow: 'hidden' }}>
-        <div className="flex items-center gap-fluid-sm sm:gap-fluid-md w-full" style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', width: '100%', gap: '0.5rem', overflow: 'hidden' }}>
-          
-          {/* Logo - hidden when search is expanded on mobile */}
-          {!(isMobile && searchExpanded) && (
-          <a 
-            href="/" 
-            className="group flex items-center gap-1.5 flex-shrink-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-lg px-1 -ml-1"
-            style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', minWidth: '48px', height: '32px', flexShrink: 0, whiteSpace: 'nowrap' }}
-            onClick={e => {
-              e.preventDefault();
-              navigate('/');
-            }} 
+      <div
+        className="h-full mx-auto flex items-center"
+        style={{
+          maxWidth: '1280px',
+          padding: '0 16px',
+          gap: '10px',
+        }}
+      >
+        {/* Logo */}
+        {!(isMobile && searchExpanded) && (
+          <a
+            href="/"
+            className="group flex items-center gap-1.5 flex-shrink-0 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            onClick={e => { e.preventDefault(); navigate('/'); }}
             aria-label="JET - Go to home"
+            style={{ height: '36px', padding: '0 4px' }}
           >
-            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary drop-shadow-[0_0_6px_hsl(var(--primary)/0.5)] group-hover:scale-110 transition-all duration-300" style={{ width: '16px', height: '16px', flexShrink: 0 }} />
-            <h1 
-              className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent leading-none group-hover:drop-shadow-[0_0_8px_hsl(var(--primary)/0.4)] transition-all duration-300"
-              style={{ fontSize: '1.25rem', fontWeight: 800, lineHeight: 1, margin: 0 }}
-              // @ts-expect-error - elementtiming is a valid HTML attribute for LCP tracking
-              elementtiming="lcp-brand"
+            <Sparkles
+              className="text-primary transition-transform duration-300 group-hover:scale-110"
+              style={{
+                width: '18px',
+                height: '18px',
+                filter: 'drop-shadow(0 0 6px hsl(var(--primary) / 0.5))',
+              }}
+            />
+            <span
+              className="font-extrabold tracking-tight bg-clip-text text-transparent"
+              style={{
+                fontSize: '22px',
+                lineHeight: 1,
+                backgroundImage: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))',
+              }}
             >
               JET
-            </h1>
+            </span>
           </a>
-          )}
-          
-          {/* Search icon button (mobile collapsed) */}
-          {showSearchIcon && (
-            <button
-              onClick={() => setSearchExpanded(true)}
-              className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl bg-secondary/50 hover:bg-secondary/70 transition-colors"
-              aria-label="Open search"
-            >
-              <Search className="w-4 h-4 text-muted-foreground" />
-            </button>
-          )}
+        )}
 
-          {/* Search bar (always on desktop, expanded on mobile) */}
-          {showSearchBar && (
-          <div 
-            className="relative flex-1 max-w-xs sm:max-w-sm"
-            style={{ position: 'relative', flex: '1 1 0%', maxWidth: isMobile ? '100%' : '20rem', minWidth: '120px' }}
+        {/* Search icon (mobile collapsed) */}
+        {showSearchIcon && (
+          <button
+            onClick={() => setSearchExpanded(true)}
+            className="flex-shrink-0 flex items-center justify-center rounded-full transition-colors hover:bg-muted/60"
+            style={{ width: '36px', height: '36px' }}
+            aria-label="Open search"
           >
-            <div 
-              className="absolute left-3 top-1/2 -translate-y-1/2 z-10 pointer-events-none"
-              style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', zIndex: 10, pointerEvents: 'none' }}
-            >
-              <Search className="w-4 h-4 text-muted-foreground/70" style={{ width: '16px', height: '16px' }} />
+            <Search className="w-[18px] h-[18px] text-muted-foreground" />
+          </button>
+        )}
+
+        {/* Search bar */}
+        {showSearchBar && (
+          <div
+            className="relative flex-1"
+            style={{ maxWidth: isMobile ? '100%' : '280px', minWidth: '120px' }}
+          >
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
+              <Search className="w-4 h-4 text-muted-foreground/60" />
             </div>
-            <Input 
-              type="text" 
-              placeholder="Search venues..." 
-              value={searchQuery} 
-              onChange={handleSearchChange} 
-              onFocus={() => searchQuery.trim() && setShowResults(true)} 
-              maxLength={100} 
-              aria-label="Search venues and deals" 
+            <Input
+              type="text"
+              placeholder="Search venues..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              onFocus={() => searchQuery.trim() && setShowResults(true)}
+              maxLength={100}
+              aria-label="Search venues and deals"
               autoFocus={isMobile && searchExpanded}
-              className="w-full pl-9 pr-9 h-9 sm:h-10 rounded-xl bg-secondary/50 border-primary/10 hover:bg-secondary/70 hover:border-primary/20 focus:bg-secondary/80 focus:border-primary/40 focus:ring-1 focus:ring-primary/30 transition-all duration-200 text-sm placeholder:text-muted-foreground/60 shadow-sm" 
-              style={{ width: '100%', paddingLeft: '2.25rem', height: '36px', boxSizing: 'border-box' }}
+              className="w-full pl-9 pr-9 h-9 rounded-full bg-muted/40 border-transparent hover:bg-muted/60 focus:bg-muted/70 focus:border-primary/30 focus:ring-1 focus:ring-primary/20 transition-all duration-200 text-sm placeholder:text-muted-foreground/50"
             />
-            
-            {/* Close button (mobile only) */}
             {isMobile && searchExpanded && (
               <button
                 onClick={handleCollapseSearch}
-                className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-6 h-6 flex items-center justify-center rounded-md hover:bg-secondary/50 transition-colors"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 z-10 w-6 h-6 flex items-center justify-center rounded-full hover:bg-muted/60 transition-colors"
                 aria-label="Close search"
               >
                 <X className="w-3.5 h-3.5 text-muted-foreground" />
               </button>
             )}
-
             {showResults && (
               <Suspense fallback={null}>
-                <SearchResults 
-                  query={searchQuery} 
-                  venues={venues} 
-                  deals={deals} 
-                  onVenueSelect={onVenueSelect} 
-                  onClose={handleCloseResults} 
-                  isVisible={showResults} 
+                <SearchResults
+                  query={searchQuery}
+                  venues={venues}
+                  deals={deals}
+                  onVenueSelect={onVenueSelect}
+                  onClose={handleCloseResults}
+                  isVisible={showResults}
                 />
               </Suspense>
             )}
           </div>
-          )}
+        )}
 
-          {/* Spacer */}
-          <div className="flex-1 min-w-0" style={{ flex: '1 1 0%', minWidth: 0 }} />
+        {/* Spacer */}
+        <div className="flex-1 min-w-0" />
 
-          {/* Enhanced avatar */}
-          <button 
-            onClick={() => navigate('/settings')} 
-            className="relative flex-shrink-0 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-full"
-            style={{ width: 'clamp(36px, 9vw, 44px)', height: 'clamp(36px, 9vw, 44px)' }}
-            aria-label="Open settings"
+        {/* Avatar */}
+        <button
+          onClick={() => navigate('/settings')}
+          className="relative flex-shrink-0 group rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          aria-label="Open settings"
+        >
+          <div
+            className="absolute -inset-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            style={{
+              background: 'linear-gradient(135deg, hsl(var(--primary) / 0.3), hsl(var(--accent) / 0.3))',
+              filter: 'blur(8px)',
+            }}
+          />
+          <Avatar
+            className="relative ring-[1.5px] ring-primary/25 group-hover:ring-primary/50 transition-all duration-300"
+            style={{ width: '34px', height: '34px' }}
           >
-            {/* Glow ring on hover */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/40 to-accent/40 opacity-0 group-hover:opacity-100 blur-md transition-opacity duration-300" />
-            
-            <Avatar className="relative w-full h-full ring-2 ring-primary/30 group-hover:ring-primary/60 transition-all duration-300 shadow-glow">
-              <AvatarImage src={avatarUrl || ""} alt="Your profile picture" className="object-cover" />
-              <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground font-extrabold text-sm">
-                {displayName.substring(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-          </button>
-        </div>
+            <AvatarImage src={avatarUrl || ""} alt="Profile" className="object-cover" />
+            <AvatarFallback
+              className="text-primary-foreground font-bold text-xs"
+              style={{
+                background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))',
+              }}
+            >
+              {displayName.substring(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        </button>
       </div>
     </header>
   );
