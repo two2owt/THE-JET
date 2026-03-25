@@ -40,7 +40,7 @@ const PWAInstallPrompt = lazy(() => import("@/components/PWAInstallPrompt").then
 const PushNotificationPrompt = lazy(() => import("@/components/PushNotificationPrompt").then(m => ({ default: m.PushNotificationPrompt })));
 
 // Minimal critical imports
-import { Map as MapIcon } from "lucide-react";
+import { Map as MapIcon, Bell } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
