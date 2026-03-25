@@ -554,6 +554,14 @@ All colors MUST be HSL.
     will-change: contents;
   }
 
+  /* JetCard elevated background - distinct from dark map tiles */
+  .jetcard-bg {
+    background-color: hsl(var(--card));
+  }
+  .dark .jetcard-bg {
+    background-color: hsl(240 5% 18%);
+  }
+
   /* Card containment - prevents card updates from affecting layout */
   .card-contained {
     contain: layout style paint;
