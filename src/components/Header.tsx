@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense, useRef } from "react";
 import { Search, Sparkles, X } from "lucide-react";
 import { Input } from "./ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -20,11 +20,20 @@ export const Header = () => {
   const isMobile = useIsMobile();
   const [searchQuery, setSearchQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const mountedRef = useRef(false);
   const [searchExpanded, setSearchExpanded] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string>("JT");
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const { addToSearchHistory } = useSearchHistory(userId);
+
+  useEffect(() => {
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      requestAnimationFrame(() => setMounted(true));
+    }
+  }, []);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -121,7 +130,13 @@ export const Header = () => {
             className="group flex items-center gap-1.5 flex-shrink-0 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             onClick={e => { e.preventDefault(); navigate('/'); }}
             aria-label="JET - Go to home"
-            style={{ height: 'var(--touch-target-min, 44px)', padding: '0 2px' }}
+            style={{
+              height: 'var(--touch-target-min, 44px)',
+              padding: '0 2px',
+              opacity: mounted ? 1 : 0,
+              transform: mounted ? 'translateX(0)' : 'translateX(-8px)',
+              transition: 'opacity 0.4s ease-out, transform 0.4s ease-out',
+            }}
           >
             <Sparkles
               className="text-primary transition-transform duration-300 group-hover:scale-110"
@@ -149,7 +164,13 @@ export const Header = () => {
           <button
             onClick={() => setSearchExpanded(true)}
             className="flex-shrink-0 flex items-center justify-center rounded-full transition-colors hover:bg-muted/60"
-            style={{ width: 'var(--touch-target-min, 44px)', height: 'var(--touch-target-min, 44px)' }}
+            style={{
+              width: 'var(--touch-target-min, 44px)',
+              height: 'var(--touch-target-min, 44px)',
+              opacity: mounted ? 1 : 0,
+              transform: mounted ? 'scale(1)' : 'scale(0.8)',
+              transition: 'opacity 0.3s ease-out 0.15s, transform 0.3s ease-out 0.15s',
+            }}
             aria-label="Open search"
           >
             <Search style={{ width: 'clamp(16px, 2.5vw, 20px)', height: 'clamp(16px, 2.5vw, 20px)' }} className="text-muted-foreground" />
@@ -163,6 +184,9 @@ export const Header = () => {
             style={{
               maxWidth: isMobile ? '100%' : 'clamp(200px, 30vw, 360px)',
               minWidth: '0',
+              opacity: mounted ? 1 : 0,
+              transform: mounted ? 'translateY(0)' : 'translateY(-6px)',
+              transition: 'opacity 0.4s ease-out 0.1s, transform 0.4s ease-out 0.1s',
             }}
           >
             <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
@@ -212,6 +236,11 @@ export const Header = () => {
           onClick={() => navigate('/settings')}
           className="relative flex-shrink-0 group rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           aria-label="Open settings"
+          style={{
+            opacity: mounted ? 1 : 0,
+            transform: mounted ? 'translateX(0)' : 'translateX(8px)',
+            transition: 'opacity 0.4s ease-out 0.2s, transform 0.4s ease-out 0.2s',
+          }}
         >
           <div
             className="absolute -inset-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
