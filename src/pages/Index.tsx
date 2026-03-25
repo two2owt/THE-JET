@@ -369,14 +369,15 @@ const Index = () => {
                 position: 'absolute',
                 zIndex: 60,
                 bottom: '8px',
-                left: '12px',
-                right: '12px',
+                left: 0,
+                right: 0,
+                padding: '0 12px',
                 pointerEvents: 'none',
                 ...(isMobile ? swipeStyle : {}),
               }}
               {...(isMobile ? swipeHandlers : {})}
             >
-              <div style={{ pointerEvents: 'auto', width: '100%', maxWidth: '480px', margin: '0 auto' }}>
+              <div style={{ pointerEvents: 'auto', maxWidth: '480px', margin: '0 auto' }}>
                 {isMobile && (
                   <div className="flex justify-center pb-2 sm:pb-2.5">
                     <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
