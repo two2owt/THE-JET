@@ -300,10 +300,11 @@ const Index = () => {
       style={{
         flex: '1 1 0%',
         minHeight: 0,
-        height: 0, /* flex-grow expands this; explicit 0 gives absolute children a resolved height */
         isolation: 'isolate',
         position: 'relative',
-        overflow: 'visible',
+        overflow: 'clip', /* clip prevents horizontal overflow but doesn't affect fixed children */
+        overflowX: 'clip' as any,
+        overflowY: 'visible', /* allow JetCard to be visible */
       }}
     >
       {/* FULL-SCREEN MAP LAYER - only on map tab */}
