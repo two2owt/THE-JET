@@ -82,13 +82,14 @@ export const Header = () => {
         minHeight: 'var(--header-total-height)',
         maxHeight: 'var(--header-total-height)',
         flexShrink: 0,
+        contain: 'layout style',
       }}
     >
       {/* Glass background */}
       <div
         className="absolute inset-0"
         style={{
-          background: 'var(--header-bg, hsl(var(--background) / 0.82))',
+          background: 'hsl(var(--background) / 0.82)',
           backdropFilter: 'blur(20px) saturate(1.6)',
           WebkitBackdropFilter: 'blur(20px) saturate(1.6)',
         }}
