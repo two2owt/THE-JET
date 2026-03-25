@@ -298,108 +298,104 @@ const Index = () => {
     <div 
       className="relative w-full"
       style={{
-        /* Fill remaining space in the flex column after header spacer */
         flex: '1 1 0%',
         minHeight: 0,
-        /* Create stacking context for overlay architecture */
         isolation: 'isolate',
         position: 'relative',
       }}
     >
       {/* FULL-SCREEN MAP LAYER - only on map tab */}
       {activeTab === "map" && (
-        <div 
-          className="absolute inset-0 w-full h-full"
-          style={{
-            zIndex: 0,
-            // DO NOT use transform here — it creates a containing block that
-            // traps fixed-position children and breaks backdrop-filter rendering
-          }}
-        >
-          {/* Error state */}
-          {mapboxError && !mapboxLoading && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-background">
-              <div className="text-center space-y-3 sm:space-y-4 p-6 sm:p-8">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 mx-auto rounded-full bg-destructive/10 flex items-center justify-center">
-                  <MapIcon className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-destructive" />
+        <>
+          <div 
+            className="absolute inset-0 w-full h-full"
+            style={{ zIndex: 0 }}
+          >
+            {mapboxError && !mapboxLoading && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-background">
+                <div className="text-center space-y-3 sm:space-y-4 p-6 sm:p-8">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 mx-auto rounded-full bg-destructive/10 flex items-center justify-center">
+                    <MapIcon className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-destructive" />
+                  </div>
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <p className="text-sm sm:text-base md:text-lg font-medium text-foreground">Unable to load map</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground max-w-[200px] sm:max-w-[280px] mx-auto">{mapboxError}</p>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="default"
+                    onClick={() => window.location.reload()}
+                    className="mt-2 sm:mt-3"
+                  >
+                    Try Again
+                  </Button>
                 </div>
-                <div className="space-y-1.5 sm:space-y-2">
-                  <p className="text-sm sm:text-base md:text-lg font-medium text-foreground">Unable to load map</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground max-w-[200px] sm:max-w-[280px] mx-auto">{mapboxError}</p>
-                </div>
-                <Button 
-                  variant="outline" 
-                  size="default"
-                  onClick={() => window.location.reload()}
-                  className="mt-2 sm:mt-3"
-                >
-                  Try Again
-                </Button>
+              </div>
+            )}
+            
+            <div 
+              className="absolute inset-0 w-full h-full"
+              style={{
+                opacity: isMapboxReady && mapboxToken ? 1 : 0,
+                transition: 'opacity 300ms ease-out',
+              }}
+            >
+              {mapboxToken && (
+                <Suspense fallback={null}>
+                  <MapboxHeatmap
+                    onVenueSelect={handleVenueSelect} 
+                    venues={venues} 
+                    mapboxToken={mapboxToken}
+                    selectedCity={selectedCity}
+                    onCityChange={handleCityChange}
+                    onNearestCityDetected={handleNearestCityDetected}
+                    onDetectedLocationNameChange={handleDetectedLocationNameChange}
+                    isLoadingVenues={venuesLoading}
+                    selectedVenue={selectedVenue}
+                    resetUIKey={mapUIResetKey}
+                    isTokenLoading={false}
+                  />
+                </Suspense>
+              )}
+            </div>
+          </div>
+
+          {/* JetCard - rendered as a separate layer above map, using inset for sizing */}
+          {selectedVenue && (
+            <div 
+              ref={jetCardRef} 
+              className="animate-fade-in"
+              style={{
+                position: 'absolute',
+                zIndex: 60,
+                bottom: '8px',
+                left: '12px',
+                right: '12px',
+                maxWidth: '480px',
+                marginLeft: 'auto',
+                marginRight: 'auto',
+                pointerEvents: 'none',
+                ...(isMobile ? swipeStyle : {}),
+              }}
+              {...(isMobile ? swipeHandlers : {})}
+            >
+              <div style={{ pointerEvents: 'auto' }}>
+                {isMobile && (
+                  <div className="flex justify-center pb-2 sm:pb-2.5">
+                    <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
+                  </div>
+                )}
+                <Suspense fallback={null}>
+                  <JetCard 
+                    venue={selectedVenue} 
+                    onGetDirections={handleGetDirections}
+                    onClose={() => setSelectedVenue(null)}
+                  />
+                </Suspense>
               </div>
             </div>
           )}
-          
-          {/* Map canvas */}
-          <div 
-            className="absolute inset-0 w-full h-full"
-            style={{
-              opacity: isMapboxReady && mapboxToken ? 1 : 0,
-              transition: 'opacity 300ms ease-out',
-            }}
-          >
-            {mapboxToken && (
-              <Suspense fallback={null}>
-                <MapboxHeatmap
-                  onVenueSelect={handleVenueSelect} 
-                  venues={venues} 
-                  mapboxToken={mapboxToken}
-                  selectedCity={selectedCity}
-                  onCityChange={handleCityChange}
-                  onNearestCityDetected={handleNearestCityDetected}
-                  onDetectedLocationNameChange={handleDetectedLocationNameChange}
-                  isLoadingVenues={venuesLoading}
-                  selectedVenue={selectedVenue}
-                  resetUIKey={mapUIResetKey}
-                  isTokenLoading={false}
-                />
-              </Suspense>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Selected Venue Card - absolute within Index container, above bottom nav */}
-      {activeTab === "map" && selectedVenue && (
-        <div 
-          ref={jetCardRef} 
-          className="absolute z-[60] animate-fade-in"
-          style={{
-            bottom: 'var(--map-safe-bottom)',
-            left: 'var(--map-ui-inset-left)',
-            right: 'var(--map-ui-inset-right)',
-            maxWidth: '480px',
-            marginLeft: 'auto',
-            marginRight: 'auto',
-            pointerEvents: 'none',
-            ...(isMobile ? swipeStyle : {}),
-          }}
-          {...(isMobile ? swipeHandlers : {})}
-        >
-          <div className="pointer-events-auto">
-            {isMobile && (
-              <div className="flex justify-center pb-2 sm:pb-2.5">
-                <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
-              </div>
-            )}
-            <Suspense fallback={null}>
-              <JetCard 
-                venue={selectedVenue} 
-                onGetDirections={handleGetDirections}
-                onClose={() => setSelectedVenue(null)}
-              />
-            </Suspense>
-          </div>
-        </div>
+        </>
       )}
 
       {/* Header config is set via context (useEffect below) */}
