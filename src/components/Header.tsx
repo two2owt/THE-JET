@@ -130,7 +130,13 @@ export const Header = () => {
             className="group flex items-center gap-1.5 flex-shrink-0 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             onClick={e => { e.preventDefault(); navigate('/'); }}
             aria-label="JET - Go to home"
-            style={{ height: 'var(--touch-target-min, 44px)', padding: '0 2px' }}
+            style={{
+              height: 'var(--touch-target-min, 44px)',
+              padding: '0 2px',
+              opacity: mounted ? 1 : 0,
+              transform: mounted ? 'translateX(0)' : 'translateX(-8px)',
+              transition: 'opacity 0.4s ease-out, transform 0.4s ease-out',
+            }}
           >
             <Sparkles
               className="text-primary transition-transform duration-300 group-hover:scale-110"
