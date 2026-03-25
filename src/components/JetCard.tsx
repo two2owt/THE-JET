@@ -1,7 +1,6 @@
 import { memo, useState, useEffect } from "react";
 import { MapPin, Users, Star, TrendingUp, X, Share2 } from "lucide-react";
 import { Button } from "./ui/button";
-import { OptimizedImage } from "./ui/optimized-image";
 import { glideHaptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,162 +23,150 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
     });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
   const getActivityLevel = (activity: number) => {
-    if (activity >= 80) return { label: "🔥 Very Busy", color: "text-hot" };
-    if (activity >= 60) return { label: "🌟 Busy", color: "text-warm" };
-    if (activity >= 40) return { label: "✨ Moderate", color: "text-cool" };
-    return { label: "😌 Quiet", color: "text-cold" };
+    if (activity >= 80) return { label: "🔥 Very Busy", color: "#ef4444" };
+    if (activity >= 60) return { label: "🌟 Busy", color: "#eab308" };
+    if (activity >= 40) return { label: "✨ Moderate", color: "#3b82f6" };
+    return { label: "😌 Quiet", color: "#737373" };
   };
 
-
   const handleGetDirections = async () => {
-    await glideHaptic(); // Smooth gliding haptic feedback
+    await glideHaptic();
     onGetDirections();
   };
 
   const handleShare = async () => {
-    // Check if user has JET+ subscription for sharing
     if (!canAccessSocialFeatures()) {
       setShowUpgradePrompt(true);
       return;
     }
-
     await glideHaptic();
-    
     const result = await shareVenue({ id: venue.id, name: venue.name });
-    
     if (result.success) {
       if (result.method === "native") {
-        toast.success("Shared successfully!", {
-          description: `${venue.name} shared with others`,
-        });
+        toast.success("Shared successfully!", { description: `${venue.name} shared with others` });
       } else {
-        toast.success("Copied to clipboard!", {
-          description: "Share link copied - paste it anywhere",
-        });
+        toast.success("Copied to clipboard!", { description: "Share link copied - paste it anywhere" });
       }
-    } else if (result.method === "native") {
-      // Native share was cancelled, don't show error
-    } else {
-      toast.error("Couldn't share", {
-        description: "Please try again",
-      });
+    } else if (result.method !== "native") {
+      toast.error("Couldn't share", { description: "Please try again" });
     }
   };
-
 
   const activityLevel = getActivityLevel(venue.activity);
 
   return (
-    <article 
-      className="relative w-full rounded-2xl overflow-hidden transition-all duration-300"
+    <article
       style={{
+        position: 'relative',
+        width: '100%',
         backgroundColor: 'hsl(240 4% 22%)',
         border: '2px solid hsl(24 100% 60% / 0.6)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px hsl(24 100% 60% / 0.25), 0 0 24px hsl(24 100% 60% / 0.15)',
         borderRadius: '16px',
-        maxHeight: '320px',
         overflow: 'hidden',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.7), 0 0 24px hsl(24 100% 60% / 0.15)',
+        maxHeight: '300px',
+        fontFamily: "'Plus Jakarta Sans Variable', system-ui, sans-serif",
       }}
       aria-label={`${venue.name} - ${venue.category} in ${venue.neighborhood}`}
     >
-      {/* Compact Header */}
-      <div className="relative h-20 sm:h-28 bg-gradient-to-br from-primary/30 via-accent/20 to-secondary/30 overflow-hidden">
+      {/* Image Header */}
+      <div style={{ position: 'relative', height: '80px', background: 'linear-gradient(135deg, hsl(24 100% 60% / 0.3), hsl(320 80% 65% / 0.2))', overflow: 'hidden' }}>
         {venue.imageUrl && (
-          <OptimizedImage
-            src={venue.imageUrl} 
+          <img
+            src={venue.imageUrl}
             alt={venue.name}
-            className="absolute inset-0 w-full h-full object-cover"
-            responsive={true}
-            responsiveSizes={['small', 'medium']}
-            sizesConfig={{ mobile: '100vw', tablet: '480px', desktop: '480px' }}
-            quality={80}
-            aspectRatio="16/9"
-            deferLoad={true}
-            blurUp={true}
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-            }}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+            loading="lazy"
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
-        
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.6), transparent)' }} />
+
         {onClose && (
           <button
             onClick={onClose}
-            className="absolute top-2 right-2 z-20 bg-background/80 backdrop-blur-sm p-1.5 rounded-full hover:bg-background transition-colors touch-manipulation"
+            style={{
+              position: 'absolute', top: '8px', right: '8px', zIndex: 20,
+              background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
+              border: 'none', borderRadius: '50%', padding: '6px',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
             aria-label="Close"
           >
-            <X className="w-4 h-4 text-foreground" />
+            <X style={{ width: '16px', height: '16px', color: '#fff' }} />
           </button>
         )}
-        
+
         {/* Activity Badge */}
-        <div className="absolute top-2 left-2 bg-background/80 backdrop-blur-sm px-2 py-0.5 rounded-full flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-          <span className="text-[10px] font-bold text-foreground">{venue.activity}% Active</span>
+        <div style={{
+          position: 'absolute', top: '8px', left: '8px',
+          background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
+          padding: '2px 8px', borderRadius: '999px',
+          display: 'flex', alignItems: 'center', gap: '6px',
+        }}>
+          <div style={{ width: '6px', height: '6px', backgroundColor: 'hsl(24 100% 60%)', borderRadius: '50%' }} />
+          <span style={{ fontSize: '10px', fontWeight: 700, color: '#fff' }}>{venue.activity}% Active</span>
         </div>
 
         {/* Category Badge */}
-        <div className="absolute bottom-2 left-2 bg-muted/80 backdrop-blur-sm px-2 py-0.5 rounded-full">
-          <span className="text-[10px] font-semibold text-foreground">{venue.category}</span>
+        <div style={{
+          position: 'absolute', bottom: '8px', left: '8px',
+          background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)',
+          padding: '2px 8px', borderRadius: '999px',
+        }}>
+          <span style={{ fontSize: '10px', fontWeight: 600, color: '#fff' }}>{venue.category}</span>
         </div>
       </div>
 
-      {/* Content Area - Compact */}
-      <div className="p-3 space-y-2">
-        {/* Title + Location */}
+      {/* Content */}
+      <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {/* Title */}
         <div>
-          <h3 className="text-base sm:text-lg font-bold text-foreground leading-tight">{venue.name}</h3>
-          <div className="flex items-center gap-1.5 text-muted-foreground mt-0.5">
-            <MapPin className="w-3 h-3 flex-shrink-0" />
-            <span className="text-[11px]">{venue.neighborhood}</span>
-            {venue.address && (
-              <span className="text-[10px] text-muted-foreground/70 truncate">· {venue.address}</span>
-            )}
+          <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#fafafa', margin: 0, lineHeight: 1.2 }}>{venue.name}</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', color: '#a1a1aa', fontSize: '11px' }}>
+            <MapPin style={{ width: '12px', height: '12px', flexShrink: 0 }} />
+            <span>{venue.neighborhood}</span>
+            {venue.address && <span style={{ color: '#71717a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>· {venue.address}</span>}
           </div>
         </div>
 
         {/* Inline Stats */}
-        <div className="flex items-center gap-3 text-xs">
-          <div className="flex items-center gap-1">
-            <TrendingUp className={`w-3.5 h-3.5 ${activityLevel.color}`} />
-            <span className="font-semibold text-foreground">{activityLevel.label.split(" ")[1]}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <TrendingUp style={{ width: '14px', height: '14px', color: activityLevel.color }} />
+            <span style={{ fontWeight: 600, color: '#fafafa' }}>{activityLevel.label.split(" ")[1]}</span>
           </div>
-          <div className="flex items-center gap-1">
-            <Star className="w-3.5 h-3.5 text-warm" />
-            <span className="font-semibold text-foreground">4.5</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Star style={{ width: '14px', height: '14px', color: '#eab308' }} />
+            <span style={{ fontWeight: 600, color: '#fafafa' }}>4.5</span>
           </div>
-          <div className="flex items-center gap-1">
-            <Users className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="font-semibold text-foreground">{Math.round(venue.activity / 10) * 10}+</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Users style={{ width: '14px', height: '14px', color: '#a1a1aa' }} />
+            <span style={{ fontWeight: 600, color: '#fafafa' }}>{Math.round(venue.activity / 10) * 10}+</span>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-2" role="group" aria-label="Venue actions">
-          <Button 
+        {/* Buttons */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }} role="group" aria-label="Venue actions">
+          <Button
             onClick={handleShare}
             variant="outline"
-            className="w-full border-border/60 hover:border-primary/60 hover:bg-primary/5 font-semibold h-9 text-xs rounded-lg transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary"
+            className="w-full font-semibold h-9 text-xs rounded-lg"
             aria-label={`Share ${venue.name}`}
           >
             <Share2 className="w-3.5 h-3.5 mr-1.5" aria-hidden="true" />
             Share
           </Button>
-          <Button 
+          <Button
             onClick={handleGetDirections}
-            className="w-full bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 text-primary-foreground font-semibold h-9 text-xs rounded-lg shadow-[var(--shadow-glow)] transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary"
+            className="w-full bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 text-primary-foreground font-semibold h-9 text-xs rounded-lg"
             aria-label={`Get directions to ${venue.name}`}
           >
             Get Directions
