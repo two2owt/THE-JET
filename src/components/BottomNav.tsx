@@ -17,7 +17,16 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
     }
   }, [onPrefetch, activeTab]);
 
-  const navItems = [
+  const [mounted, setMounted] = useState(false);
+  const mountedRef = useRef(false);
+
+  useEffect(() => {
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      requestAnimationFrame(() => setMounted(true));
+    }
+  }, []);
+
     { id: "map" as NavItem, icon: MapPinned, label: "Map" },
     { id: "explore" as NavItem, icon: Flame, label: "Hot" },
     { id: "notifications" as NavItem, icon: Bell, label: "Alerts" },
