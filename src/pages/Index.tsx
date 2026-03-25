@@ -364,20 +364,14 @@ const Index = () => {
           {selectedVenue && (
             <div 
               ref={jetCardRef} 
-              className="animate-fade-in"
+              className="absolute inset-0 z-[60] flex items-end justify-center p-3 pb-2 animate-fade-in"
               style={{
-                position: 'absolute',
-                zIndex: 60,
-                bottom: '8px',
-                left: 0,
-                right: 0,
-                padding: '0 12px',
                 pointerEvents: 'none',
                 ...(isMobile ? swipeStyle : {}),
               }}
               {...(isMobile ? swipeHandlers : {})}
             >
-              <div style={{ pointerEvents: 'auto', maxWidth: '480px', margin: '0 auto' }}>
+              <div className="w-full max-w-[480px]" style={{ pointerEvents: 'auto' }}>
                 {isMobile && (
                   <div className="flex justify-center pb-2 sm:pb-2.5">
                     <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
