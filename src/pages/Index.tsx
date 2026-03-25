@@ -427,16 +427,36 @@ const Index = () => {
           }}
         >
           {activeTab === "notifications" && (
-            <div className="animate-fade-in px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-sm sm:py-fluid-md space-y-fluid-md">
+            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <h2 className="text-fluid-2xl font-bold text-foreground mb-1 sm:mb-2">Notifications</h2>
-                <p className="text-fluid-sm text-muted-foreground">Stay updated with nearby deals and events</p>
+                <h2 
+                  style={{ 
+                    fontSize: '24px', fontWeight: 800, marginBottom: '6px', lineHeight: 1.2,
+                    background: 'linear-gradient(135deg, hsl(var(--foreground)), hsl(var(--primary)))',
+                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                  }}
+                >
+                  Notifications
+                </h2>
+                <p style={{ fontSize: '14px', color: 'hsl(var(--muted-foreground))' }}>Stay updated with nearby deals and events</p>
               </div>
               
               {notifications.length === 0 ? (
-                <div className="text-center py-8 sm:py-10 md:py-12 text-muted-foreground">
-                  <p className="text-sm sm:text-base">No notifications yet</p>
-                  <p className="text-xs sm:text-sm mt-1 sm:mt-2">Enable location tracking to receive deal alerts</p>
+                <div style={{ 
+                  textAlign: 'center', padding: '48px 16px',
+                  borderRadius: '16px', backgroundColor: 'hsl(var(--card) / 0.9)',
+                  border: '1px solid hsl(var(--border) / 0.5)',
+                }}>
+                  <div style={{
+                    width: '56px', height: '56px', margin: '0 auto 16px',
+                    borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--accent) / 0.15))',
+                    border: '1px solid hsl(var(--primary) / 0.2)',
+                  }}>
+                    <Bell style={{ width: '24px', height: '24px', color: 'hsl(var(--primary))' }} />
+                  </div>
+                  <p style={{ fontSize: '16px', fontWeight: 600, color: 'hsl(var(--foreground))', marginBottom: '6px' }}>No notifications yet</p>
+                  <p style={{ fontSize: '13px', color: 'hsl(var(--muted-foreground))' }}>Enable location tracking to receive deal alerts</p>
                 </div>
               ) : (
                 <>
