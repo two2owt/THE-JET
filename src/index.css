@@ -1404,9 +1404,8 @@ All colors MUST be HSL.
     }
   }
   
-  /* Orb entrance animation - kept for skeleton loading states */
-  /* Unused orb entrance animations removed - skeletons are now static for CLS prevention */
-  
+
+
   /* Slide in from top animation - GPU accelerated for OfflineBanner */
   @keyframes slideInFromTop {
     0% {
