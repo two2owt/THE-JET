@@ -250,10 +250,10 @@ export const Header = () => {
             }}
           />
           <Avatar
-            className="relative ring-[1.5px] ring-primary/25 group-hover:ring-primary/50 transition-all duration-300"
-            style={{ width: 'clamp(32px, 5vw, 40px)', height: 'clamp(32px, 5vw, 40px)' }}
+            className="relative ring-[1.5px] ring-primary/25 group-hover:ring-primary/50 transition-all duration-300 !overflow-hidden"
+            style={{ width: 'clamp(32px, 5vw, 40px)', height: 'clamp(32px, 5vw, 40px)', borderRadius: '9999px' }}
           >
-            <AvatarImage src={avatarUrl || ""} alt="Profile" className="object-cover" />
+            <AvatarImage src={avatarUrl || ""} alt="Profile" className="object-cover rounded-full" style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
             <AvatarFallback
               className="text-primary-foreground font-bold"
               style={{
