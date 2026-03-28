@@ -101,8 +101,6 @@ All colors MUST be HSL.
 
     --card: 0 0% 100%;
     --card-foreground: 0 0% 10%;
-    --jetcard-bg: hsl(0 0% 100%);
-
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 10%;
 
@@ -141,7 +139,6 @@ All colors MUST be HSL.
     --shadow-card: 0 15px 40px -15px hsl(0 0% 0% / 0.15);
     --shadow-jet: 0 8px 32px hsl(320 80% 55% / 0.15);
     
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-jet: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 
     --radius: 1rem;
@@ -162,8 +159,6 @@ All colors MUST be HSL.
 
     --card: 0 0% 10%;
     --card-foreground: 0 0% 98%;
-    --jetcard-bg: hsl(240 4% 16%);
-
     --popover: 0 0% 10%;
     --popover-foreground: 0 0% 98%;
 
@@ -212,60 +207,6 @@ All colors MUST be HSL.
     --sidebar-ring: 24 100% 60%;
   }
 
-  .light {
-    --background: 0 0% 98%;
-    --foreground: 0 0% 10%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
-
-    --primary: 24 100% 50%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 320 80% 55%;
-
-    --secondary: 0 0% 92%;
-    --secondary-foreground: 0 0% 15%;
-
-    --muted: 0 0% 94%;
-    --muted-foreground: 0 0% 40%;
-
-    --accent: 320 80% 55%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 84% 50%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 0 0% 85%;
-    --input: 0 0% 92%;
-    --ring: 24 100% 50%;
-
-    --hot: 0 85% 50%;
-    --warm: 45 100% 45%;
-    --cool: 210 100% 45%;
-    --cold: 0 0% 60%;
-
-    --gradient-hot: linear-gradient(135deg, hsl(0 85% 50%), hsl(0 85% 40%));
-    --gradient-warm: linear-gradient(135deg, hsl(45 100% 50%), hsl(35 100% 45%));
-    --gradient-cool: linear-gradient(135deg, hsl(210 100% 50%), hsl(220 100% 40%));
-    --gradient-primary: linear-gradient(135deg, hsl(24 100% 50%), hsl(320 80% 55%));
-    --gradient-jet: linear-gradient(135deg, hsl(0 0% 95%), hsl(0 0% 90%));
-
-    --shadow-glow: 0 0 45px hsl(24 100% 50% / 0.25);
-    --shadow-card: 0 8px 24px -8px hsl(0 0% 0% / 0.15);
-    --shadow-jet: 0 8px 32px hsl(320 80% 55% / 0.15);
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 10%;
-    --sidebar-primary: 24 100% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 94%;
-    --sidebar-accent-foreground: 0 0% 15%;
-    --sidebar-border: 0 0% 85%;
-    --sidebar-ring: 24 100% 50%;
-  }
 }
 
 /* Ultra-small mobile devices (iPhone SE, small Android phones) */
@@ -551,18 +492,6 @@ All colors MUST be HSL.
     will-change: contents;
   }
 
-  /* JetCard elevated background - distinct from dark map tiles */
-  .jetcard-bg {
-    background-color: hsl(0 0% 100%);
-  }
-  .dark .jetcard-bg {
-    background-color: hsl(240 4% 22%);
-  }
-
-  /* Card containment - prevents card updates from affecting layout */
-  .card-contained {
-    contain: layout style paint;
-  }
 
 }
 
@@ -857,8 +786,6 @@ All colors MUST be HSL.
     box-shadow: 0 0 25px hsl(var(--primary) / 0.5);
   }
   
-  /* Deal marker animations - removed */
-
   /* Mobile map controls - responsive based on device */
   /* Offset Mapbox built-in controls so they never sit under Header/BottomNav */
   .mapboxgl-ctrl-top-left,
@@ -1166,8 +1093,6 @@ All colors MUST be HSL.
     animation: airplane-bob 1s ease-in-out infinite;
     filter: drop-shadow(0 2px 4px hsl(var(--primary) / 0.6));
   }
-
-  /* Duplicate airplane-fly keyframe removed - using version at line 1016 */
 
   .sync-cloud-bg {
     animation: cloud-bg-drift 3s ease-in-out infinite;

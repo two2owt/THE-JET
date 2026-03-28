@@ -58,10 +58,6 @@ export default {
         warm: "hsl(var(--warm))",
         cool: "hsl(var(--cool))",
         cold: "hsl(var(--cold))",
-        sunset: {
-          orange: "hsl(24 100% 60%)",
-          pink: "hsl(320 80% 65%)",
-        },
         "sunset-orange": "hsl(24 100% 60%)",
         "sunset-pink": "hsl(320 80% 65%)",
       },
