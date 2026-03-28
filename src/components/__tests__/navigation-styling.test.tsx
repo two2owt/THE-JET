@@ -129,57 +129,36 @@ describe("BottomNav – inline layout styles", () => {
 });
 
 // ─── Footer ─────────────────────────────────────────────────────────────────
-describe("Footer – inline layout styles & visibility", () => {
-  it("is hidden on the map route (/)", () => {
-    renderWithRouter(<Footer />, "/");
-    expect(screen.queryByRole("contentinfo")).not.toBeInTheDocument();
-  });
-
-  it("is hidden on /auth", () => {
-    renderWithRouter(<Footer />, "/auth");
-    expect(screen.queryByRole("contentinfo")).not.toBeInTheDocument();
-  });
-
-  it("is hidden on /onboarding", () => {
-    renderWithRouter(<Footer />, "/onboarding");
-    expect(screen.queryByRole("contentinfo")).not.toBeInTheDocument();
-  });
-
-  it("renders on non-hidden routes", () => {
-    renderWithRouter(<Footer />, "/privacy-policy");
+describe("Footer – inline layout styles", () => {
+  it("always renders when mounted (visibility is now controlled by parent pages)", () => {
+    renderWithRouter(<Footer />);
     expect(screen.getByRole("contentinfo")).toBeInTheDocument();
   });
 
-  it("has inline position:relative", () => {
-    renderWithRouter(<Footer />, "/privacy-policy");
+  it("icon links container uses flex + center via inline styles", () => {
+    renderWithRouter(<Footer />);
     const footer = screen.getByRole("contentinfo");
-    expect(footer.style.position).toBe("relative");
-  });
-
-  it("icon links container uses flex + space-around via inline styles", () => {
-    renderWithRouter(<Footer />, "/privacy-policy");
-    const footer = screen.getByRole("contentinfo");
-    const flexRow = footer.querySelector("[style*='justify-content: space-around']");
+    const flexRow = footer.querySelector("[style*='justify-content: center']");
     expect(flexRow).not.toBeNull();
     expect((flexRow as HTMLElement).style.display).toBe("flex");
     expect((flexRow as HTMLElement).style.alignItems).toBe("center");
   });
 
   it("renders all 3 footer links with icons", () => {
-    renderWithRouter(<Footer />, "/privacy-policy");
+    renderWithRouter(<Footer />);
     expect(screen.getByLabelText("Contact")).toBeInTheDocument();
     expect(screen.getByLabelText("Privacy")).toBeInTheDocument();
     expect(screen.getByLabelText("Terms")).toBeInTheDocument();
   });
 
   it("Contact link points to the correct email", () => {
-    renderWithRouter(<Footer />, "/privacy-policy");
+    renderWithRouter(<Footer />);
     const contactLink = screen.getByLabelText("Contact");
     expect(contactLink).toHaveAttribute("href", "mailto:creativebreakroominfo@gmail.com");
   });
 
   it("Privacy and Terms are internal router links", () => {
-    renderWithRouter(<Footer />, "/privacy-policy");
+    renderWithRouter(<Footer />);
     const privacyLink = screen.getByLabelText("Privacy");
     const termsLink = screen.getByLabelText("Terms");
     expect(privacyLink).toHaveAttribute("href", "/privacy-policy");
@@ -187,7 +166,7 @@ describe("Footer – inline layout styles & visibility", () => {
   });
 
   it("displays current year in copyright", () => {
-    renderWithRouter(<Footer />, "/privacy-policy");
+    renderWithRouter(<Footer />);
     const year = new Date().getFullYear().toString();
     expect(screen.getByText(new RegExp(`© ${year}`))).toBeInTheDocument();
   });
