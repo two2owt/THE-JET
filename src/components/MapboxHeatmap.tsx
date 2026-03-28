@@ -2625,7 +2625,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
                 {densityData.stats.max_density > 0 && (
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-[10px] text-muted-foreground">Peak Density</span>
-                    <span className="text-xs font-bold text-orange-400">{densityData.stats.max_density}</span>
+                    <span className="text-xs font-bold text-warm">{densityData.stats.max_density}</span>
                   </div>
                 )}
               </div>
@@ -2644,13 +2644,13 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
                 {pathData.stats.unique_users > 0 && (
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-[10px] text-muted-foreground">Users Tracked</span>
-                    <span className="text-xs font-bold text-green-400">{pathData.stats.unique_users}</span>
+                    <span className="text-xs font-bold text-cool">{pathData.stats.unique_users}</span>
                   </div>
                 )}
                 {pathData.stats.max_frequency > 0 && (
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-[10px] text-muted-foreground">Peak Traffic</span>
-                    <span className="text-xs font-bold text-orange-400">{pathData.stats.max_frequency}x</span>
+                    <span className="text-xs font-bold text-warm">{pathData.stats.max_frequency}x</span>
                   </div>
                 )}
               </div>
@@ -2691,9 +2691,9 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
           <div className="flex items-center gap-2 cursor-pointer">
             <span className="text-[9px] font-medium text-muted-foreground">Legend</span>
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full shadow-sm" style={{ backgroundColor: 'hsl(0, 85%, 55%)' }} />
-              <div className="w-2 h-2 rounded-full shadow-sm" style={{ backgroundColor: 'hsl(45, 100%, 55%)' }} />
-              <div className="w-2 h-2 rounded-full shadow-sm" style={{ backgroundColor: 'hsl(210, 100%, 55%)' }} />
+              <div className="w-2 h-2 rounded-full shadow-sm bg-hot" />
+              <div className="w-2 h-2 rounded-full shadow-sm bg-warm" />
+              <div className="w-2 h-2 rounded-full shadow-sm bg-cool" />
             </div>
             <ChevronUp className="w-3 h-3 text-muted-foreground" />
           </div>
@@ -2750,15 +2750,15 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
                 <p className="text-[9px] sm:text-xs md:text-sm font-semibold text-muted-foreground mb-1 sm:mb-1.5 md:mb-2">Activity</p>
                 <div className="flex flex-col gap-1 sm:flex-row sm:gap-2 md:gap-3">
                   <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full shadow-sm" style={{ backgroundColor: 'hsl(0, 85%, 55%)' }} />
+                    <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full shadow-sm bg-hot" />
                     <span className="text-[9px] sm:text-[10px] md:text-xs text-foreground">Hot</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full shadow-sm" style={{ backgroundColor: 'hsl(45, 100%, 55%)' }} />
+                    <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full shadow-sm bg-warm" />
                     <span className="text-[9px] sm:text-[10px] md:text-xs text-foreground">Warm</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full shadow-sm" style={{ backgroundColor: 'hsl(210, 100%, 55%)' }} />
+                    <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full shadow-sm bg-cool" />
                     <span className="text-[9px] sm:text-[10px] md:text-xs text-foreground">Cool</span>
                   </div>
                 </div>
@@ -2870,18 +2870,18 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
         
         /* Popup styling - responsive */
         .mapboxgl-popup-content {
-          background: rgba(15, 15, 25, 0.96) !important;
+          background: hsl(var(--card) / 0.96) !important;
           backdrop-filter: blur(16px) saturate(180%) !important;
           -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
           border-radius: 16px !important;
-          border: 1px solid rgba(255, 255, 255, 0.12) !important;
-          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05) inset !important;
+          border: 1px solid hsl(var(--border)) !important;
+          box-shadow: 0 12px 40px hsl(var(--foreground) / 0.15), 0 0 0 1px hsl(var(--border) / 0.3) inset !important;
           padding: 0 !important;
           overflow: hidden;
         }
         
         .mapboxgl-popup-close-button {
-          color: rgba(255, 255, 255, 0.7) !important;
+          color: hsl(var(--muted-foreground)) !important;
           font-size: 20px !important;
           padding: 6px 10px !important;
           right: 4px !important;
@@ -2890,13 +2890,13 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
         }
         
         .mapboxgl-popup-close-button:hover {
-          color: white !important;
-          background: rgba(255, 255, 255, 0.1) !important;
+          color: hsl(var(--foreground)) !important;
+          background: hsl(var(--muted) / 0.5) !important;
           border-radius: 6px !important;
         }
         
         .mapboxgl-popup-tip {
-          border-top-color: rgba(15, 15, 25, 0.96) !important;
+          border-top-color: hsl(var(--card) / 0.96) !important;
         }
         
         .venue-popup .mapboxgl-popup-content {

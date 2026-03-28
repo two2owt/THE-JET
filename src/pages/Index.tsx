@@ -427,36 +427,21 @@ const Index = () => {
           }}
         >
           {activeTab === "notifications" && (
-            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div className="p-4 flex flex-col gap-4">
               <div>
-                <h2 
-                  style={{ 
-                    fontSize: '24px', fontWeight: 800, marginBottom: '6px', lineHeight: 1.2,
-                    background: 'linear-gradient(135deg, hsl(var(--foreground)), hsl(var(--primary)))',
-                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                  }}
-                >
+                <h2 className="text-fluid-2xl sm:text-fluid-3xl font-extrabold mb-1.5 leading-tight bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
                   Notifications
                 </h2>
-                <p style={{ fontSize: '14px', color: 'hsl(var(--muted-foreground))' }}>Stay updated with nearby deals and events</p>
+                <p className="text-sm text-muted-foreground">Stay updated with nearby deals and events</p>
               </div>
               
               {notifications.length === 0 ? (
-                <div style={{ 
-                  textAlign: 'center', padding: '48px 16px',
-                  borderRadius: '16px', backgroundColor: 'hsl(var(--card) / 0.9)',
-                  border: '1px solid hsl(var(--border) / 0.5)',
-                }}>
-                  <div style={{
-                    width: '56px', height: '56px', margin: '0 auto 16px',
-                    borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--accent) / 0.15))',
-                    border: '1px solid hsl(var(--primary) / 0.2)',
-                  }}>
-                    <Bell style={{ width: '24px', height: '24px', color: 'hsl(var(--primary))' }} />
+                <div className="text-center py-12 px-4 rounded-2xl bg-card/90 border border-border/50">
+                  <div className="w-14 h-14 mx-auto mb-4 rounded-full flex items-center justify-center bg-gradient-to-br from-primary/15 to-accent/15 border border-primary/20">
+                    <Bell className="w-6 h-6 text-primary" />
                   </div>
-                  <p style={{ fontSize: '16px', fontWeight: 600, color: 'hsl(var(--foreground))', marginBottom: '6px' }}>No notifications yet</p>
-                  <p style={{ fontSize: '13px', color: 'hsl(var(--muted-foreground))' }}>Enable location tracking to receive deal alerts</p>
+                  <p className="text-base font-semibold text-foreground mb-1.5">No notifications yet</p>
+                  <p className="text-[13px] text-muted-foreground">Enable location tracking to receive deal alerts</p>
                 </div>
               ) : (
                 <>
