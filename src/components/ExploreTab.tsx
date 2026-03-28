@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, memo, lazy, Suspense } from "react";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "./ui/input";
 import { Card } from "./ui/card";
@@ -390,19 +391,13 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
         </Suspense>
       )}
 
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="flex flex-col gap-6">
       {/* Header */}
       <div>
-        <h2 
-          style={{ 
-            fontSize: '24px', fontWeight: 800, marginBottom: '8px', lineHeight: 1.2,
-            background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))',
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-          }}
-        >
+        <h2 className="text-2xl font-extrabold mb-2 leading-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
           Explore Deals
         </h2>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+        <div className="flex items-center gap-2 flex-wrap">
           <p className="text-sm text-muted-foreground">
             {userLocation 
               ? "Showing deals near you" 
@@ -428,8 +423,8 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
       </div>
 
       {/* Search Bar */}
-      <div style={{ position: 'relative' }}>
-        <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '18px', height: '18px', color: 'hsl(var(--muted-foreground))' }} />
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-muted-foreground" />
         <Input
           type="text"
           placeholder="Search venues, deals, or categories..."
@@ -476,33 +471,21 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
       )}
 
       {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+      <div className="grid grid-cols-3 gap-3">
         {[
-          { icon: TrendingUp, value: filteredDeals.length, label: userLocation ? "Nearby Deals" : "Active Deals", color: 'hsl(var(--primary))' },
-          { icon: MapPin, value: new Set(filteredDeals.map(d => d.venue_name)).size, label: userLocation ? "Nearby Venues" : "Venues", color: 'hsl(var(--accent))' },
-          { icon: Clock, value: filteredDeals.length, label: searchQuery || selectedCategories.length > 0 ? "Results" : "Available", color: 'hsl(var(--muted-foreground))' },
+          { icon: TrendingUp, value: filteredDeals.length, label: userLocation ? "Nearby Deals" : "Active Deals", colorClass: "text-primary", bgClass: "from-primary/15 to-primary/5 border-primary/30" },
+          { icon: MapPin, value: new Set(filteredDeals.map(d => d.venue_name)).size, label: userLocation ? "Nearby Venues" : "Venues", colorClass: "text-accent", bgClass: "from-accent/15 to-accent/5 border-accent/30" },
+          { icon: Clock, value: filteredDeals.length, label: searchQuery || selectedCategories.length > 0 ? "Results" : "Available", colorClass: "text-muted-foreground", bgClass: "from-muted-foreground/15 to-muted-foreground/5 border-muted-foreground/30" },
         ].map((stat, i) => (
           <div
             key={i}
-            style={{
-              padding: '16px 8px',
-              textAlign: 'center',
-              borderRadius: '14px',
-              backgroundColor: 'hsl(var(--card) / 0.9)',
-              border: '1px solid hsl(var(--border) / 0.5)',
-              backdropFilter: 'blur(8px)',
-            }}
+            className="py-4 px-2 text-center rounded-[14px] bg-card/90 border border-border/50 backdrop-blur-md"
           >
-            <div style={{
-              width: '40px', height: '40px', margin: '0 auto 8px',
-              borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: `linear-gradient(135deg, ${stat.color}15, ${stat.color}08)`,
-              border: `1px solid ${stat.color}30`,
-            }}>
-              <stat.icon style={{ width: '20px', height: '20px', color: stat.color }} />
+            <div className={cn("w-10 h-10 mx-auto mb-2 rounded-full flex items-center justify-center bg-gradient-to-br border", stat.bgClass)}>
+              <stat.icon className={cn("w-5 h-5", stat.colorClass)} />
             </div>
-            <p style={{ fontSize: '22px', fontWeight: 700, color: 'hsl(var(--foreground))' }}>{stat.value}</p>
-            <p style={{ fontSize: '11px', color: 'hsl(var(--muted-foreground))' }}>{stat.label}</p>
+            <p className="text-[22px] font-bold text-foreground">{stat.value}</p>
+            <p className="text-[11px] text-muted-foreground">{stat.label}</p>
           </div>
         ))}
       </div>

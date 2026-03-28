@@ -283,7 +283,7 @@ export default function Social() {
 
         {/* Discover People */}
         <div>
-          <h2 className="text-fluid-xl sm:text-fluid-2xl font-extrabold bg-gradient-to-r from-foreground to-accent bg-clip-text text-transparent mb-fluid-md">
+          <h2 className="text-fluid-xl sm:text-fluid-2xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent mb-fluid-md">
             Discover People
           </h2>
           <VirtualGrid
