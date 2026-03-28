@@ -2625,7 +2625,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
                 {densityData.stats.max_density > 0 && (
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-[10px] text-muted-foreground">Peak Density</span>
-                    <span className="text-xs font-bold text-orange-400">{densityData.stats.max_density}</span>
+                    <span className="text-xs font-bold text-warm">{densityData.stats.max_density}</span>
                   </div>
                 )}
               </div>
@@ -2644,13 +2644,13 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
                 {pathData.stats.unique_users > 0 && (
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-[10px] text-muted-foreground">Users Tracked</span>
-                    <span className="text-xs font-bold text-green-400">{pathData.stats.unique_users}</span>
+                    <span className="text-xs font-bold text-cool">{pathData.stats.unique_users}</span>
                   </div>
                 )}
                 {pathData.stats.max_frequency > 0 && (
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-[10px] text-muted-foreground">Peak Traffic</span>
-                    <span className="text-xs font-bold text-orange-400">{pathData.stats.max_frequency}x</span>
+                    <span className="text-xs font-bold text-warm">{pathData.stats.max_frequency}x</span>
                   </div>
                 )}
               </div>
