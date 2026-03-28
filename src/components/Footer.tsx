@@ -1,15 +1,11 @@
-import { Link, useLocation } from "react-router";
+import { Link } from "react-router";
 import { Mail, Shield, FileText } from "lucide-react";
 
-const HIDDEN_ROUTES = ["/auth", "/onboarding", "/social", "/messages", "/favorites", "/settings", "/profile"];
-
+/**
+ * Inline footer for legal/info pages.
+ * Rendered inside the page's own scrollable content — not as a global fixed element.
+ */
 export const Footer = () => {
-  const location = useLocation();
-
-  if (HIDDEN_ROUTES.includes(location.pathname) || location.pathname === "/") {
-    return null;
-  }
-
   const footerLinks = [
     { icon: Mail, label: "Contact", href: "mailto:creativebreakroominfo@gmail.com", isExternal: true },
     { icon: Shield, label: "Privacy", to: "/privacy-policy", isExternal: false },
@@ -22,7 +18,6 @@ export const Footer = () => {
       role="contentinfo"
       style={{
         flexShrink: 0,
-        contain: 'layout style',
         background: 'hsl(var(--background) / 0.85)',
         backdropFilter: 'blur(16px) saturate(1.4)',
         WebkitBackdropFilter: 'blur(16px) saturate(1.4)',

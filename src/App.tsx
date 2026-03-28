@@ -7,7 +7,6 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { HeaderProvider } from "@/contexts/HeaderContext";
 import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
 import { NavigationShell } from "@/components/NavigationShell";
 
 
@@ -28,7 +27,8 @@ const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const VerificationSuccess = lazy(() => import("./pages/VerificationSuccess"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-
+/** Routes where the global Header should be hidden (full-bleed standalone pages) */
+const HEADERLESS_ROUTES = ["/auth", "/onboarding"];
 
 const PageTracker = memo(function PageTracker() {
   const location = useLocation();
@@ -49,57 +49,73 @@ const PageTracker = memo(function PageTracker() {
   return null;
 });
 
+/** Route-aware layout shell that conditionally renders Header + spacer */
+const AppLayout = memo(function AppLayout() {
+  const location = useLocation();
+  const showHeader = !HEADERLESS_ROUTES.includes(location.pathname);
+
+  return (
+    <div className="app-wrapper">
+      <Toaster />
+      <Sonner />
+      <PageTracker />
+      
+      {/* Header is fixed-positioned — only render on routes that need it */}
+      {showHeader && (
+        <>
+          <Header />
+          {/* Spacer reserves header height in document flow during font/asset load,
+              preventing content from jumping when the fixed header paints late */}
+          <div
+            aria-hidden="true"
+            style={{
+              width: '100%',
+              height: 'var(--header-total-height, 52px)',
+              minHeight: 'var(--header-total-height, 52px)',
+              maxHeight: 'var(--header-total-height, 52px)',
+              flexShrink: 0,
+              visibility: 'hidden',
+              pointerEvents: 'none',
+            }}
+          />
+        </>
+      )}
+      
+      <Suspense fallback={<NavigationShell />}>
+        <Routes>
+          {/* Main route - eagerly loaded for fastest render */}
+          <Route path="/" element={<Index />} />
+          
+          {/* Full-bleed standalone pages (no header/footer) */}
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/onboarding" element={<Onboarding />} />
+          
+          {/* Standard app pages */}
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/favorites" element={<Favorites />} />
+          <Route path="/social" element={<Social />} />
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/verification-success" element={<VerificationSuccess />} />
+          
+          {/* Legal pages — Footer is embedded inline within these pages */}
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
+    </div>
+  );
+});
+
 const App = () => (
   <ErrorBoundary>
     <AuthProvider>
       <HeaderProvider>
         <TooltipProvider>
-          <div className="app-wrapper">
-            <Toaster />
-            <Sonner />
-            <PageTracker />
-            
-            {/* Header & Footer are global, outside route Suspense */}
-            <Header />
-            
-            {/* Spacer reserves header height in document flow during font/asset load,
-                preventing content from jumping when the fixed header paints late */}
-            <div
-              aria-hidden="true"
-              style={{
-                width: '100%',
-                height: 'var(--header-total-height, 52px)',
-                minHeight: 'var(--header-total-height, 52px)',
-                maxHeight: 'var(--header-total-height, 52px)',
-                flexShrink: 0,
-                visibility: 'hidden',
-                pointerEvents: 'none',
-              }}
-            />
-            
-            <Suspense fallback={<NavigationShell />}>
-              <Routes>
-                {/* Main route - eagerly loaded for fastest render */}
-                <Route path="/" element={<Index />} />
-                
-                {/* Other routes - lazy loaded */}
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/onboarding" element={<Onboarding />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/favorites" element={<Favorites />} />
-                <Route path="/social" element={<Social />} />
-                <Route path="/messages" element={<Messages />} />
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/verification-success" element={<VerificationSuccess />} />
-                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                <Route path="/terms-of-service" element={<TermsOfService />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-            
-            <Footer />
-          </div>
+          <AppLayout />
         </TooltipProvider>
       </HeaderProvider>
     </AuthProvider>
