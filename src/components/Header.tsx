@@ -182,7 +182,7 @@ export const Header = () => {
           <div
             className="relative flex-1"
             style={{
-              maxWidth: isMobile ? '100%' : 'clamp(200px, 30vw, 360px)',
+              maxWidth: isMobile ? '100%' : 'clamp(200px, 40vw, 480px)',
               minWidth: '0',
               opacity: mounted ? 1 : 0,
               transform: mounted ? 'translateY(0)' : 'translateY(-6px)',
