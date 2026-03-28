@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, memo, lazy, Suspense } from "react";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "./ui/input";
 import { Card } from "./ui/card";
