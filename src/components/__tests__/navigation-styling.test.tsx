@@ -31,14 +31,14 @@ const renderWithRouter = (ui: React.ReactElement, route = "/settings") =>
 
 // ─── Header ─────────────────────────────────────────────────────────────────
 describe("Header – inline layout styles", () => {
-  it("renders with position:fixed and z-index via inline styles", () => {
+  it("renders with fixed positioning class and z-index", () => {
     renderWithRouter(<Header />);
     const header = screen.getByRole("banner");
-    expect(header.style.position).toBe("fixed");
-    expect(header.style.top).toBe("0px");
-    expect(header.style.left).toBe("0px");
-    expect(header.style.right).toBe("0px");
-    expect(header.style.zIndex).toBe("60");
+    expect(header.className).toContain("fixed");
+    expect(header.className).toContain("top-0");
+    expect(header.className).toContain("left-0");
+    expect(header.className).toContain("right-0");
+    expect(header.className).toContain("z-[60]");
   });
 
   it("uses CSS variable for header height", () => {
@@ -48,14 +48,14 @@ describe("Header – inline layout styles", () => {
     expect(styleAttr).toContain("--header-total-height");
   });
 
-  it("inner container has flex layout via inline styles", () => {
+  it("inner container has flex layout via className", () => {
     renderWithRouter(<Header />);
     const header = screen.getByRole("banner");
-    // First child div inside header (after background layers) is the flex container
-    const flexContainer = header.querySelector("[style*='display: flex'][style*='height: 100%']");
+    // The flex container uses Tailwind classes
+    const flexContainer = header.querySelector(".flex.items-center");
     expect(flexContainer).not.toBeNull();
-    expect((flexContainer as HTMLElement).style.display).toBe("flex");
-    expect((flexContainer as HTMLElement).style.alignItems).toBe("center");
+    expect(flexContainer!.className).toContain("flex");
+    expect(flexContainer!.className).toContain("items-center");
   });
 
   it("contains the JET brand logo", () => {
@@ -98,13 +98,13 @@ describe("BottomNav – inline layout styles", () => {
     expect(styleAttr).toContain("--bottom-nav-total-height");
   });
 
-  it("inner container has flex + space-around via inline styles", () => {
+  it("inner container has flex layout with space-around via className", () => {
     renderWithRouter(<BottomNav {...defaultProps} />);
     const nav = screen.getByRole("navigation", { name: "Main navigation" });
-    const spaceAround = nav.querySelector("[style*='justify-content: space-around']");
-    expect(spaceAround).not.toBeNull();
-    expect((spaceAround as HTMLElement).style.display).toBe("flex");
-    expect((spaceAround as HTMLElement).style.width).toBe("100%");
+    const flexContainer = nav.querySelector(".flex.items-center.justify-around");
+    expect(flexContainer).not.toBeNull();
+    expect(flexContainer!.className).toContain("flex");
+    expect(flexContainer!.className).toContain("justify-around");
   });
 
   it("renders all 5 navigation tabs", () => {
