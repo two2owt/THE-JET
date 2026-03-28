@@ -2870,18 +2870,18 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
         
         /* Popup styling - responsive */
         .mapboxgl-popup-content {
-          background: rgba(15, 15, 25, 0.96) !important;
+          background: hsl(var(--card) / 0.96) !important;
           backdrop-filter: blur(16px) saturate(180%) !important;
           -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
           border-radius: 16px !important;
-          border: 1px solid rgba(255, 255, 255, 0.12) !important;
-          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05) inset !important;
+          border: 1px solid hsl(var(--border)) !important;
+          box-shadow: 0 12px 40px hsl(var(--foreground) / 0.15), 0 0 0 1px hsl(var(--border) / 0.3) inset !important;
           padding: 0 !important;
           overflow: hidden;
         }
         
         .mapboxgl-popup-close-button {
-          color: rgba(255, 255, 255, 0.7) !important;
+          color: hsl(var(--muted-foreground)) !important;
           font-size: 20px !important;
           padding: 6px 10px !important;
           right: 4px !important;
@@ -2890,13 +2890,13 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
         }
         
         .mapboxgl-popup-close-button:hover {
-          color: white !important;
-          background: rgba(255, 255, 255, 0.1) !important;
+          color: hsl(var(--foreground)) !important;
+          background: hsl(var(--muted) / 0.5) !important;
           border-radius: 6px !important;
         }
         
         .mapboxgl-popup-tip {
-          border-top-color: rgba(15, 15, 25, 0.96) !important;
+          border-top-color: hsl(var(--card) / 0.96) !important;
         }
         
         .venue-popup .mapboxgl-popup-content {
