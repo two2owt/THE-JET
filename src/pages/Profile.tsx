@@ -579,7 +579,7 @@ export default function Profile() {
             <Button variant="outline" className="h-20 justify-start" onClick={() => navigate("/social")}>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
-                  <Users className="w-5 h-5 text-[#c37bf9]" />
+                  <Users className="w-5 h-5 text-accent" />
                 </div>
                 <div className="text-left">
                   <div className="font-semibold text-foreground">Social</div>

@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Venue } from "./MapboxHeatmap";
 import { UpgradePrompt, useFeatureAccess } from "./UpgradePrompt";
 import { shareVenue } from "@/utils/shareUtils";
+import { cn } from "@/lib/utils";
 
 interface JetCardProps {
   venue: Venue;
@@ -18,7 +19,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
   const [user, setUser] = useState<any>(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const { canAccessSocialFeatures } = useFeatureAccess();
-  
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
@@ -30,10 +31,10 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
   }, []);
 
   const getActivityLevel = (activity: number) => {
-    if (activity >= 80) return { label: "🔥 Very Busy", color: "#ef4444" };
-    if (activity >= 60) return { label: "🌟 Busy", color: "#eab308" };
-    if (activity >= 40) return { label: "✨ Moderate", color: "#3b82f6" };
-    return { label: "😌 Quiet", color: "#737373" };
+    if (activity >= 80) return { label: "🔥 Very Busy", colorClass: "text-hot" };
+    if (activity >= 60) return { label: "🌟 Busy", colorClass: "text-warm" };
+    if (activity >= 40) return { label: "✨ Moderate", colorClass: "text-cool" };
+    return { label: "😌 Quiet", colorClass: "text-cold" };
   };
 
   const handleGetDirections = async () => {
@@ -61,105 +62,79 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
 
   const activityLevel = getActivityLevel(venue.activity);
 
-  const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
-
   return (
     <article
-      style={{
-        position: 'relative',
-        width: '100%',
-        backgroundColor: isDark ? 'hsl(240 4% 22%)' : 'hsl(0 0% 100%)',
-        border: isDark ? '2px solid hsl(24 100% 60% / 0.6)' : '2px solid hsl(24 100% 50% / 0.4)',
-        borderRadius: '16px',
-        overflow: 'hidden',
-        boxShadow: isDark
-          ? '0 8px 32px rgba(0,0,0,0.7), 0 0 24px hsl(24 100% 60% / 0.15)'
-          : '0 8px 32px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05)',
-        maxHeight: '300px',
-        fontFamily: "'Plus Jakarta Sans Variable', system-ui, sans-serif",
-      }}
+      className="relative w-full bg-card border-2 border-primary/40 dark:border-primary/60 rounded-2xl overflow-hidden shadow-[var(--shadow-card)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.7),0_0_24px_hsl(var(--primary)/0.15)] max-h-[300px]"
+      style={{ fontFamily: "'Plus Jakarta Sans Variable', system-ui, sans-serif" }}
       aria-label={`${venue.name} - ${venue.category} in ${venue.neighborhood}`}
     >
       {/* Image Header */}
-      <div style={{ position: 'relative', height: '80px', background: 'linear-gradient(135deg, hsl(24 100% 60% / 0.3), hsl(320 80% 65% / 0.2))', overflow: 'hidden' }}>
+      <div className="relative h-20 bg-gradient-to-br from-primary/30 to-accent/20 overflow-hidden">
         {venue.imageUrl && (
           <img
             src={venue.imageUrl}
             alt={venue.name}
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+            className="absolute inset-0 w-full h-full object-cover"
             loading="lazy"
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
         )}
-        <div style={{ position: 'absolute', inset: 0, background: isDark ? 'linear-gradient(to top, rgba(0,0,0,0.6), transparent)' : 'linear-gradient(to top, rgba(0,0,0,0.3), transparent)' }} />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent dark:from-black/70" />
 
         {onClose && (
           <button
             onClick={onClose}
-            style={{
-              position: 'absolute', top: '8px', right: '8px', zIndex: 20,
-              background: isDark ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.8)',
-              backdropFilter: 'blur(8px)',
-              border: 'none', borderRadius: '50%', padding: '6px',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
+            className="absolute top-2 right-2 z-20 bg-white/80 dark:bg-black/60 backdrop-blur-[8px] border-0 rounded-full p-1.5 cursor-pointer flex items-center justify-center min-w-[28px] min-h-[28px]"
             aria-label="Close"
           >
-            <X style={{ width: '16px', height: '16px', color: isDark ? '#fff' : '#333' }} />
+            <X className="w-4 h-4 text-foreground" />
           </button>
         )}
 
         {/* Activity Badge */}
-        <div style={{
-          position: 'absolute', top: '8px', left: '8px',
-          background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
-          padding: '2px 8px', borderRadius: '999px',
-          display: 'flex', alignItems: 'center', gap: '6px',
-        }}>
-          <div style={{ width: '6px', height: '6px', backgroundColor: 'hsl(24 100% 60%)', borderRadius: '50%' }} />
-          <span style={{ fontSize: '10px', fontWeight: 700, color: '#fff' }}>{venue.activity}% Active</span>
+        <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-[8px] px-2 py-0.5 rounded-full flex items-center gap-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+          <span className="text-[10px] font-bold text-white">{venue.activity}% Active</span>
         </div>
 
         {/* Category Badge */}
-        <div style={{
-          position: 'absolute', bottom: '8px', left: '8px',
-          background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)',
-          padding: '2px 8px', borderRadius: '999px',
-        }}>
-          <span style={{ fontSize: '10px', fontWeight: 600, color: '#fff' }}>{venue.category}</span>
+        <div className="absolute bottom-2 left-2 bg-white/15 backdrop-blur-[8px] px-2 py-0.5 rounded-full">
+          <span className="text-[10px] font-semibold text-white">{venue.category}</span>
         </div>
       </div>
 
       {/* Content */}
-      <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div className="p-3 flex flex-col gap-2">
         {/* Title */}
         <div>
-          <h3 style={{ fontSize: '16px', fontWeight: 700, color: isDark ? '#fafafa' : '#1a1a1a', margin: 0, lineHeight: 1.2 }}>{venue.name}</h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', color: isDark ? '#a1a1aa' : '#6b7280', fontSize: '11px' }}>
-            <MapPin style={{ width: '12px', height: '12px', flexShrink: 0 }} />
+          <h3 className="text-base font-bold text-foreground m-0 leading-tight">{venue.name}</h3>
+          <div className="flex items-center gap-1.5 mt-1 text-muted-foreground text-[11px]">
+            <MapPin className="w-3 h-3 flex-shrink-0" />
             <span>{venue.neighborhood}</span>
-            {venue.address && <span style={{ color: isDark ? '#71717a' : '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>· {venue.address}</span>}
+            {venue.address && (
+              <span className="text-muted-foreground/60 overflow-hidden text-ellipsis whitespace-nowrap">· {venue.address}</span>
+            )}
           </div>
         </div>
 
         {/* Inline Stats */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <TrendingUp style={{ width: '14px', height: '14px', color: activityLevel.color }} />
-            <span style={{ fontWeight: 600, color: isDark ? '#fafafa' : '#1a1a1a' }}>{activityLevel.label.split(" ")[1]}</span>
+        <div className="flex items-center gap-3 text-xs">
+          <div className="flex items-center gap-1">
+            <TrendingUp className={cn("w-3.5 h-3.5", activityLevel.colorClass)} />
+            <span className="font-semibold text-foreground">{activityLevel.label.split(" ")[1]}</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Star style={{ width: '14px', height: '14px', color: '#eab308' }} />
-            <span style={{ fontWeight: 600, color: isDark ? '#fafafa' : '#1a1a1a' }}>4.5</span>
+          <div className="flex items-center gap-1">
+            <Star className="w-3.5 h-3.5 text-warm" />
+            <span className="font-semibold text-foreground">4.5</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Users style={{ width: '14px', height: '14px', color: isDark ? '#a1a1aa' : '#6b7280' }} />
-            <span style={{ fontWeight: 600, color: isDark ? '#fafafa' : '#1a1a1a' }}>{Math.round(venue.activity / 10) * 10}+</span>
+          <div className="flex items-center gap-1">
+            <Users className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="font-semibold text-foreground">{Math.round(venue.activity / 10) * 10}+</span>
           </div>
         </div>
 
         {/* Buttons */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }} role="group" aria-label="Venue actions">
+        <div className="grid grid-cols-2 gap-2" role="group" aria-label="Venue actions">
           <Button
             onClick={handleShare}
             variant="outline"

@@ -129,8 +129,8 @@ function ConversationList({
 
   return (
     <div className="flex flex-col">
-      <div className="px-4 py-3 border-b border-border/60">
-        <h1 className="text-fluid-xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">Messages</h1>
+      <div className="px-4 py-fluid-md border-b border-border/60">
+        <h1 className="text-fluid-2xl sm:text-fluid-3xl font-extrabold bg-gradient-to-r from-foreground via-foreground to-primary bg-clip-text text-transparent">Messages</h1>
       </div>
       <ScrollArea className="flex-1">
         <div className="divide-y divide-border">
