@@ -2045,106 +2045,20 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* Loading skeleton during map initialization — translucent so map shows through */}
       {mapInitializing && !mapError && (
         <div 
-          className="absolute inset-0 z-40 flex flex-col items-center justify-center"
+          className="absolute inset-0 z-40 flex items-center justify-center"
           style={{
-            transition: 'opacity 400ms ease-out, background-color 600ms ease-out, backdrop-filter 600ms ease-out',
+            transition: 'opacity 300ms ease-out, background-color 500ms ease-out',
             opacity: mapLoaded ? 0 : 1,
             pointerEvents: mapLoaded ? 'none' : 'auto',
-            // Progressive translucency: opaque during module load, semi-transparent once init starts, very translucent during tile load
             backgroundColor: loadingStage === 'module'
               ? 'hsl(var(--background))'
-              : loadingStage === 'init'
-              ? 'hsl(var(--background) / 0.85)'
-              : 'hsl(var(--background) / 0.5)',
-            backdropFilter: loadingStage === 'style' ? 'blur(4px)' : loadingStage === 'init' ? 'blur(8px)' : 'none',
-            WebkitBackdropFilter: loadingStage === 'style' ? 'blur(4px)' : loadingStage === 'init' ? 'blur(8px)' : 'none',
+              : 'hsl(var(--background) / 0.6)',
           }}
         >
-          {/* Faux map grid skeleton — hidden once map canvas is painting behind */}
-          <div
-            className="absolute inset-0 overflow-hidden"
-            style={{
-              opacity: loadingStage === 'module' ? 0.04 : 0,
-              transition: 'opacity 400ms ease-out',
-            }}
-          >
-            {Array.from({ length: 6 }).map((_, row) => (
-              <div key={row} className="flex w-full" style={{ height: `${100 / 6}%` }}>
-                {Array.from({ length: 8 }).map((_, col) => (
-                  <div
-                    key={col}
-                    className="border border-foreground/20 flex-1"
-                    style={{
-                      animationName: 'pulse',
-                      animationDuration: '2s',
-                      animationTimingFunction: 'ease-in-out',
-                      animationIterationCount: 'infinite',
-                      animationDelay: `${(row + col) * 120}ms`,
-                    }}
-                  />
-                ))}
-              </div>
-            ))}
-          </div>
-
-          {/* Center content — fades out as tiles load */}
-          <div
-            className="relative flex flex-col items-center gap-5 text-center px-6"
-            style={{
-              opacity: loadingStage === 'style' ? 0.7 : 1,
-              transition: 'opacity 300ms ease-out',
-            }}
-          >
-            {/* Animated map icon */}
-            <div className="relative w-14 h-14">
-              <div className="absolute inset-0 rounded-full bg-primary/10 animate-ping" style={{ animationDuration: '2s' }} />
-              <div className="absolute inset-0 rounded-full bg-primary/5 flex items-center justify-center">
-                <MapPin className="w-6 h-6 text-primary" />
-              </div>
-            </div>
-
-            {/* Stage text */}
-            <div className="space-y-1">
-              <p className="text-sm font-semibold text-foreground">
-                {loadingStage === 'module' ? 'Loading map engine…' 
-                  : loadingStage === 'init' ? 'Initializing map…' 
-                  : 'Loading tiles…'}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {loadingStage === 'module' ? 'Preparing resources' 
-                  : loadingStage === 'init' ? `Centering on ${selectedCity.name}` 
-                  : 'Almost ready'}
-              </p>
-            </div>
-
-            {/* Progress bar */}
-            <div className="w-48 sm:w-56">
-              <div className="h-1 w-full rounded-full bg-muted overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-primary transition-all duration-700 ease-out"
-                  style={{
-                    width: loadingStage === 'module' ? '25%' 
-                      : loadingStage === 'init' ? '55%' 
-                      : loadingStage === 'style' ? '80%' 
-                      : '100%',
-                  }}
-                />
-              </div>
-              <div className="flex justify-between mt-1.5">
-                {['Engine', 'Init', 'Tiles'].map((label, i) => {
-                  const stages = ['module', 'init', 'style'] as const;
-                  const stageIndex = stages.indexOf(loadingStage as any);
-                  const isActive = i <= stageIndex;
-                  return (
-                    <span
-                      key={label}
-                      className={`text-[10px] transition-colors duration-300 ${isActive ? 'text-primary font-medium' : 'text-muted-foreground/50'}`}
-                    >
-                      {label}
-                    </span>
-                  );
-                })}
-              </div>
+          <div className="relative w-10 h-10">
+            <div className="absolute inset-0 rounded-full bg-primary/10 animate-ping" style={{ animationDuration: '1.5s' }} />
+            <div className="absolute inset-0 rounded-full bg-primary/5 flex items-center justify-center">
+              <MapPin className="w-5 h-5 text-primary" />
             </div>
           </div>
         </div>
