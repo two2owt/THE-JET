@@ -22,6 +22,7 @@ import { useDeals } from "@/hooks/useDeals";
 import { useVenueActivity } from "@/hooks/useVenueActivity";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useBottomNavigation, type NavTab } from "@/hooks/useBottomNavigation";
+import { NotificationsTabSkeleton, ExploreTabSkeleton } from "@/components/skeletons/PageSkeletons";
 
 // Lazy load heavy components - deferred until needed
 const MapboxHeatmap = lazy(() => import("@/components/MapboxHeatmap").then(m => ({ default: m.MapboxHeatmap })));
@@ -427,6 +428,7 @@ const Index = () => {
           }}
         >
           {activeTab === "notifications" && (
+            <Suspense fallback={<NotificationsTabSkeleton />}>
             <div className="p-4 flex flex-col gap-4">
               <div>
                 <h2 className="text-fluid-2xl sm:text-fluid-3xl font-extrabold mb-1.5 leading-tight bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
@@ -459,11 +461,12 @@ const Index = () => {
                 </>
               )}
             </div>
+            </Suspense>
           )}
 
           {activeTab === "explore" && (
             <div className="px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-sm sm:py-fluid-md">
-              <Suspense fallback={null}>
+              <Suspense fallback={<ExploreTabSkeleton />}>
                 <ExploreTab onVenueSelect={handleVenueSelect} />
               </Suspense>
             </div>

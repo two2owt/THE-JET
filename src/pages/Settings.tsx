@@ -21,6 +21,7 @@ import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { isMonetizationEnabled } from "@/lib/monetization";
 import { PageLayout } from "@/components/PageLayout";
+import { SettingsPageSkeleton } from "@/components/skeletons/PageSkeletons";
 const preferencesSchema = z.object({
   notifications_enabled: z.boolean(),
   location_tracking_enabled: z.boolean(),
@@ -203,7 +204,13 @@ const Settings = () => {
     </PageLayout>
   );
 
-  // Direct rendering - no loading fallback per architecture requirements
+  if (isLoading) {
+    return (
+      <SettingsLayout>
+        <SettingsPageSkeleton />
+      </SettingsLayout>
+    );
+  }
 
   if (!preferences) {
     return (
