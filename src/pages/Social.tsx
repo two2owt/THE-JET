@@ -14,6 +14,7 @@ import { VirtualGrid } from "@/components/ui/virtual-list";
 import { ChatDialog } from "@/components/ChatDialog";
 import { useUnreadCounts } from "@/hooks/useMessages";
 import { Badge } from "@/components/ui/badge";
+import { SocialPageSkeleton } from "@/components/skeletons/PageSkeletons";
 
 interface Profile {
   id: string;
