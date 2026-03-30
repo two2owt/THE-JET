@@ -204,7 +204,13 @@ const Settings = () => {
     </PageLayout>
   );
 
-  // Direct rendering - no loading fallback per architecture requirements
+  if (isLoading) {
+    return (
+      <SettingsLayout>
+        <SettingsPageSkeleton />
+      </SettingsLayout>
+    );
+  }
 
   if (!preferences) {
     return (

@@ -343,7 +343,14 @@ export default function Profile() {
       </PageLayout>
     );
   }
-  // Direct rendering - no loading fallback per architecture requirements
+  if (isLoading) {
+    return (
+      <PageLayout defaultTab="map" headerConfig={{ hideSearch: true }}>
+        <ProfilePageSkeleton />
+      </PageLayout>
+    );
+  }
+
   return (
     <PageLayout defaultTab="map" headerConfig={{ hideSearch: true }}>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg space-y-fluid-lg">
