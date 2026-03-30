@@ -7,6 +7,7 @@ import { useNavigate } from "react-router";
 import { PageLayout } from "@/components/PageLayout";
 import { EmptyState } from "@/components/EmptyState";
 import { VirtualGrid } from "@/components/ui/virtual-list";
+import { FavoritesPageSkeleton } from "@/components/skeletons/PageSkeletons";
 
 interface Deal {
   id: string;
