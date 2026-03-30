@@ -460,11 +460,12 @@ const Index = () => {
                 </>
               )}
             </div>
+            </Suspense>
           )}
 
           {activeTab === "explore" && (
             <div className="px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-sm sm:py-fluid-md">
-              <Suspense fallback={null}>
+              <Suspense fallback={<ExploreTabSkeleton />}>
                 <ExploreTab onVenueSelect={handleVenueSelect} />
               </Suspense>
             </div>

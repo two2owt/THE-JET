@@ -107,11 +107,7 @@ function ConversationList({
   onSelect: (friendId: string) => void;
 }) {
   if (loading) {
-    return (
-      <div className="px-4 py-8 flex items-center justify-center">
-        <p className="text-muted-foreground text-sm">Loading conversations…</p>
-      </div>
-    );
+    return <MessagesPageSkeleton />;
   }
 
   if (conversations.length === 0) {

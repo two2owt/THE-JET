@@ -1,14 +1,13 @@
-import { BottomNav } from "./BottomNav";
-import { useBottomNavigation } from "@/hooks/useBottomNavigation";
+import { HeaderSkeleton } from "./skeletons/HeaderSkeleton";
+import { BottomNavSkeleton } from "./skeletons/BottomNavSkeleton";
+import { GenericPageSkeleton } from "./skeletons/PageSkeletons";
 
 /**
  * Persistent navigation shell rendered as Suspense fallback.
- * Header is now rendered globally in App.tsx via HeaderContext,
- * so this shell only provides the BottomNav and content placeholder.
+ * Shows skeleton header, content placeholder, and bottom nav
+ * while lazy-loaded pages are being fetched.
  */
 export function NavigationShell() {
-  const { activeTab, handleTabChange } = useBottomNavigation({ defaultTab: "map" });
-
   return (
     <div
       className="relative w-full h-full"
@@ -18,6 +17,8 @@ export function NavigationShell() {
         overflow: 'hidden',
       }}
     >
+      <HeaderSkeleton />
+
       <main
         role="main"
         style={{
@@ -26,17 +27,15 @@ export function NavigationShell() {
           minHeight: 'var(--main-height, calc(100dvh - 52px - 60px))',
           maxHeight: 'var(--main-height, calc(100dvh - 52px - 60px))',
           contain: 'strict',
-          transform: 'translateZ(0)',
           boxSizing: 'border-box',
           width: '100%',
+          overflow: 'hidden',
         }}
-      />
+      >
+        <GenericPageSkeleton />
+      </main>
 
-      <BottomNav
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-        notificationCount={0}
-      />
+      <BottomNavSkeleton />
     </div>
   );
 }
