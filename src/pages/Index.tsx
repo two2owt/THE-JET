@@ -427,6 +427,7 @@ const Index = () => {
           }}
         >
           {activeTab === "notifications" && (
+            <Suspense fallback={<NotificationsTabSkeleton />}>
             <div className="p-4 flex flex-col gap-4">
               <div>
                 <h2 className="text-fluid-2xl sm:text-fluid-3xl font-extrabold mb-1.5 leading-tight bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
