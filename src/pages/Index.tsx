@@ -497,7 +497,7 @@ const Index = () => {
       </Suspense>
 
       {/* PWA Install Prompt - lazy loaded */}
-      <Suspense fallback={null}>
+      <Suspense fallback={<PWAInstallSkeleton />}>
         <PWAInstallPrompt />
       </Suspense>
 
