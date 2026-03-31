@@ -23,6 +23,7 @@ import { useVenueActivity } from "@/hooks/useVenueActivity";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useBottomNavigation, type NavTab } from "@/hooks/useBottomNavigation";
 import { NotificationsTabSkeleton, ExploreTabSkeleton } from "@/components/skeletons/PageSkeletons";
+import { PWAInstallSkeleton } from "@/components/skeletons/PWAInstallSkeleton";
 
 // Lazy load heavy components - deferred until needed
 const MapboxHeatmap = lazy(() => import("@/components/MapboxHeatmap").then(m => ({ default: m.MapboxHeatmap })));
