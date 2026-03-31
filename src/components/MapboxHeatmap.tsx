@@ -2046,7 +2046,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* Loading skeleton during map initialization — translucent so map shows through */}
       {mapInitializing && !mapError && (
         <div 
-          className="absolute inset-0 z-40 flex items-center justify-center"
+          className="absolute inset-0 z-40"
           style={{
             transition: 'opacity 300ms ease-out, background-color 500ms ease-out',
             opacity: mapLoaded ? 0 : 1,
@@ -2056,12 +2056,17 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
               : 'hsl(var(--background) / 0.6)',
           }}
         >
-          <div className="relative w-10 h-10">
-            <div className="absolute inset-0 rounded-full bg-primary/10 animate-ping" style={{ animationDuration: '1.5s' }} />
-            <div className="absolute inset-0 rounded-full bg-primary/5 flex items-center justify-center">
-              <MapPin className="w-5 h-5 text-primary" />
+          {/* Center spinner */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative w-10 h-10">
+              <div className="absolute inset-0 rounded-full bg-primary/10 animate-ping" style={{ animationDuration: '1.5s' }} />
+              <div className="absolute inset-0 rounded-full bg-primary/5 flex items-center justify-center">
+                <MapPin className="w-5 h-5 text-primary" />
+              </div>
             </div>
           </div>
+          {/* Skeleton placeholders for map UI controls */}
+          <MapUISkeleton />
         </div>
       )}
 
