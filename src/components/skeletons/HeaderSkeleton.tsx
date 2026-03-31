@@ -11,6 +11,7 @@ export function HeaderSkeleton() {
         backdropFilter: 'blur(24px) saturate(1.6)',
         WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
         borderBottom: '1px solid hsl(var(--border) / 0.4)',
+        overflow: 'hidden',
       }}
     >
       <div
