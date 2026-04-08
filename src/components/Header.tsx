@@ -253,9 +253,11 @@ export const Header = () => {
         {/* Avatar — settings link */}
         <button
           onClick={() => navigate('/settings')}
-          className="relative flex-shrink-0 group rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="group rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           aria-label="Open settings"
           style={{
+            position: 'relative',
+            flexShrink: 0,
             opacity: mounted ? 1 : 0,
             transform: mounted ? 'translateX(0)' : 'translateX(8px)',
             transition: 'opacity 0.4s ease-out 0.2s, transform 0.4s ease-out 0.2s',
