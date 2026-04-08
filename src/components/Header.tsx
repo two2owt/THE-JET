@@ -177,8 +177,12 @@ export const Header = () => {
         {showSearchIcon && (
           <button
             onClick={() => setSearchExpanded(true)}
-            className="flex-shrink-0 flex items-center justify-center rounded-full transition-colors hover:bg-muted/60"
+            className="rounded-full transition-colors hover:bg-muted/60"
             style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
               width: 'var(--touch-target-min, 44px)',
               height: 'var(--touch-target-min, 44px)',
               opacity: mounted ? 1 : 0,
@@ -187,7 +191,7 @@ export const Header = () => {
             }}
             aria-label="Open search"
           >
-            <Search style={{ width: 'clamp(16px, 2.5vw, 20px)', height: 'clamp(16px, 2.5vw, 20px)' }} className="text-muted-foreground" />
+            <Search style={{ width: 'clamp(16px, 2.5vw, 20px)', height: 'clamp(16px, 2.5vw, 20px)', color: 'hsl(var(--muted-foreground))' }} />
           </button>
         )}
 
