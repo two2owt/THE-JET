@@ -315,20 +315,28 @@ const Index = () => {
             style={{ zIndex: 0 }}
           >
             {mapboxError && !mapboxLoading && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center bg-background">
-                <div className="text-center space-y-3 sm:space-y-4 p-6 sm:p-8">
-                  <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 mx-auto rounded-full bg-destructive/10 flex items-center justify-center">
-                    <MapIcon className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-destructive" />
+              <div style={{
+                position: 'absolute', inset: 0, zIndex: 10,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'hsl(var(--background))',
+              }}>
+                <div style={{ textAlign: 'center', padding: '24px' }}>
+                  <div style={{
+                    width: '56px', height: '56px', margin: '0 auto',
+                    borderRadius: '50%', background: 'hsl(var(--destructive) / 0.1)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <MapIcon style={{ width: '28px', height: '28px', color: 'hsl(var(--destructive))' }} />
                   </div>
-                  <div className="space-y-1.5 sm:space-y-2">
-                    <p className="text-sm sm:text-base md:text-lg font-medium text-foreground">Unable to load map</p>
-                    <p className="text-xs sm:text-sm text-muted-foreground max-w-[200px] sm:max-w-[280px] mx-auto">{mapboxError}</p>
+                  <div style={{ marginTop: '12px' }}>
+                    <p style={{ fontSize: '14px', fontWeight: 500, color: 'hsl(var(--foreground))' }}>Unable to load map</p>
+                    <p style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))', maxWidth: '280px', margin: '4px auto 0' }}>{mapboxError}</p>
                   </div>
                   <Button 
                     variant="outline" 
                     size="default"
                     onClick={() => window.location.reload()}
-                    className="mt-2 sm:mt-3"
+                    style={{ marginTop: '12px' }}
                   >
                     Try Again
                   </Button>
@@ -430,21 +438,40 @@ const Index = () => {
         >
           {activeTab === "notifications" && (
             <Suspense fallback={<NotificationsTabSkeleton />}>
-            <div className="p-4 flex flex-col gap-4">
+            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <h2 className="text-fluid-2xl sm:text-fluid-3xl font-extrabold mb-1.5 leading-tight bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+                <h2 style={{
+                  fontSize: 'clamp(1.25rem, 3vw, 1.875rem)',
+                  fontWeight: 800,
+                  marginBottom: '6px',
+                  lineHeight: 1.1,
+                  backgroundImage: 'linear-gradient(to right, hsl(var(--foreground)), hsl(var(--primary)))',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}>
                   Notifications
                 </h2>
-                <p className="text-sm text-muted-foreground">Stay updated with nearby deals and events</p>
+                <p style={{ fontSize: '14px', color: 'hsl(var(--muted-foreground))' }}>Stay updated with nearby deals and events</p>
               </div>
               
               {notifications.length === 0 ? (
-                <div className="text-center py-12 px-4 rounded-2xl bg-card/90 border border-border/50">
-                  <div className="w-14 h-14 mx-auto mb-4 rounded-full flex items-center justify-center bg-gradient-to-br from-primary/15 to-accent/15 border border-primary/20">
-                    <Bell className="w-6 h-6 text-primary" />
+                <div style={{
+                  textAlign: 'center', padding: '48px 16px',
+                  borderRadius: '16px',
+                  background: 'hsl(var(--card) / 0.9)',
+                  border: '1px solid hsl(var(--border) / 0.5)',
+                }}>
+                  <div style={{
+                    width: '56px', height: '56px', margin: '0 auto 16px',
+                    borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--accent) / 0.15))',
+                    border: '1px solid hsl(var(--primary) / 0.2)',
+                  }}>
+                    <Bell style={{ width: '24px', height: '24px', color: 'hsl(var(--primary))' }} />
                   </div>
-                  <p className="text-base font-semibold text-foreground mb-1.5">No notifications yet</p>
-                  <p className="text-[13px] text-muted-foreground">Enable location tracking to receive deal alerts</p>
+                  <p style={{ fontSize: '16px', fontWeight: 600, color: 'hsl(var(--foreground))', marginBottom: '6px' }}>No notifications yet</p>
+                  <p style={{ fontSize: '13px', color: 'hsl(var(--muted-foreground))' }}>Enable location tracking to receive deal alerts</p>
                 </div>
               ) : (
                 <>
