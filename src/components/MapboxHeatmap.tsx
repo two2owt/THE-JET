@@ -2667,51 +2667,58 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* Enhanced Legend - Bottom left, responsive for all devices, collapsible on mobile */}
       {/* CRITICAL: Uses only opacity transition to avoid CLS - no translate animations */}
       <div 
-        className={`bg-card/95 backdrop-blur-xl rounded-xl border border-border shadow-lg ${isMobile ? 'px-2 py-1.5' : 'px-3 py-2 md:px-4 md:py-3'}`}
         style={{
           position: 'absolute',
           bottom: 'var(--map-fixed-bottom)',
           left: 'var(--map-ui-inset-left)',
           maxWidth: 'var(--map-control-max-width)',
           zIndex: 30,
+          background: 'hsl(var(--card) / 0.95)',
+          backdropFilter: 'blur(24px) saturate(1.6)',
+          WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
+          borderRadius: '12px',
+          border: '1px solid hsl(var(--border))',
+          boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+          padding: isMobile ? '6px 8px' : '8px 12px',
           opacity: mapLoaded && (isMobile ? !selectedVenue : !controlsCollapsed) ? 1 : 0,
           visibility: mapLoaded && (isMobile ? !selectedVenue : !controlsCollapsed) ? 'visible' : 'hidden',
           transition: 'opacity 300ms ease-out, visibility 300ms ease-out',
           transform: 'translateZ(0)',
           willChange: 'opacity',
           pointerEvents: mapLoaded && (isMobile ? !selectedVenue : !controlsCollapsed) ? 'auto' : 'none',
+          cursor: isMobile ? 'pointer' : undefined,
         }}
         onClick={isMobile ? () => { triggerHaptic('light'); setLegendCollapsed(!legendCollapsed); } : undefined}
       >
-        {/* Mobile collapsed view - just shows indicator dots */}
         {isMobile && legendCollapsed ? (
-          <div className="flex items-center gap-2 cursor-pointer">
-            <span className="text-[9px] font-medium text-muted-foreground">Legend</span>
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full shadow-sm bg-hot" />
-              <div className="w-2 h-2 rounded-full shadow-sm bg-warm" />
-              <div className="w-2 h-2 rounded-full shadow-sm bg-cool" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <span style={{ fontSize: '9px', fontWeight: 500, color: 'hsl(var(--muted-foreground))' }}>Legend</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(0, 100%, 65%)' }} />
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(45, 100%, 60%)' }} />
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(200, 100%, 65%)' }} />
             </div>
-            <ChevronUp className="w-3 h-3 text-muted-foreground" />
+            <ChevronUp style={{ width: '12px', height: '12px', color: 'hsl(var(--muted-foreground))' }} />
           </div>
         ) : (
           <>
-            {/* Collapse indicator for mobile */}
             {isMobile && (
-              <div className="flex justify-center mb-1 cursor-pointer">
-                <ChevronDown className="w-3 h-3 text-muted-foreground" />
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '4px', cursor: 'pointer' }}>
+                <ChevronDown style={{ width: '12px', height: '12px', color: 'hsl(var(--muted-foreground))' }} />
               </div>
             )}
             
             {showMovementPaths ? (
               <>
-                <p className="text-[10px] sm:text-xs md:text-sm font-semibold text-foreground mb-1.5 sm:mb-2">User Flow Paths</p>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1.5 sm:gap-2">
-                  <div className="w-20 sm:w-24 md:w-32 h-3.5 sm:h-4 md:h-5 rounded-md shadow-inner" style={{
+                <p style={{ fontSize: '10px', fontWeight: 600, color: 'hsl(var(--foreground))', marginBottom: '6px' }}>User Flow Paths</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div style={{
+                    width: '80px', height: '14px', borderRadius: '6px',
                     background: 'linear-gradient(to right, rgb(100, 200, 255), rgb(0, 255, 255), rgb(255, 200, 0), rgb(255, 100, 0), rgb(255, 0, 100))',
-                    border: '1px solid rgba(255, 255, 255, 0.2)'
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)',
                   }} />
-                  <div className="flex justify-between w-full text-[9px] sm:text-[10px] md:text-xs text-muted-foreground font-medium">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '9px', color: 'hsl(var(--muted-foreground))', fontWeight: 500 }}>
                     <span>Less Traffic</span>
                     <span>High Traffic</span>
                   </div>
@@ -2719,23 +2726,25 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
               </>
             ) : showDensityLayer ? (
               <>
-                <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
-                  <p className="text-[10px] sm:text-xs md:text-sm font-semibold text-foreground">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                  <p style={{ fontSize: '10px', fontWeight: 600, color: 'hsl(var(--foreground))' }}>
                     {timelapseMode ? 'Time-lapse' : 'User Density Heatmap'}
                   </p>
                   {timelapseMode && timelapse.isPlaying && (
-                    <div className="flex items-center gap-1">
-                      <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-                      <span className="text-[9px] sm:text-[10px] text-primary font-medium">{timelapse.formatHour(timelapse.currentHour)}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <div className="animate-pulse" style={{ width: '6px', height: '6px', background: 'hsl(var(--primary))', borderRadius: '50%' }} />
+                      <span style={{ fontSize: '9px', color: 'hsl(var(--primary))', fontWeight: 500 }}>{timelapse.formatHour(timelapse.currentHour)}</span>
                     </div>
                   )}
                 </div>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1.5 sm:gap-2">
-                  <div className="w-20 sm:w-24 md:w-32 h-3.5 sm:h-4 md:h-5 rounded-md shadow-inner" style={{
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div style={{
+                    width: '80px', height: '14px', borderRadius: '6px',
                     background: 'linear-gradient(to right, rgba(65, 105, 225, 0.8), rgb(0, 255, 127), rgb(255, 255, 0), rgb(255, 165, 0), rgb(255, 0, 0), rgb(139, 0, 0))',
-                    border: '1px solid rgba(255, 255, 255, 0.2)'
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)',
                   }} />
-                  <div className="flex justify-between w-full text-[9px] sm:text-[10px] md:text-xs text-muted-foreground font-medium">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '9px', color: 'hsl(var(--muted-foreground))', fontWeight: 500 }}>
                     <span>Low</span>
                     <span>Medium</span>
                     <span>High</span>
@@ -2743,20 +2752,20 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
                 </div>
               </>
             ) : (
-              <div className="flex flex-col gap-1 sm:gap-0">
-                <p className="text-[9px] sm:text-xs md:text-sm font-semibold text-muted-foreground mb-1 sm:mb-1.5 md:mb-2">Activity</p>
-                <div className="flex flex-col gap-1 sm:flex-row sm:gap-2 md:gap-3">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full shadow-sm bg-hot" />
-                    <span className="text-[9px] sm:text-[10px] md:text-xs text-foreground">Hot</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <p style={{ fontSize: '9px', fontWeight: 600, color: 'hsl(var(--muted-foreground))', marginBottom: '4px' }}>Activity</p>
+                <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '4px' : '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(0, 100%, 65%)' }} />
+                    <span style={{ fontSize: '9px', color: 'hsl(var(--foreground))' }}>Hot</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full shadow-sm bg-warm" />
-                    <span className="text-[9px] sm:text-[10px] md:text-xs text-foreground">Warm</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(45, 100%, 60%)' }} />
+                    <span style={{ fontSize: '9px', color: 'hsl(var(--foreground))' }}>Warm</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full shadow-sm bg-cool" />
-                    <span className="text-[9px] sm:text-[10px] md:text-xs text-foreground">Cool</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(200, 100%, 65%)' }} />
+                    <span style={{ fontSize: '9px', color: 'hsl(var(--foreground))' }}>Cool</span>
                   </div>
                 </div>
               </div>
@@ -2768,26 +2777,42 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* Enhanced Heatmap Loading Overlay */}
       {showDensityLayer && densityLoading && (
         <div 
-          className="absolute inset-0 flex items-center justify-center bg-background/30 backdrop-blur-md z-20"
           style={{
-            // Use opacity-only transition to avoid CLS
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'hsl(var(--background) / 0.3)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            zIndex: 20,
             animation: 'fadeIn 200ms ease-out forwards',
           }}
         >
           <div 
-            className="bg-card/95 backdrop-blur-xl rounded-xl border border-border p-6 flex flex-col items-center gap-4 shadow-2xl"
             style={{
-              // Avoid scale animations that cause CLS
+              background: 'hsl(var(--card) / 0.95)',
+              backdropFilter: 'blur(24px) saturate(1.6)',
+              WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
+              borderRadius: '12px',
+              border: '1px solid hsl(var(--border))',
+              padding: '24px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '16px',
+              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
               transform: 'translateZ(0)',
             }}
           >
-            <div className="relative">
-              <div className="w-12 h-12 border-4 border-primary/30 rounded-full" />
-              <div className="absolute inset-0 w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            <div style={{ position: 'relative', width: '48px', height: '48px' }}>
+              <div style={{ position: 'absolute', inset: 0, width: '48px', height: '48px', border: '4px solid hsl(var(--primary) / 0.3)', borderRadius: '50%' }} />
+              <div className="animate-spin" style={{ position: 'absolute', inset: 0, width: '48px', height: '48px', border: '4px solid hsl(var(--primary))', borderTopColor: 'transparent', borderRadius: '50%' }} />
             </div>
-            <div className="text-center">
-              <p className="text-sm font-semibold text-foreground mb-1">Loading Density Data</p>
-              <p className="text-xs text-muted-foreground">Analyzing user hotspots...</p>
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: '14px', fontWeight: 600, color: 'hsl(var(--foreground))', marginBottom: '4px' }}>Loading Density Data</p>
+              <p style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))' }}>Analyzing user hotspots...</p>
             </div>
           </div>
         </div>
