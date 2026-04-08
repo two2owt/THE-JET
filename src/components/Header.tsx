@@ -198,8 +198,9 @@ export const Header = () => {
         {/* Search bar — expands to fill remaining space */}
         {showSearchBar && (
           <div
-            className="relative flex-1"
             style={{
+              position: 'relative',
+              flex: '1 1 0%',
               maxWidth: isMobile ? '100%' : 'clamp(200px, 40vw, 480px)',
               minWidth: '0',
               opacity: mounted ? 1 : 0,
