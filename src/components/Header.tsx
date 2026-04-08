@@ -135,30 +135,31 @@ export const Header = () => {
       >
         {/* Logo — always visible unless mobile search is expanded */}
         {!(isMobile && searchExpanded) && (
-          <a
-            href="/"
-            className="group rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            onClick={e => { e.preventDefault(); navigate('/'); }}
-            aria-label="JET - Go to home"
+          <div
+            role="img"
+            aria-label="JET"
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
               flexShrink: 0,
               height: 'var(--touch-target-min, 44px)',
-              padding: '0 2px',
+              padding: '0 4px',
+              cursor: 'default',
+              userSelect: 'none',
               opacity: mounted ? 1 : 0,
               transform: mounted ? 'translateX(0)' : 'translateX(-8px)',
               transition: 'opacity 0.4s ease-out, transform 0.4s ease-out',
             }}
           >
             <Sparkles
-              className="text-primary transition-transform duration-300 group-hover:scale-110"
               style={{
                 width: 'clamp(16px, 2.5vw, 20px)',
                 height: 'clamp(16px, 2.5vw, 20px)',
+                color: 'hsl(var(--primary))',
                 filter: 'drop-shadow(0 0 6px hsl(var(--primary) / 0.5))',
               }}
+              aria-hidden="true"
             />
             <span
               style={{
@@ -175,7 +176,7 @@ export const Header = () => {
             >
               JET
             </span>
-          </a>
+          </div>
         )}
 
         {/* Search icon — mobile collapsed state */}
