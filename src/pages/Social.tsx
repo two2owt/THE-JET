@@ -10,7 +10,6 @@ import { PageLayout } from "@/components/PageLayout";
 import { EmptyState } from "@/components/EmptyState";
 import { ConnectionProfileDialog } from "@/components/ConnectionProfileDialog";
 import { UpgradePrompt, useFeatureAccess } from "@/components/UpgradePrompt";
-import { VirtualGrid } from "@/components/ui/virtual-list";
 import { ChatDialog } from "@/components/ChatDialog";
 import { useUnreadCounts } from "@/hooks/useMessages";
 import { Badge } from "@/components/ui/badge";
@@ -104,7 +103,7 @@ export default function Social() {
   if (!user) {
     return (
       <PageLayout defaultTab="social" notificationCount={0} headerConfig={{ hideSearch: true }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg">
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px 16px' }}>
           <EmptyState
             icon={Users}
             title="Sign in to connect"
@@ -121,7 +120,7 @@ export default function Social() {
   if (!canAccessSocialFeatures()) {
     return (
       <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg">
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px 16px' }}>
           <EmptyState
             icon={Crown}
             title="Unlock Social Features"
@@ -140,17 +139,47 @@ export default function Social() {
     );
   }
 
+  const sectionHeadingStyle: React.CSSProperties = {
+    fontSize: 'clamp(1.125rem, 2.5vw, 1.5rem)',
+    fontWeight: 800,
+    marginBottom: '16px',
+    backgroundImage: 'linear-gradient(to right, hsl(var(--foreground)), hsl(var(--primary)))',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+  };
+
+  const cardStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '12px',
+    padding: '12px 16px',
+    borderRadius: '12px',
+    backgroundColor: 'hsl(var(--card) / 0.9)',
+    border: '1px solid hsl(var(--border) / 0.6)',
+    backdropFilter: 'blur(8px)',
+  };
+
+  const avatarStyle: React.CSSProperties = {
+    width: '40px',
+    height: '40px',
+    flexShrink: 0,
+    overflow: 'hidden',
+    borderRadius: '50%',
+  };
+
   return (
     <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg space-y-fluid-xl">
+      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px 16px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
         {/* Messages shortcut */}
         <Button
           variant="outline"
           onClick={() => navigate("/messages")}
-          className="w-full justify-between"
+          style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
         >
-          <span className="flex items-center gap-2">
-            <MessageCircle className="w-4 h-4" />
+          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <MessageCircle style={{ width: '16px', height: '16px' }} />
             Messages
           </span>
           {Object.values(unreadCounts).reduce((a, b) => a + b, 0) > 0 && (
@@ -163,49 +192,34 @@ export default function Social() {
         {/* Pending Requests */}
         {pendingRequests.length > 0 && (
           <div>
-            <h2 className="text-fluid-xl sm:text-fluid-2xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent mb-fluid-md">
+            <h2 style={sectionHeadingStyle}>
               Friend Requests ({pendingRequests.length})
             </h2>
-            <div className="space-y-fluid-sm">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {pendingRequests.map((request) => (
-                <div
-                  key={request.id}
-                  className="bg-card/90 backdrop-blur-sm border border-border/60 rounded-xl p-4 flex items-center justify-between shadow-card"
-                >
-                  <div className="flex items-center gap-3">
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage src={request.profile?.avatar_url || undefined} alt={request.profile?.display_name || "User"} />
-                       <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary">
+                <div key={request.id} style={{ ...cardStyle, padding: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <Avatar style={{ ...avatarStyle, width: '48px', height: '48px' }}>
+                      <AvatarImage src={request.profile?.avatar_url || undefined} alt={request.profile?.display_name || "User"} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+                      <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary">
                         {request.profile?.display_name?.charAt(0)?.toUpperCase() || <Users className="w-6 h-6" />}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="font-semibold text-foreground">
+                      <p style={{ fontWeight: 600, color: 'hsl(var(--foreground))' }}>
                         {request.profile?.display_name || "Friend Request"}
                       </p>
-                      <p className="text-sm text-muted-foreground">
+                      <p style={{ fontSize: '14px', color: 'hsl(var(--muted-foreground))' }}>
                         Wants to connect with you
                       </p>
                     </div>
                   </div>
-                  <div className="flex gap-2 flex-shrink-0">
-                    <Button
-                      size="sm"
-                      onClick={() => handleAcceptRequest(request.id)}
-                      className="bg-primary min-h-[44px] px-3"
-                    >
-                      <Check className="w-4 h-4 mr-1" />
-                      <span className="hidden sm:inline">Accept</span>
-                      <span className="sm:hidden">OK</span>
+                  <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                    <Button size="sm" onClick={() => handleAcceptRequest(request.id)} style={{ minHeight: '44px', padding: '0 12px' }}>
+                      <Check className="w-4 h-4 mr-1" /> Accept
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleRemoveConnection(request.id)}
-                      className="min-h-[44px] px-3"
-                    >
-                      <X className="w-4 h-4 mr-1" />
-                      <span className="hidden sm:inline">Decline</span>
+                    <Button size="sm" variant="outline" onClick={() => handleRemoveConnection(request.id)} style={{ minHeight: '44px', padding: '0 12px' }}>
+                      <X className="w-4 h-4 mr-1" /> Decline
                     </Button>
                   </div>
                 </div>
@@ -216,7 +230,7 @@ export default function Social() {
 
         {/* My Friends */}
         <div>
-            <h2 className="text-fluid-xl sm:text-fluid-2xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent mb-fluid-md">
+          <h2 style={sectionHeadingStyle}>
             My Friends ({connections.length})
           </h2>
           {connections.length === 0 ? (
@@ -226,97 +240,93 @@ export default function Social() {
               description="Start connecting with friends below to share deals and discover new spots together"
             />
           ) : (
-            <VirtualGrid
-              items={connections}
-              estimateSize={80}
-              className="min-h-[30vh]"
-              columns={{ mobile: 1, tablet: 2, desktop: 3 }}
-              getItemKey={(connection) => connection.id}
-              renderItem={(connection) => {
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {connections.map((connection) => {
                 const friendId = connection.user_id === user?.id ? connection.friend_id : connection.user_id;
                 return (
-                   <div className="bg-card/90 backdrop-blur-sm border border-border/60 rounded-xl p-3 sm:p-4 flex items-center justify-between gap-2 sm:gap-3 h-full shadow-card">
+                  <div key={connection.id} style={cardStyle}>
                     <button
-                      className="flex items-center gap-2 sm:gap-3 text-left flex-1 min-w-0"
+                      style={{ display: 'flex', alignItems: 'center', gap: '12px', textAlign: 'left', flex: '1 1 0%', minWidth: 0, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                       onClick={() => setSelectedProfileId(friendId)}
                     >
-                      <Avatar className="w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0">
-                        <AvatarImage src={connection.profile?.avatar_url || undefined} alt={connection.profile?.display_name || "Friend"} />
+                      <Avatar style={avatarStyle}>
+                        <AvatarImage src={connection.profile?.avatar_url || undefined} alt={connection.profile?.display_name || "Friend"} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
                         <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary text-sm">
-                          {connection.profile?.display_name?.charAt(0)?.toUpperCase() || <Users className="w-4 h-4 sm:w-5 sm:h-5" />}
+                          {connection.profile?.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '20px', height: '20px' }} />}
                         </AvatarFallback>
                       </Avatar>
-                      <p className="font-medium text-foreground text-sm sm:text-base truncate">
+                      <p style={{ fontWeight: 500, color: 'hsl(var(--foreground))', fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {connection.profile?.display_name || "Friend"}
                       </p>
                     </button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setChatFriend({
-                        id: friendId,
-                        name: connection.profile?.display_name || "Friend",
-                        avatar: connection.profile?.avatar_url,
-                      })}
-                      className="flex-shrink-0 min-h-[44px] min-w-[44px] h-9 w-9 p-0 relative"
-                    >
-                      <MessageCircle className="w-4 h-4" />
-                      {unreadCounts[friendId] > 0 && (
-                        <Badge className="absolute -top-1 -right-1 h-4 min-w-[16px] px-1 text-[10px] bg-destructive text-destructive-foreground">
-                          {unreadCounts[friendId]}
-                        </Badge>
-                      )}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleRemoveConnection(connection.id)}
-                      className="flex-shrink-0 min-h-[44px] min-w-[44px] h-9 w-9 p-0"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
+                    <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setChatFriend({
+                          id: friendId,
+                          name: connection.profile?.display_name || "Friend",
+                          avatar: connection.profile?.avatar_url,
+                        })}
+                        style={{ minHeight: '44px', minWidth: '44px', padding: 0, position: 'relative' }}
+                      >
+                        <MessageCircle style={{ width: '16px', height: '16px' }} />
+                        {unreadCounts[friendId] > 0 && (
+                          <Badge style={{
+                            position: 'absolute', top: '-4px', right: '-4px',
+                            height: '16px', minWidth: '16px', padding: '0 4px',
+                            fontSize: '10px', lineHeight: 1,
+                          }} className="bg-destructive text-destructive-foreground">
+                            {unreadCounts[friendId]}
+                          </Badge>
+                        )}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleRemoveConnection(connection.id)}
+                        style={{ minHeight: '44px', minWidth: '44px', padding: 0 }}
+                      >
+                        <X style={{ width: '16px', height: '16px' }} />
+                      </Button>
+                    </div>
                   </div>
                 );
-              }}
-            />
+              })}
+            </div>
           )}
         </div>
 
         {/* Discover People */}
         <div>
-          <h2 className="text-fluid-xl sm:text-fluid-2xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent mb-fluid-md">
+          <h2 style={sectionHeadingStyle}>
             Discover People
           </h2>
-          <VirtualGrid
-            items={profiles}
-            estimateSize={80}
-            className="min-h-[30vh]"
-            columns={{ mobile: 1, tablet: 2, desktop: 3 }}
-            getItemKey={(profile) => profile.id}
-            renderItem={(profile) => (
-              <div className="bg-card/90 backdrop-blur-sm border border-border/60 rounded-xl p-3 sm:p-4 flex items-center justify-between gap-2 sm:gap-3 h-full shadow-card">
-                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                  <Avatar className="w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0">
-                    <AvatarImage src={profile.avatar_url || undefined} alt={profile.display_name || "User"} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {profiles.map((profile) => (
+              <div key={profile.id} style={cardStyle}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: '1 1 0%', minWidth: 0 }}>
+                  <Avatar style={avatarStyle}>
+                    <AvatarImage src={profile.avatar_url || undefined} alt={profile.display_name || "User"} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
                     <AvatarFallback className="bg-gradient-to-br from-accent/15 to-primary/15 text-accent text-sm">
-                      {profile.display_name?.charAt(0)?.toUpperCase() || <Users className="w-4 h-4 sm:w-5 sm:h-5" />}
+                      {profile.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '20px', height: '20px' }} />}
                     </AvatarFallback>
                   </Avatar>
-                  <p className="font-medium text-foreground text-sm sm:text-base truncate">
+                  <p style={{ fontWeight: 500, color: 'hsl(var(--foreground))', fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {profile.display_name || "User"}
                   </p>
                 </div>
                 <Button
                   size="sm"
                   onClick={() => handleSendRequest(profile.id)}
-                  className="flex-shrink-0 h-8 sm:h-9 px-2.5 sm:px-3 text-xs sm:text-sm"
+                  style={{ flexShrink: 0, height: '36px', padding: '0 12px', fontSize: '13px' }}
                 >
-                  <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
+                  <UserPlus style={{ width: '14px', height: '14px', marginRight: '6px' }} />
                   Add
                 </Button>
               </div>
-            )}
-          />
+            ))}
+          </div>
         </div>
       </div>
 
