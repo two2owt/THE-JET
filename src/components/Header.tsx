@@ -137,10 +137,14 @@ export const Header = () => {
         {!(isMobile && searchExpanded) && (
           <a
             href="/"
-            className="group flex items-center gap-1.5 flex-shrink-0 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="group rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             onClick={e => { e.preventDefault(); navigate('/'); }}
             aria-label="JET - Go to home"
             style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              flexShrink: 0,
               height: 'var(--touch-target-min, 44px)',
               padding: '0 2px',
               opacity: mounted ? 1 : 0,
