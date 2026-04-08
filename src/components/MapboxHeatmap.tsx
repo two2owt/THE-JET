@@ -2075,11 +2075,11 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* Map Error State with Retry - deferred to not become LCP element */}
       {mapError && !mapInitializing && (
         <div 
-          className="absolute inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-sm"
-          style={{ contentVisibility: 'auto' }}
+          className="bg-background/95 backdrop-blur-sm"
+          style={{ position: 'absolute', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', contentVisibility: 'auto' }}
         >
-          <div className="flex flex-col items-center gap-4 p-6 max-w-sm text-center">
-            <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center">
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', padding: '24px', maxWidth: '24rem', textAlign: 'center' }}>
+            <div className="rounded-full bg-destructive/10" style={{ width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <AlertCircle className="w-7 h-7 text-destructive" aria-hidden="true" />
             </div>
             <div className="space-y-2">
