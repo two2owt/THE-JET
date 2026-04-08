@@ -120,17 +120,31 @@ export const Header = () => {
       />
 
       <div
-        className="h-full mx-auto flex flex-row flex-nowrap items-center px-3 sm:px-4 md:px-6 lg:px-8 gap-2 sm:gap-3 md:gap-4 overflow-hidden"
-        style={{ maxWidth: '1280px' }}
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          flexWrap: 'nowrap',
+          alignItems: 'center',
+          height: '100%',
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '0 clamp(12px, 2vw, 32px)',
+          gap: 'clamp(8px, 1.5vw, 16px)',
+          overflow: 'hidden',
+        }}
       >
         {/* Logo — always visible unless mobile search is expanded */}
         {!(isMobile && searchExpanded) && (
           <a
             href="/"
-            className="group flex items-center gap-1.5 flex-shrink-0 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="group rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             onClick={e => { e.preventDefault(); navigate('/'); }}
             aria-label="JET - Go to home"
             style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              flexShrink: 0,
               height: 'var(--touch-target-min, 44px)',
               padding: '0 2px',
               opacity: mounted ? 1 : 0,
@@ -163,8 +177,12 @@ export const Header = () => {
         {showSearchIcon && (
           <button
             onClick={() => setSearchExpanded(true)}
-            className="flex-shrink-0 flex items-center justify-center rounded-full transition-colors hover:bg-muted/60"
+            className="rounded-full transition-colors hover:bg-muted/60"
             style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
               width: 'var(--touch-target-min, 44px)',
               height: 'var(--touch-target-min, 44px)',
               opacity: mounted ? 1 : 0,
@@ -173,15 +191,16 @@ export const Header = () => {
             }}
             aria-label="Open search"
           >
-            <Search style={{ width: 'clamp(16px, 2.5vw, 20px)', height: 'clamp(16px, 2.5vw, 20px)' }} className="text-muted-foreground" />
+            <Search style={{ width: 'clamp(16px, 2.5vw, 20px)', height: 'clamp(16px, 2.5vw, 20px)', color: 'hsl(var(--muted-foreground))' }} />
           </button>
         )}
 
         {/* Search bar — expands to fill remaining space */}
         {showSearchBar && (
           <div
-            className="relative flex-1"
             style={{
+              position: 'relative',
+              flex: '1 1 0%',
               maxWidth: isMobile ? '100%' : 'clamp(200px, 40vw, 480px)',
               minWidth: '0',
               opacity: mounted ? 1 : 0,
@@ -189,8 +208,17 @@ export const Header = () => {
               transition: 'opacity 0.4s ease-out 0.1s, transform 0.4s ease-out 0.1s',
             }}
           >
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
-              <Search className="w-4 h-4 text-muted-foreground/60" />
+            <div
+              style={{
+                position: 'absolute',
+                left: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                zIndex: 10,
+                pointerEvents: 'none',
+              }}
+            >
+              <Search style={{ width: '16px', height: '16px', color: 'hsl(var(--muted-foreground) / 0.6)' }} />
             </div>
             <Input
               type="text"
@@ -201,16 +229,33 @@ export const Header = () => {
               maxLength={100}
               aria-label="Search venues and deals"
               autoFocus={isMobile && searchExpanded}
-              className="w-full pl-9 pr-9 rounded-full bg-muted/40 border-transparent hover:bg-muted/60 focus:bg-muted/70 focus:border-primary/30 focus:ring-1 focus:ring-primary/20 transition-all duration-200 text-sm placeholder:text-muted-foreground/50"
-              style={{ height: 'clamp(32px, 5vw, 40px)' }}
+              className="rounded-full bg-muted/40 border-transparent hover:bg-muted/60 focus:bg-muted/70 focus:border-primary/30 focus:ring-1 focus:ring-primary/20 transition-all duration-200 text-sm placeholder:text-muted-foreground/50"
+              style={{
+                width: '100%',
+                height: 'clamp(32px, 5vw, 40px)',
+                paddingLeft: '36px',
+                paddingRight: '36px',
+              }}
             />
             {isMobile && searchExpanded && (
               <button
                 onClick={handleCollapseSearch}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 z-10 w-6 h-6 flex items-center justify-center rounded-full hover:bg-muted/60 transition-colors"
                 aria-label="Close search"
+                className="rounded-full hover:bg-muted/60 transition-colors"
+                style={{
+                  position: 'absolute',
+                  right: '10px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  zIndex: 10,
+                  width: '24px',
+                  height: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
               >
-                <X className="w-3.5 h-3.5 text-muted-foreground" />
+                <X style={{ width: '14px', height: '14px', color: 'hsl(var(--muted-foreground))' }} />
               </button>
             )}
             {showResults && (
@@ -229,14 +274,16 @@ export const Header = () => {
         )}
 
         {/* Spacer — pushes avatar to the right */}
-        <div className="flex-1 min-w-0" />
+        <div style={{ flex: '1 1 0%', minWidth: 0 }} />
 
         {/* Avatar — settings link */}
         <button
           onClick={() => navigate('/settings')}
-          className="relative flex-shrink-0 group rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="group rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           aria-label="Open settings"
           style={{
+            position: 'relative',
+            flexShrink: 0,
             opacity: mounted ? 1 : 0,
             transform: mounted ? 'translateX(0)' : 'translateX(8px)',
             transition: 'opacity 0.4s ease-out 0.2s, transform 0.4s ease-out 0.2s',

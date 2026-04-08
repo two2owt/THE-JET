@@ -98,13 +98,16 @@ describe("BottomNav – inline layout styles", () => {
     expect(styleAttr).toContain("--bottom-nav-total-height");
   });
 
-  it("inner container has flex layout with space-around via className", () => {
+  it("inner container has flex layout with space-around via inline styles", () => {
     renderWithRouter(<BottomNav {...defaultProps} />);
     const nav = screen.getByRole("navigation", { name: "Main navigation" });
-    const flexContainer = nav.querySelector(".flex.items-center.justify-around");
-    expect(flexContainer).not.toBeNull();
-    expect(flexContainer!.className).toContain("flex");
-    expect(flexContainer!.className).toContain("justify-around");
+    // The inner container now uses inline styles instead of Tailwind classes
+    // The flex container is the last child div (after glass bg, divider, shadow divs)
+    const allDivs = nav.querySelectorAll(":scope > div");
+    const innerDiv = allDivs[allDivs.length - 1] as HTMLElement;
+    expect(innerDiv).not.toBeNull();
+    expect(innerDiv.style.display).toBe("flex");
+    expect(innerDiv.style.justifyContent).toBe("space-around");
   });
 
   it("renders all 5 navigation tabs", () => {
