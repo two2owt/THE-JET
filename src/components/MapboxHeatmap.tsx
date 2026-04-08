@@ -2585,63 +2585,69 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* CRITICAL: Uses only opacity transition to avoid CLS - no translate/scale animations */}
       {(showDensityLayer || showMovementPaths) && (densityData || pathData) && (
         <div 
-          className="absolute bg-card backdrop-blur-xl rounded-xl border border-border ring-1 ring-black/5 dark:ring-white/10 z-30 shadow-xl px-3 py-2"
           style={{
+            position: 'absolute',
             top: 'calc(var(--map-safe-top-controls-in-map, var(--map-safe-top-controls)) + 1rem)',
             right: 'var(--map-ui-inset-right)',
             minWidth: '140px',
-            // Use opacity-only transition to avoid CLS
+            zIndex: 30,
+            background: 'hsl(var(--card))',
+            backdropFilter: 'blur(24px) saturate(1.6)',
+            WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
+            borderRadius: '12px',
+            border: '1px solid hsl(var(--border))',
+            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
+            padding: '8px 12px',
             opacity: mapLoaded ? 1 : 0,
             visibility: mapLoaded ? 'visible' : 'hidden',
             transition: 'opacity 300ms ease-out, visibility 300ms ease-out',
-            // GPU acceleration without layout-affecting transforms
             transform: 'translateZ(0)',
             willChange: 'opacity',
             pointerEvents: mapLoaded ? 'auto' : 'none',
           }}
         >
-          <div className="flex flex-col gap-1.5">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Live Stats</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <p style={{ fontSize: '10px', fontWeight: 600, color: 'hsl(var(--muted-foreground))', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Live Stats</p>
             
             {showDensityLayer && densityData && (
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[10px] text-muted-foreground">Hotspots</span>
-                  <span className="text-xs font-bold text-primary">{densityData.stats.grid_cells}</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                  <span style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))' }}>Hotspots</span>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: 'hsl(var(--primary))' }}>{densityData.stats.grid_cells}</span>
                 </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[10px] text-muted-foreground">Data Points</span>
-                  <span className="text-xs font-bold text-foreground">{densityData.stats.total_points}</span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                  <span style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))' }}>Data Points</span>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: 'hsl(var(--foreground))' }}>{densityData.stats.total_points}</span>
                 </div>
                 {densityData.stats.max_density > 0 && (
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-[10px] text-muted-foreground">Peak Density</span>
-                    <span className="text-xs font-bold text-warm">{densityData.stats.max_density}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                    <span style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))' }}>Peak Density</span>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: 'hsl(45, 100%, 60%)' }}>{densityData.stats.max_density}</span>
                   </div>
                 )}
               </div>
             )}
             
             {showMovementPaths && pathData && (
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[10px] text-muted-foreground">Active Paths</span>
-                  <span className="text-xs font-bold text-primary">{pathData.stats.total_paths}</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                  <span style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))' }}>Active Paths</span>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: 'hsl(var(--primary))' }}>{pathData.stats.total_paths}</span>
                 </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[10px] text-muted-foreground">Movements</span>
-                  <span className="text-xs font-bold text-foreground">{pathData.stats.total_movements}</span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                  <span style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))' }}>Movements</span>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: 'hsl(var(--foreground))' }}>{pathData.stats.total_movements}</span>
                 </div>
                 {pathData.stats.unique_users > 0 && (
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-[10px] text-muted-foreground">Users Tracked</span>
-                    <span className="text-xs font-bold text-cool">{pathData.stats.unique_users}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                    <span style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))' }}>Users Tracked</span>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: 'hsl(200, 100%, 65%)' }}>{pathData.stats.unique_users}</span>
                   </div>
                 )}
                 {pathData.stats.max_frequency > 0 && (
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-[10px] text-muted-foreground">Peak Traffic</span>
-                    <span className="text-xs font-bold text-warm">{pathData.stats.max_frequency}x</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                    <span style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))' }}>Peak Traffic</span>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: 'hsl(45, 100%, 60%)' }}>{pathData.stats.max_frequency}x</span>
                   </div>
                 )}
               </div>
@@ -2649,9 +2655,9 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
             
             {/* Loading indicator */}
             {(densityLoading || pathsLoading) && (
-              <div className="flex items-center gap-1.5 pt-1 border-t border-border/50">
-                <div className="w-2 h-2 border border-primary border-t-transparent rounded-full animate-spin" />
-                <span className="text-[9px] text-muted-foreground">Updating...</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', paddingTop: '4px', borderTop: '1px solid hsl(var(--border) / 0.5)' }}>
+                <div className="animate-spin" style={{ width: '8px', height: '8px', border: '1px solid hsl(var(--primary))', borderTopColor: 'transparent', borderRadius: '50%' }} />
+                <span style={{ fontSize: '9px', color: 'hsl(var(--muted-foreground))' }}>Updating...</span>
               </div>
             )}
           </div>
