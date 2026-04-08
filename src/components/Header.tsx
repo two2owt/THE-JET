@@ -240,10 +240,22 @@ export const Header = () => {
             {isMobile && searchExpanded && (
               <button
                 onClick={handleCollapseSearch}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 z-10 w-6 h-6 flex items-center justify-center rounded-full hover:bg-muted/60 transition-colors"
                 aria-label="Close search"
+                className="rounded-full hover:bg-muted/60 transition-colors"
+                style={{
+                  position: 'absolute',
+                  right: '10px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  zIndex: 10,
+                  width: '24px',
+                  height: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
               >
-                <X className="w-3.5 h-3.5 text-muted-foreground" />
+                <X style={{ width: '14px', height: '14px', color: 'hsl(var(--muted-foreground))' }} />
               </button>
             )}
             {showResults && (
