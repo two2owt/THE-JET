@@ -103,8 +103,13 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
               onTouchStart={() => handlePrefetch(item.id)}
               aria-label={`${item.label}${hasNotification ? `, ${notificationCount} unread` : ''}`}
               aria-current={isActive ? "page" : undefined}
-              className="relative flex flex-col items-center justify-center touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
+              className="touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
               style={{
+                position: 'relative',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
                 minWidth: 'clamp(48px, 12vw, 64px)',
                 height: 'clamp(40px, 6vw, 52px)',
                 gap: '2px',
