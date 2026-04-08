@@ -2137,8 +2137,10 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* Unified Top-Left Controls: Location + Map Style in one compact row */}
       {controlsReady && (
       <div 
-        className="absolute flex items-center"
         style={{
+          position: 'absolute',
+          display: 'flex',
+          alignItems: 'center',
           top: 'var(--map-ui-inset-top, 0.75rem)',
           left: 'var(--map-ui-inset-left, 0.75rem)',
           gap: 'clamp(4px, 0.8vw, 8px)',
