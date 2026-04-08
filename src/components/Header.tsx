@@ -284,6 +284,10 @@ export const Header = () => {
           style={{
             position: 'relative',
             flexShrink: 0,
+            overflow: 'hidden',
+            borderRadius: '9999px',
+            width: 'clamp(32px, 5vw, 40px)',
+            height: 'clamp(32px, 5vw, 40px)',
             opacity: mounted ? 1 : 0,
             transform: mounted ? 'translateX(0)' : 'translateX(8px)',
             transition: 'opacity 0.4s ease-out 0.2s, transform 0.4s ease-out 0.2s',
@@ -297,8 +301,7 @@ export const Header = () => {
             }}
           />
           <Avatar
-            className="relative ring-[1.5px] ring-primary/25 group-hover:ring-primary/50 transition-all duration-300 !overflow-hidden"
-            style={{ width: 'clamp(32px, 5vw, 40px)', height: 'clamp(32px, 5vw, 40px)', borderRadius: '9999px' }}
+            style={{ width: '100%', height: '100%', borderRadius: '9999px', overflow: 'hidden' }}
           >
             <AvatarImage src={avatarUrl || ""} alt="Profile" className="object-cover rounded-full" style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
             <AvatarFallback
