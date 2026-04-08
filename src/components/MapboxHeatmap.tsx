@@ -2245,44 +2245,93 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
         {/* Map Style - compact icon button */}
         <Collapsible defaultOpen={false}>
           <CollapsibleTrigger asChild>
-            <Button
-              variant="secondary"
-              size="sm"
-              className="bg-card backdrop-blur-xl border border-border shadow-xl ring-1 ring-black/5 dark:ring-white/10 p-0 rounded-xl"
-              style={{ width: 'clamp(32px, 5vw, 40px)', height: 'clamp(32px, 5vw, 40px)' }}
+            <button
               aria-label="Map style options"
+              style={{
+                width: 'clamp(32px, 5vw, 40px)',
+                height: 'clamp(32px, 5vw, 40px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '12px',
+                background: 'hsl(var(--card))',
+                border: '1px solid hsl(var(--border))',
+                boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.05)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
+                cursor: 'pointer',
+                color: 'hsl(var(--foreground))',
+              }}
             >
-              <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4" aria-hidden="true" />
-            </Button>
+              <Layers style={{ width: '16px', height: '16px' }} aria-hidden="true" />
+            </button>
           </CollapsibleTrigger>
-          <CollapsibleContent className="absolute top-full left-0 mt-1.5 z-20 overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
-            <div className="bg-card/95 backdrop-blur-xl rounded-xl border border-border p-2 shadow-lg space-y-2" style={{ minWidth: '200px' }}>
-              <div className="space-y-1.5" role="group" aria-label="Map base style">
-                <span className="text-[9px] text-muted-foreground font-medium uppercase tracking-wider">Style</span>
-                <div className="grid grid-cols-4 gap-1" role="radiogroup">
+          <CollapsibleContent style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            marginTop: '6px',
+            zIndex: 20,
+            overflow: 'hidden',
+          }}>
+            <div style={{
+              background: 'hsl(var(--card) / 0.95)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              borderRadius: '12px',
+              border: '1px solid hsl(var(--border))',
+              padding: '8px',
+              boxShadow: '0 10px 25px -5px rgba(0,0,0,0.15)',
+              minWidth: '200px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+            }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }} role="group" aria-label="Map base style">
+                <span style={{ fontSize: '9px', color: 'hsl(var(--muted-foreground))', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Style</span>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px' }} role="radiogroup">
                   {(['light', 'dark', 'streets', 'satellite'] as const).map((style) => (
-                    <Button
+                    <button
                       key={style}
                       onClick={() => { triggerHaptic('light'); setMapStyle(style); }}
-                      variant={mapStyle === style ? "default" : "outline"}
-                      size="sm"
-                      className="h-7 text-[9px] px-1.5 capitalize"
                       aria-pressed={mapStyle === style}
+                      style={{
+                        height: '28px',
+                        fontSize: '9px',
+                        padding: '0 6px',
+                        textTransform: 'capitalize',
+                        borderRadius: '8px',
+                        border: mapStyle === style ? '1px solid hsl(var(--primary))' : '1px solid hsl(var(--border))',
+                        background: mapStyle === style ? 'hsl(var(--primary))' : 'transparent',
+                        color: mapStyle === style ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
+                        cursor: 'pointer',
+                        fontWeight: 600,
+                        transition: 'all 0.2s',
+                      }}
                     >
                       {style}
-                    </Button>
+                    </button>
                   ))}
                 </div>
               </div>
-              <Button
+              <button
                 onClick={() => { triggerHaptic('medium'); setShow3DTerrain(!show3DTerrain); }}
-                variant={show3DTerrain ? "default" : "outline"}
-                size="sm"
-                className="w-full h-7 text-[10px]"
                 aria-pressed={show3DTerrain}
+                style={{
+                  width: '100%',
+                  height: '28px',
+                  fontSize: '10px',
+                  fontWeight: 600,
+                  borderRadius: '8px',
+                  border: show3DTerrain ? '1px solid hsl(var(--primary))' : '1px solid hsl(var(--border))',
+                  background: show3DTerrain ? 'hsl(var(--primary))' : 'transparent',
+                  color: show3DTerrain ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
               >
                 {show3DTerrain ? "3D On" : "3D Off"}
-              </Button>
+              </button>
             </div>
           </CollapsibleContent>
         </Collapsible>

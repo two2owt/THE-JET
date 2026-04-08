@@ -61,7 +61,7 @@ SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayNam
 const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
->(({ className, children, position = "popper", ...props }, ref) => (
+>(({ className, children, position = "popper", style, ...props }, ref) => (
   <SelectPrimitive.Portal>
     <SelectPrimitive.Content
       ref={ref}
@@ -72,6 +72,18 @@ const SelectContent = React.forwardRef<
         className,
       )}
       position={position}
+      style={{
+        background: 'hsl(var(--popover))',
+        color: 'hsl(var(--popover-foreground))',
+        border: '1px solid hsl(var(--border) / 0.4)',
+        borderRadius: '12px',
+        boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.05)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
+        zIndex: 100,
+        overflow: 'hidden',
+        ...style,
+      }}
       {...props}
     >
       <SelectScrollUpButton />
@@ -81,6 +93,7 @@ const SelectContent = React.forwardRef<
           position === "popper" &&
             "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]",
         )}
+        style={{ padding: '4px' }}
       >
         {children}
       </SelectPrimitive.Viewport>
@@ -108,6 +121,16 @@ const SelectItem = React.forwardRef<
       "relative flex w-full cursor-pointer select-none items-center rounded-lg py-3 pl-8 pr-2 text-sm outline-none min-h-[44px] text-popover-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-primary/10 focus:text-foreground data-[state=checked]:bg-primary/10 data-[state=checked]:text-foreground transition-all duration-200 hover:bg-primary/10 hover:text-foreground touch-manipulation",
       className,
     )}
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      padding: '12px 8px 12px 32px',
+      borderRadius: '8px',
+      fontSize: '14px',
+      cursor: 'pointer',
+      color: 'hsl(var(--popover-foreground))',
+      minHeight: '44px',
+    }}
     {...props}
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
