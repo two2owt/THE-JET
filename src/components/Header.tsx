@@ -161,11 +161,16 @@ export const Header = () => {
               }}
             />
             <span
-              className="font-extrabold tracking-tight bg-clip-text text-transparent"
               style={{
                 fontSize: 'clamp(18px, 3vw, 24px)',
                 lineHeight: 1,
+                fontWeight: 800,
+                letterSpacing: '-0.025em',
                 backgroundImage: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))',
+                WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                color: 'transparent',
               }}
             >
               JET
