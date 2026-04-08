@@ -493,7 +493,7 @@ const Index = () => {
           )}
 
           {activeTab === "explore" && (
-            <div className="px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-sm sm:py-fluid-md">
+            <div style={{ padding: '8px 16px 16px' }}>
               <Suspense fallback={<ExploreTabSkeleton />}>
                 <ExploreTab onVenueSelect={handleVenueSelect} />
               </Suspense>
