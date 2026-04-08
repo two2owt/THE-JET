@@ -120,8 +120,18 @@ export const Header = () => {
       />
 
       <div
-        className="h-full mx-auto flex flex-row flex-nowrap items-center px-3 sm:px-4 md:px-6 lg:px-8 gap-2 sm:gap-3 md:gap-4 overflow-hidden"
-        style={{ maxWidth: '1280px' }}
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          flexWrap: 'nowrap',
+          alignItems: 'center',
+          height: '100%',
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '0 clamp(12px, 2vw, 32px)',
+          gap: 'clamp(8px, 1.5vw, 16px)',
+          overflow: 'hidden',
+        }}
       >
         {/* Logo — always visible unless mobile search is expanded */}
         {!(isMobile && searchExpanded) && (

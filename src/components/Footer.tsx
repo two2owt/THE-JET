@@ -46,6 +46,8 @@ export const Footer = () => {
         <div
           style={{
             display: 'flex',
+            flexDirection: 'row',
+            flexWrap: 'nowrap',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '24px',
