@@ -391,14 +391,23 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
         </Suspense>
       )}
 
-    <div className="flex flex-col gap-6">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-extrabold mb-2 leading-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+        <h2 style={{
+          fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
+          fontWeight: 800,
+          marginBottom: '8px',
+          lineHeight: 1.1,
+          backgroundImage: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)))',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+        }}>
           Explore Deals
         </h2>
-        <div className="flex items-center gap-2 flex-wrap">
-          <p className="text-sm text-muted-foreground">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <p style={{ fontSize: '14px', color: 'hsl(var(--muted-foreground))' }}>
             {userLocation 
               ? "Showing deals near you" 
               : "Showing all available deals"}
@@ -423,25 +432,34 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
       </div>
 
       {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-muted-foreground" />
+      <div style={{ position: 'relative' }}>
+        <Search style={{
+          position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)',
+          width: '18px', height: '18px', color: 'hsl(var(--muted-foreground))', pointerEvents: 'none',
+        }} />
         <Input
           type="text"
           placeholder="Search venues, deals, or categories..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 rounded-xl bg-muted/40 border-transparent hover:bg-muted/60 focus:bg-muted/70 focus:border-primary/30 focus:ring-1 focus:ring-primary/20 transition-all"
+          style={{
+            paddingLeft: '40px',
+            borderRadius: '12px',
+            backgroundColor: 'hsl(var(--muted) / 0.5)',
+            border: '1px solid hsl(var(--border) / 0.4)',
+            transition: 'all 0.2s',
+          }}
           aria-label="Search venues, deals, or categories"
         />
       </div>
 
       {/* Category Filters */}
       {availableCategories.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground">Filter by Category</span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Filter style={{ width: '16px', height: '16px', color: 'hsl(var(--muted-foreground))' }} />
+              <span style={{ fontSize: '14px', fontWeight: 500, color: 'hsl(var(--foreground))' }}>Filter by Category</span>
             </div>
             {(selectedCategories.length > 0 || searchQuery) && (
               <Button
@@ -455,7 +473,7 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
               </Button>
             )}
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
             {availableCategories.map((category) => (
               <Badge
                 key={category}
@@ -471,21 +489,33 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-3">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
         {[
-          { icon: TrendingUp, value: filteredDeals.length, label: userLocation ? "Nearby Deals" : "Active Deals", colorClass: "text-primary", bgClass: "from-primary/15 to-primary/5 border-primary/30" },
-          { icon: MapPin, value: new Set(filteredDeals.map(d => d.venue_name)).size, label: userLocation ? "Nearby Venues" : "Venues", colorClass: "text-accent", bgClass: "from-accent/15 to-accent/5 border-accent/30" },
-          { icon: Clock, value: filteredDeals.length, label: searchQuery || selectedCategories.length > 0 ? "Results" : "Available", colorClass: "text-muted-foreground", bgClass: "from-muted-foreground/15 to-muted-foreground/5 border-muted-foreground/30" },
+          { icon: TrendingUp, value: filteredDeals.length, label: userLocation ? "Nearby Deals" : "Active Deals", color: 'hsl(var(--primary))' },
+          { icon: MapPin, value: new Set(filteredDeals.map(d => d.venue_name)).size, label: userLocation ? "Nearby Venues" : "Venues", color: 'hsl(var(--accent))' },
+          { icon: Clock, value: filteredDeals.length, label: searchQuery || selectedCategories.length > 0 ? "Results" : "Available", color: 'hsl(var(--muted-foreground))' },
         ].map((stat, i) => (
           <div
             key={i}
-            className="py-4 px-2 text-center rounded-[14px] bg-card/90 border border-border/50 backdrop-blur-md"
+            style={{
+              padding: '16px 8px',
+              textAlign: 'center',
+              borderRadius: '14px',
+              backgroundColor: 'hsl(var(--card) / 0.9)',
+              border: '1px solid hsl(var(--border) / 0.5)',
+              backdropFilter: 'blur(12px)',
+            }}
           >
-            <div className={cn("w-10 h-10 mx-auto mb-2 rounded-full flex items-center justify-center bg-gradient-to-br border", stat.bgClass)}>
-              <stat.icon className={cn("w-5 h-5", stat.colorClass)} />
+            <div style={{
+              width: '40px', height: '40px', margin: '0 auto 8px',
+              borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: `linear-gradient(135deg, ${stat.color}26, ${stat.color}0d)`,
+              border: `1px solid ${stat.color}4d`,
+            }}>
+              <stat.icon style={{ width: '20px', height: '20px', color: stat.color }} />
             </div>
-            <p className="text-[22px] font-bold text-foreground">{stat.value}</p>
-            <p className="text-[11px] text-muted-foreground">{stat.label}</p>
+            <p style={{ fontSize: '22px', fontWeight: 700, color: 'hsl(var(--foreground))' }}>{stat.value}</p>
+            <p style={{ fontSize: '11px', color: 'hsl(var(--muted-foreground))' }}>{stat.label}</p>
           </div>
         ))}
       </div>

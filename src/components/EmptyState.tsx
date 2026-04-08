@@ -66,7 +66,17 @@ export const EmptyState = ({
         {description}
       </p>
       {actionLabel && onAction && (
-        <Button onClick={onAction} size="lg" className="bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 text-primary-foreground font-semibold rounded-xl">
+        <Button
+          onClick={onAction}
+          size="lg"
+          style={{
+            background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)))',
+            color: 'hsl(var(--primary-foreground))',
+            fontWeight: 600,
+            borderRadius: '12px',
+            border: 'none',
+          }}
+        >
           {actionLabel}
         </Button>
       )}
