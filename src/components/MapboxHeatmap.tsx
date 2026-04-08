@@ -2301,20 +2301,36 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       >
         {/* Expanded panel - slides up from FAB */}
         <div 
-          className={`overflow-hidden transition-all duration-300 ease-out ${
-            !controlsCollapsed ? 'max-h-[600px] opacity-100 mb-2' : 'max-h-0 opacity-0'
-          }`}
-          style={{ width: '160px', contain: 'layout style' }}
+          style={{
+            width: '160px',
+            contain: 'layout style',
+            overflow: 'hidden',
+            transition: 'max-height 300ms ease-out, opacity 300ms ease-out, margin-bottom 300ms ease-out',
+            maxHeight: !controlsCollapsed ? '600px' : '0px',
+            opacity: !controlsCollapsed ? 1 : 0,
+            marginBottom: !controlsCollapsed ? '8px' : '0px',
+          }}
         >
-          <div className="bg-card/95 backdrop-blur-xl rounded-xl border border-border shadow-xl p-2.5 space-y-2">
+          <div style={{
+            background: 'hsl(var(--card) / 0.95)',
+            backdropFilter: 'blur(24px) saturate(1.6)',
+            WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
+            borderRadius: '12px',
+            border: '1px solid hsl(var(--border))',
+            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
+            padding: '10px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+          }}>
             {/* Panel header */}
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Layers</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '10px', fontWeight: 600, color: 'hsl(var(--muted-foreground))', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Layers</span>
               <button 
                 onClick={() => { triggerHaptic('light'); setControlsCollapsed(true); }}
-                className="w-5 h-5 flex items-center justify-center rounded-md hover:bg-secondary/50 transition-colors"
+                style={{ width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '6px', transition: 'background 0.2s', cursor: 'pointer', background: 'transparent', border: 'none' }}
               >
-                <X className="w-3 h-3 text-muted-foreground" />
+                <X style={{ width: '12px', height: '12px', color: 'hsl(var(--muted-foreground))' }} />
               </button>
             </div>
 
@@ -2330,22 +2346,40 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
                   setDayFilter(undefined);
                 }
               }}
-              className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg text-[11px] font-semibold transition-all duration-200 active:scale-[0.97] ${
-                showDensityLayer 
-                  ? 'bg-primary/15 text-primary border border-primary/30' 
-                  : 'bg-secondary/30 text-muted-foreground hover:bg-secondary/50'
-              }`}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px',
+                borderRadius: '8px',
+                fontSize: '11px',
+                fontWeight: 600,
+                transition: 'all 0.2s',
+                cursor: 'pointer',
+                border: showDensityLayer ? '1px solid hsl(var(--primary) / 0.3)' : '1px solid transparent',
+                background: showDensityLayer ? 'hsl(var(--primary) / 0.15)' : 'hsl(var(--secondary) / 0.3)',
+                color: showDensityLayer ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
+              }}
             >
-              <div className={`w-6 h-6 rounded-md flex items-center justify-center ${showDensityLayer ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
-                <Layers className="w-3.5 h-3.5" />
+              <div style={{
+                width: '24px', height: '24px', borderRadius: '6px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: showDensityLayer ? 'hsl(var(--primary))' : 'hsl(var(--secondary))',
+                color: showDensityLayer ? 'hsl(var(--primary-foreground))' : 'inherit',
+              }}>
+                <Layers style={{ width: '14px', height: '14px' }} />
               </div>
               <span>Heatmap</span>
-              <div className={`ml-auto w-2 h-2 rounded-full ${showDensityLayer ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
+              <div style={{
+                marginLeft: 'auto', width: '8px', height: '8px', borderRadius: '50%',
+                background: showDensityLayer ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground) / 0.3)',
+              }} />
             </button>
 
             {/* Heat filters - shown when heat is on */}
-            <div className={`overflow-hidden transition-all duration-200 ${showDensityLayer ? 'max-h-[240px]' : 'max-h-0'}`}>
-              <div className="space-y-2 pl-1">
+            <div style={{ overflow: 'hidden', transition: 'max-height 0.2s', maxHeight: showDensityLayer ? '240px' : '0px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '4px' }}>
                 {/* Time-lapse toggle */}
                 <Button
                   onClick={() => {
@@ -2364,15 +2398,15 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
 
                 {/* Time-lapse controls */}
                 {timelapseMode && (
-                  <div className="space-y-1.5 pt-1 border-t border-border/50">
-                    <div className="flex items-center justify-between gap-1">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingTop: '4px', borderTop: '1px solid hsl(var(--border) / 0.5)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
                       <Button onClick={() => { triggerHaptic('light'); timelapse.stepBackward(); }} variant="outline" size="sm" className="h-6 w-6 p-0" disabled={timelapse.isPlaying}><SkipBack className="w-3 h-3" /></Button>
                       <Button onClick={() => { triggerHaptic('medium'); timelapse.isPlaying ? timelapse.pause() : timelapse.play(); }} variant={timelapse.isPlaying ? "default" : "outline"} size="sm" className="h-6 flex-1">{timelapse.isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}</Button>
                       <Button onClick={() => { triggerHaptic('light'); timelapse.stepForward(); }} variant="outline" size="sm" className="h-6 w-6 p-0" disabled={timelapse.isPlaying}><SkipForward className="w-3 h-3" /></Button>
                     </div>
-                    <div className="text-center text-[10px] font-semibold text-primary">{timelapse.formatHour(timelapse.currentHour)}</div>
+                    <div style={{ textAlign: 'center', fontSize: '10px', fontWeight: 600, color: 'hsl(var(--primary))' }}>{timelapse.formatHour(timelapse.currentHour)}</div>
                     <Slider value={[timelapse.currentHour]} onValueChange={([v]) => timelapse.setHour(v)} min={0} max={23} step={1} className="w-full" disabled={timelapse.isPlaying} />
-                    <div className="flex gap-1">
+                    <div style={{ display: 'flex', gap: '4px' }}>
                       {[2, 1, 0.5].map((speed) => (
                         <Button key={speed} onClick={() => timelapse.setSpeed(speed)} variant={timelapse.speed === speed ? "default" : "outline"} size="sm" className="h-5 flex-1 text-[9px] px-1">{speed === 2 ? '0.5x' : speed === 1 ? '1x' : '2x'}</Button>
                       ))}
@@ -2382,7 +2416,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
 
                 {/* Regular filters */}
                 {!timelapseMode && (
-                  <div className="space-y-1.5">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <Select value={timeFilter} onValueChange={(v: any) => setTimeFilter(v)}>
                       <SelectTrigger className="h-7 text-[10px] bg-background/80"><SelectValue placeholder="Time" /></SelectTrigger>
                       <SelectContent>
@@ -2407,31 +2441,49 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
             </div>
 
             {/* Divider */}
-            <div className="h-px bg-border/50" />
+            <div style={{ height: '1px', background: 'hsl(var(--border) / 0.5)' }} />
 
             {/* Paths toggle row */}
             <button
               onClick={() => { triggerHaptic('medium'); setShowMovementPaths(!showMovementPaths); }}
-              className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg text-[11px] font-semibold transition-all duration-200 active:scale-[0.97] ${
-                showMovementPaths 
-                  ? 'bg-primary/15 text-primary border border-primary/30' 
-                  : 'bg-secondary/30 text-muted-foreground hover:bg-secondary/50'
-              }`}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px',
+                borderRadius: '8px',
+                fontSize: '11px',
+                fontWeight: 600,
+                transition: 'all 0.2s',
+                cursor: 'pointer',
+                border: showMovementPaths ? '1px solid hsl(var(--primary) / 0.3)' : '1px solid transparent',
+                background: showMovementPaths ? 'hsl(var(--primary) / 0.15)' : 'hsl(var(--secondary) / 0.3)',
+                color: showMovementPaths ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
+              }}
             >
-              <div className={`w-6 h-6 rounded-md flex items-center justify-center ${showMovementPaths ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
-                <Route className="w-3.5 h-3.5" />
+              <div style={{
+                width: '24px', height: '24px', borderRadius: '6px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: showMovementPaths ? 'hsl(var(--primary))' : 'hsl(var(--secondary))',
+                color: showMovementPaths ? 'hsl(var(--primary-foreground))' : 'inherit',
+              }}>
+                <Route style={{ width: '14px', height: '14px' }} />
               </div>
               <span>Flow Paths</span>
-              <div className={`ml-auto w-2 h-2 rounded-full ${showMovementPaths ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
+              <div style={{
+                marginLeft: 'auto', width: '8px', height: '8px', borderRadius: '50%',
+                background: showMovementPaths ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground) / 0.3)',
+              }} />
             </button>
 
             {/* Path filters */}
-            <div className={`overflow-hidden transition-all duration-200 ${showMovementPaths ? 'max-h-[200px]' : 'max-h-0'}`}>
-              <div className="space-y-1.5 pl-1">
+            <div style={{ overflow: 'hidden', transition: 'max-height 0.2s', maxHeight: showMovementPaths ? '200px' : '0px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingLeft: '4px' }}>
                 {pathsError && (
-                  <div className="flex items-center gap-1.5 p-1.5 bg-destructive/10 rounded-lg text-[10px]">
-                    <AlertCircle className="w-3 h-3 text-destructive flex-shrink-0" />
-                    <span className="text-destructive">Failed</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', background: 'hsl(var(--destructive) / 0.1)', borderRadius: '8px', fontSize: '10px' }}>
+                    <AlertCircle style={{ width: '12px', height: '12px', color: 'hsl(var(--destructive))', flexShrink: 0 }} />
+                    <span style={{ color: 'hsl(var(--destructive))' }}>Failed</span>
                     <Button onClick={refreshPaths} variant="ghost" size="sm" className="h-5 text-[9px] px-1.5 ml-auto">Retry</Button>
                   </div>
                 )}
@@ -2444,15 +2496,15 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
                     <SelectItem value="this_hour">This Hour</SelectItem>
                   </SelectContent>
                 </Select>
-                <div className="space-y-0.5">
-                  <div className="flex items-center justify-between text-[9px]">
-                    <span className="text-muted-foreground">Min. Frequency</span>
-                    <span className="font-semibold text-primary">{minPathFrequency}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '9px' }}>
+                    <span style={{ color: 'hsl(var(--muted-foreground))' }}>Min. Frequency</span>
+                    <span style={{ fontWeight: 600, color: 'hsl(var(--primary))' }}>{minPathFrequency}</span>
                   </div>
                   <input type="range" min="1" max="10" value={minPathFrequency} onChange={(e) => setMinPathFrequency(parseInt(e.target.value))} className="path-flow-slider w-full" />
                 </div>
                 {pathData && (
-                  <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground pt-1 border-t border-border/30">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '9px', color: 'hsl(var(--muted-foreground))', paddingTop: '4px', borderTop: '1px solid hsl(var(--border) / 0.3)' }}>
                     <span>{pathData.stats.total_paths} paths</span>
                     <span>•</span>
                     <span>{pathData.stats.unique_users} users</span>
@@ -2487,26 +2539,41 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
         {/* Layers FAB */}
         <button
           onClick={() => { triggerHaptic('light'); setControlsCollapsed(!controlsCollapsed); }}
-          className={`flex items-center justify-center rounded-xl shadow-xl transition-all duration-200 active:scale-95 touch-manipulation ${
-            (showDensityLayer || showMovementPaths)
-              ? 'bg-primary text-primary-foreground shadow-primary/40'
-              : 'bg-card backdrop-blur-xl text-foreground border border-border ring-1 ring-black/5 dark:ring-white/10'
-          }`}
-          style={{ 
-            width: 'var(--touch-target-min, 44px)', 
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '12px',
+            boxShadow: (showDensityLayer || showMovementPaths)
+              ? '0 20px 25px -5px hsl(var(--primary) / 0.4)'
+              : '0 20px 25px -5px rgba(0,0,0,0.1)',
+            transition: 'all 0.2s',
+            width: 'var(--touch-target-min, 44px)',
             height: 'var(--touch-target-min, 44px)',
             marginLeft: 'auto',
+            cursor: 'pointer',
+            position: 'relative',
+            border: (showDensityLayer || showMovementPaths) ? 'none' : '1px solid hsl(var(--border))',
+            background: (showDensityLayer || showMovementPaths) ? 'hsl(var(--primary))' : 'hsl(var(--card))',
+            color: (showDensityLayer || showMovementPaths) ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
+            backdropFilter: (showDensityLayer || showMovementPaths) ? 'none' : 'blur(24px) saturate(1.6)',
+            WebkitBackdropFilter: (showDensityLayer || showMovementPaths) ? 'none' : 'blur(24px) saturate(1.6)',
           }}
           aria-label={controlsCollapsed ? "Open layers panel" : "Close layers panel"}
         >
           {controlsCollapsed ? (
-            <Layers className="w-5 h-5" />
+            <Layers style={{ width: '20px', height: '20px' }} />
           ) : (
-            <X className="w-5 h-5" />
+            <X style={{ width: '20px', height: '20px' }} />
           )}
           {/* Active indicator dot */}
           {(showDensityLayer || showMovementPaths) && controlsCollapsed && (
-            <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-accent rounded-full border-2 border-card" />
+            <div style={{
+              position: 'absolute', top: '-2px', right: '-2px',
+              width: '10px', height: '10px',
+              background: 'hsl(var(--accent))', borderRadius: '50%',
+              border: '2px solid hsl(var(--card))',
+            }} />
           )}
         </button>
       </div>
