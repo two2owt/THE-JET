@@ -102,7 +102,9 @@ describe("BottomNav – inline layout styles", () => {
     renderWithRouter(<BottomNav {...defaultProps} />);
     const nav = screen.getByRole("navigation", { name: "Main navigation" });
     // The inner container now uses inline styles instead of Tailwind classes
-    const innerDiv = nav.querySelector("div > div") as HTMLElement;
+    // The flex container is the last child div (after glass bg, divider, shadow divs)
+    const allDivs = nav.querySelectorAll(":scope > div");
+    const innerDiv = allDivs[allDivs.length - 1] as HTMLElement;
     expect(innerDiv).not.toBeNull();
     expect(innerDiv.style.display).toBe("flex");
     expect(innerDiv.style.justifyContent).toBe("space-around");
