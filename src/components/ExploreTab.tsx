@@ -442,8 +442,14 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
           placeholder="Search venues, deals, or categories..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          style={{ paddingLeft: '40px', borderRadius: '12px' }}
-          className="bg-muted/40 border-transparent hover:bg-muted/60 focus:bg-muted/70 focus:border-primary/30 focus:ring-1 focus:ring-primary/20 transition-all"
+          style={{
+            paddingLeft: '40px',
+            borderRadius: '12px',
+            backgroundColor: 'hsl(var(--muted) / 0.4)',
+            border: '1px solid transparent',
+            transition: 'all 0.2s',
+          }}
+          className="hover:bg-muted/60 focus:bg-muted/70 focus:border-primary/30 focus:ring-1 focus:ring-primary/20"
           aria-label="Search venues, deals, or categories"
         />
       </div>
