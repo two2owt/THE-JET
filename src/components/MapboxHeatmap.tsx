@@ -2592,16 +2592,16 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* Enhanced Legend - Bottom left, responsive for all devices, collapsible on mobile */}
       {/* CRITICAL: Uses only opacity transition to avoid CLS - no translate animations */}
       <div 
-        className={`absolute bg-card/95 backdrop-blur-xl rounded-xl border border-border z-30 shadow-lg ${isMobile ? 'px-2 py-1.5' : 'px-3 py-2 md:px-4 md:py-3'}`}
+        className={`bg-card/95 backdrop-blur-xl rounded-xl border border-border shadow-lg ${isMobile ? 'px-2 py-1.5' : 'px-3 py-2 md:px-4 md:py-3'}`}
         style={{
+          position: 'absolute',
           bottom: 'var(--map-fixed-bottom)',
           left: 'var(--map-ui-inset-left)',
           maxWidth: 'var(--map-control-max-width)',
-          // Use opacity-only transition to avoid CLS
+          zIndex: 30,
           opacity: mapLoaded && (isMobile ? !selectedVenue : !controlsCollapsed) ? 1 : 0,
           visibility: mapLoaded && (isMobile ? !selectedVenue : !controlsCollapsed) ? 'visible' : 'hidden',
           transition: 'opacity 300ms ease-out, visibility 300ms ease-out',
-          // GPU acceleration without layout-affecting transforms
           transform: 'translateZ(0)',
           willChange: 'opacity',
           pointerEvents: mapLoaded && (isMobile ? !selectedVenue : !controlsCollapsed) ? 'auto' : 'none',
