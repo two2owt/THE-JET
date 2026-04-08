@@ -248,7 +248,7 @@ export const Header = () => {
         )}
 
         {/* Spacer — pushes avatar to the right */}
-        <div className="flex-1 min-w-0" />
+        <div style={{ flex: '1 1 0%', minWidth: 0 }} />
 
         {/* Avatar — settings link */}
         <button
