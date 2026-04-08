@@ -315,20 +315,28 @@ const Index = () => {
             style={{ zIndex: 0 }}
           >
             {mapboxError && !mapboxLoading && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center bg-background">
-                <div className="text-center space-y-3 sm:space-y-4 p-6 sm:p-8">
-                  <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 mx-auto rounded-full bg-destructive/10 flex items-center justify-center">
-                    <MapIcon className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-destructive" />
+              <div style={{
+                position: 'absolute', inset: 0, zIndex: 10,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'hsl(var(--background))',
+              }}>
+                <div style={{ textAlign: 'center', padding: '24px' }}>
+                  <div style={{
+                    width: '56px', height: '56px', margin: '0 auto',
+                    borderRadius: '50%', background: 'hsl(var(--destructive) / 0.1)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <MapIcon style={{ width: '28px', height: '28px', color: 'hsl(var(--destructive))' }} />
                   </div>
-                  <div className="space-y-1.5 sm:space-y-2">
-                    <p className="text-sm sm:text-base md:text-lg font-medium text-foreground">Unable to load map</p>
-                    <p className="text-xs sm:text-sm text-muted-foreground max-w-[200px] sm:max-w-[280px] mx-auto">{mapboxError}</p>
+                  <div style={{ marginTop: '12px' }}>
+                    <p style={{ fontSize: '14px', fontWeight: 500, color: 'hsl(var(--foreground))' }}>Unable to load map</p>
+                    <p style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))', maxWidth: '280px', margin: '4px auto 0' }}>{mapboxError}</p>
                   </div>
                   <Button 
                     variant="outline" 
                     size="default"
                     onClick={() => window.location.reload()}
-                    className="mt-2 sm:mt-3"
+                    style={{ marginTop: '12px' }}
                   >
                     Try Again
                   </Button>
