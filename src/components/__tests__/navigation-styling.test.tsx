@@ -102,10 +102,10 @@ describe("BottomNav – inline layout styles", () => {
     renderWithRouter(<BottomNav {...defaultProps} />);
     const nav = screen.getByRole("navigation", { name: "Main navigation" });
     // The inner container now uses inline styles instead of Tailwind classes
-    const innerDiv = nav.querySelector("div > div");
+    const innerDiv = nav.querySelector("div > div") as HTMLElement;
     expect(innerDiv).not.toBeNull();
-    expect(innerDiv!.style.display).toBe("flex");
-    expect(innerDiv!.style.justifyContent).toBe("space-around");
+    expect(innerDiv.style.display).toBe("flex");
+    expect(innerDiv.style.justifyContent).toBe("space-around");
   });
 
   it("renders all 5 navigation tabs", () => {
