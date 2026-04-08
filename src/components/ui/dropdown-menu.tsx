@@ -94,6 +94,15 @@ const DropdownMenuItem = React.forwardRef<
       inset && "pl-8",
       className,
     )}
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      padding: '6px 8px',
+      borderRadius: '4px',
+      fontSize: '14px',
+      cursor: 'default',
+      color: 'hsl(var(--popover-foreground))',
+    }}
     {...props}
   />
 ));
