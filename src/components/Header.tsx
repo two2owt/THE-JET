@@ -235,13 +235,21 @@ export const Header = () => {
               maxLength={100}
               aria-label="Search venues and deals"
               autoFocus={isMobile && searchExpanded}
-              className="rounded-full bg-muted/40 border-transparent hover:bg-muted/60 focus:bg-muted/70 focus:border-primary/30 focus:ring-1 focus:ring-primary/20 transition-all duration-200 text-sm placeholder:text-muted-foreground/50"
               style={{
                 width: '100%',
-                height: 'clamp(32px, 5vw, 40px)',
+                height: 'clamp(34px, 5vw, 40px)',
                 paddingLeft: '36px',
                 paddingRight: '36px',
+                borderRadius: '9999px',
+                border: '1px solid hsl(var(--border) / 0.5)',
+                background: 'hsl(var(--muted) / 0.35)',
+                fontSize: '14px',
+                color: 'hsl(var(--foreground))',
+                outline: 'none',
+                transition: 'background 0.2s, border-color 0.2s, box-shadow 0.2s',
               }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'hsl(var(--muted) / 0.55)'; }}
+              onMouseLeave={e => { if (document.activeElement !== e.currentTarget) e.currentTarget.style.background = 'hsl(var(--muted) / 0.35)'; }}
             />
             {isMobile && searchExpanded && (
               <button
