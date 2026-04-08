@@ -445,11 +445,10 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
           style={{
             paddingLeft: '40px',
             borderRadius: '12px',
-            backgroundColor: 'hsl(var(--muted) / 0.4)',
-            border: '1px solid transparent',
+            backgroundColor: 'hsl(var(--muted) / 0.5)',
+            border: '1px solid hsl(var(--border) / 0.4)',
             transition: 'all 0.2s',
           }}
-          className="hover:bg-muted/60 focus:bg-muted/70 focus:border-primary/30 focus:ring-1 focus:ring-primary/20"
           aria-label="Search venues, deals, or categories"
         />
       </div>
