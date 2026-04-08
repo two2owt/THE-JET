@@ -2046,8 +2046,10 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* Loading skeleton during map initialization — translucent so map shows through */}
       {mapInitializing && !mapError && (
         <div 
-          className="absolute inset-0 z-40"
           style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 40,
             transition: 'opacity 300ms ease-out, background-color 500ms ease-out',
             opacity: mapLoaded ? 0 : 1,
             pointerEvents: mapLoaded ? 'none' : 'auto',
@@ -2057,10 +2059,10 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
           }}
         >
           {/* Center spinner */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="relative w-10 h-10">
-              <div className="absolute inset-0 rounded-full bg-primary/10 animate-ping" style={{ animationDuration: '1.5s' }} />
-              <div className="absolute inset-0 rounded-full bg-primary/5 flex items-center justify-center">
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ position: 'relative', width: '40px', height: '40px' }}>
+              <div className="rounded-full bg-primary/10 animate-ping" style={{ position: 'absolute', inset: 0, animationDuration: '1.5s' }} />
+              <div className="rounded-full bg-primary/5" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <MapPin className="w-5 h-5 text-primary" />
               </div>
             </div>
@@ -2073,11 +2075,11 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* Map Error State with Retry - deferred to not become LCP element */}
       {mapError && !mapInitializing && (
         <div 
-          className="absolute inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-sm"
-          style={{ contentVisibility: 'auto' }}
+          className="bg-background/95 backdrop-blur-sm"
+          style={{ position: 'absolute', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', contentVisibility: 'auto' }}
         >
-          <div className="flex flex-col items-center gap-4 p-6 max-w-sm text-center">
-            <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center">
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', padding: '24px', maxWidth: '24rem', textAlign: 'center' }}>
+            <div className="rounded-full bg-destructive/10" style={{ width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <AlertCircle className="w-7 h-7 text-destructive" aria-hidden="true" />
             </div>
             <div className="space-y-2">
@@ -2137,8 +2139,10 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* Unified Top-Left Controls: Location + Map Style in one compact row */}
       {controlsReady && (
       <div 
-        className="absolute flex items-center"
         style={{
+          position: 'absolute',
+          display: 'flex',
+          alignItems: 'center',
           top: 'var(--map-ui-inset-top, 0.75rem)',
           left: 'var(--map-ui-inset-left, 0.75rem)',
           gap: 'clamp(4px, 0.8vw, 8px)',
@@ -2288,8 +2292,8 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* Layers Panel - Unified FAB + expandable panel */}
       {controlsReady && (
       <div 
-        className="absolute"
         style={{
+          position: 'absolute',
           bottom: 'var(--map-ui-inset-bottom, 0.75rem)',
           right: 'var(--map-ui-inset-right, 0.75rem)',
           zIndex: 30,
@@ -2590,16 +2594,16 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
       {/* Enhanced Legend - Bottom left, responsive for all devices, collapsible on mobile */}
       {/* CRITICAL: Uses only opacity transition to avoid CLS - no translate animations */}
       <div 
-        className={`absolute bg-card/95 backdrop-blur-xl rounded-xl border border-border z-30 shadow-lg ${isMobile ? 'px-2 py-1.5' : 'px-3 py-2 md:px-4 md:py-3'}`}
+        className={`bg-card/95 backdrop-blur-xl rounded-xl border border-border shadow-lg ${isMobile ? 'px-2 py-1.5' : 'px-3 py-2 md:px-4 md:py-3'}`}
         style={{
+          position: 'absolute',
           bottom: 'var(--map-fixed-bottom)',
           left: 'var(--map-ui-inset-left)',
           maxWidth: 'var(--map-control-max-width)',
-          // Use opacity-only transition to avoid CLS
+          zIndex: 30,
           opacity: mapLoaded && (isMobile ? !selectedVenue : !controlsCollapsed) ? 1 : 0,
           visibility: mapLoaded && (isMobile ? !selectedVenue : !controlsCollapsed) ? 'visible' : 'hidden',
           transition: 'opacity 300ms ease-out, visibility 300ms ease-out',
-          // GPU acceleration without layout-affecting transforms
           transform: 'translateZ(0)',
           willChange: 'opacity',
           pointerEvents: mapLoaded && (isMobile ? !selectedVenue : !controlsCollapsed) ? 'auto' : 'none',
