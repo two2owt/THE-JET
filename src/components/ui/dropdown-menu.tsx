@@ -47,6 +47,17 @@ const DropdownMenuSubContent = React.forwardRef<
       "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
       className,
     )}
+    style={{
+      background: 'hsl(var(--popover))',
+      color: 'hsl(var(--popover-foreground))',
+      border: '1px solid hsl(var(--border) / 0.4)',
+      borderRadius: '8px',
+      padding: '4px',
+      boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+      backdropFilter: 'blur(24px)',
+      WebkitBackdropFilter: 'blur(24px)',
+      zIndex: 50,
+    }}
     {...props}
   />
 ));
@@ -64,6 +75,17 @@ const DropdownMenuContent = React.forwardRef<
         "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
         className,
       )}
+      style={{
+        background: 'hsl(var(--popover))',
+        color: 'hsl(var(--popover-foreground))',
+        border: '1px solid hsl(var(--border) / 0.4)',
+        borderRadius: '8px',
+        padding: '4px',
+        boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
+        zIndex: 50,
+      }}
       {...props}
     />
   </DropdownMenuPrimitive.Portal>
@@ -83,6 +105,15 @@ const DropdownMenuItem = React.forwardRef<
       inset && "pl-8",
       className,
     )}
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      padding: '6px 8px',
+      borderRadius: '4px',
+      fontSize: '14px',
+      cursor: 'default',
+      color: 'hsl(var(--popover-foreground))',
+    }}
     {...props}
   />
 ));
