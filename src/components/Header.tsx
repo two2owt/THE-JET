@@ -208,8 +208,17 @@ export const Header = () => {
               transition: 'opacity 0.4s ease-out 0.1s, transform 0.4s ease-out 0.1s',
             }}
           >
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
-              <Search className="w-4 h-4 text-muted-foreground/60" />
+            <div
+              style={{
+                position: 'absolute',
+                left: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                zIndex: 10,
+                pointerEvents: 'none',
+              }}
+            >
+              <Search style={{ width: '16px', height: '16px', color: 'hsl(var(--muted-foreground) / 0.6)' }} />
             </div>
             <Input
               type="text"
@@ -220,8 +229,13 @@ export const Header = () => {
               maxLength={100}
               aria-label="Search venues and deals"
               autoFocus={isMobile && searchExpanded}
-              className="w-full pl-9 pr-9 rounded-full bg-muted/40 border-transparent hover:bg-muted/60 focus:bg-muted/70 focus:border-primary/30 focus:ring-1 focus:ring-primary/20 transition-all duration-200 text-sm placeholder:text-muted-foreground/50"
-              style={{ height: 'clamp(32px, 5vw, 40px)' }}
+              className="rounded-full bg-muted/40 border-transparent hover:bg-muted/60 focus:bg-muted/70 focus:border-primary/30 focus:ring-1 focus:ring-primary/20 transition-all duration-200 text-sm placeholder:text-muted-foreground/50"
+              style={{
+                width: '100%',
+                height: 'clamp(32px, 5vw, 40px)',
+                paddingLeft: '36px',
+                paddingRight: '36px',
+              }}
             />
             {isMobile && searchExpanded && (
               <button
