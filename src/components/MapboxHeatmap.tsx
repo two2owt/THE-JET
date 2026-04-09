@@ -2734,7 +2734,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
           transition: 'opacity 300ms ease-out, visibility 300ms ease-out',
           transform: 'translateZ(0)',
           willChange: 'opacity',
-          pointerEvents: mapLoaded && (isMobile ? !selectedVenue : !controlsCollapsed) ? 'auto' : 'none',
+          pointerEvents: mapLoaded && (isMobile ? !selectedVenue : true) ? 'auto' : 'none',
           cursor: isMobile ? 'pointer' : undefined,
         }}
         onClick={isMobile ? () => { triggerHaptic('light'); setLegendCollapsed(!legendCollapsed); } : undefined}
