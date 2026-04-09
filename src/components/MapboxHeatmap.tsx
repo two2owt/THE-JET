@@ -2278,7 +2278,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
             overflow: 'hidden',
           }}>
             <div style={{
-              background: 'hsl(var(--card) / 0.95)',
+              background: 'hsl(var(--card) / 0.8)',
               backdropFilter: 'blur(24px)',
               WebkitBackdropFilter: 'blur(24px)',
               borderRadius: '12px',
