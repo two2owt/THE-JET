@@ -368,7 +368,7 @@ export default function Profile() {
             </div>
 
             {/* Avatar Section */}
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-6">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-6" style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '24px', marginBottom: '24px' }}>
               <div className="relative">
                 <Avatar className="w-24 h-24 ring-2 ring-primary/30 shadow-glow">
                   <AvatarImage src={profile?.avatar_url || undefined} />
