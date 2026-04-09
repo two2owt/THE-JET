@@ -337,7 +337,7 @@ export default function Profile() {
   if (!user) {
     return (
       <PageLayout defaultTab="map" notificationCount={0} headerConfig={{ hideSearch: true }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg" style={{ maxWidth: '1280px', marginLeft: 'auto', marginRight: 'auto', padding: 'clamp(16px, 3vw, 24px)' }}>
           <EmptyState icon={User} title="Sign in to view profile" description="Create an account to access your profile, manage settings, and track your activity" actionLabel="Sign In" onAction={() => navigate("/auth")} />
         </div>
       </PageLayout>
