@@ -618,7 +618,7 @@ export default function Profile() {
           </div>
 
           {/* Sign Out */}
-          <Card className="p-4 bg-card/90 backdrop-blur-xl shadow-card border-primary/10">
+          <Card className="p-4 bg-card/90 backdrop-blur-xl shadow-card border-primary/10" style={{ padding: '16px' }}>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" className="w-full">
