@@ -483,8 +483,8 @@ const Settings = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between gap-3">
-              <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-3" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+              <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0" style={{ flex: '1 1 0%', minWidth: 0 }}>
                 <label htmlFor="background-tracking" className="text-xs sm:text-sm font-medium text-foreground block">
                   Background Tracking
                 </label>
