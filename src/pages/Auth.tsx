@@ -580,6 +580,7 @@ const Auth = () => {
                         setValidationErrors(prev => ({ ...prev, locationConsent: undefined }));
                       }}
                       className="mt-0.5"
+                      style={{ width: '18px', height: '18px', minWidth: '18px', marginTop: '2px', border: '2px solid hsl(var(--border))', borderRadius: '4px' }}
                     />
                     <label htmlFor="locationConsent" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
                       I consent to location tracking to receive personalized deals and push notifications. You can disable this anytime in your Profile Settings.
