@@ -171,7 +171,7 @@ export default function Social() {
 
   return (
     <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
-      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px 16px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+      <div style={{ maxWidth: '768px', margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)', display: 'flex', flexDirection: 'column', gap: 'clamp(24px, 4vw, 32px)' }}>
         {/* Messages shortcut */}
         <Button
           variant="outline"
