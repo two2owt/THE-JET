@@ -388,7 +388,7 @@ const Settings = () => {
 
           <Separator />
 
-          <div className="space-y-2 sm:space-y-3">
+          <div className="space-y-2 sm:space-y-3" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(8px, 1.5vw, 12px)' }}>
             <button
               onClick={() => setTheme("light")}
               className={`w-full flex items-center justify-between p-3 sm:p-4 rounded-lg border-2 transition-all ${
