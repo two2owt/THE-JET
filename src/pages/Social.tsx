@@ -120,7 +120,7 @@ export default function Social() {
   if (!canAccessSocialFeatures()) {
     return (
       <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px 16px' }}>
+        <div style={{ maxWidth: '768px', margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)' }}>
           <EmptyState
             icon={Crown}
             title="Unlock Social Features"
