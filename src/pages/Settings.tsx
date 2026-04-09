@@ -518,7 +518,7 @@ const Settings = () => {
         </Card>
 
         {/* Support Section */}
-        <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
+        <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card" style={{ padding: 'clamp(16px, 2.5vw, 24px)', display: 'flex', flexDirection: 'column', gap: 'clamp(16px, 2vw, 24px)' }}>
           <div>
             <h2 className="text-base sm:text-lg font-extrabold bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">Support</h2>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">
