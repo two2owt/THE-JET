@@ -46,15 +46,17 @@ export const useHeatmapTimelapse = (dayFilter?: number) => {
 
     try {
       const hourlyPromises = Array.from({ length: 24 }, async (_, hour) => {
-        const params = new URLSearchParams();
-        params.append('time_filter', 'all');
-        params.append('hour_of_day', hour.toString());
+        const body: Record<string, string | number> = {
+          time_filter: 'all',
+          hour_of_day: hour,
+        };
         if (dayFilter !== undefined) {
-          params.append('day_of_week', dayFilter.toString());
+          body.day_of_week = dayFilter;
         }
 
         const { data, error } = await supabase.functions.invoke(
-          `get-location-density?${params.toString()}`
+          'get-location-density',
+          { body: JSON.stringify(body) }
         );
 
         if (error) throw error;
