@@ -2188,7 +2188,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
           }}
         >
           <SelectTrigger 
-            className="text-[11px] sm:text-xs rounded-xl shadow-xl bg-card backdrop-blur-xl border-border ring-1 ring-black/5 dark:ring-white/10"
+            className="text-[11px] sm:text-xs rounded-xl shadow-xl backdrop-blur-xl border-border/40 ring-1 ring-black/5 dark:ring-white/10"
             aria-label="Select city location"
             style={{
               height: 'clamp(32px, 5vw, 40px)',
@@ -2197,6 +2197,9 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
               minWidth: 'clamp(120px, 18vw, 220px)',
               maxWidth: 'var(--map-control-max-width, 220px)',
               contain: 'layout style',
+              background: 'hsl(var(--card) / 0.7)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
             }}
           >
             <div className="flex items-center gap-1.5 w-full">
@@ -2254,8 +2257,8 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
                 alignItems: 'center',
                 justifyContent: 'center',
                 borderRadius: '12px',
-                background: 'hsl(var(--card))',
-                border: '1px solid hsl(var(--border))',
+                background: 'hsl(var(--card) / 0.7)',
+                border: '1px solid hsl(var(--border) / 0.4)',
                 boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.05)',
                 backdropFilter: 'blur(24px)',
                 WebkitBackdropFilter: 'blur(24px)',
@@ -2275,11 +2278,11 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
             overflow: 'hidden',
           }}>
             <div style={{
-              background: 'hsl(var(--card) / 0.95)',
+              background: 'hsl(var(--card) / 0.8)',
               backdropFilter: 'blur(24px)',
               WebkitBackdropFilter: 'blur(24px)',
               borderRadius: '12px',
-              border: '1px solid hsl(var(--border))',
+              border: '1px solid hsl(var(--border) / 0.4)',
               padding: '8px',
               boxShadow: '0 10px 25px -5px rgba(0,0,0,0.15)',
               minWidth: '200px',
