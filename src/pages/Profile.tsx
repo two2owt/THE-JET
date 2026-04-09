@@ -502,7 +502,7 @@ export default function Profile() {
                   <Separator className="my-6" />
                   <div>
                     <Label className="mb-3 block">Social Media</Label>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                       {instagramUrl && <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 text-white hover:opacity-90 transition-opacity text-sm font-medium">
                           <Instagram className="w-4 h-4" />
                           Instagram
