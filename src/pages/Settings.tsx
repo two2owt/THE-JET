@@ -240,7 +240,7 @@ const Settings = () => {
             variant="outline"
             className="w-full h-auto py-4 justify-start"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center">
                 <User className="w-5 h-5 text-primary" />
               </div>
