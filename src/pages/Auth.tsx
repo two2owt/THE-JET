@@ -407,24 +407,40 @@ const Auth = () => {
     >
       {/* Animated matte black/grey gradient overlay */}
       <div className="absolute inset-0 auth-gradient-overlay" />
-      <div className="w-full max-w-md relative z-10">
+      <div className="w-full max-w-md relative z-10" style={{ width: '100%', maxWidth: '28rem', position: 'relative', zIndex: 10 }}>
         {/* Glassmorphic Card */}
-        <div className="backdrop-blur-xl bg-background/20 border border-border/30 rounded-2xl p-fluid-lg shadow-2xl space-y-fluid-md">
+        <div className="backdrop-blur-xl bg-background/20 border border-border/30 rounded-2xl shadow-2xl"
+          style={{
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            background: 'hsl(var(--background) / 0.2)',
+            border: '1px solid hsl(var(--border) / 0.3)',
+            borderRadius: '16px',
+            padding: 'clamp(24px, 5vw, 32px)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'clamp(16px, 3vw, 24px)',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
+          }}
+        >
           {/* Header */}
-          <div className="text-center space-y-3">
-            <div className="w-24 h-24 flex items-center justify-center mx-auto">
+          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '96px', height: '96px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <img 
                 src={jetLogo} 
                 alt="JET Logo" 
-                className="w-full h-full object-contain drop-shadow-lg"
+                style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }}
                 width="96"
                 height="96"
                 fetchPriority="high"
                 decoding="async"
               />
             </div>
-            <h1 className="text-3xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent drop-shadow-sm">Welcome to JET</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-3xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent"
+              style={{ fontSize: 'clamp(1.5rem, 5vw, 1.875rem)', fontWeight: 800 }}>
+              Welcome to JET
+            </h1>
+            <p style={{ color: 'hsl(var(--muted-foreground))', fontSize: '14px' }}>
               {isResettingPassword
                 ? "Set your new password"
                 : isForgotPassword
@@ -436,10 +452,10 @@ const Auth = () => {
           </div>
 
           {/* Form */}
-          <form onSubmit={isResettingPassword ? handlePasswordReset : isForgotPassword ? handleForgotPassword : handleAuth} className="space-y-4">
+          <form onSubmit={isResettingPassword ? handlePasswordReset : isForgotPassword ? handleForgotPassword : handleAuth} className="space-y-4" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Email field - only show if not resetting password */}
           {!isResettingPassword && (
-            <div className="space-y-2">
+            <div className="space-y-2" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <Input
                 type="email"
                 placeholder="Email"
@@ -461,8 +477,8 @@ const Auth = () => {
           {/* Password fields */}
           {!isForgotPassword && (
             <>
-              <div className="space-y-2">
-                <div className="relative">
+              <div className="space-y-2" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div className="relative" style={{ position: 'relative' }}>
                   <Input
                     type={showPassword ? "text" : "password"}
                     placeholder="Password"
@@ -479,6 +495,7 @@ const Auth = () => {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
+                    style={{ position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)', minWidth: '44px', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: 'hsl(var(--muted-foreground))' }}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -494,8 +511,8 @@ const Auth = () => {
               </div>
 
               {(isSignUp || isResettingPassword) && (
-                <div className="space-y-2">
-                  <div className="relative">
+                <div className="space-y-2" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div className="relative" style={{ position: 'relative' }}>
                     <Input
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder="Confirm Password"
@@ -512,6 +529,7 @@ const Auth = () => {
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
+                      style={{ position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)', minWidth: '44px', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: 'hsl(var(--muted-foreground))' }}
                     >
                       {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -524,8 +542,8 @@ const Auth = () => {
 
               {/* Consent checkboxes for signup */}
               {isSignUp && (
-                <div className="space-y-3 pt-2">
-                  <div className="flex items-start space-x-3">
+                <div className="space-y-3 pt-2" style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: '8px' }}>
+                  <div className="flex items-start space-x-3" style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                     <Checkbox
                       id="dataConsent"
                       checked={dataProcessingConsent}
@@ -534,6 +552,7 @@ const Auth = () => {
                         setValidationErrors(prev => ({ ...prev, consent: undefined }));
                       }}
                       className="mt-0.5"
+                      style={{ width: '18px', height: '18px', minWidth: '18px', marginTop: '2px', border: '2px solid hsl(var(--border))', borderRadius: '4px' }}
                     />
                     <label htmlFor="dataConsent" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
                       I agree to the{" "}
@@ -552,7 +571,7 @@ const Auth = () => {
                     <p className="text-xs text-destructive ml-6">{validationErrors.consent}</p>
                   )}
                   
-                  <div className="flex items-start space-x-3">
+                  <div className="flex items-start space-x-3" style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                     <Checkbox
                       id="locationConsent"
                       checked={locationConsent}
@@ -561,6 +580,7 @@ const Auth = () => {
                         setValidationErrors(prev => ({ ...prev, locationConsent: undefined }));
                       }}
                       className="mt-0.5"
+                      style={{ width: '18px', height: '18px', minWidth: '18px', marginTop: '2px', border: '2px solid hsl(var(--border))', borderRadius: '4px' }}
                     />
                     <label htmlFor="locationConsent" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
                       I consent to location tracking to receive personalized deals and push notifications. You can disable this anytime in your Profile Settings.
@@ -578,7 +598,19 @@ const Auth = () => {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 text-primary-foreground font-semibold py-6 rounded-xl shadow-[var(--shadow-glow)]"
+            className="w-full bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 text-primary-foreground font-semibold rounded-xl"
+            style={{
+              width: '100%',
+              padding: '14px 24px',
+              borderRadius: '12px',
+              fontWeight: 600,
+              fontSize: '16px',
+              background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow, var(--primary))))',
+              color: 'hsl(var(--primary-foreground))',
+              border: 'none',
+              cursor: 'pointer',
+              minHeight: '48px',
+            }}
           >
             {isLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -596,7 +628,7 @@ const Auth = () => {
 
         {/* Resend Verification Email */}
         {showResendVerification && !isResettingPassword && (
-          <div className="bg-muted/50 border border-border rounded-lg p-4 space-y-3">
+          <div className="bg-muted/50 border border-border rounded-lg p-4 space-y-3" style={{ background: 'hsl(var(--muted) / 0.5)', border: '1px solid hsl(var(--border))', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div className="text-sm text-muted-foreground">
               Didn't receive the verification email?
             </div>
@@ -620,7 +652,7 @@ const Auth = () => {
 
         {/* Toggle & Forgot Password */}
         {!isResettingPassword && (
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-2" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {!isForgotPassword && !isSignUp && (
               <button
                 onClick={() => setIsForgotPassword(true)}
@@ -653,9 +685,10 @@ const Auth = () => {
         )}
 
           {/* Features */}
-          <div className="bg-card/30 backdrop-blur-sm rounded-xl p-4 space-y-2 border border-border/30">
-            <p className="text-xs font-semibold text-foreground">With an account you can:</p>
-            <ul className="text-xs text-muted-foreground space-y-1">
+           <div className="bg-card/30 backdrop-blur-sm rounded-xl border border-border/30"
+             style={{ background: 'hsl(var(--card) / 0.3)', backdropFilter: 'blur(8px)', borderRadius: '12px', padding: '16px', border: '1px solid hsl(var(--border) / 0.3)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <p style={{ fontSize: '12px', fontWeight: 600, color: 'hsl(var(--foreground))' }}>With an account you can:</p>
+            <ul style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))', display: 'flex', flexDirection: 'column', gap: '4px', listStyle: 'none', padding: 0, margin: 0 }}>
               <li>• Get real-time notifications for nearby deals</li>
               <li>• Save your favorite venues</li>
               <li>• Receive personalized recommendations</li>
