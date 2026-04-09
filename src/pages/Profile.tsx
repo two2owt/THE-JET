@@ -559,7 +559,7 @@ export default function Profile() {
           </Card>
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
             <Button variant="outline" className="h-20 justify-start" onClick={() => navigate("/settings")}>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center">
