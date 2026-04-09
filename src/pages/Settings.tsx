@@ -504,9 +504,9 @@ const Settings = () => {
         </Card>
 
         {/* Privacy Info */}
-        <Card className="p-4 sm:p-5 md:p-6 bg-muted/80 backdrop-blur-sm shadow-card">
-          <div className="flex items-start gap-2 sm:gap-3">
-            <Radio className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+        <Card className="p-4 sm:p-5 md:p-6 bg-muted/80 backdrop-blur-sm shadow-card" style={{ padding: 'clamp(16px, 2.5vw, 24px)' }}>
+          <div className="flex items-start gap-2 sm:gap-3" style={{ display: 'flex', alignItems: 'flex-start', gap: 'clamp(8px, 1.5vw, 12px)' }}>
+            <Radio className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground mt-0.5 flex-shrink-0" style={{ flexShrink: 0 }} />
             <div className="space-y-1 sm:space-y-2 flex-1 min-w-0">
               <h3 className="text-xs sm:text-sm font-medium text-foreground">Privacy Notice</h3>
               <p className="text-[10px] sm:text-xs text-muted-foreground">
