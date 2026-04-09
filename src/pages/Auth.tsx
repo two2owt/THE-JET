@@ -477,8 +477,8 @@ const Auth = () => {
           {/* Password fields */}
           {!isForgotPassword && (
             <>
-              <div className="space-y-2">
-                <div className="relative">
+              <div className="space-y-2" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div className="relative" style={{ position: 'relative' }}>
                   <Input
                     type={showPassword ? "text" : "password"}
                     placeholder="Password"
