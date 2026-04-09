@@ -457,7 +457,7 @@ export default function Profile() {
               {isEditing && <>
                   <Separator className="my-6" />
                   
-                  <div className="space-y-4">
+                  <div className="space-y-4" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <Label>Social Media Links</Label>
                     
                     <div className="space-y-2">
