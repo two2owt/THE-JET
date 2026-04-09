@@ -331,9 +331,9 @@ const Settings = () => {
 
           <Separator />
 
-          <div className="space-y-3 sm:space-y-4">
-            <div className="flex items-center justify-between gap-3">
-              <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
+          <div className="space-y-3 sm:space-y-4" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px, 1.5vw, 16px)' }}>
+            <div className="flex items-center justify-between gap-3" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+              <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0" style={{ flex: '1 1 0%', minWidth: 0 }}>
                 <label htmlFor="notifications" className="text-xs sm:text-sm font-medium text-foreground block">
                   App Notifications
                 </label>
