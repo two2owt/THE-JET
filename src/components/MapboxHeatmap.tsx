@@ -2729,12 +2729,12 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
           border: '1px solid hsl(var(--border))',
           boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
           padding: isMobile ? '6px 8px' : '8px 12px',
-          opacity: mapLoaded && (isMobile ? !selectedVenue : !controlsCollapsed) ? 1 : 0,
-          visibility: mapLoaded && (isMobile ? !selectedVenue : !controlsCollapsed) ? 'visible' : 'hidden',
+          opacity: mapLoaded && (isMobile ? !selectedVenue : true) ? 1 : 0,
+          visibility: mapLoaded && (isMobile ? !selectedVenue : true) ? 'visible' : 'hidden',
           transition: 'opacity 300ms ease-out, visibility 300ms ease-out',
           transform: 'translateZ(0)',
           willChange: 'opacity',
-          pointerEvents: mapLoaded && (isMobile ? !selectedVenue : !controlsCollapsed) ? 'auto' : 'none',
+          pointerEvents: mapLoaded && (isMobile ? !selectedVenue : true) ? 'auto' : 'none',
           cursor: isMobile ? 'pointer' : undefined,
         }}
         onClick={isMobile ? () => { triggerHaptic('light'); setLegendCollapsed(!legendCollapsed); } : undefined}
