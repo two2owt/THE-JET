@@ -234,7 +234,7 @@ const Settings = () => {
     <SettingsLayout>
       <div className="max-w-3xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg space-y-fluid-lg" style={{ maxWidth: '768px', marginLeft: 'auto', marginRight: 'auto', padding: 'clamp(16px, 3vw, 24px)', display: 'flex', flexDirection: 'column', gap: 'clamp(16px, 3vw, 24px)' }}>
         {/* Profile Link */}
-        <Card className="p-4 sm:p-5 md:p-6 bg-card/90 backdrop-blur-sm shadow-card">
+        <Card className="p-4 sm:p-5 md:p-6 bg-card/90 backdrop-blur-sm shadow-card" style={{ padding: 'clamp(16px, 2.5vw, 24px)' }}>
           <Button
             onClick={() => navigate("/profile")}
             variant="outline"
