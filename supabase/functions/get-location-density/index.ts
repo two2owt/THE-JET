@@ -137,9 +137,23 @@ Deno.serve(async (req) => {
     );
 
     const url = new URL(req.url);
-    const timeFilter = url.searchParams.get('time_filter') || 'all';
-    const hourOfDay = url.searchParams.get('hour_of_day');
-    const dayOfWeek = url.searchParams.get('day_of_week');
+    
+    // Read filters from URL params or request body
+    let timeFilter = url.searchParams.get('time_filter') || 'all';
+    let hourOfDay = url.searchParams.get('hour_of_day');
+    let dayOfWeek = url.searchParams.get('day_of_week');
+    
+    // Also support POST body for filters (supabase.functions.invoke sends body)
+    if (req.method === 'POST') {
+      try {
+        const body = await req.json();
+        if (body.time_filter) timeFilter = body.time_filter;
+        if (body.hour_of_day !== undefined) hourOfDay = String(body.hour_of_day);
+        if (body.day_of_week !== undefined) dayOfWeek = String(body.day_of_week);
+      } catch (_) {
+        // No body or invalid JSON, use URL params
+      }
+    }
 
     console.log('Fetching location density with filters:', { timeFilter, hourOfDay, dayOfWeek });
 
