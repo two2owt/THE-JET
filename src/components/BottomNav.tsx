@@ -113,10 +113,15 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
                 minWidth: 'clamp(48px, 12vw, 64px)',
                 height: 'clamp(40px, 6vw, 52px)',
                 gap: '2px',
+                background: 'transparent',
+                border: 'none',
+                padding: 0,
+                cursor: 'pointer',
+                WebkitAppearance: 'none' as any,
                 opacity: mounted ? 1 : 0,
                 transform: mounted ? 'translateY(0)' : 'translateY(8px)',
                 transition: `opacity 0.35s ease-out ${staggerDelay}, transform 0.35s ease-out ${staggerDelay}`,
-              }}
+              }
             >
               {/* Active pill indicator */}
               {isActive && (
