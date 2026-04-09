@@ -531,7 +531,7 @@ export default function Profile() {
                   </div>
                 </>}
 
-              {isEditing && <div className="flex gap-2 pt-4">
+              {isEditing && <div className="flex gap-2 pt-4" style={{ display: 'flex', gap: '8px', paddingTop: '16px' }}>
                   <Button onClick={handleSaveProfile} disabled={isSaving || !displayName.trim()} className="flex-1" variant="jet">
                     {isSaving ? <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
