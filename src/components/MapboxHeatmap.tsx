@@ -2189,19 +2189,6 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
         >
           <SelectTrigger 
             className="text-[11px] sm:text-xs rounded-xl shadow-xl backdrop-blur-xl border-border/40 ring-1 ring-black/5 dark:ring-white/10"
-            style={{
-              ...({
-                height: 'clamp(32px, 5vw, 40px)',
-                paddingLeft: 'clamp(8px, 1.5vw, 12px)',
-                paddingRight: 'clamp(8px, 1.5vw, 12px)',
-                minWidth: 'clamp(120px, 18vw, 220px)',
-                maxWidth: 'var(--map-control-max-width, 220px)',
-                contain: 'layout style',
-                background: 'hsl(var(--card) / 0.7)',
-                backdropFilter: 'blur(24px)',
-                WebkitBackdropFilter: 'blur(24px)',
-              }),
-            }}
             aria-label="Select city location"
             style={{
               height: 'clamp(32px, 5vw, 40px)',
@@ -2210,6 +2197,9 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
               minWidth: 'clamp(120px, 18vw, 220px)',
               maxWidth: 'var(--map-control-max-width, 220px)',
               contain: 'layout style',
+              background: 'hsl(var(--card) / 0.7)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
             }}
           >
             <div className="flex items-center gap-1.5 w-full">
