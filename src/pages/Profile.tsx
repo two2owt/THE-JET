@@ -337,7 +337,7 @@ export default function Profile() {
   if (!user) {
     return (
       <PageLayout defaultTab="map" notificationCount={0} headerConfig={{ hideSearch: true }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg" style={{ maxWidth: '1280px', marginLeft: 'auto', marginRight: 'auto', padding: 'clamp(16px, 3vw, 24px)' }}>
           <EmptyState icon={User} title="Sign in to view profile" description="Create an account to access your profile, manage settings, and track your activity" actionLabel="Sign In" onAction={() => navigate("/auth")} />
         </div>
       </PageLayout>
@@ -353,10 +353,10 @@ export default function Profile() {
 
   return (
     <PageLayout defaultTab="map" headerConfig={{ hideSearch: true }}>
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg space-y-fluid-lg">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg space-y-fluid-lg" style={{ maxWidth: '896px', marginLeft: 'auto', marginRight: 'auto', padding: 'clamp(16px, 3vw, 24px)', display: 'flex', flexDirection: 'column', gap: 'clamp(16px, 3vw, 24px)' }}>
           {/* Profile Header */}
           <Card className="p-6 bg-card/90 backdrop-blur-xl shadow-card border-primary/10">
-            <div className="flex items-start justify-between mb-6">
+            <div className="flex items-start justify-between mb-6" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '24px' }}>
               <div>
                 <h1 className="text-2xl font-extrabold bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent mb-1">Profile</h1>
                 <p className="text-sm text-muted-foreground">Manage your account and preferences</p>
@@ -368,7 +368,7 @@ export default function Profile() {
             </div>
 
             {/* Avatar Section */}
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-6">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-6" style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '24px', marginBottom: '24px' }}>
               <div className="relative">
                 <Avatar className="w-24 h-24 ring-2 ring-primary/30 shadow-glow">
                   <AvatarImage src={profile?.avatar_url || undefined} />
@@ -390,7 +390,7 @@ export default function Profile() {
                 <p className="text-sm text-muted-foreground mb-3">{user.email}</p>
                 
                 {/* Stats */}
-                <div className="flex justify-center sm:justify-start gap-6">
+                <div className="flex justify-center sm:justify-start gap-6" style={{ display: 'flex', justifyContent: 'flex-start', gap: '24px' }}>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-foreground">{favorites.length}</div>
                     <div className="text-xs text-muted-foreground">Favorites</div>
@@ -410,7 +410,7 @@ export default function Profile() {
             <Separator className="my-6" />
 
             {/* Profile Form */}
-            <div className="space-y-4">
+              <div className="space-y-4" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div className="space-y-2">
                 <Label htmlFor="display_name">Display Name *</Label>
                 <Input id="display_name" value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Your display name" maxLength={100} disabled={!isEditing} />
@@ -424,7 +424,7 @@ export default function Profile() {
                   </p>}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
                 <div className="space-y-2">
                   <Label>Gender <span className="text-destructive">*</span></Label>
                   <Select value={gender} onValueChange={setGender} disabled={!isEditing}>
@@ -559,7 +559,7 @@ export default function Profile() {
           </Card>
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
             <Button variant="outline" className="h-20 justify-start" onClick={() => navigate("/settings")}>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center">
