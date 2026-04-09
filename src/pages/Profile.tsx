@@ -424,7 +424,7 @@ export default function Profile() {
                   </p>}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
                 <div className="space-y-2">
                   <Label>Gender <span className="text-destructive">*</span></Label>
                   <Select value={gender} onValueChange={setGender} disabled={!isEditing}>
