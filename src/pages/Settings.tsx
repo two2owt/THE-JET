@@ -535,7 +535,7 @@ const Settings = () => {
 
         {/* Danger Zone - Account Deletion */}
         {userId && (
-          <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 border-destructive/30 bg-card/90 backdrop-blur-xl shadow-card">
+          <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 border-destructive/30 bg-card/90 backdrop-blur-xl shadow-card" style={{ padding: 'clamp(16px, 2.5vw, 24px)', display: 'flex', flexDirection: 'column', gap: 'clamp(16px, 2vw, 24px)' }}>
             <div>
               <div className="flex items-center gap-2 mb-1 sm:mb-2">
                 <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
