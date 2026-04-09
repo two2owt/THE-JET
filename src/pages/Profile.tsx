@@ -560,14 +560,16 @@ export default function Profile() {
 
           {/* Quick Actions */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-            <Button variant="outline" className="h-20 justify-start" onClick={() => navigate("/settings")}>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center">
-                  <Settings className="w-5 h-5 text-primary" />
+            <Button variant="outline" className="h-20 justify-start" onClick={() => navigate("/settings")}
+              style={{ height: '80px', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: '16px', background: 'hsl(var(--card) / 0.9)', border: '1px solid hsl(var(--border) / 0.4)', borderRadius: '12px', cursor: 'pointer' }}>
+              <div className="flex items-center gap-3" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center"
+                  style={{ width: '40px', height: '40px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--accent) / 0.15))' }}>
+                  <Settings className="w-5 h-5 text-primary" style={{ color: 'hsl(var(--primary))' }} />
                 </div>
-                <div className="text-left">
-                  <div className="font-semibold text-foreground">Settings</div>
-                  <div className="text-xs text-muted-foreground">Notifications & preferences</div>
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontWeight: 600, color: 'hsl(var(--foreground))' }}>Settings</div>
+                  <div style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))' }}>Notifications & preferences</div>
                 </div>
               </div>
             </Button>
