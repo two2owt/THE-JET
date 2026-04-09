@@ -570,7 +570,7 @@ const Auth = () => {
                     <p className="text-xs text-destructive ml-6">{validationErrors.consent}</p>
                   )}
                   
-                  <div className="flex items-start space-x-3">
+                  <div className="flex items-start space-x-3" style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                     <Checkbox
                       id="locationConsent"
                       checked={locationConsent}
