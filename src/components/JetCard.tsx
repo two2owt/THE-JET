@@ -7,7 +7,6 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Venue } from "./MapboxHeatmap";
 import { UpgradePrompt, useFeatureAccess } from "./UpgradePrompt";
 import { shareVenue } from "@/utils/shareUtils";
-import { cn } from "@/lib/utils";
 
 interface JetCardProps {
   venue: Venue;
@@ -31,10 +30,10 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
   }, []);
 
   const getActivityLevel = (activity: number) => {
-    if (activity >= 80) return { label: "🔥 Very Busy", colorClass: "text-hot" };
-    if (activity >= 60) return { label: "🌟 Busy", colorClass: "text-warm" };
-    if (activity >= 40) return { label: "✨ Moderate", colorClass: "text-cool" };
-    return { label: "😌 Quiet", colorClass: "text-cold" };
+    if (activity >= 80) return { label: "🔥 Very Busy", color: 'hsl(var(--hot))' };
+    if (activity >= 60) return { label: "🌟 Busy", color: 'hsl(var(--warm))' };
+    if (activity >= 40) return { label: "✨ Moderate", color: 'hsl(var(--cool))' };
+    return { label: "😌 Quiet", color: 'hsl(var(--cold))' };
   };
 
   const handleGetDirections = async () => {
@@ -64,74 +63,153 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
 
   return (
     <article
-      className="relative w-full bg-card border-2 border-primary/40 dark:border-primary/60 rounded-2xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.7),0_0_24px_hsl(var(--primary)/0.15)] max-h-[300px] font-sans"
+      style={{
+        position: 'relative',
+        width: '100%',
+        background: 'hsl(var(--card))',
+        border: '2px solid hsl(var(--primary) / 0.4)',
+        borderRadius: '16px',
+        overflow: 'hidden',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.15), 0 0 24px hsl(var(--primary) / 0.1)',
+        maxHeight: '300px',
+        fontFamily: 'var(--font-sans, system-ui, -apple-system, sans-serif)',
+        color: 'hsl(var(--foreground))',
+      }}
       aria-label={`${venue.name} - ${venue.category} in ${venue.neighborhood}`}
     >
       {/* Image Header */}
-      <div className="relative h-20 bg-gradient-to-br from-primary/30 to-accent/20 overflow-hidden">
+      <div style={{
+        position: 'relative',
+        height: '80px',
+        background: 'linear-gradient(135deg, hsl(var(--primary) / 0.3), hsl(var(--accent) / 0.2))',
+        overflow: 'hidden',
+      }}>
         {venue.imageUrl && (
           <img
             src={venue.imageUrl}
             alt={venue.name}
-            className="absolute inset-0 w-full h-full object-cover"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+            }}
             loading="lazy"
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 dark:from-black/60 to-transparent" />
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(to top, rgba(0,0,0,0.4), transparent)',
+        }} />
 
         {onClose && (
           <button
             onClick={onClose}
-            className="absolute top-2 right-2 z-20 bg-background/80 dark:bg-black/60 backdrop-blur-md border-none rounded-full p-1.5 cursor-pointer flex items-center justify-center"
+            style={{
+              position: 'absolute',
+              top: '8px',
+              right: '8px',
+              zIndex: 20,
+              background: 'hsl(var(--background) / 0.8)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: 'none',
+              borderRadius: '50%',
+              padding: '6px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
             aria-label="Close"
           >
-            <X className="w-4 h-4 text-foreground" />
+            <X style={{ width: '16px', height: '16px', color: 'hsl(var(--foreground))' }} />
           </button>
         )}
 
         {/* Activity Badge */}
-        <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-full flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-          <span className="text-[10px] font-bold text-white">{venue.activity}% Active</span>
+        <div style={{
+          position: 'absolute',
+          top: '8px',
+          left: '8px',
+          background: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          padding: '2px 8px',
+          borderRadius: '9999px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+        }}>
+          <div style={{ width: '6px', height: '6px', background: 'hsl(var(--primary))', borderRadius: '50%' }} />
+          <span style={{ fontSize: '10px', fontWeight: 700, color: 'white' }}>{venue.activity}% Active</span>
         </div>
 
         {/* Category Badge */}
-        <div className="absolute bottom-2 left-2 bg-white/15 backdrop-blur-md px-2 py-0.5 rounded-full">
-          <span className="text-[10px] font-semibold text-white">{venue.category}</span>
+        <div style={{
+          position: 'absolute',
+          bottom: '8px',
+          left: '8px',
+          background: 'rgba(255,255,255,0.15)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          padding: '2px 8px',
+          borderRadius: '9999px',
+        }}>
+          <span style={{ fontSize: '10px', fontWeight: 600, color: 'white' }}>{venue.category}</span>
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-3 flex flex-col gap-2">
+      <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {/* Title */}
         <div>
-          <h3 className="text-base font-bold text-foreground leading-tight">{venue.name}</h3>
-          <div className="flex items-center gap-1.5 mt-1 text-muted-foreground text-[11px]">
-            <MapPin className="w-3 h-3 flex-shrink-0" />
+          <h3 style={{
+            fontSize: '16px',
+            fontWeight: 700,
+            color: 'hsl(var(--foreground))',
+            lineHeight: 1.25,
+            margin: 0,
+          }}>{venue.name}</h3>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            marginTop: '4px',
+            color: 'hsl(var(--muted-foreground))',
+            fontSize: '11px',
+          }}>
+            <MapPin style={{ width: '12px', height: '12px', flexShrink: 0 }} />
             <span>{venue.neighborhood}</span>
-            {venue.address && <span className="text-muted-foreground/60 overflow-hidden text-ellipsis whitespace-nowrap">· {venue.address}</span>}
+            {venue.address && (
+              <span style={{ opacity: 0.6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                · {venue.address}
+              </span>
+            )}
           </div>
         </div>
 
         {/* Inline Stats */}
-        <div className="flex items-center gap-3 text-xs">
-          <div className="flex items-center gap-1">
-            <TrendingUp className={cn("w-3.5 h-3.5", activityLevel.colorClass)} />
-            <span className="font-semibold text-foreground">{activityLevel.label.split(" ")[1]}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <TrendingUp style={{ width: '14px', height: '14px', color: activityLevel.color }} />
+            <span style={{ fontWeight: 600, color: 'hsl(var(--foreground))' }}>{activityLevel.label.split(" ")[1]}</span>
           </div>
-          <div className="flex items-center gap-1">
-            <Star className="w-3.5 h-3.5 text-warm" />
-            <span className="font-semibold text-foreground">4.5</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Star style={{ width: '14px', height: '14px', color: 'hsl(var(--warm))' }} />
+            <span style={{ fontWeight: 600, color: 'hsl(var(--foreground))' }}>4.5</span>
           </div>
-          <div className="flex items-center gap-1">
-            <Users className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="font-semibold text-foreground">{Math.round(venue.activity / 10) * 10}+</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Users style={{ width: '14px', height: '14px', color: 'hsl(var(--muted-foreground))' }} />
+            <span style={{ fontWeight: 600, color: 'hsl(var(--foreground))' }}>{Math.round(venue.activity / 10) * 10}+</span>
           </div>
         </div>
 
         {/* Buttons */}
-        <div className="grid grid-cols-2 gap-2" role="group" aria-label="Venue actions">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }} role="group" aria-label="Venue actions">
           <Button
             onClick={handleShare}
             variant="outline"
@@ -143,7 +221,17 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
           </Button>
           <Button
             onClick={handleGetDirections}
-            className="w-full bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 text-primary-foreground font-semibold h-9 text-xs rounded-lg"
+            style={{
+              width: '100%',
+              background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
+              color: 'hsl(var(--primary-foreground))',
+              fontWeight: 600,
+              height: '36px',
+              fontSize: '12px',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: 'pointer',
+            }}
             aria-label={`Get directions to ${venue.name}`}
           >
             Get Directions
