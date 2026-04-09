@@ -355,7 +355,7 @@ export default function Profile() {
     <PageLayout defaultTab="map" headerConfig={{ hideSearch: true }}>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg space-y-fluid-lg" style={{ maxWidth: '896px', marginLeft: 'auto', marginRight: 'auto', padding: 'clamp(16px, 3vw, 24px)', display: 'flex', flexDirection: 'column', gap: 'clamp(16px, 3vw, 24px)' }}>
           {/* Profile Header */}
-          <Card className="p-6 bg-card/90 backdrop-blur-xl shadow-card border-primary/10">
+          <Card className="p-6 bg-card/90 backdrop-blur-xl shadow-card border-primary/10" style={{ padding: 'clamp(16px, 3vw, 24px)' }}>
             <div className="flex items-start justify-between mb-6" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '24px' }}>
               <div>
                 <h1 className="text-2xl font-extrabold bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent mb-1">Profile</h1>
@@ -368,7 +368,7 @@ export default function Profile() {
             </div>
 
             {/* Avatar Section */}
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-6" style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '24px', marginBottom: '24px' }}>
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-6" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', marginBottom: '24px' }}>
               <div className="relative">
                 <Avatar className="w-24 h-24 ring-2 ring-primary/30 shadow-glow">
                   <AvatarImage src={profile?.avatar_url || undefined} />
@@ -385,12 +385,12 @@ export default function Profile() {
                   </>}
               </div>
 
-              <div className="flex-1 text-center sm:text-left">
+              <div className="flex-1 text-center sm:text-left" style={{ flex: '1 1 0%', textAlign: 'center' }}>
                 <h2 className="text-xl font-semibold text-foreground mb-1">{displayName || 'User'}</h2>
                 <p className="text-sm text-muted-foreground mb-3">{user.email}</p>
                 
                 {/* Stats */}
-                <div className="flex justify-center sm:justify-start gap-6" style={{ display: 'flex', justifyContent: 'flex-start', gap: '24px' }}>
+                <div className="flex justify-center sm:justify-start gap-6" style={{ display: 'flex', justifyContent: 'center', gap: '24px' }}>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-foreground">{favorites.length}</div>
                     <div className="text-xs text-muted-foreground">Favorites</div>
@@ -424,7 +424,7 @@ export default function Profile() {
                   </p>}
               </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
                 <div className="space-y-2">
                   <Label>Gender <span className="text-destructive">*</span></Label>
                   <Select value={gender} onValueChange={setGender} disabled={!isEditing}>
@@ -457,7 +457,7 @@ export default function Profile() {
               {isEditing && <>
                   <Separator className="my-6" />
                   
-                  <div className="space-y-4">
+                  <div className="space-y-4" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <Label>Social Media Links</Label>
                     
                     <div className="space-y-2">
@@ -502,7 +502,7 @@ export default function Profile() {
                   <Separator className="my-6" />
                   <div>
                     <Label className="mb-3 block">Social Media</Label>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                       {instagramUrl && <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 text-white hover:opacity-90 transition-opacity text-sm font-medium">
                           <Instagram className="w-4 h-4" />
                           Instagram
@@ -531,7 +531,7 @@ export default function Profile() {
                   </div>
                 </>}
 
-              {isEditing && <div className="flex gap-2 pt-4">
+              {isEditing && <div className="flex gap-2 pt-4" style={{ display: 'flex', gap: '8px', paddingTop: '16px' }}>
                   <Button onClick={handleSaveProfile} disabled={isSaving || !displayName.trim()} className="flex-1" variant="jet">
                     {isSaving ? <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -559,58 +559,66 @@ export default function Profile() {
           </Card>
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
-            <Button variant="outline" className="h-20 justify-start" onClick={() => navigate("/settings")}>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center">
-                  <Settings className="w-5 h-5 text-primary" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+            <Button variant="outline" className="h-20 justify-start" onClick={() => navigate("/settings")}
+              style={{ height: '80px', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: '16px', background: 'hsl(var(--card) / 0.9)', border: '1px solid hsl(var(--border) / 0.4)', borderRadius: '12px', cursor: 'pointer' }}>
+              <div className="flex items-center gap-3" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center"
+                  style={{ width: '40px', height: '40px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--accent) / 0.15))' }}>
+                  <Settings className="w-5 h-5 text-primary" style={{ color: 'hsl(var(--primary))' }} />
                 </div>
-                <div className="text-left">
-                  <div className="font-semibold text-foreground">Settings</div>
-                  <div className="text-xs text-muted-foreground">Notifications & preferences</div>
-                </div>
-              </div>
-            </Button>
-
-            <Button variant="outline" className="h-20 justify-start" onClick={() => navigate("/favorites")}>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent/15 to-primary/15 flex items-center justify-center">
-                  <Heart className="w-5 h-5 text-accent" />
-                </div>
-                <div className="text-left">
-                  <div className="font-semibold text-foreground">Favorites</div>
-                  <div className="text-xs text-muted-foreground">{favorites.length} saved deals</div>
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontWeight: 600, color: 'hsl(var(--foreground))' }}>Settings</div>
+                  <div style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))' }}>Notifications & preferences</div>
                 </div>
               </div>
             </Button>
 
-            <Button variant="outline" className="h-20 justify-start" onClick={() => navigate("/social")}>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
-                  <Users className="w-5 h-5 text-accent" />
+            <Button variant="outline" className="h-20 justify-start" onClick={() => navigate("/favorites")}
+              style={{ height: '80px', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: '16px', background: 'hsl(var(--card) / 0.9)', border: '1px solid hsl(var(--border) / 0.4)', borderRadius: '12px', cursor: 'pointer' }}>
+              <div className="flex items-center gap-3" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent/15 to-primary/15 flex items-center justify-center"
+                  style={{ width: '40px', height: '40px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, hsl(var(--accent) / 0.15), hsl(var(--primary) / 0.15))' }}>
+                  <Heart className="w-5 h-5 text-accent" style={{ color: 'hsl(var(--accent))' }} />
                 </div>
-                <div className="text-left">
-                  <div className="font-semibold text-foreground">Social</div>
-                  <div className="text-xs text-muted-foreground">{connections.length} connections</div>
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontWeight: 600, color: 'hsl(var(--foreground))' }}>Favorites</div>
+                  <div style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))' }}>{favorites.length} saved deals</div>
                 </div>
               </div>
             </Button>
 
-            {isAdmin && <Button variant="outline" className="h-20 justify-start" onClick={() => navigate("/admin")}>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
-                    <Shield className="w-5 h-5 text-destructive" />
+            <Button variant="outline" className="h-20 justify-start" onClick={() => navigate("/social")}
+              style={{ height: '80px', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: '16px', background: 'hsl(var(--card) / 0.9)', border: '1px solid hsl(var(--border) / 0.4)', borderRadius: '12px', cursor: 'pointer' }}>
+              <div className="flex items-center gap-3" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center"
+                  style={{ width: '40px', height: '40px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.1))' }}>
+                  <Users className="w-5 h-5 text-accent" style={{ color: 'hsl(var(--accent))' }} />
+                </div>
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontWeight: 600, color: 'hsl(var(--foreground))' }}>Social</div>
+                  <div style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))' }}>{connections.length} connections</div>
+                </div>
+              </div>
+            </Button>
+
+            {isAdmin && <Button variant="outline" className="h-20 justify-start" onClick={() => navigate("/admin")}
+              style={{ height: '80px', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: '16px', background: 'hsl(var(--card) / 0.9)', border: '1px solid hsl(var(--border) / 0.4)', borderRadius: '12px', cursor: 'pointer' }}>
+                <div className="flex items-center gap-3" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center"
+                    style={{ width: '40px', height: '40px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'hsl(var(--destructive) / 0.1)' }}>
+                    <Shield className="w-5 h-5 text-destructive" style={{ color: 'hsl(var(--destructive))' }} />
                   </div>
-                  <div className="text-left">
-                    <div className="font-semibold text-foreground">Admin</div>
-                    <div className="text-xs text-muted-foreground">Dashboard & analytics</div>
+                  <div style={{ textAlign: 'left' }}>
+                    <div style={{ fontWeight: 600, color: 'hsl(var(--foreground))' }}>Admin</div>
+                    <div style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))' }}>Dashboard & analytics</div>
                   </div>
                 </div>
               </Button>}
           </div>
 
           {/* Sign Out */}
-          <Card className="p-4 bg-card/90 backdrop-blur-xl shadow-card border-primary/10">
+          <Card className="p-4 bg-card/90 backdrop-blur-xl shadow-card border-primary/10" style={{ padding: '16px' }}>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" className="w-full">
