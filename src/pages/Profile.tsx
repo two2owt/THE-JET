@@ -356,7 +356,7 @@ export default function Profile() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg space-y-fluid-lg" style={{ maxWidth: '896px', marginLeft: 'auto', marginRight: 'auto', padding: 'clamp(16px, 3vw, 24px)', display: 'flex', flexDirection: 'column', gap: 'clamp(16px, 3vw, 24px)' }}>
           {/* Profile Header */}
           <Card className="p-6 bg-card/90 backdrop-blur-xl shadow-card border-primary/10">
-            <div className="flex items-start justify-between mb-6">
+            <div className="flex items-start justify-between mb-6" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '24px' }}>
               <div>
                 <h1 className="text-2xl font-extrabold bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent mb-1">Profile</h1>
                 <p className="text-sm text-muted-foreground">Manage your account and preferences</p>
