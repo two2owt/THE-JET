@@ -121,7 +121,7 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
                 opacity: mounted ? 1 : 0,
                 transform: mounted ? 'translateY(0)' : 'translateY(8px)',
                 transition: `opacity 0.35s ease-out ${staggerDelay}, transform 0.35s ease-out ${staggerDelay}`,
-              }
+              }}
             >
               {/* Active pill indicator */}
               {isActive && (
