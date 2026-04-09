@@ -390,7 +390,7 @@ export default function Profile() {
                 <p className="text-sm text-muted-foreground mb-3">{user.email}</p>
                 
                 {/* Stats */}
-                <div className="flex justify-center sm:justify-start gap-6">
+                <div className="flex justify-center sm:justify-start gap-6" style={{ display: 'flex', justifyContent: 'flex-start', gap: '24px' }}>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-foreground">{favorites.length}</div>
                     <div className="text-xs text-muted-foreground">Favorites</div>
