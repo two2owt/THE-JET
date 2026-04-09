@@ -574,14 +574,16 @@ export default function Profile() {
               </div>
             </Button>
 
-            <Button variant="outline" className="h-20 justify-start" onClick={() => navigate("/favorites")}>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent/15 to-primary/15 flex items-center justify-center">
-                  <Heart className="w-5 h-5 text-accent" />
+            <Button variant="outline" className="h-20 justify-start" onClick={() => navigate("/favorites")}
+              style={{ height: '80px', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: '16px', background: 'hsl(var(--card) / 0.9)', border: '1px solid hsl(var(--border) / 0.4)', borderRadius: '12px', cursor: 'pointer' }}>
+              <div className="flex items-center gap-3" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent/15 to-primary/15 flex items-center justify-center"
+                  style={{ width: '40px', height: '40px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, hsl(var(--accent) / 0.15), hsl(var(--primary) / 0.15))' }}>
+                  <Heart className="w-5 h-5 text-accent" style={{ color: 'hsl(var(--accent))' }} />
                 </div>
-                <div className="text-left">
-                  <div className="font-semibold text-foreground">Favorites</div>
-                  <div className="text-xs text-muted-foreground">{favorites.length} saved deals</div>
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontWeight: 600, color: 'hsl(var(--foreground))' }}>Favorites</div>
+                  <div style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))' }}>{favorites.length} saved deals</div>
                 </div>
               </div>
             </Button>
