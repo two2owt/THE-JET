@@ -455,7 +455,7 @@ const Auth = () => {
           <form onSubmit={isResettingPassword ? handlePasswordReset : isForgotPassword ? handleForgotPassword : handleAuth} className="space-y-4" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Email field - only show if not resetting password */}
           {!isResettingPassword && (
-            <div className="space-y-2">
+            <div className="space-y-2" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <Input
                 type="email"
                 placeholder="Email"
