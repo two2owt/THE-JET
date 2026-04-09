@@ -683,9 +683,10 @@ const Auth = () => {
         )}
 
           {/* Features */}
-          <div className="bg-card/30 backdrop-blur-sm rounded-xl p-4 space-y-2 border border-border/30">
-            <p className="text-xs font-semibold text-foreground">With an account you can:</p>
-            <ul className="text-xs text-muted-foreground space-y-1">
+           <div className="bg-card/30 backdrop-blur-sm rounded-xl border border-border/30"
+             style={{ background: 'hsl(var(--card) / 0.3)', backdropFilter: 'blur(8px)', borderRadius: '12px', padding: '16px', border: '1px solid hsl(var(--border) / 0.3)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <p style={{ fontSize: '12px', fontWeight: 600, color: 'hsl(var(--foreground))' }}>With an account you can:</p>
+            <ul style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))', display: 'flex', flexDirection: 'column', gap: '4px', listStyle: 'none', padding: 0, margin: 0 }}>
               <li>• Get real-time notifications for nearby deals</li>
               <li>• Save your favorite venues</li>
               <li>• Receive personalized recommendations</li>
