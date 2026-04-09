@@ -385,7 +385,7 @@ export default function Profile() {
                   </>}
               </div>
 
-              <div className="flex-1 text-center sm:text-left">
+              <div className="flex-1 text-center sm:text-left" style={{ flex: '1 1 0%', textAlign: 'center' }}>
                 <h2 className="text-xl font-semibold text-foreground mb-1">{displayName || 'User'}</h2>
                 <p className="text-sm text-muted-foreground mb-3">{user.email}</p>
                 
