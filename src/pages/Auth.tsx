@@ -542,8 +542,8 @@ const Auth = () => {
 
               {/* Consent checkboxes for signup */}
               {isSignUp && (
-                <div className="space-y-3 pt-2">
-                  <div className="flex items-start space-x-3">
+                <div className="space-y-3 pt-2" style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: '8px' }}>
+                  <div className="flex items-start space-x-3" style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                     <Checkbox
                       id="dataConsent"
                       checked={dataProcessingConsent}
