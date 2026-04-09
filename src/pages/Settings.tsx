@@ -353,9 +353,9 @@ const Settings = () => {
 
             {/* Only show native push notifications on iOS/Android */}
             {isNative && (
-              <div className="flex items-center justify-between gap-3">
-                <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
-                  <label htmlFor="push-notifications" className="text-xs sm:text-sm font-medium text-foreground flex items-center gap-1.5">
+              <div className="flex items-center justify-between gap-3" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0" style={{ flex: '1 1 0%', minWidth: 0 }}>
+                  <label htmlFor="push-notifications" className="text-xs sm:text-sm font-medium text-foreground flex items-center gap-1.5" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Smartphone className="w-3.5 h-3.5" />
                     Native Push Notifications
                   </label>
