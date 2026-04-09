@@ -626,7 +626,7 @@ const Auth = () => {
 
         {/* Resend Verification Email */}
         {showResendVerification && !isResettingPassword && (
-          <div className="bg-muted/50 border border-border rounded-lg p-4 space-y-3">
+          <div className="bg-muted/50 border border-border rounded-lg p-4 space-y-3" style={{ background: 'hsl(var(--muted) / 0.5)', border: '1px solid hsl(var(--border))', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div className="text-sm text-muted-foreground">
               Didn't receive the verification email?
             </div>
