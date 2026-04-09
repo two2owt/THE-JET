@@ -2282,7 +2282,7 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
               backdropFilter: 'blur(24px)',
               WebkitBackdropFilter: 'blur(24px)',
               borderRadius: '12px',
-              border: '1px solid hsl(var(--border))',
+              border: '1px solid hsl(var(--border) / 0.4)',
               padding: '8px',
               boxShadow: '0 10px 25px -5px rgba(0,0,0,0.15)',
               minWidth: '200px',
