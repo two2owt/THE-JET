@@ -596,7 +596,19 @@ const Auth = () => {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 text-primary-foreground font-semibold py-6 rounded-xl shadow-[var(--shadow-glow)]"
+            className="w-full bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 text-primary-foreground font-semibold rounded-xl"
+            style={{
+              width: '100%',
+              padding: '14px 24px',
+              borderRadius: '12px',
+              fontWeight: 600,
+              fontSize: '16px',
+              background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow, var(--primary))))',
+              color: 'hsl(var(--primary-foreground))',
+              border: 'none',
+              cursor: 'pointer',
+              minHeight: '48px',
+            }}
           >
             {isLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
