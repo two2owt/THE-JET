@@ -407,24 +407,40 @@ const Auth = () => {
     >
       {/* Animated matte black/grey gradient overlay */}
       <div className="absolute inset-0 auth-gradient-overlay" />
-      <div className="w-full max-w-md relative z-10">
+      <div className="w-full max-w-md relative z-10" style={{ width: '100%', maxWidth: '28rem', position: 'relative', zIndex: 10 }}>
         {/* Glassmorphic Card */}
-        <div className="backdrop-blur-xl bg-background/20 border border-border/30 rounded-2xl p-fluid-lg shadow-2xl space-y-fluid-md">
+        <div className="backdrop-blur-xl bg-background/20 border border-border/30 rounded-2xl shadow-2xl"
+          style={{
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            background: 'hsl(var(--background) / 0.2)',
+            border: '1px solid hsl(var(--border) / 0.3)',
+            borderRadius: '16px',
+            padding: 'clamp(24px, 5vw, 32px)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'clamp(16px, 3vw, 24px)',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
+          }}
+        >
           {/* Header */}
-          <div className="text-center space-y-3">
-            <div className="w-24 h-24 flex items-center justify-center mx-auto">
+          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '96px', height: '96px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <img 
                 src={jetLogo} 
                 alt="JET Logo" 
-                className="w-full h-full object-contain drop-shadow-lg"
+                style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }}
                 width="96"
                 height="96"
                 fetchPriority="high"
                 decoding="async"
               />
             </div>
-            <h1 className="text-3xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent drop-shadow-sm">Welcome to JET</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-3xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent"
+              style={{ fontSize: 'clamp(1.5rem, 5vw, 1.875rem)', fontWeight: 800 }}>
+              Welcome to JET
+            </h1>
+            <p style={{ color: 'hsl(var(--muted-foreground))', fontSize: '14px' }}>
               {isResettingPassword
                 ? "Set your new password"
                 : isForgotPassword
