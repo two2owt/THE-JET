@@ -552,6 +552,7 @@ const Auth = () => {
                         setValidationErrors(prev => ({ ...prev, consent: undefined }));
                       }}
                       className="mt-0.5"
+                      style={{ width: '18px', height: '18px', minWidth: '18px', marginTop: '2px', border: '2px solid hsl(var(--border))', borderRadius: '4px' }}
                     />
                     <label htmlFor="dataConsent" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
                       I agree to the{" "}
