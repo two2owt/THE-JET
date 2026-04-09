@@ -650,7 +650,7 @@ const Auth = () => {
 
         {/* Toggle & Forgot Password */}
         {!isResettingPassword && (
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-2" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {!isForgotPassword && !isSignUp && (
               <button
                 onClick={() => setIsForgotPassword(true)}
