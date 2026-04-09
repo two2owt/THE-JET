@@ -410,7 +410,7 @@ export default function Profile() {
             <Separator className="my-6" />
 
             {/* Profile Form */}
-            <div className="space-y-4">
+              <div className="space-y-4" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div className="space-y-2">
                 <Label htmlFor="display_name">Display Name *</Label>
                 <Input id="display_name" value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Your display name" maxLength={100} disabled={!isEditing} />
