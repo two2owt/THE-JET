@@ -89,6 +89,7 @@ import type { Venue } from "@/types/venue";
 
 interface MapboxHeatmapProps {
   onVenueSelect: (venue: Venue) => void;
+  onParkingSelect?: (parking: { lat: number; lng: number; name?: string }) => void;
   venues: Venue[];
   mapboxToken: string;
   selectedCity: City;
@@ -160,7 +161,7 @@ const getPlatformSettings = (isMobile: boolean) => {
   };
 };
 
-export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity, onCityChange, onNearestCityDetected, onDetectedLocationNameChange, isLoadingVenues = false, selectedVenue, resetUIKey, isTokenLoading = false }: MapboxHeatmapProps) => {
+export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues, mapboxToken, selectedCity, onCityChange, onNearestCityDetected, onDetectedLocationNameChange, isLoadingVenues = false, selectedVenue, resetUIKey, isTokenLoading = false }: MapboxHeatmapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapboxGL.Map | null>(null);
   const mapboxglRef = useRef<MapboxGLModule | null>(null);
@@ -176,6 +177,8 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
   const geolocateControlRef = useRef<MapboxGL.GeolocateControl | null>(null);
   const onVenueSelectRef = useRef(onVenueSelect);
   onVenueSelectRef.current = onVenueSelect;
+  const onParkingSelectRef = useRef(onParkingSelect);
+  onParkingSelectRef.current = onParkingSelect;
   const flowAnimationRef = useRef<number | null>(null);
   const isMobile = useIsMobile();
   const initStartTime = useRef<number>(0);
@@ -754,6 +757,29 @@ export const MapboxHeatmap = ({ onVenueSelect, venues, mapboxToken, selectedCity
                 minzoom: 13,
               });
               console.log('MapboxHeatmap: Parking icons layer added');
+
+              // Add click handler for parking icons
+              map.current.on('click', 'parking-icons', (e) => {
+                if (!e.features || e.features.length === 0) return;
+                const feature = e.features[0];
+                const coords = (feature.geometry as any).coordinates;
+                const parkingName = feature.properties?.name || 'Parking';
+                
+                triggerHaptic('medium');
+                onParkingSelectRef.current?.({
+                  lat: coords[1],
+                  lng: coords[0],
+                  name: parkingName,
+                });
+              });
+
+              // Change cursor on hover
+              map.current.on('mouseenter', 'parking-icons', () => {
+                if (map.current) map.current.getCanvas().style.cursor = 'pointer';
+              });
+              map.current.on('mouseleave', 'parking-icons', () => {
+                if (map.current) map.current.getCanvas().style.cursor = '';
+              });
             } catch (e) {
               console.warn('MapboxHeatmap: Could not add parking layer:', e);
             }

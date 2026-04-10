@@ -30,6 +30,7 @@ const MapboxHeatmap = lazy(() => import("@/components/MapboxHeatmap").then(m => 
 
 // Lazy load interaction-triggered components - not needed for first paint
 const JetCard = lazy(() => import("@/components/JetCard").then(m => ({ default: m.JetCard })));
+const ParkingCard = lazy(() => import("@/components/ParkingCard").then(m => ({ default: m.ParkingCard })));
 const NotificationCard = lazy(() => import("@/components/NotificationCard").then(m => ({ default: m.NotificationCard })));
 
 // Lazy load tab content and dialogs - user-triggered
@@ -76,6 +77,7 @@ const Index = () => {
   const [isMapboxReady, setIsMapboxReady] = useState(MAPBOX_ALWAYS_READY);
   const [mapUIResetKey, setMapUIResetKey] = useState(0); // Increments when switching to map tab to reset collapsed UI
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
+  const [selectedParking, setSelectedParking] = useState<{ lat: number; lng: number; name?: string } | null>(null);
   const [selectedCity, setSelectedCity] = useState<City>(CITIES[0]); // Default to Charlotte
   const [detectedLocationName, setDetectedLocationName] = useState<string | null>(null); // Actual city from reverse geocoding
   const [showDirectionsDialog, setShowDirectionsDialog] = useState(false);
@@ -252,6 +254,11 @@ const Index = () => {
     }
   }, [venues, getVenueImage]);
 
+  const handleParkingSelect = useCallback((parking: { lat: number; lng: number; name?: string }) => {
+    setSelectedVenue(null); // Close venue card if open
+    setSelectedParking(parking);
+  }, []);
+
   const handleGetDirections = useCallback(async () => {
     if (!selectedVenue) return;
     // Dynamic import for haptics to reduce bundle
@@ -354,7 +361,8 @@ const Index = () => {
               {mapboxToken && (
                 <Suspense fallback={null}>
                   <MapboxHeatmap
-                    onVenueSelect={handleVenueSelect} 
+                    onVenueSelect={handleVenueSelect}
+                    onParkingSelect={handleParkingSelect}
                     venues={venues} 
                     mapboxToken={mapboxToken}
                     selectedCity={selectedCity}
@@ -403,6 +411,40 @@ const Index = () => {
                 venue={selectedVenue} 
                 onGetDirections={handleGetDirections}
                 onClose={() => setSelectedVenue(null)}
+              />
+            </Suspense>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* ParkingCard - portaled to body like JetCard */}
+      {selectedParking && activeTab === "map" && createPortal(
+        <div 
+          className="animate-fade-in"
+          style={{
+            position: 'fixed',
+            bottom: 'calc(var(--bottom-nav-total-height, 60px) + 8px)',
+            left: '0',
+            width: '100vw',
+            zIndex: 9999,
+            padding: '0 12px',
+            boxSizing: 'border-box',
+            pointerEvents: 'none',
+          }}
+        >
+          <div style={{ pointerEvents: 'auto', width: '100%', maxWidth: '480px', margin: '0 auto', boxSizing: 'border-box' }}>
+            {isMobile && (
+              <div className="flex justify-center pb-2 sm:pb-2.5">
+                <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
+              </div>
+            )}
+            <Suspense fallback={null}>
+              <ParkingCard
+                lat={selectedParking.lat}
+                lng={selectedParking.lng}
+                name={selectedParking.name}
+                onClose={() => setSelectedParking(null)}
               />
             </Suspense>
           </div>
