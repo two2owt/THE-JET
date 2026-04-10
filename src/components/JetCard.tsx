@@ -49,7 +49,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
     setNearbyParking([]);
 
     supabase.functions.invoke('get-nearby-parking', {
-      body: JSON.stringify({ lat: venue.lat, lng: venue.lng, radius: 500 }),
+      body: JSON.stringify({ lat: venue.lat, lng: venue.lng, radius: 1000 }),
     }).then(({ data, error }) => {
       if (cancelled) return;
       setParkingLoading(false);
