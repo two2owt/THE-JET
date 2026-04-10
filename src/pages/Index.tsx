@@ -77,6 +77,7 @@ const Index = () => {
   const [isMapboxReady, setIsMapboxReady] = useState(MAPBOX_ALWAYS_READY);
   const [mapUIResetKey, setMapUIResetKey] = useState(0); // Increments when switching to map tab to reset collapsed UI
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
+  const [selectedParking, setSelectedParking] = useState<{ lat: number; lng: number; name?: string } | null>(null);
   const [selectedCity, setSelectedCity] = useState<City>(CITIES[0]); // Default to Charlotte
   const [detectedLocationName, setDetectedLocationName] = useState<string | null>(null); // Actual city from reverse geocoding
   const [showDirectionsDialog, setShowDirectionsDialog] = useState(false);
