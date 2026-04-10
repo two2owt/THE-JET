@@ -66,7 +66,7 @@ const loadMapboxGL = async (): Promise<MapboxGLModule> => {
   }
   return mapboxLoadPromise;
 };
-import { MapPin, TrendingUp, Layers, X, AlertCircle, Route, Play, Pause, SkipBack, SkipForward, Clock, ChevronDown, ChevronUp, PanelRightClose, PanelRightOpen } from "lucide-react";
+import { MapPin, TrendingUp, Layers, X, AlertCircle, Route, Play, Pause, SkipBack, SkipForward, Clock, ChevronDown, ChevronUp, PanelRightClose, PanelRightOpen, Car } from "lucide-react";
 import { MapUISkeleton } from "@/components/skeletons/MapUISkeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocationDensity } from "@/hooks/useLocationDensity";
@@ -212,6 +212,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues, mapboxTo
   
   // Density heatmap state
   const [showDensityLayer, setShowDensityLayer] = useState(false);
+  const [showParking, setShowParking] = useState(true);
   const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>('all');
   const [hourFilter, setHourFilter] = useState<number | undefined>();
   const [dayFilter, setDayFilter] = useState<number | undefined>();
@@ -754,7 +755,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues, mapboxTo
                   'text-halo-color': 'hsl(0, 0%, 10%)',
                   'text-halo-width': 1,
                 },
-                minzoom: 13,
+                minzoom: 8,
               });
               console.log('MapboxHeatmap: Parking icons layer added');
 
@@ -2590,6 +2591,54 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues, mapboxTo
                 )}
               </div>
             </div>
+
+            {/* Divider */}
+            <div style={{ height: '1px', background: 'hsl(var(--border) / 0.5)' }} />
+
+            {/* Parking toggle row */}
+            <button
+              onClick={() => {
+                triggerHaptic('medium');
+                const newState = !showParking;
+                setShowParking(newState);
+                if (map.current) {
+                  try {
+                    if (map.current.getLayer('parking-icons')) {
+                      map.current.setLayoutProperty('parking-icons', 'visibility', newState ? 'visible' : 'none');
+                    }
+                  } catch (e) { /* layer may not exist yet */ }
+                }
+              }}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px',
+                borderRadius: '8px',
+                fontSize: '11px',
+                fontWeight: 600,
+                transition: 'all 0.2s',
+                cursor: 'pointer',
+                border: showParking ? '1px solid hsl(var(--primary) / 0.3)' : '1px solid transparent',
+                background: showParking ? 'hsl(var(--primary) / 0.15)' : 'hsl(var(--secondary) / 0.3)',
+                color: showParking ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
+              }}
+            >
+              <div style={{
+                width: '24px', height: '24px', borderRadius: '6px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: showParking ? 'hsl(var(--primary))' : 'hsl(var(--secondary))',
+                color: showParking ? 'hsl(var(--primary-foreground))' : 'inherit',
+              }}>
+                <Car style={{ width: '14px', height: '14px' }} />
+              </div>
+              <span>Parking</span>
+              <div style={{
+                marginLeft: 'auto', width: '8px', height: '8px', borderRadius: '50%',
+                background: showParking ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground) / 0.3)',
+              }} />
+            </button>
 
             {/* Both toggle */}
             <Button
