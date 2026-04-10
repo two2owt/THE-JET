@@ -30,6 +30,7 @@ const MapboxHeatmap = lazy(() => import("@/components/MapboxHeatmap").then(m => 
 
 // Lazy load interaction-triggered components - not needed for first paint
 const JetCard = lazy(() => import("@/components/JetCard").then(m => ({ default: m.JetCard })));
+const ParkingCard = lazy(() => import("@/components/ParkingCard").then(m => ({ default: m.ParkingCard })));
 const NotificationCard = lazy(() => import("@/components/NotificationCard").then(m => ({ default: m.NotificationCard })));
 
 // Lazy load tab content and dialogs - user-triggered
