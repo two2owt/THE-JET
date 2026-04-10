@@ -1,5 +1,5 @@
 import { memo, useState, useEffect } from "react";
-import { MapPin, Users, Star, TrendingUp, X, Share2 } from "lucide-react";
+import { MapPin, Users, Star, TrendingUp, X, Share2, Car, Navigation, Loader2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { glideHaptic } from "@/lib/haptics";
 import { toast } from "sonner";
@@ -7,6 +7,16 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Venue } from "./MapboxHeatmap";
 import { UpgradePrompt, useFeatureAccess } from "./UpgradePrompt";
 import { shareVenue } from "@/utils/shareUtils";
+
+interface NearbyParking {
+  name: string;
+  address: string;
+  lat: number;
+  lng: number;
+  rating: number | null;
+  isOpen: boolean | null;
+  placeId: string;
+}
 
 interface JetCardProps {
   venue: Venue;
@@ -18,6 +28,8 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
   const [user, setUser] = useState<any>(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const { canAccessSocialFeatures } = useFeatureAccess();
+  const [nearbyParking, setNearbyParking] = useState<NearbyParking[]>([]);
+  const [parkingLoading, setParkingLoading] = useState(false);
   
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -28,6 +40,28 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  // Fetch nearby parking when venue changes
+  useEffect(() => {
+    if (!venue.lat || !venue.lng) return;
+    let cancelled = false;
+    setParkingLoading(true);
+    setNearbyParking([]);
+
+    supabase.functions.invoke('get-nearby-parking', {
+      body: JSON.stringify({ lat: venue.lat, lng: venue.lng, radius: 1000 }),
+    }).then(({ data, error }) => {
+      if (cancelled) return;
+      setParkingLoading(false);
+      if (!error && data?.results) {
+        setNearbyParking(data.results);
+      }
+    }).catch(() => {
+      if (!cancelled) setParkingLoading(false);
+    });
+
+    return () => { cancelled = true; };
+  }, [venue.id, venue.lat, venue.lng]);
 
   const getActivityLevel = (activity: number) => {
     if (activity >= 80) return { label: "🔥 Very Busy", color: 'hsl(var(--hot))' };
@@ -59,6 +93,11 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
     }
   };
 
+  const openParkingDirections = (parking: NearbyParking) => {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${parking.lat},${parking.lng}&destination_place_id=${parking.placeId}&travelmode=driving`;
+    window.open(url, '_blank');
+  };
+
   const activityLevel = getActivityLevel(venue.activity);
 
   return (
@@ -71,7 +110,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
         borderRadius: '16px',
         overflow: 'hidden',
         boxShadow: '0 8px 32px rgba(0,0,0,0.15), 0 0 24px hsl(var(--primary) / 0.1)',
-        maxHeight: '300px',
+        maxHeight: '420px',
         fontFamily: 'var(--font-sans, system-ui, -apple-system, sans-serif)',
         color: 'hsl(var(--foreground))',
       }}
@@ -237,6 +276,90 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
             Get Directions
           </Button>
         </div>
+
+        {/* Nearby Parking Section */}
+        {(parkingLoading || nearbyParking.length > 0) && (
+          <div style={{
+            borderTop: '1px solid hsl(var(--border) / 0.5)',
+            paddingTop: '8px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px',
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '11px',
+              fontWeight: 600,
+              color: 'hsl(var(--muted-foreground))',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+            }}>
+              <Car style={{ width: '12px', height: '12px' }} />
+              <span>Nearby Parking</span>
+              {parkingLoading && <Loader2 style={{ width: '10px', height: '10px', animation: 'spin 1s linear infinite' }} />}
+            </div>
+
+            {nearbyParking.map((parking, i) => (
+              <button
+                key={parking.placeId || i}
+                onClick={() => openParkingDirections(parking)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '6px 8px',
+                  borderRadius: '8px',
+                  background: 'hsl(var(--secondary) / 0.4)',
+                  border: '1px solid hsl(var(--border) / 0.3)',
+                  cursor: 'pointer',
+                  transition: 'background 0.15s',
+                  width: '100%',
+                  textAlign: 'left',
+                }}
+              >
+                <div style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '6px',
+                  background: 'hsl(var(--primary) / 0.15)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}>
+                  <Car style={{ width: '14px', height: '14px', color: 'hsl(var(--primary))' }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    color: 'hsl(var(--foreground))',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}>{parking.name}</div>
+                  <div style={{
+                    fontSize: '10px',
+                    color: 'hsl(var(--muted-foreground))',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {parking.address}
+                    {parking.isOpen !== null && (
+                      <span style={{ color: parking.isOpen ? 'hsl(var(--cool))' : 'hsl(var(--hot))', marginLeft: '4px' }}>
+                        · {parking.isOpen ? 'Open' : 'Closed'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <Navigation style={{ width: '14px', height: '14px', color: 'hsl(var(--primary))', flexShrink: 0 }} />
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <UpgradePrompt
