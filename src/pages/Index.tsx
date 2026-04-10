@@ -418,6 +418,40 @@ const Index = () => {
         document.body
       )}
 
+      {/* ParkingCard - portaled to body like JetCard */}
+      {selectedParking && activeTab === "map" && createPortal(
+        <div 
+          className="animate-fade-in"
+          style={{
+            position: 'fixed',
+            bottom: 'calc(var(--bottom-nav-total-height, 60px) + 8px)',
+            left: '0',
+            width: '100vw',
+            zIndex: 9999,
+            padding: '0 12px',
+            boxSizing: 'border-box',
+            pointerEvents: 'none',
+          }}
+        >
+          <div style={{ pointerEvents: 'auto', width: '100%', maxWidth: '480px', margin: '0 auto', boxSizing: 'border-box' }}>
+            {isMobile && (
+              <div className="flex justify-center pb-2 sm:pb-2.5">
+                <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
+              </div>
+            )}
+            <Suspense fallback={null}>
+              <ParkingCard
+                lat={selectedParking.lat}
+                lng={selectedParking.lng}
+                name={selectedParking.name}
+                onClose={() => setSelectedParking(null)}
+              />
+            </Suspense>
+          </div>
+        </div>,
+        document.body
+      )}
+
       {/* Header config is set via context (useEffect below) */}
 
       {/* Offline Banner - lazy loaded, non-critical */}
