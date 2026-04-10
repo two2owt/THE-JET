@@ -254,6 +254,11 @@ const Index = () => {
     }
   }, [venues, getVenueImage]);
 
+  const handleParkingSelect = useCallback((parking: { lat: number; lng: number; name?: string }) => {
+    setSelectedVenue(null); // Close venue card if open
+    setSelectedParking(parking);
+  }, []);
+
   const handleGetDirections = useCallback(async () => {
     if (!selectedVenue) return;
     // Dynamic import for haptics to reduce bundle
