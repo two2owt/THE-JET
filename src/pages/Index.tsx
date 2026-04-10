@@ -361,7 +361,8 @@ const Index = () => {
               {mapboxToken && (
                 <Suspense fallback={null}>
                   <MapboxHeatmap
-                    onVenueSelect={handleVenueSelect} 
+                    onVenueSelect={handleVenueSelect}
+                    onParkingSelect={handleParkingSelect}
                     venues={venues} 
                     mapboxToken={mapboxToken}
                     selectedCity={selectedCity}
