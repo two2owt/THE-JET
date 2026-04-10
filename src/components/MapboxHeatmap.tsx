@@ -89,6 +89,7 @@ import type { Venue } from "@/types/venue";
 
 interface MapboxHeatmapProps {
   onVenueSelect: (venue: Venue) => void;
+  onParkingSelect?: (parking: { lat: number; lng: number; name?: string }) => void;
   venues: Venue[];
   mapboxToken: string;
   selectedCity: City;
