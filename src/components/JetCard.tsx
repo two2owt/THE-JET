@@ -250,15 +250,35 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
         </div>
 
         {/* Buttons */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }} role="group" aria-label="Venue actions">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }} role="group" aria-label="Venue actions">
           <Button
             onClick={handleShare}
             variant="outline"
             className="w-full font-semibold h-9 text-xs rounded-lg"
             aria-label={`Share ${venue.name}`}
           >
-            <Share2 className="w-3.5 h-3.5 mr-1.5" aria-hidden="true" />
+            <Share2 className="w-3.5 h-3.5 mr-1" aria-hidden="true" />
             Share
+          </Button>
+          <Button
+            onClick={() => {
+              if (!canAccessSocialFeatures()) {
+                setShowUpgradePrompt(true);
+                return;
+              }
+              if (!user) {
+                toast.error("Sign in to send venues to friends");
+                return;
+              }
+              glideHaptic();
+              setShowSendDialog(true);
+            }}
+            variant="outline"
+            className="w-full font-semibold h-9 text-xs rounded-lg border-primary/30 text-primary hover:bg-primary/10"
+            aria-label={`Send ${venue.name} to a friend`}
+          >
+            <Send className="w-3.5 h-3.5 mr-1" aria-hidden="true" />
+            Send
           </Button>
           <Button
             onClick={handleGetDirections}
@@ -275,7 +295,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
             }}
             aria-label={`Get directions to ${venue.name}`}
           >
-            Get Directions
+            Directions
           </Button>
         </div>
 
