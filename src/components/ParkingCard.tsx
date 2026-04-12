@@ -1,6 +1,5 @@
 import { memo, useState, useEffect } from "react";
 import { Car, MapPin, Star, Clock, X, Phone, Globe, Navigation, Loader2 } from "lucide-react";
-import { Button } from "./ui/button";
 import { glideHaptic } from "@/lib/haptics";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -203,36 +202,73 @@ export const ParkingCard = memo(({ lat, lng, name, onClose, onGetDirections }: P
           )}
 
           {/* Actions */}
-          <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-            <Button
-              size="sm"
+          <div style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
+            <button
               onClick={handleGetDirections}
-              style={{ flex: 1, fontSize: '12px', gap: '6px' }}
+              style={{
+                flex: 1,
+                background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
+                color: 'hsl(var(--primary-foreground))',
+                fontWeight: 600,
+                height: '36px',
+                fontSize: '12px',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '4px',
+              }}
             >
               <Navigation style={{ width: '14px', height: '14px' }} />
               Directions
-            </Button>
+            </button>
             {parking.phone && (
-              <Button
-                size="sm"
-                variant="outline"
+              <button
                 onClick={() => window.open(`tel:${parking.phone}`, '_self')}
-                style={{ fontSize: '12px', gap: '6px' }}
+                style={{
+                  background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
+                  color: 'hsl(var(--primary-foreground))',
+                  fontWeight: 600,
+                  height: '36px',
+                  fontSize: '12px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                  padding: '0 12px',
+                }}
               >
                 <Phone style={{ width: '14px', height: '14px' }} />
                 Call
-              </Button>
+              </button>
             )}
             {parking.website && (
-              <Button
-                size="sm"
-                variant="outline"
+              <button
                 onClick={() => window.open(parking.website!, '_blank')}
-                style={{ fontSize: '12px', gap: '6px' }}
+                style={{
+                  background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
+                  color: 'hsl(var(--primary-foreground))',
+                  fontWeight: 600,
+                  height: '36px',
+                  fontSize: '12px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                  padding: '0 12px',
+                }}
               >
                 <Globe style={{ width: '14px', height: '14px' }} />
                 Web
-              </Button>
+              </button>
             )}
           </div>
         </div>

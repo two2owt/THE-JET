@@ -1,6 +1,5 @@
 import { memo, useState, useEffect } from "react";
 import { MapPin, Users, Star, TrendingUp, X, Share2, Send, Car, Navigation, Loader2 } from "lucide-react";
-import { Button } from "./ui/button";
 import { glideHaptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -251,16 +250,29 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
 
         {/* Buttons */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }} role="group" aria-label="Venue actions">
-          <Button
+          <button
             onClick={handleShare}
-            variant="outline"
-            className="w-full font-semibold h-9 text-xs rounded-lg"
+            style={{
+              width: '100%',
+              background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
+              color: 'hsl(var(--primary-foreground))',
+              fontWeight: 600,
+              height: '36px',
+              fontSize: '12px',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px',
+            }}
             aria-label={`Share ${venue.name}`}
           >
-            <Share2 className="w-3.5 h-3.5 mr-1" aria-hidden="true" />
+            <Share2 style={{ width: '14px', height: '14px' }} aria-hidden="true" />
             Share
-          </Button>
-          <Button
+          </button>
+          <button
             onClick={() => {
               if (!canAccessSocialFeatures()) {
                 setShowUpgradePrompt(true);
@@ -273,14 +285,27 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
               glideHaptic();
               setShowSendDialog(true);
             }}
-            variant="outline"
-            className="w-full font-semibold h-9 text-xs rounded-lg border-primary/30 text-primary hover:bg-primary/10"
+            style={{
+              width: '100%',
+              background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
+              color: 'hsl(var(--primary-foreground))',
+              fontWeight: 600,
+              height: '36px',
+              fontSize: '12px',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px',
+            }}
             aria-label={`Send ${venue.name} to a friend`}
           >
-            <Send className="w-3.5 h-3.5 mr-1" aria-hidden="true" />
+            <Send style={{ width: '14px', height: '14px' }} aria-hidden="true" />
             Send
-          </Button>
-          <Button
+          </button>
+          <button
             onClick={handleGetDirections}
             style={{
               width: '100%',
@@ -292,11 +317,16 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
               borderRadius: '8px',
               border: 'none',
               cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px',
             }}
             aria-label={`Get directions to ${venue.name}`}
           >
+            <Navigation style={{ width: '14px', height: '14px' }} aria-hidden="true" />
             Directions
-          </Button>
+          </button>
         </div>
 
         {/* Nearby Parking Section */}
