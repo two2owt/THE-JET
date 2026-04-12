@@ -390,6 +390,21 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
         isOpen={showUpgradePrompt}
         onClose={() => setShowUpgradePrompt(false)}
       />
+
+      {user && (
+        <ShareToFriendDialog
+          isOpen={showSendDialog}
+          onClose={() => setShowSendDialog(false)}
+          userId={user.id}
+          venue={{
+            id: venue.id,
+            name: venue.name,
+            neighborhood: venue.neighborhood,
+            category: venue.category,
+            activity: venue.activity,
+          }}
+        />
+      )}
     </article>
   );
 });
