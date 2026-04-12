@@ -9,7 +9,7 @@ const Switch = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SwitchPrimitives.Root
     className={cn(
-      "peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors data-[state=checked]:bg-primary data-[state=unchecked]:bg-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
+      "peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border border-border transition-colors data-[state=checked]:bg-primary data-[state=checked]:border-primary data-[state=unchecked]:bg-transparent data-[state=unchecked]:border-muted-foreground/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
       className,
     )}
     style={{
@@ -20,15 +20,14 @@ const Switch = React.forwardRef<
       cursor: 'pointer',
       alignItems: 'center',
       borderRadius: '9999px',
-      border: '2px solid transparent',
-      transition: 'background-color 150ms ease',
+      transition: 'background-color 150ms ease, border-color 150ms ease',
     }}
     {...props}
     ref={ref}
   >
     <SwitchPrimitives.Thumb
       className={cn(
-        "pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0",
+        "pointer-events-none block h-5 w-5 rounded-full shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0 data-[state=checked]:bg-primary-foreground data-[state=unchecked]:bg-muted-foreground/60",
       )}
       style={{
         pointerEvents: 'none',
@@ -36,9 +35,8 @@ const Switch = React.forwardRef<
         height: '20px',
         width: '20px',
         borderRadius: '9999px',
-        background: 'hsl(var(--background))',
-        boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
-        transition: 'transform 150ms ease',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+        transition: 'transform 150ms ease, background-color 150ms ease',
       }}
     />
   </SwitchPrimitives.Root>
