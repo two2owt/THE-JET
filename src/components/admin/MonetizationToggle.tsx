@@ -56,7 +56,7 @@ export const MonetizationToggle = () => {
         <div className="space-y-3">
           <div 
             className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
-              override === "enabled" ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/50"
+              override === "enabled" ? "border-primary bg-primary/5" : "border-border/50 bg-background/50 backdrop-blur-sm hover:border-primary/50"
             }`}
             onClick={() => handleToggle("enabled")}
           >
@@ -69,7 +69,7 @@ export const MonetizationToggle = () => {
 
           <div 
             className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
-              override === "disabled" ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/50"
+              override === "disabled" ? "border-primary bg-primary/5" : "border-border/50 bg-background/50 backdrop-blur-sm hover:border-primary/50"
             }`}
             onClick={() => handleToggle("disabled")}
           >
