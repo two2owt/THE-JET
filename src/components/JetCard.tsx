@@ -1,5 +1,5 @@
 import { memo, useState, useEffect } from "react";
-import { MapPin, Users, Star, TrendingUp, X, Share2, Car, Navigation, Loader2 } from "lucide-react";
+import { MapPin, Users, Star, TrendingUp, X, Share2, Send, Car, Navigation, Loader2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { glideHaptic } from "@/lib/haptics";
 import { toast } from "sonner";
@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Venue } from "./MapboxHeatmap";
 import { UpgradePrompt, useFeatureAccess } from "./UpgradePrompt";
 import { shareVenue } from "@/utils/shareUtils";
+import { ShareToFriendDialog } from "./ShareToFriendDialog";
 
 interface NearbyParking {
   name: string;
@@ -27,6 +28,7 @@ interface JetCardProps {
 export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) => {
   const [user, setUser] = useState<any>(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
+  const [showSendDialog, setShowSendDialog] = useState(false);
   const { canAccessSocialFeatures } = useFeatureAccess();
   const [nearbyParking, setNearbyParking] = useState<NearbyParking[]>([]);
   const [parkingLoading, setParkingLoading] = useState(false);
@@ -248,15 +250,35 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
         </div>
 
         {/* Buttons */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }} role="group" aria-label="Venue actions">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }} role="group" aria-label="Venue actions">
           <Button
             onClick={handleShare}
             variant="outline"
             className="w-full font-semibold h-9 text-xs rounded-lg"
             aria-label={`Share ${venue.name}`}
           >
-            <Share2 className="w-3.5 h-3.5 mr-1.5" aria-hidden="true" />
+            <Share2 className="w-3.5 h-3.5 mr-1" aria-hidden="true" />
             Share
+          </Button>
+          <Button
+            onClick={() => {
+              if (!canAccessSocialFeatures()) {
+                setShowUpgradePrompt(true);
+                return;
+              }
+              if (!user) {
+                toast.error("Sign in to send venues to friends");
+                return;
+              }
+              glideHaptic();
+              setShowSendDialog(true);
+            }}
+            variant="outline"
+            className="w-full font-semibold h-9 text-xs rounded-lg border-primary/30 text-primary hover:bg-primary/10"
+            aria-label={`Send ${venue.name} to a friend`}
+          >
+            <Send className="w-3.5 h-3.5 mr-1" aria-hidden="true" />
+            Send
           </Button>
           <Button
             onClick={handleGetDirections}
@@ -273,7 +295,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
             }}
             aria-label={`Get directions to ${venue.name}`}
           >
-            Get Directions
+            Directions
           </Button>
         </div>
 
@@ -368,6 +390,21 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
         isOpen={showUpgradePrompt}
         onClose={() => setShowUpgradePrompt(false)}
       />
+
+      {user && (
+        <ShareToFriendDialog
+          isOpen={showSendDialog}
+          onClose={() => setShowSendDialog(false)}
+          userId={user.id}
+          venue={{
+            id: venue.id,
+            name: venue.name,
+            neighborhood: venue.neighborhood,
+            category: venue.category,
+            activity: venue.activity,
+          }}
+        />
+      )}
     </article>
   );
 });
