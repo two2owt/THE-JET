@@ -119,12 +119,14 @@ export function ChatDialog({
                       }`}
                     >
                       {msg.image_url && (
-                        <img
-                          src={msg.image_url}
-                          alt="Shared image"
-                          className="rounded-lg max-w-full mb-1.5"
-                          loading="lazy"
-                        />
+                        <div className="overflow-hidden rounded-lg mb-1.5 max-w-[240px]">
+                          <img
+                            src={msg.image_url}
+                            alt="Shared image"
+                            className="w-full h-auto max-h-[280px] object-cover rounded-lg"
+                            loading="lazy"
+                          />
+                        </div>
                       )}
                       {msg.content && (
                         <p className="text-sm whitespace-pre-wrap break-words">
