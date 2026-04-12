@@ -495,11 +495,11 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
       <div className="space-y-3">
         <Label className="text-sm">Live Discovery</Label>
         
-        <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+        <div className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-background/50 backdrop-blur-sm">
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-primary" />
             <div>
-              <p className="font-medium text-xs">Trending Venues</p>
+              <p className="font-medium text-xs text-foreground">Trending Venues</p>
               <p className="text-[10px] text-muted-foreground">See what's popular now</p>
             </div>
           </div>
@@ -509,11 +509,11 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
           />
         </div>
 
-        <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+        <div className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-background/50 backdrop-blur-sm">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-primary" />
             <div>
-              <p className="font-medium text-xs">Activity in Your Area</p>
+              <p className="font-medium text-xs text-foreground">Activity in Your Area</p>
               <p className="text-[10px] text-muted-foreground">Get location-based alerts</p>
             </div>
           </div>
