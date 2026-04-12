@@ -75,7 +75,7 @@ export default function Messages() {
 
   return (
     <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
-      <div className="max-w-2xl mx-auto w-full h-full flex flex-col">
+      <div className="max-w-2xl mx-auto w-full h-full flex flex-col overflow-hidden">
         {activeFriendId ? (
           <ChatView
             userId={user.id}
@@ -248,7 +248,7 @@ function ChatView({
       </div>
 
       {/* Messages area */}
-      <ScrollArea className="flex-1 px-4 py-3">
+      <ScrollArea className="flex-1 px-4 py-3 w-full overflow-x-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <p className="text-muted-foreground text-sm">Loading messages…</p>
@@ -261,7 +261,7 @@ function ChatView({
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3 w-full overflow-hidden">
             {messages.map((msg) => {
               const isMine = msg.sender_id === userId;
               return (
@@ -270,21 +270,28 @@ function ChatView({
                   className={`flex ${isMine ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[75%] rounded-2xl px-3.5 py-2 ${
+                    className={`max-w-[75%] min-w-0 overflow-hidden rounded-2xl px-3.5 py-2 ${
                       isMine
                         ? "bg-primary text-primary-foreground rounded-br-md"
                         : "bg-muted text-foreground rounded-bl-md"
                     }`}
                   >
                     {msg.image_url && (
-                      <div className="overflow-hidden rounded-lg mb-1.5 max-w-[240px]">
-                        <img
-                          src={msg.image_url}
-                          alt="Shared image"
-                          className="w-full h-auto max-h-[280px] object-cover rounded-lg"
-                          loading="lazy"
-                        />
-                      </div>
+                      <img
+                        src={msg.image_url}
+                        alt="Shared image"
+                        loading="lazy"
+                        style={{
+                          display: 'block',
+                          maxWidth: '240px',
+                          maxHeight: '280px',
+                          width: '100%',
+                          height: 'auto',
+                          objectFit: 'cover',
+                          borderRadius: '8px',
+                          marginBottom: '6px',
+                        }}
+                      />
                     )}
                     {msg.content && (
                       <p className="text-sm whitespace-pre-wrap break-words">
