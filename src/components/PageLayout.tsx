@@ -115,7 +115,8 @@ export function PageLayout({
           height: 'var(--main-height, calc(100dvh - 52px - 60px))',
           minHeight: 'var(--main-height, calc(100dvh - 52px - 60px))',
           maxHeight: 'var(--main-height, calc(100dvh - 52px - 60px))',
-          contain: 'style',
+          // CSS containment for performance - use layout+style (not strict) to allow scrolling
+          contain: 'layout style',
           // GPU layer for smooth transitions
           transform: 'translateZ(0)',
           boxSizing: 'border-box',
