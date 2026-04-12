@@ -137,9 +137,9 @@ function ConversationList({
               onClick={() => onSelect(c.friendId)}
               className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-left"
             >
-              <div className="relative flex-shrink-0">
-                <Avatar className="w-12 h-12">
-                  <AvatarImage src={c.friendAvatar || undefined} alt={c.friendName} />
+              <div className="relative" style={{ flexShrink: 0, width: '48px', height: '48px' }}>
+                <Avatar className="w-12 h-12" style={{ width: '48px', height: '48px', minWidth: '48px', minHeight: '48px' }}>
+                  <AvatarImage src={c.friendAvatar || undefined} alt={c.friendName} style={{ width: '48px', height: '48px', objectFit: 'cover' }} />
                   <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary">
                     {c.friendName.charAt(0).toUpperCase()}
                   </AvatarFallback>
@@ -236,8 +236,8 @@ function ChatView({
         <Button variant="ghost" size="icon" onClick={onBack} className="flex-shrink-0">
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <Avatar className="w-9 h-9">
-          <AvatarImage src={friend?.friendAvatar || undefined} alt={friend?.friendName || "Friend"} />
+        <Avatar className="w-9 h-9" style={{ width: '36px', height: '36px', minWidth: '36px', minHeight: '36px', flexShrink: 0 }}>
+          <AvatarImage src={friend?.friendAvatar || undefined} alt={friend?.friendName || "Friend"} style={{ width: '36px', height: '36px', objectFit: 'cover' }} />
           <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary text-sm">
             {(friend?.friendName || "F").charAt(0).toUpperCase()}
           </AvatarFallback>
