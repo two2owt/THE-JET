@@ -112,7 +112,7 @@ export function ChatDialog({
                     className={`flex ${isMine ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-[75%] rounded-2xl px-3.5 py-2 ${
+                      className={`max-w-[75%] min-w-0 overflow-hidden rounded-2xl px-3.5 py-2 ${
                         isMine
                           ? "bg-primary text-primary-foreground rounded-br-md"
                           : "bg-muted text-foreground rounded-bl-md"
