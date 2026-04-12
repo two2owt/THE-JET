@@ -261,7 +261,7 @@ function ChatView({
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3 w-full overflow-hidden">
             {messages.map((msg) => {
               const isMine = msg.sender_id === userId;
               return (
