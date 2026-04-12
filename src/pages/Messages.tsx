@@ -277,14 +277,21 @@ function ChatView({
                     }`}
                   >
                     {msg.image_url && (
-                      <div className="overflow-hidden rounded-lg mb-1.5 max-w-[240px]">
-                        <img
-                          src={msg.image_url}
-                          alt="Shared image"
-                          className="w-full h-auto max-h-[280px] object-cover rounded-lg"
-                          loading="lazy"
-                        />
-                      </div>
+                      <img
+                        src={msg.image_url}
+                        alt="Shared image"
+                        loading="lazy"
+                        style={{
+                          display: 'block',
+                          maxWidth: '240px',
+                          maxHeight: '280px',
+                          width: '100%',
+                          height: 'auto',
+                          objectFit: 'cover',
+                          borderRadius: '8px',
+                          marginBottom: '6px',
+                        }}
+                      />
                     )}
                     {msg.content && (
                       <p className="text-sm whitespace-pre-wrap break-words">
