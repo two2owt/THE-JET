@@ -160,7 +160,8 @@ export function ShareToFriendDialog({
             </div>
           )}
         </ScrollArea>
-      </DialogContent>
-    </Dialog>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }
