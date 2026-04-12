@@ -236,8 +236,8 @@ function ChatView({
         <Button variant="ghost" size="icon" onClick={onBack} className="flex-shrink-0">
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <Avatar className="w-9 h-9">
-          <AvatarImage src={friend?.friendAvatar || undefined} alt={friend?.friendName || "Friend"} />
+        <Avatar className="w-9 h-9" style={{ width: '36px', height: '36px', minWidth: '36px', minHeight: '36px', flexShrink: 0 }}>
+          <AvatarImage src={friend?.friendAvatar || undefined} alt={friend?.friendName || "Friend"} style={{ width: '36px', height: '36px', objectFit: 'cover' }} />
           <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary text-sm">
             {(friend?.friendName || "F").charAt(0).toUpperCase()}
           </AvatarFallback>
