@@ -1,7 +1,6 @@
 import { memo, useState, useEffect } from "react";
 import { MapPin, Users, Star, TrendingUp, X, Share2, Send, Car, Navigation, Loader2 } from "lucide-react";
 import { glideHaptic } from "@/lib/haptics";
-import { glideHaptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Venue } from "./MapboxHeatmap";
