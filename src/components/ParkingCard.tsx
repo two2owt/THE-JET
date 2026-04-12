@@ -67,10 +67,17 @@ export const ParkingCard = memo(({ lat, lng, name, onClose, onGetDirections }: P
     await glideHaptic();
     if (onGetDirections) {
       onGetDirections();
+      return;
+    }
+    // Platform-aware turn-by-turn navigation
+    const destination = encodeURIComponent(parking?.name || `${lat},${lng}`);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (isIOS) {
+      // Apple Maps with driving directions
+      window.open(`maps://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`, '_blank');
     } else {
-      // Open in Google Maps
-      const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-      window.open(url, '_blank');
+      // Google Maps with driving mode for turn-by-turn
+      window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_place_id=${parking?.placeId || ''}&travelmode=driving`, '_blank');
     }
   };
 
