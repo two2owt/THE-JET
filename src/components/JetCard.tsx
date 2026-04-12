@@ -1,5 +1,5 @@
 import { memo, useState, useEffect } from "react";
-import { MapPin, Users, Star, TrendingUp, X, Share2, Car, Navigation, Loader2 } from "lucide-react";
+import { MapPin, Users, Star, TrendingUp, X, Share2, Send, Car, Navigation, Loader2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { glideHaptic } from "@/lib/haptics";
 import { toast } from "sonner";
@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Venue } from "./MapboxHeatmap";
 import { UpgradePrompt, useFeatureAccess } from "./UpgradePrompt";
 import { shareVenue } from "@/utils/shareUtils";
+import { ShareToFriendDialog } from "./ShareToFriendDialog";
 
 interface NearbyParking {
   name: string;
