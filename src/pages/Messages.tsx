@@ -248,7 +248,7 @@ function ChatView({
       </div>
 
       {/* Messages area */}
-      <ScrollArea className="flex-1 px-4 py-3">
+      <ScrollArea className="flex-1 px-4 py-3 w-full overflow-x-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <p className="text-muted-foreground text-sm">Loading messages…</p>
