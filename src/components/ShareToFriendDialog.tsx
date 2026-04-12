@@ -65,7 +65,7 @@ export function ShareToFriendDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-sm max-h-[70vh] flex flex-col p-0 gap-0 bg-card/95 backdrop-blur-xl border-primary/20">
+      <DialogContent className="sm:max-w-sm max-h-[70vh] flex flex-col p-0 gap-0 bg-card/95 backdrop-blur-xl border-primary/20 z-[10000]">
         <DialogHeader className="px-4 py-3 border-b border-border/50">
           <DialogTitle className="text-base font-semibold flex items-center gap-2">
             <Send className="w-4 h-4 text-primary" />
