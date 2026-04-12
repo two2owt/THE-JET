@@ -75,7 +75,7 @@ export default function Messages() {
 
   return (
     <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
-      <div className="max-w-2xl mx-auto w-full h-full flex flex-col">
+      <div className="max-w-2xl mx-auto w-full h-full flex flex-col overflow-hidden">
         {activeFriendId ? (
           <ChatView
             userId={user.id}
