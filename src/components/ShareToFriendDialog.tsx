@@ -112,8 +112,8 @@ export function ShareToFriendDialog({
                     key={conn.id}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-secondary/40 transition-colors"
                   >
-                    <Avatar className="w-9 h-9">
-                      <AvatarImage src={profile?.avatar_url || undefined} />
+                    <Avatar className="w-9 h-9" style={{ width: '36px', height: '36px', minWidth: '36px', minHeight: '36px', flexShrink: 0 }}>
+                      <AvatarImage src={profile?.avatar_url || undefined} style={{ width: '36px', height: '36px', objectFit: 'cover' }} />
                       <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
                         {(profile?.display_name || "?").charAt(0).toUpperCase()}
                       </AvatarFallback>
