@@ -1,6 +1,6 @@
 import { memo, useState, useEffect } from "react";
 import { Car, MapPin, Star, Clock, X, Phone, Globe, Navigation, Loader2 } from "lucide-react";
-import { Button } from "./ui/button";
+import { glideHaptic } from "@/lib/haptics";
 import { glideHaptic } from "@/lib/haptics";
 import { supabase } from "@/integrations/supabase/client";
 
