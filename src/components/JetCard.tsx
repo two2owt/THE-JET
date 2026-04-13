@@ -274,10 +274,6 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
           </button>
           <button
             onClick={() => {
-              if (!canAccessSocialFeatures()) {
-                setShowUpgradePrompt(true);
-                return;
-              }
               if (!user) {
                 toast.error("Sign in to send venues to friends");
                 return;
