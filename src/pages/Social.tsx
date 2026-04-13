@@ -353,14 +353,18 @@ export default function Social() {
                     {profile.display_name || "User"}
                   </p>
                 </div>
-                <Button
-                  size="sm"
+                <button
                   onClick={() => handleSendRequest(profile.id)}
-                  style={{ flexShrink: 0, height: '36px', padding: '0 12px', fontSize: '13px' }}
+                  style={{
+                    flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                    height: '36px', padding: '0 14px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+                    background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
+                    color: 'hsl(var(--primary-foreground))', fontWeight: 600, fontSize: '13px',
+                  }}
                 >
-                  <UserPlus style={{ width: '14px', height: '14px', marginRight: '6px' }} />
+                  <UserPlus style={{ width: '14px', height: '14px' }} />
                   Add
-                </Button>
+                </button>
               </div>
             ))}
           </div>
