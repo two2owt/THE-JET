@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useConnections } from "@/hooks/useConnections";
 import { Users, UserPlus, Check, X, UserX, Crown, MessageCircle } from "lucide-react";
-import { Users, UserPlus, Check, X, UserX, Crown, MessageCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
