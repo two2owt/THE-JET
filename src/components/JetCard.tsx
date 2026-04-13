@@ -25,10 +25,9 @@ interface JetCardProps {
   onSendToFriend?: () => void;
 }
 
-export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) => {
+export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }: JetCardProps) => {
   const [user, setUser] = useState<any>(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
-  const [showSendDialog, setShowSendDialog] = useState(false);
   const { canAccessSocialFeatures } = useFeatureAccess();
   const [nearbyParking, setNearbyParking] = useState<NearbyParking[]>([]);
   const [parkingLoading, setParkingLoading] = useState(false);
