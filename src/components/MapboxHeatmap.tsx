@@ -2644,26 +2644,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues, mapboxTo
               }} />
             </button>
 
-            {/* Both toggle */}
-            <Button
-              onClick={() => {
-                triggerHaptic('heavy');
-                const bothOn = showDensityLayer && showMovementPaths;
-                setShowDensityLayer(!bothOn);
-                setShowMovementPaths(!bothOn);
-                if (!bothOn) {
-                  setTimeFilter('all');
-                  setHourFilter(undefined);
-                  setDayFilter(undefined);
-                }
-              }}
-              variant={(showDensityLayer && showMovementPaths) ? "default" : "outline"}
-              size="sm"
-              className="w-full h-7 text-[10px] font-semibold"
-            >
-              <TrendingUp className="w-3 h-3 mr-1" />
-              {(showDensityLayer && showMovementPaths) ? "All On" : "Show Both"}
-            </Button>
           </div>
         </div>
 
