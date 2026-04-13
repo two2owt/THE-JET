@@ -36,6 +36,7 @@ const NotificationCard = lazy(() => import("@/components/NotificationCard").then
 // Lazy load tab content and dialogs - user-triggered
 const ExploreTab = lazy(() => import("@/components/ExploreTab").then(m => ({ default: m.ExploreTab })));
 const DirectionsDialog = lazy(() => import("@/components/DirectionsDialog"));
+const ShareToFriendDialog = lazy(() => import("@/components/ShareToFriendDialog").then(m => ({ default: m.ShareToFriendDialog })));
 
 // Lazy load non-critical UI - deferred until after FCP
 const OfflineBanner = lazy(() => import("@/components/OfflineBanner").then(m => ({ default: m.OfflineBanner })));
@@ -81,6 +82,8 @@ const Index = () => {
   const [selectedCity, setSelectedCity] = useState<City>(CITIES[0]); // Default to Charlotte
   const [detectedLocationName, setDetectedLocationName] = useState<string | null>(null); // Actual city from reverse geocoding
   const [showDirectionsDialog, setShowDirectionsDialog] = useState(false);
+  const [showSendDialog, setShowSendDialog] = useState(false);
+  const [sendDialogUserId, setSendDialogUserId] = useState<string | null>(null);
   const [deepLinkedDeal, setDeepLinkedDeal] = useState<any>(null);
   const { token: mapboxToken, loading: mapboxLoading, error: mapboxError } = useMapboxToken();
   const { getVenueImage } = useVenueImages();
@@ -411,6 +414,15 @@ const Index = () => {
                 venue={selectedVenue} 
                 onGetDirections={handleGetDirections}
                 onClose={() => setSelectedVenue(null)}
+                onSendToFriend={async () => {
+                  const { data: { session } } = await supabase.auth.getSession();
+                  if (!session?.user) {
+                    toast.error("Sign in to send venues to friends");
+                    return;
+                  }
+                  setSendDialogUserId(session.user.id);
+                  setShowSendDialog(true);
+                }}
               />
             </Suspense>
           </div>
@@ -565,6 +577,24 @@ const Index = () => {
           venue={selectedVenue}
         />
       </Suspense>
+
+      {/* Send to Friend Dialog - rendered outside JetCard portal */}
+      {sendDialogUserId && selectedVenue && (
+        <Suspense fallback={null}>
+          <ShareToFriendDialog
+            isOpen={showSendDialog}
+            onClose={() => setShowSendDialog(false)}
+            userId={sendDialogUserId}
+            venue={{
+              id: selectedVenue.id,
+              name: selectedVenue.name,
+              neighborhood: selectedVenue.neighborhood,
+              category: selectedVenue.category,
+              activity: selectedVenue.activity,
+            }}
+          />
+        </Suspense>
+      )}
 
       {/* PWA Install Prompt - lazy loaded */}
       <Suspense fallback={<PWAInstallSkeleton />}>

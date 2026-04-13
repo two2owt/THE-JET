@@ -22,12 +22,12 @@ interface JetCardProps {
   venue: Venue;
   onGetDirections: () => void;
   onClose?: () => void;
+  onSendToFriend?: () => void;
 }
 
-export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) => {
+export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }: JetCardProps) => {
   const [user, setUser] = useState<any>(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
-  const [showSendDialog, setShowSendDialog] = useState(false);
   const { canAccessSocialFeatures } = useFeatureAccess();
   const [nearbyParking, setNearbyParking] = useState<NearbyParking[]>([]);
   const [parkingLoading, setParkingLoading] = useState(false);
@@ -274,16 +274,8 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
           </button>
           <button
             onClick={() => {
-              if (!canAccessSocialFeatures()) {
-                setShowUpgradePrompt(true);
-                return;
-              }
-              if (!user) {
-                toast.error("Sign in to send venues to friends");
-                return;
-              }
               glideHaptic();
-              setShowSendDialog(true);
+              if (onSendToFriend) onSendToFriend();
             }}
             style={{
               width: '100%',
@@ -421,20 +413,6 @@ export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) 
         onClose={() => setShowUpgradePrompt(false)}
       />
 
-      {user && (
-        <ShareToFriendDialog
-          isOpen={showSendDialog}
-          onClose={() => setShowSendDialog(false)}
-          userId={user.id}
-          venue={{
-            id: venue.id,
-            name: venue.name,
-            neighborhood: venue.neighborhood,
-            category: venue.category,
-            activity: venue.activity,
-          }}
-        />
-      )}
     </article>
   );
 });
