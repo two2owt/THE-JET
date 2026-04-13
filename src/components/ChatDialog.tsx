@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { MessageContent } from "@/components/chat/MessageContent";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -136,9 +137,7 @@ export function ChatDialog({
                         />
                       )}
                       {msg.content && (
-                        <p className="text-sm whitespace-pre-wrap break-words">
-                          {msg.content}
-                        </p>
+                        <MessageContent content={msg.content} isMine={isMine} />
                       )}
                       <div
                         className={`flex items-center gap-1 mt-1 ${
