@@ -231,7 +231,17 @@ export const Header = () => {
               placeholder="Search venues..."
               value={searchQuery}
               onChange={handleSearchChange}
-              onFocus={() => searchQuery.trim() && setShowResults(true)}
+              onFocus={(e) => {
+                searchQuery.trim() && setShowResults(true);
+                e.currentTarget.style.background = 'hsl(var(--muted) / 0.55)';
+                e.currentTarget.style.borderColor = 'hsl(var(--primary) / 0.5)';
+                e.currentTarget.style.boxShadow = '0 0 0 3px hsl(var(--primary) / 0.1), 0 0 12px hsl(var(--primary) / 0.08)';
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.background = 'hsl(var(--muted) / 0.35)';
+                e.currentTarget.style.borderColor = 'hsl(var(--border) / 0.5)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
               maxLength={100}
               aria-label="Search venues and deals"
               autoFocus={isMobile && searchExpanded}
@@ -241,15 +251,13 @@ export const Header = () => {
                 paddingLeft: '36px',
                 paddingRight: '36px',
                 borderRadius: '9999px',
-                border: '1px solid hsl(var(--border) / 0.5)',
+                border: '1.5px solid hsl(var(--border) / 0.5)',
                 background: 'hsl(var(--muted) / 0.35)',
                 fontSize: '14px',
                 color: 'hsl(var(--foreground))',
                 outline: 'none',
-                transition: 'background 0.2s, border-color 0.2s, box-shadow 0.2s',
+                transition: 'background 0.2s, border-color 0.3s, box-shadow 0.3s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'hsl(var(--muted) / 0.55)'; }}
-              onMouseLeave={e => { if (document.activeElement !== e.currentTarget) e.currentTarget.style.background = 'hsl(var(--muted) / 0.35)'; }}
             />
             {isMobile && searchExpanded && (
               <button
@@ -293,29 +301,32 @@ export const Header = () => {
         {/* Avatar — settings link */}
         <button
           onClick={() => navigate('/settings')}
-          className="group rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           aria-label="Open settings"
           style={{
             position: 'relative',
             flexShrink: 0,
-            overflow: 'hidden',
             borderRadius: '9999px',
-            width: 'clamp(32px, 5vw, 40px)',
-            height: 'clamp(32px, 5vw, 40px)',
+            width: 'clamp(36px, 5vw, 42px)',
+            height: 'clamp(36px, 5vw, 42px)',
+            padding: '2px',
+            background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))',
             opacity: mounted ? 1 : 0,
             transform: mounted ? 'translateX(0)' : 'translateX(8px)',
-            transition: 'opacity 0.4s ease-out 0.2s, transform 0.4s ease-out 0.2s',
+            transition: 'opacity 0.4s ease-out 0.2s, transform 0.4s ease-out 0.2s, box-shadow 0.3s ease',
+            boxShadow: '0 0 12px hsl(var(--primary) / 0.2)',
           }}
+          onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 0 20px hsl(var(--primary) / 0.4)'; }}
+          onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 0 12px hsl(var(--primary) / 0.2)'; }}
         >
-          <div
-            className="absolute -inset-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-            style={{
-              background: 'linear-gradient(135deg, hsl(var(--primary) / 0.3), hsl(var(--accent) / 0.3))',
-              filter: 'blur(8px)',
-            }}
-          />
           <Avatar
-            style={{ width: '100%', height: '100%', borderRadius: '9999px', overflow: 'hidden' }}
+            style={{
+              width: '100%',
+              height: '100%',
+              borderRadius: '9999px',
+              overflow: 'hidden',
+              border: '2px solid hsl(var(--background))',
+            }}
           >
             <AvatarImage src={avatarUrl || ""} alt="Profile" className="object-cover rounded-full" style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
             <AvatarFallback
