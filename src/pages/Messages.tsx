@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { MessageContent } from "@/components/chat/MessageContent";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router";
 import { PageLayout } from "@/components/PageLayout";
@@ -294,9 +295,7 @@ function ChatView({
                       />
                     )}
                     {msg.content && (
-                      <p className="text-sm whitespace-pre-wrap break-words">
-                        {msg.content}
-                      </p>
+                      <MessageContent content={msg.content} isMine={isMine} />
                     )}
                     <div
                       className={`flex items-center gap-1 mt-1 ${
