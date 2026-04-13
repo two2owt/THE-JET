@@ -414,6 +414,15 @@ const Index = () => {
                 venue={selectedVenue} 
                 onGetDirections={handleGetDirections}
                 onClose={() => setSelectedVenue(null)}
+                onSendToFriend={async () => {
+                  const { data: { session } } = await supabase.auth.getSession();
+                  if (!session?.user) {
+                    toast.error("Sign in to send venues to friends");
+                    return;
+                  }
+                  setSendDialogUserId(session.user.id);
+                  setShowSendDialog(true);
+                }}
               />
             </Suspense>
           </div>
