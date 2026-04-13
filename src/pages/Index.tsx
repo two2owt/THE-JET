@@ -578,6 +578,24 @@ const Index = () => {
         />
       </Suspense>
 
+      {/* Send to Friend Dialog - rendered outside JetCard portal */}
+      {sendDialogUserId && selectedVenue && (
+        <Suspense fallback={null}>
+          <ShareToFriendDialog
+            isOpen={showSendDialog}
+            onClose={() => setShowSendDialog(false)}
+            userId={sendDialogUserId}
+            venue={{
+              id: selectedVenue.id,
+              name: selectedVenue.name,
+              neighborhood: selectedVenue.neighborhood,
+              category: selectedVenue.category,
+              activity: selectedVenue.activity,
+            }}
+          />
+        </Suspense>
+      )}
+
       {/* PWA Install Prompt - lazy loaded */}
       <Suspense fallback={<PWAInstallSkeleton />}>
         <PWAInstallPrompt />
