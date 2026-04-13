@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useConnections } from "@/hooks/useConnections";
 import { Users, UserPlus, Check, X, UserX, Crown, MessageCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -173,10 +172,23 @@ export default function Social() {
     <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
       <div style={{ maxWidth: '768px', margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)', display: 'flex', flexDirection: 'column', gap: 'clamp(24px, 4vw, 32px)' }}>
         {/* Messages shortcut */}
-        <Button
-          variant="outline"
+        <button
           onClick={() => navigate("/messages")}
-          style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+          style={{
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            height: '44px',
+            padding: '0 16px',
+            borderRadius: '12px',
+            background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
+            color: 'hsl(var(--primary-foreground))',
+            fontWeight: 600,
+            fontSize: '14px',
+            border: 'none',
+            cursor: 'pointer',
+          }}
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <MessageCircle style={{ width: '16px', height: '16px' }} />
@@ -187,7 +199,7 @@ export default function Social() {
               {Object.values(unreadCounts).reduce((a, b) => a + b, 0)}
             </Badge>
           )}
-        </Button>
+        </button>
 
         {/* Pending Requests */}
         {pendingRequests.length > 0 && (
@@ -215,12 +227,29 @@ export default function Social() {
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-                    <Button size="sm" onClick={() => handleAcceptRequest(request.id)} style={{ minHeight: '44px', padding: '0 12px' }}>
-                      <Check className="w-4 h-4 mr-1" /> Accept
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleRemoveConnection(request.id)} style={{ minHeight: '44px', padding: '0 12px' }}>
-                      <X className="w-4 h-4 mr-1" /> Decline
-                    </Button>
+                    <button
+                      onClick={() => handleAcceptRequest(request.id)}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
+                        height: '36px', padding: '0 14px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+                        background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
+                        color: 'hsl(var(--primary-foreground))', fontWeight: 600, fontSize: '13px',
+                      }}
+                    >
+                      <Check className="w-4 h-4" /> Accept
+                    </button>
+                    <button
+                      onClick={() => handleRemoveConnection(request.id)}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
+                        height: '36px', padding: '0 14px', borderRadius: '8px', cursor: 'pointer',
+                        background: 'hsl(var(--secondary) / 0.5)',
+                        border: '1px solid hsl(var(--border) / 0.5)',
+                        color: 'hsl(var(--foreground))', fontWeight: 600, fontSize: '13px',
+                      }}
+                    >
+                      <X className="w-4 h-4" /> Decline
+                    </button>
                   </div>
                 </div>
               ))}
@@ -260,15 +289,18 @@ export default function Social() {
                       </p>
                     </button>
                     <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
-                      <Button
-                        size="sm"
-                        variant="ghost"
+                      <button
                         onClick={() => setChatFriend({
                           id: friendId,
                           name: connection.profile?.display_name || "Friend",
                           avatar: connection.profile?.avatar_url,
                         })}
-                        style={{ minHeight: '44px', minWidth: '44px', padding: 0, position: 'relative' }}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          height: '36px', width: '36px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+                          background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
+                          color: 'hsl(var(--primary-foreground))', position: 'relative',
+                        }}
                       >
                         <MessageCircle style={{ width: '16px', height: '16px' }} />
                         {unreadCounts[friendId] > 0 && (
@@ -280,15 +312,19 @@ export default function Social() {
                             {unreadCounts[friendId]}
                           </Badge>
                         )}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
+                      </button>
+                      <button
                         onClick={() => handleRemoveConnection(connection.id)}
-                        style={{ minHeight: '44px', minWidth: '44px', padding: 0 }}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          height: '36px', width: '36px', borderRadius: '8px', cursor: 'pointer',
+                          background: 'hsl(var(--secondary) / 0.5)',
+                          border: '1px solid hsl(var(--border) / 0.5)',
+                          color: 'hsl(var(--muted-foreground))',
+                        }}
                       >
                         <X style={{ width: '16px', height: '16px' }} />
-                      </Button>
+                      </button>
                     </div>
                   </div>
                 );
@@ -316,14 +352,18 @@ export default function Social() {
                     {profile.display_name || "User"}
                   </p>
                 </div>
-                <Button
-                  size="sm"
+                <button
                   onClick={() => handleSendRequest(profile.id)}
-                  style={{ flexShrink: 0, height: '36px', padding: '0 12px', fontSize: '13px' }}
+                  style={{
+                    flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                    height: '36px', padding: '0 14px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+                    background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
+                    color: 'hsl(var(--primary-foreground))', fontWeight: 600, fontSize: '13px',
+                  }}
                 >
-                  <UserPlus style={{ width: '14px', height: '14px', marginRight: '6px' }} />
+                  <UserPlus style={{ width: '14px', height: '14px' }} />
                   Add
-                </Button>
+                </button>
               </div>
             ))}
           </div>
