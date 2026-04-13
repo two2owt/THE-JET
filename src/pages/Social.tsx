@@ -173,10 +173,23 @@ export default function Social() {
     <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
       <div style={{ maxWidth: '768px', margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)', display: 'flex', flexDirection: 'column', gap: 'clamp(24px, 4vw, 32px)' }}>
         {/* Messages shortcut */}
-        <Button
-          variant="outline"
+        <button
           onClick={() => navigate("/messages")}
-          style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+          style={{
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            height: '44px',
+            padding: '0 16px',
+            borderRadius: '12px',
+            background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
+            color: 'hsl(var(--primary-foreground))',
+            fontWeight: 600,
+            fontSize: '14px',
+            border: 'none',
+            cursor: 'pointer',
+          }}
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <MessageCircle style={{ width: '16px', height: '16px' }} />
@@ -187,7 +200,7 @@ export default function Social() {
               {Object.values(unreadCounts).reduce((a, b) => a + b, 0)}
             </Badge>
           )}
-        </Button>
+        </button>
 
         {/* Pending Requests */}
         {pendingRequests.length > 0 && (
