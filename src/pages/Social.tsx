@@ -290,15 +290,18 @@ export default function Social() {
                       </p>
                     </button>
                     <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
-                      <Button
-                        size="sm"
-                        variant="ghost"
+                      <button
                         onClick={() => setChatFriend({
                           id: friendId,
                           name: connection.profile?.display_name || "Friend",
                           avatar: connection.profile?.avatar_url,
                         })}
-                        style={{ minHeight: '44px', minWidth: '44px', padding: 0, position: 'relative' }}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          height: '36px', width: '36px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+                          background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
+                          color: 'hsl(var(--primary-foreground))', position: 'relative',
+                        }}
                       >
                         <MessageCircle style={{ width: '16px', height: '16px' }} />
                         {unreadCounts[friendId] > 0 && (
@@ -310,15 +313,19 @@ export default function Social() {
                             {unreadCounts[friendId]}
                           </Badge>
                         )}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
+                      </button>
+                      <button
                         onClick={() => handleRemoveConnection(connection.id)}
-                        style={{ minHeight: '44px', minWidth: '44px', padding: 0 }}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          height: '36px', width: '36px', borderRadius: '8px', cursor: 'pointer',
+                          background: 'hsl(var(--secondary) / 0.5)',
+                          border: '1px solid hsl(var(--border) / 0.5)',
+                          color: 'hsl(var(--muted-foreground))',
+                        }}
                       >
                         <X style={{ width: '16px', height: '16px' }} />
-                      </Button>
+                      </button>
                     </div>
                   </div>
                 );
