@@ -228,12 +228,29 @@ export default function Social() {
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-                    <Button size="sm" onClick={() => handleAcceptRequest(request.id)} style={{ minHeight: '44px', padding: '0 12px' }}>
-                      <Check className="w-4 h-4 mr-1" /> Accept
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleRemoveConnection(request.id)} style={{ minHeight: '44px', padding: '0 12px' }}>
-                      <X className="w-4 h-4 mr-1" /> Decline
-                    </Button>
+                    <button
+                      onClick={() => handleAcceptRequest(request.id)}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
+                        height: '36px', padding: '0 14px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+                        background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
+                        color: 'hsl(var(--primary-foreground))', fontWeight: 600, fontSize: '13px',
+                      }}
+                    >
+                      <Check className="w-4 h-4" /> Accept
+                    </button>
+                    <button
+                      onClick={() => handleRemoveConnection(request.id)}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
+                        height: '36px', padding: '0 14px', borderRadius: '8px', cursor: 'pointer',
+                        background: 'hsl(var(--secondary) / 0.5)',
+                        border: '1px solid hsl(var(--border) / 0.5)',
+                        color: 'hsl(var(--foreground))', fontWeight: 600, fontSize: '13px',
+                      }}
+                    >
+                      <X className="w-4 h-4" /> Decline
+                    </button>
                   </div>
                 </div>
               ))}
