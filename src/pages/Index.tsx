@@ -82,6 +82,8 @@ const Index = () => {
   const [selectedCity, setSelectedCity] = useState<City>(CITIES[0]); // Default to Charlotte
   const [detectedLocationName, setDetectedLocationName] = useState<string | null>(null); // Actual city from reverse geocoding
   const [showDirectionsDialog, setShowDirectionsDialog] = useState(false);
+  const [showSendDialog, setShowSendDialog] = useState(false);
+  const [sendDialogUserId, setSendDialogUserId] = useState<string | null>(null);
   const [deepLinkedDeal, setDeepLinkedDeal] = useState<any>(null);
   const { token: mapboxToken, loading: mapboxLoading, error: mapboxError } = useMapboxToken();
   const { getVenueImage } = useVenueImages();
