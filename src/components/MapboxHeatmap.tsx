@@ -2215,18 +2215,22 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues, mapboxTo
           }}
         >
           <SelectTrigger 
-            className="text-[11px] sm:text-xs rounded-xl shadow-xl backdrop-blur-xl border-border/40 ring-1 ring-black/5 dark:ring-white/10"
+            className="text-[11px] sm:text-xs shadow-xl"
             aria-label="Select city location"
             style={{
               height: 'clamp(32px, 5vw, 40px)',
-              paddingLeft: 'clamp(8px, 1.5vw, 12px)',
-              paddingRight: 'clamp(8px, 1.5vw, 12px)',
+              paddingLeft: 'clamp(10px, 1.5vw, 14px)',
+              paddingRight: 'clamp(10px, 1.5vw, 14px)',
               minWidth: 'clamp(120px, 18vw, 220px)',
               maxWidth: 'var(--map-control-max-width, 220px)',
               contain: 'layout style',
-              background: 'hsl(var(--card) / 0.7)',
-              backdropFilter: 'blur(24px)',
-              WebkitBackdropFilter: 'blur(24px)',
+              background: 'hsl(var(--card) / 0.75)',
+              backdropFilter: 'blur(24px) saturate(1.6)',
+              WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
+              borderRadius: '9999px',
+              border: '1.5px solid transparent',
+              backgroundClip: 'padding-box',
+              boxShadow: '0 0 0 1.5px hsl(var(--primary) / 0.25), 0 8px 24px -4px rgba(0,0,0,0.15)',
             }}
           >
             <div className="flex items-center gap-1.5 w-full">
