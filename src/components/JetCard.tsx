@@ -283,7 +283,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
                 return;
               }
               glideHaptic();
-              setShowSendDialog(true);
+              if (onSendToFriend) onSendToFriend();
             }}
             style={{
               width: '100%',
