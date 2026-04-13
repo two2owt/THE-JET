@@ -22,6 +22,7 @@ interface JetCardProps {
   venue: Venue;
   onGetDirections: () => void;
   onClose?: () => void;
+  onSendToFriend?: () => void;
 }
 
 export const JetCard = memo(({ venue, onGetDirections, onClose }: JetCardProps) => {
