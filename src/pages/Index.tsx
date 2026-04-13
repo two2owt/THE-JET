@@ -36,6 +36,7 @@ const NotificationCard = lazy(() => import("@/components/NotificationCard").then
 // Lazy load tab content and dialogs - user-triggered
 const ExploreTab = lazy(() => import("@/components/ExploreTab").then(m => ({ default: m.ExploreTab })));
 const DirectionsDialog = lazy(() => import("@/components/DirectionsDialog"));
+const ShareToFriendDialog = lazy(() => import("@/components/ShareToFriendDialog").then(m => ({ default: m.ShareToFriendDialog })));
 
 // Lazy load non-critical UI - deferred until after FCP
 const OfflineBanner = lazy(() => import("@/components/OfflineBanner").then(m => ({ default: m.OfflineBanner })));
