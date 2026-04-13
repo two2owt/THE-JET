@@ -294,9 +294,7 @@ function ChatView({
                       />
                     )}
                     {msg.content && (
-                      <p className="text-sm whitespace-pre-wrap break-words">
-                        {msg.content}
-                      </p>
+                      <MessageContent content={msg.content} isMine={isMine} />
                     )}
                     <div
                       className={`flex items-center gap-1 mt-1 ${
