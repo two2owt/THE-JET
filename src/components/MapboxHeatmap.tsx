@@ -2332,18 +2332,24 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues, mapboxTo
                   value={city.id}
                   className="py-2.5 px-2 my-0.5 rounded-lg focus:bg-primary/10"
                 >
-                  <div className="flex items-center justify-between w-full gap-4">
+                  <div className="flex items-center justify-between w-full gap-6">
                     <span
-                      className="font-bold text-sm text-foreground"
-                      style={{ letterSpacing: '-0.01em', lineHeight: 1.25 }}
+                      className="font-bold text-sm text-foreground truncate"
+                      style={{ letterSpacing: '0.005em', lineHeight: 1.3 }}
                     >
                       {city.name}
-                      <span className="text-muted-foreground font-medium ml-1">
+                      <span
+                        className="text-muted-foreground font-medium ml-1.5"
+                        style={{ letterSpacing: '0.02em' }}
+                      >
                         {city.state}
                       </span>
                     </span>
                     {distanceMiles !== null && (
-                      <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground tabular-nums">
+                      <span
+                        className="ml-auto pl-4 text-[11px] font-semibold uppercase text-muted-foreground tabular-nums flex-shrink-0"
+                        style={{ letterSpacing: '0.08em' }}
+                      >
                         {distanceMiles < 1 ? '<1' : Math.round(distanceMiles)} mi
                       </span>
                     )}
