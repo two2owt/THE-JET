@@ -69,6 +69,7 @@ export const EmptyState = ({
         <Button
           onClick={onAction}
           size="lg"
+          className="w-full sm:w-auto"
           style={{
             background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
             color: 'hsl(var(--primary-foreground))',
@@ -77,7 +78,7 @@ export const EmptyState = ({
             borderRadius: '12px',
             border: 'none',
             height: '48px',
-            minWidth: '180px',
+            maxWidth: '320px',
             paddingLeft: '28px',
             paddingRight: '28px',
             boxShadow: '0 8px 24px -8px hsl(var(--primary) / 0.5)',
