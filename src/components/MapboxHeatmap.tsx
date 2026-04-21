@@ -2233,9 +2233,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues, mapboxTo
               boxShadow: '0 0 0 1.5px hsl(var(--primary) / 0.25), 0 8px 24px -4px rgba(0,0,0,0.15)',
             }}
           >
-            <div className="flex items-center gap-1.5 w-full">
+            <div className="flex items-center gap-2 w-full">
               <MapPin className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-              <span className="font-semibold truncate flex-1 text-left" style={{ minWidth: '80px' }}>
+              <span
+                className="font-bold truncate flex-1 text-left text-foreground"
+                style={{ minWidth: '80px', letterSpacing: '-0.01em', lineHeight: 1.2 }}
+              >
                 {isUsingCurrentLocation 
                   ? (detectedLocationName || (detectedCity ? `${detectedCity.name}, ${detectedCity.state}` : "Locating..."))
                   : `${selectedCity.name}, ${selectedCity.state}`}
@@ -2245,27 +2248,44 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues, mapboxTo
               )}
             </div>
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="current-location">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                {detectedLocationName 
-                  ? `${detectedLocationName} (Current)` 
-                  : (detectedCity ? `${detectedCity.name}, ${detectedCity.state} (Current)` : "Use Current Location")}
+          <SelectContent className="min-w-[240px] py-2">
+            <SelectItem value="current-location" className="py-2.5 px-2 my-0.5 rounded-lg focus:bg-primary/10">
+              <div className="flex items-center gap-2.5">
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse flex-shrink-0" />
+                <span className="font-bold text-sm text-foreground" style={{ letterSpacing: '-0.01em' }}>
+                  {detectedLocationName 
+                    ? `${detectedLocationName}` 
+                    : (detectedCity ? `${detectedCity.name}, ${detectedCity.state}` : "Use Current Location")}
+                </span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-primary/80 ml-auto">
+                  Current
+                </span>
               </div>
             </SelectItem>
-            <div className="h-px bg-border my-1" />
+            <div className="h-px bg-border/60 my-1.5 mx-2" />
             {(userLocation 
               ? getCitiesSortedByDistance(userLocation.lat, userLocation.lng)
               : CITIES.map(c => ({ ...c, distanceKm: 0 }))
             ).map((city) => {
               const distanceMiles = userLocation ? kmToMiles(city.distanceKm) : null;
               return (
-                <SelectItem key={city.id} value={city.id}>
-                  <div className="flex items-center justify-between w-full gap-3">
-                    <span>{city.name}, {city.state}</span>
+                <SelectItem
+                  key={city.id}
+                  value={city.id}
+                  className="py-2.5 px-2 my-0.5 rounded-lg focus:bg-primary/10"
+                >
+                  <div className="flex items-center justify-between w-full gap-4">
+                    <span
+                      className="font-bold text-sm text-foreground"
+                      style={{ letterSpacing: '-0.01em', lineHeight: 1.25 }}
+                    >
+                      {city.name}
+                      <span className="text-muted-foreground font-medium ml-1">
+                        {city.state}
+                      </span>
+                    </span>
                     {distanceMiles !== null && (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground tabular-nums">
                         {distanceMiles < 1 ? '<1' : Math.round(distanceMiles)} mi
                       </span>
                     )}
