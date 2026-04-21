@@ -246,9 +246,10 @@ export const Header = () => {
             </div>
             <Input
               type="text"
-              placeholder="Search venues..."
+              placeholder="Search venues, deals, neighborhoods..."
               value={searchQuery}
               onChange={handleSearchChange}
+              onKeyDown={handleSearchKeyDown}
               onFocus={(e) => {
                 searchQuery.trim() && setShowResults(true);
                 e.currentTarget.style.background = 'hsl(var(--muted) / 0.55)';
@@ -262,12 +263,17 @@ export const Header = () => {
               }}
               maxLength={100}
               aria-label="Search venues and deals"
+              enterKeyHint="search"
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck={false}
+              inputMode="search"
               autoFocus={isMobile && searchExpanded}
               style={{
                 width: '100%',
                 height: 'clamp(34px, 5vw, 40px)',
                 paddingLeft: '36px',
-                paddingRight: '36px',
+                paddingRight: searchQuery ? '64px' : '36px',
                 borderRadius: '9999px',
                 border: '1.5px solid hsl(var(--border) / 0.5)',
                 background: 'hsl(var(--muted) / 0.35)',
@@ -277,6 +283,31 @@ export const Header = () => {
                 transition: 'background 0.2s, border-color 0.3s, box-shadow 0.3s',
               }}
             />
+            {/* Clear button — visible whenever there is text */}
+            {searchQuery && (
+              <button
+                onClick={handleClearSearch}
+                aria-label="Clear search"
+                className="rounded-full hover:bg-muted/80 transition-colors"
+                style={{
+                  position: 'absolute',
+                  right: isMobile && searchExpanded ? '40px' : '8px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  zIndex: 10,
+                  width: '24px',
+                  height: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'hsl(var(--muted) / 0.6)',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                <X style={{ width: '12px', height: '12px', color: 'hsl(var(--muted-foreground))' }} />
+              </button>
+            )}
             {isMobile && searchExpanded && (
               <button
                 onClick={handleCollapseSearch}
