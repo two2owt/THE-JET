@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useCallback } from "react";
+import { memo, useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { Clock, MapPin, Share2, Heart, X, ExternalLink, Navigation } from "lucide-react";
 import { Button } from "./ui/button";
 import { OptimizedImage } from "./ui/optimized-image";
@@ -7,6 +7,9 @@ import { shareDeal } from "@/utils/shareUtils";
 import { useFavorites } from "@/hooks/useFavorites";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import type { Venue } from "@/types/venue";
+
+const DirectionsDialog = lazy(() => import("./DirectionsDialog"));
 
 // Defer haptics import - only loaded when user interacts
 const triggerHaptic = async () => {
@@ -46,6 +49,7 @@ interface DealDetailCardProps {
 
 export const DealDetailCard = memo(({ deal, onClose }: DealDetailCardProps) => {
   const [user, setUser] = useState<any>(null);
+  const [showDirections, setShowDirections] = useState(false);
   
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -98,17 +102,18 @@ export const DealDetailCard = memo(({ deal, onClose }: DealDetailCardProps) => {
 
   const handleGetDirections = async () => {
     await triggerHaptic();
-    
-    const address = deal.venue_address || deal.venue_name;
-    const coords = deal.neighborhoods 
-      ? `${deal.neighborhoods.center_lat},${deal.neighborhoods.center_lng}`
-      : null;
-    
-    const mapsUrl = coords
-      ? `https://www.google.com/maps/dir/?api=1&destination=${coords}`
-      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
-    
-    window.open(mapsUrl, "_blank");
+    setShowDirections(true);
+  };
+
+  const directionsVenue: Venue = {
+    id: deal.id,
+    name: deal.venue_name,
+    lat: deal.neighborhoods?.center_lat ?? 0,
+    lng: deal.neighborhoods?.center_lng ?? 0,
+    activity: 0,
+    category: deal.deal_type,
+    neighborhood: deal.neighborhoods?.name ?? "",
+    address: deal.venue_address ?? undefined,
   };
 
   const handleViewWebsite = () => {
@@ -294,6 +299,14 @@ export const DealDetailCard = memo(({ deal, onClose }: DealDetailCardProps) => {
           </Button>
         )}
       </div>
+
+      <Suspense fallback={null}>
+        <DirectionsDialog
+          open={showDirections}
+          onOpenChange={setShowDirections}
+          venue={directionsVenue}
+        />
+      </Suspense>
     </div>
   );
 });
