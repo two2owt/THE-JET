@@ -139,7 +139,7 @@ export default function Social() {
   }
 
   const sectionHeadingStyle: React.CSSProperties = {
-    fontSize: 'clamp(1.125rem, 2.5vw, 1.5rem)',
+    fontSize: '1.25rem',
     fontWeight: 800,
     marginBottom: '16px',
     backgroundImage: 'linear-gradient(to right, hsl(var(--foreground)), hsl(var(--primary)))',
