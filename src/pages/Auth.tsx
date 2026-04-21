@@ -652,7 +652,7 @@ const Auth = () => {
               onClick={handleResendVerification}
               disabled={isResending || resendCooldown > 0}
               variant="outline"
-              className="w-full rounded-xl border-primary/40 hover:border-primary/70 hover:bg-primary/5"
+              className="w-full rounded-xl bg-transparent border-primary/40 text-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/70 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary/70 disabled:opacity-60 disabled:bg-transparent disabled:text-muted-foreground disabled:border-border/40 disabled:cursor-not-allowed transition-all"
               size="sm"
             >
               {isResending ? (
