@@ -2257,6 +2257,39 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues, mapboxTo
             </div>
           </SelectTrigger>
           <SelectContent className="min-w-[240px] py-2">
+            {/* Search input — stops keystrokes from Select's typeahead */}
+            <div
+              className="px-2 pb-2 sticky top-0 z-10 bg-popover"
+              onKeyDown={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              onPointerMove={(e) => e.stopPropagation()}
+            >
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+                <Input
+                  type="text"
+                  inputMode="search"
+                  autoComplete="off"
+                  spellCheck={false}
+                  value={citySearchQuery}
+                  onChange={(e) => setCitySearchQuery(e.target.value)}
+                  placeholder="Search cities..."
+                  className="h-9 pl-8 pr-8 text-sm rounded-lg bg-card/60 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-primary/50"
+                  aria-label="Search cities"
+                />
+                {citySearchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setCitySearchQuery("")}
+                    aria-label="Clear search"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+            </div>
+            {!citySearchQuery && (
             <SelectItem value="current-location" className="py-2.5 px-2 my-0.5 rounded-lg focus:bg-primary/10">
               <div className="flex items-center gap-2.5">
                 <div className="w-2 h-2 bg-primary rounded-full animate-pulse flex-shrink-0" />
@@ -2270,11 +2303,28 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues, mapboxTo
                 </span>
               </div>
             </SelectItem>
-            <div className="h-px bg-border/60 my-1.5 mx-2" />
-            {(userLocation 
-              ? getCitiesSortedByDistance(userLocation.lat, userLocation.lng)
-              : CITIES.map(c => ({ ...c, distanceKm: 0 }))
-            ).map((city) => {
+            )}
+            {!citySearchQuery && <div className="h-px bg-border/60 my-1.5 mx-2" />}
+            {(() => {
+              const baseList = userLocation
+                ? getCitiesSortedByDistance(userLocation.lat, userLocation.lng)
+                : CITIES.map(c => ({ ...c, distanceKm: 0 }));
+              const q = citySearchQuery.trim().toLowerCase();
+              const filtered = q
+                ? baseList.filter(c =>
+                    c.name.toLowerCase().includes(q) ||
+                    c.state.toLowerCase().includes(q) ||
+                    `${c.name}, ${c.state}`.toLowerCase().includes(q)
+                  )
+                : baseList;
+              if (filtered.length === 0) {
+                return (
+                  <div className="px-3 py-6 text-center text-xs text-muted-foreground">
+                    No cities match “{citySearchQuery}”
+                  </div>
+                );
+              }
+              return filtered.map((city) => {
               const distanceMiles = userLocation ? kmToMiles(city.distanceKm) : null;
               return (
                 <SelectItem
@@ -2300,7 +2350,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues, mapboxTo
                   </div>
                 </SelectItem>
               );
-            })}
+              });
+            })()}
           </SelectContent>
         </Select>
 
