@@ -675,7 +675,8 @@ const Auth = () => {
               <button
                 type="button"
                 onClick={() => setIsForgotPassword(true)}
-                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors w-full min-h-[44px] flex items-center justify-center touch-manipulation rounded-lg bg-transparent hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                disabled={isLoading}
+                className="text-sm font-medium text-muted-foreground hover:text-primary active:text-primary-glow transition-colors w-full min-h-[44px] flex items-center justify-center touch-manipulation rounded-lg bg-transparent hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:opacity-50 disabled:pointer-events-none border border-transparent hover:border-primary/20"
               >
                 Forgot password?
               </button>
@@ -693,7 +694,8 @@ const Auth = () => {
                 setDataProcessingConsent(false);
                 setLocationConsent(false);
               }}
-              className="text-sm text-muted-foreground hover:text-primary transition-colors min-h-[44px] flex items-center justify-center w-full touch-manipulation rounded-lg bg-transparent hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              disabled={isLoading}
+              className="text-sm text-muted-foreground hover:text-primary active:text-primary-glow transition-colors min-h-[44px] flex items-center justify-center w-full touch-manipulation rounded-lg bg-transparent hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:opacity-50 disabled:pointer-events-none border border-transparent hover:border-primary/20"
             >
               {isForgotPassword ? (
                 "Back to sign in"
