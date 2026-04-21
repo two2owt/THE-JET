@@ -583,69 +583,57 @@ export default function Profile() {
           </Card>
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-            <Button variant="outline" className="h-20 justify-start" onClick={() => navigate("/settings")}
-              style={{ height: '80px', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: '16px', background: 'hsl(var(--card) / 0.9)', border: '1px solid hsl(var(--border) / 0.4)', borderRadius: '12px', cursor: 'pointer' }}>
-              <div className="flex items-center gap-3" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center"
-                  style={{ width: '40px', height: '40px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--accent) / 0.15))' }}>
-                  <Settings className="w-5 h-5 text-primary" style={{ color: 'hsl(var(--primary))' }} />
-                </div>
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontWeight: 600, color: 'hsl(var(--foreground))' }}>Settings</div>
-                  <div style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))' }}>Notifications & preferences</div>
-                </div>
-              </div>
-            </Button>
-
-            <Button variant="outline" className="h-20 justify-start" onClick={() => navigate("/favorites")}
-              style={{ height: '80px', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: '16px', background: 'hsl(var(--card) / 0.9)', border: '1px solid hsl(var(--border) / 0.4)', borderRadius: '12px', cursor: 'pointer' }}>
-              <div className="flex items-center gap-3" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent/15 to-primary/15 flex items-center justify-center"
-                  style={{ width: '40px', height: '40px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, hsl(var(--accent) / 0.15), hsl(var(--primary) / 0.15))' }}>
-                  <Heart className="w-5 h-5 text-accent" style={{ color: 'hsl(var(--accent))' }} />
-                </div>
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontWeight: 600, color: 'hsl(var(--foreground))' }}>Favorites</div>
-                  <div style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))' }}>{favorites.length} saved deals</div>
-                </div>
-              </div>
-            </Button>
-
-            <Button variant="outline" className="h-20 justify-start" onClick={() => navigate("/social")}
-              style={{ height: '80px', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: '16px', background: 'hsl(var(--card) / 0.9)', border: '1px solid hsl(var(--border) / 0.4)', borderRadius: '12px', cursor: 'pointer' }}>
-              <div className="flex items-center gap-3" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center"
-                  style={{ width: '40px', height: '40px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.1))' }}>
-                  <Users className="w-5 h-5 text-accent" style={{ color: 'hsl(var(--accent))' }} />
-                </div>
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontWeight: 600, color: 'hsl(var(--foreground))' }}>Social</div>
-                  <div style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))' }}>{connections.length} connections</div>
-                </div>
-              </div>
-            </Button>
-
-            {isAdmin && <Button variant="outline" className="h-20 justify-start" onClick={() => navigate("/admin")}
-              style={{ height: '80px', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: '16px', background: 'hsl(var(--card) / 0.9)', border: '1px solid hsl(var(--border) / 0.4)', borderRadius: '12px', cursor: 'pointer' }}>
-                <div className="flex items-center gap-3" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center"
-                    style={{ width: '40px', height: '40px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'hsl(var(--destructive) / 0.1)' }}>
-                    <Shield className="w-5 h-5 text-destructive" style={{ color: 'hsl(var(--destructive))' }} />
+          <div>
+            <h2 className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground uppercase tracking-[0.08em] mb-3 px-1">
+              <Sparkles className="w-3 h-3" />
+              Quick Actions
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                { label: 'Settings', sub: 'Notifications & preferences', icon: Settings, to: '/settings', tone: 'primary' as const },
+                { label: 'Favorites', sub: `${favorites.length} saved deal${favorites.length === 1 ? '' : 's'}`, icon: Heart, to: '/favorites', tone: 'accent' as const },
+                { label: 'Social', sub: `${connections.length} connection${connections.length === 1 ? '' : 's'}`, icon: Users, to: '/social', tone: 'primary' as const },
+                ...(isAdmin
+                  ? [{ label: 'Admin', sub: 'Dashboard & analytics', icon: Shield, to: '/admin', tone: 'destructive' as const }]
+                  : []),
+              ].map(({ label, sub, icon: Icon, to, tone }) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => navigate(to)}
+                  className="group flex items-center gap-3 w-full text-left p-4 rounded-2xl border border-border/40 bg-card/80 backdrop-blur-sm hover:border-primary/40 hover:bg-card hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all"
+                >
+                  <div
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                      tone === 'destructive'
+                        ? 'bg-destructive/10 text-destructive'
+                        : tone === 'accent'
+                        ? 'bg-accent/15 text-accent'
+                        : 'bg-primary/15 text-primary'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
                   </div>
-                  <div style={{ textAlign: 'left' }}>
-                    <div style={{ fontWeight: 600, color: 'hsl(var(--foreground))' }}>Admin</div>
-                    <div style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))' }}>Dashboard & analytics</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-sm text-foreground" style={{ letterSpacing: '-0.01em' }}>
+                      {label}
+                    </div>
+                    <div className="text-xs text-muted-foreground truncate">{sub}</div>
                   </div>
-                </div>
-              </Button>}
+                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Sign Out */}
-          <Card className="p-4 bg-card/90 backdrop-blur-xl shadow-card border-primary/10" style={{ padding: '16px' }}>
+          <Card className="p-4 bg-card/80 backdrop-blur-xl shadow-card border-destructive/15 rounded-2xl">
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" className="w-full">
+                <Button
+                  variant="outline"
+                  className="w-full border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/60 focus-visible:ring-2 focus-visible:ring-destructive/40"
+                >
                   <LogOut className="w-4 h-4 mr-2" />
                   Sign Out
                 </Button>
