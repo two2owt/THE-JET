@@ -520,38 +520,39 @@ export default function Profile() {
                 </>}
 
               {/* Social Links Display */}
-              {!isEditing && (instagramUrl || twitterUrl || facebookUrl || linkedinUrl || tiktokUrl) && <>
+              {!isEditing && (instagramUrl || twitterUrl || facebookUrl || linkedinUrl || tiktokUrl) && (
+                <>
                   <Separator className="my-6" />
                   <div>
-                    <Label className="mb-3 block">Social Media</Label>
-                    <div className="flex flex-wrap gap-2" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                      {instagramUrl && <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 text-white hover:opacity-90 transition-opacity text-sm font-medium">
-                          <Instagram className="w-4 h-4" />
-                          Instagram
-                        </a>}
-                      
-                      {twitterUrl && <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 text-white hover:opacity-90 transition-opacity text-sm font-medium">
-                          <Twitter className="w-4 h-4" />
-                          Twitter/X
-                        </a>}
-                      
-                      {facebookUrl && <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 text-white hover:opacity-90 transition-opacity text-sm font-medium">
-                          <Facebook className="w-4 h-4" />
-                          Facebook
-                        </a>}
-                      
-                      {linkedinUrl && <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-br from-blue-600 to-blue-800 text-white hover:opacity-90 transition-opacity text-sm font-medium">
-                          <Linkedin className="w-4 h-4" />
-                          LinkedIn
-                        </a>}
-                      
-                      {tiktokUrl && <a href={tiktokUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-br from-gray-800 to-gray-900 text-white hover:opacity-90 transition-opacity text-sm font-medium">
-                          <Video className="w-4 h-4" />
-                          TikTok
-                        </a>}
+                    <h3 className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground uppercase tracking-[0.08em] mb-3">
+                      <Link2 className="w-3 h-3" />
+                      Social Media
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { url: instagramUrl, icon: Instagram, label: 'Instagram' },
+                        { url: twitterUrl, icon: Twitter, label: 'Twitter / X' },
+                        { url: facebookUrl, icon: Facebook, label: 'Facebook' },
+                        { url: linkedinUrl, icon: Linkedin, label: 'LinkedIn' },
+                        { url: tiktokUrl, icon: Video, label: 'TikTok' },
+                      ]
+                        .filter((s) => !!s.url)
+                        .map(({ url, icon: Icon, label }) => (
+                          <a
+                            key={label}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-border/50 bg-card/60 text-foreground text-sm font-semibold hover:border-primary/50 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors"
+                          >
+                            <Icon className="w-4 h-4 text-primary" />
+                            {label}
+                          </a>
+                        ))}
                     </div>
                   </div>
-                </>}
+                </>
+              )}
 
               {isEditing && <div className="flex gap-2 pt-4" style={{ display: 'flex', gap: '8px', paddingTop: '16px' }}>
                   <Button onClick={handleSaveProfile} disabled={isSaving || !displayName.trim()} className="flex-1" variant="jet">
@@ -577,6 +578,7 @@ export default function Profile() {
                     Cancel
                   </Button>
                 </div>}
+            </div>
             </div>
           </Card>
 
