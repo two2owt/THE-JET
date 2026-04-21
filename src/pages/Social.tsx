@@ -102,7 +102,7 @@ export default function Social() {
   if (!user) {
     return (
       <PageLayout defaultTab="social" notificationCount={0} headerConfig={{ hideSearch: true }}>
-        <div style={{ maxWidth: '768px', margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)' }}>
+        <div style={{ maxWidth: '768px', margin: '0 auto', padding: '24px' }}>
           <EmptyState
             icon={Users}
             title="Sign in to connect"
@@ -119,7 +119,7 @@ export default function Social() {
   if (!canAccessSocialFeatures()) {
     return (
       <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
-        <div style={{ maxWidth: '768px', margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)' }}>
+        <div style={{ maxWidth: '768px', margin: '0 auto', padding: '24px' }}>
           <EmptyState
             icon={Crown}
             title="Unlock Social Features"
