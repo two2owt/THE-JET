@@ -70,11 +70,27 @@ export const EmptyState = ({
           onClick={onAction}
           size="lg"
           style={{
-            background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)))',
+            background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
             color: 'hsl(var(--primary-foreground))',
             fontWeight: 600,
+            fontSize: '15px',
             borderRadius: '12px',
             border: 'none',
+            height: '48px',
+            minWidth: '180px',
+            paddingLeft: '28px',
+            paddingRight: '28px',
+            boxShadow: '0 8px 24px -8px hsl(var(--primary) / 0.5)',
+            transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+            cursor: 'pointer',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow = '0 12px 28px -8px hsl(var(--primary) / 0.6)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 8px 24px -8px hsl(var(--primary) / 0.5)';
           }}
         >
           {actionLabel}
