@@ -2183,6 +2183,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues, mapboxTo
       >
         <Select
           value={isUsingCurrentLocation ? "current-location" : selectedCity.id}
+          onOpenChange={(open) => {
+            if (!open) setCitySearchQuery("");
+          }}
           onValueChange={(value) => {
             // Haptic feedback for city selection
             triggerHaptic('light');
