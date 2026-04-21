@@ -560,11 +560,19 @@ const Auth = () => {
                     />
                     <label htmlFor="dataConsent" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
                       I agree to the{" "}
-                      <Link to="/privacy-policy" className="text-primary hover:underline" target="_blank">
+                      <Link
+                        to="/privacy-policy"
+                        target="_blank"
+                        className="text-primary font-medium underline-offset-4 hover:text-primary-glow hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:rounded-sm transition-colors"
+                      >
                         Privacy Policy
                       </Link>{" "}
                       and{" "}
-                      <Link to="/terms-of-service" className="text-primary hover:underline" target="_blank">
+                      <Link
+                        to="/terms-of-service"
+                        target="_blank"
+                        className="text-primary font-medium underline-offset-4 hover:text-primary-glow hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:rounded-sm transition-colors"
+                      >
                         Terms of Service
                       </Link>
                       . I understand my data will be processed securely after inactivity.
