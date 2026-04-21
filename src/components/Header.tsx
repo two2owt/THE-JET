@@ -78,6 +78,24 @@ export const Header = () => {
     setShowResults(false);
   };
 
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    setShowResults(false);
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      if (searchQuery) {
+        handleClearSearch();
+      } else if (isMobile && searchExpanded) {
+        handleCollapseSearch();
+      } else {
+        e.currentTarget.blur();
+      }
+    }
+  };
+
   const showSearchBar = !hideSearch && (!isMobile || searchExpanded);
   const showSearchIcon = !hideSearch && isMobile && !searchExpanded;
 
