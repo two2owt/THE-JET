@@ -494,8 +494,10 @@ const Auth = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
-                    style={{ position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)', minWidth: '44px', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: 'hsl(var(--muted-foreground))' }}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-pressed={showPassword}
+                    className="absolute right-1 top-1/2 -translate-y-1/2 rounded-lg bg-transparent text-muted-foreground hover:text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:opacity-50 disabled:pointer-events-none transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
+                    style={{ position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)', minWidth: '44px', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -528,8 +530,10 @@ const Auth = () => {
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
-                      style={{ position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)', minWidth: '44px', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: 'hsl(var(--muted-foreground))' }}
+                      aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                      aria-pressed={showConfirmPassword}
+                      className="absolute right-1 top-1/2 -translate-y-1/2 rounded-lg bg-transparent text-muted-foreground hover:text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:opacity-50 disabled:pointer-events-none transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
+                      style={{ position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)', minWidth: '44px', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }}
                     >
                       {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -556,11 +560,19 @@ const Auth = () => {
                     />
                     <label htmlFor="dataConsent" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
                       I agree to the{" "}
-                      <Link to="/privacy-policy" className="text-primary hover:underline" target="_blank">
+                      <Link
+                        to="/privacy-policy"
+                        target="_blank"
+                        className="text-primary font-medium underline-offset-4 hover:text-primary-glow hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:rounded-sm transition-colors"
+                      >
                         Privacy Policy
                       </Link>{" "}
                       and{" "}
-                      <Link to="/terms-of-service" className="text-primary hover:underline" target="_blank">
+                      <Link
+                        to="/terms-of-service"
+                        target="_blank"
+                        className="text-primary font-medium underline-offset-4 hover:text-primary-glow hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:rounded-sm transition-colors"
+                      >
                         Terms of Service
                       </Link>
                       . I understand my data will be processed securely after inactivity.
@@ -640,7 +652,7 @@ const Auth = () => {
               onClick={handleResendVerification}
               disabled={isResending || resendCooldown > 0}
               variant="outline"
-              className="w-full rounded-xl border-primary/40 hover:border-primary/70 hover:bg-primary/5"
+              className="w-full rounded-xl bg-transparent border-primary/40 text-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/70 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary/70 disabled:opacity-60 disabled:bg-transparent disabled:text-muted-foreground disabled:border-border/40 disabled:cursor-not-allowed transition-all"
               size="sm"
             >
               {isResending ? (
@@ -663,7 +675,8 @@ const Auth = () => {
               <button
                 type="button"
                 onClick={() => setIsForgotPassword(true)}
-                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors w-full min-h-[44px] flex items-center justify-center touch-manipulation rounded-lg bg-transparent hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                disabled={isLoading}
+                className="text-sm font-medium text-muted-foreground hover:text-primary active:text-primary-glow transition-colors w-full min-h-[44px] flex items-center justify-center touch-manipulation rounded-lg bg-transparent hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:opacity-50 disabled:pointer-events-none border border-transparent hover:border-primary/20"
               >
                 Forgot password?
               </button>
@@ -681,7 +694,8 @@ const Auth = () => {
                 setDataProcessingConsent(false);
                 setLocationConsent(false);
               }}
-              className="text-sm text-muted-foreground hover:text-primary transition-colors min-h-[44px] flex items-center justify-center w-full touch-manipulation rounded-lg bg-transparent hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              disabled={isLoading}
+              className="text-sm text-muted-foreground hover:text-primary active:text-primary-glow transition-colors min-h-[44px] flex items-center justify-center w-full touch-manipulation rounded-lg bg-transparent hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:opacity-50 disabled:pointer-events-none border border-transparent hover:border-primary/20"
             >
               {isForgotPassword ? (
                 "Back to sign in"
