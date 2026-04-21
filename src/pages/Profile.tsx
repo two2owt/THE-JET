@@ -353,61 +353,83 @@ export default function Profile() {
 
   return (
     <PageLayout defaultTab="map" headerConfig={{ hideSearch: true }}>
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg space-y-fluid-lg" style={{ maxWidth: '896px', marginLeft: 'auto', marginRight: 'auto', padding: 'clamp(16px, 3vw, 24px)', display: 'flex', flexDirection: 'column', gap: 'clamp(16px, 3vw, 24px)' }}>
-          {/* Profile Header */}
-          <Card className="p-6 bg-card/90 backdrop-blur-xl shadow-card border-primary/10" style={{ padding: 'clamp(16px, 3vw, 24px)' }}>
-            <div className="flex items-start justify-between mb-6" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '24px' }}>
-              <div>
-                <h1 className="text-2xl font-extrabold bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent mb-1">Profile</h1>
-                <p className="text-sm text-muted-foreground">Manage your account and preferences</p>
-              </div>
-              {!isEditing && <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+      <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg space-y-6">
+          {/* Profile Hero */}
+          <Card className="overflow-hidden bg-card/90 backdrop-blur-xl shadow-card border-primary/10 rounded-2xl">
+            {/* Gradient banner */}
+            <div className="relative h-28 sm:h-32 bg-gradient-to-br from-primary via-primary/70 to-accent">
+              <div className="absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_20%_20%,hsl(var(--primary-glow)/0.4),transparent_50%),radial-gradient(circle_at_80%_60%,hsl(var(--accent)/0.4),transparent_50%)]" />
+              {!isEditing && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditing(true)}
+                  className="absolute top-3 right-3 bg-background/80 backdrop-blur-md hover:bg-background border-border/60 focus-visible:ring-2 focus-visible:ring-primary/50"
+                >
                   <Edit2 className="w-4 h-4 mr-2" />
-                  Edit
-                </Button>}
+                  Edit Profile
+                </Button>
+              )}
             </div>
 
-            {/* Avatar Section */}
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-6" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', marginBottom: '24px' }}>
-              <div className="relative">
-                <Avatar className="w-24 h-24 ring-2 ring-primary/30 shadow-glow">
-                  <AvatarImage src={profile?.avatar_url || undefined} />
-                  <AvatarFallback className="text-2xl bg-gradient-to-r from-primary to-primary-glow text-primary-foreground">
-                    {displayName.charAt(0).toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                
-                {isEditing && <>
-                    <label htmlFor="avatar-upload" className="absolute bottom-0 right-0 bg-primary text-primary-foreground p-2 rounded-full cursor-pointer hover:bg-primary/90 transition-colors">
-                      {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
-                    </label>
-                    <input id="avatar-upload" type="file" accept="image/*" onChange={handleAvatarUpload} disabled={isUploading} className="hidden" />
-                  </>}
-              </div>
+            <div className="px-5 sm:px-7 pb-6">
+              {/* Avatar — overlaps banner */}
+              <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-5 -mt-12 sm:-mt-14">
+                <div className="relative mx-auto sm:mx-0 group">
+                  <Avatar className="w-24 h-24 sm:w-28 sm:h-28 ring-4 ring-card shadow-glow">
+                    <AvatarImage src={profile?.avatar_url || undefined} alt={displayName || "User avatar"} />
+                    <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-primary to-primary-glow text-primary-foreground">
+                      {displayName.charAt(0).toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  {isEditing && (
+                    <>
+                      <label
+                        htmlFor="avatar-upload"
+                        className="absolute bottom-0 right-0 w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center cursor-pointer shadow-lg ring-2 ring-card hover:bg-primary/90 hover:scale-105 active:scale-95 transition-transform focus-within:ring-2 focus-within:ring-primary/50"
+                        aria-label="Upload new avatar"
+                      >
+                        {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+                      </label>
+                      <input id="avatar-upload" type="file" accept="image/*" onChange={handleAvatarUpload} disabled={isUploading} className="sr-only" />
+                    </>
+                  )}
+                </div>
 
-              <div className="flex-1 text-center sm:text-left" style={{ flex: '1 1 0%', textAlign: 'center' }}>
-                <h2 className="text-xl font-semibold text-foreground mb-1">{displayName || 'User'}</h2>
-                <p className="text-sm text-muted-foreground mb-3">{user.email}</p>
-                
-                {/* Stats */}
-                <div className="flex justify-center sm:justify-start gap-6" style={{ display: 'flex', justifyContent: 'center', gap: '24px' }}>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-foreground">{favorites.length}</div>
-                    <div className="text-xs text-muted-foreground">Favorites</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-foreground">{connections.length}</div>
-                    <div className="text-xs text-muted-foreground">Connections</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-foreground">0</div>
-                    <div className="text-xs text-muted-foreground">Notifications</div>
-                  </div>
+                <div className="flex-1 min-w-0 text-center sm:text-left sm:pb-1">
+                  <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground truncate" style={{ letterSpacing: '-0.02em' }}>
+                    {displayName || 'User'}
+                  </h1>
+                  <p className="mt-1 inline-flex items-center gap-1.5 text-sm text-muted-foreground truncate max-w-full">
+                    <Mail className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span className="truncate">{user.email}</span>
+                  </p>
                 </div>
               </div>
-            </div>
 
-            <Separator className="my-6" />
+              {/* Stat chips */}
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-6">
+                {[
+                  { icon: Heart, label: 'Favorites', value: favorites.length },
+                  { icon: Users, label: 'Connections', value: connections.length },
+                  { icon: Bell, label: 'Alerts', value: 0 },
+                ].map(({ icon: Icon, label, value }) => (
+                  <div
+                    key={label}
+                    className="flex flex-col items-center justify-center rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm py-3 px-2 hover:border-primary/40 hover:bg-primary/5 transition-colors"
+                  >
+                    <Icon className="w-4 h-4 text-primary mb-1" />
+                    <div className="text-xl sm:text-2xl font-bold text-foreground tabular-nums" style={{ letterSpacing: '-0.02em' }}>
+                      {value}
+                    </div>
+                    <div className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-0.5">
+                      {label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <Separator className="my-6" />
 
             {/* Profile Form */}
               <div className="space-y-4" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
