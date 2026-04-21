@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { EmptyState } from "@/components/EmptyState";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useConnections } from "@/hooks/useConnections";
-import { User, Camera, Edit2, X, Save, Settings, Heart, Users, Shield, LogOut, Loader2, Instagram, Twitter, Facebook, Linkedin, Video } from "lucide-react";
+import { User, Camera, Edit2, X, Save, Settings, Heart, Users, Shield, LogOut, Loader2, Instagram, Twitter, Facebook, Linkedin, Video, Mail, Sparkles, Bell, ChevronRight, Link2 } from "lucide-react";
 
 import { toast } from "sonner";
 import { z } from "zod";
@@ -353,61 +353,83 @@ export default function Profile() {
 
   return (
     <PageLayout defaultTab="map" headerConfig={{ hideSearch: true }}>
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg space-y-fluid-lg" style={{ maxWidth: '896px', marginLeft: 'auto', marginRight: 'auto', padding: 'clamp(16px, 3vw, 24px)', display: 'flex', flexDirection: 'column', gap: 'clamp(16px, 3vw, 24px)' }}>
-          {/* Profile Header */}
-          <Card className="p-6 bg-card/90 backdrop-blur-xl shadow-card border-primary/10" style={{ padding: 'clamp(16px, 3vw, 24px)' }}>
-            <div className="flex items-start justify-between mb-6" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '24px' }}>
-              <div>
-                <h1 className="text-2xl font-extrabold bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent mb-1">Profile</h1>
-                <p className="text-sm text-muted-foreground">Manage your account and preferences</p>
-              </div>
-              {!isEditing && <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+      <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg space-y-6">
+          {/* Profile Hero */}
+          <Card className="overflow-hidden bg-card/90 backdrop-blur-xl shadow-card border-primary/10 rounded-2xl">
+            {/* Gradient banner */}
+            <div className="relative h-28 sm:h-32 bg-gradient-to-br from-primary via-primary/70 to-accent">
+              <div className="absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_20%_20%,hsl(var(--primary-glow)/0.4),transparent_50%),radial-gradient(circle_at_80%_60%,hsl(var(--accent)/0.4),transparent_50%)]" />
+              {!isEditing && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditing(true)}
+                  className="absolute top-3 right-3 bg-background/80 backdrop-blur-md hover:bg-background border-border/60 focus-visible:ring-2 focus-visible:ring-primary/50"
+                >
                   <Edit2 className="w-4 h-4 mr-2" />
-                  Edit
-                </Button>}
+                  Edit Profile
+                </Button>
+              )}
             </div>
 
-            {/* Avatar Section */}
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-6" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', marginBottom: '24px' }}>
-              <div className="relative">
-                <Avatar className="w-24 h-24 ring-2 ring-primary/30 shadow-glow">
-                  <AvatarImage src={profile?.avatar_url || undefined} />
-                  <AvatarFallback className="text-2xl bg-gradient-to-r from-primary to-primary-glow text-primary-foreground">
-                    {displayName.charAt(0).toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                
-                {isEditing && <>
-                    <label htmlFor="avatar-upload" className="absolute bottom-0 right-0 bg-primary text-primary-foreground p-2 rounded-full cursor-pointer hover:bg-primary/90 transition-colors">
-                      {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
-                    </label>
-                    <input id="avatar-upload" type="file" accept="image/*" onChange={handleAvatarUpload} disabled={isUploading} className="hidden" />
-                  </>}
-              </div>
+            <div className="px-5 sm:px-7 pb-6">
+              {/* Avatar — overlaps banner */}
+              <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-5 -mt-12 sm:-mt-14">
+                <div className="relative mx-auto sm:mx-0 group">
+                  <Avatar className="w-24 h-24 sm:w-28 sm:h-28 ring-4 ring-card shadow-glow">
+                    <AvatarImage src={profile?.avatar_url || undefined} alt={displayName || "User avatar"} />
+                    <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-primary to-primary-glow text-primary-foreground">
+                      {displayName.charAt(0).toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  {isEditing && (
+                    <>
+                      <label
+                        htmlFor="avatar-upload"
+                        className="absolute bottom-0 right-0 w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center cursor-pointer shadow-lg ring-2 ring-card hover:bg-primary/90 hover:scale-105 active:scale-95 transition-transform focus-within:ring-2 focus-within:ring-primary/50"
+                        aria-label="Upload new avatar"
+                      >
+                        {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+                      </label>
+                      <input id="avatar-upload" type="file" accept="image/*" onChange={handleAvatarUpload} disabled={isUploading} className="sr-only" />
+                    </>
+                  )}
+                </div>
 
-              <div className="flex-1 text-center sm:text-left" style={{ flex: '1 1 0%', textAlign: 'center' }}>
-                <h2 className="text-xl font-semibold text-foreground mb-1">{displayName || 'User'}</h2>
-                <p className="text-sm text-muted-foreground mb-3">{user.email}</p>
-                
-                {/* Stats */}
-                <div className="flex justify-center sm:justify-start gap-6" style={{ display: 'flex', justifyContent: 'center', gap: '24px' }}>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-foreground">{favorites.length}</div>
-                    <div className="text-xs text-muted-foreground">Favorites</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-foreground">{connections.length}</div>
-                    <div className="text-xs text-muted-foreground">Connections</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-foreground">0</div>
-                    <div className="text-xs text-muted-foreground">Notifications</div>
-                  </div>
+                <div className="flex-1 min-w-0 text-center sm:text-left sm:pb-1">
+                  <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground truncate" style={{ letterSpacing: '-0.02em' }}>
+                    {displayName || 'User'}
+                  </h1>
+                  <p className="mt-1 inline-flex items-center gap-1.5 text-sm text-muted-foreground truncate max-w-full">
+                    <Mail className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span className="truncate">{user.email}</span>
+                  </p>
                 </div>
               </div>
-            </div>
 
-            <Separator className="my-6" />
+              {/* Stat chips */}
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-6">
+                {[
+                  { icon: Heart, label: 'Favorites', value: favorites.length },
+                  { icon: Users, label: 'Connections', value: connections.length },
+                  { icon: Bell, label: 'Alerts', value: 0 },
+                ].map(({ icon: Icon, label, value }) => (
+                  <div
+                    key={label}
+                    className="flex flex-col items-center justify-center rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm py-3 px-2 hover:border-primary/40 hover:bg-primary/5 transition-colors"
+                  >
+                    <Icon className="w-4 h-4 text-primary mb-1" />
+                    <div className="text-xl sm:text-2xl font-bold text-foreground tabular-nums" style={{ letterSpacing: '-0.02em' }}>
+                      {value}
+                    </div>
+                    <div className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-0.5">
+                      {label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <Separator className="my-6" />
 
             {/* Profile Form */}
               <div className="space-y-4" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -498,38 +520,39 @@ export default function Profile() {
                 </>}
 
               {/* Social Links Display */}
-              {!isEditing && (instagramUrl || twitterUrl || facebookUrl || linkedinUrl || tiktokUrl) && <>
+              {!isEditing && (instagramUrl || twitterUrl || facebookUrl || linkedinUrl || tiktokUrl) && (
+                <>
                   <Separator className="my-6" />
                   <div>
-                    <Label className="mb-3 block">Social Media</Label>
-                    <div className="flex flex-wrap gap-2" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                      {instagramUrl && <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 text-white hover:opacity-90 transition-opacity text-sm font-medium">
-                          <Instagram className="w-4 h-4" />
-                          Instagram
-                        </a>}
-                      
-                      {twitterUrl && <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 text-white hover:opacity-90 transition-opacity text-sm font-medium">
-                          <Twitter className="w-4 h-4" />
-                          Twitter/X
-                        </a>}
-                      
-                      {facebookUrl && <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 text-white hover:opacity-90 transition-opacity text-sm font-medium">
-                          <Facebook className="w-4 h-4" />
-                          Facebook
-                        </a>}
-                      
-                      {linkedinUrl && <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-br from-blue-600 to-blue-800 text-white hover:opacity-90 transition-opacity text-sm font-medium">
-                          <Linkedin className="w-4 h-4" />
-                          LinkedIn
-                        </a>}
-                      
-                      {tiktokUrl && <a href={tiktokUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-br from-gray-800 to-gray-900 text-white hover:opacity-90 transition-opacity text-sm font-medium">
-                          <Video className="w-4 h-4" />
-                          TikTok
-                        </a>}
+                    <h3 className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground uppercase tracking-[0.08em] mb-3">
+                      <Link2 className="w-3 h-3" />
+                      Social Media
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { url: instagramUrl, icon: Instagram, label: 'Instagram' },
+                        { url: twitterUrl, icon: Twitter, label: 'Twitter / X' },
+                        { url: facebookUrl, icon: Facebook, label: 'Facebook' },
+                        { url: linkedinUrl, icon: Linkedin, label: 'LinkedIn' },
+                        { url: tiktokUrl, icon: Video, label: 'TikTok' },
+                      ]
+                        .filter((s) => !!s.url)
+                        .map(({ url, icon: Icon, label }) => (
+                          <a
+                            key={label}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-border/50 bg-card/60 text-foreground text-sm font-semibold hover:border-primary/50 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors"
+                          >
+                            <Icon className="w-4 h-4 text-primary" />
+                            {label}
+                          </a>
+                        ))}
                     </div>
                   </div>
-                </>}
+                </>
+              )}
 
               {isEditing && <div className="flex gap-2 pt-4" style={{ display: 'flex', gap: '8px', paddingTop: '16px' }}>
                   <Button onClick={handleSaveProfile} disabled={isSaving || !displayName.trim()} className="flex-1" variant="jet">
@@ -556,72 +579,61 @@ export default function Profile() {
                   </Button>
                 </div>}
             </div>
+            </div>
           </Card>
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-            <Button variant="outline" className="h-20 justify-start" onClick={() => navigate("/settings")}
-              style={{ height: '80px', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: '16px', background: 'hsl(var(--card) / 0.9)', border: '1px solid hsl(var(--border) / 0.4)', borderRadius: '12px', cursor: 'pointer' }}>
-              <div className="flex items-center gap-3" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center"
-                  style={{ width: '40px', height: '40px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--accent) / 0.15))' }}>
-                  <Settings className="w-5 h-5 text-primary" style={{ color: 'hsl(var(--primary))' }} />
-                </div>
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontWeight: 600, color: 'hsl(var(--foreground))' }}>Settings</div>
-                  <div style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))' }}>Notifications & preferences</div>
-                </div>
-              </div>
-            </Button>
-
-            <Button variant="outline" className="h-20 justify-start" onClick={() => navigate("/favorites")}
-              style={{ height: '80px', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: '16px', background: 'hsl(var(--card) / 0.9)', border: '1px solid hsl(var(--border) / 0.4)', borderRadius: '12px', cursor: 'pointer' }}>
-              <div className="flex items-center gap-3" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent/15 to-primary/15 flex items-center justify-center"
-                  style={{ width: '40px', height: '40px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, hsl(var(--accent) / 0.15), hsl(var(--primary) / 0.15))' }}>
-                  <Heart className="w-5 h-5 text-accent" style={{ color: 'hsl(var(--accent))' }} />
-                </div>
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontWeight: 600, color: 'hsl(var(--foreground))' }}>Favorites</div>
-                  <div style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))' }}>{favorites.length} saved deals</div>
-                </div>
-              </div>
-            </Button>
-
-            <Button variant="outline" className="h-20 justify-start" onClick={() => navigate("/social")}
-              style={{ height: '80px', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: '16px', background: 'hsl(var(--card) / 0.9)', border: '1px solid hsl(var(--border) / 0.4)', borderRadius: '12px', cursor: 'pointer' }}>
-              <div className="flex items-center gap-3" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center"
-                  style={{ width: '40px', height: '40px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.1))' }}>
-                  <Users className="w-5 h-5 text-accent" style={{ color: 'hsl(var(--accent))' }} />
-                </div>
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontWeight: 600, color: 'hsl(var(--foreground))' }}>Social</div>
-                  <div style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))' }}>{connections.length} connections</div>
-                </div>
-              </div>
-            </Button>
-
-            {isAdmin && <Button variant="outline" className="h-20 justify-start" onClick={() => navigate("/admin")}
-              style={{ height: '80px', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: '16px', background: 'hsl(var(--card) / 0.9)', border: '1px solid hsl(var(--border) / 0.4)', borderRadius: '12px', cursor: 'pointer' }}>
-                <div className="flex items-center gap-3" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center"
-                    style={{ width: '40px', height: '40px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'hsl(var(--destructive) / 0.1)' }}>
-                    <Shield className="w-5 h-5 text-destructive" style={{ color: 'hsl(var(--destructive))' }} />
+          <div>
+            <h2 className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground uppercase tracking-[0.08em] mb-3 px-1">
+              <Sparkles className="w-3 h-3" />
+              Quick Actions
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                { label: 'Settings', sub: 'Notifications & preferences', icon: Settings, to: '/settings', tone: 'primary' as const },
+                { label: 'Favorites', sub: `${favorites.length} saved deal${favorites.length === 1 ? '' : 's'}`, icon: Heart, to: '/favorites', tone: 'accent' as const },
+                { label: 'Social', sub: `${connections.length} connection${connections.length === 1 ? '' : 's'}`, icon: Users, to: '/social', tone: 'primary' as const },
+                ...(isAdmin
+                  ? [{ label: 'Admin', sub: 'Dashboard & analytics', icon: Shield, to: '/admin', tone: 'destructive' as const }]
+                  : []),
+              ].map(({ label, sub, icon: Icon, to, tone }) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => navigate(to)}
+                  className="group flex items-center gap-3 w-full text-left p-4 rounded-2xl border border-border/40 bg-card/80 backdrop-blur-sm hover:border-primary/40 hover:bg-card hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all"
+                >
+                  <div
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                      tone === 'destructive'
+                        ? 'bg-destructive/10 text-destructive'
+                        : tone === 'accent'
+                        ? 'bg-accent/15 text-accent'
+                        : 'bg-primary/15 text-primary'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
                   </div>
-                  <div style={{ textAlign: 'left' }}>
-                    <div style={{ fontWeight: 600, color: 'hsl(var(--foreground))' }}>Admin</div>
-                    <div style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))' }}>Dashboard & analytics</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-sm text-foreground" style={{ letterSpacing: '-0.01em' }}>
+                      {label}
+                    </div>
+                    <div className="text-xs text-muted-foreground truncate">{sub}</div>
                   </div>
-                </div>
-              </Button>}
+                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Sign Out */}
-          <Card className="p-4 bg-card/90 backdrop-blur-xl shadow-card border-primary/10" style={{ padding: '16px' }}>
+          <Card className="p-4 bg-card/80 backdrop-blur-xl shadow-card border-destructive/15 rounded-2xl">
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" className="w-full">
+                <Button
+                  variant="outline"
+                  className="w-full border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/60 focus-visible:ring-2 focus-visible:ring-destructive/40"
+                >
                   <LogOut className="w-4 h-4 mr-2" />
                   Sign Out
                 </Button>
