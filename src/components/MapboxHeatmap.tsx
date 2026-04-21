@@ -2332,23 +2332,28 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues, mapboxTo
                   value={city.id}
                   className="py-2.5 px-2 my-0.5 rounded-lg focus:bg-primary/10"
                 >
-                  <div className="flex items-center justify-between w-full gap-6">
+                  <div className="flex items-center w-full gap-2 sm:gap-3 min-w-0">
+                    {/* City name — flexes and truncates so it never wraps */}
                     <span
-                      className="font-bold text-sm text-foreground truncate"
+                      className="font-bold text-[13px] sm:text-sm text-foreground truncate min-w-0 flex-1"
                       style={{ letterSpacing: '0.005em', lineHeight: 1.3 }}
                     >
                       {city.name}
-                      <span
-                        className="text-muted-foreground font-medium ml-1.5"
-                        style={{ letterSpacing: '0.02em' }}
-                      >
-                        {city.state}
-                      </span>
                     </span>
+
+                    {/* State code — fixed-width chip, never shrinks */}
+                    <span
+                      className="text-[10px] sm:text-[11px] font-semibold uppercase text-muted-foreground tabular-nums flex-shrink-0"
+                      style={{ letterSpacing: '0.08em', minWidth: '1.75rem', textAlign: 'center' }}
+                    >
+                      {city.state}
+                    </span>
+
+                    {/* Distance — right-aligned, fixed width, never wraps */}
                     {distanceMiles !== null && (
                       <span
-                        className="ml-auto pl-4 text-[11px] font-semibold uppercase text-muted-foreground tabular-nums flex-shrink-0"
-                        style={{ letterSpacing: '0.08em' }}
+                        className="text-[10px] sm:text-[11px] font-semibold uppercase text-muted-foreground/80 tabular-nums flex-shrink-0 text-right"
+                        style={{ letterSpacing: '0.06em', minWidth: '3.25rem' }}
                       >
                         {distanceMiles < 1 ? '<1' : Math.round(distanceMiles)} mi
                       </span>
