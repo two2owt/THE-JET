@@ -393,7 +393,8 @@ const Onboarding = () => {
             <Button
               onClick={handleStep1Next}
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 text-primary-foreground font-semibold py-6 rounded-xl"
+              variant="jet"
+              className="w-full py-6 rounded-xl"
             >
               {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Next"}
             </Button>
@@ -451,7 +452,8 @@ const Onboarding = () => {
             <Button
               onClick={handleComplete}
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 text-primary-foreground font-semibold py-6 rounded-xl"
+              variant="jet"
+              className="w-full py-6 rounded-xl"
             >
               {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Get Started"}
             </Button>

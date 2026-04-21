@@ -70,7 +70,8 @@ export const AuthPrompt = ({
           <div className="flex flex-col gap-3">
             <Button
               onClick={handleSignUp}
-              className="w-full bg-gradient-to-r from-primary to-primary-glow"
+              variant="jet"
+              className="w-full"
             >
               <UserPlus className="w-4 h-4 mr-2" />
               Create Account

@@ -203,7 +203,8 @@ export const DealCard = memo(({ deal, index = 0 }: DealCardProps) => {
             Share
           </Button>
           <Button
-            className="w-full bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 text-primary-foreground font-semibold py-6 rounded-xl shadow-[var(--shadow-glow)] transition-all duration-300 hover-scale"
+            variant="jet"
+            className="w-full py-6 rounded-xl"
           >
             View Details
           </Button>

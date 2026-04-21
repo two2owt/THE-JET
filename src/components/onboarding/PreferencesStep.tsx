@@ -451,7 +451,8 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
         <Button
           onClick={handleNext}
           disabled={isLoading || selectedCategories.length === 0}
-          className="flex-1 bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 text-primary-foreground font-semibold"
+          variant="jet"
+          className="flex-1"
           size="sm"
         >
           Next
