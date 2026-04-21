@@ -86,7 +86,8 @@ export const UpgradePrompt = ({
             </Button>
             <Button
               onClick={handleUpgrade}
-              className="flex-1 bg-gradient-to-r from-primary to-primary-glow"
+              variant="jet"
+              className="flex-1"
               disabled={loading}
             >
               {loading ? "Loading..." : "Upgrade Now"}

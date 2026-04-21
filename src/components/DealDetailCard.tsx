@@ -280,7 +280,8 @@ export const DealDetailCard = memo(({ deal, onClose }: DealDetailCardProps) => {
           </Button>
           <Button
             onClick={handleGetDirections}
-            className="w-full bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 text-primary-foreground font-semibold py-6 rounded-xl shadow-[var(--shadow-glow)] transition-all duration-300 hover-scale"
+            variant="jet"
+            className="w-full py-6 rounded-xl"
           >
             <Navigation className="w-4 h-4 mr-2" />
             Directions
