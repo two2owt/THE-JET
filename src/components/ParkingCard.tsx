@@ -68,15 +68,16 @@ export const ParkingCard = memo(({ lat, lng, name, onClose, onGetDirections }: P
       onGetDirections();
       return;
     }
-    // Platform-aware turn-by-turn navigation
-    const destination = encodeURIComponent(parking?.name || `${lat},${lng}`);
+    // Platform-aware turn-by-turn navigation across Google / Apple / Waze
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
     if (isIOS) {
-      // Apple Maps with driving directions
       window.open(`maps://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`, '_blank');
-    } else {
-      // Google Maps with driving mode for turn-by-turn
+    } else if (isAndroid) {
       window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_place_id=${parking?.placeId || ''}&travelmode=driving`, '_blank');
+    } else {
+      // Desktop fallback - Google Maps web
+      window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`, '_blank');
     }
   };
 
