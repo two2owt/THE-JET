@@ -618,8 +618,21 @@ const Auth = () => {
 
         {/* Resend Verification Email */}
         {showResendVerification && !isResettingPassword && (
-          <div className="bg-muted/50 border border-border rounded-lg p-4 space-y-3" style={{ background: 'hsl(var(--muted) / 0.5)', border: '1px solid hsl(var(--border))', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div className="text-sm text-muted-foreground">
+          <div
+            className="rounded-xl p-4 space-y-3"
+            style={{
+              background: 'hsl(var(--card) / 0.4)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              border: '1px solid hsl(var(--primary) / 0.25)',
+              borderRadius: '12px',
+              padding: '16px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+            }}
+          >
+            <div className="text-sm text-muted-foreground text-center">
               Didn't receive the verification email?
             </div>
             <Button
@@ -627,7 +640,7 @@ const Auth = () => {
               onClick={handleResendVerification}
               disabled={isResending || resendCooldown > 0}
               variant="outline"
-              className="w-full"
+              className="w-full rounded-xl border-primary/40 hover:border-primary/70 hover:bg-primary/5"
               size="sm"
             >
               {isResending ? (
@@ -642,17 +655,22 @@ const Auth = () => {
 
         {/* Toggle & Forgot Password */}
         {!isResettingPassword && (
-          <div className="text-center space-y-2" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div
+            className="text-center"
+            style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '4px' }}
+          >
             {!isForgotPassword && !isSignUp && (
               <button
+                type="button"
                 onClick={() => setIsForgotPassword(true)}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors block w-full min-h-[44px] flex items-center justify-center touch-manipulation"
+                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors w-full min-h-[44px] flex items-center justify-center touch-manipulation rounded-lg bg-transparent hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
               >
                 Forgot password?
               </button>
             )}
             
             <button
+              type="button"
               onClick={() => {
                 setIsSignUp(!isSignUp);
                 setIsForgotPassword(false);
@@ -663,13 +681,15 @@ const Auth = () => {
                 setDataProcessingConsent(false);
                 setLocationConsent(false);
               }}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors min-h-[44px] flex items-center justify-center w-full touch-manipulation"
+              className="text-sm text-muted-foreground hover:text-primary transition-colors min-h-[44px] flex items-center justify-center w-full touch-manipulation rounded-lg bg-transparent hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
             >
-              {isForgotPassword 
-                ? "Back to sign in"
-                : isSignUp 
-                ? "Already have an account? Sign in" 
-                : "Don't have an account? Sign up"}
+              {isForgotPassword ? (
+                "Back to sign in"
+              ) : isSignUp ? (
+                <>Already have an account? <span className="text-primary font-semibold ml-1">Sign in</span></>
+              ) : (
+                <>Don't have an account? <span className="text-primary font-semibold ml-1">Sign up</span></>
+              )}
             </button>
           </div>
         )}
