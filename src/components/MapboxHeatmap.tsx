@@ -265,6 +265,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues, mapboxTo
   const [detectedCity, setDetectedCity] = useState<City | null>(null); // Nearest predefined city for filtering
   const [detectedLocationName, setDetectedLocationName] = useState<string | null>(null); // Actual city name from reverse geocoding
   const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(true); // Default to current location
+
+  // City selector search query
+  const [citySearchQuery, setCitySearchQuery] = useState("");
   
   // Notify parent when detected location name changes
   useEffect(() => {
