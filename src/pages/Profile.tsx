@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { EmptyState } from "@/components/EmptyState";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useConnections } from "@/hooks/useConnections";
-import { User, Camera, Edit2, X, Save, Settings, Heart, Users, Shield, LogOut, Loader2, Instagram, Twitter, Facebook, Linkedin, Video } from "lucide-react";
+import { User, Camera, Edit2, X, Save, Settings, Heart, Users, Shield, LogOut, Loader2, Instagram, Twitter, Facebook, Linkedin, Video, Mail, Sparkles, Bell, ChevronRight, Link2 } from "lucide-react";
 
 import { toast } from "sonner";
 import { z } from "zod";
