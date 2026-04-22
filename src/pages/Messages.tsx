@@ -277,23 +277,7 @@ function ChatView({
                         : "bg-muted text-foreground rounded-bl-md"
                     }`}
                   >
-                    {msg.image_url && (
-                      <img
-                        src={msg.image_url}
-                        alt="Shared image"
-                        loading="lazy"
-                        style={{
-                          display: 'block',
-                          maxWidth: '240px',
-                          maxHeight: '280px',
-                          width: '100%',
-                          height: 'auto',
-                          objectFit: 'cover',
-                          borderRadius: '8px',
-                          marginBottom: '6px',
-                        }}
-                      />
-                    )}
+                    {msg.image_url && <ChatImage value={msg.image_url} />}
                     {msg.content && (
                       <MessageContent content={msg.content} isMine={isMine} />
                     )}
