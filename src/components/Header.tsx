@@ -282,7 +282,11 @@ export const Header = () => {
                 width: '100%',
                 height: 'clamp(34px, 5vw, 40px)',
                 paddingLeft: '36px',
-                paddingRight: searchQuery ? '64px' : '36px',
+                // Reserve room for: close button (mobile expanded) + clear button (when query present)
+                paddingRight:
+                  isMobile && searchExpanded
+                    ? (searchQuery ? '80px' : '44px')
+                    : (searchQuery ? '44px' : '16px'),
                 borderRadius: '9999px',
                 border: '1.5px solid hsl(var(--border) / 0.5)',
                 background: 'hsl(var(--muted) / 0.35)',
