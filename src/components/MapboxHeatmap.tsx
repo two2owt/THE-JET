@@ -2225,11 +2225,14 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues, mapboxTo
           <SelectTrigger 
             className="text-[11px] sm:text-xs shadow-xl"
             aria-label="Select city location"
+            aria-haspopup="listbox"
             style={{
               height: 'clamp(32px, 5vw, 40px)',
               paddingLeft: 'clamp(10px, 1.5vw, 14px)',
               paddingRight: 'clamp(10px, 1.5vw, 14px)',
-              minWidth: 'clamp(120px, 18vw, 220px)',
+              // Fixed width prevents trigger from resizing when selecting cities of different name lengths
+              width: 'clamp(160px, 20vw, 220px)',
+              minWidth: 'clamp(160px, 20vw, 220px)',
               maxWidth: 'var(--map-control-max-width, 220px)',
               contain: 'layout style',
               background: 'hsl(var(--card) / 0.75)',
