@@ -323,9 +323,9 @@ export const UserProfile = () => {
       {/* Avatar Upload */}
       <div className="flex flex-col items-center gap-4">
         <div className="relative">
-          <Avatar className="w-24 h-24">
+          <Avatar className="w-24 h-24 sm:w-28 sm:h-28">
             <AvatarImage src={profile.avatar_url || undefined} />
-            <AvatarFallback className="text-2xl bg-gradient-to-r from-primary to-primary-glow">
+            <AvatarFallback className="bg-gradient-to-r from-primary to-primary-glow text-primary-foreground font-bold">
               {displayName.charAt(0).toUpperCase() || 'U'}
             </AvatarFallback>
           </Avatar>
