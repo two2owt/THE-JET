@@ -2225,11 +2225,14 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues, mapboxTo
           <SelectTrigger 
             className="text-[11px] sm:text-xs shadow-xl"
             aria-label="Select city location"
+            aria-haspopup="listbox"
             style={{
               height: 'clamp(32px, 5vw, 40px)',
               paddingLeft: 'clamp(10px, 1.5vw, 14px)',
               paddingRight: 'clamp(10px, 1.5vw, 14px)',
-              minWidth: 'clamp(120px, 18vw, 220px)',
+              // Fixed width prevents trigger from resizing when selecting cities of different name lengths
+              width: 'clamp(160px, 20vw, 220px)',
+              minWidth: 'clamp(160px, 20vw, 220px)',
               maxWidth: 'var(--map-control-max-width, 220px)',
               contain: 'layout style',
               background: 'hsl(var(--card) / 0.75)',
@@ -2260,7 +2263,14 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues, mapboxTo
             {/* Search input — stops keystrokes from Select's typeahead */}
             <div
               className="px-2 pb-2 sticky top-0 z-10 bg-popover"
-              onKeyDown={(e) => e.stopPropagation()}
+              onKeyDown={(e) => {
+                // Let arrow keys, Enter, and Escape reach Radix Select for keyboard navigation;
+                // stop letter/number/Backspace so they only edit the search field (no typeahead jump).
+                const navKeys = ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'Enter', 'Escape', 'Tab', 'PageUp', 'PageDown'];
+                if (!navKeys.includes(e.key)) {
+                  e.stopPropagation();
+                }
+              }}
               onPointerDown={(e) => e.stopPropagation()}
               onPointerMove={(e) => e.stopPropagation()}
             >
