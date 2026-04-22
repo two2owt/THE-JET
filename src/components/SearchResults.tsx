@@ -1,5 +1,6 @@
 import { MapPin, Tag, X, Search as SearchIcon, Store, Sparkles } from "lucide-react";
 import { createPortal } from "react-dom";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
 import type { Venue } from "./MapboxHeatmap";
@@ -24,6 +25,31 @@ export const SearchResults = ({
   onClose,
   isVisible 
 }: SearchResultsProps) => {
+  // Position version — bumped whenever we should recalc (resize, orientation, dropdown open/close).
+  // Used as a key on the panel so layout-affecting CSS variables are re-read.
+  const [posVersion, setPosVersion] = useState(0);
+
+  useEffect(() => {
+    if (!isVisible) return;
+    const recalc = () => setPosVersion(v => v + 1);
+
+    window.addEventListener('resize', recalc);
+    window.addEventListener('orientationchange', recalc);
+    // Custom event dispatched by other floating UI (e.g. city dropdown) when it opens/closes
+    window.addEventListener('jet:floating-ui-toggle', recalc);
+
+    // VisualViewport handles iOS keyboard/zoom changes that affect safe-area insets
+    const vv = window.visualViewport;
+    vv?.addEventListener('resize', recalc);
+
+    return () => {
+      window.removeEventListener('resize', recalc);
+      window.removeEventListener('orientationchange', recalc);
+      window.removeEventListener('jet:floating-ui-toggle', recalc);
+      vv?.removeEventListener('resize', recalc);
+    };
+  }, [isVisible]);
+
   if (!isVisible || !query.trim()) return null;
 
   // Filter venues by name, category, or neighborhood
@@ -57,6 +83,7 @@ export const SearchResults = ({
       />
 
       <div
+        key={posVersion}
         role="dialog"
         aria-label="Search results"
         className="fixed left-2 right-2 sm:left-auto sm:right-4 z-[9999] animate-fade-in sm:w-[420px] sm:max-w-[min(420px,calc(100vw-2rem))]"
