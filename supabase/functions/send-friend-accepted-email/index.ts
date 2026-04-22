@@ -56,6 +56,35 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Verify the caller is the actual accepter
+    const token = authHeader.replace('Bearer ', '');
+    const { data: callerData, error: callerError } = await supabaseAdmin.auth.getUser(token);
+    if (callerError || !callerData?.user) {
+      console.error('Invalid auth token:', callerError);
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
+    }
+    const callerId = callerData.user.id;
+
+    // Verify an accepted connection exists where caller accepted recipient's request
+    // (recipient originally sent the request: user_id=recipient, friend_id=caller)
+    const { data: connection, error: connError } = await supabaseAdmin
+      .from('user_connections')
+      .select('id')
+      .eq('user_id', recipientUserId)
+      .eq('friend_id', callerId)
+      .eq('status', 'accepted')
+      .maybeSingle();
+    if (connError || !connection) {
+      console.error('No accepted connection from recipient to caller', connError);
+      return new Response(
+        JSON.stringify({ error: 'Forbidden: no accepted connection found' }),
+        { status: 403, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
+    }
+
     // Get recipient's email from auth.users using admin client
     const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(recipientUserId);
 

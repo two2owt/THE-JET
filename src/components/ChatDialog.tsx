@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageContent } from "@/components/chat/MessageContent";
+import { ChatImage } from "@/components/chat/ChatImage";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -119,23 +120,7 @@ export function ChatDialog({
                           : "bg-muted text-foreground rounded-bl-md"
                       }`}
                     >
-                      {msg.image_url && (
-                        <img
-                          src={msg.image_url}
-                          alt="Shared image"
-                          loading="lazy"
-                          style={{
-                            display: 'block',
-                            maxWidth: '240px',
-                            maxHeight: '280px',
-                            width: '100%',
-                            height: 'auto',
-                            objectFit: 'cover',
-                            borderRadius: '8px',
-                            marginBottom: '6px',
-                          }}
-                        />
-                      )}
+                      {msg.image_url && <ChatImage value={msg.image_url} />}
                       {msg.content && (
                         <MessageContent content={msg.content} isMine={isMine} />
                       )}

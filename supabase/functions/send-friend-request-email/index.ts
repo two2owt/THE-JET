@@ -56,6 +56,34 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Verify the caller is the actual sender by extracting user from the JWT
+    const token = authHeader.replace('Bearer ', '');
+    const { data: callerData, error: callerError } = await supabaseAdmin.auth.getUser(token);
+    if (callerError || !callerData?.user) {
+      console.error('Invalid auth token:', callerError);
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
+    }
+    const callerId = callerData.user.id;
+
+    // Verify a pending connection exists from caller -> recipient
+    const { data: connection, error: connError } = await supabaseAdmin
+      .from('user_connections')
+      .select('id')
+      .eq('user_id', callerId)
+      .eq('friend_id', recipientUserId)
+      .eq('status', 'pending')
+      .maybeSingle();
+    if (connError || !connection) {
+      console.error('No pending connection from caller to recipient', connError);
+      return new Response(
+        JSON.stringify({ error: 'Forbidden: no pending friend request found' }),
+        { status: 403, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
+    }
+
     // Get recipient's email from auth.users using admin client
     const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(recipientUserId);
 
