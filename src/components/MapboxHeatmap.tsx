@@ -2682,8 +2682,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               <div style={{
                 width: '24px', height: '24px', borderRadius: '6px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: showMovementPaths ? 'hsl(var(--primary))' : 'hsl(var(--secondary))',
-                color: showMovementPaths ? 'hsl(var(--primary-foreground))' : 'inherit',
+                background: showMovementPaths ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground) / 0.12)',
+                color: showMovementPaths ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
+                transition: 'background 0.2s, color 0.2s',
               }}>
                 <Route style={{ width: '14px', height: '14px' }} />
               </div>
