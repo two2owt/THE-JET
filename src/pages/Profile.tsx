@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AvatarCropDialog } from "@/components/AvatarCropDialog";
 
 const profileSchema = z.object({
   display_name: z.string().trim().min(1, "Display name is required").max(100, "Display name must be less than 100 characters"),
@@ -115,6 +116,8 @@ export default function Profile() {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [isCropOpen, setIsCropOpen] = useState(false);
   const {
     favorites
   } = useFavorites(user?.id);
