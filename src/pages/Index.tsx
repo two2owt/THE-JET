@@ -595,8 +595,10 @@ const Index = () => {
         </Suspense>
       )}
 
-      {/* PWA Install Prompt - lazy loaded */}
-      <Suspense fallback={<PWAInstallSkeleton />}>
+      {/* PWA Install Prompt - lazy loaded. No skeleton fallback: a placeholder
+          fixed at the bottom would overlap the map's bottom controls and bottom
+          nav while loading, making it look like the map is broken. */}
+      <Suspense fallback={null}>
         <PWAInstallPrompt />
       </Suspense>
 
