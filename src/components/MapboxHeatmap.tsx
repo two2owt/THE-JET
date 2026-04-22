@@ -2558,8 +2558,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               <div style={{
                 width: '24px', height: '24px', borderRadius: '6px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: showDensityLayer ? 'hsl(var(--primary))' : 'hsl(var(--secondary))',
-                color: showDensityLayer ? 'hsl(var(--primary-foreground))' : 'inherit',
+                background: showDensityLayer ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground) / 0.12)',
+                color: showDensityLayer ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
+                transition: 'background 0.2s, color 0.2s',
               }}>
                 <Layers style={{ width: '14px', height: '14px' }} />
               </div>
