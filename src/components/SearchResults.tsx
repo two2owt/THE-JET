@@ -1,4 +1,5 @@
 import { MapPin, Tag, X, Search as SearchIcon, Store, Sparkles } from "lucide-react";
+import { createPortal } from "react-dom";
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
 import type { Venue } from "./MapboxHeatmap";
@@ -43,20 +44,22 @@ export const SearchResults = ({
   const hasResults = filteredVenues.length > 0 || filteredDeals.length > 0;
   const totalCount = filteredVenues.length + filteredDeals.length;
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <>
       {/* Mobile-only dimmed backdrop — keeps focus on results, dismisses on tap */}
       <button
         type="button"
         aria-label="Close search results"
         onClick={onClose}
-        className="sm:hidden fixed inset-0 z-[60] bg-background/40 backdrop-blur-[2px] animate-fade-in"
+        className="sm:hidden fixed inset-0 z-[9998] bg-background/40 backdrop-blur-[2px] animate-fade-in"
       />
 
       <div
         role="dialog"
         aria-label="Search results"
-        className="fixed sm:absolute left-2 right-2 sm:left-auto sm:right-0 sm:mt-2 z-[70] animate-fade-in sm:w-[420px] sm:max-w-[min(420px,calc(100vw-2rem))]"
+        className="fixed left-2 right-2 sm:left-auto sm:right-4 z-[9999] animate-fade-in sm:w-[420px] sm:max-w-[min(420px,calc(100vw-2rem))]"
         style={{
           top: 'calc(var(--header-height, 56px) + env(safe-area-inset-top, 0px) + 8px)',
           // Stay clear of the bottom nav on mobile and the page edge on desktop
@@ -190,6 +193,7 @@ export const SearchResults = ({
           </CardContent>
         </Card>
       </div>
-    </>
+    </>,
+    document.body
   );
 };
