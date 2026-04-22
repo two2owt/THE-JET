@@ -300,12 +300,12 @@ export const Header = () => {
                 className="rounded-full hover:bg-muted/80 transition-colors"
                 style={{
                   position: 'absolute',
-                  right: isMobile && searchExpanded ? '40px' : '8px',
+                  right: isMobile && searchExpanded ? '44px' : '8px',
                   top: '50%',
                   transform: 'translateY(-50%)',
                   zIndex: 10,
-                  width: '24px',
-                  height: '24px',
+                  width: '28px',
+                  height: '28px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -324,12 +324,12 @@ export const Header = () => {
                 className="rounded-full hover:bg-muted/60 transition-colors"
                 style={{
                   position: 'absolute',
-                  right: '10px',
+                  right: '8px',
                   top: '50%',
                   transform: 'translateY(-50%)',
                   zIndex: 10,
-                  width: '24px',
-                  height: '24px',
+                  width: '28px',
+                  height: '28px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
