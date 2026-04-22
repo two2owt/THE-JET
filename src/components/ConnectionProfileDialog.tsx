@@ -97,10 +97,10 @@ export function ConnectionProfileDialog({ connectionId, isOpen, onClose }: Conne
           <div className="space-y-4">
             {/* Avatar and Name */}
             <div className="flex items-center gap-4">
-              <Avatar className="w-16 h-16">
+              <Avatar className="w-16 h-16 sm:w-20 sm:h-20">
                 <AvatarImage src={filteredProfile.avatar_url || undefined} />
-                <AvatarFallback className="bg-primary/10 text-primary text-xl">
-                  {filteredProfile.display_name?.charAt(0)?.toUpperCase() || <Users className="w-8 h-8" />}
+                <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                  {filteredProfile.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '50%', height: '50%' }} />}
                 </AvatarFallback>
               </Avatar>
               <div>
