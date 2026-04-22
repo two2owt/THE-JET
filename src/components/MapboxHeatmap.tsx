@@ -2185,6 +2185,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues, mapboxTo
           value={isUsingCurrentLocation ? "current-location" : selectedCity.id}
           onOpenChange={(open) => {
             if (!open) setCitySearchQuery("");
+            // Notify floating panels (e.g. SearchResults) to recalc position
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('jet:floating-ui-toggle', { detail: { source: 'city-select', open } }));
+            }
           }}
           onValueChange={(value) => {
             // Haptic feedback for city selection
