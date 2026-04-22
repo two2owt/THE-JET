@@ -74,7 +74,9 @@ export const useMessages = (userId?: string, friendId?: string) => {
   const sendImage = useCallback(
     async (file: File) => {
       if (!userId || !friendId || !conversationId) return;
-      const path = `${conversationId}/${Date.now()}_${file.name}`;
+      // Path must start with the uploader's user id to satisfy storage RLS
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const path = `${userId}/${conversationId}/${Date.now()}_${safeName}`;
       const { error: uploadError } = await supabase.storage
         .from("chat-images")
         .upload(path, file);
@@ -82,15 +84,12 @@ export const useMessages = (userId?: string, friendId?: string) => {
         console.error("Upload error:", uploadError);
         return;
       }
-      const { data: urlData } = supabase.storage
-        .from("chat-images")
-        .getPublicUrl(path);
-
+      // Store the storage path (not a public URL) — bucket is private; we sign on read
       await supabase.from("messages").insert({
         conversation_id: conversationId,
         sender_id: userId,
         recipient_id: friendId,
-        image_url: urlData.publicUrl,
+        image_url: path,
       });
     },
     [userId, friendId, conversationId]
