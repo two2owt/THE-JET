@@ -23,6 +23,7 @@ export const Header = () => {
   const [mounted, setMounted] = useState(false);
   const mountedRef = useRef(false);
   const [searchExpanded, setSearchExpanded] = useState(false);
+  const searchWrapperRef = useRef<HTMLDivElement>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string>("JT");
   const [userId, setUserId] = useState<string | undefined>(undefined);
@@ -62,7 +63,9 @@ export const Header = () => {
     const value = e.target.value;
     if (!validateSearchQuery(value)) return;
     setSearchQuery(value);
-    setShowResults(value.trim().length > 0);
+    // Always reflect query state — never collapse while user is typing
+    const hasQuery = value.trim().length > 0;
+    setShowResults(hasQuery);
     if (value.trim().length > 2) {
       const timeoutId = setTimeout(() => {
         addToSearchHistory(value.trim());
@@ -222,6 +225,7 @@ export const Header = () => {
         {/* Search bar — expands to fill remaining space */}
         {showSearchBar && (
           <div
+            ref={searchWrapperRef}
             style={{
               position: 'relative',
               flex: '1 1 0%',
@@ -251,12 +255,15 @@ export const Header = () => {
               onChange={handleSearchChange}
               onKeyDown={handleSearchKeyDown}
               onFocus={(e) => {
-                searchQuery.trim() && setShowResults(true);
+                // Re-open results whenever input gains focus and there's a query
+                if (searchQuery.trim()) setShowResults(true);
                 e.currentTarget.style.background = 'hsl(var(--muted) / 0.55)';
                 e.currentTarget.style.borderColor = 'hsl(var(--primary) / 0.5)';
                 e.currentTarget.style.boxShadow = '0 0 0 3px hsl(var(--primary) / 0.1), 0 0 12px hsl(var(--primary) / 0.08)';
               }}
               onBlur={(e) => {
+                // Restyle only — never toggle results visibility on blur.
+                // Closing is handled explicitly by the close button, Escape, or outside-click via the mobile backdrop.
                 e.currentTarget.style.background = 'hsl(var(--muted) / 0.35)';
                 e.currentTarget.style.borderColor = 'hsl(var(--border) / 0.5)';
                 e.currentTarget.style.boxShadow = 'none';
