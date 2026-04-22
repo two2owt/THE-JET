@@ -2558,8 +2558,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               <div style={{
                 width: '24px', height: '24px', borderRadius: '6px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: showDensityLayer ? 'hsl(var(--primary))' : 'hsl(var(--secondary))',
-                color: showDensityLayer ? 'hsl(var(--primary-foreground))' : 'inherit',
+                background: showDensityLayer ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground) / 0.12)',
+                color: showDensityLayer ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
+                transition: 'background 0.2s, color 0.2s',
               }}>
                 <Layers style={{ width: '14px', height: '14px' }} />
               </div>
@@ -2681,8 +2682,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               <div style={{
                 width: '24px', height: '24px', borderRadius: '6px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: showMovementPaths ? 'hsl(var(--primary))' : 'hsl(var(--secondary))',
-                color: showMovementPaths ? 'hsl(var(--primary-foreground))' : 'inherit',
+                background: showMovementPaths ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground) / 0.12)',
+                color: showMovementPaths ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
+                transition: 'background 0.2s, color 0.2s',
               }}>
                 <Route style={{ width: '14px', height: '14px' }} />
               </div>
@@ -2788,8 +2790,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               <div style={{
                 width: '24px', height: '24px', borderRadius: '6px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: showParking ? 'hsl(var(--primary))' : 'hsl(var(--secondary))',
-                color: showParking ? 'hsl(var(--primary-foreground))' : 'inherit',
+                background: showParking ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground) / 0.12)',
+                color: showParking ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
+                transition: 'background 0.2s, color 0.2s',
               }}>
                 <Car style={{ width: '14px', height: '14px' }} />
               </div>
@@ -2834,7 +2837,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             alignItems: 'center',
             justifyContent: 'center',
             borderRadius: '12px',
-            boxShadow: (showDensityLayer || showMovementPaths)
+            boxShadow: (showDensityLayer || showMovementPaths || showParking)
               ? '0 20px 25px -5px hsl(var(--primary) / 0.4)'
               : '0 20px 25px -5px rgba(0,0,0,0.1)',
             transition: 'all 0.2s',
@@ -2843,11 +2846,11 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             marginLeft: 'auto',
             cursor: 'pointer',
             position: 'relative',
-            border: (showDensityLayer || showMovementPaths) ? 'none' : '1px solid hsl(var(--border))',
-            background: (showDensityLayer || showMovementPaths) ? 'hsl(var(--primary))' : 'hsl(var(--card))',
-            color: (showDensityLayer || showMovementPaths) ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
-            backdropFilter: (showDensityLayer || showMovementPaths) ? 'none' : 'blur(24px) saturate(1.6)',
-            WebkitBackdropFilter: (showDensityLayer || showMovementPaths) ? 'none' : 'blur(24px) saturate(1.6)',
+            border: (showDensityLayer || showMovementPaths || showParking) ? 'none' : '1px solid hsl(var(--border))',
+            background: (showDensityLayer || showMovementPaths || showParking) ? 'hsl(var(--primary))' : 'hsl(var(--card))',
+            color: (showDensityLayer || showMovementPaths || showParking) ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
+            backdropFilter: (showDensityLayer || showMovementPaths || showParking) ? 'none' : 'blur(24px) saturate(1.6)',
+            WebkitBackdropFilter: (showDensityLayer || showMovementPaths || showParking) ? 'none' : 'blur(24px) saturate(1.6)',
           }}
           aria-label={controlsCollapsed ? "Open layers panel" : "Close layers panel"}
         >
@@ -2857,7 +2860,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             <X style={{ width: '20px', height: '20px' }} />
           )}
           {/* Active indicator dot */}
-          {(showDensityLayer || showMovementPaths) && controlsCollapsed && (
+          {(showDensityLayer || showMovementPaths || showParking) && controlsCollapsed && (
             <div style={{
               position: 'absolute', top: '-2px', right: '-2px',
               width: '10px', height: '10px',
