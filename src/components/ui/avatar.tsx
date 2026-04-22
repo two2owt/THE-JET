@@ -6,10 +6,16 @@ import { cn } from "@/lib/utils";
 const Avatar = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
->(({ className, ...props }, ref) => (
+>(({ className, style, ...props }, ref) => (
   <AvatarPrimitive.Root
     ref={ref}
-    className={cn("relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full", className)}
+    className={cn(
+      // Container-adaptive: square aspect, never overflows. Default size h-10 w-10 — override via className/style.
+      "relative flex shrink-0 overflow-hidden rounded-full aspect-square h-10 w-10",
+      className
+    )}
+    // containerType enables `cqw` units in AvatarFallback so text scales to container size.
+    style={{ containerType: 'inline-size', ...style }}
     {...props}
   />
 ));
@@ -21,8 +27,18 @@ const AvatarImage = React.forwardRef<
 >(({ className, style, ...props }, ref) => (
   <AvatarPrimitive.Image
     ref={ref}
-    className={cn("aspect-square h-full w-full object-cover", className)}
-    style={{ ...style, maxWidth: '100%', maxHeight: '100%', objectFit: 'cover' }}
+    className={cn("h-full w-full object-cover", className)}
+    style={{
+      // Always adapt to container: full size, cropped centered.
+      width: '100%',
+      height: '100%',
+      maxWidth: '100%',
+      maxHeight: '100%',
+      objectFit: 'cover',
+      objectPosition: 'center',
+      display: 'block',
+      ...style,
+    }}
     {...props}
   />
 ));
@@ -34,7 +50,12 @@ const AvatarFallback = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AvatarPrimitive.Fallback
     ref={ref}
-    className={cn("flex h-full w-full items-center justify-center rounded-full bg-muted", className)}
+    className={cn(
+      // Adapts type-scale to container size via container queries (clamp on font-size as fallback).
+      "flex h-full w-full items-center justify-center rounded-full bg-muted leading-none select-none",
+      className
+    )}
+    style={{ fontSize: 'clamp(0.75rem, 40cqw, 2.25rem)' }}
     {...props}
   />
 ));
