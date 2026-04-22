@@ -229,7 +229,9 @@ export const Header = () => {
             style={{
               position: 'relative',
               flex: '1 1 0%',
-              maxWidth: isMobile ? '100%' : 'clamp(200px, 40vw, 480px)',
+              // On desktop cap width so the bar doesn't stretch edge-to-edge;
+              // on mobile fill all remaining space between logo/icon and avatar.
+              maxWidth: isMobile ? 'none' : 'clamp(240px, 42vw, 520px)',
               minWidth: '0',
               opacity: mounted ? 1 : 0,
               transform: mounted ? 'translateY(0)' : 'translateY(-6px)',
@@ -351,8 +353,11 @@ export const Header = () => {
           </div>
         )}
 
-        {/* Spacer — pushes avatar to the right */}
-        <div style={{ flex: '1 1 0%', minWidth: 0 }} />
+        {/* Spacer — only needed when the search bar isn't rendered (mobile
+            collapsed or hideSearch). When the search bar is visible it already
+            uses flex:1 to fill the gap, so a second spacer would steal width
+            and shrink the input. */}
+        {!showSearchBar && <div style={{ flex: '1 1 0%', minWidth: 0 }} />}
 
         {/* Avatar — settings link */}
         <button
