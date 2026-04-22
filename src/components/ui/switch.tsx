@@ -35,7 +35,7 @@ const Switch = React.forwardRef<
         height: '20px',
         width: '20px',
         borderRadius: '9999px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+        boxShadow: '0 2px 8px hsl(var(--foreground) / 0.15)',
         transition: 'transform 150ms ease, background-color 150ms ease',
       }}
     />

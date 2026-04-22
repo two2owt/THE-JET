@@ -78,6 +78,7 @@ import { triggerHaptic } from "@/lib/haptics";
 import { Button } from "./ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Slider } from "./ui/slider";
+import { Switch } from "./ui/switch";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
 import { Input } from "./ui/input";
 import { Search } from "lucide-react";
@@ -2565,33 +2566,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 <Layers style={{ width: '14px', height: '14px' }} />
               </div>
               <span>Heatmap</span>
-              <div
-                role="switch"
-                aria-checked={showDensityLayer}
-                style={{
-                  marginLeft: 'auto',
-                  width: '28px',
-                  height: '16px',
-                  borderRadius: '9999px',
-                  position: 'relative',
-                  transition: 'background 0.2s, border-color 0.2s',
-                  border: `1px solid ${showDensityLayer ? 'hsl(var(--primary) / 0.5)' : 'hsl(var(--muted-foreground) / 0.3)'}`,
-                  background: showDensityLayer ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground) / 0.15)',
-                  flexShrink: 0,
-                }}
-              >
-                <div style={{
-                  position: 'absolute',
-                  top: '2px',
-                  left: showDensityLayer ? '13px' : '2px',
-                  width: '10px',
-                  height: '10px',
-                  borderRadius: '50%',
-                  background: showDensityLayer ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground) / 0.5)',
-                  transition: 'left 0.2s, background 0.2s',
-                  boxShadow: showDensityLayer ? '0 0 6px hsl(var(--primary) / 0.4)' : 'none',
-                }} />
-              </div>
+              <Switch
+                checked={showDensityLayer}
+                tabIndex={-1}
+                aria-label="Toggle heatmap layer"
+                style={{ marginLeft: 'auto', pointerEvents: 'none' }}
+              />
             </button>
 
             {/* Heat filters - shown when heat is on */}
@@ -2689,33 +2669,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 <Route style={{ width: '14px', height: '14px' }} />
               </div>
               <span>Flow Paths</span>
-              <div
-                role="switch"
-                aria-checked={showMovementPaths}
-                style={{
-                  marginLeft: 'auto',
-                  width: '28px',
-                  height: '16px',
-                  borderRadius: '9999px',
-                  position: 'relative',
-                  transition: 'background 0.2s, border-color 0.2s',
-                  border: `1px solid ${showMovementPaths ? 'hsl(var(--primary) / 0.5)' : 'hsl(var(--muted-foreground) / 0.3)'}`,
-                  background: showMovementPaths ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground) / 0.15)',
-                  flexShrink: 0,
-                }}
-              >
-                <div style={{
-                  position: 'absolute',
-                  top: '2px',
-                  left: showMovementPaths ? '13px' : '2px',
-                  width: '10px',
-                  height: '10px',
-                  borderRadius: '50%',
-                  background: showMovementPaths ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground) / 0.5)',
-                  transition: 'left 0.2s, background 0.2s',
-                  boxShadow: showMovementPaths ? '0 0 6px hsl(var(--primary) / 0.4)' : 'none',
-                }} />
-              </div>
+              <Switch
+                checked={showMovementPaths}
+                tabIndex={-1}
+                aria-label="Toggle flow paths layer"
+                style={{ marginLeft: 'auto', pointerEvents: 'none' }}
+              />
             </button>
 
             {/* Path filters */}
@@ -2797,33 +2756,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 <Car style={{ width: '14px', height: '14px' }} />
               </div>
               <span>Parking</span>
-              <div
-                role="switch"
-                aria-checked={showParking}
-                style={{
-                  marginLeft: 'auto',
-                  width: '28px',
-                  height: '16px',
-                  borderRadius: '9999px',
-                  position: 'relative',
-                  transition: 'background 0.2s, border-color 0.2s',
-                  border: `1px solid ${showParking ? 'hsl(var(--primary) / 0.5)' : 'hsl(var(--muted-foreground) / 0.3)'}`,
-                  background: showParking ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground) / 0.15)',
-                  flexShrink: 0,
-                }}
-              >
-                <div style={{
-                  position: 'absolute',
-                  top: '2px',
-                  left: showParking ? '13px' : '2px',
-                  width: '10px',
-                  height: '10px',
-                  borderRadius: '50%',
-                  background: showParking ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground) / 0.5)',
-                  transition: 'left 0.2s, background 0.2s',
-                  boxShadow: showParking ? '0 0 6px hsl(var(--primary) / 0.4)' : 'none',
-                }} />
-              </div>
+              <Switch
+                checked={showParking}
+                tabIndex={-1}
+                aria-label="Toggle parking layer"
+                style={{ marginLeft: 'auto', pointerEvents: 'none' }}
+              />
             </button>
 
           </div>
