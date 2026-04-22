@@ -6,15 +6,16 @@ import { cn } from "@/lib/utils";
 const Avatar = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
->(({ className, ...props }, ref) => (
+>(({ className, style, ...props }, ref) => (
   <AvatarPrimitive.Root
     ref={ref}
     className={cn(
-      // Container-adaptive: square aspect, fills any sized parent, never overflows.
-      // Default size (h-10 w-10) only applies if no width/height utility is provided in className.
-      "relative flex shrink-0 overflow-hidden rounded-full aspect-square h-10 w-10 [&[class*='h-']]:h-auto [&[class*='w-']]:w-auto",
+      // Container-adaptive: square aspect, never overflows. Default size h-10 w-10 — override via className/style.
+      "relative flex shrink-0 overflow-hidden rounded-full aspect-square h-10 w-10",
       className
     )}
+    // containerType enables `cqw` units in AvatarFallback so text scales to container size.
+    style={{ containerType: 'inline-size', ...style }}
     {...props}
   />
 ));
@@ -54,7 +55,7 @@ const AvatarFallback = React.forwardRef<
       "flex h-full w-full items-center justify-center rounded-full bg-muted leading-none select-none",
       className
     )}
-    style={{ fontSize: 'clamp(0.75rem, 40cqw, 2.25rem)', containerType: 'inline-size' }}
+    style={{ fontSize: 'clamp(0.75rem, 40cqw, 2.25rem)' }}
     {...props}
   />
 ));
