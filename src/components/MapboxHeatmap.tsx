@@ -2756,33 +2756,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 <Car style={{ width: '14px', height: '14px' }} />
               </div>
               <span>Parking</span>
-              <div
-                role="switch"
-                aria-checked={showParking}
-                style={{
-                  marginLeft: 'auto',
-                  width: '28px',
-                  height: '16px',
-                  borderRadius: '9999px',
-                  position: 'relative',
-                  transition: 'background 0.2s, border-color 0.2s',
-                  border: `1px solid ${showParking ? 'hsl(var(--primary) / 0.5)' : 'hsl(var(--muted-foreground) / 0.3)'}`,
-                  background: showParking ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground) / 0.15)',
-                  flexShrink: 0,
-                }}
-              >
-                <div style={{
-                  position: 'absolute',
-                  top: '2px',
-                  left: showParking ? '13px' : '2px',
-                  width: '10px',
-                  height: '10px',
-                  borderRadius: '50%',
-                  background: showParking ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground) / 0.5)',
-                  transition: 'left 0.2s, background 0.2s',
-                  boxShadow: showParking ? '0 0 6px hsl(var(--primary) / 0.4)' : 'none',
-                }} />
-              </div>
+              <Switch
+                checked={showParking}
+                tabIndex={-1}
+                aria-label="Toggle parking layer"
+                style={{ marginLeft: 'auto', pointerEvents: 'none' }}
+              />
             </button>
 
           </div>
