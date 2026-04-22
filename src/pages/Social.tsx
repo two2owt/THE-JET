@@ -212,9 +212,9 @@ export default function Social() {
                 <div key={request.id} style={{ ...cardStyle, padding: '16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <Avatar style={{ ...avatarStyle, width: '48px', height: '48px' }}>
-                      <AvatarImage src={request.profile?.avatar_url || undefined} alt={request.profile?.display_name || "User"} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+                      <AvatarImage src={request.profile?.avatar_url || undefined} alt={request.profile?.display_name || "User"} />
                       <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary">
-                        {request.profile?.display_name?.charAt(0)?.toUpperCase() || <Users className="w-6 h-6" />}
+                        {request.profile?.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '50%', height: '50%' }} />}
                       </AvatarFallback>
                     </Avatar>
                     <div>
@@ -279,9 +279,9 @@ export default function Social() {
                       onClick={() => setSelectedProfileId(friendId)}
                     >
                       <Avatar style={avatarStyle}>
-                        <AvatarImage src={connection.profile?.avatar_url || undefined} alt={connection.profile?.display_name || "Friend"} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
-                        <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary text-sm">
-                          {connection.profile?.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '20px', height: '20px' }} />}
+                        <AvatarImage src={connection.profile?.avatar_url || undefined} alt={connection.profile?.display_name || "Friend"} />
+                        <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary">
+                          {connection.profile?.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '50%', height: '50%' }} />}
                         </AvatarFallback>
                       </Avatar>
                       <p style={{ fontWeight: 500, color: 'hsl(var(--foreground))', fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -343,9 +343,9 @@ export default function Social() {
               <div key={profile.id} style={cardStyle}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: '1 1 0%', minWidth: 0 }}>
                   <Avatar style={avatarStyle}>
-                    <AvatarImage src={profile.avatar_url || undefined} alt={profile.display_name || "User"} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
-                    <AvatarFallback className="bg-gradient-to-br from-accent/15 to-primary/15 text-accent text-sm">
-                      {profile.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '20px', height: '20px' }} />}
+                    <AvatarImage src={profile.avatar_url || undefined} alt={profile.display_name || "User"} />
+                    <AvatarFallback className="bg-gradient-to-br from-accent/15 to-primary/15 text-accent">
+                      {profile.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '50%', height: '50%' }} />}
                     </AvatarFallback>
                   </Avatar>
                   <p style={{ fontWeight: 500, color: 'hsl(var(--foreground))', fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
