@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AvatarCropDialog } from "@/components/AvatarCropDialog";
 
 const profileSchema = z.object({
   display_name: z.string().trim().min(1, "Display name is required").max(100, "Display name must be less than 100 characters"),
@@ -115,6 +116,8 @@ export default function Profile() {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [isCropOpen, setIsCropOpen] = useState(false);
   const {
     favorites
   } = useFavorites(user?.id);
@@ -197,8 +200,10 @@ export default function Profile() {
       toast.error('Failed to create profile');
     }
   };
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    // Reset the input so selecting the same file twice still triggers change
+    e.target.value = "";
     if (!file || !profile || !user) return;
     try {
       avatarFileSchema.parse({
@@ -212,36 +217,40 @@ export default function Profile() {
       }
       return;
     }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCropSrc(reader.result as string);
+      setIsCropOpen(true);
+    };
+    reader.onerror = () => toast.error('Failed to read image');
+    reader.readAsDataURL(file);
+  };
+
+  const handleCroppedAvatarSave = async (blob: Blob) => {
+    if (!profile || !user) return;
     setIsUploading(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/avatar.${fileExt}`;
+      const fileName = `${user.id}/avatar.jpg`;
       if (profile?.avatar_url) {
         const oldPath = profile.avatar_url.split('/').slice(-2).join('/');
         await supabase.storage.from('avatars').remove([oldPath]);
       }
-      const {
-        error: uploadError
-      } = await supabase.storage.from('avatars').upload(fileName, file, {
-        upsert: true
-      });
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, blob, { upsert: true, contentType: 'image/jpeg' });
       if (uploadError) throw uploadError;
-      const {
-        data: {
-          publicUrl
-        }
-      } = supabase.storage.from('avatars').getPublicUrl(fileName);
-      const {
-        error: updateError
-      } = await supabase.from('profiles').update({
-        avatar_url: publicUrl
-      }).eq('id', user.id);
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName);
+      // Cache-bust so the new image shows immediately
+      const bustedUrl = `${publicUrl}?t=${Date.now()}`;
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: bustedUrl })
+        .eq('id', user.id);
       if (updateError) throw updateError;
-      setProfile(prev => prev ? {
-        ...prev,
-        avatar_url: publicUrl
-      } : null);
+      setProfile(prev => prev ? { ...prev, avatar_url: bustedUrl } : null);
       toast.success('Avatar updated');
+      setIsCropOpen(false);
+      setCropSrc(null);
     } catch (error) {
       console.error('Error uploading avatar:', error);
       toast.error('Failed to upload avatar');
@@ -353,6 +362,13 @@ export default function Profile() {
 
   return (
     <PageLayout defaultTab="map" headerConfig={{ hideSearch: true }}>
+      <AvatarCropDialog
+        open={isCropOpen}
+        imageSrc={cropSrc}
+        onClose={() => { setIsCropOpen(false); setCropSrc(null); }}
+        onCropComplete={handleCroppedAvatarSave}
+        isProcessing={isUploading}
+      />
       <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg space-y-6">
           {/* Profile Hero */}
           <Card className="overflow-hidden bg-card/90 backdrop-blur-xl shadow-card border-primary/10 rounded-2xl">
