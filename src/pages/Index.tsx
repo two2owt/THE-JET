@@ -23,7 +23,6 @@ import { useVenueActivity } from "@/hooks/useVenueActivity";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useBottomNavigation, type NavTab } from "@/hooks/useBottomNavigation";
 import { NotificationsTabSkeleton, ExploreTabSkeleton } from "@/components/skeletons/PageSkeletons";
-import { PWAInstallSkeleton } from "@/components/skeletons/PWAInstallSkeleton";
 
 // Lazy load heavy components - deferred until needed
 const MapboxHeatmap = lazy(() => import("@/components/MapboxHeatmap").then(m => ({ default: m.MapboxHeatmap })));
@@ -596,8 +595,10 @@ const Index = () => {
         </Suspense>
       )}
 
-      {/* PWA Install Prompt - lazy loaded */}
-      <Suspense fallback={<PWAInstallSkeleton />}>
+      {/* PWA Install Prompt - lazy loaded. No skeleton fallback: a placeholder
+          fixed at the bottom would overlap the map's bottom controls and bottom
+          nav while loading, making it look like the map is broken. */}
+      <Suspense fallback={null}>
         <PWAInstallPrompt />
       </Suspense>
 
