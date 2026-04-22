@@ -73,6 +73,7 @@ import { useLocationDensity } from "@/hooks/useLocationDensity";
 import { useMovementPaths } from "@/hooks/useMovementPaths";
 import { useHeatmapTimelapse } from "@/hooks/useHeatmapTimelapse";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useOpenVenues } from "@/hooks/useOpenVenues";
 import { triggerHaptic } from "@/lib/haptics";
 import { Button } from "./ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
