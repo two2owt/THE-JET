@@ -2790,8 +2790,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               <div style={{
                 width: '24px', height: '24px', borderRadius: '6px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: showParking ? 'hsl(var(--primary))' : 'hsl(var(--secondary))',
-                color: showParking ? 'hsl(var(--primary-foreground))' : 'inherit',
+                background: showParking ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground) / 0.12)',
+                color: showParking ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
+                transition: 'background 0.2s, color 0.2s',
               }}>
                 <Car style={{ width: '14px', height: '14px' }} />
               </div>
