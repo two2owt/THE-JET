@@ -73,6 +73,7 @@ import { useLocationDensity } from "@/hooks/useLocationDensity";
 import { useMovementPaths } from "@/hooks/useMovementPaths";
 import { useHeatmapTimelapse } from "@/hooks/useHeatmapTimelapse";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useOpenVenues } from "@/hooks/useOpenVenues";
 import { triggerHaptic } from "@/lib/haptics";
 import { Button } from "./ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
@@ -163,7 +164,12 @@ const getPlatformSettings = (isMobile: boolean) => {
   };
 };
 
-export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues, mapboxToken, selectedCity, onCityChange, onNearestCityDetected, onDetectedLocationNameChange, isLoadingVenues = false, selectedVenue, resetUIKey, isTokenLoading = false }: MapboxHeatmapProps) => {
+export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenues, mapboxToken, selectedCity, onCityChange, onNearestCityDetected, onDetectedLocationNameChange, isLoadingVenues = false, selectedVenue, resetUIKey, isTokenLoading = false }: MapboxHeatmapProps) => {
+  // Filter venues by Google Places opening hours against the device's local
+  // time. Markers (and the underlying heatmap source) automatically refresh
+  // every minute as venues open/close. Venues without parseable hours stay
+  // visible (fail-open) so unknown data doesn't blank out the map.
+  const venues = useOpenVenues(allVenues);
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapboxGL.Map | null>(null);
   const mapboxglRef = useRef<MapboxGLModule | null>(null);
