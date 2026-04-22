@@ -362,6 +362,13 @@ export default function Profile() {
 
   return (
     <PageLayout defaultTab="map" headerConfig={{ hideSearch: true }}>
+      <AvatarCropDialog
+        open={isCropOpen}
+        imageSrc={cropSrc}
+        onClose={() => { setIsCropOpen(false); setCropSrc(null); }}
+        onCropComplete={handleCroppedAvatarSave}
+        isProcessing={isUploading}
+      />
       <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg space-y-6">
           {/* Profile Hero */}
           <Card className="overflow-hidden bg-card/90 backdrop-blur-xl shadow-card border-primary/10 rounded-2xl">
