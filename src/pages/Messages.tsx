@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { MessageContent } from "@/components/chat/MessageContent";
+import { ChatImage } from "@/components/chat/ChatImage";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router";
 import { PageLayout } from "@/components/PageLayout";

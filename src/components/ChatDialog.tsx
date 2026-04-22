@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageContent } from "@/components/chat/MessageContent";
+import { ChatImage } from "@/components/chat/ChatImage";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
