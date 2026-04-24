@@ -19,26 +19,37 @@ export default function VerificationSuccess() {
   const [isVerified, setIsVerified] = useState(false);
 
   useEffect(() => {
-    // Defensive: strip any query params (e.g. ?mode=signup) so that
-    // navigating back to /auth never re-triggers a signup submission.
+    // Parse signals BEFORE stripping URL
+    const params = new URLSearchParams(location.search);
+    const emailFromQuery = params.get("email");
+    const verifiedFromQuery =
+      params.get("verified") === "true" || params.get("verified") === "1";
+    const emailFromStorage = localStorage.getItem(RESEND_EMAIL_KEY);
+
+    // If Supabase placed tokens in the hash (email link redirect), it means
+    // verification just succeeded — mark verified before we strip the URL.
+    const hash = location.hash || "";
+    const hasAuthTokens =
+      hash.includes("access_token=") || hash.includes("type=signup");
+    if (hasAuthTokens || verifiedFromQuery) {
+      setIsVerified(true);
+    }
+
+    // Defensive: strip query/hash so navigating back to /auth never
+    // re-triggers a signup submission.
     if (location.search || location.hash) {
       window.history.replaceState({}, "", "/verification-success");
     }
 
-    // Auto-fill email from: query param > localStorage > current user
-    const params = new URLSearchParams(location.search);
-    const emailFromQuery = params.get("email");
-    const emailFromStorage = localStorage.getItem(RESEND_EMAIL_KEY);
-
+    // Auto-fill email from: query param > localStorage > current user (later)
     if (emailFromQuery) {
       setResendEmail(emailFromQuery);
     } else if (emailFromStorage) {
       setResendEmail(emailFromStorage);
     }
 
-    // Re-check verification status: refresh session, then read user.
-    // This ensures the "Go to app" button appears immediately after the
-    // user clicks the email link (which updates email_confirmed_at server-side).
+    // Re-check verification status from session — works whether the user
+    // is already signed in OR just established a session via the email link.
     let cancelled = false;
     const checkVerification = async () => {
       try {
@@ -47,27 +58,30 @@ export default function VerificationSuccess() {
         // ignore — fall back to whatever session we have
       }
       const { data: { user } } = await supabase.auth.getUser();
-      if (cancelled || !user) return;
-      if (user.email && !emailFromQuery && !emailFromStorage) {
+      if (cancelled) return;
+      if (user?.email && !emailFromQuery && !emailFromStorage) {
         setResendEmail(user.email);
       }
-      if (user.email_confirmed_at || (user as any).confirmed_at) {
+      if (user?.email_confirmed_at || (user as any)?.confirmed_at) {
         setIsVerified(true);
       }
     };
     checkVerification();
 
-    // Listen for auth changes (e.g. USER_UPDATED after verification)
+    // Listen for auth changes (USER_UPDATED / SIGNED_IN after email link)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         const user = session?.user;
+        if (user?.email && !emailFromQuery && !emailFromStorage) {
+          setResendEmail(user.email);
+        }
         if (user?.email_confirmed_at || (user as any)?.confirmed_at) {
           setIsVerified(true);
         }
       }
     );
 
-    // Also re-check when the tab regains focus (user returning from email)
+    // Re-check when tab regains focus (user returning from email client)
     const handleVisibility = () => {
       if (document.visibilityState === "visible") {
         checkVerification();
