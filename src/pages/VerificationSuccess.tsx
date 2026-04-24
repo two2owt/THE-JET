@@ -34,18 +34,46 @@ export default function VerificationSuccess() {
       setResendEmail(emailFromQuery);
     } else if (emailFromStorage) {
       setResendEmail(emailFromStorage);
-    } else {
-      // Try to get from current session as last resort
-      supabase.auth.getUser().then(({ data: { user } }) => {
-        if (user?.email) {
-          setResendEmail(user.email);
-        }
-        // Detect already-verified accounts
+    }
+
+    // Re-check verification status: refresh session, then read user.
+    // This ensures the "Go to app" button appears immediately after the
+    // user clicks the email link (which updates email_confirmed_at server-side).
+    let cancelled = false;
+    const checkVerification = async () => {
+      try {
+        await supabase.auth.refreshSession();
+      } catch {
+        // ignore — fall back to whatever session we have
+      }
+      const { data: { user } } = await supabase.auth.getUser();
+      if (cancelled || !user) return;
+      if (user.email && !emailFromQuery && !emailFromStorage) {
+        setResendEmail(user.email);
+      }
+      if (user.email_confirmed_at || (user as any).confirmed_at) {
+        setIsVerified(true);
+      }
+    };
+    checkVerification();
+
+    // Listen for auth changes (e.g. USER_UPDATED after verification)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        const user = session?.user;
         if (user?.email_confirmed_at || (user as any)?.confirmed_at) {
           setIsVerified(true);
         }
-      });
-    }
+      }
+    );
+
+    // Also re-check when the tab regains focus (user returning from email)
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        checkVerification();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
 
     const timer = setInterval(() => {
       setCountdown((prev) => {
@@ -58,7 +86,12 @@ export default function VerificationSuccess() {
       });
     }, 1000);
 
-    return () => clearInterval(timer);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+      subscription.unsubscribe();
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
   }, [navigate, location.search, location.hash]);
 
   const handleResend = async () => {
