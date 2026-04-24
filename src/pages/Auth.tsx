@@ -345,6 +345,8 @@ const Auth = () => {
         toast.success("Check your email!", {
           description: "We sent you a verification link. Please verify your email to continue.",
         });
+        // Store email for auto-fill on verification-success page
+        localStorage.setItem("jet_verification_email", email.trim().toLowerCase());
         setShowResendVerification(true);
         setPassword("");
         setConfirmPassword("");
