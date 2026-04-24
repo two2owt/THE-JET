@@ -1,18 +1,25 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function VerificationSuccess() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
+    // Defensive: strip any query params (e.g. ?mode=signup) so that
+    // navigating back to /auth never re-triggers a signup submission.
+    if (location.search || location.hash) {
+      window.history.replaceState({}, "", "/verification-success");
+    }
+
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          navigate("/auth");
+          navigate("/auth?mode=signin", { replace: true });
           return 0;
         }
         return prev - 1;
@@ -20,7 +27,7 @@ export default function VerificationSuccess() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [navigate]);
+  }, [navigate, location.search, location.hash]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4 sm:px-6 md:px-8 lg:px-10">
@@ -47,7 +54,7 @@ export default function VerificationSuccess() {
         </div>
 
         <Button 
-          onClick={() => navigate("/auth")} 
+          onClick={() => navigate("/auth?mode=signin", { replace: true })} 
           variant="jet"
           className="w-full"
           size="lg"
