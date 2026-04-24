@@ -494,138 +494,179 @@ const Auth = () => {
               </div>
             )}
 
-          {/* Password fields */}
-          {!isForgotPassword && (
-            <>
-              <div className="space-y-2" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div className="relative" style={{ position: 'relative' }}>
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      setValidationErrors(prev => ({ ...prev, password: undefined }));
-                    }}
-                    required
-                    className={`bg-card border-border pr-10 ${validationErrors.password ? "border-destructive" : ""}`}
-                    autoComplete={isSignUp ? "new-password" : "current-password"}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                    aria-pressed={showPassword}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 rounded-lg bg-transparent text-muted-foreground hover:text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:opacity-50 disabled:pointer-events-none transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
-                    style={{ position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)', minWidth: '44px', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }}
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-                {validationErrors.password && (
-                  <p className="text-xs text-destructive">{validationErrors.password}</p>
-                )}
-                {(isSignUp || isResettingPassword) && !validationErrors.password && (
-                  <p className="text-xs text-muted-foreground">
-                    Must be 8+ characters with uppercase, lowercase, and number
-                  </p>
-                )}
-              </div>
-
-              {(isSignUp || isResettingPassword) && (
-                <div className="space-y-2" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div className="relative" style={{ position: 'relative' }}>
+            {/* Password fields */}
+            {!isForgotPassword && (
+              <>
+                <div className="flex flex-col gap-2">
+                  <div className="relative">
                     <Input
-                      type={showConfirmPassword ? "text" : "password"}
-                      placeholder="Confirm Password"
-                      value={confirmPassword}
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Password"
+                      value={password}
                       onChange={(e) => {
-                        setConfirmPassword(e.target.value);
-                        setValidationErrors(prev => ({ ...prev, confirmPassword: undefined }));
+                        setPassword(e.target.value);
+                        setValidationErrors((prev) => ({
+                          ...prev,
+                          password: undefined,
+                        }));
                       }}
                       required
-                      className={`bg-card border-border pr-10 ${validationErrors.confirmPassword ? "border-destructive" : ""}`}
-                      autoComplete="new-password"
+                      className={`bg-card border-border pr-12 ${
+                        validationErrors.password ? "border-destructive" : ""
+                      }`}
+                      autoComplete={isSignUp ? "new-password" : "current-password"}
                     />
                     <button
                       type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-                      aria-pressed={showConfirmPassword}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 rounded-lg bg-transparent text-muted-foreground hover:text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:opacity-50 disabled:pointer-events-none transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
-                      style={{ position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)', minWidth: '44px', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }}
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      aria-pressed={showPassword}
+                      className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 touch-manipulation items-center justify-center rounded-lg bg-transparent text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:pointer-events-none disabled:opacity-50"
                     >
-                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </button>
                   </div>
-                  {validationErrors.confirmPassword && (
-                    <p className="text-xs text-destructive">{validationErrors.confirmPassword}</p>
+                  {validationErrors.password && (
+                    <p className="text-xs text-destructive">
+                      {validationErrors.password}
+                    </p>
+                  )}
+                  {(isSignUp || isResettingPassword) && !validationErrors.password && (
+                    <p className="text-xs text-muted-foreground">
+                      Must be 8+ characters with uppercase, lowercase, and number
+                    </p>
                   )}
                 </div>
-              )}
 
-              {/* Consent checkboxes for signup */}
-              {isSignUp && (
-                <div className="space-y-3 pt-2" style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: '8px' }}>
-                  <div className="flex items-start space-x-3" style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                    <Checkbox
-                      id="dataConsent"
-                      checked={dataProcessingConsent}
-                      onCheckedChange={(checked) => {
-                        setDataProcessingConsent(checked === true);
-                        setValidationErrors(prev => ({ ...prev, consent: undefined }));
-                      }}
-                      className="mt-0.5"
-                      style={{ width: '18px', height: '18px', minWidth: '18px', marginTop: '2px', border: '2px solid hsl(var(--border))', borderRadius: '4px' }}
-                    />
-                    <label htmlFor="dataConsent" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
-                      I agree to the{" "}
-                      <Link
-                        to="/privacy-policy"
-                        target="_blank"
-                        className="text-primary font-medium underline-offset-4 hover:text-primary-glow hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:rounded-sm transition-colors"
+                {(isSignUp || isResettingPassword) && (
+                  <div className="flex flex-col gap-2">
+                    <div className="relative">
+                      <Input
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="Confirm Password"
+                        value={confirmPassword}
+                        onChange={(e) => {
+                          setConfirmPassword(e.target.value);
+                          setValidationErrors((prev) => ({
+                            ...prev,
+                            confirmPassword: undefined,
+                          }));
+                        }}
+                        required
+                        className={`bg-card border-border pr-12 ${
+                          validationErrors.confirmPassword
+                            ? "border-destructive"
+                            : ""
+                        }`}
+                        autoComplete="new-password"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        aria-label={
+                          showConfirmPassword ? "Hide password" : "Show password"
+                        }
+                        aria-pressed={showConfirmPassword}
+                        className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 touch-manipulation items-center justify-center rounded-lg bg-transparent text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:pointer-events-none disabled:opacity-50"
                       >
-                        Privacy Policy
-                      </Link>{" "}
-                      and{" "}
-                      <Link
-                        to="/terms-of-service"
-                        target="_blank"
-                        className="text-primary font-medium underline-offset-4 hover:text-primary-glow hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:rounded-sm transition-colors"
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                    {validationErrors.confirmPassword && (
+                      <p className="text-xs text-destructive">
+                        {validationErrors.confirmPassword}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Consent checkboxes for signup */}
+                {isSignUp && (
+                  <div className="flex flex-col gap-3 pt-2">
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        id="dataConsent"
+                        checked={dataProcessingConsent}
+                        onCheckedChange={(checked) => {
+                          setDataProcessingConsent(checked === true);
+                          setValidationErrors((prev) => ({
+                            ...prev,
+                            consent: undefined,
+                          }));
+                        }}
+                        className="mt-0.5"
+                      />
+                      <label
+                        htmlFor="dataConsent"
+                        className="cursor-pointer text-xs leading-relaxed text-muted-foreground"
                       >
-                        Terms of Service
-                      </Link>
-                      . I understand my data will be processed securely after inactivity.
-                      <span className="text-destructive">*</span>
-                    </label>
+                        I agree to the{" "}
+                        <Link
+                          to="/privacy-policy"
+                          target="_blank"
+                          className="font-medium text-primary underline-offset-4 transition-colors hover:text-primary-glow hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                        >
+                          Privacy Policy
+                        </Link>{" "}
+                        and{" "}
+                        <Link
+                          to="/terms-of-service"
+                          target="_blank"
+                          className="font-medium text-primary underline-offset-4 transition-colors hover:text-primary-glow hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                        >
+                          Terms of Service
+                        </Link>
+                        . I understand my data will be processed securely after
+                        inactivity.
+                        <span className="text-destructive">*</span>
+                      </label>
+                    </div>
+                    {validationErrors.consent && (
+                      <p className="ml-6 text-xs text-destructive">
+                        {validationErrors.consent}
+                      </p>
+                    )}
+
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        id="locationConsent"
+                        checked={locationConsent}
+                        onCheckedChange={(checked) => {
+                          setLocationConsent(checked === true);
+                          setValidationErrors((prev) => ({
+                            ...prev,
+                            locationConsent: undefined,
+                          }));
+                        }}
+                        className="mt-0.5"
+                      />
+                      <label
+                        htmlFor="locationConsent"
+                        className="cursor-pointer text-xs leading-relaxed text-muted-foreground"
+                      >
+                        I consent to location tracking to receive personalized
+                        deals and push notifications. You can disable this
+                        anytime in your Profile Settings.
+                        <span className="text-destructive">*</span>
+                      </label>
+                    </div>
+                    {validationErrors.locationConsent && (
+                      <p className="ml-6 text-xs text-destructive">
+                        {validationErrors.locationConsent}
+                      </p>
+                    )}
                   </div>
-                  {validationErrors.consent && (
-                    <p className="text-xs text-destructive ml-6">{validationErrors.consent}</p>
-                  )}
-                  
-                  <div className="flex items-start space-x-3" style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                    <Checkbox
-                      id="locationConsent"
-                      checked={locationConsent}
-                      onCheckedChange={(checked) => {
-                        setLocationConsent(checked === true);
-                        setValidationErrors(prev => ({ ...prev, locationConsent: undefined }));
-                      }}
-                      className="mt-0.5"
-                      style={{ width: '18px', height: '18px', minWidth: '18px', marginTop: '2px', border: '2px solid hsl(var(--border))', borderRadius: '4px' }}
-                    />
-                    <label htmlFor="locationConsent" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
-                      I consent to location tracking to receive personalized deals and push notifications. You can disable this anytime in your Profile Settings.
-                      <span className="text-destructive">*</span>
-                    </label>
-                  </div>
-                  {validationErrors.locationConsent && (
-                    <p className="text-xs text-destructive ml-6">{validationErrors.locationConsent}</p>
-                  )}
-                </div>
-              )}
-            </>
-          )}
+                )}
+              </>
+            )}
 
           <Button
             type="submit"
