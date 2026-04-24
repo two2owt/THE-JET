@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+const RESEND_EMAIL_KEY = "jet_verification_email";
+
 export default function VerificationSuccess() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -20,6 +22,24 @@ export default function VerificationSuccess() {
     // navigating back to /auth never re-triggers a signup submission.
     if (location.search || location.hash) {
       window.history.replaceState({}, "", "/verification-success");
+    }
+
+    // Auto-fill email from: query param > localStorage > current user
+    const params = new URLSearchParams(location.search);
+    const emailFromQuery = params.get("email");
+    const emailFromStorage = localStorage.getItem(RESEND_EMAIL_KEY);
+
+    if (emailFromQuery) {
+      setResendEmail(emailFromQuery);
+    } else if (emailFromStorage) {
+      setResendEmail(emailFromStorage);
+    } else {
+      // Try to get from current session as last resort
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user?.email) {
+          setResendEmail(user.email);
+        }
+      });
     }
 
     const timer = setInterval(() => {
