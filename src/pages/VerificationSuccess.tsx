@@ -16,6 +16,7 @@ export default function VerificationSuccess() {
     "idle" | "sending" | "sent" | "error"
   >("idle");
   const [resendMessage, setResendMessage] = useState<string>("");
+  const [isVerified, setIsVerified] = useState(false);
 
   useEffect(() => {
     // Defensive: strip any query params (e.g. ?mode=signup) so that
@@ -38,6 +39,10 @@ export default function VerificationSuccess() {
       supabase.auth.getUser().then(({ data: { user } }) => {
         if (user?.email) {
           setResendEmail(user.email);
+        }
+        // Detect already-verified accounts
+        if (user?.email_confirmed_at || (user as any)?.confirmed_at) {
+          setIsVerified(true);
         }
       });
     }
@@ -137,65 +142,88 @@ export default function VerificationSuccess() {
           Sign In Now
         </Button>
 
-        <div className="p-4 rounded-xl bg-card/70 backdrop-blur-sm border border-border/60 shadow-card text-left space-y-3">
-          <div className="flex items-center gap-2">
-            <Mail className="w-4 h-4 text-primary" />
-            <p className="text-sm font-semibold text-foreground">
-              Didn't get the email?
+        {isVerified ? (
+          <div className="p-4 rounded-xl bg-card/70 backdrop-blur-sm border border-primary/30 shadow-card text-center space-y-3">
+            <div className="flex items-center justify-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-primary" />
+              <p className="text-sm font-semibold text-foreground">
+                Your email is verified
+              </p>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              You're all set. Jump into the app to get started.
             </p>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Enter your email and we'll send a new verification link.
-          </p>
-          <input
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            placeholder="you@example.com"
-            value={resendEmail}
-            onChange={(e) => {
-              setResendEmail(e.target.value);
-              if (resendStatus === "error") {
-                setResendStatus("idle");
-                setResendMessage("");
-              }
-            }}
-            disabled={isLocked}
-            className="w-full h-10 px-3 rounded-md bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-60 disabled:cursor-not-allowed"
-          />
-          <Button
-            type="button"
-            onClick={handleResend}
-            disabled={isLocked || !resendEmail.trim()}
-            variant="outline"
-            className="w-full"
-            size="sm"
-          >
-            {resendStatus === "sending" && (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            )}
-            {resendStatus === "sending"
-              ? "Sending…"
-              : resendStatus === "sent"
-                ? "Verification link sent"
-                : "Resend verification email"}
-          </Button>
-          {resendMessage && (
-            <p
-              role="status"
-              aria-live="polite"
-              className={`text-xs ${
-                resendStatus === "error"
-                  ? "text-destructive"
-                  : resendStatus === "sent"
-                    ? "text-primary"
-                    : "text-muted-foreground"
-              }`}
+            <Button
+              type="button"
+              onClick={() => navigate("/", { replace: true })}
+              variant="jet"
+              className="w-full"
+              size="lg"
             >
-              {resendMessage}
+              Go to app
+            </Button>
+          </div>
+        ) : (
+          <div className="p-4 rounded-xl bg-card/70 backdrop-blur-sm border border-border/60 shadow-card text-left space-y-3">
+            <div className="flex items-center gap-2">
+              <Mail className="w-4 h-4 text-primary" />
+              <p className="text-sm font-semibold text-foreground">
+                Didn't get the email?
+              </p>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Enter your email and we'll send a new verification link.
             </p>
-          )}
-        </div>
+            <input
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={resendEmail}
+              onChange={(e) => {
+                setResendEmail(e.target.value);
+                if (resendStatus === "error") {
+                  setResendStatus("idle");
+                  setResendMessage("");
+                }
+              }}
+              disabled={isLocked}
+              className="w-full h-10 px-3 rounded-md bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-60 disabled:cursor-not-allowed"
+            />
+            <Button
+              type="button"
+              onClick={handleResend}
+              disabled={isLocked || !resendEmail.trim()}
+              variant="outline"
+              className="w-full"
+              size="sm"
+            >
+              {resendStatus === "sending" && (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              )}
+              {resendStatus === "sending"
+                ? "Sending…"
+                : resendStatus === "sent"
+                  ? "Verification link sent"
+                  : "Resend verification email"}
+            </Button>
+            {resendMessage && (
+              <p
+                role="status"
+                aria-live="polite"
+                className={`text-xs ${
+                  resendStatus === "error"
+                    ? "text-destructive"
+                    : resendStatus === "sent"
+                      ? "text-primary"
+                      : "text-muted-foreground"
+                }`}
+              >
+                {resendMessage}
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
