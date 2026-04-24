@@ -90,6 +90,8 @@ export default function VerificationSuccess() {
       setResendMessage(
         `Verification link sent to ${email}. Check your inbox (and spam folder).`
       );
+      // Clear stored email since verification was resent
+      localStorage.removeItem(RESEND_EMAIL_KEY);
       toast.success("Verification email sent");
     } catch {
       setResendStatus("error");
