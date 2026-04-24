@@ -419,85 +419,80 @@ const Auth = () => {
   };
 
   return (
-    <div 
-      className="min-h-screen min-h-[100dvh] flex items-center justify-center px-fluid-md py-fluid-lg relative bg-background"
+    <div
+      className="relative flex min-h-screen min-h-[100dvh] items-center justify-center bg-background bg-cover bg-center bg-no-repeat px-fluid-md py-fluid-lg"
       style={{
         backgroundImage: `url(${authBackground})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        paddingTop: 'max(env(safe-area-inset-top, 0px), var(--space-lg))',
-        paddingBottom: 'max(env(safe-area-inset-bottom, 0px), var(--space-lg))',
+        paddingTop: "max(env(safe-area-inset-top, 0px), var(--space-lg))",
+        paddingBottom: "max(env(safe-area-inset-bottom, 0px), var(--space-lg))",
       }}
     >
       {/* Animated matte black/grey gradient overlay */}
       <div className="absolute inset-0 auth-gradient-overlay" />
-      <div className="w-full max-w-md relative z-10" style={{ width: '100%', maxWidth: '28rem', position: 'relative', zIndex: 10 }}>
+
+      <div className="relative z-10 w-full max-w-md">
         {/* Glassmorphic Card */}
-        <div className="backdrop-blur-xl bg-background/20 border border-border/30 rounded-2xl shadow-2xl"
-          style={{
-            backdropFilter: 'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
-            background: 'hsl(var(--background) / 0.2)',
-            border: '1px solid hsl(var(--border) / 0.3)',
-            borderRadius: '16px',
-            padding: 'clamp(24px, 5vw, 32px)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'clamp(16px, 3vw, 24px)',
-            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
-          }}
-        >
+        <div className="flex flex-col gap-6 rounded-2xl border border-border/30 bg-background/20 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
           {/* Header */}
-          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '96px', height: '96px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <img 
-                src={jetLogo} 
-                alt="JET Logo" 
-                style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }}
+          <div className="flex flex-col items-center gap-3 text-center">
+            <div className="flex h-24 w-24 items-center justify-center">
+              <img
+                src={jetLogo}
+                alt="JET Logo"
+                className="h-full w-full object-contain drop-shadow-lg"
                 width="96"
                 height="96"
                 fetchPriority="high"
                 decoding="async"
               />
             </div>
-            <h1 className="text-3xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent"
-              style={{ fontSize: 'clamp(1.5rem, 5vw, 1.875rem)', fontWeight: 800 }}>
+            <h1 className="bg-gradient-to-r from-foreground to-primary bg-clip-text text-2xl font-extrabold text-transparent sm:text-3xl">
               Welcome to JET
             </h1>
-            <p style={{ color: 'hsl(var(--muted-foreground))', fontSize: '14px' }}>
+            <p className="text-sm text-muted-foreground">
               {isResettingPassword
                 ? "Set your new password"
                 : isForgotPassword
                 ? "Reset your password"
                 : isSignUp
-                ? "Create an account to get started"
+                ? "Join JET and find what's hot near you"
                 : "Sign in to discover what's hot in your area"}
             </p>
           </div>
 
           {/* Form */}
-          <form onSubmit={isResettingPassword ? handlePasswordReset : isForgotPassword ? handleForgotPassword : handleAuth} className="space-y-4" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {/* Email field - only show if not resetting password */}
-          {!isResettingPassword && (
-            <div className="space-y-2" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <Input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setValidationErrors(prev => ({ ...prev, email: undefined }));
-                }}
-                required
-                className={`bg-card border-border ${validationErrors.email ? "border-destructive" : ""}`}
-                autoComplete="email"
-              />
-              {validationErrors.email && (
-                <p className="text-xs text-destructive">{validationErrors.email}</p>
-              )}
-            </div>
-          )}
+          <form
+            onSubmit={
+              isResettingPassword
+                ? handlePasswordReset
+                : isForgotPassword
+                ? handleForgotPassword
+                : handleAuth
+            }
+            className="flex flex-col gap-4"
+          >
+            {/* Email field - only show if not resetting password */}
+            {!isResettingPassword && (
+              <div className="flex flex-col gap-2">
+                <Input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setValidationErrors((prev) => ({ ...prev, email: undefined }));
+                  }}
+                  required
+                  className={`bg-card border-border ${
+                    validationErrors.email ? "border-destructive" : ""
+                  }`}
+                  autoComplete="email"
+                />
+                {validationErrors.email && (
+                  <p className="text-xs text-destructive">{validationErrors.email}</p>
+                )}
+              </div>
+            )}
 
           {/* Password fields */}
           {!isForgotPassword && (
