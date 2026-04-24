@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router";
-import { CheckCircle2, Mail, Loader2 } from "lucide-react";
+import { CheckCircle2, Mail, Loader2, MailCheck, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -117,7 +117,7 @@ export default function VerificationSuccess() {
             <CheckCircle2 className="w-12 h-12 text-primary" />
           </div>
         </div>
-        
+
         <div className="space-y-2">
           <h1 className="text-3xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
             Email Verified!
@@ -127,10 +127,41 @@ export default function VerificationSuccess() {
           </p>
         </div>
 
-        <div className="p-4 rounded-xl bg-card/90 backdrop-blur-sm border border-primary/20 shadow-card">
-          <p className="text-sm text-muted-foreground">
-            Redirecting to sign in page in <span className="font-bold text-primary">{countdown}</span> seconds...
-          </p>
+        {/* Verification status banner — explains current state + next step */}
+        <div
+          role="status"
+          aria-live="polite"
+          className={`p-4 rounded-xl backdrop-blur-sm shadow-card text-left flex items-start gap-3 ${
+            isVerified
+              ? "bg-primary/10 border border-primary/30"
+              : "bg-card/80 border border-border/60"
+          }`}
+        >
+          <div
+            className={`shrink-0 w-9 h-9 rounded-full flex items-center justify-center ${
+              isVerified
+                ? "bg-primary/20 text-primary"
+                : "bg-muted text-muted-foreground"
+            }`}
+          >
+            {isVerified ? (
+              <MailCheck className="w-5 h-5" />
+            ) : (
+              <Clock className="w-5 h-5" />
+            )}
+          </div>
+          <div className="flex-1 space-y-1">
+            <p className="text-sm font-semibold text-foreground">
+              {isVerified ? "Your email is verified" : "Verification pending"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {isVerified
+                ? "You're all set. Tap “Go to app” below to start exploring JET."
+                : `Check your inbox${
+                    resendEmail ? ` (${resendEmail})` : ""
+                  } and click the verification link. You'll be redirected to sign in in ${countdown}s.`}
+            </p>
+          </div>
         </div>
 
         <Button 
