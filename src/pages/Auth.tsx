@@ -419,218 +419,254 @@ const Auth = () => {
   };
 
   return (
-    <div 
-      className="min-h-screen min-h-[100dvh] flex items-center justify-center px-fluid-md py-fluid-lg relative bg-background"
+    <div
+      className="relative flex min-h-screen min-h-[100dvh] items-center justify-center bg-background bg-cover bg-center bg-no-repeat px-fluid-md py-fluid-lg"
       style={{
         backgroundImage: `url(${authBackground})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        paddingTop: 'max(env(safe-area-inset-top, 0px), var(--space-lg))',
-        paddingBottom: 'max(env(safe-area-inset-bottom, 0px), var(--space-lg))',
+        paddingTop: "max(env(safe-area-inset-top, 0px), var(--space-lg))",
+        paddingBottom: "max(env(safe-area-inset-bottom, 0px), var(--space-lg))",
       }}
     >
       {/* Animated matte black/grey gradient overlay */}
       <div className="absolute inset-0 auth-gradient-overlay" />
-      <div className="w-full max-w-md relative z-10" style={{ width: '100%', maxWidth: '28rem', position: 'relative', zIndex: 10 }}>
+
+      <div className="relative z-10 w-full max-w-md">
         {/* Glassmorphic Card */}
-        <div className="backdrop-blur-xl bg-background/20 border border-border/30 rounded-2xl shadow-2xl"
-          style={{
-            backdropFilter: 'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
-            background: 'hsl(var(--background) / 0.2)',
-            border: '1px solid hsl(var(--border) / 0.3)',
-            borderRadius: '16px',
-            padding: 'clamp(24px, 5vw, 32px)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'clamp(16px, 3vw, 24px)',
-            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
-          }}
-        >
+        <div className="flex flex-col gap-6 rounded-2xl border border-border/30 bg-background/20 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
           {/* Header */}
-          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '96px', height: '96px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <img 
-                src={jetLogo} 
-                alt="JET Logo" 
-                style={{ width: '100%', height: '100%', objectFit: 'contain', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }}
+          <div className="flex flex-col items-center gap-3 text-center">
+            <div className="flex h-24 w-24 items-center justify-center">
+              <img
+                src={jetLogo}
+                alt="JET Logo"
+                className="h-full w-full object-contain drop-shadow-lg"
                 width="96"
                 height="96"
                 fetchPriority="high"
                 decoding="async"
               />
             </div>
-            <h1 className="text-3xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent"
-              style={{ fontSize: 'clamp(1.5rem, 5vw, 1.875rem)', fontWeight: 800 }}>
+            <h1 className="bg-gradient-to-r from-foreground to-primary bg-clip-text text-2xl font-extrabold text-transparent sm:text-3xl">
               Welcome to JET
             </h1>
-            <p style={{ color: 'hsl(var(--muted-foreground))', fontSize: '14px' }}>
+            <p className="text-sm text-muted-foreground">
               {isResettingPassword
                 ? "Set your new password"
                 : isForgotPassword
                 ? "Reset your password"
                 : isSignUp
-                ? "Create an account to get started"
+                ? "Join JET and find what's hot near you"
                 : "Sign in to discover what's hot in your area"}
             </p>
           </div>
 
           {/* Form */}
-          <form onSubmit={isResettingPassword ? handlePasswordReset : isForgotPassword ? handleForgotPassword : handleAuth} className="space-y-4" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {/* Email field - only show if not resetting password */}
-          {!isResettingPassword && (
-            <div className="space-y-2" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <Input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setValidationErrors(prev => ({ ...prev, email: undefined }));
-                }}
-                required
-                className={`bg-card border-border ${validationErrors.email ? "border-destructive" : ""}`}
-                autoComplete="email"
-              />
-              {validationErrors.email && (
-                <p className="text-xs text-destructive">{validationErrors.email}</p>
-              )}
-            </div>
-          )}
-
-          {/* Password fields */}
-          {!isForgotPassword && (
-            <>
-              <div className="space-y-2" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div className="relative" style={{ position: 'relative' }}>
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      setValidationErrors(prev => ({ ...prev, password: undefined }));
-                    }}
-                    required
-                    className={`bg-card border-border pr-10 ${validationErrors.password ? "border-destructive" : ""}`}
-                    autoComplete={isSignUp ? "new-password" : "current-password"}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                    aria-pressed={showPassword}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 rounded-lg bg-transparent text-muted-foreground hover:text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:opacity-50 disabled:pointer-events-none transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
-                    style={{ position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)', minWidth: '44px', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }}
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-                {validationErrors.password && (
-                  <p className="text-xs text-destructive">{validationErrors.password}</p>
-                )}
-                {(isSignUp || isResettingPassword) && !validationErrors.password && (
-                  <p className="text-xs text-muted-foreground">
-                    Must be 8+ characters with uppercase, lowercase, and number
-                  </p>
+          <form
+            onSubmit={
+              isResettingPassword
+                ? handlePasswordReset
+                : isForgotPassword
+                ? handleForgotPassword
+                : handleAuth
+            }
+            className="flex flex-col gap-4"
+          >
+            {/* Email field - only show if not resetting password */}
+            {!isResettingPassword && (
+              <div className="flex flex-col gap-2">
+                <Input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setValidationErrors((prev) => ({ ...prev, email: undefined }));
+                  }}
+                  required
+                  className={`bg-card border-border ${
+                    validationErrors.email ? "border-destructive" : ""
+                  }`}
+                  autoComplete="email"
+                />
+                {validationErrors.email && (
+                  <p className="text-xs text-destructive">{validationErrors.email}</p>
                 )}
               </div>
+            )}
 
-              {(isSignUp || isResettingPassword) && (
-                <div className="space-y-2" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div className="relative" style={{ position: 'relative' }}>
+            {/* Password fields */}
+            {!isForgotPassword && (
+              <>
+                <div className="flex flex-col gap-2">
+                  <div className="relative">
                     <Input
-                      type={showConfirmPassword ? "text" : "password"}
-                      placeholder="Confirm Password"
-                      value={confirmPassword}
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Password"
+                      value={password}
                       onChange={(e) => {
-                        setConfirmPassword(e.target.value);
-                        setValidationErrors(prev => ({ ...prev, confirmPassword: undefined }));
+                        setPassword(e.target.value);
+                        setValidationErrors((prev) => ({
+                          ...prev,
+                          password: undefined,
+                        }));
                       }}
                       required
-                      className={`bg-card border-border pr-10 ${validationErrors.confirmPassword ? "border-destructive" : ""}`}
-                      autoComplete="new-password"
+                      className={`bg-card border-border pr-12 ${
+                        validationErrors.password ? "border-destructive" : ""
+                      }`}
+                      autoComplete={isSignUp ? "new-password" : "current-password"}
                     />
                     <button
                       type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-                      aria-pressed={showConfirmPassword}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 rounded-lg bg-transparent text-muted-foreground hover:text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:opacity-50 disabled:pointer-events-none transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
-                      style={{ position: 'absolute', right: '4px', top: '50%', transform: 'translateY(-50%)', minWidth: '44px', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }}
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      aria-pressed={showPassword}
+                      className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 touch-manipulation items-center justify-center rounded-lg bg-transparent text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:pointer-events-none disabled:opacity-50"
                     >
-                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </button>
                   </div>
-                  {validationErrors.confirmPassword && (
-                    <p className="text-xs text-destructive">{validationErrors.confirmPassword}</p>
+                  {validationErrors.password && (
+                    <p className="text-xs text-destructive">
+                      {validationErrors.password}
+                    </p>
+                  )}
+                  {(isSignUp || isResettingPassword) && !validationErrors.password && (
+                    <p className="text-xs text-muted-foreground">
+                      Must be 8+ characters with uppercase, lowercase, and number
+                    </p>
                   )}
                 </div>
-              )}
 
-              {/* Consent checkboxes for signup */}
-              {isSignUp && (
-                <div className="space-y-3 pt-2" style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: '8px' }}>
-                  <div className="flex items-start space-x-3" style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                    <Checkbox
-                      id="dataConsent"
-                      checked={dataProcessingConsent}
-                      onCheckedChange={(checked) => {
-                        setDataProcessingConsent(checked === true);
-                        setValidationErrors(prev => ({ ...prev, consent: undefined }));
-                      }}
-                      className="mt-0.5"
-                      style={{ width: '18px', height: '18px', minWidth: '18px', marginTop: '2px', border: '2px solid hsl(var(--border))', borderRadius: '4px' }}
-                    />
-                    <label htmlFor="dataConsent" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
-                      I agree to the{" "}
-                      <Link
-                        to="/privacy-policy"
-                        target="_blank"
-                        className="text-primary font-medium underline-offset-4 hover:text-primary-glow hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:rounded-sm transition-colors"
+                {(isSignUp || isResettingPassword) && (
+                  <div className="flex flex-col gap-2">
+                    <div className="relative">
+                      <Input
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="Confirm Password"
+                        value={confirmPassword}
+                        onChange={(e) => {
+                          setConfirmPassword(e.target.value);
+                          setValidationErrors((prev) => ({
+                            ...prev,
+                            confirmPassword: undefined,
+                          }));
+                        }}
+                        required
+                        className={`bg-card border-border pr-12 ${
+                          validationErrors.confirmPassword
+                            ? "border-destructive"
+                            : ""
+                        }`}
+                        autoComplete="new-password"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        aria-label={
+                          showConfirmPassword ? "Hide password" : "Show password"
+                        }
+                        aria-pressed={showConfirmPassword}
+                        className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 touch-manipulation items-center justify-center rounded-lg bg-transparent text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:pointer-events-none disabled:opacity-50"
                       >
-                        Privacy Policy
-                      </Link>{" "}
-                      and{" "}
-                      <Link
-                        to="/terms-of-service"
-                        target="_blank"
-                        className="text-primary font-medium underline-offset-4 hover:text-primary-glow hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:rounded-sm transition-colors"
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                    {validationErrors.confirmPassword && (
+                      <p className="text-xs text-destructive">
+                        {validationErrors.confirmPassword}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Consent checkboxes for signup */}
+                {isSignUp && (
+                  <div className="flex flex-col gap-3 pt-2">
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        id="dataConsent"
+                        checked={dataProcessingConsent}
+                        onCheckedChange={(checked) => {
+                          setDataProcessingConsent(checked === true);
+                          setValidationErrors((prev) => ({
+                            ...prev,
+                            consent: undefined,
+                          }));
+                        }}
+                        className="mt-0.5"
+                      />
+                      <label
+                        htmlFor="dataConsent"
+                        className="cursor-pointer text-xs leading-relaxed text-muted-foreground"
                       >
-                        Terms of Service
-                      </Link>
-                      . I understand my data will be processed securely after inactivity.
-                      <span className="text-destructive">*</span>
-                    </label>
+                        I agree to the{" "}
+                        <Link
+                          to="/privacy-policy"
+                          target="_blank"
+                          className="font-medium text-primary underline-offset-4 transition-colors hover:text-primary-glow hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                        >
+                          Privacy Policy
+                        </Link>{" "}
+                        and{" "}
+                        <Link
+                          to="/terms-of-service"
+                          target="_blank"
+                          className="font-medium text-primary underline-offset-4 transition-colors hover:text-primary-glow hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                        >
+                          Terms of Service
+                        </Link>
+                        . I understand my data will be processed securely after
+                        inactivity.
+                        <span className="text-destructive">*</span>
+                      </label>
+                    </div>
+                    {validationErrors.consent && (
+                      <p className="ml-6 text-xs text-destructive">
+                        {validationErrors.consent}
+                      </p>
+                    )}
+
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        id="locationConsent"
+                        checked={locationConsent}
+                        onCheckedChange={(checked) => {
+                          setLocationConsent(checked === true);
+                          setValidationErrors((prev) => ({
+                            ...prev,
+                            locationConsent: undefined,
+                          }));
+                        }}
+                        className="mt-0.5"
+                      />
+                      <label
+                        htmlFor="locationConsent"
+                        className="cursor-pointer text-xs leading-relaxed text-muted-foreground"
+                      >
+                        I consent to location tracking to receive personalized
+                        deals and push notifications. You can disable this
+                        anytime in your Profile Settings.
+                        <span className="text-destructive">*</span>
+                      </label>
+                    </div>
+                    {validationErrors.locationConsent && (
+                      <p className="ml-6 text-xs text-destructive">
+                        {validationErrors.locationConsent}
+                      </p>
+                    )}
                   </div>
-                  {validationErrors.consent && (
-                    <p className="text-xs text-destructive ml-6">{validationErrors.consent}</p>
-                  )}
-                  
-                  <div className="flex items-start space-x-3" style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                    <Checkbox
-                      id="locationConsent"
-                      checked={locationConsent}
-                      onCheckedChange={(checked) => {
-                        setLocationConsent(checked === true);
-                        setValidationErrors(prev => ({ ...prev, locationConsent: undefined }));
-                      }}
-                      className="mt-0.5"
-                      style={{ width: '18px', height: '18px', minWidth: '18px', marginTop: '2px', border: '2px solid hsl(var(--border))', borderRadius: '4px' }}
-                    />
-                    <label htmlFor="locationConsent" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
-                      I consent to location tracking to receive personalized deals and push notifications. You can disable this anytime in your Profile Settings.
-                      <span className="text-destructive">*</span>
-                    </label>
-                  </div>
-                  {validationErrors.locationConsent && (
-                    <p className="text-xs text-destructive ml-6">{validationErrors.locationConsent}</p>
-                  )}
-                </div>
-              )}
-            </>
-          )}
+                )}
+              </>
+            )}
 
           <Button
             type="submit"
@@ -655,21 +691,8 @@ const Auth = () => {
 
         {/* Resend Verification Email */}
         {showResendVerification && !isResettingPassword && (
-          <div
-            className="rounded-xl p-4 space-y-3"
-            style={{
-              background: 'hsl(var(--card) / 0.4)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-              border: '1px solid hsl(var(--primary) / 0.25)',
-              borderRadius: '12px',
-              padding: '16px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '12px',
-            }}
-          >
-            <div className="text-sm text-muted-foreground text-center">
+          <div className="flex flex-col gap-3 rounded-xl border border-primary/25 bg-card/40 p-4 backdrop-blur-md">
+            <div className="text-center text-sm text-muted-foreground">
               Didn't receive the verification email?
             </div>
             <Button
@@ -677,14 +700,12 @@ const Auth = () => {
               onClick={handleResendVerification}
               disabled={isResending || resendCooldown > 0}
               variant="outline"
-              className="w-full rounded-xl bg-transparent border-primary/40 text-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/70 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary/70 disabled:opacity-60 disabled:bg-transparent disabled:text-muted-foreground disabled:border-border/40 disabled:cursor-not-allowed transition-all"
               size="sm"
+              className="w-full rounded-xl border-primary/40 bg-transparent text-foreground transition-all hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:border-primary/70 focus-visible:ring-2 focus-visible:ring-primary/50 disabled:cursor-not-allowed disabled:border-border/40 disabled:bg-transparent disabled:text-muted-foreground disabled:opacity-60"
             >
-              {isResending ? (
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              ) : null}
-              {resendCooldown > 0 
-                ? `Resend in ${resendCooldown}s` 
+              {isResending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {resendCooldown > 0
+                ? `Resend in ${resendCooldown}s`
                 : "Resend Verification Email"}
             </Button>
           </div>
@@ -692,21 +713,18 @@ const Auth = () => {
 
         {/* Toggle & Forgot Password */}
         {!isResettingPassword && (
-          <div
-            className="text-center"
-            style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '4px' }}
-          >
+          <div className="flex flex-col gap-1 text-center">
             {!isForgotPassword && !isSignUp && (
               <button
                 type="button"
                 onClick={() => setIsForgotPassword(true)}
                 disabled={isLoading}
-                className="text-sm font-medium text-muted-foreground hover:text-primary active:text-primary-glow transition-colors w-full min-h-[44px] flex items-center justify-center touch-manipulation rounded-lg bg-transparent hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:opacity-50 disabled:pointer-events-none border border-transparent hover:border-primary/20"
+                className="flex min-h-[44px] w-full touch-manipulation items-center justify-center rounded-lg border border-transparent bg-transparent text-sm font-medium text-muted-foreground transition-colors hover:border-primary/20 hover:bg-primary/10 hover:text-primary active:text-primary-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:pointer-events-none disabled:opacity-50"
               >
                 Forgot password?
               </button>
             )}
-            
+
             <button
               type="button"
               onClick={() => {
@@ -720,34 +738,41 @@ const Auth = () => {
                 setLocationConsent(false);
               }}
               disabled={isLoading}
-              className="text-sm text-muted-foreground hover:text-primary active:text-primary-glow transition-colors min-h-[44px] flex items-center justify-center w-full touch-manipulation rounded-lg bg-transparent hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:opacity-50 disabled:pointer-events-none border border-transparent hover:border-primary/20"
+              className="flex min-h-[44px] w-full touch-manipulation items-center justify-center rounded-lg border border-transparent bg-transparent text-sm text-muted-foreground transition-colors hover:border-primary/20 hover:bg-primary/10 hover:text-primary active:text-primary-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:pointer-events-none disabled:opacity-50"
             >
               {isForgotPassword ? (
                 "Back to sign in"
               ) : isSignUp ? (
-                <>Already have an account? <span className="text-primary font-semibold ml-1">Sign in</span></>
+                <>
+                  Already have an account?{" "}
+                  <span className="ml-1 font-semibold text-primary">Sign in</span>
+                </>
               ) : (
-                <>Don't have an account? <span className="text-primary font-semibold ml-1">Sign up</span></>
+                <>
+                  Don't have an account?{" "}
+                  <span className="ml-1 font-semibold text-primary">Sign up</span>
+                </>
               )}
             </button>
           </div>
         )}
 
-          {/* Features */}
-           <div className="bg-card/30 backdrop-blur-sm rounded-xl border border-border/30"
-             style={{ background: 'hsl(var(--card) / 0.3)', backdropFilter: 'blur(8px)', borderRadius: '12px', padding: '16px', border: '1px solid hsl(var(--border) / 0.3)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <p style={{ fontSize: '12px', fontWeight: 600, color: 'hsl(var(--foreground))' }}>With an account you can:</p>
-            <ul style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))', display: 'flex', flexDirection: 'column', gap: '4px', listStyle: 'none', padding: 0, margin: 0 }}>
-              <li>• Get real-time notifications for nearby deals</li>
-              <li>• Save your favorite venues</li>
-              <li>• Receive personalized recommendations</li>
-              <li>• Track your activity and rewards</li>
-            </ul>
-          </div>
+        {/* Features */}
+        <div className="flex flex-col gap-2 rounded-xl border border-border/30 bg-card/30 p-4 backdrop-blur-sm">
+          <p className="text-xs font-semibold text-foreground">
+            With an account you can:
+          </p>
+          <ul className="flex list-none flex-col gap-1 p-0 text-xs text-muted-foreground">
+            <li>• Get real-time notifications for nearby deals</li>
+            <li>• Save your favorite venues</li>
+            <li>• Receive personalized recommendations</li>
+            <li>• Track your activity and rewards</li>
+          </ul>
         </div>
-
-        {/* Footer now rendered globally */}
+        </div>
       </div>
+
+      {/* Footer now rendered globally */}
     </div>
   );
 };
