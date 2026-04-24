@@ -769,6 +769,7 @@ const Auth = () => {
             <li>• Track your activity and rewards</li>
           </ul>
         </div>
+        </div>
       </div>
 
       {/* Footer now rendered globally */}
