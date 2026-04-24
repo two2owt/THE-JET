@@ -19,33 +19,75 @@ export default function VerificationSuccess() {
   const [isVerified, setIsVerified] = useState(false);
 
   useEffect(() => {
-    // Defensive: strip any query params (e.g. ?mode=signup) so that
-    // navigating back to /auth never re-triggers a signup submission.
+    // Parse signals BEFORE stripping URL
+    const params = new URLSearchParams(location.search);
+    const emailFromQuery = params.get("email");
+    const verifiedFromQuery =
+      params.get("verified") === "true" || params.get("verified") === "1";
+    const emailFromStorage = localStorage.getItem(RESEND_EMAIL_KEY);
+
+    // If Supabase placed tokens in the hash (email link redirect), it means
+    // verification just succeeded — mark verified before we strip the URL.
+    const hash = location.hash || "";
+    const hasAuthTokens =
+      hash.includes("access_token=") || hash.includes("type=signup");
+    if (hasAuthTokens || verifiedFromQuery) {
+      setIsVerified(true);
+    }
+
+    // Defensive: strip query/hash so navigating back to /auth never
+    // re-triggers a signup submission.
     if (location.search || location.hash) {
       window.history.replaceState({}, "", "/verification-success");
     }
 
-    // Auto-fill email from: query param > localStorage > current user
-    const params = new URLSearchParams(location.search);
-    const emailFromQuery = params.get("email");
-    const emailFromStorage = localStorage.getItem(RESEND_EMAIL_KEY);
-
+    // Auto-fill email from: query param > localStorage > current user (later)
     if (emailFromQuery) {
       setResendEmail(emailFromQuery);
     } else if (emailFromStorage) {
       setResendEmail(emailFromStorage);
-    } else {
-      // Try to get from current session as last resort
-      supabase.auth.getUser().then(({ data: { user } }) => {
-        if (user?.email) {
+    }
+
+    // Re-check verification status from session — works whether the user
+    // is already signed in OR just established a session via the email link.
+    let cancelled = false;
+    const checkVerification = async () => {
+      try {
+        await supabase.auth.refreshSession();
+      } catch {
+        // ignore — fall back to whatever session we have
+      }
+      const { data: { user } } = await supabase.auth.getUser();
+      if (cancelled) return;
+      if (user?.email && !emailFromQuery && !emailFromStorage) {
+        setResendEmail(user.email);
+      }
+      if (user?.email_confirmed_at || (user as any)?.confirmed_at) {
+        setIsVerified(true);
+      }
+    };
+    checkVerification();
+
+    // Listen for auth changes (USER_UPDATED / SIGNED_IN after email link)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        const user = session?.user;
+        if (user?.email && !emailFromQuery && !emailFromStorage) {
           setResendEmail(user.email);
         }
-        // Detect already-verified accounts
         if (user?.email_confirmed_at || (user as any)?.confirmed_at) {
           setIsVerified(true);
         }
-      });
-    }
+      }
+    );
+
+    // Re-check when tab regains focus (user returning from email client)
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        checkVerification();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
 
     const timer = setInterval(() => {
       setCountdown((prev) => {
@@ -58,7 +100,12 @@ export default function VerificationSuccess() {
       });
     }, 1000);
 
-    return () => clearInterval(timer);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+      subscription.unsubscribe();
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
   }, [navigate, location.search, location.hash]);
 
   const handleResend = async () => {
