@@ -294,19 +294,42 @@ const Auth = () => {
 
         // Enhanced error handling for signup
         if (error) {
-          if (error.message?.includes("already registered")) {
+          const msg = error.message?.toLowerCase() ?? "";
+          if (
+            msg.includes("already registered") ||
+            msg.includes("already been registered") ||
+            msg.includes("user already exists")
+          ) {
             toast.error("Account already exists", {
               description: "This email is already registered. Please sign in instead.",
             });
             setIsSignUp(false);
+            setPassword("");
+            setConfirmPassword("");
             return;
-          } else if (error.message?.includes("rate limit")) {
+          } else if (msg.includes("rate limit")) {
             toast.error("Too many attempts", {
               description: "Please wait a few minutes before trying again.",
             });
             return;
           }
           throw error;
+        }
+
+        // Supabase returns a user with empty identities when the email is
+        // already registered (no error thrown). Detect and surface clearly
+        // instead of silently "succeeding".
+        const identities = (signUpData.user as any)?.identities;
+        if (signUpData.user && Array.isArray(identities) && identities.length === 0) {
+          toast.error("Account already exists", {
+            description: "This email is already registered. Please sign in instead.",
+          });
+          setIsSignUp(false);
+          setPassword("");
+          setConfirmPassword("");
+          setDataProcessingConsent(false);
+          setLocationConsent(false);
+          return;
         }
 
         // Store consent in profile after signup
