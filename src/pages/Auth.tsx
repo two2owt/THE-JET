@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
-// Footer is now rendered globally in App.tsx
 // Use the new JET logo for auth page
 import jetLogo from "@/assets/jet-auth-logo.png";
 import authBackground from "@/assets/auth-background.webp";
@@ -516,19 +516,18 @@ const Auth = () => {
                       }`}
                       autoComplete={isSignUp ? "new-password" : "current-password"}
                     />
-                    <button
-                      type="button"
+                    <IconButton
                       onClick={() => setShowPassword(!showPassword)}
-                      aria-label={showPassword ? "Hide password" : "Show password"}
-                      aria-pressed={showPassword}
-                      className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 touch-manipulation items-center justify-center rounded-lg bg-transparent text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:pointer-events-none disabled:opacity-50"
+                      ariaLabel={showPassword ? "Hide password" : "Show password"}
+                      ariaPressed={showPassword}
+                      className="absolute right-1 top-1/2 -translate-y-1/2"
                     >
                       {showPassword ? (
                         <EyeOff className="h-4 w-4" />
                       ) : (
                         <Eye className="h-4 w-4" />
                       )}
-                    </button>
+                    </IconButton>
                   </div>
                   {validationErrors.password && (
                     <p className="text-xs text-destructive">
@@ -564,21 +563,18 @@ const Auth = () => {
                         }`}
                         autoComplete="new-password"
                       />
-                      <button
-                        type="button"
+                      <IconButton
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        aria-label={
-                          showConfirmPassword ? "Hide password" : "Show password"
-                        }
-                        aria-pressed={showConfirmPassword}
-                        className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 touch-manipulation items-center justify-center rounded-lg bg-transparent text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:pointer-events-none disabled:opacity-50"
+                        ariaLabel={showConfirmPassword ? "Hide password" : "Show password"}
+                        ariaPressed={showConfirmPassword}
+                        className="absolute right-1 top-1/2 -translate-y-1/2"
                       >
                         {showConfirmPassword ? (
                           <EyeOff className="h-4 w-4" />
                         ) : (
                           <Eye className="h-4 w-4" />
                         )}
-                      </button>
+                      </IconButton>
                     </div>
                     {validationErrors.confirmPassword && (
                       <p className="text-xs text-destructive">
