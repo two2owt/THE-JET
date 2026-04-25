@@ -2,6 +2,7 @@ import { useState, useEffect, lazy, Suspense, useRef } from "react";
 import { Search, Sparkles, X } from "lucide-react";
 import { Input } from "./ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { IconButton } from "./ui/icon-button";
 import { useNavigate } from "react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useSearchHistory } from "@/hooks/useSearchHistory";
@@ -202,24 +203,20 @@ export const Header = () => {
 
         {/* Search icon — mobile collapsed state */}
         {showSearchIcon && (
-          <button
+          <IconButton
+            variant="ghost"
+            ariaLabel="Open search"
             onClick={() => setSearchExpanded(true)}
             className="rounded-full transition-colors hover:bg-muted/60"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
               flexShrink: 0,
-              width: 'var(--touch-target-min, 44px)',
-              height: 'var(--touch-target-min, 44px)',
               opacity: mounted ? 1 : 0,
               transform: mounted ? 'scale(1)' : 'scale(0.8)',
               transition: 'opacity 0.3s ease-out 0.15s, transform 0.3s ease-out 0.15s',
             }}
-            aria-label="Open search"
           >
-            <Search style={{ width: 'clamp(16px, 2.5vw, 20px)', height: 'clamp(16px, 2.5vw, 20px)', color: 'hsl(var(--muted-foreground))' }} />
-          </button>
+            <Search style={{ color: 'hsl(var(--muted-foreground))' }} />
+          </IconButton>
         )}
 
         {/* Search bar — expands to fill remaining space */}
@@ -298,9 +295,10 @@ export const Header = () => {
             />
             {/* Clear button — visible whenever there is text */}
             {searchQuery && (
-              <button
+              <IconButton
+                size="bare"
+                ariaLabel="Clear search"
                 onClick={handleClearSearch}
-                aria-label="Clear search"
                 className="rounded-full hover:bg-muted/80 transition-colors"
                 style={{
                   position: 'absolute',
@@ -310,21 +308,19 @@ export const Header = () => {
                   zIndex: 10,
                   width: '28px',
                   height: '28px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
                   background: 'hsl(var(--muted) / 0.6)',
                   border: 'none',
                   cursor: 'pointer',
                 }}
               >
                 <X style={{ width: '12px', height: '12px', color: 'hsl(var(--muted-foreground))' }} />
-              </button>
+              </IconButton>
             )}
             {isMobile && searchExpanded && (
-              <button
+              <IconButton
+                size="bare"
+                ariaLabel="Close search"
                 onClick={handleCollapseSearch}
-                aria-label="Close search"
                 className="rounded-full hover:bg-muted/60 transition-colors"
                 style={{
                   position: 'absolute',
@@ -334,13 +330,10 @@ export const Header = () => {
                   zIndex: 10,
                   width: '28px',
                   height: '28px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
                 }}
               >
                 <X style={{ width: '14px', height: '14px', color: 'hsl(var(--muted-foreground))' }} />
-              </button>
+              </IconButton>
             )}
             {showResults && (
               <Suspense fallback={null}>
