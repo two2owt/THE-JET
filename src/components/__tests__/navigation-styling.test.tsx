@@ -65,13 +65,13 @@ describe("Header – inline layout styles", () => {
 
   it("contains settings avatar button", () => {
     renderWithRouter(<Header />);
-    expect(screen.getByLabelText("Open settings")).toBeInTheDocument();
+    expect(screen.getByLabelText("Open settings and profile")).toBeInTheDocument();
   });
 
   it("has search input on pages that don't hide it", () => {
     renderWithRouter(<Header />, "/settings");
     // Settings hides search via PageLayout, but Header renders search by default
-    const search = screen.getByPlaceholderText("Search venues...");
+    const search = screen.getByPlaceholderText("Search venues, deals, neighborhoods...");
     expect(search).toBeInTheDocument();
   });
 });
