@@ -420,7 +420,7 @@ const Auth = () => {
 
   return (
     <div
-      className="relative flex min-h-screen min-h-[100dvh] items-center justify-center bg-background bg-cover bg-center bg-no-repeat px-fluid-md py-fluid-lg"
+      className="relative flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto bg-background bg-cover bg-center bg-no-repeat px-fluid-md py-fluid-lg"
       style={{
         backgroundImage: `url(${authBackground})`,
         paddingTop: "max(env(safe-area-inset-top, 0px), var(--space-lg))",
