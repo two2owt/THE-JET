@@ -563,21 +563,18 @@ const Auth = () => {
                         }`}
                         autoComplete="new-password"
                       />
-                      <button
-                        type="button"
+                      <IconButton
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        aria-label={
-                          showConfirmPassword ? "Hide password" : "Show password"
-                        }
-                        aria-pressed={showConfirmPassword}
-                        className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 touch-manipulation items-center justify-center rounded-lg bg-transparent text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:pointer-events-none disabled:opacity-50"
+                        ariaLabel={showConfirmPassword ? "Hide password" : "Show password"}
+                        ariaPressed={showConfirmPassword}
+                        className="absolute right-1 top-1/2 -translate-y-1/2"
                       >
                         {showConfirmPassword ? (
                           <EyeOff className="h-4 w-4" />
                         ) : (
                           <Eye className="h-4 w-4" />
                         )}
-                      </button>
+                      </IconButton>
                     </div>
                     {validationErrors.confirmPassword && (
                       <p className="text-xs text-destructive">
