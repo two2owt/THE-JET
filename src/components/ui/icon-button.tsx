@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const iconButtonVariants = cva(
-  "inline-flex items-center justify-center rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 touch-manipulation",
+  "inline-flex items-center justify-center rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 touch-manipulation [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -13,9 +13,9 @@ const iconButtonVariants = cva(
         muted: "bg-transparent text-muted-foreground/60 hover:bg-muted hover:text-muted-foreground",
       },
       size: {
-        default: "h-11 w-11 min-h-[44px] min-w-[44px]",
-        sm: "h-9 w-9 min-h-[36px] min-w-[36px] sm:min-h-[44px] sm:min-w-[44px]",
-        lg: "h-12 w-12 min-h-[48px] min-w-[48px]",
+        default: "h-11 w-11 min-h-[44px] min-w-[44px] [&_svg]:h-4 [&_svg]:w-4",
+        sm: "h-9 w-9 min-h-[36px] min-w-[36px] sm:min-h-[44px] sm:min-w-[44px] [&_svg]:h-3.5 [&_svg]:w-3.5",
+        lg: "h-12 w-12 min-h-[48px] min-w-[48px] [&_svg]:h-5 [&_svg]:w-5",
       },
     },
     defaultVariants: {
