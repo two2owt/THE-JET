@@ -16,6 +16,7 @@ const iconButtonVariants = cva(
         default: "h-11 w-11 min-h-[44px] min-w-[44px] [&_svg]:h-4 [&_svg]:w-4",
         sm: "h-9 w-9 min-h-[36px] min-w-[36px] sm:min-h-[44px] sm:min-w-[44px] [&_svg]:h-3.5 [&_svg]:w-3.5",
         lg: "h-12 w-12 min-h-[48px] min-w-[48px] [&_svg]:h-5 [&_svg]:w-5",
+        bare: "[&_svg]:h-3 [&_svg]:w-3",
       },
     },
     defaultVariants: {
