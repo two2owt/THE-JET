@@ -53,4 +53,21 @@ describe("IconButton", () => {
     expect(btn.className).toMatch(/hover:bg-primary\/10/);
     expect(btn.className).toMatch(/hover:text-primary/);
   });
+
+  it("applies consistent SVG centering rules to all icon children", () => {
+    render(<IconButton ariaLabel="SVG rules"><Eye /></IconButton>);
+    const btn = screen.getByRole("button");
+    expect(btn.className).toMatch(/\[&_svg\]:block/);
+    expect(btn.className).toMatch(/\[&_svg\]:shrink-0/);
+    expect(btn.className).toMatch(/\[&_svg\]:pointer-events-none/);
+  });
+
+  it("scales SVG size with the size variant", () => {
+    const { rerender } = render(<IconButton size="sm" ariaLabel="sm"><Eye /></IconButton>);
+    expect(screen.getByRole("button").className).toMatch(/\[&_svg\]:h-3\.5/);
+    rerender(<IconButton size="default" ariaLabel="default"><Eye /></IconButton>);
+    expect(screen.getByRole("button").className).toMatch(/\[&_svg\]:h-4/);
+    rerender(<IconButton size="lg" ariaLabel="lg"><Eye /></IconButton>);
+    expect(screen.getByRole("button").className).toMatch(/\[&_svg\]:h-5/);
+  });
 });

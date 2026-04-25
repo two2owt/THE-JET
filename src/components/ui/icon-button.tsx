@@ -4,7 +4,9 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const iconButtonVariants = cva(
-  "inline-flex items-center justify-center rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 touch-manipulation [&_svg]:shrink-0",
+  // Base: every descendant SVG is centered, non-shrinkable, block (no baseline gap),
+  // and click-through so the parent button always receives the event.
+  "inline-flex items-center justify-center rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 touch-manipulation [&_svg]:block [&_svg]:shrink-0 [&_svg]:pointer-events-none",
   {
     variants: {
       variant: {

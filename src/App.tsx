@@ -27,11 +27,6 @@ const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const VerificationSuccess = lazy(() => import("./pages/VerificationSuccess"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// Dev-only QA pages (tree-shaken in production builds)
-const IconButtonQA = import.meta.env.DEV
-  ? lazy(() => import("./pages/IconButtonQA"))
-  : null;
-
 /** Routes where the global Header should be hidden (full-bleed standalone pages) */
 const HEADERLESS_ROUTES = ["/auth", "/onboarding"];
 
@@ -107,12 +102,7 @@ const AppLayout = memo(function AppLayout() {
           {/* Legal pages — Footer is embedded inline within these pages */}
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
-
-          {/* Dev-only QA routes */}
-          {IconButtonQA && (
-            <Route path="/dev/icon-button" element={<IconButtonQA />} />
-          )}
-
+          
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
