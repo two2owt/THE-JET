@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { Venue } from "@/types/venue";
+import { buildDirectionsUrl, type DirectionsApp } from "@/lib/directions-url";
 
 interface DirectionsDialogProps {
   open: boolean;
@@ -27,54 +28,13 @@ const triggerSoarHaptic = async () => {
 };
 
 const DirectionsDialog = ({ open, onOpenChange, venue }: DirectionsDialogProps) => {
-  const openDirections = async (app: 'google' | 'apple' | 'waze') => {
+  const openDirections = async (app: DirectionsApp) => {
     if (!venue) return;
 
     await triggerSoarHaptic();
 
-    const { lat, lng, address, name } = venue;
-    const hasCoords =
-      typeof lat === 'number' && typeof lng === 'number' &&
-      Number.isFinite(lat) && Number.isFinite(lng) &&
-      lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
-    const label = encodeURIComponent(name || address || 'Destination');
-    const addressQuery = address ? encodeURIComponent(address) : '';
-
-    let url = '';
-
-    switch (app) {
-      case 'google':
-        // Prefer coords for determinism; fall back to address text.
-        // Never pass `destination_place_id` unless it's a real Google Place ID.
-        if (hasCoords) {
-          url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
-        } else if (addressQuery) {
-          url = `https://www.google.com/maps/dir/?api=1&destination=${addressQuery}&travelmode=driving`;
-        } else {
-          url = `https://www.google.com/maps/search/?api=1&query=${label}`;
-        }
-        break;
-      case 'apple':
-        // Apple Maps: HTTPS, coords + named label via `q` for the pin title.
-        if (hasCoords) {
-          url = `https://maps.apple.com/?daddr=${lat},${lng}&q=${label}&dirflg=d`;
-        } else if (addressQuery) {
-          url = `https://maps.apple.com/?daddr=${addressQuery}&q=${label}&dirflg=d`;
-        } else {
-          url = `https://maps.apple.com/?q=${label}`;
-        }
-        break;
-      case 'waze':
-        // Waze: `ll` is the canonical coord param; `q` is a free-text fallback.
-        if (hasCoords) {
-          url = `https://www.waze.com/ul?ll=${lat}%2C${lng}&navigate=yes&zoom=17`;
-        } else if (addressQuery) {
-          url = `https://www.waze.com/ul?q=${addressQuery}&navigate=yes`;
-        } else {
-          url = `https://www.waze.com/ul?q=${label}&navigate=yes`;
-        }
-        break;
-    }
+    const url = buildDirectionsUrl(app, venue);
+    const { address, name } = venue;
 
     if (!url) {
       toast.error('Unable to open directions', {
