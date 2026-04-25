@@ -428,9 +428,9 @@ const Auth = () => {
 
       <div className="relative z-10 w-full max-w-md">
         {/* Glassmorphic Card */}
-        <div className="flex flex-col gap-6 rounded-2xl border border-border/30 bg-background/20 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
+        <div className="flex flex-col gap-fluid-lg rounded-2xl border border-border/30 bg-background/20 p-fluid-lg shadow-2xl backdrop-blur-xl">
           {/* Header */}
-          <div className="flex flex-col items-center gap-3 text-center">
+          <div className="flex flex-col items-center gap-fluid-sm text-center">
             <div className="flex h-24 w-24 items-center justify-center">
               <img
                 src={jetLogo}
@@ -442,10 +442,10 @@ const Auth = () => {
                 decoding="async"
               />
             </div>
-            <h1 className="bg-gradient-to-r from-foreground to-primary bg-clip-text text-2xl font-extrabold text-transparent sm:text-3xl">
+            <h1 className="bg-gradient-to-r from-foreground to-primary bg-clip-text text-fluid-3xl font-extrabold text-transparent">
               Welcome to JET
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-fluid-sm text-muted-foreground">
               {isResettingPassword
                 ? "Set your new password"
                 : isForgotPassword
@@ -465,11 +465,11 @@ const Auth = () => {
                 ? handleForgotPassword
                 : handleAuth
             }
-            className="flex flex-col gap-4"
+            className="flex flex-col gap-fluid-md"
           >
             {/* Email field - only show if not resetting password */}
             {!isResettingPassword && (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-fluid-xs">
                 <Input
                   type="email"
                   placeholder="Email"
@@ -485,7 +485,7 @@ const Auth = () => {
                   autoComplete="email"
                 />
                 {validationErrors.email && (
-                  <p className="text-xs text-destructive">{validationErrors.email}</p>
+                  <p className="text-fluid-xs text-destructive">{validationErrors.email}</p>
                 )}
               </div>
             )}
