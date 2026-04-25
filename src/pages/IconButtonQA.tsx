@@ -39,30 +39,30 @@ export default function IconButtonQA() {
         <Card className="p-6 space-y-1">
           <h2 className="text-lg font-semibold mb-2">Variants</h2>
           <Row label="default (auth password)">
-            <IconButton ariaLabel="Default"><Eye className="h-4 w-4" /></IconButton>
-            <IconButton ariaLabel="Default pressed" ariaPressed><EyeOff className="h-4 w-4" /></IconButton>
-            <IconButton ariaLabel="Default disabled" disabled><Eye className="h-4 w-4" /></IconButton>
+            <IconButton ariaLabel="Default"><Eye /></IconButton>
+            <IconButton ariaLabel="Default pressed" ariaPressed><EyeOff /></IconButton>
+            <IconButton ariaLabel="Default disabled" disabled><Eye /></IconButton>
           </Row>
           <Row label="ghost">
-            <IconButton variant="ghost" ariaLabel="Ghost"><X className="h-4 w-4" /></IconButton>
-            <IconButton variant="ghost" ariaLabel="Ghost disabled" disabled><X className="h-4 w-4" /></IconButton>
+            <IconButton variant="ghost" ariaLabel="Ghost"><X /></IconButton>
+            <IconButton variant="ghost" ariaLabel="Ghost disabled" disabled><X /></IconButton>
           </Row>
           <Row label="muted">
-            <IconButton variant="muted" ariaLabel="Muted"><Search className="h-4 w-4" /></IconButton>
-            <IconButton variant="muted" ariaLabel="Muted disabled" disabled><Search className="h-4 w-4" /></IconButton>
+            <IconButton variant="muted" ariaLabel="Muted"><Search /></IconButton>
+            <IconButton variant="muted" ariaLabel="Muted disabled" disabled><Search /></IconButton>
           </Row>
         </Card>
 
         <Card className="p-6 space-y-1">
           <h2 className="text-lg font-semibold mb-2">Sizes</h2>
           <Row label="sm (36px → 44px on touch)">
-            <IconButton size="sm" ariaLabel="Small"><Eye className="h-4 w-4" /></IconButton>
+            <IconButton size="sm" ariaLabel="Small"><Eye /></IconButton>
           </Row>
           <Row label="default (44px)">
-            <IconButton size="default" ariaLabel="Default size"><Eye className="h-4 w-4" /></IconButton>
+            <IconButton size="default" ariaLabel="Default size"><Eye /></IconButton>
           </Row>
           <Row label="lg (48px)">
-            <IconButton size="lg" ariaLabel="Large"><Eye className="h-5 w-5" /></IconButton>
+            <IconButton size="lg" ariaLabel="Large"><Eye /></IconButton>
           </Row>
         </Card>
 
@@ -88,7 +88,7 @@ export default function IconButtonQA() {
                 ariaPressed={show1}
                 className="absolute right-1 top-1/2 -translate-y-1/2"
               >
-                {show1 ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {show1 ? <EyeOff /> : <Eye />}
               </IconButton>
             </div>
           </div>
@@ -108,7 +108,7 @@ export default function IconButtonQA() {
                 ariaPressed={show2}
                 className="absolute right-1 top-1/2 -translate-y-1/2"
               >
-                {show2 ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {show2 ? <EyeOff /> : <Eye />}
               </IconButton>
             </div>
           </div>
@@ -128,7 +128,7 @@ export default function IconButtonQA() {
                 disabled
                 className="absolute right-1 top-1/2 -translate-y-1/2"
               >
-                <Eye className="h-4 w-4" />
+                <Eye />
               </IconButton>
             </div>
           </div>
