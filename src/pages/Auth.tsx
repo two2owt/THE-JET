@@ -420,21 +420,17 @@ const Auth = () => {
 
   return (
     <div
-      className="relative flex min-h-screen min-h-[100dvh] items-center justify-center bg-background bg-cover bg-center bg-no-repeat px-fluid-md py-fluid-lg"
-      style={{
-        backgroundImage: `url(${authBackground})`,
-        paddingTop: "max(env(safe-area-inset-top, 0px), var(--space-lg))",
-        paddingBottom: "max(env(safe-area-inset-bottom, 0px), var(--space-lg))",
-      }}
+      className="relative flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto bg-background bg-cover bg-center bg-no-repeat px-fluid-md pt-[max(env(safe-area-inset-top,0px),var(--space-lg))] pb-[max(env(safe-area-inset-bottom,0px),var(--space-lg))]"
+      style={{ backgroundImage: `url(${authBackground})` }}
     >
       {/* Animated matte black/grey gradient overlay */}
       <div className="absolute inset-0 auth-gradient-overlay" />
 
       <div className="relative z-10 w-full max-w-md">
         {/* Glassmorphic Card */}
-        <div className="flex flex-col gap-6 rounded-2xl border border-border/30 bg-background/20 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
+        <div className="flex flex-col gap-fluid-lg rounded-2xl border border-border/30 bg-background/20 p-fluid-lg shadow-2xl backdrop-blur-xl">
           {/* Header */}
-          <div className="flex flex-col items-center gap-3 text-center">
+          <div className="flex flex-col items-center gap-fluid-sm text-center">
             <div className="flex h-24 w-24 items-center justify-center">
               <img
                 src={jetLogo}
@@ -446,10 +442,10 @@ const Auth = () => {
                 decoding="async"
               />
             </div>
-            <h1 className="bg-gradient-to-r from-foreground to-primary bg-clip-text text-2xl font-extrabold text-transparent sm:text-3xl">
+            <h1 className="bg-gradient-to-r from-foreground to-primary bg-clip-text text-fluid-3xl font-extrabold text-transparent">
               Welcome to JET
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-fluid-sm text-muted-foreground">
               {isResettingPassword
                 ? "Set your new password"
                 : isForgotPassword
@@ -469,11 +465,11 @@ const Auth = () => {
                 ? handleForgotPassword
                 : handleAuth
             }
-            className="flex flex-col gap-4"
+            className="flex flex-col gap-fluid-md"
           >
             {/* Email field - only show if not resetting password */}
             {!isResettingPassword && (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-fluid-xs">
                 <Input
                   type="email"
                   placeholder="Email"
@@ -489,7 +485,7 @@ const Auth = () => {
                   autoComplete="email"
                 />
                 {validationErrors.email && (
-                  <p className="text-xs text-destructive">{validationErrors.email}</p>
+                  <p className="text-fluid-xs text-destructive">{validationErrors.email}</p>
                 )}
               </div>
             )}
@@ -497,7 +493,7 @@ const Auth = () => {
             {/* Password fields */}
             {!isForgotPassword && (
               <>
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-fluid-xs">
                   <div className="relative">
                     <Input
                       type={showPassword ? "text" : "password"}
@@ -523,26 +519,26 @@ const Auth = () => {
                       className="absolute right-1 top-1/2 -translate-y-1/2"
                     >
                       {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
+                        <EyeOff />
                       ) : (
-                        <Eye className="h-4 w-4" />
+                        <Eye />
                       )}
                     </IconButton>
                   </div>
                   {validationErrors.password && (
-                    <p className="text-xs text-destructive">
+                    <p className="text-fluid-xs text-destructive">
                       {validationErrors.password}
                     </p>
                   )}
                   {(isSignUp || isResettingPassword) && !validationErrors.password && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-fluid-xs text-muted-foreground">
                       Must be 8+ characters with uppercase, lowercase, and number
                     </p>
                   )}
                 </div>
 
                 {(isSignUp || isResettingPassword) && (
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-fluid-xs">
                     <div className="relative">
                       <Input
                         type={showConfirmPassword ? "text" : "password"}
@@ -570,14 +566,14 @@ const Auth = () => {
                         className="absolute right-1 top-1/2 -translate-y-1/2"
                       >
                         {showConfirmPassword ? (
-                          <EyeOff className="h-4 w-4" />
+                          <EyeOff />
                         ) : (
-                          <Eye className="h-4 w-4" />
+                          <Eye />
                         )}
                       </IconButton>
                     </div>
                     {validationErrors.confirmPassword && (
-                      <p className="text-xs text-destructive">
+                      <p className="text-fluid-xs text-destructive">
                         {validationErrors.confirmPassword}
                       </p>
                     )}
@@ -586,8 +582,8 @@ const Auth = () => {
 
                 {/* Consent checkboxes for signup */}
                 {isSignUp && (
-                  <div className="flex flex-col gap-3 pt-2">
-                    <div className="flex items-start gap-3">
+                  <div className="flex flex-col gap-fluid-sm pt-fluid-xs">
+                    <div className="flex items-start gap-fluid-sm">
                       <Checkbox
                         id="dataConsent"
                         checked={dataProcessingConsent}
@@ -602,7 +598,7 @@ const Auth = () => {
                       />
                       <label
                         htmlFor="dataConsent"
-                        className="cursor-pointer text-xs leading-relaxed text-muted-foreground"
+                        className="cursor-pointer text-fluid-xs leading-relaxed text-muted-foreground"
                       >
                         I agree to the{" "}
                         <Link
@@ -626,12 +622,12 @@ const Auth = () => {
                       </label>
                     </div>
                     {validationErrors.consent && (
-                      <p className="ml-6 text-xs text-destructive">
+                      <p className="ml-6 text-fluid-xs text-destructive">
                         {validationErrors.consent}
                       </p>
                     )}
 
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-fluid-sm">
                       <Checkbox
                         id="locationConsent"
                         checked={locationConsent}
@@ -646,7 +642,7 @@ const Auth = () => {
                       />
                       <label
                         htmlFor="locationConsent"
-                        className="cursor-pointer text-xs leading-relaxed text-muted-foreground"
+                        className="cursor-pointer text-fluid-xs leading-relaxed text-muted-foreground"
                       >
                         I consent to location tracking to receive personalized
                         deals and push notifications. You can disable this
@@ -655,7 +651,7 @@ const Auth = () => {
                       </label>
                     </div>
                     {validationErrors.locationConsent && (
-                      <p className="ml-6 text-xs text-destructive">
+                      <p className="ml-6 text-fluid-xs text-destructive">
                         {validationErrors.locationConsent}
                       </p>
                     )}
@@ -669,7 +665,7 @@ const Auth = () => {
             disabled={isLoading}
             variant="jet"
             size="lg"
-            className="w-full rounded-xl text-base"
+            className="w-full rounded-xl text-fluid-base"
           >
             {isLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -687,8 +683,8 @@ const Auth = () => {
 
         {/* Resend Verification Email */}
         {showResendVerification && !isResettingPassword && (
-          <div className="flex flex-col gap-3 rounded-xl border border-primary/25 bg-card/40 p-4 backdrop-blur-md">
-            <div className="text-center text-sm text-muted-foreground">
+          <div className="flex flex-col gap-fluid-sm rounded-xl border border-primary/25 bg-card/40 p-fluid-md backdrop-blur-md">
+            <div className="text-center text-fluid-sm text-muted-foreground">
               Didn't receive the verification email?
             </div>
             <Button
@@ -715,7 +711,7 @@ const Auth = () => {
                 type="button"
                 onClick={() => setIsForgotPassword(true)}
                 disabled={isLoading}
-                className="flex min-h-[44px] w-full touch-manipulation items-center justify-center rounded-lg border border-transparent bg-transparent text-sm font-medium text-muted-foreground transition-colors hover:border-primary/20 hover:bg-primary/10 hover:text-primary active:text-primary-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:pointer-events-none disabled:opacity-50"
+                className="flex min-h-[44px] w-full touch-manipulation items-center justify-center rounded-lg border border-transparent bg-transparent text-fluid-sm font-medium text-muted-foreground transition-colors hover:border-primary/20 hover:bg-primary/10 hover:text-primary active:text-primary-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:pointer-events-none disabled:opacity-50"
               >
                 Forgot password?
               </button>
@@ -734,7 +730,7 @@ const Auth = () => {
                 setLocationConsent(false);
               }}
               disabled={isLoading}
-              className="flex min-h-[44px] w-full touch-manipulation items-center justify-center rounded-lg border border-transparent bg-transparent text-sm text-muted-foreground transition-colors hover:border-primary/20 hover:bg-primary/10 hover:text-primary active:text-primary-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:pointer-events-none disabled:opacity-50"
+              className="flex min-h-[44px] w-full touch-manipulation items-center justify-center rounded-lg border border-transparent bg-transparent text-fluid-sm text-muted-foreground transition-colors hover:border-primary/20 hover:bg-primary/10 hover:text-primary active:text-primary-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:pointer-events-none disabled:opacity-50"
             >
               {isForgotPassword ? (
                 "Back to sign in"
@@ -754,11 +750,11 @@ const Auth = () => {
         )}
 
         {/* Features */}
-        <div className="flex flex-col gap-2 rounded-xl border border-border/30 bg-card/30 p-4 backdrop-blur-sm">
-          <p className="text-xs font-semibold text-foreground">
+        <div className="flex flex-col gap-fluid-xs rounded-xl border border-border/30 bg-card/30 p-fluid-md backdrop-blur-sm">
+          <p className="text-fluid-xs font-semibold text-foreground">
             With an account you can:
           </p>
-          <ul className="flex list-none flex-col gap-1 p-0 text-xs text-muted-foreground">
+          <ul className="flex list-none flex-col gap-1 p-0 text-fluid-xs text-muted-foreground">
             <li>• Get real-time notifications for nearby deals</li>
             <li>• Save your favorite venues</li>
             <li>• Receive personalized recommendations</li>
