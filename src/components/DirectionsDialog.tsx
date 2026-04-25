@@ -29,44 +29,72 @@ const triggerSoarHaptic = async () => {
 const DirectionsDialog = ({ open, onOpenChange, venue }: DirectionsDialogProps) => {
   const openDirections = async (app: 'google' | 'apple' | 'waze') => {
     if (!venue) return;
-    
+
     await triggerSoarHaptic();
-    
+
     const { lat, lng, address, name } = venue;
-    const destination = encodeURIComponent(address || name);
-    
+    const hasCoords =
+      typeof lat === 'number' && typeof lng === 'number' &&
+      Number.isFinite(lat) && Number.isFinite(lng) &&
+      lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+    const label = encodeURIComponent(name || address || 'Destination');
+    const addressQuery = address ? encodeURIComponent(address) : '';
+
     let url = '';
-    
+
     switch (app) {
       case 'google':
-        if (address) {
-          url = `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
+        // Prefer coords for determinism; fall back to address text.
+        // Never pass `destination_place_id` unless it's a real Google Place ID.
+        if (hasCoords) {
+          url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+        } else if (addressQuery) {
+          url = `https://www.google.com/maps/dir/?api=1&destination=${addressQuery}&travelmode=driving`;
         } else {
-          url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_place_id=${destination}`;
+          url = `https://www.google.com/maps/search/?api=1&query=${label}`;
         }
         break;
       case 'apple':
-        if (address) {
-          url = `http://maps.apple.com/?daddr=${destination}`;
+        // Apple Maps: HTTPS, coords + named label via `q` for the pin title.
+        if (hasCoords) {
+          url = `https://maps.apple.com/?daddr=${lat},${lng}&q=${label}&dirflg=d`;
+        } else if (addressQuery) {
+          url = `https://maps.apple.com/?daddr=${addressQuery}&q=${label}&dirflg=d`;
         } else {
-          url = `http://maps.apple.com/?daddr=${lat},${lng}&q=${destination}`;
+          url = `https://maps.apple.com/?q=${label}`;
         }
         break;
       case 'waze':
-        if (address) {
-          url = `https://waze.com/ul?q=${destination}&navigate=yes`;
+        // Waze: `ll` is the canonical coord param; `q` is a free-text fallback.
+        if (hasCoords) {
+          url = `https://www.waze.com/ul?ll=${lat}%2C${lng}&navigate=yes&zoom=17`;
+        } else if (addressQuery) {
+          url = `https://www.waze.com/ul?q=${addressQuery}&navigate=yes`;
         } else {
-          url = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes&q=${destination}`;
+          url = `https://www.waze.com/ul?q=${label}&navigate=yes`;
         }
         break;
     }
-    
-    window.open(url, '_blank');
+
+    if (!url) {
+      toast.error('Unable to open directions', {
+        description: 'No location data available for this venue.',
+      });
+      return;
+    }
+
+    // `noopener,noreferrer` prevents the new tab from accessing window.opener.
+    const opened = window.open(url, '_blank', 'noopener,noreferrer');
+    if (!opened) {
+      // Popup blocked — fall back to same-tab navigation so the user still gets there.
+      window.location.href = url;
+    }
     onOpenChange(false);
-    
-    toast.success(`Opening ${app === 'google' ? 'Google Maps' : app === 'apple' ? 'Apple Maps' : 'Waze'}`, {
-      description: `Navigate to ${address || name}`
-    });
+
+    toast.success(
+      `Opening ${app === 'google' ? 'Google Maps' : app === 'apple' ? 'Apple Maps' : 'Waze'}`,
+      { description: `Navigate to ${name || address || 'destination'}` },
+    );
   };
 
   return (
