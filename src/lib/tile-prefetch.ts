@@ -3,7 +3,7 @@
  * Prefetches tiles based on user's last known location or default city
  */
 
-import { CITIES, City } from "@/types/cities";
+import { CITIES } from "@/types/cities";
 
 // Default city for prefetching (Charlotte)
 const DEFAULT_CITY = CITIES[0];

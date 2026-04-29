@@ -1,4 +1,4 @@
-import { useState, ImgHTMLAttributes, memo, useEffect } from "react";
+import { useState, ImgHTMLAttributes, memo } from "react";
 import { cn } from "@/lib/utils";
 import { 
   generateSrcSet, 
@@ -86,7 +86,7 @@ export const OptimizedImage = memo(({
     : src;
 
   // Shared image element for blur-up
-  const renderImage = (showBlur: boolean = false) => (
+  const renderImage = (_showBlur: boolean = false) => (
     <>
       {/* Blur placeholder */}
       {blurUp && !isLoaded && (

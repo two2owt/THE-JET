@@ -234,7 +234,7 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
 
   const toggleOption = (
     option: string,
-    currentSelection: string[],
+    _currentSelection: string[],
     setter: React.Dispatch<React.SetStateAction<string[]>>,
     maxSelections: number = 5
   ) => {

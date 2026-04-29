@@ -1,5 +1,5 @@
 import { memo, useState, useEffect } from "react";
-import { Clock, MapPin, Share2, Heart, Crown } from "lucide-react";
+import { Clock, MapPin, Share2, Heart } from "lucide-react";
 import { Button } from "./ui/button";
 import { OptimizedImage } from "./ui/optimized-image";
 import { glideHaptic } from "@/lib/haptics";

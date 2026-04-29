@@ -45,8 +45,6 @@ interface EventsPreferences {
   timeSetting: string[];
 }
 
-const CATEGORIES = ["Food", "Drinks", "Nightlife", "Events"];
-
 const FOOD_OPTIONS = {
   cuisineType: ["American", "Italian", "Mexican", "Asian Fusion", "Mediterranean"],
   dietaryPreference: ["Vegetarian", "Vegan", "Gluten-Free", "Keto", "Halal"],
@@ -136,7 +134,7 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
 
   const toggleOption = (
     option: string,
-    currentSelection: string[],
+    _currentSelection: string[],
     setter: React.Dispatch<React.SetStateAction<string[]>>,
     maxSelections: number = 5
   ) => {

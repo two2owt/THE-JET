@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { storeLastKnownLocation } from "@/lib/tile-prefetch";
 import type * as MapboxGL from "mapbox-gl";
 
@@ -66,9 +66,8 @@ const loadMapboxGL = async (): Promise<MapboxGLModule> => {
   }
   return mapboxLoadPromise;
 };
-import { MapPin, TrendingUp, Layers, X, AlertCircle, Route, Play, Pause, SkipBack, SkipForward, Clock, ChevronDown, ChevronUp, PanelRightClose, PanelRightOpen, Car } from "lucide-react";
+import { MapPin, Layers, X, AlertCircle, Route, Play, Pause, SkipBack, SkipForward, Clock, ChevronDown, ChevronUp, Car } from "lucide-react";
 import { MapUISkeleton } from "@/components/skeletons/MapUISkeleton";
-import { supabase } from "@/integrations/supabase/client";
 import { useLocationDensity } from "@/hooks/useLocationDensity";
 import { useMovementPaths } from "@/hooks/useMovementPaths";
 import { useHeatmapTimelapse } from "@/hooks/useHeatmapTimelapse";
@@ -83,8 +82,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collap
 import { Input } from "./ui/input";
 import { Search } from "lucide-react";
 
-import { CITIES, type City, getDistanceKm, getNearestCity, getCitiesSortedByDistance, kmToMiles } from "@/types/cities";
-import { getCachedReverseGeocode, type GeocodedLocation } from "@/utils/reverseGeocode";
+import { CITIES, type City, getNearestCity, getCitiesSortedByDistance, kmToMiles } from "@/types/cities";
+import { getCachedReverseGeocode } from "@/utils/reverseGeocode";
 import locationPuckIcon from "@/assets/location-puck.png";
 
 // Re-export Venue type for backwards compatibility
@@ -111,13 +110,6 @@ const getActivityColor = (activity: number) => {
   if (activity >= 80) return "hsl(0, 100%, 65%)"; // hot red - bright coral
   if (activity >= 60) return "hsl(45, 100%, 60%)"; // warm yellow-orange 
   return "hsl(200, 100%, 65%)"; // cool blue - vibrant sky blue
-};
-
-// Get glow color for markers based on activity
-const getActivityGlow = (activity: number) => {
-  if (activity >= 80) return "rgba(255, 100, 100, 0.6)"; // red glow
-  if (activity >= 60) return "rgba(255, 200, 50, 0.5)"; // warm glow
-  return "rgba(100, 180, 255, 0.5)"; // blue glow
 };
 
 // Platform detection for optimized settings
@@ -165,7 +157,7 @@ const getPlatformSettings = (isMobile: boolean) => {
   };
 };
 
-export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenues, mapboxToken, selectedCity, onCityChange, onNearestCityDetected, onDetectedLocationNameChange, isLoadingVenues = false, selectedVenue, resetUIKey, isTokenLoading = false }: MapboxHeatmapProps) => {
+export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenues, mapboxToken, selectedCity, onCityChange, onNearestCityDetected, onDetectedLocationNameChange, isLoadingVenues = false, selectedVenue, resetUIKey }: MapboxHeatmapProps) => {
   // Filter venues by Google Places opening hours against the device's local
   // time. Markers (and the underlying heatmap source) automatically refresh
   // every minute as venues open/close. Venues without parseable hours stay
@@ -239,7 +231,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     const isDark = document.documentElement.classList.contains('dark');
     return isDark ? 'dark' : 'streets';
   });
-  const [lightPreset, setLightPreset] = useState<'dawn' | 'day' | 'dusk' | 'night'>(getTimeOfDayPreset);
+  const [lightPreset] = useState<'dawn' | 'day' | 'dusk' | 'night'>(getTimeOfDayPreset);
   const [show3DTerrain, setShow3DTerrain] = useState(false);
   
   // Time-lapse mode state
@@ -323,7 +315,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
   
-  const { densityData, loading: densityLoading, error: densityError, refresh: refreshDensity } = useLocationDensity({
+  const { densityData, loading: densityLoading } = useLocationDensity({
     timeFilter,
     hourOfDay: timelapseMode ? undefined : hourFilter,
     dayOfWeek: dayFilter,
@@ -1694,8 +1686,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       // Increased minimum size for better visibility
       const markerSize = Math.max(32, Math.min(38, baseSize * 0.8)) * proximityFactor * activitySizeFactor;
       const markerHeight = markerSize * 1.35;
-      const glowColor = getActivityGlow(venue.activity);
-
       // Create teardrop marker element with entrance animation
       const staggerDelay = (index % 30) * 30;
       const el = document.createElement("div");

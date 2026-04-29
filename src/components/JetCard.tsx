@@ -6,7 +6,6 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Venue } from "./MapboxHeatmap";
 import { UpgradePrompt, useFeatureAccess } from "./UpgradePrompt";
 import { shareVenue } from "@/utils/shareUtils";
-import { ShareToFriendDialog } from "./ShareToFriendDialog";
 
 interface NearbyParking {
   name: string;
@@ -26,21 +25,10 @@ interface JetCardProps {
 }
 
 export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }: JetCardProps) => {
-  const [user, setUser] = useState<any>(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const { canAccessSocialFeatures } = useFeatureAccess();
   const [nearbyParking, setNearbyParking] = useState<NearbyParking[]>([]);
   const [parkingLoading, setParkingLoading] = useState(false);
-  
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
 
   // Fetch nearby parking when venue changes
   useEffect(() => {

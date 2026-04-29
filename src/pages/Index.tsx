@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, lazy, Suspense, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { useNavigate, useLocation } from "react-router";
+import { useNavigate } from "react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { type Venue } from "@/types/venue";
 import { CITIES, type City } from "@/types/cities";
@@ -11,7 +11,7 @@ import { useHeaderConfig } from "@/contexts/HeaderContext";
 
 
 // Hooks must be imported synchronously (React rules)
-import { useMapboxToken, getMapboxTokenFromCache } from "@/hooks/useMapboxToken";
+import { useMapboxToken } from "@/hooks/useMapboxToken";
 import { useDeepLinking } from "@/hooks/useDeepLinking";
 import { useSwipeToDismiss } from "@/hooks/useSwipeToDismiss";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -21,7 +21,7 @@ import { useAutoScrapeVenueImages } from "@/hooks/useAutoScrapeVenueImages";
 import { useDeals } from "@/hooks/useDeals";
 import { useVenueActivity } from "@/hooks/useVenueActivity";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
-import { useBottomNavigation, type NavTab } from "@/hooks/useBottomNavigation";
+import { useBottomNavigation } from "@/hooks/useBottomNavigation";
 import { NotificationsTabSkeleton, ExploreTabSkeleton } from "@/components/skeletons/PageSkeletons";
 
 // Lazy load heavy components - deferred until needed
@@ -47,9 +47,6 @@ import { Map as MapIcon, Bell } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
-// Check for cached token synchronously to determine if we can skip loading state
-const hasCachedToken = getMapboxTokenFromCache() !== null;
-
 // Mapbox is always ready - no deferral needed (direct-rendering architecture)
 const MAPBOX_ALWAYS_READY = true;
 
@@ -69,12 +66,11 @@ const charlotteVenues: Venue[] = [
 
 const Index = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   
   // Use shared navigation hook for consistent tab handling
   const { activeTab, setActiveTab, handleTabChange } = useBottomNavigation({ defaultTab: "map" });
   // Direct rendering - Mapbox loads immediately (no deferral)
-  const [isMapboxReady, setIsMapboxReady] = useState(MAPBOX_ALWAYS_READY);
+  const [isMapboxReady] = useState(MAPBOX_ALWAYS_READY);
   const [mapUIResetKey, setMapUIResetKey] = useState(0); // Increments when switching to map tab to reset collapsed UI
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [selectedParking, setSelectedParking] = useState<{ lat: number; lng: number; name?: string } | null>(null);
@@ -83,13 +79,13 @@ const Index = () => {
   const [showDirectionsDialog, setShowDirectionsDialog] = useState(false);
   const [showSendDialog, setShowSendDialog] = useState(false);
   const [sendDialogUserId, setSendDialogUserId] = useState<string | null>(null);
-  const [deepLinkedDeal, setDeepLinkedDeal] = useState<any>(null);
+  const [, setDeepLinkedDeal] = useState<any>(null);
   const { token: mapboxToken, loading: mapboxLoading, error: mapboxError } = useMapboxToken();
   const { getVenueImage } = useVenueImages();
   
   // Data hooks - load immediately without deferral
-  const { notifications, loading: notificationsLoading, markAsRead } = useNotifications(true);
-  const { isScrapingActive } = useAutoScrapeVenueImages(true);
+  const { notifications, markAsRead } = useNotifications(true);
+  useAutoScrapeVenueImages(true);
   const { deals, refresh: refreshDeals, loading: dealsLoading, lastUpdated: dealsLastUpdated } = useDeals(false, true);
   const { venues: realVenues, loading: venuesLoading, refresh: refreshVenues, lastUpdated: venuesLastUpdated } = useVenueActivity(true);
   const { justInstalled, clearJustInstalled } = usePWAInstall();
@@ -108,7 +104,7 @@ const Index = () => {
   const venues = realVenues && realVenues.length > 0 ? realVenues : charlotteVenues;
 
   // Handle deep linked deal - select the venue associated with the deal
-  const handleDeepLinkDeal = useCallback(async (dealId: string, dealData: any) => {
+  const handleDeepLinkDeal = useCallback(async (_dealId: string, dealData: any) => {
     setDeepLinkedDeal(dealData);
     setActiveTab("map");
     

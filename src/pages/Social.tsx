@@ -12,7 +12,6 @@ import { UpgradePrompt, useFeatureAccess } from "@/components/UpgradePrompt";
 import { ChatDialog } from "@/components/ChatDialog";
 import { useUnreadCounts } from "@/hooks/useMessages";
 import { Badge } from "@/components/ui/badge";
-import { SocialPageSkeleton } from "@/components/skeletons/PageSkeletons";
 
 interface Profile {
   id: string;
