@@ -37,38 +37,20 @@ function renderAvatarWith(src: string, aspectLabel: string) {
 }
 
 describe("Avatar — uploaded image containment", () => {
-  it("wrapper hides overflow and is a perfect square circle", () => {
+  it("Avatar root applies the cropping class contract", () => {
     const { getByTestId } = renderAvatarWith(
       "https://example.com/portrait.jpg",
       "portrait"
     );
     const root = getByTestId("avatar-portrait");
-    const cs = window.getComputedStyle(root);
 
-    expect(cs.overflow).toBe("hidden");
-    expect(cs.borderRadius).toMatch(/9999px|50%/);
-    // aspect-square Tailwind class
+    // jsdom doesn't load Tailwind, so assert via className contract instead
+    // of computed style. These classes guarantee circle + crop at runtime.
+    expect(root.className).toMatch(/overflow-hidden/);
     expect(root.className).toMatch(/aspect-square/);
-  });
-
-  it("AvatarImage is rendered with cover-cropping styles for extreme portrait", () => {
-    // Render AvatarImage in isolation as a plain <img> wrapper so we can
-    // inspect the inline style contract without depending on Radix's async
-    // image-load probe (which never fires in jsdom).
-    const { container } = render(
-      <div style={{ width: 40, height: 40, overflow: "hidden", borderRadius: "9999px" }}>
-        <AvatarImage src="https://example.com/very-tall.jpg" alt="portrait" />
-      </div>
-    );
-    // Radix may not mount the img until load; assert the container itself
-    // crops, and verify the AvatarImage *would* receive containment styles.
-    // We test the contract via the Avatar primitive's exported style rules
-    // by rendering a manually-staged image.
-    const wrapper = container.firstElementChild as HTMLElement;
-    const wrapperStyle = window.getComputedStyle(wrapper);
-    expect(wrapperStyle.overflow).toBe("hidden");
-    expect(wrapperStyle.width).toBe("40px");
-    expect(wrapperStyle.height).toBe("40px");
+    expect(root.className).toMatch(/rounded-full/);
+    // containerType inline style enables cqw-based fallback scaling.
+    expect(root.style.containerType).toBe("inline-size");
   });
 
   it("contract: any <img> placed inside Avatar covers the container without overflow", () => {
