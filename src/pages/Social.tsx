@@ -159,13 +159,9 @@ export default function Social() {
     backdropFilter: 'blur(8px)',
   };
 
-  const avatarStyle: React.CSSProperties = {
-    width: '40px',
-    height: '40px',
-    flexShrink: 0,
-    overflow: 'hidden',
-    borderRadius: '50%',
-  };
+  // Use Tailwind sizing so container queries inside <Avatar> resolve correctly
+  // (fallback text scales via `cqw` units defined in the primitive).
+  const avatarClass = "w-10 h-10 shrink-0";
 
   return (
     <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
