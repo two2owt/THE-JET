@@ -1,5 +1,4 @@
-import { useState, useEffect, useCallback, memo, lazy, Suspense } from "react";
-import { cn } from "@/lib/utils";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "./ui/input";
 import { Card } from "./ui/card";
@@ -564,7 +563,7 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
           estimateSize={112}
           overscan={3}
           className="max-h-[60vh]"
-          renderItem={(deal, index) => (
+          renderItem={(deal) => (
             <Card
               className="overflow-hidden bg-card/90 backdrop-blur-sm hover-scale cursor-pointer transition-all shadow-none"
               onClick={() => handleDealClick(deal)}

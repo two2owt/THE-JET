@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useCallback, lazy, Suspense } from "react";
+import { memo, useState, useEffect, lazy, Suspense } from "react";
 import { Clock, MapPin, Share2, Heart, X, ExternalLink, Navigation } from "lucide-react";
 import { Button } from "./ui/button";
 import { OptimizedImage } from "./ui/optimized-image";
