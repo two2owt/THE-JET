@@ -215,9 +215,9 @@ const Settings = () => {
   };
 
   // Consistent layout wrapper for Settings page.
-  // Settings is reached from the Profile/Crew tab — keep that highlighted.
+  // Settings is reached from the Crew (social) tab — keep that highlighted.
   const SettingsLayout = ({ children }: { children: React.ReactNode }) => (
-    <PageLayout defaultTab="profile" headerConfig={{ hideSearch: true }}>
+    <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
       {children}
     </PageLayout>
   );
