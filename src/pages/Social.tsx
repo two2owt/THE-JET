@@ -159,13 +159,10 @@ export default function Social() {
     backdropFilter: 'blur(8px)',
   };
 
-  const avatarStyle: React.CSSProperties = {
-    width: '40px',
-    height: '40px',
-    flexShrink: 0,
-    overflow: 'hidden',
-    borderRadius: '50%',
-  };
+  // Use Tailwind sizing so container queries inside <Avatar> resolve correctly
+  // (fallback text scales via `cqw` units defined in the primitive).
+  const avatarClass = "w-10 h-10 shrink-0";
+  const avatarClassLg = "w-12 h-12 shrink-0";
 
   return (
     <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
@@ -210,7 +207,7 @@ export default function Social() {
               {pendingRequests.map((request) => (
                 <div key={request.id} style={{ ...cardStyle, padding: '16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <Avatar style={{ ...avatarStyle, width: '48px', height: '48px' }}>
+                    <Avatar className={avatarClassLg}>
                       <AvatarImage src={request.profile?.avatar_url || undefined} alt={request.profile?.display_name || "User"} />
                       <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary">
                         {request.profile?.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '50%', height: '50%' }} />}
@@ -277,7 +274,7 @@ export default function Social() {
                       style={{ display: 'flex', alignItems: 'center', gap: '12px', textAlign: 'left', flex: '1 1 0%', minWidth: 0, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                       onClick={() => setSelectedProfileId(friendId)}
                     >
-                      <Avatar style={avatarStyle}>
+                      <Avatar className={avatarClass}>
                         <AvatarImage src={connection.profile?.avatar_url || undefined} alt={connection.profile?.display_name || "Friend"} />
                         <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary">
                           {connection.profile?.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '50%', height: '50%' }} />}
@@ -341,7 +338,7 @@ export default function Social() {
             {profiles.map((profile) => (
               <div key={profile.id} style={cardStyle}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: '1 1 0%', minWidth: 0 }}>
-                  <Avatar style={avatarStyle}>
+                  <Avatar className={avatarClass}>
                     <AvatarImage src={profile.avatar_url || undefined} alt={profile.display_name || "User"} />
                     <AvatarFallback className="bg-gradient-to-br from-accent/15 to-primary/15 text-accent">
                       {profile.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '50%', height: '50%' }} />}
