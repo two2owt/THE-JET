@@ -387,21 +387,13 @@ export const Header = () => {
           }}
         >
           <Avatar
+            className="h-full w-full"
             style={{
-              width: '100%',
-              height: '100%',
-              borderRadius: '9999px',
-              overflow: 'hidden',
               border: '2px solid hsl(var(--background))',
               background: 'hsl(var(--background))',
             }}
           >
-            <AvatarImage
-              src={avatarUrl || ""}
-              alt="Profile"
-              className="object-cover rounded-full"
-              style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-            />
+            <AvatarImage src={avatarUrl || ""} alt="Profile" />
             <AvatarFallback
               className="text-primary-foreground font-bold tracking-wide"
               style={{
