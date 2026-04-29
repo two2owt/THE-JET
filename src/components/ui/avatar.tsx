@@ -29,14 +29,20 @@ const AvatarImage = React.forwardRef<
     ref={ref}
     className={cn("h-full w-full object-cover", className)}
     style={{
-      // Always adapt to container: full size, cropped centered.
+      // Always adapt to container: fill, crop centered, never overflow.
+      // `min-*: 100%` guarantees portrait or landscape uploads cover the
+      // circle without letterboxing; `object-fit: cover` crops the excess.
       width: '100%',
       height: '100%',
+      minWidth: '100%',
+      minHeight: '100%',
       maxWidth: '100%',
       maxHeight: '100%',
       objectFit: 'cover',
       objectPosition: 'center',
       display: 'block',
+      // Smooth scaling for high-DPI uploads.
+      imageRendering: 'auto',
       ...style,
     }}
     {...props}
