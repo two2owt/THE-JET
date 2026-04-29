@@ -112,13 +112,6 @@ const getActivityColor = (activity: number) => {
   return "hsl(200, 100%, 65%)"; // cool blue - vibrant sky blue
 };
 
-// Get glow color for markers based on activity
-const getActivityGlow = (activity: number) => {
-  if (activity >= 80) return "rgba(255, 100, 100, 0.6)"; // red glow
-  if (activity >= 60) return "rgba(255, 200, 50, 0.5)"; // warm glow
-  return "rgba(100, 180, 255, 0.5)"; // blue glow
-};
-
 // Platform detection for optimized settings
 const getPlatformSettings = (isMobile: boolean) => {
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);

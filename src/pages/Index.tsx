@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, lazy, Suspense, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { useNavigate, useLocation } from "react-router";
+import { useNavigate } from "react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { type Venue } from "@/types/venue";
 import { CITIES, type City } from "@/types/cities";
@@ -11,7 +11,7 @@ import { useHeaderConfig } from "@/contexts/HeaderContext";
 
 
 // Hooks must be imported synchronously (React rules)
-import { useMapboxToken, getMapboxTokenFromCache } from "@/hooks/useMapboxToken";
+import { useMapboxToken } from "@/hooks/useMapboxToken";
 import { useDeepLinking } from "@/hooks/useDeepLinking";
 import { useSwipeToDismiss } from "@/hooks/useSwipeToDismiss";
 import { useIsMobile } from "@/hooks/use-mobile";

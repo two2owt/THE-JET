@@ -2,32 +2,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Venue } from "@/components/MapboxHeatmap";
 
-interface GooglePlacesData {
-  rating: number | null;
-  totalRatings: number;
-  reviews: Array<{
-    author: string;
-    rating: number;
-    text: string;
-    time: string | null;
-  }>;
-  isOpen: boolean | null;
-  openingHours: string[];
-}
-
-interface VenueActivityData {
-  venue_id: string;
-  venue_name: string;
-  neighborhood_name: string;
-  deal_count: number;
-  recent_deal_count: number;
-  favorite_count: number;
-  share_count: number;
-  center_lat: number;
-  center_lng: number;
-  venue_address: string | null;
-}
-
 /**
  * Fetch the top 10 most popular venues in Charlotte
  */
