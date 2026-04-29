@@ -34,6 +34,9 @@ const IconButtonQA = import.meta.env.DEV
 const PanelsQA = import.meta.env.DEV
   ? lazy(() => import("./pages/PanelsQA"))
   : null;
+const AvatarQA = import.meta.env.DEV
+  ? lazy(() => import("./pages/AvatarQA"))
+  : null;
 
 /** Routes where the global Header should be hidden (full-bleed standalone pages) */
 const HEADERLESS_ROUTES = ["/auth", "/onboarding"];
@@ -117,6 +120,9 @@ const AppLayout = memo(function AppLayout() {
           )}
           {PanelsQA && (
             <Route path="/dev/panels" element={<PanelsQA />} />
+          )}
+          {AvatarQA && (
+            <Route path="/dev/avatars" element={<AvatarQA />} />
           )}
 
           <Route path="*" element={<NotFound />} />
