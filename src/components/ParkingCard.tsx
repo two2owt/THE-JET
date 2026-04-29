@@ -1,5 +1,5 @@
 import { memo, useState, useEffect } from "react";
-import { Car, MapPin, Star, Clock, X, Phone, Globe, Navigation, Loader2 } from "lucide-react";
+import { Car, MapPin, Star, X, Phone, Globe, Navigation, Loader2 } from "lucide-react";
 import { glideHaptic } from "@/lib/haptics";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -29,7 +29,7 @@ interface ParkingCardProps {
 export const ParkingCard = memo(({ lat, lng, name, onClose, onGetDirections }: ParkingCardProps) => {
   const [parking, setParking] = useState<ParkingLot | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchDetails = async () => {

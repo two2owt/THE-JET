@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useCallback } from "react";
+import { ReactNode, useEffect } from "react";
 import { BottomNav } from "./BottomNav";
 import { useBottomNavigation, type NavTab } from "@/hooks/useBottomNavigation";
 import { useNotifications } from "@/hooks/useNotifications";

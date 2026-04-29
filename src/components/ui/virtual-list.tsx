@@ -1,5 +1,5 @@
-import { useRef, ReactNode, useCallback, useEffect, useState } from "react";
-import { useVirtualizer, VirtualizerOptions } from "@tanstack/react-virtual";
+import { useRef, ReactNode, useEffect, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { cn } from "@/lib/utils";
 
 interface VirtualListProps<T> {

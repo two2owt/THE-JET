@@ -35,7 +35,7 @@ export const ReportIssueDialog = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      const { data, error } = await supabase.functions.invoke(
+      const { error } = await supabase.functions.invoke(
         "send-admin-notification",
         {
           body: {

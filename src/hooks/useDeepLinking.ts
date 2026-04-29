@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from "react";
-import { useNavigate, useLocation, useSearchParams } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -10,7 +10,6 @@ interface DeepLinkHandler {
 
 export const useDeepLinking = (handlers?: DeepLinkHandler) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Handle deal deep link
