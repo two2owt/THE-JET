@@ -102,10 +102,11 @@ describe("Index view regression: open/closed marker filtering", () => {
     const { result } = renderHook(() => useOpenVenues(venues));
     expect(result.current.map((v) => v.id)).toEqual(["closes-at-9"]);
 
-    // Jump past closing time and let the minute-tick fire.
+    // Jump past closing time and run all minute-tick timers (the hook
+    // re-schedules itself inside each callback, so advance until idle).
     act(() => {
       vi.setSystemTime(new Date("2026-04-24T21:30:00"));
-      vi.advanceTimersByTime(60_000);
+      vi.advanceTimersByTime(120_000);
     });
 
     expect(result.current).toEqual([]);
