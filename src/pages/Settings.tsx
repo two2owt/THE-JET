@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { isMonetizationEnabled } from "@/lib/monetization";
 import { PageLayout } from "@/components/PageLayout";
 import { SettingsPageSkeleton } from "@/components/skeletons/PageSkeletons";
+import { ThemeOption } from "@/components/settings/ThemeOption";
 const preferencesSchema = z.object({
   notifications_enabled: z.boolean(),
   location_tracking_enabled: z.boolean(),
@@ -70,11 +71,27 @@ const Settings = () => {
   const [locationTrackingEnabled, setLocationTrackingEnabled] = useState(false);
   const [backgroundTrackingEnabled, setBackgroundTrackingEnabled] = useState(true);
 
+  // Decoupled: load preferences once on mount.
   useEffect(() => {
     loadPreferences();
-    // Check if push notifications are already registered
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Sync push registration status independently — does not retrigger DB fetch.
+  useEffect(() => {
     setPushNotificationsEnabled(isPushRegistered);
   }, [isPushRegistered]);
+
+  // Track whether notification/location toggles diverge from saved preferences,
+  // so the global Save button only appears when it actually has work to do.
+  const hasUnsavedChanges = useMemo(() => {
+    if (!preferences) return false;
+    return (
+      preferences.notifications_enabled !== notificationsEnabled ||
+      preferences.location_tracking_enabled !== locationTrackingEnabled ||
+      preferences.background_tracking_enabled !== backgroundTrackingEnabled
+    );
+  }, [preferences, notificationsEnabled, locationTrackingEnabled, backgroundTrackingEnabled]);
 
   const loadPreferences = async () => {
     try {
@@ -197,9 +214,10 @@ const Settings = () => {
     }
   };
 
-  // Consistent layout wrapper for Settings page
+  // Consistent layout wrapper for Settings page.
+  // Settings is reached from the Crew (social) tab — keep that highlighted.
   const SettingsLayout = ({ children }: { children: React.ReactNode }) => (
-    <PageLayout defaultTab="map" headerConfig={{ hideSearch: true }}>
+    <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
       {children}
     </PageLayout>
   );
@@ -232,15 +250,15 @@ const Settings = () => {
 
   return (
     <SettingsLayout>
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg space-y-fluid-lg" style={{ maxWidth: '768px', marginLeft: 'auto', marginRight: 'auto', padding: 'clamp(16px, 3vw, 24px)', display: 'flex', flexDirection: 'column', gap: 'clamp(16px, 3vw, 24px)' }}>
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg space-y-fluid-lg">
         {/* Profile Link */}
-        <Card className="p-4 sm:p-5 md:p-6 bg-card/90 backdrop-blur-sm shadow-card" style={{ padding: 'clamp(16px, 2.5vw, 24px)' }}>
+        <Card className="p-4 sm:p-5 md:p-6 bg-card/90 backdrop-blur-sm shadow-card">
           <Button
             onClick={() => navigate("/profile")}
             variant="outline"
             className="w-full h-auto py-4 justify-start"
           >
-            <div className="flex items-center gap-3" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center">
                 <User className="w-5 h-5 text-primary" />
               </div>
@@ -254,8 +272,8 @@ const Settings = () => {
 
         {/* Subscription Section - visible when monetization is enabled OR user is admin */}
         {userId && showSubscriptionSection && (
-          <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card" style={{ padding: 'clamp(16px, 2.5vw, 24px)', display: 'flex', flexDirection: 'column', gap: 'clamp(16px, 2vw, 24px)' }}>
-            <div className="flex items-start justify-between gap-2" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
+          <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
+            <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="flex items-center gap-2 mb-1 sm:mb-2">
                   <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
@@ -281,7 +299,7 @@ const Settings = () => {
 
         {/* Personal Preferences Section */}
         {userId && (
-          <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card" style={{ padding: 'clamp(16px, 2.5vw, 24px)', display: 'flex', flexDirection: 'column', gap: 'clamp(16px, 2vw, 24px)' }}>
+          <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
             <div>
               <div className="flex items-center gap-2 mb-1 sm:mb-2">
                 <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
@@ -300,7 +318,7 @@ const Settings = () => {
 
         {/* Privacy Settings Section */}
         {userId && (
-          <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card" style={{ padding: 'clamp(16px, 2.5vw, 24px)', display: 'flex', flexDirection: 'column', gap: 'clamp(16px, 2vw, 24px)' }}>
+          <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
             <div>
               <div className="flex items-center gap-2 mb-1 sm:mb-2">
                 <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
@@ -318,7 +336,7 @@ const Settings = () => {
         )}
 
         {/* Notifications Section */}
-        <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card" style={{ padding: 'clamp(16px, 2.5vw, 24px)', display: 'flex', flexDirection: 'column', gap: 'clamp(16px, 2vw, 24px)' }}>
+        <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
           <div>
             <div className="flex items-center gap-2 mb-1 sm:mb-2">
               <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
@@ -331,9 +349,9 @@ const Settings = () => {
 
           <Separator />
 
-          <div className="space-y-3 sm:space-y-4" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px, 1.5vw, 16px)' }}>
-            <div className="flex items-center justify-between gap-3" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-              <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0" style={{ flex: '1 1 0%', minWidth: 0 }}>
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
                 <label htmlFor="notifications" className="text-xs sm:text-sm font-medium text-foreground block">
                   App Notifications
                 </label>
@@ -353,9 +371,9 @@ const Settings = () => {
 
             {/* Only show native push notifications on iOS/Android */}
             {isNative && (
-              <div className="flex items-center justify-between gap-3" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0" style={{ flex: '1 1 0%', minWidth: 0 }}>
-                  <label htmlFor="push-notifications" className="text-xs sm:text-sm font-medium text-foreground flex items-center gap-1.5" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div className="flex items-center justify-between gap-3">
+                <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
+                  <label htmlFor="push-notifications" className="text-xs sm:text-sm font-medium text-foreground flex items-center gap-1.5">
                     <Smartphone className="w-3.5 h-3.5" />
                     Native Push Notifications
                   </label>
@@ -375,7 +393,7 @@ const Settings = () => {
         </Card>
 
         {/* Theme Section */}
-        <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card" style={{ padding: 'clamp(16px, 2.5vw, 24px)', display: 'flex', flexDirection: 'column', gap: 'clamp(16px, 2vw, 24px)' }}>
+        <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
           <div>
             <div className="flex items-center gap-2 mb-1 sm:mb-2">
               <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
@@ -388,71 +406,26 @@ const Settings = () => {
 
           <Separator />
 
-          <div className="space-y-2 sm:space-y-3" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(8px, 1.5vw, 12px)' }}>
-            <button
-              onClick={() => setTheme("light")}
-              className={`w-full flex items-center justify-between p-3 sm:p-4 rounded-lg border-2 transition-all ${
-                theme === "light" 
-                  ? "border-primary bg-primary/5" 
-                  : "border-border hover:border-primary/50"
-              }`}
-            >
-              <div className="flex items-center gap-2 sm:gap-3">
-                <Sun className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                <div className="text-left">
-                  <div className="text-sm sm:text-base font-medium text-foreground">Light</div>
-                  <div className="text-[10px] sm:text-xs text-muted-foreground">Bright theme for daytime</div>
-                </div>
-              </div>
-              {theme === "light" && (
-                <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-primary flex-shrink-0" />
-              )}
-            </button>
-
-            <button
-              onClick={() => setTheme("dark")}
-              className={`w-full flex items-center justify-between p-3 sm:p-4 rounded-lg border-2 transition-all ${
-                theme === "dark" 
-                  ? "border-primary bg-primary/5" 
-                  : "border-border hover:border-primary/50"
-              }`}
-            >
-              <div className="flex items-center gap-2 sm:gap-3">
-                <Moon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                <div className="text-left">
-                  <div className="text-sm sm:text-base font-medium text-foreground">Dark</div>
-                  <div className="text-[10px] sm:text-xs text-muted-foreground">Dark theme for nighttime</div>
-                </div>
-              </div>
-              {theme === "dark" && (
-                <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-primary flex-shrink-0" />
-              )}
-            </button>
-
-            <button
-              onClick={() => setTheme("system")}
-              className={`w-full flex items-center justify-between p-3 sm:p-4 rounded-lg border-2 transition-all ${
-                theme === "system" 
-                  ? "border-primary bg-primary/5" 
-                  : "border-border hover:border-primary/50"
-              }`}
-            >
-              <div className="flex items-center gap-2 sm:gap-3">
-                <Monitor className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                <div className="text-left">
-                  <div className="text-sm sm:text-base font-medium text-foreground">Auto</div>
-                  <div className="text-[10px] sm:text-xs text-muted-foreground">Matches your device theme</div>
-                </div>
-              </div>
-              {theme === "system" && (
-                <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-primary flex-shrink-0" />
-              )}
-            </button>
+          <div className="space-y-2 sm:space-y-3">
+            {([
+              { key: "light", Icon: Sun, label: "Light", description: "Bright theme for daytime" },
+              { key: "dark", Icon: Moon, label: "Dark", description: "Dark theme for nighttime" },
+              { key: "system", Icon: Monitor, label: "Auto", description: "Matches your device theme" },
+            ] as const).map(({ key, Icon, label, description }) => (
+              <ThemeOption
+                key={key}
+                active={theme === key}
+                onClick={() => setTheme(key)}
+                Icon={Icon}
+                label={label}
+                description={description}
+              />
+            ))}
           </div>
         </Card>
 
         {/* Location Section */}
-        <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card" style={{ padding: 'clamp(16px, 2.5vw, 24px)', display: 'flex', flexDirection: 'column', gap: 'clamp(16px, 2vw, 24px)' }}>
+        <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
           <div>
             <div className="flex items-center gap-2 mb-1 sm:mb-2">
               <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
@@ -465,9 +438,9 @@ const Settings = () => {
 
           <Separator />
 
-          <div className="space-y-3 sm:space-y-4" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px, 1.5vw, 16px)' }}>
-            <div className="flex items-center justify-between gap-3" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-              <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0" style={{ flex: '1 1 0%', minWidth: 0 }}>
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
                 <label htmlFor="location-tracking" className="text-xs sm:text-sm font-medium text-foreground block">
                   Location Tracking
                 </label>
@@ -483,8 +456,8 @@ const Settings = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between gap-3" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-              <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0" style={{ flex: '1 1 0%', minWidth: 0 }}>
+            <div className="flex items-center justify-between gap-3">
+              <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
                 <label htmlFor="background-tracking" className="text-xs sm:text-sm font-medium text-foreground block">
                   Background Tracking
                 </label>
@@ -504,9 +477,9 @@ const Settings = () => {
         </Card>
 
         {/* Privacy Info */}
-        <Card className="p-4 sm:p-5 md:p-6 bg-card/90 backdrop-blur-sm border border-border/50 shadow-card" style={{ padding: 'clamp(16px, 2.5vw, 24px)' }}>
-          <div className="flex items-start gap-2 sm:gap-3" style={{ display: 'flex', alignItems: 'flex-start', gap: 'clamp(8px, 1.5vw, 12px)' }}>
-            <Radio className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground mt-0.5 flex-shrink-0" style={{ flexShrink: 0 }} />
+        <Card className="p-4 sm:p-5 md:p-6 bg-card/90 backdrop-blur-sm border border-border/50 shadow-card">
+          <div className="flex items-start gap-2 sm:gap-3">
+            <Radio className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground mt-0.5 flex-shrink-0" />
             <div className="space-y-1 sm:space-y-2 flex-1 min-w-0">
               <h3 className="text-xs sm:text-sm font-medium text-foreground">Privacy Notice</h3>
               <p className="text-[10px] sm:text-xs text-muted-foreground">
@@ -518,7 +491,7 @@ const Settings = () => {
         </Card>
 
         {/* Support Section */}
-        <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card" style={{ padding: 'clamp(16px, 2.5vw, 24px)', display: 'flex', flexDirection: 'column', gap: 'clamp(16px, 2vw, 24px)' }}>
+        <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
           <div>
             <h2 className="text-base sm:text-lg font-extrabold bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">Support</h2>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">
@@ -535,7 +508,7 @@ const Settings = () => {
 
         {/* Danger Zone - Account Deletion */}
         {userId && (
-          <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 border-destructive/30 bg-card/90 backdrop-blur-xl shadow-card" style={{ padding: 'clamp(16px, 2.5vw, 24px)', display: 'flex', flexDirection: 'column', gap: 'clamp(16px, 2vw, 24px)' }}>
+          <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 border-destructive/30 bg-card/90 backdrop-blur-xl shadow-card">
             <div>
               <div className="flex items-center gap-2 mb-1 sm:mb-2">
                 <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
@@ -552,26 +525,29 @@ const Settings = () => {
           </Card>
         )}
 
-        {/* Save Button */}
-        <Button
-          onClick={handleSaveSettings}
-          disabled={isSaving}
-          className="w-full text-sm sm:text-base"
-          size="lg"
-          variant="jet"
-        >
-          {isSaving ? (
-            <>
-              <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
-              Save Settings
-            </>
-          )}
-        </Button>
+        {/* Save Button — only appears when notification/location toggles changed.
+            Other sections (preferences, privacy, subscription, theme) save independently. */}
+        {hasUnsavedChanges && (
+          <Button
+            onClick={handleSaveSettings}
+            disabled={isSaving}
+            className="w-full text-sm sm:text-base"
+            size="lg"
+            variant="jet"
+          >
+            {isSaving ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
+                Save Notification &amp; Location Settings
+              </>
+            )}
+          </Button>
+        )}
       </div>
     </SettingsLayout>
   );
