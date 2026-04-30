@@ -67,7 +67,7 @@ export function Breadcrumbs() {
   return (
     <nav
       aria-label="Breadcrumb"
-      className="fixed left-0 right-0 z-[55] pointer-events-none"
+      className="fixed left-0 right-0 z-[55] pointer-events-none md:hidden"
       style={{
         top: "var(--header-total-height, 52px)",
       }}
