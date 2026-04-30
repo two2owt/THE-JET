@@ -2894,12 +2894,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           left: 'var(--map-ui-inset-left)',
           maxWidth: 'var(--map-control-max-width)',
           zIndex: 30,
-          background: 'hsl(var(--card) / 0.95)',
+          // Dark luxe legend — vertical gradient surface, hairline border,
+          // soft ambient gold glow, inset highlight for refined depth.
+          background:
+            'linear-gradient(180deg, hsl(var(--card) / 0.95), hsl(var(--card) / 0.82))',
           backdropFilter: 'blur(24px) saturate(1.6)',
           WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
           borderRadius: '12px',
-          border: '1px solid hsl(var(--border))',
-          boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+          border: '1px solid hsl(0 0% 100% / 0.06)',
+          boxShadow:
+            '0 0 60px hsl(var(--gold) / 0.06), 0 14px 30px -12px rgba(0,0,0,0.7), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
           padding: isMobile ? '6px 8px' : '8px 12px',
           opacity: mapLoaded && (isMobile ? !selectedVenue : true) ? 1 : 0,
           visibility: mapLoaded && (isMobile ? !selectedVenue : true) ? 'visible' : 'hidden',
