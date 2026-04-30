@@ -55,24 +55,27 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
       <div
         className="absolute inset-0"
         style={{
-          background: 'hsl(var(--background) / 0.82)',
+          background:
+            'linear-gradient(0deg, hsl(var(--background) / 0.94), hsl(var(--background) / 0.78))',
           backdropFilter: 'blur(24px) saturate(1.6)',
           WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
         }}
       />
-      {/* Top divider */}
+      {/* Top divider — gold hairline luxe accent */}
       <div
         className="absolute top-0 left-0 right-0"
         style={{
           height: '1px',
-          background: 'linear-gradient(90deg, hsl(var(--primary) / 0.2), hsl(var(--accent) / 0.3), hsl(var(--primary) / 0.2))',
+          background:
+            'linear-gradient(90deg, transparent 0%, hsl(var(--gold) / 0.35) 50%, transparent 100%)',
         }}
       />
       {/* Soft shadow above */}
       <div
         className="absolute -top-3 left-0 right-0 h-3 pointer-events-none"
         style={{
-          background: 'linear-gradient(to top, hsl(var(--background) / 0.08), transparent)',
+          background:
+            'linear-gradient(to top, hsl(0 0% 0% / 0.4), transparent)',
         }}
       />
 

@@ -8,12 +8,17 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
     className={cn("rounded-lg border bg-card text-card-foreground shadow-sm", className)}
     style={{
       borderRadius: '12px',
-      border: '1px solid hsl(var(--border) / 0.4)',
-      background: 'hsl(var(--card) / 0.9)',
+      // Hairline border — barely-there 5% white for the dark luxe aesthetic
+      border: '1px solid hsl(0 0% 100% / 0.05)',
+      // Subtle vertical gradient for depth (5-10% variation), layered over card token
+      background:
+        'linear-gradient(180deg, hsl(var(--card) / 0.92), hsl(var(--card) / 0.78))',
       color: 'hsl(var(--card-foreground))',
       backdropFilter: 'blur(12px)',
       WebkitBackdropFilter: 'blur(12px)',
-      boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+      // Soft ambient gold glow + diffused depth shadow + inset hairline highlight
+      boxShadow:
+        '0 0 60px hsl(var(--gold, 41 44% 58%) / 0.04), 0 20px 50px -20px rgba(0,0,0,0.7), inset 0 1px 0 hsl(0 0% 100% / 0.04)',
       ...style,
     }}
     {...props}
