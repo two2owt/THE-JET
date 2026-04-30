@@ -7,6 +7,7 @@ import { useSearchHistory } from "@/hooks/useSearchHistory";
 import { useHeaderContext } from "@/contexts/HeaderContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { HeaderUserMenu } from "./navigation/HeaderUserMenu";
+import { InlineBreadcrumbs } from "./navigation/InlineBreadcrumbs";
 
 const SearchResults = lazy(() => import("./SearchResults").then(m => ({ default: m.SearchResults })));
 
@@ -219,6 +220,9 @@ export const Header = () => {
             </span>
           </div>
         )}
+
+        {/* Inline breadcrumbs — desktop only, sits next to the logo SaaS-style */}
+        {!isMobile && <InlineBreadcrumbs />}
 
         {/* Search icon — mobile collapsed state */}
         {showSearchIcon && (
