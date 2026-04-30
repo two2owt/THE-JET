@@ -370,73 +370,15 @@ export const Header = () => {
             and shrink the input. */}
         {!showSearchBar && <div style={{ flex: '1 1 0%', minWidth: 0 }} />}
 
-        {/* Avatar — settings link */}
-        <button
-          onClick={() => navigate('/settings')}
-          className="group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-          aria-label="Open settings and profile"
-          title="Profile & Settings"
-          style={{
-            position: 'relative',
-            flexShrink: 0,
-            borderRadius: '9999px',
-            width: 'clamp(38px, 5vw, 44px)',
-            height: 'clamp(38px, 5vw, 44px)',
-            padding: '2.5px',
-            background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 50%, hsl(var(--primary-glow, var(--primary))) 100%)',
-            cursor: 'pointer',
-            border: 'none',
-            opacity: mounted ? 1 : 0,
-            transform: mounted ? 'translateX(0) scale(1)' : 'translateX(8px) scale(0.9)',
-            transition: 'opacity 0.4s ease-out 0.2s, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s, box-shadow 0.3s ease',
-            boxShadow: '0 2px 12px hsl(var(--primary) / 0.25), 0 0 0 1px hsl(var(--background) / 0.6)',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.boxShadow = '0 4px 20px hsl(var(--primary) / 0.45), 0 0 0 1px hsl(var(--background) / 0.8)';
-            e.currentTarget.style.transform = 'translateX(0) scale(1.05)';
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.boxShadow = '0 2px 12px hsl(var(--primary) / 0.25), 0 0 0 1px hsl(var(--background) / 0.6)';
-            e.currentTarget.style.transform = 'translateX(0) scale(1)';
-          }}
-        >
-          <Avatar
-            className="h-full w-full"
-            style={{
-              border: '2px solid hsl(var(--background))',
-              background: 'hsl(var(--background))',
-            }}
-          >
-            <AvatarImage src={avatarUrl || ""} alt="Profile" />
-            <AvatarFallback
-              className="text-primary-foreground font-bold tracking-wide"
-              style={{
-                fontSize: 'clamp(11px, 1.5vw, 14px)',
-                background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))',
-                letterSpacing: '0.02em',
-              }}
-            >
-              {displayName.substring(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          {/* Online status dot — only shown when signed in */}
-          {userId && (
-            <span
-              aria-hidden="true"
-              style={{
-                position: 'absolute',
-                bottom: '1px',
-                right: '1px',
-                width: '10px',
-                height: '10px',
-                borderRadius: '9999px',
-                background: 'hsl(var(--cool, 142 76% 45%))',
-                border: '2px solid hsl(var(--background))',
-                boxShadow: '0 0 6px hsl(var(--cool, 142 76% 45%) / 0.6)',
-              }}
-            />
-          )}
-        </button>
+        {/* Avatar + dropdown menu (Profile / Settings / Admin / Sign out) */}
+        <HeaderUserMenu
+          mounted={mounted}
+          avatarUrl={avatarUrl}
+          displayName={displayName}
+          userId={userId}
+          email={userEmail}
+          isAdmin={isAdmin}
+        />
       </div>
     </header>
   );
