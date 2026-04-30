@@ -14,7 +14,11 @@ const Separator = React.forwardRef<
     className={cn("shrink-0 bg-border", orientation === "horizontal" ? "h-[1px] w-full" : "h-full w-[1px]", className)}
     style={{
       flexShrink: 0,
-      background: 'hsl(var(--border))',
+      // Hairline gradient — fades in/out at edges for refinement
+      background:
+        orientation === "horizontal"
+          ? 'linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.08) 50%, transparent)'
+          : 'linear-gradient(180deg, transparent, hsl(0 0% 100% / 0.08) 50%, transparent)',
       ...(orientation === "horizontal"
         ? { height: '1px', width: '100%' }
         : { height: '100%', width: '1px' }),
