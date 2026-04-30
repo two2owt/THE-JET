@@ -82,7 +82,7 @@ export function Breadcrumbs() {
         }}
       >
         <ol
-          className="flex items-center gap-1.5 text-xs font-medium"
+          className="flex items-center gap-1.5 text-xs font-medium list-none"
           style={{
             maxWidth: "1280px",
             margin: "0 auto",
@@ -91,9 +91,10 @@ export function Breadcrumbs() {
             overflowX: "auto",
             scrollbarWidth: "none",
             whiteSpace: "nowrap",
+            listStyle: "none",
           }}
         >
-          <li className="flex items-center shrink-0">
+          <li className="flex items-center shrink-0" style={{ listStyle: "none" }}>
             <Link
               to="/"
               aria-label="Home"
@@ -104,10 +105,10 @@ export function Breadcrumbs() {
           </li>
           {crumbs.map((crumb) => (
             <Fragment key={crumb.href}>
-              <li aria-hidden="true" className="text-muted-foreground/50 shrink-0">
+              <li aria-hidden="true" className="text-muted-foreground/50 shrink-0" style={{ listStyle: "none" }}>
                 <ChevronRight className="h-3 w-3" />
               </li>
-              <li className="flex items-center shrink-0">
+              <li className="flex items-center shrink-0" style={{ listStyle: "none" }}>
                 {crumb.isCurrent ? (
                   <span
                     aria-current="page"
