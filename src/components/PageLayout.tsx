@@ -135,6 +135,7 @@ export function PageLayout({
         {showBreadcrumbSpacer && (
           <div
             aria-hidden="true"
+            className="md:hidden"
             style={{
               width: '100%',
               height: 'var(--breadcrumb-height, 36px)',
