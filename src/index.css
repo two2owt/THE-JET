@@ -180,9 +180,8 @@ All colors MUST be HSL.
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Hairline borders — barely-there at 5% white */
-    --border: 0 0% 100%;             /* used with /5 opacity via consumers */
-    --border: 30 3% 16%;             /* solid hairline #292828 */
+    /* Hairline borders — barely-there #292828 */
+    --border: 30 3% 16%;
     --input: 30 3% 14%;
     --ring: 24 100% 60%;
 
