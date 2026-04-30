@@ -134,7 +134,9 @@ export const Header = () => {
       <div
         className="absolute inset-0"
         style={{
-          background: 'hsl(var(--background) / 0.82)',
+          // Deeper near-black glass for the dark luxe header
+          background:
+            'linear-gradient(180deg, hsl(var(--background) / 0.92), hsl(var(--background) / 0.78))',
           backdropFilter: 'blur(20px) saturate(1.6)',
           WebkitBackdropFilter: 'blur(20px) saturate(1.6)',
         }}
@@ -143,15 +145,18 @@ export const Header = () => {
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'linear-gradient(135deg, hsl(var(--primary) / 0.06) 0%, transparent 50%, hsl(var(--accent) / 0.06) 100%)',
+          // Brand-led sheen kept faint; gold corner light adds the luxe note
+          background:
+            'linear-gradient(135deg, hsl(var(--primary) / 0.05) 0%, transparent 45%, hsl(var(--gold) / 0.04) 100%)',
         }}
       />
-      {/* Bottom divider */}
+      {/* Bottom divider — hairline gold luxe accent */}
       <div
         className="absolute bottom-0 left-0 right-0"
         style={{
           height: '1px',
-          background: 'linear-gradient(90deg, hsl(var(--primary) / 0.25), hsl(var(--accent) / 0.35), hsl(var(--primary) / 0.25))',
+          background:
+            'linear-gradient(90deg, transparent 0%, hsl(var(--gold) / 0.35) 50%, transparent 100%)',
         }}
       />
 
