@@ -17,11 +17,14 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           minHeight: '44px',
           width: '100%',
           borderRadius: '8px',
-          border: '1px solid hsl(var(--input))',
-          background: 'hsl(var(--background))',
+          // Hairline border + slightly elevated surface for luxe inputs
+          border: '1px solid hsl(0 0% 100% / 0.06)',
+          background: 'hsl(var(--popover) / 0.6)',
           color: 'hsl(var(--foreground))',
           padding: '8px 12px',
           fontSize: '16px',
+          letterSpacing: '0.01em',
+          transition: 'border-color 400ms ease-out, box-shadow 400ms ease-out, background-color 400ms ease-out',
           ...style,
         }}
         ref={ref}
