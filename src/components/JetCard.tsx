@@ -212,13 +212,25 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
           position: 'absolute',
           bottom: '8px',
           left: '8px',
-          background: 'rgba(255,255,255,0.15)',
+          background: 'rgba(0,0,0,0.55)',
+          border: '1px solid hsl(var(--silver) / 0.35)',
+          boxShadow: '0 0 10px hsl(var(--silver) / 0.12)',
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',
-          padding: '2px 8px',
+          padding: '3px 10px',
           borderRadius: '9999px',
         }}>
-          <span style={{ fontSize: '10px', fontWeight: 600, color: 'white' }}>{venue.category}</span>
+          <span
+            style={{
+              fontSize: '10px',
+              fontWeight: 600,
+              color: 'hsl(var(--silver))',
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+            }}
+          >
+            {venue.category}
+          </span>
         </div>
       </div>
 
