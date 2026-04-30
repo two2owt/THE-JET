@@ -1572,3 +1572,63 @@ All colors MUST be HSL.
     font-feature-settings: "tnum" 1;
   }
 }
+
+/* ========================================================================
+   Gold-accent focus & hover system — dark luxe interaction states.
+
+   Applies a unified gold focus ring to keyboard-focused buttons, links,
+   and inputs site-wide, plus a subtle gold-tinged hover for non-primary
+   buttons and inputs. Primary CTAs keep their JET red/purple identity —
+   gold is *seasoning*, applied to focus rings and secondary surfaces.
+   ======================================================================== */
+@layer base {
+  /* Disable the default Tailwind focus-visible blue ring so our gold
+     ring shows through cleanly. Components that intentionally want a
+     primary-colored ring keep their explicit `focus-visible:ring-primary`. */
+  :where(button, a, [role="button"], [role="link"]):focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 2px hsl(var(--background)),
+      0 0 0 4px hsl(var(--gold) / 0.7),
+      0 0 18px hsl(var(--gold) / 0.25);
+    border-radius: inherit;
+    transition: box-shadow 200ms ease-out;
+  }
+
+  /* Inputs / textareas / selects — gold border + soft glow on focus.
+     Uses :where() so component-level inline styles still win. */
+  :where(input, textarea, select):focus-visible,
+  :where(input, textarea, select):focus {
+    outline: none;
+    border-color: hsl(var(--gold) / 0.6) !important;
+    box-shadow:
+      0 0 0 3px hsl(var(--gold) / 0.12),
+      0 0 14px hsl(var(--gold) / 0.1) !important;
+  }
+
+  /* Plain anchors — gold hover underline + color shift */
+  a:not([class*="bg-"]):not([role="button"]):not(.no-luxe-link) {
+    transition: color 200ms ease-out, text-decoration-color 200ms ease-out;
+    text-decoration-color: transparent;
+  }
+  a:not([class*="bg-"]):not([role="button"]):not(.no-luxe-link):hover {
+    color: hsl(var(--gold));
+    text-decoration-color: hsl(var(--gold) / 0.6);
+  }
+
+  /* Outline / ghost buttons — gold-tinged hover border + faint glow */
+  button[class*="border-input"]:hover,
+  button[class*="border-border"]:hover,
+  .luxe-hover-gold:hover {
+    border-color: hsl(var(--gold) / 0.45) !important;
+    box-shadow: 0 0 18px hsl(var(--gold) / 0.08);
+  }
+}
+
+/* Reduced-motion: keep the gold ring, but drop the transition */
+@media (prefers-reduced-motion: reduce) {
+  :where(button, a, [role="button"], [role="link"]):focus-visible,
+  :where(input, textarea, select):focus-visible {
+    transition: none;
+  }
+}
