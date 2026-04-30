@@ -17,6 +17,10 @@ export default function VerificationSuccess() {
   >("idle");
   const [resendMessage, setResendMessage] = useState<string>("");
   const [isVerified, setIsVerified] = useState(false);
+  // Distinguishes "email change confirmation" from initial signup verification.
+  // Email change uses type=email_change in the Supabase callback hash, or can
+  // be signaled explicitly via ?context=email_change.
+  const [flow, setFlow] = useState<"signup" | "email_change">("signup");
 
   useEffect(() => {
     // Parse signals BEFORE stripping URL
@@ -24,6 +28,7 @@ export default function VerificationSuccess() {
     const emailFromQuery = params.get("email");
     const verifiedFromQuery =
       params.get("verified") === "true" || params.get("verified") === "1";
+    const contextFromQuery = params.get("context");
     const emailFromStorage = localStorage.getItem(RESEND_EMAIL_KEY);
 
     // If Supabase placed tokens in the hash (email link redirect), it means
@@ -33,6 +38,21 @@ export default function VerificationSuccess() {
       hash.includes("access_token=") || hash.includes("type=signup");
     if (hasAuthTokens || verifiedFromQuery) {
       setIsVerified(true);
+    }
+
+    // Detect email-change flow from hash (?type=email_change) or explicit
+    // query (?context=email_change). Email change links land here after the
+    // user updates their address from Settings → Account.
+    if (
+      contextFromQuery === "email_change" ||
+      hash.includes("type=email_change")
+    ) {
+      setFlow("email_change");
+      // Email change links are inherently "verified" once Supabase processes
+      // the callback (the new address is now active).
+      if (hash.includes("type=email_change")) {
+        setIsVerified(true);
+      }
     }
 
     // Defensive: strip query/hash so navigating back to /auth never
