@@ -602,7 +602,7 @@ export default function Profile() {
                 <>
                   <Separator className="my-6" />
                   <div>
-                    <h3 className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground uppercase tracking-[0.08em] mb-3">
+                    <h3 className="flex items-center gap-1.5 heading-luxe-eyebrow mb-3">
                       <Link2 className="w-3 h-3" />
                       Social Media
                     </h3>
@@ -662,7 +662,7 @@ export default function Profile() {
 
           {/* Quick Actions */}
           <div>
-            <h2 className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground uppercase tracking-[0.08em] mb-3 px-1">
+            <h2 className="flex items-center gap-1.5 heading-luxe-eyebrow mb-3 px-1">
               <Sparkles className="w-3 h-3" />
               Quick Actions
             </h2>
