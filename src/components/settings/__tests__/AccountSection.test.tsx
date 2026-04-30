@@ -81,8 +81,8 @@ describe("AccountSection — password", () => {
     const user = userEvent.setup();
     renderSection();
 
-    await user.type(screen.getByLabelText(/^new password$/i), "short");
-    await user.type(screen.getByLabelText(/confirm new password/i), "short");
+    await user.type(screen.getByLabelText(/^new password$/i), "Short1");
+    await user.type(screen.getByLabelText(/confirm new password/i), "Short1");
     await user.click(screen.getByRole("button", { name: /update password/i }));
 
     const alerts = await screen.findAllByRole("alert");
