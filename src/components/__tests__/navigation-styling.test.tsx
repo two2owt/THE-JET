@@ -63,9 +63,15 @@ describe("Header – inline layout styles", () => {
     expect(screen.getByText("JET")).toBeInTheDocument();
   });
 
-  it("contains settings avatar button", () => {
+  it("contains avatar entry point (sign-in or user menu)", () => {
     renderWithRouter(<Header />);
-    expect(screen.getByLabelText("Open settings and profile")).toBeInTheDocument();
+    // Avatar trigger now opens a dropdown menu when authenticated, or links
+    // to /auth when not. In tests we have no Supabase session, so we expect
+    // the unauthenticated "Sign in" trigger.
+    const trigger =
+      screen.queryByLabelText("Sign in") ??
+      screen.queryByLabelText("Open user menu");
+    expect(trigger).toBeInTheDocument();
   });
 
   it("has search input on pages that don't hide it", () => {
