@@ -1632,3 +1632,36 @@ All colors MUST be HSL.
     transition: none;
   }
 }
+
+/* ========================================================================
+   Luxe skeleton shimmer — gold-tinted diagonal sweep over the surface.
+   GPU-only (transform/opacity) to keep CLS at 0 and respect performance.
+   ======================================================================== */
+@layer components {
+  .skeleton-luxe::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      110deg,
+      transparent 25%,
+      hsl(var(--gold) / 0.07) 45%,
+      hsl(0 0% 100% / 0.05) 50%,
+      hsl(var(--gold) / 0.07) 55%,
+      transparent 75%
+    );
+    transform: translateX(-100%);
+    animation: skeleton-luxe-shimmer 1.8s ease-in-out infinite;
+    pointer-events: none;
+    will-change: transform;
+  }
+}
+
+@keyframes skeleton-luxe-shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-luxe::after { animation: none; opacity: 0; }
+}

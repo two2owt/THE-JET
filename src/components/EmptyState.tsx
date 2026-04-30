@@ -22,9 +22,14 @@ export const EmptyState = ({
         padding: '40px 24px',
         textAlign: 'center',
         borderRadius: '16px',
-        backgroundColor: 'hsl(var(--card) / 0.9)',
-        border: '1px solid hsl(var(--primary) / 0.15)',
-        backdropFilter: 'blur(12px)',
+        // Dark luxe surface — hairline border + ambient gold glow + soft vertical gradient
+        background:
+          'linear-gradient(180deg, hsl(var(--card) / 0.92), hsl(var(--card) / 0.78))',
+        border: '1px solid hsl(0 0% 100% / 0.05)',
+        backdropFilter: 'blur(14px)',
+        WebkitBackdropFilter: 'blur(14px)',
+        boxShadow:
+          '0 0 60px hsl(var(--gold) / 0.05), 0 20px 50px -20px hsl(0 0% 0% / 0.65), inset 0 1px 0 hsl(0 0% 100% / 0.04)',
       }}
     >
       <div
@@ -36,8 +41,12 @@ export const EmptyState = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--accent) / 0.15))',
-          border: '1px solid hsl(var(--primary) / 0.2)',
+          // Halo: brand gradient core, gold hairline ring, soft gold glow
+          background:
+            'linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--accent) / 0.18))',
+          border: '1px solid hsl(var(--gold) / 0.25)',
+          boxShadow:
+            '0 0 22px hsl(var(--gold) / 0.12), inset 0 0 0 1px hsl(0 0% 100% / 0.04)',
         }}
       >
         <Icon style={{ width: '28px', height: '28px', color: 'hsl(var(--primary))' }} />
@@ -45,7 +54,8 @@ export const EmptyState = ({
       <h3
         style={{
           fontSize: '18px',
-          fontWeight: 700,
+          fontWeight: 600,
+          letterSpacing: '-0.012em',
           color: 'hsl(var(--foreground))',
           marginBottom: '6px',
         }}
@@ -60,7 +70,8 @@ export const EmptyState = ({
           maxWidth: '320px',
           marginLeft: 'auto',
           marginRight: 'auto',
-          lineHeight: 1.5,
+          lineHeight: 1.55,
+          letterSpacing: '0.012em',
         }}
       >
         {description}
