@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import {
   User as UserIcon,
@@ -235,6 +235,3 @@ const avatarFallbackStyle: React.CSSProperties = {
   background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))",
   letterSpacing: "0.02em",
 };
-
-/* Re-export hook for parent if needed in the future */
-export const _internal = { useEffect };
