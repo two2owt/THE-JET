@@ -100,13 +100,13 @@ export function Breadcrumbs() {
               aria-label="Home"
               className="flex items-center gap-1 rounded-md px-1.5 py-1 text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
-              <Home className="h-3.5 w-3.5" aria-hidden="true" />
+              <Home aria-hidden="true" style={{ width: 14, height: 14, flexShrink: 0 }} />
             </Link>
           </li>
           {crumbs.map((crumb) => (
             <Fragment key={crumb.href}>
               <li aria-hidden="true" className="text-muted-foreground/50 shrink-0" style={{ listStyle: "none" }}>
-                <ChevronRight className="h-3 w-3" />
+                <ChevronRight style={{ width: 12, height: 12, flexShrink: 0 }} />
               </li>
               <li className="flex items-center shrink-0" style={{ listStyle: "none" }}>
                 {crumb.isCurrent ? (
