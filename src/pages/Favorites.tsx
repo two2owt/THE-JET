@@ -93,8 +93,14 @@ export default function Favorites() {
   return (
     <PageLayout defaultTab="favorites">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg">
-        <div className="mb-fluid-lg">
-          <h1 className="text-fluid-2xl sm:text-fluid-3xl font-extrabold bg-gradient-to-r from-foreground via-foreground to-primary bg-clip-text text-transparent mb-fluid-xs">My Favorites</h1>
+        <div className="mb-fluid-lg space-y-2">
+          <h1
+            className="text-fluid-2xl sm:text-fluid-3xl font-light text-foreground"
+            style={{ letterSpacing: '0.04em' }}
+          >
+            My <span className="text-luxe-gold font-semibold">Favorites</span>
+          </h1>
+          <div className="divider-luxe" style={{ maxWidth: '64px' }} />
           <p className="text-fluid-sm text-muted-foreground">
             {deals.length} {deals.length === 1 ? "deal" : "deals"} saved
           </p>
