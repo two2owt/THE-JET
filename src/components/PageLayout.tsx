@@ -3,6 +3,7 @@ import { BottomNav } from "./BottomNav";
 import { useBottomNavigation, type NavTab } from "@/hooks/useBottomNavigation";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useHeaderConfig } from "@/contexts/HeaderContext";
+import { useLocation } from "react-router";
 import type { Venue } from "@/types/venue";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -68,6 +69,12 @@ export function PageLayout({
   const { activeTab, handleTabChange } = useBottomNavigation({ defaultTab });
   const { notifications } = useNotifications();
   const setHeaderConfig = useHeaderConfig();
+  const { pathname } = useLocation();
+
+  // Breadcrumbs render on every sub-route except map root and headerless
+  // routes. When they are visible, push the inner page content down so
+  // the fixed breadcrumb bar doesn't overlap the first paragraph.
+  const showBreadcrumbSpacer = pathname !== "/" && !fullBleed;
 
   // Use provided notification count or calculate from notifications
   const unreadCount = notificationCount ?? notifications.filter(n => !n.read).length;
@@ -125,6 +132,17 @@ export function PageLayout({
           overflow: fullBleed ? 'hidden' : 'auto',
         }}
       >
+        {showBreadcrumbSpacer && (
+          <div
+            aria-hidden="true"
+            style={{
+              width: '100%',
+              height: 'var(--breadcrumb-height, 36px)',
+              flexShrink: 0,
+              pointerEvents: 'none',
+            }}
+          />
+        )}
         {children}
       </main>
 
