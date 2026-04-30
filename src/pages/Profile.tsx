@@ -732,6 +732,9 @@ export default function Profile() {
               </AlertDialogContent>
             </AlertDialog>
           </Card>
+
+          {/* Account management — email, password, account deletion */}
+          <AccountSection userId={user.id} currentEmail={user.email} />
         </div>
     </PageLayout>
   );
