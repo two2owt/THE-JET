@@ -2917,31 +2917,53 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       >
         {isMobile && legendCollapsed ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-            <span style={{ fontSize: '9px', fontWeight: 500, color: 'hsl(var(--muted-foreground))' }}>Legend</span>
+            <span
+              style={{
+                fontSize: '9px',
+                fontWeight: 500,
+                color: 'hsl(var(--gold))',
+                textTransform: 'uppercase',
+                letterSpacing: '0.12em',
+              }}
+            >
+              Legend
+            </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(0, 100%, 65%)' }} />
               <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(45, 100%, 60%)' }} />
               <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(200, 100%, 65%)' }} />
             </div>
-            <ChevronUp style={{ width: '12px', height: '12px', color: 'hsl(var(--muted-foreground))' }} />
+            <ChevronUp style={{ width: '12px', height: '12px', color: 'hsl(var(--silver))' }} />
           </div>
         ) : (
           <>
             {isMobile && (
               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '4px', cursor: 'pointer' }}>
-                <ChevronDown style={{ width: '12px', height: '12px', color: 'hsl(var(--muted-foreground))' }} />
+                <ChevronDown style={{ width: '12px', height: '12px', color: 'hsl(var(--silver))' }} />
               </div>
             )}
             
             {showMovementPaths ? (
               <>
-                <p style={{ fontSize: '10px', fontWeight: 600, color: 'hsl(var(--foreground))', marginBottom: '6px' }}>User Flow Paths</p>
+                <p
+                  style={{
+                    fontSize: '10px',
+                    fontWeight: 600,
+                    color: 'hsl(var(--gold))',
+                    marginBottom: '6px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                  }}
+                >
+                  User Flow Paths
+                </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <div style={{
                     width: '80px', height: '14px', borderRadius: '6px',
                     background: 'linear-gradient(to right, rgb(100, 200, 255), rgb(0, 255, 255), rgb(255, 200, 0), rgb(255, 100, 0), rgb(255, 0, 100))',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)',
+                    border: '1px solid hsl(var(--gold) / 0.35)',
+                    boxShadow:
+                      'inset 0 1px 3px rgba(0,0,0,0.3), 0 0 12px hsl(var(--gold) / 0.15)',
                   }} />
                   <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '9px', color: 'hsl(var(--muted-foreground))', fontWeight: 500 }}>
                     <span>Less Traffic</span>
@@ -2952,7 +2974,15 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             ) : showDensityLayer ? (
               <>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                  <p style={{ fontSize: '10px', fontWeight: 600, color: 'hsl(var(--foreground))' }}>
+                  <p
+                    style={{
+                      fontSize: '10px',
+                      fontWeight: 600,
+                      color: 'hsl(var(--gold))',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.1em',
+                    }}
+                  >
                     {timelapseMode ? 'Time-lapse' : 'User Density Heatmap'}
                   </p>
                   {timelapseMode && timelapse.isPlaying && (
@@ -2966,8 +2996,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   <div style={{
                     width: '80px', height: '14px', borderRadius: '6px',
                     background: 'linear-gradient(to right, rgba(65, 105, 225, 0.8), rgb(0, 255, 127), rgb(255, 255, 0), rgb(255, 165, 0), rgb(255, 0, 0), rgb(139, 0, 0))',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)',
+                    border: '1px solid hsl(var(--gold) / 0.35)',
+                    boxShadow:
+                      'inset 0 1px 3px rgba(0,0,0,0.3), 0 0 12px hsl(var(--gold) / 0.15)',
                   }} />
                   <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '9px', color: 'hsl(var(--muted-foreground))', fontWeight: 500 }}>
                     <span>Low</span>
@@ -2978,18 +3009,29 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               </>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <p style={{ fontSize: '9px', fontWeight: 600, color: 'hsl(var(--muted-foreground))', marginBottom: '4px' }}>Activity</p>
+                <p
+                  style={{
+                    fontSize: '9px',
+                    fontWeight: 600,
+                    color: 'hsl(var(--gold))',
+                    marginBottom: '4px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.12em',
+                  }}
+                >
+                  Activity
+                </p>
                 <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '4px' : '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(0, 100%, 65%)' }} />
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(0, 100%, 65%)', boxShadow: '0 0 6px hsl(0, 100%, 65% / 0.6)' }} />
                     <span style={{ fontSize: '9px', color: 'hsl(var(--foreground))' }}>Hot</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(45, 100%, 60%)' }} />
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(var(--gold))', boxShadow: '0 0 6px hsl(var(--gold) / 0.55)' }} />
                     <span style={{ fontSize: '9px', color: 'hsl(var(--foreground))' }}>Warm</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(200, 100%, 65%)' }} />
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(var(--silver))', boxShadow: '0 0 6px hsl(var(--silver) / 0.5)' }} />
                     <span style={{ fontSize: '9px', color: 'hsl(var(--foreground))' }}>Cool</span>
                   </div>
                 </div>
