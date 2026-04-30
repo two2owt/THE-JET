@@ -6,9 +6,8 @@ import { Routes, Route, useLocation } from "react-router";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { HeaderProvider } from "@/contexts/HeaderContext";
-import { Header } from "@/components/Header";
 import { NavigationShell } from "@/components/NavigationShell";
-import { Breadcrumbs } from "@/components/navigation/Breadcrumbs";
+import { AppShell } from "@/components/AppShell";
 
 
 // Eager load Index for fastest FCP on main route
@@ -42,9 +41,6 @@ const AccountSectionQA = import.meta.env.DEV
   ? lazy(() => import("./pages/AccountSectionQA"))
   : null;
 
-/** Routes where the global Header should be hidden (full-bleed standalone pages) */
-const HEADERLESS_ROUTES = ["/auth", "/onboarding"];
-
 const PageTracker = memo(function PageTracker() {
   const location = useLocation();
   const analyticsRef = useRef<typeof import("@/lib/analytics").analytics | null>(null);
@@ -66,37 +62,12 @@ const PageTracker = memo(function PageTracker() {
 
 /** Route-aware layout shell that conditionally renders Header + spacer */
 const AppLayout = memo(function AppLayout() {
-  const location = useLocation();
-  const showHeader = !HEADERLESS_ROUTES.includes(location.pathname);
-
   return (
-    <div className="app-wrapper">
+    <AppShell>
       <Toaster />
       <Sonner />
       <PageTracker />
-      
-      {/* Header is fixed-positioned — only render on routes that need it */}
-      {showHeader && (
-        <>
-          <Header />
-          <Breadcrumbs />
-          {/* Spacer reserves header height in document flow during font/asset load,
-              preventing content from jumping when the fixed header paints late */}
-          <div
-            aria-hidden="true"
-            style={{
-              width: '100%',
-              height: 'var(--header-total-height, 52px)',
-              minHeight: 'var(--header-total-height, 52px)',
-              maxHeight: 'var(--header-total-height, 52px)',
-              flexShrink: 0,
-              visibility: 'hidden',
-              pointerEvents: 'none',
-            }}
-          />
-        </>
-      )}
-      
+
       <Suspense fallback={<NavigationShell />}>
         <Routes>
           {/* Main route - eagerly loaded for fastest render */}
@@ -136,7 +107,7 @@ const AppLayout = memo(function AppLayout() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
-    </div>
+    </AppShell>
   );
 });
 
