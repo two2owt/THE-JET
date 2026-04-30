@@ -37,7 +37,13 @@ const queryClient = new QueryClient({
 // Render immediately - critical for FCP
 const root = createRoot(document.getElementById("root")!);
 root.render(
-  <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
+  <ThemeProvider
+    attribute="class"
+    defaultTheme="dark"
+    forcedTheme="dark"
+    enableSystem={false}
+    disableTransitionOnChange
+  >
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <App />

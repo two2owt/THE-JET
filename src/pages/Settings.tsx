@@ -6,11 +6,10 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Bell, MapPin, Radio, Loader2, Save, Sun, Moon, Monitor, Smartphone, User, Heart, Shield, Trash2, CreditCard, ShieldCheck } from "lucide-react";
+import { Bell, MapPin, Radio, Loader2, Save, Moon, Smartphone, User, Heart, Shield, Trash2, CreditCard, ShieldCheck } from "lucide-react";
 
 import { toast } from "sonner";
 import { z } from "zod";
-import { useTheme } from "next-themes";
 import { ReportIssueDialog } from "@/components/ReportIssueDialog";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 
@@ -22,7 +21,6 @@ import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { isMonetizationEnabled } from "@/lib/monetization";
 import { PageLayout } from "@/components/PageLayout";
 import { SettingsPageSkeleton } from "@/components/skeletons/PageSkeletons";
-import { ThemeOption } from "@/components/settings/ThemeOption";
 const preferencesSchema = z.object({
   notifications_enabled: z.boolean(),
   location_tracking_enabled: z.boolean(),
@@ -40,7 +38,6 @@ interface UserPreferences {
 const Settings = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { theme, setTheme } = useTheme();
   const { isRegistered: isPushRegistered, isNative, initializePushNotifications, unregister: unregisterPush } = usePushNotifications();
   const { isAdmin } = useIsAdmin();
   const showSubscriptionSection = isMonetizationEnabled() || isAdmin;
@@ -396,31 +393,27 @@ const Settings = () => {
         <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
           <div>
             <div className="flex items-center gap-2 mb-1 sm:mb-2">
-              <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-              <h2 className="text-base sm:text-lg font-extrabold bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">Appearance</h2>
+              <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-gold" />
+              <h2 className="text-base sm:text-lg font-extrabold text-luxe-gold">Appearance</h2>
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              Choose how the app looks
+              JET ships in a single, signature dark luxe theme.
             </p>
           </div>
 
-          <Separator />
+          <div className="divider-luxe" />
 
-          <div className="space-y-2 sm:space-y-3">
-            {([
-              { key: "light", Icon: Sun, label: "Light", description: "Bright theme for daytime" },
-              { key: "dark", Icon: Moon, label: "Dark", description: "Dark theme for nighttime" },
-              { key: "system", Icon: Monitor, label: "Auto", description: "Matches your device theme" },
-            ] as const).map(({ key, Icon, label, description }) => (
-              <ThemeOption
-                key={key}
-                active={theme === key}
-                onClick={() => setTheme(key)}
-                Icon={Icon}
-                label={label}
-                description={description}
-              />
-            ))}
+          <div className="flex items-center gap-3 p-3 sm:p-4 rounded-xl border-hairline bg-popover/40">
+            <div className="shrink-0 w-9 h-9 rounded-full bg-gradient-gold/10 ring-1 ring-gold/30 flex items-center justify-center">
+              <Moon className="w-4 h-4 text-gold" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground">Dark Luxe</p>
+              <p className="text-xs text-muted-foreground">
+                Near-black surfaces, hairline borders, soft ambient glow.
+              </p>
+            </div>
+            <span className="dot-gold" aria-hidden="true" />
           </div>
         </Card>
 

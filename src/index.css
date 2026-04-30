@@ -154,23 +154,25 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 0 0% 6%;
-    --foreground: 0 0% 98%;
+    /* Dark Luxury palette — near-black surfaces with subtle warmth.
+       #0A0A0A bg, #1A1A1A surface, #1F1F1F card-elevated, off-white text. */
+    --background: 30 6% 4%;          /* #0A0A0A with whisper of warmth */
+    --foreground: 0 0% 96%;          /* #F5F5F5 off-white, never pure */
 
-    --card: 0 0% 10%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 98%;
+    --card: 30 4% 10%;               /* #1A1A1A */
+    --card-foreground: 0 0% 96%;
+    --popover: 30 4% 12%;            /* #1F1F1F elevated surface */
+    --popover-foreground: 0 0% 96%;
 
     --primary: 24 100% 60%;
     --primary-foreground: 0 0% 100%;
     --primary-glow: 320 80% 65%;
 
-    --secondary: 0 0% 17%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 30 3% 14%;
+    --secondary-foreground: 0 0% 96%;
 
-    --muted: 0 0% 17%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 30 3% 14%;
+    --muted-foreground: 0 0% 45%;    /* #737373 muted */
 
     --accent: 320 80% 65%;
     --accent-foreground: 0 0% 100%;
@@ -178,8 +180,9 @@ All colors MUST be HSL.
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 17%;
+    /* Hairline borders — barely-there #292828 */
+    --border: 30 3% 16%;
+    --input: 30 3% 14%;
     --ring: 24 100% 60%;
 
     --hot: 0 85% 55%;
@@ -191,19 +194,30 @@ All colors MUST be HSL.
     --gradient-warm: linear-gradient(135deg, hsl(45 100% 55%), hsl(35 100% 50%));
     --gradient-cool: linear-gradient(135deg, hsl(210 100% 55%), hsl(220 100% 45%));
     --gradient-primary: linear-gradient(135deg, hsl(24 100% 60%), hsl(320 80% 65%));
-    --gradient-jet: linear-gradient(135deg, hsl(0 0% 12%), hsl(0 0% 8%));
+    --gradient-jet: linear-gradient(135deg, hsl(30 4% 12%), hsl(30 6% 6%));
 
-    --shadow-glow: 0 0 45px hsl(24 100% 60% / 0.3);
-    --shadow-card: 0 15px 40px -15px hsl(0 0% 0% / 0.7);
-    --shadow-jet: 0 8px 32px hsl(320 80% 65% / 0.2);
+    /* Luxury accent metals — muted, never shiny */
+    --gold: 41 44% 58%;              /* #C9A961 */
+    --gold-soft: 28 26% 61%;         /* #B8977E rose-gold */
+    --silver: 220 9% 65%;            /* #9CA3AF platinum */
+    --gradient-gold: linear-gradient(135deg, hsl(41 44% 58%), hsl(28 26% 61%));
+    --gradient-silver: linear-gradient(135deg, hsl(220 9% 70%), hsl(220 9% 55%));
+    --gradient-luxe-bg: radial-gradient(ellipse at top, hsl(30 6% 7%), hsl(30 6% 4%) 70%);
 
-    --sidebar-background: 0 0% 8%;
-    --sidebar-foreground: 0 0% 98%;
+    /* Soft ambient glow — gold light source, not directional */
+    --shadow-ambient: 0 0 60px hsl(41 44% 58% / 0.05);
+    --shadow-glow: 0 0 60px hsl(41 44% 58% / 0.08);
+    --shadow-card: 0 20px 50px -20px hsl(0 0% 0% / 0.8), 0 0 0 1px hsl(0 0% 100% / 0.04);
+    --shadow-jet: 0 8px 40px hsl(320 80% 65% / 0.15);
+    --shadow-hairline: inset 0 0 0 1px hsl(0 0% 100% / 0.05);
+
+    --sidebar-background: 30 6% 5%;
+    --sidebar-foreground: 0 0% 96%;
     --sidebar-primary: 24 100% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 17%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 0 0% 20%;
+    --sidebar-accent: 30 3% 12%;
+    --sidebar-accent-foreground: 0 0% 96%;
+    --sidebar-border: 30 3% 16%;
     --sidebar-ring: 24 100% 60%;
   }
 
@@ -314,6 +328,17 @@ All colors MUST be HSL.
   h3 { @apply font-semibold;  /* 600 */ letter-spacing: -0.015em; line-height: 1.25; }
   h4 { @apply font-medium;    /* 500 */ letter-spacing: -0.01em;  line-height: 1.3; }
 
+  /* Dark luxury display headings — generous tracking, light weight option */
+  .dark h1, .dark h2 {
+    /* Subtle off-white instead of pure white for refinement */
+    color: hsl(0 0% 96%);
+  }
+  .display-luxe {
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    text-transform: none;
+  }
+
   body {
     letter-spacing: 0.01em;
     line-height: 1.6;
@@ -330,6 +355,8 @@ All colors MUST be HSL.
     width: 100%;
     max-width: 100vw;
     background-color: hsl(var(--background));
+    background-image: var(--gradient-luxe-bg);
+    background-attachment: fixed;
     color: hsl(var(--foreground));
     /* Force consistent viewport on all visits */
     height: 100%;
@@ -1416,5 +1443,59 @@ All colors MUST be HSL.
       transform: translateY(0);
       opacity: 1;
     }
+  }
+}
+
+/* ========================================================================
+   Dark Luxury — utility primitives
+   Use sparingly. Metallic accents are seasoning, not the main course.
+   ======================================================================== */
+@layer components {
+  /* Gold gradient text — for select hero words, NEVER body copy */
+  .text-luxe-gold {
+    background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  /* Hairline gold divider — 1px line, 30% opacity, full width */
+  .divider-luxe {
+    height: 1px;
+    width: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(var(--gold) / 0.35) 50%,
+      transparent 100%
+    );
+    border: 0;
+  }
+
+  /* Hairline border — barely-there 5% white */
+  .border-hairline {
+    border: 1px solid hsl(0 0% 100% / 0.05);
+  }
+  .ring-hairline {
+    box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.05);
+  }
+
+  /* Soft ambient gold glow — for premium cards */
+  .glow-ambient {
+    box-shadow:
+      0 0 60px hsl(var(--gold) / 0.05),
+      0 20px 50px -20px hsl(0 0% 0% / 0.7),
+      inset 0 0 0 1px hsl(0 0% 100% / 0.04);
+  }
+
+  /* Small gold dot — decorative bullet */
+  .dot-gold {
+    width: 4px;
+    height: 4px;
+    border-radius: 9999px;
+    background: hsl(var(--gold));
+    box-shadow: 0 0 8px hsl(var(--gold) / 0.5);
+    display: inline-block;
   }
 }
