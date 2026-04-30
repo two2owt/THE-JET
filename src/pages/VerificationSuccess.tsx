@@ -187,10 +187,14 @@ export default function VerificationSuccess() {
 
         <div className="space-y-2">
           <h1 className="text-3xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-            Email Verified!
+            {flow === "email_change"
+              ? "Email Updated!"
+              : "Email Verified!"}
           </h1>
           <p className="text-muted-foreground">
-            Welcome to JET! Your email has been successfully verified.
+            {flow === "email_change"
+              ? "Your account email has been successfully changed. Use your new address the next time you sign in."
+              : "Welcome to JET! Your email has been successfully verified."}
           </p>
         </div>
 
@@ -219,11 +223,19 @@ export default function VerificationSuccess() {
           </div>
           <div className="flex-1 space-y-1">
             <p className="text-sm font-semibold text-foreground">
-              {isVerified ? "Your email is verified" : "Verification pending"}
+              {isVerified
+                ? flow === "email_change"
+                  ? "Your new email is active"
+                  : "Your email is verified"
+                : "Verification pending"}
             </p>
             <p className="text-xs text-muted-foreground">
               {isVerified
-                ? "You're all set. Tap “Go to app” below to start exploring JET."
+                ? flow === "email_change"
+                  ? `From now on, sign in with ${
+                      resendEmail || "your new email address"
+                    }. Your password and data are unchanged.`
+                  : "You're all set. Tap “Go to app” below to start exploring JET."
                 : `Check your inbox${
                     resendEmail ? ` (${resendEmail})` : ""
                   } and click the verification link. You'll be redirected to sign in in ${countdown}s.`}
