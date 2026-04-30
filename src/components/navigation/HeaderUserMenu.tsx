@@ -111,15 +111,17 @@ export function HeaderUserMenu({
         sideOffset={8}
         className="w-60 z-[70]"
       >
-        <DropdownMenuLabel className="flex flex-col gap-0.5">
-          <span className="truncate text-sm font-semibold text-foreground">
-            {displayName}
-          </span>
-          {email && (
-            <span className="truncate text-xs font-normal text-muted-foreground">
-              {email}
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <span className="truncate text-sm font-semibold text-foreground">
+              {displayName}
             </span>
-          )}
+            {email && (
+              <span className="truncate text-xs font-normal text-muted-foreground">
+                {email}
+              </span>
+            )}
+          </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
 
