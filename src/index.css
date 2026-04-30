@@ -1445,3 +1445,57 @@ All colors MUST be HSL.
     }
   }
 }
+
+/* ========================================================================
+   Dark Luxury — utility primitives
+   Use sparingly. Metallic accents are seasoning, not the main course.
+   ======================================================================== */
+@layer components {
+  /* Gold gradient text — for select hero words, NEVER body copy */
+  .text-luxe-gold {
+    background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  /* Hairline gold divider — 1px line, 30% opacity, full width */
+  .divider-luxe {
+    height: 1px;
+    width: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(var(--gold) / 0.35) 50%,
+      transparent 100%
+    );
+    border: 0;
+  }
+
+  /* Hairline border — barely-there 5% white */
+  .border-hairline {
+    border: 1px solid hsl(0 0% 100% / 0.05);
+  }
+  .ring-hairline {
+    box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.05);
+  }
+
+  /* Soft ambient gold glow — for premium cards */
+  .glow-ambient {
+    box-shadow:
+      0 0 60px hsl(var(--gold) / 0.05),
+      0 20px 50px -20px hsl(0 0% 0% / 0.7),
+      inset 0 0 0 1px hsl(0 0% 100% / 0.04);
+  }
+
+  /* Small gold dot — decorative bullet */
+  .dot-gold {
+    width: 4px;
+    height: 4px;
+    border-radius: 9999px;
+    background: hsl(var(--gold));
+    box-shadow: 0 0 8px hsl(var(--gold) / 0.5);
+    display: inline-block;
+  }
+}
