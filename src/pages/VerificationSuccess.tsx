@@ -17,6 +17,10 @@ export default function VerificationSuccess() {
   >("idle");
   const [resendMessage, setResendMessage] = useState<string>("");
   const [isVerified, setIsVerified] = useState(false);
+  // Distinguishes "email change confirmation" from initial signup verification.
+  // Email change uses type=email_change in the Supabase callback hash, or can
+  // be signaled explicitly via ?context=email_change.
+  const [flow, setFlow] = useState<"signup" | "email_change">("signup");
 
   useEffect(() => {
     // Parse signals BEFORE stripping URL
@@ -24,6 +28,7 @@ export default function VerificationSuccess() {
     const emailFromQuery = params.get("email");
     const verifiedFromQuery =
       params.get("verified") === "true" || params.get("verified") === "1";
+    const contextFromQuery = params.get("context");
     const emailFromStorage = localStorage.getItem(RESEND_EMAIL_KEY);
 
     // If Supabase placed tokens in the hash (email link redirect), it means
@@ -33,6 +38,21 @@ export default function VerificationSuccess() {
       hash.includes("access_token=") || hash.includes("type=signup");
     if (hasAuthTokens || verifiedFromQuery) {
       setIsVerified(true);
+    }
+
+    // Detect email-change flow from hash (?type=email_change) or explicit
+    // query (?context=email_change). Email change links land here after the
+    // user updates their address from Settings → Account.
+    if (
+      contextFromQuery === "email_change" ||
+      hash.includes("type=email_change")
+    ) {
+      setFlow("email_change");
+      // Email change links are inherently "verified" once Supabase processes
+      // the callback (the new address is now active).
+      if (hash.includes("type=email_change")) {
+        setIsVerified(true);
+      }
     }
 
     // Defensive: strip query/hash so navigating back to /auth never
@@ -167,10 +187,14 @@ export default function VerificationSuccess() {
 
         <div className="space-y-2">
           <h1 className="text-3xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-            Email Verified!
+            {flow === "email_change"
+              ? "Email Updated!"
+              : "Email Verified!"}
           </h1>
           <p className="text-muted-foreground">
-            Welcome to JET! Your email has been successfully verified.
+            {flow === "email_change"
+              ? "Your account email has been successfully changed. Use your new address the next time you sign in."
+              : "Welcome to JET! Your email has been successfully verified."}
           </p>
         </div>
 
@@ -199,11 +223,19 @@ export default function VerificationSuccess() {
           </div>
           <div className="flex-1 space-y-1">
             <p className="text-sm font-semibold text-foreground">
-              {isVerified ? "Your email is verified" : "Verification pending"}
+              {isVerified
+                ? flow === "email_change"
+                  ? "Your new email is active"
+                  : "Your email is verified"
+                : "Verification pending"}
             </p>
             <p className="text-xs text-muted-foreground">
               {isVerified
-                ? "You're all set. Tap “Go to app” below to start exploring JET."
+                ? flow === "email_change"
+                  ? `From now on, sign in with ${
+                      resendEmail || "your new email address"
+                    }. Your password and data are unchanged.`
+                  : "You're all set. Tap “Go to app” below to start exploring JET."
                 : `Check your inbox${
                     resendEmail ? ` (${resendEmail})` : ""
                   } and click the verification link. You'll be redirected to sign in in ${countdown}s.`}
