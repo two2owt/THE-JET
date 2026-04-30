@@ -263,19 +263,86 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
           </div>
         </div>
 
-        {/* Inline Stats */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <TrendingUp style={{ width: '14px', height: '14px', color: activityLevel.color }} />
-            <span style={{ fontWeight: 600, color: 'hsl(var(--foreground))' }}>{activityLevel.label.split(" ")[1]}</span>
+        {/* Hairline gold divider above key metrics */}
+        <div
+          aria-hidden="true"
+          style={{
+            height: '1px',
+            width: '100%',
+            background:
+              'linear-gradient(90deg, transparent, hsl(var(--gold) / 0.35) 50%, transparent)',
+          }}
+        />
+
+        {/* Inline Stats — luxe metric strip with gold/silver overlays */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '8px',
+            padding: '8px 10px',
+            borderRadius: '10px',
+            background:
+              'linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.18))',
+            border: '1px solid hsl(0 0% 100% / 0.05)',
+            boxShadow:
+              'inset 0 1px 0 hsl(0 0% 100% / 0.04), 0 0 24px hsl(var(--gold) / 0.04)',
+            fontSize: '12px',
+          }}
+        >
+          {/* Activity — primary metric (kept on JET red/purple via activityLevel.color) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <TrendingUp style={{ width: '14px', height: '14px', color: activityLevel.color, filter: `drop-shadow(0 0 4px ${activityLevel.color})` }} />
+            <span style={{ fontWeight: 700, color: 'hsl(var(--foreground))', letterSpacing: '0.02em' }}>
+              {activityLevel.label.split(" ")[1]}
+            </span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Star style={{ width: '14px', height: '14px', color: 'hsl(var(--warm))' }} />
-            <span style={{ fontWeight: 600, color: 'hsl(var(--foreground))' }}>4.5</span>
+
+          {/* Hairline silver vertical separator */}
+          <div aria-hidden="true" style={{ width: '1px', height: '14px', background: 'hsl(var(--silver) / 0.18)' }} />
+
+          {/* Rating — GOLD luxe overlay (precious metal accent) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <Star
+              style={{
+                width: '14px',
+                height: '14px',
+                color: 'hsl(var(--gold))',
+                fill: 'hsl(var(--gold))',
+                filter: 'drop-shadow(0 0 4px hsl(var(--gold) / 0.55))',
+              }}
+            />
+            <span
+              style={{
+                fontWeight: 700,
+                background: 'var(--gradient-gold)',
+                WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                color: 'transparent',
+              }}
+            >
+              4.5
+            </span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Users style={{ width: '14px', height: '14px', color: 'hsl(var(--muted-foreground))' }} />
-            <span style={{ fontWeight: 600, color: 'hsl(var(--foreground))' }}>{Math.round(venue.activity / 10) * 10}+</span>
+
+          {/* Hairline silver vertical separator */}
+          <div aria-hidden="true" style={{ width: '1px', height: '14px', background: 'hsl(var(--silver) / 0.18)' }} />
+
+          {/* Live users — SILVER platinum overlay */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <Users
+              style={{
+                width: '14px',
+                height: '14px',
+                color: 'hsl(var(--silver))',
+                filter: 'drop-shadow(0 0 4px hsl(var(--silver) / 0.4))',
+              }}
+            />
+            <span style={{ fontWeight: 700, color: 'hsl(var(--silver))', letterSpacing: '0.02em' }}>
+              {Math.round(venue.activity / 10) * 10}+
+            </span>
           </div>
         </div>
 
