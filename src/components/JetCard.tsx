@@ -94,11 +94,15 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
       style={{
         position: 'relative',
         width: '100%',
-        background: 'hsl(var(--card))',
-        border: '2px solid hsl(var(--primary) / 0.4)',
+        // Dark luxe surface — vertical gradient + hairline border with
+        // a barely-there gold ambient ring (JET red/purple stays in shadow).
+        background:
+          'linear-gradient(180deg, hsl(var(--card) / 0.96), hsl(var(--card) / 0.82))',
+        border: '1px solid hsl(0 0% 100% / 0.06)',
         borderRadius: '16px',
         overflow: 'hidden',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.15), 0 0 24px hsl(var(--primary) / 0.1)',
+        boxShadow:
+          '0 0 60px hsl(var(--gold) / 0.05), 0 24px 50px -20px rgba(0,0,0,0.75), 0 0 0 1px hsl(var(--gold) / 0.18), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
         maxHeight: '420px',
         fontFamily: 'var(--font-sans, system-ui, -apple-system, sans-serif)',
         color: 'hsl(var(--foreground))',
