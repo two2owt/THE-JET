@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { HeaderProvider } from "@/contexts/HeaderContext";
 import { Header } from "@/components/Header";
 import { NavigationShell } from "@/components/NavigationShell";
+import { Breadcrumbs } from "@/components/navigation/Breadcrumbs";
 
 
 // Eager load Index for fastest FCP on main route
@@ -78,6 +79,7 @@ const AppLayout = memo(function AppLayout() {
       {showHeader && (
         <>
           <Header />
+          <Breadcrumbs />
           {/* Spacer reserves header height in document flow during font/asset load,
               preventing content from jumping when the fixed header paints late */}
           <div
