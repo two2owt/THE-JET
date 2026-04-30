@@ -21,6 +21,7 @@ import { z } from "zod";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { AvatarCropDialog } from "@/components/AvatarCropDialog";
+import { AccountSection } from "@/components/settings/AccountSection";
 
 const profileSchema = z.object({
   display_name: z.string().trim().min(1, "Display name is required").max(100, "Display name must be less than 100 characters"),
@@ -118,6 +119,8 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [isCropOpen, setIsCropOpen] = useState(false);
+  // Inline field-level validation errors for the profile form.
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string | undefined>>({});
   const {
     favorites
   } = useFavorites(user?.id);
@@ -268,6 +271,7 @@ export default function Profile() {
   };
   const handleSaveProfile = async () => {
     if (!user) return;
+    setFieldErrors({});
     try {
       const validatedData = profileSchema.parse({
         display_name: displayName,
@@ -276,6 +280,7 @@ export default function Profile() {
 
       // Validate gender is required
       if (!gender) {
+        setFieldErrors((p) => ({ ...p, gender: "Please select your gender" }));
         toast.error("Gender required", {
           description: "Please select your gender"
         });
@@ -293,6 +298,7 @@ export default function Profile() {
       // Check unique display name
       const isUnique = await checkDisplayNameUnique(validatedData.display_name);
       if (!isUnique) {
+        setFieldErrors({ display_name: "This display name is already in use" });
         toast.error("Display name taken", {
           description: "This display name is already in use. Please choose another."
         });
@@ -314,6 +320,7 @@ export default function Profile() {
       }).eq('id', user.id);
       if (error) {
         if (error.code === '23505') {
+          setFieldErrors({ display_name: "This display name is already in use" });
           toast.error("Display name taken", {
             description: "This display name is already in use. Please choose another."
           });
@@ -326,6 +333,13 @@ export default function Profile() {
       await loadProfile();
     } catch (error) {
       if (error instanceof z.ZodError) {
+        // Map every zod issue to its field for inline display.
+        const errs: Record<string, string> = {};
+        for (const issue of error.errors) {
+          const key = (issue.path[0] as string) || "_form";
+          if (!errs[key]) errs[key] = issue.message;
+        }
+        setFieldErrors(errs);
         toast.error(error.errors[0].message);
       } else {
         toast.error('Failed to update profile');
@@ -451,12 +465,48 @@ export default function Profile() {
               <div className="space-y-4" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div className="space-y-2">
                 <Label htmlFor="display_name">Display Name *</Label>
-                <Input id="display_name" value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Your display name" maxLength={100} disabled={!isEditing} />
+                <Input
+                  id="display_name"
+                  value={displayName}
+                  onChange={e => {
+                    setDisplayName(e.target.value);
+                    if (fieldErrors.display_name) setFieldErrors(p => ({ ...p, display_name: undefined }));
+                  }}
+                  placeholder="Your display name"
+                  maxLength={100}
+                  disabled={!isEditing}
+                  aria-invalid={!!fieldErrors.display_name}
+                  aria-describedby={fieldErrors.display_name ? "display_name-error" : undefined}
+                />
+                {fieldErrors.display_name && (
+                  <p id="display_name-error" role="alert" className="text-xs font-medium text-destructive">
+                    {fieldErrors.display_name}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="bio">Bio</Label>
-                <Textarea id="bio" value={bio} onChange={e => setBio(e.target.value)} placeholder="Tell us about yourself..." maxLength={500} rows={4} disabled={!isEditing} className="resize-none" />
+                <Textarea
+                  id="bio"
+                  value={bio}
+                  onChange={e => {
+                    setBio(e.target.value);
+                    if (fieldErrors.bio) setFieldErrors(p => ({ ...p, bio: undefined }));
+                  }}
+                  placeholder="Tell us about yourself..."
+                  maxLength={500}
+                  rows={4}
+                  disabled={!isEditing}
+                  className="resize-none"
+                  aria-invalid={!!fieldErrors.bio}
+                  aria-describedby={fieldErrors.bio ? "bio-error" : undefined}
+                />
+                {fieldErrors.bio && (
+                  <p id="bio-error" role="alert" className="text-xs font-medium text-destructive">
+                    {fieldErrors.bio}
+                  </p>
+                )}
                 {isEditing && <p className="text-xs text-muted-foreground text-right">
                     {bio.length}/500
                   </p>}
@@ -465,7 +515,14 @@ export default function Profile() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
                 <div className="space-y-2">
                   <Label>Gender <span className="text-destructive">*</span></Label>
-                  <Select value={gender} onValueChange={setGender} disabled={!isEditing}>
+                  <Select
+                    value={gender}
+                    onValueChange={(v) => {
+                      setGender(v);
+                      if (fieldErrors.gender) setFieldErrors(p => ({ ...p, gender: undefined }));
+                    }}
+                    disabled={!isEditing}
+                  >
                     <SelectTrigger className="bg-card">
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
@@ -475,6 +532,11 @@ export default function Profile() {
                         </SelectItem>)}
                     </SelectContent>
                   </Select>
+                  {fieldErrors.gender && (
+                    <p role="alert" className="text-xs font-medium text-destructive">
+                      {fieldErrors.gender}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -670,6 +732,9 @@ export default function Profile() {
               </AlertDialogContent>
             </AlertDialog>
           </Card>
+
+          {/* Account management — email, password, account deletion */}
+          <AccountSection userId={user.id} currentEmail={user.email} />
         </div>
     </PageLayout>
   );
