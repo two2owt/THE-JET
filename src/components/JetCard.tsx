@@ -167,17 +167,44 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
           position: 'absolute',
           top: '8px',
           left: '8px',
-          background: 'rgba(0,0,0,0.6)',
+          // Luxe metric pill — near-black glass with hairline gold ring + ambient glow
+          background:
+            'linear-gradient(135deg, rgba(0,0,0,0.72), rgba(0,0,0,0.55))',
+          border: '1px solid hsl(var(--gold) / 0.45)',
+          boxShadow:
+            '0 0 14px hsl(var(--gold) / 0.25), inset 0 1px 0 hsl(0 0% 100% / 0.08)',
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',
-          padding: '2px 8px',
+          padding: '3px 10px',
           borderRadius: '9999px',
           display: 'flex',
           alignItems: 'center',
           gap: '6px',
         }}>
-          <div style={{ width: '6px', height: '6px', background: 'hsl(var(--primary))', borderRadius: '50%' }} />
-          <span style={{ fontSize: '10px', fontWeight: 700, color: 'white' }}>{venue.activity}% Active</span>
+          <div
+            className="animate-pulse"
+            style={{
+              width: '6px',
+              height: '6px',
+              background: 'hsl(var(--gold))',
+              borderRadius: '50%',
+              boxShadow: '0 0 8px hsl(var(--gold) / 0.7)',
+            }}
+          />
+          <span
+            style={{
+              fontSize: '10px',
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              background: 'var(--gradient-gold)',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              color: 'transparent',
+            }}
+          >
+            {venue.activity}% ACTIVE
+          </span>
         </div>
 
         {/* Category Badge */}
