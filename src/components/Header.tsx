@@ -1,13 +1,12 @@
 import { useState, useEffect, lazy, Suspense, useRef } from "react";
 import { Search, Sparkles, X } from "lucide-react";
 import { Input } from "./ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { IconButton } from "./ui/icon-button";
-import { useNavigate } from "react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useSearchHistory } from "@/hooks/useSearchHistory";
 import { useHeaderContext } from "@/contexts/HeaderContext";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { HeaderUserMenu } from "./navigation/HeaderUserMenu";
 
 const SearchResults = lazy(() => import("./SearchResults").then(m => ({ default: m.SearchResults })));
 
@@ -17,7 +16,6 @@ const validateSearchQuery = (value: string): boolean => {
 
 export const Header = () => {
   const { venues, deals, onVenueSelect, hideSearch } = useHeaderContext();
-  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [searchQuery, setSearchQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
@@ -28,6 +26,8 @@ export const Header = () => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string>("JT");
   const [userId, setUserId] = useState<string | undefined>(undefined);
+  const [userEmail, setUserEmail] = useState<string | undefined>(undefined);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { addToSearchHistory } = useSearchHistory(userId);
 
   useEffect(() => {
@@ -43,6 +43,7 @@ export const Header = () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           setUserId(user.id);
+          setUserEmail(user.email);
           const { data: profile } = await supabase
             .from('profiles')
             .select('avatar_url, display_name')
@@ -51,6 +52,19 @@ export const Header = () => {
           if (profile) {
             setAvatarUrl(profile.avatar_url);
             setDisplayName(profile.display_name || user.email?.substring(0, 2).toUpperCase() || "JT");
+          }
+          // Best-effort admin check (RLS-aware via has_role function).
+          // Failure simply leaves the Admin menu hidden — no UX impact.
+          try {
+            const { data: roleRow } = await supabase
+              .from('user_roles')
+              .select('role')
+              .eq('user_id', user.id)
+              .eq('role', 'admin')
+              .maybeSingle();
+            setIsAdmin(!!roleRow);
+          } catch {
+            setIsAdmin(false);
           }
         }
       } catch {
