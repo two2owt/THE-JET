@@ -21,6 +21,7 @@ import { z } from "zod";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { AvatarCropDialog } from "@/components/AvatarCropDialog";
+import { AccountSection } from "@/components/settings/AccountSection";
 
 const profileSchema = z.object({
   display_name: z.string().trim().min(1, "Display name is required").max(100, "Display name must be less than 100 characters"),
@@ -118,6 +119,8 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [isCropOpen, setIsCropOpen] = useState(false);
+  // Inline field-level validation errors for the profile form.
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string | undefined>>({});
   const {
     favorites
   } = useFavorites(user?.id);
@@ -268,6 +271,7 @@ export default function Profile() {
   };
   const handleSaveProfile = async () => {
     if (!user) return;
+    setFieldErrors({});
     try {
       const validatedData = profileSchema.parse({
         display_name: displayName,
@@ -276,6 +280,7 @@ export default function Profile() {
 
       // Validate gender is required
       if (!gender) {
+        setFieldErrors((p) => ({ ...p, gender: "Please select your gender" }));
         toast.error("Gender required", {
           description: "Please select your gender"
         });
@@ -293,6 +298,7 @@ export default function Profile() {
       // Check unique display name
       const isUnique = await checkDisplayNameUnique(validatedData.display_name);
       if (!isUnique) {
+        setFieldErrors({ display_name: "This display name is already in use" });
         toast.error("Display name taken", {
           description: "This display name is already in use. Please choose another."
         });
@@ -314,6 +320,7 @@ export default function Profile() {
       }).eq('id', user.id);
       if (error) {
         if (error.code === '23505') {
+          setFieldErrors({ display_name: "This display name is already in use" });
           toast.error("Display name taken", {
             description: "This display name is already in use. Please choose another."
           });
@@ -326,6 +333,13 @@ export default function Profile() {
       await loadProfile();
     } catch (error) {
       if (error instanceof z.ZodError) {
+        // Map every zod issue to its field for inline display.
+        const errs: Record<string, string> = {};
+        for (const issue of error.errors) {
+          const key = (issue.path[0] as string) || "_form";
+          if (!errs[key]) errs[key] = issue.message;
+        }
+        setFieldErrors(errs);
         toast.error(error.errors[0].message);
       } else {
         toast.error('Failed to update profile');
