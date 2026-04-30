@@ -58,6 +58,11 @@ export default {
         warm: "hsl(var(--warm))",
         cool: "hsl(var(--cool))",
         cold: "hsl(var(--cold))",
+        gold: {
+          DEFAULT: "hsl(var(--gold))",
+          soft: "hsl(var(--gold-soft))",
+        },
+        silver: "hsl(var(--silver))",
         "sunset-orange": "hsl(24 100% 60%)",
         "sunset-pink": "hsl(320 80% 65%)",
       },
@@ -66,11 +71,16 @@ export default {
         'gradient-primary': 'var(--gradient-primary)',
         'gradient-hot': 'var(--gradient-hot)',
         'gradient-warm': 'var(--gradient-warm)',
+        'gradient-gold': 'var(--gradient-gold)',
+        'gradient-silver': 'var(--gradient-silver)',
+        'gradient-luxe-bg': 'var(--gradient-luxe-bg)',
       },
       boxShadow: {
         'glow': 'var(--shadow-glow)',
         'card': 'var(--shadow-card)',
         'jet': 'var(--shadow-jet)',
+        'ambient': 'var(--shadow-ambient)',
+        'hairline': 'var(--shadow-hairline)',
       },
       transitionTimingFunction: {
         'jet': 'cubic-bezier(0.16, 1, 0.3, 1)',
