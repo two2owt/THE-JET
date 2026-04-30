@@ -137,7 +137,7 @@ export const SearchResults = ({
             {/* Venues */}
             {filteredVenues.length > 0 && (
               <section className="space-y-1.5">
-                <h4 className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground uppercase tracking-[0.08em] px-1">
+                <h4 className="flex items-center gap-1.5 heading-luxe-eyebrow px-1">
                   <Store className="w-3 h-3" />
                   Venues
                   <span className="ml-auto text-muted-foreground/60 tabular-nums">{filteredVenues.length}</span>
@@ -185,7 +185,7 @@ export const SearchResults = ({
             {/* Deals */}
             {filteredDeals.length > 0 && (
               <section className="space-y-1.5">
-                <h4 className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground uppercase tracking-[0.08em] px-1">
+                <h4 className="flex items-center gap-1.5 heading-luxe-eyebrow px-1">
                   <Sparkles className="w-3 h-3" />
                   Deals
                   <span className="ml-auto text-muted-foreground/60 tabular-nums">{filteredDeals.length}</span>
