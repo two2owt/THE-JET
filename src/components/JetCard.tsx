@@ -441,8 +441,9 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
             }}>
               <Car style={{ width: '12px', height: '12px' }} />
               <span>Nearby Parking</span>
-              {parkingLoading && <Loader2 style={{ width: '10px', height: '10px', animation: 'spin 1s linear infinite' }} />}
             </div>
+
+            {parkingLoading && nearbyParking.length === 0 && <JetCardParkingSkeleton />}
 
             {nearbyParking.map((parking, i) => (
               <button
