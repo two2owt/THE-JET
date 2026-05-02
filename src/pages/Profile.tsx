@@ -516,7 +516,11 @@ export default function Profile() {
                   </p>}
               </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                {/* Use the Tailwind responsive columns alone — the prior
+                    inline `minmax(200px, 1fr)` forced a 200px cell floor
+                    that overflowed the viewport at 320–375px (parent
+                    padding ate ~32px, leaving < 200px per column). */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Gender <span className="text-destructive">*</span></Label>
                   <Select
