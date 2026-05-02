@@ -62,28 +62,36 @@ export class ErrorBoundary extends Component<Props, State> {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <h1
-                className="text-2xl text-foreground"
-                style={{ fontWeight: 600, letterSpacing: '-0.018em' }}
-              >
-                Oops! Something went wrong
+            <div className="space-y-3">
+              <p className="heading-luxe-eyebrow" style={{ color: 'hsl(var(--destructive) / 0.85)' }}>
+                Unexpected error
+              </p>
+              <h1 className="heading-luxe-display">
+                Something went sideways
               </h1>
-              <p className="text-sm text-muted-foreground" style={{ letterSpacing: '0.012em', lineHeight: 1.55 }}>
-                We encountered an unexpected error. Don't worry, your data is safe.
+              <p className="body-luxe-muted" style={{ maxWidth: '32ch', marginLeft: 'auto', marginRight: 'auto' }}>
+                A glitch interrupted the experience. Your data is safe — give it another moment.
               </p>
             </div>
 
             {this.state.error && (
               <div
-                className="rounded-lg p-4 text-left"
+                className="rounded-lg p-4 text-left space-y-1.5"
                 style={{
                   background: 'hsl(var(--muted) / 0.4)',
                   border: '1px solid hsl(0 0% 100% / 0.05)',
                   boxShadow: 'inset 0 1px 0 hsl(0 0% 100% / 0.03)',
                 }}
               >
-                <p className="text-xs font-mono text-muted-foreground break-all">
+                <p className="heading-luxe-eyebrow">Error detail</p>
+                <p
+                  className="text-xs font-mono break-all"
+                  style={{
+                    color: 'hsl(var(--muted-foreground))',
+                    lineHeight: 1.55,
+                    letterSpacing: '0.005em',
+                  }}
+                >
                   {this.state.error.message}
                 </p>
               </div>
@@ -107,8 +115,8 @@ export class ErrorBoundary extends Component<Props, State> {
               </Button>
             </div>
 
-            <p className="text-xs text-muted-foreground">
-              If this problem persists, please contact support
+            <p className="body-luxe-muted" style={{ fontSize: '0.75rem' }}>
+              If this keeps happening, reach out to support — we're on it.
             </p>
           </div>
         </div>

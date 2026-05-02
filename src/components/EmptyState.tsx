@@ -51,27 +51,16 @@ export const EmptyState = ({
       >
         <Icon style={{ width: '28px', height: '28px', color: 'hsl(var(--primary))' }} />
       </div>
-      <h3
-        style={{
-          fontSize: '18px',
-          fontWeight: 600,
-          letterSpacing: '-0.012em',
-          color: 'hsl(var(--foreground))',
-          marginBottom: '6px',
-        }}
-      >
+      <h3 className="heading-luxe-section" style={{ marginBottom: '8px' }}>
         {title}
       </h3>
       <p
+        className="body-luxe-muted"
         style={{
-          fontSize: '14px',
-          color: 'hsl(var(--muted-foreground))',
           marginBottom: actionLabel ? '20px' : '0',
           maxWidth: '320px',
           marginLeft: 'auto',
           marginRight: 'auto',
-          lineHeight: 1.55,
-          letterSpacing: '0.012em',
         }}
       >
         {description}
