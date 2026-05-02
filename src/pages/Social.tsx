@@ -168,11 +168,16 @@ export default function Social() {
           onClick={() => navigate("/messages")}
           style={{
             width: '100%',
+            maxWidth: '100%',
+            boxSizing: 'border-box',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
+            gap: '8px',
             height: '44px',
-            padding: '0 16px',
+            /* Tighter horizontal padding on 320px viewports keeps the
+               label + badge inside the pill; relax to 16px from sm up. */
+            padding: '0 clamp(12px, 3.5vw, 16px)',
             borderRadius: '12px',
             background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
             color: 'hsl(var(--primary-foreground))',
@@ -180,14 +185,15 @@ export default function Social() {
             fontSize: '14px',
             border: 'none',
             cursor: 'pointer',
+            overflow: 'hidden',
           }}
         >
-          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <MessageCircle style={{ width: '16px', height: '16px' }} />
-            Messages
+          <span style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, overflow: 'hidden' }}>
+            <MessageCircle style={{ width: '16px', height: '16px', flexShrink: 0 }} />
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Messages</span>
           </span>
           {Object.values(unreadCounts).reduce((a, b) => a + b, 0) > 0 && (
-            <Badge className="bg-destructive text-destructive-foreground">
+            <Badge className="bg-destructive text-destructive-foreground shrink-0">
               {Object.values(unreadCounts).reduce((a, b) => a + b, 0)}
             </Badge>
           )}
