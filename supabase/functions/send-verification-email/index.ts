@@ -111,8 +111,16 @@ Deno.serve(async (req) => {
       })
     );
 
+    // Sender address. Defaults to the production verified domain
+    // (noreply@jet-around.com). If you've verified a different subdomain
+    // in Resend (e.g. mail.jet-around.com or send.jet-around.com), set
+    // the `RESEND_FROM_EMAIL` secret in Lovable Cloud and it'll be used
+    // verbatim — no redeploy required to swap senders.
+    const fromAddress =
+      Deno.env.get('RESEND_FROM_EMAIL') ?? 'JET <noreply@jet-around.com>';
+
     const { error } = await resend.emails.send({
-      from: 'JET <onboarding@resend.dev>',
+      from: fromAddress,
       to: [user.email],
       subject: 'Verify your JET account',
       html,
