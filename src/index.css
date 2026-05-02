@@ -1604,16 +1604,27 @@ All colors MUST be HSL.
   }
 
   .body-luxe {
-    /* 15px stays — but give long paragraphs more vertical air on
-       narrow viewports so the eye can find the next line. */
-    line-height: 1.7;
+    /* 15px stays. Earlier we ran 1.7 leading on mobile, but on-device
+       QA showed paragraphs ballooning card heights and pushing CTAs
+       below the fold. 1.62 keeps the airy rhythm (~24.3px per line)
+       while clawing back ~1.2px per line — measurable on 4+ line
+       blocks like onboarding copy. */
+    line-height: 1.62;
   }
 
   .body-luxe-muted {
-    /* 13px is at the legibility floor on small screens; relax leading
-       slightly so wrapped helper text doesn't feel dense. */
-    line-height: 1.6;
-    letter-spacing: 0.014em;
+    /* 13px is at the legibility floor on small screens. Two tuned
+       changes vs the prior 1.6 / 0.014em pass:
+       1. Leading 1.6 → 1.55. At 13px that's 20.8px → 20.15px per
+          line — still well above the 1.5 readability floor, but
+          recovers ~0.65px per line so chat previews, helper text,
+          and stat captions don't inflate row heights.
+       2. Tracking 0.014em → 0.012em to match `body-luxe`. The
+          extra 0.002em on muted copy was making it read "thin"
+          against the foreground body — the unified value gives
+          a more cohesive vertical type colour at small sizes. */
+    line-height: 1.55;
+    letter-spacing: 0.012em;
   }
 }
 
