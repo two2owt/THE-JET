@@ -129,10 +129,7 @@ function ConversationList({
   return (
     <div className="flex flex-col">
       <div className="px-4 py-3 border-b border-border/60">
-        <h1
-          className="text-fluid-2xl sm:text-fluid-3xl font-light text-foreground"
-          style={{ letterSpacing: '0.04em' }}
-        >
+        <h1 className="heading-luxe-display">
           Messages
         </h1>
       </div>
@@ -159,16 +156,16 @@ function ConversationList({
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
-                  <p className={`text-sm truncate ${c.unreadCount > 0 ? "font-bold text-foreground" : "font-medium text-foreground"}`}>
+                  <p className={`heading-luxe-card truncate ${c.unreadCount > 0 ? "font-bold" : "font-medium"}`}>
                     {c.friendName}
                   </p>
                   {c.lastMessageAt && (
-                    <span className={`text-[11px] flex-shrink-0 ml-2 ${c.unreadCount > 0 ? "text-primary font-semibold" : "text-muted-foreground"}`}>
+                    <span className={`heading-luxe-eyebrow flex-shrink-0 ml-2 ${c.unreadCount > 0 ? "!text-primary" : ""}`}>
                       {formatConvoTime(c.lastMessageAt)}
                     </span>
                   )}
                 </div>
-                <p className={`text-xs truncate mt-0.5 ${c.unreadCount > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+                <p className={`body-luxe-muted truncate mt-0.5 ${c.unreadCount > 0 ? "!text-foreground font-medium" : ""}`}>
                   {c.lastMessage || "Start a conversation"}
                 </p>
               </div>
@@ -249,7 +246,7 @@ function ChatView({
             {(friend?.friendName || "F").charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
-        <p className="font-semibold text-foreground text-sm truncate">
+        <p className="heading-luxe-card truncate">
           {friend?.friendName || "Chat"}
         </p>
       </div>
@@ -258,12 +255,12 @@ function ChatView({
       <ScrollArea className="flex-1 px-4 py-3 w-full overflow-x-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <p className="text-muted-foreground text-sm">Loading messages…</p>
+            <p className="body-luxe-muted">Loading messages…</p>
           </div>
         ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 gap-2">
             <Users className="w-10 h-10 text-muted-foreground/40" />
-            <p className="text-muted-foreground text-sm text-center">
+            <p className="body-luxe-muted text-center">
               No messages yet. Say hi!
             </p>
           </div>

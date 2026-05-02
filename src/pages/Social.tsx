@@ -137,15 +137,11 @@ export default function Social() {
     );
   }
 
-  const sectionHeadingStyle: React.CSSProperties = {
-    fontSize: '1.25rem',
-    fontWeight: 800,
-    marginBottom: '16px',
-    backgroundImage: 'linear-gradient(to right, hsl(var(--foreground)), hsl(var(--primary)))',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    backgroundClip: 'text',
-  };
+  // Section headings now use the canonical luxe scale (`heading-luxe-section`)
+  // so they inherit the small-screen line-height refinements in index.css and
+  // stay legible at 320px. The gradient fill is dropped — the luxe scale
+  // expresses hierarchy through weight + spacing, not gradient text, which
+  // clips descenders at heavy weights on small Android viewports.
 
   const cardStyle: React.CSSProperties = {
     display: 'flex',
@@ -200,7 +196,7 @@ export default function Social() {
         {/* Pending Requests */}
         {pendingRequests.length > 0 && (
           <div>
-            <h2 style={sectionHeadingStyle}>
+            <h2 className="heading-luxe-section mb-4">
               Friend Requests ({pendingRequests.length})
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -255,7 +251,7 @@ export default function Social() {
 
         {/* My Friends */}
         <div>
-          <h2 style={sectionHeadingStyle}>
+          <h2 className="heading-luxe-section mb-4">
             My Friends ({connections.length})
           </h2>
           {connections.length === 0 ? (
@@ -331,7 +327,7 @@ export default function Social() {
 
         {/* Discover People */}
         <div>
-          <h2 style={sectionHeadingStyle}>
+          <h2 className="heading-luxe-section mb-4">
             Discover People
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
