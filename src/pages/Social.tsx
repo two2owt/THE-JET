@@ -201,24 +201,26 @@ export default function Social() {
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {pendingRequests.map((request) => (
-                <div key={request.id} style={{ ...cardStyle, padding: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div key={request.id} style={{ ...cardStyle, padding: '16px', flexWrap: 'wrap', rowGap: '12px' }}>
+                  {/* Identity block — must shrink so the action row can sit
+                      beside it on ≥ sm screens and wrap below on small. */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: '1 1 200px', minWidth: 0 }}>
                     <Avatar className={avatarClassLg}>
                       <AvatarImage src={request.profile?.avatar_url || undefined} alt={request.profile?.display_name || "User"} />
                       <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary">
                         {request.profile?.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '50%', height: '50%' }} />}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <p style={{ fontWeight: 600, color: 'hsl(var(--foreground))' }}>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <p className="heading-luxe-card truncate">
                         {request.profile?.display_name || "Friend Request"}
                       </p>
-                      <p style={{ fontSize: '14px', color: 'hsl(var(--muted-foreground))' }}>
+                      <p className="body-luxe-muted truncate">
                         Wants to connect with you
                       </p>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                  <div style={{ display: 'flex', gap: '8px', flexShrink: 0, marginLeft: 'auto' }}>
                     <button
                       onClick={() => handleAcceptRequest(request.id)}
                       style={{
