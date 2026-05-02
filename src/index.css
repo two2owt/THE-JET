@@ -1573,6 +1573,50 @@ All colors MUST be HSL.
   }
 }
 
+/* --------------------------------------------------------------------
+   Small-screen luxe typography refinements (≤ 380px — iPhone SE,
+   small Android). Keep the desktop scale intact; just nudge spacing
+   and line-height where the default felt cramped after on-device QA.
+   -------------------------------------------------------------------- */
+@media (max-width: 380px) {
+  .heading-luxe-display {
+    /* Lift the floor a hair so the H1 still feels editorial at 320px
+       without the descenders crashing into the next line. */
+    font-size: clamp(1.625rem, 6vw, 1.875rem);
+    line-height: 1.15;
+    letter-spacing: 0.015em;
+  }
+
+  .heading-luxe-section {
+    /* Slightly looser leading on small screens — section titles often
+       wrap to two lines and need breathing room. */
+    line-height: 1.3;
+  }
+
+  .heading-luxe-card {
+    line-height: 1.35;
+  }
+
+  .heading-luxe-eyebrow {
+    /* Uppercase + tracked text reads tighter than its line-height
+       suggests. Pull it in for cleaner stacked labels. */
+    line-height: 1.3;
+  }
+
+  .body-luxe {
+    /* 15px stays — but give long paragraphs more vertical air on
+       narrow viewports so the eye can find the next line. */
+    line-height: 1.7;
+  }
+
+  .body-luxe-muted {
+    /* 13px is at the legibility floor on small screens; relax leading
+       slightly so wrapped helper text doesn't feel dense. */
+    line-height: 1.6;
+    letter-spacing: 0.014em;
+  }
+}
+
 /* ========================================================================
    Gold-accent focus & hover system — dark luxe interaction states.
 
