@@ -1665,3 +1665,21 @@ All colors MUST be HSL.
 @media (prefers-reduced-motion: reduce) {
   .skeleton-luxe::after { animation: none; opacity: 0; }
 }
+
+/* Heatmap skeleton — diagonal gold shimmer sweep across the full map surface
+   while Mapbox GL boots and tiles stream in. GPU-only transform + opacity
+   to preserve 0 CLS on the map view. */
+.heatmap-skeleton-shimmer {
+  transform: translateX(-100%);
+  animation: heatmap-skeleton-shimmer 2.6s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes heatmap-skeleton-shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heatmap-skeleton-shimmer { animation: none; opacity: 0; }
+}

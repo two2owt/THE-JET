@@ -1,11 +1,12 @@
 import { memo, useState, useEffect } from "react";
-import { MapPin, Users, Star, TrendingUp, X, Share2, Send, Car, Navigation, Loader2 } from "lucide-react";
+import { MapPin, Users, Star, TrendingUp, X, Share2, Send, Car, Navigation } from "lucide-react";
 import { glideHaptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Venue } from "./MapboxHeatmap";
 import { UpgradePrompt, useFeatureAccess } from "./UpgradePrompt";
 import { shareVenue } from "@/utils/shareUtils";
+import { JetCardParkingSkeleton } from "@/components/skeletons/JetCardSkeleton";
 
 interface NearbyParking {
   name: string;
@@ -440,8 +441,9 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
             }}>
               <Car style={{ width: '12px', height: '12px' }} />
               <span>Nearby Parking</span>
-              {parkingLoading && <Loader2 style={{ width: '10px', height: '10px', animation: 'spin 1s linear infinite' }} />}
             </div>
+
+            {parkingLoading && nearbyParking.length === 0 && <JetCardParkingSkeleton />}
 
             {nearbyParking.map((parking, i) => (
               <button

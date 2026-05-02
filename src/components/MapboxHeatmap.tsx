@@ -67,7 +67,7 @@ const loadMapboxGL = async (): Promise<MapboxGLModule> => {
   return mapboxLoadPromise;
 };
 import { MapPin, Layers, X, AlertCircle, Route, Play, Pause, SkipBack, SkipForward, Clock, ChevronDown, ChevronUp, Car } from "lucide-react";
-import { MapUISkeleton } from "@/components/skeletons/MapUISkeleton";
+import { HeatmapSkeleton } from "@/components/skeletons/HeatmapSkeleton";
 import { useLocationDensity } from "@/hooks/useLocationDensity";
 import { useMovementPaths } from "@/hooks/useMovementPaths";
 import { useHeatmapTimelapse } from "@/hooks/useHeatmapTimelapse";
@@ -2074,30 +2074,19 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     >
       {/* Loading skeleton during map initialization — translucent so map shows through */}
       {mapInitializing && !mapError && (
-        <div 
+        <div
           style={{
             position: 'absolute',
             inset: 0,
             zIndex: 40,
-            transition: 'opacity 300ms ease-out, background-color 500ms ease-out',
+            transition: 'opacity 300ms ease-out',
             opacity: mapLoaded ? 0 : 1,
             pointerEvents: mapLoaded ? 'none' : 'auto',
-            backgroundColor: loadingStage === 'module'
-              ? 'hsl(var(--background))'
-              : 'hsl(var(--background) / 0.6)',
           }}
         >
-          {/* Center spinner */}
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ position: 'relative', width: '40px', height: '40px' }}>
-              <div className="rounded-full bg-primary/10 animate-ping" style={{ position: 'absolute', inset: 0, animationDuration: '1.5s' }} />
-              <div className="rounded-full bg-primary/5" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <MapPin className="w-5 h-5 text-primary" />
-              </div>
-            </div>
-          </div>
-          {/* Skeleton placeholders for map UI controls */}
-          <MapUISkeleton />
+          {/* Luxe heatmap skeleton — opaque while the GL module loads, then
+              translucent so tiles fade through as they stream in. */}
+          <HeatmapSkeleton translucent={loadingStage !== 'module'} />
         </div>
       )}
 
