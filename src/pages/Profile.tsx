@@ -437,7 +437,11 @@ export default function Profile() {
                 </div>
               </div>
 
-              {/* Stat chips */}
+              {/* Stat chips — `min-w-0` lets each cell shrink below its
+                  intrinsic content width on 320px viewports so the longest
+                  label ("Connections") doesn't push the grid wider than
+                  the parent. Tracking + uppercase are tightened on small
+                  screens to keep the label inside the chip. */}
               <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-6">
                 {[
                   { icon: Heart, label: 'Favorites', value: favorites.length },
@@ -446,13 +450,13 @@ export default function Profile() {
                 ].map(({ icon: Icon, label, value }) => (
                   <div
                     key={label}
-                    className="flex flex-col items-center justify-center rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm py-3 px-2 hover:border-primary/40 hover:bg-primary/5 transition-colors"
+                    className="min-w-0 flex flex-col items-center justify-center rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm py-3 px-2 hover:border-primary/40 hover:bg-primary/5 transition-colors"
                   >
                     <Icon className="w-4 h-4 text-primary mb-1" />
                     <div className="text-xl sm:text-2xl font-bold text-foreground tabular-nums" style={{ letterSpacing: '-0.02em' }}>
                       {value}
                     </div>
-                    <div className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-0.5">
+                    <div className="max-w-full text-[10px] sm:text-xs font-semibold uppercase tracking-[0.04em] sm:tracking-wider text-muted-foreground mt-0.5 text-center leading-tight truncate">
                       {label}
                     </div>
                   </div>
