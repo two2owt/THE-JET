@@ -28,20 +28,6 @@ const VerificationSuccess = lazy(() => import("./pages/VerificationSuccess"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// Dev-only QA pages (tree-shaken in production builds)
-const IconButtonQA = import.meta.env.DEV
-  ? lazy(() => import("./pages/IconButtonQA"))
-  : null;
-const PanelsQA = import.meta.env.DEV
-  ? lazy(() => import("./pages/PanelsQA"))
-  : null;
-const AvatarQA = import.meta.env.DEV
-  ? lazy(() => import("./pages/AvatarQA"))
-  : null;
-const AccountSectionQA = import.meta.env.DEV
-  ? lazy(() => import("./pages/AccountSectionQA"))
-  : null;
-
 const PageTracker = memo(function PageTracker() {
   const location = useLocation();
   const analyticsRef = useRef<typeof import("@/lib/analytics").analytics | null>(null);
@@ -91,20 +77,6 @@ const AppLayout = memo(function AppLayout() {
           {/* Legal pages — Footer is embedded inline within these pages */}
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
-
-          {/* Dev-only QA routes */}
-          {IconButtonQA && (
-            <Route path="/dev/icon-button" element={<IconButtonQA />} />
-          )}
-          {PanelsQA && (
-            <Route path="/dev/panels" element={<PanelsQA />} />
-          )}
-          {AvatarQA && (
-            <Route path="/dev/avatars" element={<AvatarQA />} />
-          )}
-          {AccountSectionQA && (
-            <Route path="/dev/account-test" element={<AccountSectionQA />} />
-          )}
 
           <Route path="*" element={<NotFound />} />
         </Routes>
