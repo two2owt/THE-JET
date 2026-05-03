@@ -127,10 +127,22 @@ Deno.serve(async (req) => {
     });
 
     if (error) {
-      // Log but don't fail - email issues shouldn't block signup
+      // Log but don't fail - email issues shouldn't block signup.
+      // Surface a structured, user-facing message + retry hint so the
+      // client (or admin tooling) can prompt the user to resend instead
+      // of silently dropping the verification email.
       console.warn('Resend email not sent (domain not verified):', error);
       return new Response(
-        JSON.stringify({ success: true, emailSkipped: true, reason: 'Email domain not verified' }),
+        JSON.stringify({
+          success: true,
+          emailSkipped: true,
+          reason: 'email_domain_not_verified',
+          userMessage:
+            "We couldn't send your verification email right now (sender domain pending verification). Tap \"Resend verification email\" to try again, or contact support if it keeps failing.",
+          canRetry: true,
+          retryAfterSeconds: 30,
+          supportEmail: 'support@jet-around.com',
+        }),
         {
           status: 200,
           headers: { 'Content-Type': 'application/json', ...corsHeaders },
@@ -148,10 +160,21 @@ Deno.serve(async (req) => {
       }
     );
   } catch (error) {
-    // Log but don't fail - email is nice-to-have, not critical for signup
+    // Log but don't fail - email is nice-to-have, not critical for signup.
+    // Return a clear, actionable payload so callers can notify the user
+    // and offer a retry instead of a silent skip.
     console.error('Error in verification email function:', error);
     return new Response(
-      JSON.stringify({ success: true, emailSkipped: true, reason: 'Email service error' }),
+      JSON.stringify({
+        success: true,
+        emailSkipped: true,
+        reason: 'email_service_error',
+        userMessage:
+          "Your account was created, but we hit a snag sending the verification email. Tap \"Resend verification email\" to try again.",
+        canRetry: true,
+        retryAfterSeconds: 30,
+        supportEmail: 'support@jet-around.com',
+      }),
       {
         status: 200,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
