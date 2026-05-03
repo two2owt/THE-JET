@@ -533,11 +533,11 @@ const Index = () => {
           )}
 
           {activeTab === "explore" && (
-            <div style={{ padding: '8px 16px 16px' }}>
+            <PageShell>
               <Suspense fallback={<ExploreTabSkeleton />}>
                 <ExploreTab onVenueSelect={handleVenueSelect} />
               </Suspense>
-            </div>
+            </PageShell>
           )}
         </main>
       )}
