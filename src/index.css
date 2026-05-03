@@ -714,50 +714,6 @@ All colors MUST be HSL.
     }
   }
 
-  /* Touch-friendly timelapse swipe control */
-  .timelapse-swipe-control {
-    touch-action: pan-x;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-
-  .timelapse-touch-button {
-    @apply flex items-center justify-center w-8 h-8 rounded-full text-muted-foreground transition-colors;
-    @apply hover:bg-muted/50 hover:text-foreground active:bg-primary/20 active:text-primary;
-    @apply disabled:opacity-50 disabled:pointer-events-none;
-    min-width: 32px;
-    min-height: 32px;
-  }
-
-  /* Compact control panel styles for mobile */
-  .map-control-compact {
-    @apply bg-card/90 backdrop-blur-lg rounded-lg border border-border/50 shadow-md;
-    padding: var(--control-compact-padding, 0.375rem);
-    /* Ensure visibility on mobile */
-    will-change: transform, opacity;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
-
-  /* Mobile-specific control panel adjustments */
-  @media (max-width: 640px) {
-    .map-control-compact {
-      max-width: 160px !important;
-      font-size: 10px !important;
-      padding: 0.25rem;
-    }
-    
-    .map-control-compact select,
-    .map-control-compact button {
-      min-height: 26px !important;
-      font-size: 9px !important;
-    }
-  }
-
-  .map-control-compact .control-header {
-    @apply flex items-center justify-between text-[10px] font-medium text-muted-foreground mb-1;
-  }
-
   /* Path flow compact slider - orange themed */
   .path-flow-slider {
     @apply w-full appearance-none bg-transparent cursor-pointer;
