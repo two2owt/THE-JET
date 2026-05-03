@@ -22,11 +22,14 @@ export function PageShell({
   className,
   style,
 }: PageShellProps) {
+  // Safe-area-aware padding: respects iOS notch (top), home indicator (bottom),
+  // and landscape notch insets (left/right) while preserving the base padding.
+  const safePadding = `calc(${padding} + env(safe-area-inset-top, 0px)) calc(${padding} + env(safe-area-inset-right, 0px)) calc(${padding} + env(safe-area-inset-bottom, 0px)) calc(${padding} + env(safe-area-inset-left, 0px))`;
   return (
     <div
       className={`max-w-7xl mx-auto${className ? ` ${className}` : ""}`}
       style={{
-        padding,
+        padding: safePadding,
         display: "flex",
         flexDirection: "column",
         gap,
