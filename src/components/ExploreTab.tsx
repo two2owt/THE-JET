@@ -9,6 +9,7 @@ import { Search, MapPin, Clock, TrendingUp, Filter, X, Navigation, Heart, Sparkl
 import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { EmptyState } from "./EmptyState";
+import { TabPageHeader } from "./TabPageHeader";
 import { calculateDistance, getDynamicRadius, formatDistance } from "@/utils/geospatialUtils";
 import { useFavorites } from "@/hooks/useFavorites";
 
