@@ -7,7 +7,7 @@ import App from "./App.tsx";
 // Plus Jakarta Sans variable font - single import covers all weights
 import "@fontsource-variable/plus-jakarta-sans";
 // Syne variable font for display/headings — bold, modern, spontaneous
-import "@fontsource-variable/syne";
+import "@fontsource-variable/syne/index.css";
 
 import "./index.css";
 
