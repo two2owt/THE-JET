@@ -393,16 +393,7 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Header */}
       <div>
-        <h2 style={{
-          fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
-          fontWeight: 800,
-          marginBottom: '8px',
-          lineHeight: 1.1,
-          backgroundImage: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)))',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
-        }}>
+        <h2 className="heading-luxe-gradient" style={{ marginBottom: '8px' }}>
           Explore Deals
         </h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
