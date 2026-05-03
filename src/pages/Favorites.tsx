@@ -10,6 +10,7 @@ import { VirtualGrid } from "@/components/ui/virtual-list";
 import { FavoritesPageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { PageShell } from "@/components/PageShell";
 import { useAuth } from "@/contexts/AuthContext";
+import { TabPageHeader } from "@/components/TabPageHeader";
 
 interface Deal {
   id: string;
@@ -94,6 +95,14 @@ export default function Favorites() {
   return (
     <PageLayout defaultTab="favorites" headerConfig={headerConfig}>
       <PageShell>
+        <TabPageHeader
+          title="Your Favorites"
+          subtitle={
+            deals.length === 0
+              ? "Saved deals will appear here"
+              : `${deals.length} saved ${deals.length === 1 ? "deal" : "deals"}`
+          }
+        />
         {deals.length === 0 ? (
           <EmptyState
             icon={Compass}

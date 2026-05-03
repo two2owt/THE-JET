@@ -16,6 +16,7 @@ import { PageShell } from "@/components/PageShell";
 import { SocialPageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { SectionTitle } from "@/components/ui/page-title";
 import { useAuth } from "@/contexts/AuthContext";
+import { TabPageHeader } from "@/components/TabPageHeader";
 
 // Tap-to-expand display name with native tooltip on hover-capable devices.
 // Truncates to a single line by default (clean ellipsis, zero CLS); on tap
@@ -274,6 +275,10 @@ export default function Social() {
   return (
     <PageLayout defaultTab="social" headerConfig={headerConfig}>
       <PageShell>
+        <TabPageHeader
+          title="Your Crew"
+          subtitle="Friends, requests, and people to discover"
+        />
         {/* Messages shortcut */}
         <button
           onClick={() => navigate("/messages")}
