@@ -298,9 +298,14 @@ export default function Social() {
                           {connection.profile?.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '50%', height: '50%' }} />}
                         </AvatarFallback>
                       </Avatar>
-                      <p style={{ fontWeight: 500, color: 'hsl(var(--foreground))', fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {connection.profile?.display_name || "Friend"}
-                      </p>
+                      <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <p style={nameStyle}>
+                          {connection.profile?.display_name || "Friend"}
+                        </p>
+                        <p className="body-luxe-muted" style={{ fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          Connected
+                        </p>
+                      </div>
                     </button>
                     <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
                       <button
@@ -362,9 +367,11 @@ export default function Social() {
                       {profile.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '50%', height: '50%' }} />}
                     </AvatarFallback>
                   </Avatar>
-                  <p style={{ fontWeight: 500, color: 'hsl(var(--foreground))', fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {profile.display_name || "User"}
-                  </p>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <p style={nameStyle}>
+                      {profile.display_name || "User"}
+                    </p>
+                  </div>
                 </div>
                 <button
                   onClick={() => handleSendRequest(profile.id)}
