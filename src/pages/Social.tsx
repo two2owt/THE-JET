@@ -143,7 +143,7 @@ export default function Social() {
   if (!user) {
     return (
       <PageLayout defaultTab="social" notificationCount={0} headerConfig={{ hideSearch: true }}>
-        <div style={{ maxWidth: '768px', margin: '0 auto', padding: '24px' }}>
+        <div className="max-w-7xl mx-auto" style={{ padding: '16px' }}>
           <EmptyState
             icon={Users}
             title="Sign in to connect"
@@ -160,7 +160,7 @@ export default function Social() {
   if (!canAccessSocialFeatures()) {
     return (
       <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
-        <div style={{ maxWidth: '768px', margin: '0 auto', padding: '24px' }}>
+        <div className="max-w-7xl mx-auto" style={{ padding: '16px' }}>
           <EmptyState
             icon={Crown}
             title="Unlock Social Features"
@@ -272,9 +272,19 @@ export default function Social() {
 
   return (
     <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
-      <div style={{ width: '100%', maxWidth: 'min(768px, 100%)', margin: '0 auto', padding: 'clamp(14px, 3vw, 28px)', display: 'flex', flexDirection: 'column', gap: 'clamp(20px, 4vw, 32px)' }}>
-        {/* Page title — gradient brand wash, consistent across tabs */}
-        <h1 className="heading-luxe-gradient">Crew</h1>
+      <div
+        className="max-w-7xl mx-auto"
+        style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}
+      >
+        {/* Page title — matches Hot/Alerts header pattern for consistency */}
+        <div>
+          <h2 className="heading-luxe-gradient" style={{ marginBottom: '6px' }}>
+            Crew
+          </h2>
+          <p style={{ fontSize: '14px', color: 'hsl(var(--muted-foreground))' }}>
+            Connect with friends and share deals together
+          </p>
+        </div>
         {/* Messages shortcut */}
         <button
           onClick={() => navigate("/messages")}
