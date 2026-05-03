@@ -129,7 +129,7 @@ function ConversationList({
   return (
     <div className="flex flex-col">
       <div className="px-4 py-3 border-b border-border/60">
-        <h1 className="heading-luxe-display">
+        <h1 className="heading-luxe-gradient">
           Messages
         </h1>
       </div>
