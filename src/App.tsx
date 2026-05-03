@@ -25,6 +25,7 @@ const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const VerificationSuccess = lazy(() => import("./pages/VerificationSuccess"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Dev-only QA pages (tree-shaken in production builds)
@@ -85,6 +86,7 @@ const AppLayout = memo(function AppLayout() {
           <Route path="/messages" element={<Messages />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/verification-success" element={<VerificationSuccess />} />
+          <Route path="/unsubscribe" element={<Unsubscribe />} />
           
           {/* Legal pages — Footer is embedded inline within these pages */}
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
