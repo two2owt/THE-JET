@@ -45,21 +45,26 @@ export const MagicLinkEmail = ({
 
 export default MagicLinkEmail
 
-const main = {
-  backgroundColor: '#ffffff',
-  fontFamily: '"Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
+const main = { backgroundColor: '#ffffff', fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif", color: '#0A0A0A' }
+const container = { padding: '20px 25px' }
+const h1 = {
+  fontSize: '22px',
+  fontWeight: 'bold' as const,
+  color: '#0A0A0A', fontFamily: "'Syne', Georgia, serif",
+  margin: '0 0 20px',
 }
-const container = { padding: '32px 28px', maxWidth: '560px' }
-const h1 = { fontSize: '24px', fontWeight: 700 as const, color: '#0A0A0A', letterSpacing: '-0.01em', margin: '0 0 20px' }
-const text = { fontSize: '15px', color: '#3F3F46', lineHeight: '1.6', margin: '0 0 24px' }
+const text = {
+  fontSize: '14px',
+  color: '#404040',
+  lineHeight: '1.5',
+  margin: '0 0 25px',
+}
 const button = {
-  background: 'linear-gradient(135deg, #E11D48 0%, #7C3AED 100%)',
-  backgroundColor: '#E11D48',
+  background: 'linear-gradient(135deg, hsl(24, 100%, 60%), hsl(320, 80%, 65%))',
   color: '#ffffff',
-  fontSize: '15px',
-  fontWeight: 600 as const,
-  borderRadius: '12px',
-  padding: '14px 24px',
+  fontSize: '14px',
+  borderRadius: '12px', fontWeight: 600, display: 'inline-block',
+  padding: '14px 28px',
   textDecoration: 'none',
 }
-const footer = { fontSize: '12px', color: '#9CA3AF', margin: '32px 0 0', lineHeight: '1.5' }
+const footer = { fontSize: '12px', color: '#737373', margin: '30px 0 0' }
