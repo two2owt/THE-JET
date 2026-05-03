@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { PageLayout } from "@/components/PageLayout";
@@ -22,6 +22,7 @@ import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { AvatarCropDialog } from "@/components/AvatarCropDialog";
 import { AccountSection } from "@/components/settings/AccountSection";
+import { useAuth } from "@/contexts/AuthContext";
 
 const profileSchema = z.object({
   display_name: z.string().trim().min(1, "Display name is required").max(100, "Display name must be less than 100 characters"),
@@ -102,7 +103,9 @@ export default function Profile() {
   const {
     isAdmin
   } = useIsAdmin();
-  const [user, setUser] = useState<any>(null);
+  const { user, isLoading: isAuthLoading } = useAuth();
+  // Stable header config so PageLayout effect doesn't churn.
+  const headerConfig = useMemo(() => ({ hideSearch: true }), []);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
@@ -128,29 +131,14 @@ export default function Profile() {
     connections
   } = useConnections(user?.id);
   useEffect(() => {
-    supabase.auth.getSession().then(({
-      data: {
-        session
-      }
-    }) => {
-      setUser(session?.user ?? null);
-    });
-    const {
-      data: {
-        subscription
-      }
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
-  useEffect(() => {
+    if (isAuthLoading) return;
     if (user) {
       loadProfile();
     } else {
       setIsLoading(false);
     }
-  }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthLoading, user?.id]);
   const loadProfile = async () => {
     if (!user) return;
     try {
@@ -357,25 +345,25 @@ export default function Profile() {
       toast.error('Failed to sign out');
     }
   };
+  if (isAuthLoading || (user && isLoading)) {
+    return (
+      <PageLayout defaultTab="map" headerConfig={headerConfig}>
+        <ProfilePageSkeleton />
+      </PageLayout>
+    );
+  }
   if (!user) {
     return (
-      <PageLayout defaultTab="map" notificationCount={0} headerConfig={{ hideSearch: true }}>
+      <PageLayout defaultTab="map" notificationCount={0} headerConfig={headerConfig}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg" style={{ maxWidth: '1280px', marginLeft: 'auto', marginRight: 'auto', padding: 'clamp(16px, 3vw, 24px)' }}>
           <EmptyState icon={User} title="Sign in to view profile" description="Create an account to access your profile, manage settings, and track your activity" actionLabel="Sign In" onAction={() => navigate("/auth")} />
         </div>
       </PageLayout>
     );
   }
-  if (isLoading) {
-    return (
-      <PageLayout defaultTab="map" headerConfig={{ hideSearch: true }}>
-        <ProfilePageSkeleton />
-      </PageLayout>
-    );
-  }
 
   return (
-    <PageLayout defaultTab="map" headerConfig={{ hideSearch: true }}>
+    <PageLayout defaultTab="map" headerConfig={headerConfig}>
       <AvatarCropDialog
         open={isCropOpen}
         imageSrc={cropSrc}

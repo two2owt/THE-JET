@@ -21,6 +21,8 @@ import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { isMonetizationEnabled } from "@/lib/monetization";
 import { PageLayout } from "@/components/PageLayout";
 import { SettingsPageSkeleton } from "@/components/skeletons/PageSkeletons";
+import { PageTitle, SectionTitle } from "@/components/ui/page-title";
+import { useAuth } from "@/contexts/AuthContext";
 const preferencesSchema = z.object({
   notifications_enabled: z.boolean(),
   location_tracking_enabled: z.boolean(),
@@ -40,6 +42,7 @@ const Settings = () => {
   const [searchParams] = useSearchParams();
   const { isRegistered: isPushRegistered, isNative, initializePushNotifications, unregister: unregisterPush } = usePushNotifications();
   const { isAdmin } = useIsAdmin();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const showSubscriptionSection = isMonetizationEnabled() || isAdmin;
 
   // Stable header config so PageLayout's effect doesn't churn on every render.
@@ -64,18 +67,23 @@ const Settings = () => {
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
+  const userId = user?.id ?? null;
   
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState(false);
   const [locationTrackingEnabled, setLocationTrackingEnabled] = useState(false);
   const [backgroundTrackingEnabled, setBackgroundTrackingEnabled] = useState(true);
 
-  // Decoupled: load preferences once on mount.
+  // Decoupled: load preferences once auth resolves.
   useEffect(() => {
+    if (isAuthLoading) return;
+    if (!user) {
+      setIsLoading(false);
+      return;
+    }
     loadPreferences();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isAuthLoading, user?.id]);
 
   // Sync push registration status independently — does not retrigger DB fetch.
   useEffect(() => {
@@ -95,25 +103,21 @@ const Settings = () => {
 
   const loadPreferences = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.user) {
+      if (!user) {
         setIsLoading(false);
         return;
       }
 
-      setUserId(session.user.id);
-
       const { data, error } = await supabase
         .from('user_preferences')
         .select('*')
-        .eq('user_id', session.user.id)
+        .eq('user_id', user.id)
         .single();
 
       if (error) {
         // If no preferences exist, create default ones
         if (error.code === 'PGRST116') {
-          await createDefaultPreferences(session.user.id);
+          await createDefaultPreferences(user.id);
           return;
         }
         throw error;
@@ -225,7 +229,7 @@ const Settings = () => {
     [headerConfig]
   );
 
-  if (isLoading) {
+  if (isAuthLoading || isLoading) {
     return (
       <SettingsLayout>
         <SettingsPageSkeleton />
@@ -233,7 +237,7 @@ const Settings = () => {
     );
   }
 
-  if (!preferences) {
+  if (!user || !preferences) {
     return (
       <SettingsLayout>
         <div className="max-w-lg mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg">
@@ -254,6 +258,10 @@ const Settings = () => {
   return (
     <SettingsLayout>
       <div className="max-w-3xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg space-y-fluid-lg">
+        <PageTitle subtitle="Manage your account, preferences, and privacy.">
+          Settings
+        </PageTitle>
+
         {/* Profile Link */}
         <Card className="p-4 sm:p-5 md:p-6 bg-card/90 backdrop-blur-sm shadow-card">
           <Button
@@ -276,23 +284,21 @@ const Settings = () => {
         {/* Subscription Section - visible when monetization is enabled OR user is admin */}
         {userId && showSubscriptionSection && (
           <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <div className="flex items-center gap-2 mb-1 sm:mb-2">
-                  <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                  <h2 className="text-base sm:text-lg font-semibold text-foreground tracking-wide">Subscription</h2>
-                </div>
-                <p className="text-xs sm:text-sm text-muted-foreground">
-                  Manage your JET subscription plan
-                </p>
-              </div>
-              {isAdmin && !isMonetizationEnabled() && (
+            <SectionTitle
+              subtitle="Manage your JET subscription plan"
+              meta={isAdmin && !isMonetizationEnabled() ? (
                 <Badge variant="outline" className="flex items-center gap-1 text-xs border-primary/50 text-primary shrink-0">
                   <ShieldCheck className="w-3 h-3" />
                   Admin Only
                 </Badge>
-              )}
-            </div>
+              ) : undefined}
+              className="mb-0"
+            >
+              <span className="inline-flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-primary" />
+                Subscription
+              </span>
+            </SectionTitle>
 
             <Separator />
 
@@ -303,15 +309,15 @@ const Settings = () => {
         {/* Personal Preferences Section */}
         {userId && (
           <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
-            <div>
-              <div className="flex items-center gap-2 mb-1 sm:mb-2">
-                <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                <h2 className="text-base sm:text-lg font-semibold text-foreground tracking-wide">Personal Preferences</h2>
-              </div>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                Customize your interests for personalized recommendations
-              </p>
-            </div>
+            <SectionTitle
+              subtitle="Customize your interests for personalized recommendations"
+              className="mb-0"
+            >
+              <span className="inline-flex items-center gap-2">
+                <Heart className="w-5 h-5 text-primary" />
+                Personal Preferences
+              </span>
+            </SectionTitle>
 
             <Separator />
 
@@ -322,15 +328,15 @@ const Settings = () => {
         {/* Privacy Settings Section */}
         {userId && (
           <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
-            <div>
-              <div className="flex items-center gap-2 mb-1 sm:mb-2">
-                <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                <h2 className="text-base sm:text-lg font-semibold text-foreground tracking-wide">Privacy Settings</h2>
-              </div>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                Control what information is visible to your connections
-              </p>
-            </div>
+            <SectionTitle
+              subtitle="Control what information is visible to your connections"
+              className="mb-0"
+            >
+              <span className="inline-flex items-center gap-2">
+                <Shield className="w-5 h-5 text-primary" />
+                Privacy Settings
+              </span>
+            </SectionTitle>
 
             <Separator />
 
@@ -340,15 +346,15 @@ const Settings = () => {
 
         {/* Notifications Section */}
         <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
-          <div>
-            <div className="flex items-center gap-2 mb-1 sm:mb-2">
-              <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-              <h2 className="text-base sm:text-lg font-semibold text-foreground tracking-wide">Notifications</h2>
-            </div>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              Manage how you receive alerts and updates
-            </p>
-          </div>
+          <SectionTitle
+            subtitle="Manage how you receive alerts and updates"
+            className="mb-0"
+          >
+            <span className="inline-flex items-center gap-2">
+              <Bell className="w-5 h-5 text-primary" />
+              Notifications
+            </span>
+          </SectionTitle>
 
           <Separator />
 
@@ -397,15 +403,15 @@ const Settings = () => {
 
         {/* Theme Section */}
         <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
-          <div>
-            <div className="flex items-center gap-2 mb-1 sm:mb-2">
-              <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-gold" />
-              <h2 className="text-base sm:text-lg font-extrabold text-luxe-gold">Appearance</h2>
-            </div>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              JET ships in a single, signature dark luxe theme.
-            </p>
-          </div>
+          <SectionTitle
+            subtitle="JET ships in a single, signature dark luxe theme."
+            className="mb-0"
+          >
+            <span className="inline-flex items-center gap-2">
+              <Moon className="w-5 h-5 text-gold" />
+              Appearance
+            </span>
+          </SectionTitle>
 
           <div className="divider-luxe" />
 
@@ -425,15 +431,15 @@ const Settings = () => {
 
         {/* Location Section */}
         <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
-          <div>
-            <div className="flex items-center gap-2 mb-1 sm:mb-2">
-              <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-              <h2 className="text-base sm:text-lg font-semibold text-foreground tracking-wide">Location</h2>
-            </div>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              Control how the app uses your location
-            </p>
-          </div>
+          <SectionTitle
+            subtitle="Control how the app uses your location"
+            className="mb-0"
+          >
+            <span className="inline-flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-primary" />
+              Location
+            </span>
+          </SectionTitle>
 
           <Separator />
 
@@ -491,12 +497,12 @@ const Settings = () => {
 
         {/* Support Section */}
         <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
-          <div>
-            <h2 className="text-base sm:text-lg font-semibold text-foreground tracking-wide">Support</h2>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              Need help or found an issue?
-            </p>
-          </div>
+          <SectionTitle
+            subtitle="Need help or found an issue?"
+            className="mb-0"
+          >
+            Support
+          </SectionTitle>
 
           <Separator />
 
@@ -508,15 +514,15 @@ const Settings = () => {
         {/* Danger Zone - Account Deletion */}
         {userId && (
           <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 border-destructive/30 bg-card/90 backdrop-blur-xl shadow-card">
-            <div>
-              <div className="flex items-center gap-2 mb-1 sm:mb-2">
-                <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
-                <h2 className="text-base sm:text-lg font-bold text-destructive">Danger Zone</h2>
-              </div>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                Permanently delete your account and all associated data
-              </p>
-            </div>
+            <SectionTitle
+              subtitle="Permanently delete your account and all associated data"
+              className="mb-0"
+            >
+              <span className="inline-flex items-center gap-2 text-destructive">
+                <Trash2 className="w-5 h-5" />
+                Danger Zone
+              </span>
+            </SectionTitle>
 
             <Separator />
 
