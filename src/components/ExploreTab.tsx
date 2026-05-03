@@ -397,14 +397,13 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
           title="Explore Deals"
           subtitle={userLocation ? "Showing deals near you" : "Showing all available deals"}
         />
-        {userLocation && (
-          <div style={{ marginTop: '8px' }}>
-            <Badge variant="secondary" className="text-xs flex items-center gap-1 w-fit">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '8px' }}>
+          {userLocation && (
+            <Badge variant="secondary" className="text-xs flex items-center gap-1">
               <Navigation className="w-3 h-3" />
               Location Active
             </Badge>
-          </div>
-        )}
+          )}
           {userPreferences?.categories && userPreferences.categories.length > 0 && (
             <Badge 
               variant={preferenceFilterEnabled ? "default" : "outline"}
