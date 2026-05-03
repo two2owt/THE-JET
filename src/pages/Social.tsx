@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useConnections } from "@/hooks/useConnections";
 import { Users, UserPlus, Check, X, UserX, Crown, MessageCircle } from "lucide-react";
@@ -14,6 +14,8 @@ import { useUnreadCounts } from "@/hooks/useMessages";
 import { Badge } from "@/components/ui/badge";
 import { PageShell } from "@/components/PageShell";
 import { SocialPageSkeleton } from "@/components/skeletons/PageSkeletons";
+import { SectionTitle } from "@/components/ui/page-title";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Tap-to-expand display name with native tooltip on hover-capable devices.
 // Truncates to a single line by default (clean ellipsis, zero CLS); on tap
@@ -65,30 +67,14 @@ interface Profile {
 
 export default function Social() {
   const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
-  const [sessionChecked, setSessionChecked] = useState(false);
+  const { user, isLoading: authLoading } = useAuth();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [chatFriend, setChatFriend] = useState<{ id: string; name: string; avatar?: string | null } | null>(null);
   const unreadCounts = useUnreadCounts(user?.id);
   const { canAccessSocialFeatures } = useFeatureAccess();
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setSessionChecked(true);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setSessionChecked(true);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const headerConfig = useMemo(() => ({ hideSearch: true }), []);
 
   const {
     connections,
@@ -145,9 +131,9 @@ export default function Social() {
     }
   };
 
-  if (!sessionChecked) {
+  if (authLoading) {
     return (
-      <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
+      <PageLayout defaultTab="social" headerConfig={headerConfig}>
         <PageShell>
           <SocialPageSkeleton />
         </PageShell>
@@ -157,7 +143,7 @@ export default function Social() {
 
   if (!user) {
     return (
-      <PageLayout defaultTab="social" notificationCount={0} headerConfig={{ hideSearch: true }}>
+      <PageLayout defaultTab="social" notificationCount={0} headerConfig={headerConfig}>
         <PageShell>
           <EmptyState
             icon={Users}
@@ -174,7 +160,7 @@ export default function Social() {
   // Show upgrade prompt for users without JET+ subscription
   if (!canAccessSocialFeatures()) {
     return (
-      <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
+      <PageLayout defaultTab="social" headerConfig={headerConfig}>
         <PageShell>
           <EmptyState
             icon={Crown}
@@ -286,7 +272,7 @@ export default function Social() {
   };
 
   return (
-    <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
+    <PageLayout defaultTab="social" headerConfig={headerConfig}>
       <PageShell>
         {/* Messages shortcut */}
         <button
@@ -327,14 +313,9 @@ export default function Social() {
         {/* Pending Requests */}
         {pendingRequests.length > 0 && (
           <section className="mt-8 first:mt-6">
-            <header className="mb-4 flex items-baseline justify-between gap-3">
-              <h2 className="font-display text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
-                Friend Requests
-              </h2>
-              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground tabular-nums">
-                {pendingRequests.length} pending
-              </span>
-            </header>
+            <SectionTitle meta={`${pendingRequests.length} pending`}>
+              Friend Requests
+            </SectionTitle>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {pendingRequests.map((request) => (
                 <div key={request.id} style={{ ...cardStyle, flexWrap: 'wrap', rowGap: '12px' }}>
@@ -366,14 +347,11 @@ export default function Social() {
 
         {/* My Friends */}
         <section className="mt-10">
-          <header className="mb-4 flex items-baseline justify-between gap-3">
-            <h2 className="font-display text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
-              My Friends
-            </h2>
-            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground tabular-nums">
-              {connections.length} {connections.length === 1 ? "friend" : "friends"}
-            </span>
-          </header>
+          <SectionTitle
+            meta={`${connections.length} ${connections.length === 1 ? "friend" : "friends"}`}
+          >
+            My Friends
+          </SectionTitle>
           {connections.length === 0 ? (
             <EmptyState
               icon={UserX}
@@ -448,14 +426,9 @@ export default function Social() {
 
         {/* Discover People */}
         <section className="mt-10">
-          <header className="mb-4">
-            <h2 className="font-display text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
-              Discover People
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Suggested connections from your area
-            </p>
-          </header>
+          <SectionTitle subtitle="Suggested connections from your area">
+            Discover People
+          </SectionTitle>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {profiles.map((profile) => (
               <div key={profile.id} style={cardStyle}>

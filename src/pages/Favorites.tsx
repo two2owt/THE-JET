@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useFavorites } from "@/hooks/useFavorites";
 import { Heart, Compass } from "lucide-react";
@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { VirtualGrid } from "@/components/ui/virtual-list";
 import { FavoritesPageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { PageShell } from "@/components/PageShell";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Deal {
   id: string;
@@ -24,22 +25,9 @@ interface Deal {
 
 export default function Favorites() {
   const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
+  const { user, isLoading: authLoading } = useAuth();
   const [deals, setDeals] = useState<Deal[]>([]);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const headerConfig = useMemo(() => ({}), []);
 
   const { favorites, loading: favoritesLoading } = useFavorites(user?.id);
 
@@ -67,9 +55,19 @@ export default function Favorites() {
     }
   };
 
+  if (authLoading) {
+    return (
+      <PageLayout defaultTab="favorites" headerConfig={headerConfig}>
+        <PageShell>
+          <FavoritesPageSkeleton />
+        </PageShell>
+      </PageLayout>
+    );
+  }
+
   if (!user) {
     return (
-      <PageLayout defaultTab="favorites" notificationCount={0}>
+      <PageLayout defaultTab="favorites" notificationCount={0} headerConfig={headerConfig}>
         <PageShell>
           <EmptyState
             icon={Heart}
@@ -85,14 +83,16 @@ export default function Favorites() {
 
   if (favoritesLoading) {
     return (
-      <PageLayout defaultTab="favorites">
-        <FavoritesPageSkeleton />
+      <PageLayout defaultTab="favorites" headerConfig={headerConfig}>
+        <PageShell>
+          <FavoritesPageSkeleton />
+        </PageShell>
       </PageLayout>
     );
   }
 
   return (
-    <PageLayout defaultTab="favorites">
+    <PageLayout defaultTab="favorites" headerConfig={headerConfig}>
       <PageShell>
         {deals.length === 0 ? (
           <EmptyState
