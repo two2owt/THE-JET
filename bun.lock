@@ -7,7 +7,6 @@
       "dependencies": {
         "@fontsource-variable/plus-jakarta-sans": "^5.2.8",
         "@fontsource-variable/syne": "^5.2.7",
-        "@fontsource/kanit": "^5.2.8",
         "@hookform/resolvers": "^3.10.0",
         "@radix-ui/react-accordion": "^1.2.11",
         "@radix-ui/react-alert-dialog": "^1.1.14",
@@ -364,8 +363,6 @@
     "@fontsource-variable/plus-jakarta-sans": ["@fontsource-variable/plus-jakarta-sans@5.2.8", "", {}, "sha512-iQecBizIdZxezODNHzOn4SvvRMrZL/S8k4MEXGDynCmUrImVW0VmX+tIAMqnADwH4haXlHSXqMgU6+kcfBQJdw=="],
 
     "@fontsource-variable/syne": ["@fontsource-variable/syne@5.2.7", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@fontsource-variable/syne/-/syne-5.2.7.tgz", {}, "sha512-B2z7P0mGdNSAgz6SmtK7HXReZL22WJ8Z8sk5Z1ZuKiCSRM7DwWLjWXLwhbQ+CvmtNS/+p95jGvVEfQT9bm+UKw=="],
-
-    "@fontsource/kanit": ["@fontsource/kanit@5.2.8", "", {}, "sha512-vISPW1kRoy+BTqplYCymdYRJcNFGmlPxWXqo178eGPe7P+lMX24JiQOxWdI4HLWR+0ROUzaFneXy/v1I9u99yg=="],
 
     "@hookform/resolvers": ["@hookform/resolvers@3.10.0", "", { "peerDependencies": { "react-hook-form": "^7.0.0" } }, "sha512-79Dv+3mDF7i+2ajj7SkypSKHhl1cbln1OGavqrsF7p6mbUv11xpqpacPsGDCTRvCSjEEIez2ef1NveSVL3b0Ag=="],
 
