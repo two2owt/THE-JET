@@ -489,16 +489,7 @@ const Index = () => {
             <Suspense fallback={<NotificationsTabSkeleton />}>
             <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <h2 style={{
-                  fontSize: 'clamp(1.25rem, 3vw, 1.875rem)',
-                  fontWeight: 800,
-                  marginBottom: '6px',
-                  lineHeight: 1.1,
-                  backgroundImage: 'linear-gradient(to right, hsl(var(--foreground)), hsl(var(--primary)))',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                }}>
+                <h2 className="heading-luxe-gradient" style={{ marginBottom: '6px' }}>
                   Notifications
                 </h2>
                 <p style={{ fontSize: '14px', color: 'hsl(var(--muted-foreground))' }}>Stay updated with nearby deals and events</p>

@@ -868,6 +868,29 @@ All colors MUST be HSL.
     color: hsl(var(--foreground));
   }
 
+  /* Page-level gradient heading — primary→accent brand wash.
+     Matches the Hot (Explore) tab title for a consistent brand voice across
+     Favorites, Alerts, Social, Settings, and Profile. */
+  .heading-luxe-gradient {
+    font-family: var(--font-display, inherit);
+    font-weight: 800;
+    font-size: clamp(1.5rem, 3.2vw, 2.25rem);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    background-image: linear-gradient(
+      to right,
+      hsl(var(--primary)),
+      hsl(var(--accent))
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    /* Avoid descender clipping on heavy weights */
+    padding-bottom: 0.08em;
+    display: inline-block;
+  }
+
   /* Section heading — paired with .divider-luxe below for editorial rhythm */
   .heading-luxe-section {
     font-weight: 600;
