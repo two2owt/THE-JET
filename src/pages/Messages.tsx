@@ -24,6 +24,84 @@ import {
 import { format, isToday, isYesterday } from "date-fns";
 import { MessagesPageSkeleton } from "@/components/skeletons/PageSkeletons";
 
+/* ─── Shared adaptive style tokens (mirrors Social page) ─── */
+const convoCardStyle: React.CSSProperties = {
+  gap: 'clamp(10px, 3vw, 14px)',
+  padding: 'clamp(10px, 2.8vw, 14px) clamp(12px, 3.2vw, 16px)',
+};
+
+const nameStyle: React.CSSProperties = {
+  display: '-webkit-box',
+  WebkitLineClamp: 1,
+  WebkitBoxOrient: 'vertical',
+  overflow: 'hidden',
+  overflowWrap: 'anywhere',
+  wordBreak: 'break-word',
+  minHeight: 'calc(1.3em)',
+  textAlign: 'left',
+  background: 'transparent',
+  border: 'none',
+  padding: 0,
+  margin: 0,
+  font: 'inherit',
+  color: 'inherit',
+  cursor: 'pointer',
+  width: '100%',
+};
+
+const subtitleStyle: React.CSSProperties = {
+  display: '-webkit-box',
+  WebkitLineClamp: 1,
+  WebkitBoxOrient: 'vertical',
+  overflow: 'hidden',
+  overflowWrap: 'anywhere',
+  wordBreak: 'break-word',
+  minHeight: 'calc(1.3em)',
+};
+
+const avatarClass =
+  "w-10 h-10 min-[360px]:w-11 min-[360px]:h-11 sm:w-12 sm:h-12 lg:w-[52px] lg:h-[52px] shrink-0";
+const avatarHeaderClass =
+  "w-9 h-9 min-[360px]:w-10 min-[360px]:h-10 sm:w-11 sm:h-11 shrink-0";
+
+function DisplayName({
+  name,
+  className,
+  style,
+}: {
+  name: string;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const merged: React.CSSProperties = expanded
+    ? {
+        ...nameStyle,
+        ...style,
+        WebkitLineClamp: 'unset' as any,
+        display: 'block',
+        whiteSpace: 'normal',
+        overflow: 'visible',
+      }
+    : { ...nameStyle, ...style };
+  return (
+    <button
+      type="button"
+      title={name}
+      aria-label={name}
+      aria-expanded={expanded}
+      onClick={(e) => {
+        e.stopPropagation();
+        setExpanded((v) => !v);
+      }}
+      className={className}
+      style={merged}
+    >
+      {name}
+    </button>
+  );
+}
+
 function formatConvoTime(dateStr: string) {
   if (!dateStr) return "";
   const d = new Date(dateStr);
@@ -139,10 +217,11 @@ function ConversationList({
             <button
               key={c.friendId}
               onClick={() => onSelect(c.friendId)}
-              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-left"
+              className="w-full flex items-center hover:bg-muted/50 transition-colors text-left"
+              style={convoCardStyle}
             >
               <div className="relative shrink-0">
-                <Avatar className="w-12 h-12">
+                <Avatar className={avatarClass}>
                   <AvatarImage src={c.friendAvatar || undefined} alt={c.friendName} />
                   <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary">
                     {c.friendName.charAt(0).toUpperCase()}
@@ -155,17 +234,23 @@ function ConversationList({
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <p className={`heading-luxe-card truncate ${c.unreadCount > 0 ? "font-bold" : "font-medium"}`}>
-                    {c.friendName}
-                  </p>
+                <div className="flex items-center justify-between gap-2 min-w-0">
+                  <div className="flex-1 min-w-0">
+                    <DisplayName
+                      name={c.friendName}
+                      className={`heading-luxe-card ${c.unreadCount > 0 ? "font-bold" : "font-medium"}`}
+                    />
+                  </div>
                   {c.lastMessageAt && (
-                    <span className={`heading-luxe-eyebrow flex-shrink-0 ml-2 ${c.unreadCount > 0 ? "!text-primary" : ""}`}>
+                    <span className={`heading-luxe-eyebrow flex-shrink-0 ${c.unreadCount > 0 ? "!text-primary" : ""}`}>
                       {formatConvoTime(c.lastMessageAt)}
                     </span>
                   )}
                 </div>
-                <p className={`body-luxe-muted truncate mt-0.5 ${c.unreadCount > 0 ? "!text-foreground font-medium" : ""}`}>
+                <p
+                  className={`body-luxe-muted mt-0.5 ${c.unreadCount > 0 ? "!text-foreground font-medium" : ""}`}
+                  style={subtitleStyle}
+                >
                   {c.lastMessage || "Start a conversation"}
                 </p>
               </div>
@@ -236,23 +321,33 @@ function ChatView({
   return (
     <div className="flex flex-col h-full">
       {/* Chat header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-border/60 bg-card/60 backdrop-blur-sm">
+      <div
+        className="flex items-center border-b border-border/60 bg-card/60 backdrop-blur-sm"
+        style={convoCardStyle}
+      >
         <Button variant="ghost" size="icon" onClick={onBack} className="flex-shrink-0">
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <Avatar className="w-9 h-9 shrink-0">
+        <Avatar className={avatarHeaderClass}>
           <AvatarImage src={friend?.friendAvatar || undefined} alt={friend?.friendName || "Friend"} />
           <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary">
             {(friend?.friendName || "F").charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
-        <p className="heading-luxe-card truncate">
-          {friend?.friendName || "Chat"}
-        </p>
+        <div className="flex-1 min-w-0">
+          <DisplayName
+            name={friend?.friendName || "Chat"}
+            className="heading-luxe-card"
+          />
+        </div>
       </div>
 
       {/* Messages area */}
-      <ScrollArea className="flex-1 px-4 py-3 w-full overflow-x-hidden">
+      <ScrollArea className="flex-1 w-full overflow-x-hidden" >
+        <div
+          className="w-full"
+          style={{ padding: 'clamp(10px, 2.8vw, 14px) clamp(12px, 3.2vw, 16px)' }}
+        >
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <p className="body-luxe-muted">Loading messages…</p>
@@ -265,7 +360,10 @@ function ChatView({
             </p>
           </div>
         ) : (
-          <div className="space-y-3 w-full overflow-hidden">
+          <div
+            className="w-full overflow-hidden"
+            style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(8px, 2.2vw, 12px)' }}
+          >
             {messages.map((msg) => {
               const isMine = msg.sender_id === userId;
               return (
@@ -274,11 +372,15 @@ function ChatView({
                   className={`flex ${isMine ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[75%] min-w-0 overflow-hidden rounded-2xl px-3.5 py-2 ${
+                    className={`min-w-0 overflow-hidden rounded-2xl ${
                       isMine
                         ? "bg-primary text-primary-foreground rounded-br-md"
                         : "bg-muted text-foreground rounded-bl-md"
                     }`}
+                    style={{
+                      maxWidth: 'min(78%, 520px)',
+                      padding: 'clamp(6px, 1.6vw, 10px) clamp(10px, 2.6vw, 14px)',
+                    }}
                   >
                     {msg.image_url && <ChatImage value={msg.image_url} />}
                     {msg.content && (
@@ -312,12 +414,15 @@ function ChatView({
             <div ref={bottomRef} />
           </div>
         )}
+        </div>
       </ScrollArea>
 
       {/* Input bar */}
       <div
-        className="px-4 py-3 border-t border-border/60 bg-card/60 backdrop-blur-sm flex items-center gap-2"
+        className="border-t border-border/60 bg-card/60 backdrop-blur-sm flex items-center"
         style={{
+          gap: 'clamp(6px, 1.8vw, 10px)',
+          padding: 'clamp(8px, 2.2vw, 12px) clamp(12px, 3.2vw, 16px)',
           paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 12px)',
         }}
       >
