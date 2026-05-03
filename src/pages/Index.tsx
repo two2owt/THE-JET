@@ -24,6 +24,7 @@ import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useBottomNavigation } from "@/hooks/useBottomNavigation";
 import { NotificationsTabSkeleton, ExploreTabSkeleton } from "@/components/skeletons/PageSkeletons";
 import { TabPageHeader } from "@/components/TabPageHeader";
+import { PageShell } from "@/components/PageShell";
 
 // Lazy load heavy components - deferred until needed
 const MapboxHeatmap = lazy(() => import("@/components/MapboxHeatmap").then(m => ({ default: m.MapboxHeatmap })));
@@ -488,7 +489,7 @@ const Index = () => {
         >
           {activeTab === "notifications" && (
             <Suspense fallback={<NotificationsTabSkeleton />}>
-            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <PageShell>
               <TabPageHeader
                 title="Notifications"
                 subtitle="Stay updated with nearby deals and events"
@@ -527,7 +528,7 @@ const Index = () => {
                   ))}
                 </>
               )}
-            </div>
+            </PageShell>
             </Suspense>
           )}
 
