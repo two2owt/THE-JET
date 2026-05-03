@@ -763,47 +763,8 @@ All colors MUST be HSL.
     box-shadow: 0 0 12px hsl(var(--primary) / 0.7);
   }
 
-  /* Compact control inline row */
-  .control-inline-row {
-    @apply flex items-center gap-1.5 text-[10px];
-  }
-
-  .control-inline-label {
-    @apply text-muted-foreground whitespace-nowrap min-w-[40px];
-  }
-
-  .control-inline-value {
-    @apply font-medium text-foreground;
-  }
-
-  /* Map controls toggle button */
-  .map-controls-toggle {
-    @apply bg-card/95 backdrop-blur-xl rounded-full p-2 border border-border shadow-lg;
-    @apply transition-all duration-300 hover:bg-card hover:scale-105;
-    @apply focus:outline-none focus:ring-2 focus:ring-primary/50;
-  }
-
-  .map-controls-toggle:active {
-    @apply scale-95;
-  }
-
-  /* Collapsed state indicator */
-  .map-controls-collapsed-hint {
-    @apply absolute bottom-0 right-0 w-1 h-8 bg-primary/50 rounded-full;
-    animation: pulse-hint 2s ease-in-out infinite;
-  }
-
-  @keyframes pulse-hint {
-    0%, 100% {
-      opacity: 0.3;
-    }
-    50% {
-      opacity: 0.7;
-    }
-  }
-
-  /* Cloud/fog flying through animation for sync indicator */
-  @keyframes cloud-drift-left {
+  /* Cloud/fog flying through animation for sync indicator (unused) */
+  @keyframes cloud-drift-left-LEGACY-REMOVE {
     0% {
       transform: translateX(100%);
       opacity: 0;
