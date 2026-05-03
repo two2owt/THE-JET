@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,9 @@ const Settings = () => {
   const { isRegistered: isPushRegistered, isNative, initializePushNotifications, unregister: unregisterPush } = usePushNotifications();
   const { isAdmin } = useIsAdmin();
   const showSubscriptionSection = isMonetizationEnabled() || isAdmin;
+
+  // Stable header config so PageLayout's effect doesn't churn on every render.
+  const headerConfig = useMemo(() => ({ hideSearch: true }), []);
 
   // Handle subscription success/cancel from Stripe redirect
   useEffect(() => {
@@ -213,10 +216,13 @@ const Settings = () => {
 
   // Consistent layout wrapper for Settings page.
   // Settings is reached from the Crew (social) tab — keep that highlighted.
-  const SettingsLayout = ({ children }: { children: React.ReactNode }) => (
-    <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
-      {children}
-    </PageLayout>
+  const SettingsLayout = useCallback(
+    ({ children }: { children: React.ReactNode }) => (
+      <PageLayout defaultTab="social" headerConfig={headerConfig}>
+        {children}
+      </PageLayout>
+    ),
+    [headerConfig]
   );
 
   if (isLoading) {
