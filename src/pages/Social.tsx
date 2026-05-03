@@ -13,6 +13,48 @@ import { ChatDialog } from "@/components/ChatDialog";
 import { useUnreadCounts } from "@/hooks/useMessages";
 import { Badge } from "@/components/ui/badge";
 
+// Tap-to-expand display name with native tooltip on hover-capable devices.
+// Truncates to a single line by default (clean ellipsis, zero CLS); on tap
+// it expands to wrap and reveal the full string. Hover devices get the full
+// name via the `title` attribute as a fallback.
+function DisplayName({ name, style }: { name: string; style: React.CSSProperties }) {
+  const [expanded, setExpanded] = useState(false);
+  const expandedStyle: React.CSSProperties = expanded
+    ? {
+        ...style,
+        WebkitLineClamp: 'unset' as any,
+        display: 'block',
+        whiteSpace: 'normal',
+        overflow: 'visible',
+        minHeight: 0,
+      }
+    : style;
+  return (
+    <button
+      type="button"
+      title={name}
+      aria-label={expanded ? `Collapse ${name}` : `Show full name: ${name}`}
+      aria-expanded={expanded}
+      onClick={(e) => {
+        e.stopPropagation();
+        setExpanded((v) => !v);
+      }}
+      style={{
+        ...expandedStyle,
+        background: 'none',
+        border: 'none',
+        padding: 0,
+        textAlign: 'left',
+        cursor: 'pointer',
+        font: 'inherit',
+        width: '100%',
+      }}
+    >
+      {name}
+    </button>
+  );
+}
+
 interface Profile {
   id: string;
   display_name: string | null;
@@ -286,7 +328,7 @@ export default function Social() {
                       </AvatarFallback>
                     </Avatar>
                     <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                      <p style={nameStyle}>{request.profile?.display_name || "Friend Request"}</p>
+                      <DisplayName name={request.profile?.display_name || "Friend Request"} style={nameStyle} />
                       <p style={subtitleStyle}>Wants to connect with you</p>
                     </div>
                   </div>
@@ -332,7 +374,7 @@ export default function Social() {
                         </AvatarFallback>
                       </Avatar>
                       <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        <p style={nameStyle}>{connection.profile?.display_name || "Friend"}</p>
+                        <DisplayName name={connection.profile?.display_name || "Friend"} style={nameStyle} />
                         <p style={subtitleStyle}>Connected</p>
                       </div>
                     </button>
@@ -397,7 +439,7 @@ export default function Social() {
                     </AvatarFallback>
                   </Avatar>
                   <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    <p style={nameStyle}>{profile.display_name || "User"}</p>
+                    <DisplayName name={profile.display_name || "User"} style={nameStyle} />
                     <p style={subtitleStyle}>Suggested for you</p>
                   </div>
                 </div>
