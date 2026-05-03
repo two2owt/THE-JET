@@ -147,22 +147,34 @@ export default function Social() {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: '12px',
-    padding: '12px 16px',
-    borderRadius: '12px',
+    gap: 'clamp(10px, 2.5vw, 16px)',
+    padding: 'clamp(12px, 2.5vw, 16px) clamp(14px, 3vw, 18px)',
+    borderRadius: '14px',
     backgroundColor: 'hsl(var(--card) / 0.9)',
     border: '1px solid hsl(var(--border) / 0.6)',
     backdropFilter: 'blur(8px)',
+    minWidth: 0,
   };
 
   // Use Tailwind sizing so container queries inside <Avatar> resolve correctly
   // (fallback text scales via `cqw` units defined in the primitive).
-  const avatarClass = "w-10 h-10 shrink-0";
-  const avatarClassLg = "w-12 h-12 shrink-0";
+  const avatarClass = "w-10 h-10 sm:w-11 sm:h-11 shrink-0";
+  const avatarClassLg = "w-12 h-12 sm:w-14 sm:h-14 shrink-0";
+
+  const nameStyle: React.CSSProperties = {
+    fontWeight: 600,
+    color: 'hsl(var(--foreground))',
+    fontSize: 'clamp(14px, 2.6vw, 15px)',
+    lineHeight: 1.3,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    letterSpacing: '-0.01em',
+  };
 
   return (
     <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
-      <div style={{ maxWidth: '768px', margin: '0 auto', padding: 'clamp(16px, 3vw, 24px)', display: 'flex', flexDirection: 'column', gap: 'clamp(24px, 4vw, 32px)' }}>
+      <div style={{ width: '100%', maxWidth: 'min(768px, 100%)', margin: '0 auto', padding: 'clamp(14px, 3vw, 28px)', display: 'flex', flexDirection: 'column', gap: 'clamp(20px, 4vw, 32px)' }}>
         {/* Page title — gradient brand wash, consistent across tabs */}
         <h1 className="heading-luxe-gradient">Crew</h1>
         {/* Messages shortcut */}
