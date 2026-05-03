@@ -48,7 +48,7 @@ export default function AdminDashboard() {
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <Shield className="w-6 h-6 text-primary" />
-            <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
+            <h1 className="heading-luxe-gradient">Admin Dashboard</h1>
           </div>
         </div>
       </header>
