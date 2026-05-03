@@ -36,7 +36,9 @@ export default function Unsubscribe() {
           setMessage(data?.error || "This unsubscribe link is invalid or expired.");
           return;
         }
-        if (data?.alreadyUnsubscribed || data?.used) {
+        // Handler returns { valid: false, reason: 'already_unsubscribed' } when used,
+        // or { valid: true } when the token is fresh.
+        if (data?.reason === "already_unsubscribed" || data?.valid === false) {
           setStatus("already");
           if (data?.email) setEmail(data.email);
           return;
@@ -63,7 +65,17 @@ export default function Unsubscribe() {
         { body: { token } },
       );
       if (error) throw error;
-      if ((data as any)?.email) setEmail((data as any).email);
+      const payload = data as any;
+      if (payload?.email) setEmail(payload.email);
+      if (payload?.success === false && payload?.reason === "already_unsubscribed") {
+        setStatus("already");
+        return;
+      }
+      if (payload?.error) {
+        setStatus("error");
+        setMessage(payload.error);
+        return;
+      }
       setStatus("done");
     } catch (e: any) {
       setStatus("error");
