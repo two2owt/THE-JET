@@ -146,25 +146,66 @@ export function SettingsPageSkeleton() {
 
 export function ProfilePageSkeleton() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg">
-      {/* Avatar + name */}
-      <div className="flex flex-col items-center gap-3 mb-8">
-        <Skeleton className="h-24 w-24 rounded-full" />
-        <Skeleton className="h-6 w-40 rounded" />
-        <Skeleton className="h-4 w-56 rounded" />
-      </div>
-      {/* Stats row */}
-      <div className="flex justify-center gap-8 mb-8">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="flex flex-col items-center gap-1">
-            <Skeleton className="h-6 w-8 rounded" />
-            <Skeleton className="h-3 w-14 rounded" />
+    <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg space-y-6">
+      {/* Hero card mirrors real Profile layout to prevent CLS */}
+      <div className="overflow-hidden rounded-2xl border border-border/40 bg-card/90 backdrop-blur-xl shadow-card">
+        {/* Banner */}
+        <Skeleton className="h-28 sm:h-32 w-full rounded-none" />
+
+        <div className="px-5 sm:px-7 pb-6">
+          {/* Overlapping avatar + identity */}
+          <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-5 -mt-12 sm:-mt-14">
+            <Skeleton className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mx-auto sm:mx-0 ring-4 ring-card shrink-0" />
+            <div className="flex-1 min-w-0 text-center sm:text-left sm:pb-1 space-y-2">
+              <Skeleton className="h-7 w-44 sm:w-56 rounded mx-auto sm:mx-0" />
+              <Skeleton className="h-4 w-56 sm:w-64 rounded mx-auto sm:mx-0" />
+            </div>
           </div>
-        ))}
+
+          {/* Stat chips — match real grid for 0 CLS */}
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-6">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="min-w-0 flex flex-col items-center justify-center rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm py-3 px-2 gap-1.5"
+              >
+                <Skeleton className="w-4 h-4 rounded" />
+                <Skeleton className="h-6 w-8 rounded" />
+                <Skeleton className="h-3 w-14 rounded" />
+              </div>
+            ))}
+          </div>
+
+          {/* Separator */}
+          <div className="h-px w-full bg-border/60 my-6" />
+
+          {/* Form fields */}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28 rounded" />
+              <Skeleton className="h-10 w-full rounded-md" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-12 rounded" />
+              <Skeleton className="h-24 w-full rounded-md" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-20 rounded" />
+                <Skeleton className="h-10 w-full rounded-md" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-20 rounded" />
+                <Skeleton className="h-10 w-full rounded-md" />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      {/* Cards */}
-      {Array.from({ length: 3 }).map((_, i) => (
-        <Skeleton key={i} className="h-28 rounded-2xl mb-4" />
+
+      {/* Secondary cards */}
+      {Array.from({ length: 2 }).map((_, i) => (
+        <Skeleton key={i} className="h-32 w-full rounded-2xl" />
       ))}
     </div>
   );
