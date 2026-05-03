@@ -25,7 +25,7 @@ function CardGridSkeleton({ count = 6 }: { count?: number }) {
 
 export function FavoritesPageSkeleton() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg">
+    <div className="w-full">
       <PageHeadingSkeleton subtitleWidth="w-20" />
       <CardGridSkeleton count={6} />
     </div>
@@ -36,7 +36,7 @@ export function FavoritesPageSkeleton() {
 
 export function SocialPageSkeleton() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg">
+    <div className="w-full">
       {/* Messages button */}
       <Skeleton className="h-12 w-full rounded-xl mb-6" />
 
