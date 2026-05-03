@@ -10,6 +10,7 @@ const DealManagement = lazy(() => import("@/components/admin/DealManagement").th
 const UserAnalytics = lazy(() => import("@/components/admin/UserAnalytics").then(m => ({ default: m.UserAnalytics })));
 const NeighborhoodManagement = lazy(() => import("@/components/admin/NeighborhoodManagement").then(m => ({ default: m.NeighborhoodManagement })));
 const MonetizationToggle = lazy(() => import("@/components/admin/MonetizationToggle").then(m => ({ default: m.MonetizationToggle })));
+const ResendDomainStatus = lazy(() => import("@/components/admin/ResendDomainStatus").then(m => ({ default: m.ResendDomainStatus })));
 
 export default function AdminDashboard() {
   const { isAdmin, loading } = useIsAdmin();
@@ -83,6 +84,9 @@ export default function AdminDashboard() {
             <div className="space-y-6">
               <Suspense fallback={<div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
                 <MonetizationToggle />
+              </Suspense>
+              <Suspense fallback={<div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
+                <ResendDomainStatus />
               </Suspense>
             </div>
           </TabsContent>
