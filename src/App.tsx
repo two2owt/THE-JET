@@ -9,6 +9,7 @@ import { HeaderProvider } from "@/contexts/HeaderContext";
 import { NavigationShell } from "@/components/NavigationShell";
 import { AppShell } from "@/components/AppShell";
 import { PageLayout } from "@/components/PageLayout";
+import type { NavTab } from "@/hooks/useBottomNavigation";
 import {
   FavoritesPageSkeleton,
   SocialPageSkeleton,
@@ -47,7 +48,7 @@ function RouteFallback({
   hideSearch = true,
   children,
 }: {
-  defaultTab?: "map" | "social" | "saved" | "alerts" | "hot";
+  defaultTab?: NavTab;
   hideSearch?: boolean;
   children: React.ReactNode;
 }) {
@@ -127,7 +128,7 @@ const AppLayout = memo(function AppLayout() {
         <Route
           path="/favorites"
           element={
-            <Suspense fallback={<RouteFallback defaultTab="saved"><FavoritesPageSkeleton /></RouteFallback>}>
+            <Suspense fallback={<RouteFallback defaultTab="favorites"><FavoritesPageSkeleton /></RouteFallback>}>
               <Favorites />
             </Suspense>
           }
