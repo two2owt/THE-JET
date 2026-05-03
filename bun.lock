@@ -6,6 +6,7 @@
       "name": "vite_react_shadcn_ts",
       "dependencies": {
         "@fontsource-variable/plus-jakarta-sans": "^5.2.8",
+        "@fontsource-variable/syne": "^5.2.7",
         "@fontsource/kanit": "^5.2.8",
         "@hookform/resolvers": "^3.10.0",
         "@radix-ui/react-accordion": "^1.2.11",
@@ -361,6 +362,8 @@
     "@floating-ui/utils": ["@floating-ui/utils@0.2.11", "", {}, "sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg=="],
 
     "@fontsource-variable/plus-jakarta-sans": ["@fontsource-variable/plus-jakarta-sans@5.2.8", "", {}, "sha512-iQecBizIdZxezODNHzOn4SvvRMrZL/S8k4MEXGDynCmUrImVW0VmX+tIAMqnADwH4haXlHSXqMgU6+kcfBQJdw=="],
+
+    "@fontsource-variable/syne": ["@fontsource-variable/syne@5.2.7", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@fontsource-variable/syne/-/syne-5.2.7.tgz", {}, "sha512-B2z7P0mGdNSAgz6SmtK7HXReZL22WJ8Z8sk5Z1ZuKiCSRM7DwWLjWXLwhbQ+CvmtNS/+p95jGvVEfQT9bm+UKw=="],
 
     "@fontsource/kanit": ["@fontsource/kanit@5.2.8", "", {}, "sha512-vISPW1kRoy+BTqplYCymdYRJcNFGmlPxWXqo178eGPe7P+lMX24JiQOxWdI4HLWR+0ROUzaFneXy/v1I9u99yg=="],
 
