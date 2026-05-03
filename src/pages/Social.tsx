@@ -13,6 +13,7 @@ import { ChatDialog } from "@/components/ChatDialog";
 import { useUnreadCounts } from "@/hooks/useMessages";
 import { Badge } from "@/components/ui/badge";
 import { TabPageHeader } from "@/components/TabPageHeader";
+import { PageShell } from "@/components/PageShell";
 
 // Tap-to-expand display name with native tooltip on hover-capable devices.
 // Truncates to a single line by default (clean ellipsis, zero CLS); on tap
@@ -273,10 +274,7 @@ export default function Social() {
 
   return (
     <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
-      <div
-        className="max-w-7xl mx-auto"
-        style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}
-      >
+      <PageShell>
         {/* Page title — uses shared TabPageHeader for cross-tab consistency */}
         <TabPageHeader
           title="Crew"
@@ -458,7 +456,7 @@ export default function Social() {
             ))}
           </div>
         </div>
-      </div>
+      </PageShell>
 
       {/* Connection Profile Dialog */}
       <ConnectionProfileDialog
