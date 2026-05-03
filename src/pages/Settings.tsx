@@ -20,6 +20,7 @@ import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { isMonetizationEnabled } from "@/lib/monetization";
 import { PageLayout } from "@/components/PageLayout";
+import { PageShell } from "@/components/PageShell";
 import { SettingsPageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { PageTitle, SectionTitle } from "@/components/ui/page-title";
 import { useAuth } from "@/contexts/AuthContext";
@@ -240,7 +241,7 @@ const Settings = () => {
   if (!user || !preferences) {
     return (
       <SettingsLayout>
-        <div className="max-w-lg mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg">
+        <PageShell variant="relaxed" className="!max-w-lg">
           <Card className="p-fluid-lg text-center bg-card/90 backdrop-blur-sm shadow-card">
             <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center mx-auto mb-fluid-md ring-1 ring-primary/20">
               <Bell className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
@@ -250,14 +251,14 @@ const Settings = () => {
               Sign In
             </Button>
           </Card>
-        </div>
+        </PageShell>
       </SettingsLayout>
     );
   }
 
   return (
     <SettingsLayout>
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg space-y-fluid-lg">
+      <PageShell variant="relaxed" className="!max-w-3xl">
         <PageTitle subtitle="Manage your account, preferences, and privacy.">
           Settings
         </PageTitle>
@@ -553,7 +554,7 @@ const Settings = () => {
             )}
           </Button>
         )}
-      </div>
+      </PageShell>
     </SettingsLayout>
   );
 };

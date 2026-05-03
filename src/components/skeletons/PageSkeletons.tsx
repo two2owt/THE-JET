@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageShell } from "@/components/PageShell";
 
 /* ─── Shared helpers ─── */
 
@@ -133,14 +134,19 @@ export function MessagesPageSkeleton() {
 
 export function SettingsPageSkeleton() {
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg space-y-fluid-lg">
+    <PageShell variant="relaxed" className="!max-w-3xl">
+      {/* Page title placeholder mirrors real <PageTitle> */}
+      <div className="space-y-2 mb-2">
+        <Skeleton className="h-8 w-40 rounded-lg" />
+        <Skeleton className="h-4 w-64 rounded" />
+      </div>
       {/* Profile link card */}
       <Skeleton className="h-20 w-full rounded-2xl" />
       {/* Section cards mirroring real Settings layout for 0 CLS */}
       {Array.from({ length: 5 }).map((_, i) => (
-        <Skeleton key={i} className="h-40 rounded-2xl" />
+        <Skeleton key={i} className="h-40 w-full rounded-2xl" />
       ))}
-    </div>
+    </PageShell>
   );
 }
 
