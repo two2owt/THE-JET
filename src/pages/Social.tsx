@@ -168,20 +168,34 @@ export default function Social() {
     color: 'hsl(var(--foreground))',
     fontSize: 'clamp(14px, 2.6vw, 15px)',
     lineHeight: 1.3,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
     letterSpacing: '-0.01em',
     margin: 0,
+    // Reserve a fixed line slot so truncation never causes vertical CLS.
+    // `display: -webkit-box` + line-clamp gives clean ellipsis for both
+    // short and long names; `wordBreak: break-word` prevents overflow
+    // when a single token (e.g. an email-like handle) is wider than the
+    // container on 320px screens.
+    display: '-webkit-box',
+    WebkitBoxOrient: 'vertical' as const,
+    WebkitLineClamp: 1,
+    overflow: 'hidden',
+    overflowWrap: 'anywhere',
+    wordBreak: 'break-word',
+    minHeight: 'calc(1.3em)',
+    maxWidth: '100%',
   };
   const subtitleStyle: React.CSSProperties = {
     fontSize: 'clamp(11px, 2.2vw, 12px)',
     color: 'hsl(var(--muted-foreground))',
     lineHeight: 1.3,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
     margin: 0,
+    display: '-webkit-box',
+    WebkitBoxOrient: 'vertical' as const,
+    WebkitLineClamp: 1,
+    overflow: 'hidden',
+    overflowWrap: 'anywhere',
+    minHeight: 'calc(1.3em)',
+    maxWidth: '100%',
   };
   const identityWrap: React.CSSProperties = {
     display: 'flex',
