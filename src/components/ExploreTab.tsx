@@ -393,21 +393,18 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Header */}
       <div>
-        <h2 className="heading-luxe-gradient" style={{ marginBottom: '8px' }}>
-          Explore Deals
-        </h2>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          <p style={{ fontSize: '14px', color: 'hsl(var(--muted-foreground))' }}>
-            {userLocation 
-              ? "Showing deals near you" 
-              : "Showing all available deals"}
-          </p>
-          {userLocation && (
-            <Badge variant="secondary" className="text-xs flex items-center gap-1">
+        <TabPageHeader
+          title="Explore Deals"
+          subtitle={userLocation ? "Showing deals near you" : "Showing all available deals"}
+        />
+        {userLocation && (
+          <div style={{ marginTop: '8px' }}>
+            <Badge variant="secondary" className="text-xs flex items-center gap-1 w-fit">
               <Navigation className="w-3 h-3" />
               Location Active
             </Badge>
-          )}
+          </div>
+        )}
           {userPreferences?.categories && userPreferences.categories.length > 0 && (
             <Badge 
               variant={preferenceFilterEnabled ? "default" : "outline"}
