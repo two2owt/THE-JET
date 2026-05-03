@@ -326,10 +326,15 @@ export default function Social() {
 
         {/* Pending Requests */}
         {pendingRequests.length > 0 && (
-          <div>
-            <h2 className="heading-luxe-section mb-4">
-              Friend Requests ({pendingRequests.length})
-            </h2>
+          <section className="mt-8 first:mt-6">
+            <header className="mb-4 flex items-baseline justify-between gap-3">
+              <h2 className="font-display text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
+                Friend Requests
+              </h2>
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground tabular-nums">
+                {pendingRequests.length} pending
+              </span>
+            </header>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {pendingRequests.map((request) => (
                 <div key={request.id} style={{ ...cardStyle, flexWrap: 'wrap', rowGap: '12px' }}>
@@ -356,14 +361,19 @@ export default function Social() {
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         )}
 
         {/* My Friends */}
-        <div>
-          <h2 className="heading-luxe-section mb-4">
-            My Friends ({connections.length})
-          </h2>
+        <section className="mt-10">
+          <header className="mb-4 flex items-baseline justify-between gap-3">
+            <h2 className="font-display text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
+              My Friends
+            </h2>
+            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground tabular-nums">
+              {connections.length} {connections.length === 1 ? "friend" : "friends"}
+            </span>
+          </header>
           {connections.length === 0 ? (
             <EmptyState
               icon={UserX}
@@ -434,13 +444,18 @@ export default function Social() {
               })}
             </div>
           )}
-        </div>
+        </section>
 
         {/* Discover People */}
-        <div>
-          <h2 className="heading-luxe-section mb-4">
-            Discover People
-          </h2>
+        <section className="mt-10">
+          <header className="mb-4">
+            <h2 className="font-display text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
+              Discover People
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Suggested connections from your area
+            </p>
+          </header>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {profiles.map((profile) => (
               <div key={profile.id} style={cardStyle}>
@@ -463,7 +478,7 @@ export default function Social() {
               </div>
             ))}
           </div>
-        </div>
+        </section>
       </PageShell>
 
       {/* Connection Profile Dialog */}
