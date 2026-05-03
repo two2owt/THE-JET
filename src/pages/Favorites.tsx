@@ -71,7 +71,7 @@ export default function Favorites() {
   if (!user) {
     return (
       <PageLayout defaultTab="favorites" notificationCount={0}>
-        <div className="max-w-7xl mx-auto" style={{ padding: '16px' }}>
+        <PageShell>
           <EmptyState
             icon={Heart}
             title="Sign in to view favorites"
@@ -79,7 +79,7 @@ export default function Favorites() {
             actionLabel="Sign In"
             onAction={() => navigate("/auth")}
           />
-        </div>
+        </PageShell>
       </PageLayout>
     );
   }
