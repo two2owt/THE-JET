@@ -764,23 +764,6 @@ All colors MUST be HSL.
   }
 
 
-  /* Glassmorphic orb pulse animation for venue markers */
-  @keyframes orbPulse {
-    0% {
-      transform: scale(1);
-      opacity: 0.6;
-    }
-    50% {
-      transform: scale(1.4);
-      opacity: 0;
-    }
-    100% {
-      transform: scale(1.8);
-      opacity: 0;
-    }
-  }
-
-  /* Orb entrance animation - scale up and fade in (no translate to preserve GPS anchor) */
   /* Marker fade in animation - simple opacity transition */
   @keyframes markerFadeIn {
     0% {
