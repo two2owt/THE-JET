@@ -31,7 +31,7 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
     { id: "map" as NavItem, icon: MapPinned, label: "Map" },
     { id: "explore" as NavItem, icon: Flame, label: "Hot" },
     { id: "notifications" as NavItem, icon: Bell, label: "Alerts" },
-    { id: "favorites" as NavItem, icon: Heart, label: "Saved" },
+    { id: "favorites" as NavItem, icon: Heart, label: "Favorites" },
     { id: "social" as NavItem, icon: Users2, label: "Crew" },
   ];
 
