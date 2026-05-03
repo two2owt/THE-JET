@@ -158,8 +158,10 @@ export default function Social() {
 
   // Use Tailwind sizing so container queries inside <Avatar> resolve correctly
   // (fallback text scales via `cqw` units defined in the primitive).
-  const avatarClass = "w-10 h-10 sm:w-11 sm:h-11 shrink-0";
-  const avatarClassLg = "w-12 h-12 sm:w-14 sm:h-14 shrink-0";
+  // Single avatar size used across all sub-sections so cards align uniformly
+  // on every breakpoint (320px → desktop).
+  const avatarClass = "w-11 h-11 sm:w-12 sm:h-12 shrink-0";
+  const avatarClassLg = avatarClass;
 
   const nameStyle: React.CSSProperties = {
     fontWeight: 600,
@@ -170,6 +172,40 @@ export default function Social() {
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
     letterSpacing: '-0.01em',
+    margin: 0,
+  };
+  const subtitleStyle: React.CSSProperties = {
+    fontSize: 'clamp(11px, 2.2vw, 12px)',
+    color: 'hsl(var(--muted-foreground))',
+    lineHeight: 1.3,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    margin: 0,
+  };
+  const identityWrap: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 'clamp(10px, 2.5vw, 12px)',
+    flex: '1 1 0%',
+    minWidth: 0,
+  };
+  const primaryActionStyle: React.CSSProperties = {
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+    height: '40px', padding: '0 clamp(12px, 3vw, 16px)', borderRadius: '10px',
+    border: 'none', cursor: 'pointer',
+    background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
+    color: 'hsl(var(--primary-foreground))', fontWeight: 600, fontSize: '13px',
+    flexShrink: 0,
+  };
+  const secondaryActionStyle: React.CSSProperties = {
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+    height: '40px', minWidth: '40px', padding: '0 clamp(10px, 2.5vw, 14px)', borderRadius: '10px',
+    cursor: 'pointer',
+    background: 'hsl(var(--secondary) / 0.5)',
+    border: '1px solid hsl(var(--border) / 0.5)',
+    color: 'hsl(var(--foreground))', fontWeight: 600, fontSize: '13px',
+    flexShrink: 0,
   };
 
   return (
@@ -221,47 +257,24 @@ export default function Social() {
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {pendingRequests.map((request) => (
-                <div key={request.id} style={{ ...cardStyle, padding: '16px', flexWrap: 'wrap', rowGap: '12px' }}>
-                  {/* Identity block — must shrink so the action row can sit
-                      beside it on ≥ sm screens and wrap below on small. */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: '1 1 200px', minWidth: 0 }}>
+                <div key={request.id} style={{ ...cardStyle, flexWrap: 'wrap', rowGap: '12px' }}>
+                  <div style={{ ...identityWrap, flex: '1 1 200px' }}>
                     <Avatar className={avatarClassLg}>
                       <AvatarImage src={request.profile?.avatar_url || undefined} alt={request.profile?.display_name || "User"} />
                       <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary">
                         {request.profile?.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '50%', height: '50%' }} />}
                       </AvatarFallback>
                     </Avatar>
-                    <div style={{ minWidth: 0, flex: 1 }}>
-                      <p className="heading-luxe-card truncate">
-                        {request.profile?.display_name || "Friend Request"}
-                      </p>
-                      <p className="body-luxe-muted truncate">
-                        Wants to connect with you
-                      </p>
+                    <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <p style={nameStyle}>{request.profile?.display_name || "Friend Request"}</p>
+                      <p style={subtitleStyle}>Wants to connect with you</p>
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '8px', flexShrink: 0, marginLeft: 'auto' }}>
-                    <button
-                      onClick={() => handleAcceptRequest(request.id)}
-                      style={{
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
-                        height: '36px', padding: '0 14px', borderRadius: '8px', border: 'none', cursor: 'pointer',
-                        background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
-                        color: 'hsl(var(--primary-foreground))', fontWeight: 600, fontSize: '13px',
-                      }}
-                    >
+                    <button onClick={() => handleAcceptRequest(request.id)} style={primaryActionStyle}>
                       <Check className="w-4 h-4" /> Accept
                     </button>
-                    <button
-                      onClick={() => handleRemoveConnection(request.id)}
-                      style={{
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
-                        height: '36px', padding: '0 14px', borderRadius: '8px', cursor: 'pointer',
-                        background: 'hsl(var(--secondary) / 0.5)',
-                        border: '1px solid hsl(var(--border) / 0.5)',
-                        color: 'hsl(var(--foreground))', fontWeight: 600, fontSize: '13px',
-                      }}
-                    >
+                    <button onClick={() => handleRemoveConnection(request.id)} style={secondaryActionStyle}>
                       <X className="w-4 h-4" /> Decline
                     </button>
                   </div>
@@ -289,7 +302,7 @@ export default function Social() {
                 return (
                   <div key={connection.id} style={cardStyle}>
                     <button
-                      style={{ display: 'flex', alignItems: 'center', gap: '12px', textAlign: 'left', flex: '1 1 0%', minWidth: 0, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                      style={{ ...identityWrap, textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                       onClick={() => setSelectedProfileId(friendId)}
                     >
                       <Avatar className={avatarClass}>
@@ -299,12 +312,8 @@ export default function Social() {
                         </AvatarFallback>
                       </Avatar>
                       <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        <p style={nameStyle}>
-                          {connection.profile?.display_name || "Friend"}
-                        </p>
-                        <p className="body-luxe-muted" style={{ fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          Connected
-                        </p>
+                        <p style={nameStyle}>{connection.profile?.display_name || "Friend"}</p>
+                        <p style={subtitleStyle}>Connected</p>
                       </div>
                     </button>
                     <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
@@ -316,7 +325,7 @@ export default function Social() {
                         })}
                         style={{
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          height: '36px', width: '36px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+                          height: '40px', width: '40px', borderRadius: '10px', border: 'none', cursor: 'pointer',
                           background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
                           color: 'hsl(var(--primary-foreground))', position: 'relative',
                         }}
@@ -336,7 +345,7 @@ export default function Social() {
                         onClick={() => handleRemoveConnection(connection.id)}
                         style={{
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          height: '36px', width: '36px', borderRadius: '8px', cursor: 'pointer',
+                          height: '40px', width: '40px', borderRadius: '10px', cursor: 'pointer',
                           background: 'hsl(var(--secondary) / 0.5)',
                           border: '1px solid hsl(var(--border) / 0.5)',
                           color: 'hsl(var(--muted-foreground))',
@@ -360,28 +369,19 @@ export default function Social() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {profiles.map((profile) => (
               <div key={profile.id} style={cardStyle}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: '1 1 0%', minWidth: 0 }}>
+                <div style={identityWrap}>
                   <Avatar className={avatarClass}>
                     <AvatarImage src={profile.avatar_url || undefined} alt={profile.display_name || "User"} />
                     <AvatarFallback className="bg-gradient-to-br from-accent/15 to-primary/15 text-accent">
                       {profile.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '50%', height: '50%' }} />}
                     </AvatarFallback>
                   </Avatar>
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <p style={nameStyle}>
-                      {profile.display_name || "User"}
-                    </p>
+                  <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <p style={nameStyle}>{profile.display_name || "User"}</p>
+                    <p style={subtitleStyle}>Suggested for you</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => handleSendRequest(profile.id)}
-                  style={{
-                    flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                    height: '36px', padding: '0 14px', borderRadius: '8px', border: 'none', cursor: 'pointer',
-                    background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
-                    color: 'hsl(var(--primary-foreground))', fontWeight: 600, fontSize: '13px',
-                  }}
-                >
+                <button onClick={() => handleSendRequest(profile.id)} style={primaryActionStyle}>
                   <UserPlus style={{ width: '14px', height: '14px' }} />
                   Add
                 </button>
