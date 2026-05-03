@@ -445,11 +445,8 @@ const Auth = () => {
                 decoding="async"
               />
             </div>
-            <h1
-              className="text-fluid-3xl font-light text-foreground"
-              style={{ letterSpacing: '0.04em' }}
-            >
-              Welcome to <span className="text-luxe-gold font-semibold">JET</span>
+            <h1 className="heading-luxe-gradient">
+              Welcome to JET
             </h1>
             <div className="divider-luxe mx-auto" style={{ maxWidth: '64px' }} />
             <p className="text-fluid-sm text-muted-foreground">
