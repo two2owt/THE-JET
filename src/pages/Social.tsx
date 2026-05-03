@@ -14,6 +14,7 @@ import { useUnreadCounts } from "@/hooks/useMessages";
 import { Badge } from "@/components/ui/badge";
 import { TabPageHeader } from "@/components/TabPageHeader";
 import { PageShell } from "@/components/PageShell";
+import { SocialPageSkeleton } from "@/components/skeletons/PageSkeletons";
 
 // Tap-to-expand display name with native tooltip on hover-capable devices.
 // Truncates to a single line by default (clean ellipsis, zero CLS); on tap
@@ -66,6 +67,7 @@ interface Profile {
 export default function Social() {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
+  const [sessionChecked, setSessionChecked] = useState(false);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
@@ -76,12 +78,14 @@ export default function Social() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      setSessionChecked(true);
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      setSessionChecked(true);
     });
 
     return () => subscription.unsubscribe();
@@ -141,6 +145,16 @@ export default function Social() {
       toast.error("Failed to remove connection");
     }
   };
+
+  if (!sessionChecked) {
+    return (
+      <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
+        <PageShell>
+          <SocialPageSkeleton />
+        </PageShell>
+      </PageLayout>
+    );
+  }
 
   if (!user) {
     return (
