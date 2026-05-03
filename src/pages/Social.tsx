@@ -147,8 +147,10 @@ export default function Social() {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 'clamp(10px, 2.5vw, 16px)',
-    padding: 'clamp(12px, 2.5vw, 16px) clamp(14px, 3vw, 18px)',
+    // Tuned for: 320px (iPhone SE), 360–393px (Android), 414px (iPhone Pro Max),
+    // 768px (iPad). Padding stays comfortable without crowding the action buttons.
+    gap: 'clamp(10px, 3vw, 14px)',
+    padding: 'clamp(10px, 2.8vw, 14px) clamp(12px, 3.2vw, 16px)',
     borderRadius: '14px',
     backgroundColor: 'hsl(var(--card) / 0.9)',
     border: '1px solid hsl(var(--border) / 0.6)',
@@ -156,11 +158,13 @@ export default function Social() {
     minWidth: 0,
   };
 
-  // Use Tailwind sizing so container queries inside <Avatar> resolve correctly
-  // (fallback text scales via `cqw` units defined in the primitive).
-  // Single avatar size used across all sub-sections so cards align uniformly
-  // on every breakpoint (320px → desktop).
-  const avatarClass = "w-11 h-11 sm:w-12 sm:h-12 shrink-0";
+  // Avatar sizing per breakpoint:
+  //   • <360px (iPhone SE / small Android): 40px — keeps space for 2 actions
+  //   • 360–639px (most phones):            44px — Apple HIG min touch target
+  //   • ≥640px (sm: tablets/desktop):        48px — better optical balance
+  //   • ≥1024px (lg: desktop):               52px
+  // Single shared class so cards align uniformly across every sub-section.
+  const avatarClass = "w-10 h-10 min-[360px]:w-11 min-[360px]:h-11 sm:w-12 sm:h-12 lg:w-[52px] lg:h-[52px] shrink-0";
   const avatarClassLg = avatarClass;
 
   const nameStyle: React.CSSProperties = {
@@ -168,25 +172,41 @@ export default function Social() {
     color: 'hsl(var(--foreground))',
     fontSize: 'clamp(14px, 2.6vw, 15px)',
     lineHeight: 1.3,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
     letterSpacing: '-0.01em',
     margin: 0,
+    // Reserve a fixed line slot so truncation never causes vertical CLS.
+    // `display: -webkit-box` + line-clamp gives clean ellipsis for both
+    // short and long names; `wordBreak: break-word` prevents overflow
+    // when a single token (e.g. an email-like handle) is wider than the
+    // container on 320px screens.
+    display: '-webkit-box',
+    WebkitBoxOrient: 'vertical' as const,
+    WebkitLineClamp: 1,
+    overflow: 'hidden',
+    overflowWrap: 'anywhere',
+    wordBreak: 'break-word',
+    minHeight: 'calc(1.3em)',
+    maxWidth: '100%',
   };
   const subtitleStyle: React.CSSProperties = {
     fontSize: 'clamp(11px, 2.2vw, 12px)',
     color: 'hsl(var(--muted-foreground))',
     lineHeight: 1.3,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
     margin: 0,
+    display: '-webkit-box',
+    WebkitBoxOrient: 'vertical' as const,
+    WebkitLineClamp: 1,
+    overflow: 'hidden',
+    overflowWrap: 'anywhere',
+    minHeight: 'calc(1.3em)',
+    maxWidth: '100%',
   };
   const identityWrap: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
-    gap: 'clamp(10px, 2.5vw, 12px)',
+    // Slightly tighter on small screens so the identity block + actions fit
+    // on one row at 320px; relaxes to 14px on tablets for a more airy feel.
+    gap: 'clamp(10px, 2.8vw, 14px)',
     flex: '1 1 0%',
     minWidth: 0,
   };
