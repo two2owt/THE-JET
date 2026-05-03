@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const RESEND_EMAIL_KEY = "jet_verification_email";
+const WELCOME_SENT_PREFIX = "jet_welcome_sent:";
 
 export default function VerificationSuccess() {
   const navigate = useNavigate();
@@ -127,6 +128,40 @@ export default function VerificationSuccess() {
       document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, [navigate, location.search, location.hash]);
+
+  // Fire welcome email once verification is confirmed (signup flow only).
+  useEffect(() => {
+    if (!isVerified || flow !== "signup") return;
+    let cancelled = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const email = user?.email || resendEmail.trim().toLowerCase();
+      const userId = user?.id;
+      if (!email || !userId || cancelled) return;
+      const key = `${WELCOME_SENT_PREFIX}${userId}`;
+      if (localStorage.getItem(key)) return;
+      const displayName =
+        (user?.user_metadata as any)?.display_name ||
+        (user?.user_metadata as any)?.full_name ||
+        undefined;
+      try {
+        await supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "welcome",
+            recipientEmail: email,
+            idempotencyKey: `welcome-${userId}`,
+            templateData: displayName ? { name: displayName } : {},
+          },
+        });
+        localStorage.setItem(key, "1");
+      } catch {
+        // Silent — not user-blocking.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isVerified, flow, resendEmail]);
 
   const handleResend = async () => {
     const email = resendEmail.trim().toLowerCase();
