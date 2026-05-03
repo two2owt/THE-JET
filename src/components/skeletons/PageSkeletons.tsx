@@ -133,9 +133,11 @@ export function MessagesPageSkeleton() {
 
 export function SettingsPageSkeleton() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg space-y-6">
-      <PageHeadingSkeleton subtitleWidth="w-40" />
-      {Array.from({ length: 4 }).map((_, i) => (
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg space-y-fluid-lg">
+      {/* Profile link card */}
+      <Skeleton className="h-20 w-full rounded-2xl" />
+      {/* Section cards mirroring real Settings layout for 0 CLS */}
+      {Array.from({ length: 5 }).map((_, i) => (
         <Skeleton key={i} className="h-40 rounded-2xl" />
       ))}
     </div>
