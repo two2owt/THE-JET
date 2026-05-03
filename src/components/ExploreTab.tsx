@@ -9,6 +9,7 @@ import { Search, MapPin, Clock, TrendingUp, Filter, X, Navigation, Heart, Sparkl
 import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { EmptyState } from "./EmptyState";
+import { TabPageHeader } from "./TabPageHeader";
 import { calculateDistance, getDynamicRadius, formatDistance } from "@/utils/geospatialUtils";
 import { useFavorites } from "@/hooks/useFavorites";
 
@@ -393,15 +394,11 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Header */}
       <div>
-        <h2 className="heading-luxe-gradient" style={{ marginBottom: '8px' }}>
-          Explore Deals
-        </h2>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          <p style={{ fontSize: '14px', color: 'hsl(var(--muted-foreground))' }}>
-            {userLocation 
-              ? "Showing deals near you" 
-              : "Showing all available deals"}
-          </p>
+        <TabPageHeader
+          title="Explore Deals"
+          subtitle={userLocation ? "Showing deals near you" : "Showing all available deals"}
+        />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '8px' }}>
           {userLocation && (
             <Badge variant="secondary" className="text-xs flex items-center gap-1">
               <Navigation className="w-3 h-3" />

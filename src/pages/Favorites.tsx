@@ -8,6 +8,7 @@ import { PageLayout } from "@/components/PageLayout";
 import { EmptyState } from "@/components/EmptyState";
 import { VirtualGrid } from "@/components/ui/virtual-list";
 import { FavoritesPageSkeleton } from "@/components/skeletons/PageSkeletons";
+import { TabPageHeader } from "@/components/TabPageHeader";
 
 interface Deal {
   id: string;
@@ -96,14 +97,10 @@ export default function Favorites() {
         className="max-w-7xl mx-auto"
         style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}
       >
-        <div>
-          <h2 className="heading-luxe-gradient" style={{ marginBottom: '6px' }}>
-            Favorites
-          </h2>
-          <p style={{ fontSize: '14px', color: 'hsl(var(--muted-foreground))' }}>
-            {deals.length} {deals.length === 1 ? "deal" : "deals"} saved
-          </p>
-        </div>
+        <TabPageHeader
+          title="Favorites"
+          subtitle={`${deals.length} ${deals.length === 1 ? "deal" : "deals"} saved`}
+        />
 
         {deals.length === 0 ? (
           <EmptyState

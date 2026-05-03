@@ -23,6 +23,7 @@ import { useVenueActivity } from "@/hooks/useVenueActivity";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useBottomNavigation } from "@/hooks/useBottomNavigation";
 import { NotificationsTabSkeleton, ExploreTabSkeleton } from "@/components/skeletons/PageSkeletons";
+import { TabPageHeader } from "@/components/TabPageHeader";
 
 // Lazy load heavy components - deferred until needed
 const MapboxHeatmap = lazy(() => import("@/components/MapboxHeatmap").then(m => ({ default: m.MapboxHeatmap })));
@@ -488,12 +489,10 @@ const Index = () => {
           {activeTab === "notifications" && (
             <Suspense fallback={<NotificationsTabSkeleton />}>
             <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div>
-                <h2 className="heading-luxe-gradient" style={{ marginBottom: '6px' }}>
-                  Notifications
-                </h2>
-                <p style={{ fontSize: '14px', color: 'hsl(var(--muted-foreground))' }}>Stay updated with nearby deals and events</p>
-              </div>
+              <TabPageHeader
+                title="Notifications"
+                subtitle="Stay updated with nearby deals and events"
+              />
               
               {notifications.length === 0 ? (
                 <div style={{
