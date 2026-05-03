@@ -213,7 +213,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   
   // Density heatmap state
   const [showDensityLayer, setShowDensityLayer] = useState(false);
-  const [showParking, setShowParking] = useState(true);
+  const [showParking, setShowParking] = useState(false);
   const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>('all');
   const [hourFilter, setHourFilter] = useState<number | undefined>();
   const [dayFilter, setDayFilter] = useState<number | undefined>();
