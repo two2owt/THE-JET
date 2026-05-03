@@ -69,7 +69,7 @@ export default function Favorites() {
   if (!user) {
     return (
       <PageLayout defaultTab="favorites" notificationCount={0}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg">
+        <div className="max-w-7xl mx-auto" style={{ padding: '16px' }}>
           <EmptyState
             icon={Heart}
             title="Sign in to view favorites"
@@ -92,13 +92,15 @@ export default function Favorites() {
 
   return (
     <PageLayout defaultTab="favorites">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg">
-        <div className="mb-fluid-lg space-y-2">
-          <h1 className="heading-luxe-gradient">
-            My Favorites
-          </h1>
-          <div className="divider-luxe" style={{ maxWidth: '64px' }} />
-          <p className="text-fluid-sm text-muted-foreground">
+      <div
+        className="max-w-7xl mx-auto"
+        style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}
+      >
+        <div>
+          <h2 className="heading-luxe-gradient" style={{ marginBottom: '6px' }}>
+            Favorites
+          </h2>
+          <p style={{ fontSize: '14px', color: 'hsl(var(--muted-foreground))' }}>
             {deals.length} {deals.length === 1 ? "deal" : "deals"} saved
           </p>
         </div>
