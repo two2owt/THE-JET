@@ -503,22 +503,6 @@ All colors MUST be HSL.
     display: none;  /* Chrome, Safari, Opera */
   }
 
-  /* Map wrapper - isolates map from parent layout changes */
-  .map-wrapper {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    /* Strict containment for the actual map element */
-    contain: strict;
-    /* Create new stacking context */
-    isolation: isolate;
-    /* GPU acceleration */
-    transform: translateZ(0);
-    will-change: contents;
-  }
-
-
 }
 
 @layer utilities {
