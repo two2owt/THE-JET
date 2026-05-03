@@ -62,6 +62,21 @@ const TAILWIND_EXACT = new Set([
   "container", "sr-only", "not-sr-only", "antialiased", "subpixel-antialiased",
 ]);
 
+/**
+ * Selectors applied at runtime by 3rd-party libraries (Mapbox, Radix, etc.)
+ * — these will never appear in our source code but must NOT be removed.
+ * Add patterns here to suppress false positives.
+ */
+const RUNTIME_APPLIED_PREFIXES = [
+  "mapboxgl-",        // Mapbox GL JS controls
+  "maplibregl-",      // MapLibre fallback
+  "radix-",           // Radix UI internals
+  "leaflet-",         // Leaflet
+];
+function isRuntimeApplied(cls) {
+  return RUNTIME_APPLIED_PREFIXES.some((p) => cls.startsWith(p));
+}
+
 function isLikelyTailwind(cls) {
   if (TAILWIND_EXACT.has(cls)) return true;
   // Single utility-style tokens like `flex`, `grid`, `block`, `hidden` — keep
@@ -78,7 +93,9 @@ const allClasses = new Set();
 let m;
 while ((m = CLASS_RE.exec(cssNoComments)) !== null) {
   const name = m[1];
-  if (!isLikelyTailwind(name)) allClasses.add(name);
+  if (isLikelyTailwind(name)) continue;
+  if (isRuntimeApplied(name)) continue;
+  allClasses.add(name);
 }
 
 // @keyframes
