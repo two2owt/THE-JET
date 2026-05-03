@@ -538,97 +538,40 @@ All colors MUST be HSL.
     -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 70%, transparent 100%);
   }
 
-  /* Touch target utilities - ensures minimum 44px touch area for accessibility */
+  /* Touch target utility — ensures minimum 44px touch area for accessibility */
   .touch-target {
     min-width: 44px;
     min-height: 44px;
   }
-  
-  .touch-target-sm {
-    min-width: 36px;
-    min-height: 36px;
-  }
-  
-  .touch-target-lg {
-    min-width: 48px;
-    min-height: 48px;
-  }
 
-  /* Safe area spacing utilities */
-  .safe-area-top {
-    padding-top: var(--safe-area-inset-top);
-  }
-  
-  .safe-area-bottom {
-    padding-bottom: var(--safe-area-inset-bottom);
-  }
-  
-  .safe-area-left {
-    padding-left: var(--safe-area-inset-left);
-  }
-  
-  .safe-area-right {
-    padding-right: var(--safe-area-inset-right);
-  }
-  
+  /* Safe area spacing utility (only the all-sides inset is used) */
   .safe-area-inset {
     padding-top: var(--safe-area-inset-top);
     padding-right: var(--safe-area-inset-right);
     padding-bottom: var(--safe-area-inset-bottom);
     padding-left: var(--safe-area-inset-left);
   }
-  
-  /* Fluid spacing utilities */
-  .space-fluid-xs { padding: var(--space-xs); }
-  .space-fluid-sm { padding: var(--space-sm); }
-  .space-fluid-md { padding: var(--space-md); }
-  .space-fluid-lg { padding: var(--space-lg); }
-  .space-fluid-xl { padding: var(--space-xl); }
-  .space-fluid-2xl { padding: var(--space-2xl); }
-  
-  .p-fluid-xs { padding: var(--space-xs); }
-  .p-fluid-sm { padding: var(--space-sm); }
+
+  /* Fluid spacing utilities — only kept variants that are actually used */
   .p-fluid-md { padding: var(--space-md); }
   .p-fluid-lg { padding: var(--space-lg); }
-  .p-fluid-xl { padding: var(--space-xl); }
-  
-  .px-fluid-xs { padding-left: var(--space-xs); padding-right: var(--space-xs); }
-  .px-fluid-sm { padding-left: var(--space-sm); padding-right: var(--space-sm); }
-  .px-fluid-md { padding-left: var(--space-md); padding-right: var(--space-md); }
-  .px-fluid-lg { padding-left: var(--space-lg); padding-right: var(--space-lg); }
-  .px-fluid-xl { padding-left: var(--space-xl); padding-right: var(--space-xl); }
-  
-  .py-fluid-xs { padding-top: var(--space-xs); padding-bottom: var(--space-xs); }
-  .py-fluid-sm { padding-top: var(--space-sm); padding-bottom: var(--space-sm); }
-  .py-fluid-md { padding-top: var(--space-md); padding-bottom: var(--space-md); }
-  .py-fluid-lg { padding-top: var(--space-lg); padding-bottom: var(--space-lg); }
-  .py-fluid-xl { padding-top: var(--space-xl); padding-bottom: var(--space-xl); }
-  
+
   .mb-fluid-xs { margin-bottom: var(--space-xs); }
-  .mb-fluid-sm { margin-bottom: var(--space-sm); }
   .mb-fluid-md { margin-bottom: var(--space-md); }
   .mb-fluid-lg { margin-bottom: var(--space-lg); }
-  .mb-fluid-xl { margin-bottom: var(--space-xl); }
-  
-  .mt-fluid-xs { margin-top: var(--space-xs); }
-  .mt-fluid-sm { margin-top: var(--space-sm); }
+
   .mt-fluid-md { margin-top: var(--space-md); }
-  .mt-fluid-lg { margin-top: var(--space-lg); }
-  .mt-fluid-xl { margin-top: var(--space-xl); }
-  
+
   .gap-fluid-xs { gap: var(--space-xs); }
   .gap-fluid-sm { gap: var(--space-sm); }
   .gap-fluid-md { gap: var(--space-md); }
   .gap-fluid-lg { gap: var(--space-lg); }
-  .gap-fluid-xl { gap: var(--space-xl); }
-  
-  .space-y-fluid-xs > * + * { margin-top: var(--space-xs); }
+
   .space-y-fluid-sm > * + * { margin-top: var(--space-sm); }
   .space-y-fluid-md > * + * { margin-top: var(--space-md); }
   .space-y-fluid-lg > * + * { margin-top: var(--space-lg); }
-  .space-y-fluid-xl > * + * { margin-top: var(--space-xl); }
-  
-  /* Responsive text sizing */
+
+  /* Responsive text sizing — only kept variants that are actually used */
   .text-fluid-xs { font-size: var(--text-xs); }
   .text-fluid-sm { font-size: var(--text-sm); }
   .text-fluid-base { font-size: var(--text-base); }
