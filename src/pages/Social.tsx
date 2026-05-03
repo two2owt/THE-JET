@@ -145,7 +145,7 @@ export default function Social() {
   if (!user) {
     return (
       <PageLayout defaultTab="social" notificationCount={0} headerConfig={{ hideSearch: true }}>
-        <div className="max-w-7xl mx-auto" style={{ padding: '16px' }}>
+        <PageShell>
           <EmptyState
             icon={Users}
             title="Sign in to connect"
@@ -153,7 +153,7 @@ export default function Social() {
             actionLabel="Sign In"
             onAction={() => navigate("/auth")}
           />
-        </div>
+        </PageShell>
       </PageLayout>
     );
   }
@@ -162,7 +162,7 @@ export default function Social() {
   if (!canAccessSocialFeatures()) {
     return (
       <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
-        <div className="max-w-7xl mx-auto" style={{ padding: '16px' }}>
+        <PageShell>
           <EmptyState
             icon={Crown}
             title="Unlock Social Features"
@@ -170,7 +170,7 @@ export default function Social() {
             actionLabel="Upgrade to JET+"
             onAction={() => setShowUpgradePrompt(true)}
           />
-        </div>
+        </PageShell>
         <UpgradePrompt
           requiredTier="jet_plus"
           featureName="Social features"
