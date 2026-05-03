@@ -12,6 +12,7 @@ import { UpgradePrompt, useFeatureAccess } from "@/components/UpgradePrompt";
 import { ChatDialog } from "@/components/ChatDialog";
 import { useUnreadCounts } from "@/hooks/useMessages";
 import { Badge } from "@/components/ui/badge";
+import { TabPageHeader } from "@/components/TabPageHeader";
 
 // Tap-to-expand display name with native tooltip on hover-capable devices.
 // Truncates to a single line by default (clean ellipsis, zero CLS); on tap
@@ -276,15 +277,11 @@ export default function Social() {
         className="max-w-7xl mx-auto"
         style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}
       >
-        {/* Page title — matches Hot/Alerts header pattern for consistency */}
-        <div>
-          <h2 className="heading-luxe-gradient" style={{ marginBottom: '6px' }}>
-            Crew
-          </h2>
-          <p style={{ fontSize: '14px', color: 'hsl(var(--muted-foreground))' }}>
-            Connect with friends and share deals together
-          </p>
-        </div>
+        {/* Page title — uses shared TabPageHeader for cross-tab consistency */}
+        <TabPageHeader
+          title="Crew"
+          subtitle="Connect with friends and share deals together"
+        />
         {/* Messages shortcut */}
         <button
           onClick={() => navigate("/messages")}
