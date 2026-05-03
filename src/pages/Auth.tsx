@@ -683,88 +683,88 @@ const Auth = () => {
               "Sign In"
             )}
           </Button>
-        </form>
-
-        {/* Resend Verification Email */}
-        {showResendVerification && !isResettingPassword && (
-          <div className="flex flex-col gap-fluid-sm rounded-xl border border-primary/25 bg-card/40 p-fluid-md backdrop-blur-md">
-            <div className="text-center text-fluid-sm text-muted-foreground">
-              Didn't receive the verification email?
+          </form>
+  
+          {/* Resend Verification Email */}
+          {showResendVerification && !isResettingPassword && (
+            <div className="flex flex-col gap-fluid-sm rounded-xl border border-primary/25 bg-card/40 p-fluid-md backdrop-blur-md">
+              <div className="text-center text-fluid-sm text-muted-foreground">
+                Didn't receive the verification email?
+              </div>
+              <Button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={isResending || resendCooldown > 0}
+                variant="outline"
+                size="sm"
+                className="w-full rounded-xl border-primary/40 bg-transparent text-foreground transition-all hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:border-primary/70 focus-visible:ring-2 focus-visible:ring-primary/50 disabled:cursor-not-allowed disabled:border-border/40 disabled:bg-transparent disabled:text-muted-foreground disabled:opacity-60"
+              >
+                {isResending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {resendCooldown > 0
+                  ? `Resend in ${resendCooldown}s`
+                  : "Resend Verification Email"}
+              </Button>
             </div>
-            <Button
-              type="button"
-              onClick={handleResendVerification}
-              disabled={isResending || resendCooldown > 0}
-              variant="outline"
-              size="sm"
-              className="w-full rounded-xl border-primary/40 bg-transparent text-foreground transition-all hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:border-primary/70 focus-visible:ring-2 focus-visible:ring-primary/50 disabled:cursor-not-allowed disabled:border-border/40 disabled:bg-transparent disabled:text-muted-foreground disabled:opacity-60"
-            >
-              {isResending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {resendCooldown > 0
-                ? `Resend in ${resendCooldown}s`
-                : "Resend Verification Email"}
-            </Button>
-          </div>
-        )}
-
-        {/* Toggle & Forgot Password */}
-        {!isResettingPassword && (
-          <div className="flex flex-col gap-1 text-center">
-            {!isForgotPassword && !isSignUp && (
+          )}
+  
+          {/* Toggle & Forgot Password */}
+          {!isResettingPassword && (
+            <div className="flex flex-col gap-1 text-center">
+              {!isForgotPassword && !isSignUp && (
+                <button
+                  type="button"
+                  onClick={() => setIsForgotPassword(true)}
+                  disabled={isLoading}
+                  className="flex min-h-[44px] w-full touch-manipulation items-center justify-center rounded-lg border border-transparent bg-transparent text-fluid-sm font-medium text-muted-foreground transition-colors hover:border-primary/20 hover:bg-primary/10 hover:text-primary active:text-primary-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:pointer-events-none disabled:opacity-50"
+                >
+                  Forgot password?
+                </button>
+              )}
+  
               <button
                 type="button"
-                onClick={() => setIsForgotPassword(true)}
+                onClick={() => {
+                  setIsSignUp(!isSignUp);
+                  setIsForgotPassword(false);
+                  setShowResendVerification(false);
+                  setValidationErrors({});
+                  setPassword("");
+                  setConfirmPassword("");
+                  setDataProcessingConsent(false);
+                  setLocationConsent(false);
+                }}
                 disabled={isLoading}
-                className="flex min-h-[44px] w-full touch-manipulation items-center justify-center rounded-lg border border-transparent bg-transparent text-fluid-sm font-medium text-muted-foreground transition-colors hover:border-primary/20 hover:bg-primary/10 hover:text-primary active:text-primary-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:pointer-events-none disabled:opacity-50"
+                className="flex min-h-[44px] w-full touch-manipulation items-center justify-center rounded-lg border border-transparent bg-transparent text-fluid-sm text-muted-foreground transition-colors hover:border-primary/20 hover:bg-primary/10 hover:text-primary active:text-primary-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:pointer-events-none disabled:opacity-50"
               >
-                Forgot password?
+                {isForgotPassword ? (
+                  "Back to sign in"
+                ) : isSignUp ? (
+                  <>
+                    Already have an account?{" "}
+                    <span className="ml-1 font-semibold text-primary">Sign in</span>
+                  </>
+                ) : (
+                  <>
+                    Don't have an account?{" "}
+                    <span className="ml-1 font-semibold text-primary">Sign up</span>
+                  </>
+                )}
               </button>
-            )}
-
-            <button
-              type="button"
-              onClick={() => {
-                setIsSignUp(!isSignUp);
-                setIsForgotPassword(false);
-                setShowResendVerification(false);
-                setValidationErrors({});
-                setPassword("");
-                setConfirmPassword("");
-                setDataProcessingConsent(false);
-                setLocationConsent(false);
-              }}
-              disabled={isLoading}
-              className="flex min-h-[44px] w-full touch-manipulation items-center justify-center rounded-lg border border-transparent bg-transparent text-fluid-sm text-muted-foreground transition-colors hover:border-primary/20 hover:bg-primary/10 hover:text-primary active:text-primary-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:pointer-events-none disabled:opacity-50"
-            >
-              {isForgotPassword ? (
-                "Back to sign in"
-              ) : isSignUp ? (
-                <>
-                  Already have an account?{" "}
-                  <span className="ml-1 font-semibold text-primary">Sign in</span>
-                </>
-              ) : (
-                <>
-                  Don't have an account?{" "}
-                  <span className="ml-1 font-semibold text-primary">Sign up</span>
-                </>
-              )}
-            </button>
+            </div>
+          )}
+  
+          {/* Features */}
+          <div className="flex flex-col gap-fluid-xs rounded-xl border border-border/30 bg-card/30 p-fluid-md backdrop-blur-sm">
+            <p className="text-fluid-xs font-semibold text-foreground">
+              With an account you can:
+            </p>
+            <ul className="flex list-none flex-col gap-1 p-0 text-fluid-xs text-muted-foreground">
+              <li>• Get real-time notifications for nearby deals</li>
+              <li>• Save your favorite venues</li>
+              <li>• Receive personalized recommendations</li>
+              <li>• Track your activity and rewards</li>
+            </ul>
           </div>
-        )}
-
-        {/* Features */}
-        <div className="flex flex-col gap-fluid-xs rounded-xl border border-border/30 bg-card/30 p-fluid-md backdrop-blur-sm">
-          <p className="text-fluid-xs font-semibold text-foreground">
-            With an account you can:
-          </p>
-          <ul className="flex list-none flex-col gap-1 p-0 text-fluid-xs text-muted-foreground">
-            <li>• Get real-time notifications for nearby deals</li>
-            <li>• Save your favorite venues</li>
-            <li>• Receive personalized recommendations</li>
-            <li>• Track your activity and rewards</li>
-          </ul>
-        </div>
         </div>
       </div>
 
