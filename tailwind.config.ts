@@ -14,10 +14,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        // Primary brand font - variable weight, excellent web + mobile support
+        // Primary body font — variable weight, excellent web + mobile support
         sans: ["'Plus Jakarta Sans Variable'", "'Plus Jakarta Sans Fallback'", "system-ui", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
-        // Display variant for headings
-        display: ["'Plus Jakarta Sans Variable'", "'Plus Jakarta Sans Fallback'", "system-ui", "sans-serif"],
+        // Display font — Syne: bold, fast, spontaneous, modern
+        display: ["'Syne Variable'", "'Plus Jakarta Sans Variable'", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
