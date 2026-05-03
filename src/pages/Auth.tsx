@@ -483,7 +483,7 @@ const Auth = () => {
                     setValidationErrors((prev) => ({ ...prev, email: undefined }));
                   }}
                   required
-                  className={`bg-card border-border ${
+                  className={`bg-card ${
                     validationErrors.email ? "border-destructive" : ""
                   }`}
                   autoComplete="email"
@@ -511,7 +511,7 @@ const Auth = () => {
                         }));
                       }}
                       required
-                      className={`bg-card border-border pr-12 ${
+                      className={`bg-card pr-12 ${
                         validationErrors.password ? "border-destructive" : ""
                       }`}
                       autoComplete={isSignUp ? "new-password" : "current-password"}
@@ -556,7 +556,7 @@ const Auth = () => {
                           }));
                         }}
                         required
-                        className={`bg-card border-border pr-12 ${
+                        className={`bg-card pr-12 ${
                           validationErrors.confirmPassword
                             ? "border-destructive"
                             : ""
