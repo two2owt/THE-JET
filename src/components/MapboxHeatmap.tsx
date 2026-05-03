@@ -2217,35 +2217,35 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             aria-label="Select city location"
             aria-haspopup="listbox"
             style={{
-              height: 'clamp(32px, 5vw, 40px)',
-              paddingLeft: 'clamp(10px, 1.5vw, 14px)',
-              paddingRight: 'clamp(10px, 1.5vw, 14px)',
+              height: 'clamp(36px, 5.5vw, 44px)',
+              paddingLeft: 'clamp(12px, 1.75vw, 16px)',
+              paddingRight: 'clamp(12px, 1.75vw, 16px)',
               // Fixed width prevents trigger from resizing when selecting cities of different name lengths
-              width: 'clamp(160px, 20vw, 220px)',
-              minWidth: 'clamp(160px, 20vw, 220px)',
-              maxWidth: 'var(--map-control-max-width, 220px)',
+              width: 'clamp(176px, 22vw, 240px)',
+              minWidth: 'clamp(176px, 22vw, 240px)',
+              maxWidth: 'var(--map-control-max-width, 240px)',
               contain: 'layout style',
-              background: 'hsl(var(--card) / 0.75)',
+              background: 'hsl(var(--card) / 0.78)',
               backdropFilter: 'blur(24px) saturate(1.6)',
               WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
               borderRadius: '9999px',
               border: '1.5px solid transparent',
               backgroundClip: 'padding-box',
-              boxShadow: '0 0 0 1.5px hsl(var(--primary) / 0.25), 0 8px 24px -4px rgba(0,0,0,0.15)',
+              boxShadow: '0 0 0 1.5px hsl(var(--primary) / 0.28), 0 10px 28px -6px rgba(0,0,0,0.22)',
             }}
           >
-            <div className="flex items-center gap-2 w-full">
-              <MapPin className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+            <div className="flex items-center gap-2.5 w-full">
+              <MapPin className="w-4 h-4 text-primary flex-shrink-0" aria-hidden="true" />
               <span
-                className="font-bold truncate flex-1 text-left text-foreground"
-                style={{ minWidth: '80px', letterSpacing: '-0.01em', lineHeight: 1.2 }}
+                className="font-display font-bold truncate flex-1 text-left text-foreground text-[12px] sm:text-[13px]"
+                style={{ letterSpacing: '-0.015em', lineHeight: 1.15 }}
               >
                 {isUsingCurrentLocation 
                   ? (detectedLocationName || (detectedCity ? `${detectedCity.name}, ${detectedCity.state}` : "Locating..."))
                   : `${selectedCity.name}, ${selectedCity.state}`}
               </span>
               {isUsingCurrentLocation && (detectedLocationName || detectedCity) && (
-                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse flex-shrink-0" />
+                <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse flex-shrink-0" aria-hidden="true" />
               )}
             </div>
           </SelectTrigger>
@@ -2290,15 +2290,15 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               </div>
             </div>
             {!citySearchQuery && (
-            <SelectItem value="current-location" className="py-2.5 px-2 my-0.5 rounded-lg focus:bg-primary/10">
-              <div className="flex items-center gap-2.5">
-                <div className="w-2 h-2 bg-primary rounded-full animate-pulse flex-shrink-0" />
-                <span className="font-bold text-sm text-foreground" style={{ letterSpacing: '-0.01em' }}>
+            <SelectItem value="current-location" className="py-3 px-2.5 my-0.5 rounded-lg focus:bg-primary/10">
+              <div className="flex items-center gap-3 w-full min-w-0">
+                <span className="w-2 h-2 bg-primary rounded-full animate-pulse flex-shrink-0" aria-hidden="true" />
+                <span className="font-display font-bold text-sm text-foreground truncate flex-1 min-w-0" style={{ letterSpacing: '-0.01em' }}>
                   {detectedLocationName 
                     ? `${detectedLocationName}` 
                     : (detectedCity ? `${detectedCity.name}, ${detectedCity.state}` : "Use Current Location")}
                 </span>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-primary/80 ml-auto">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-primary/80 flex-shrink-0">
                   Current
                 </span>
               </div>
@@ -2330,13 +2330,13 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 <SelectItem
                   key={city.id}
                   value={city.id}
-                  className="py-2.5 px-2 my-0.5 rounded-lg focus:bg-primary/10"
+                  className="py-2.5 px-2.5 my-0.5 rounded-lg focus:bg-primary/10"
                 >
-                  <div className="flex items-center w-full gap-2 sm:gap-3 min-w-0">
+                  <div className="flex items-center w-full gap-3 min-w-0">
                     {/* City name — flexes and truncates so it never wraps */}
                     <span
-                      className="font-bold text-[13px] sm:text-sm text-foreground truncate min-w-0 flex-1"
-                      style={{ letterSpacing: '0.005em', lineHeight: 1.3 }}
+                      className="font-display font-bold text-[13px] sm:text-sm text-foreground truncate min-w-0 flex-1"
+                      style={{ letterSpacing: '-0.005em', lineHeight: 1.3 }}
                     >
                       {city.name}
                     </span>
@@ -2344,7 +2344,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     {/* State code — fixed-width chip, never shrinks */}
                     <span
                       className="text-[10px] sm:text-[11px] font-semibold uppercase text-muted-foreground tabular-nums flex-shrink-0"
-                      style={{ letterSpacing: '0.08em', minWidth: '1.75rem', textAlign: 'center' }}
+                      style={{ letterSpacing: '0.1em', minWidth: '1.75rem', textAlign: 'center' }}
                     >
                       {city.state}
                     </span>
@@ -2353,7 +2353,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     {distanceMiles !== null && (
                       <span
                         className="text-[10px] sm:text-[11px] font-semibold uppercase text-muted-foreground/80 tabular-nums flex-shrink-0 text-right"
-                        style={{ letterSpacing: '0.06em', minWidth: '3.25rem' }}
+                        style={{ letterSpacing: '0.08em', minWidth: '3.5rem' }}
                       >
                         {distanceMiles < 1 ? '<1' : Math.round(distanceMiles)} mi
                       </span>
