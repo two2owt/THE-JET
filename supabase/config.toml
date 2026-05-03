@@ -58,3 +58,5 @@ verify_jwt = false
 
 [functions.sync-merchant-deals]
 verify_jwt = false
+[functions.process-email-queue]
+verify_jwt = true
