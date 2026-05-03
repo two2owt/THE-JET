@@ -8,7 +8,15 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { HeaderProvider } from "@/contexts/HeaderContext";
 import { NavigationShell } from "@/components/NavigationShell";
 import { AppShell } from "@/components/AppShell";
-
+import { PageLayout } from "@/components/PageLayout";
+import {
+  FavoritesPageSkeleton,
+  SocialPageSkeleton,
+  SettingsPageSkeleton,
+  ProfilePageSkeleton,
+  MessagesPageSkeleton,
+  GenericPageSkeleton,
+} from "@/components/skeletons/PageSkeletons";
 
 // Eager load Index for fastest FCP on main route
 import Index from "./pages/Index";
@@ -27,6 +35,28 @@ const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const VerificationSuccess = lazy(() => import("./pages/VerificationSuccess"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+
+/**
+ * Per-route Suspense fallback that mirrors the destination page's
+ * PageLayout wrapper. This avoids the "global shell → generic
+ * skeleton → real skeleton → content" flicker by rendering the
+ * correct shell + skeleton from the very first frame.
+ */
+function RouteFallback({
+  defaultTab = "map",
+  hideSearch = true,
+  children,
+}: {
+  defaultTab?: "map" | "social" | "saved" | "alerts" | "hot";
+  hideSearch?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <PageLayout defaultTab={defaultTab} headerConfig={{ hideSearch }}>
+      {children}
+    </PageLayout>
+  );
+}
 
 const PageTracker = memo(function PageTracker() {
   const location = useLocation();
@@ -55,32 +85,121 @@ const AppLayout = memo(function AppLayout() {
       <Sonner />
       <PageTracker />
 
-      <Suspense fallback={<NavigationShell />}>
-        <Routes>
-          {/* Main route - eagerly loaded for fastest render */}
-          <Route path="/" element={<Index />} />
-          
-          {/* Full-bleed standalone pages (no header/footer) */}
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/onboarding" element={<Onboarding />} />
-          
-          {/* Standard app pages */}
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/favorites" element={<Favorites />} />
-          <Route path="/social" element={<Social />} />
-          <Route path="/messages" element={<Messages />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/verification-success" element={<VerificationSuccess />} />
-          <Route path="/unsubscribe" element={<Unsubscribe />} />
-          
-          {/* Legal pages — Footer is embedded inline within these pages */}
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/terms-of-service" element={<TermsOfService />} />
+      <Routes>
+        {/* Main route - eagerly loaded for fastest render */}
+        <Route path="/" element={<Index />} />
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Suspense>
+        {/* Full-bleed standalone pages (no header/footer) */}
+        <Route
+          path="/auth"
+          element={
+            <Suspense fallback={<NavigationShell />}>
+              <Auth />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/onboarding"
+          element={
+            <Suspense fallback={<NavigationShell />}>
+              <Onboarding />
+            </Suspense>
+          }
+        />
+
+        {/* Standard app pages — fallback mirrors each page's real shell */}
+        <Route
+          path="/profile"
+          element={
+            <Suspense fallback={<RouteFallback defaultTab="map"><ProfilePageSkeleton /></RouteFallback>}>
+              <Profile />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <Suspense fallback={<RouteFallback defaultTab="social"><SettingsPageSkeleton /></RouteFallback>}>
+              <Settings />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/favorites"
+          element={
+            <Suspense fallback={<RouteFallback defaultTab="saved"><FavoritesPageSkeleton /></RouteFallback>}>
+              <Favorites />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/social"
+          element={
+            <Suspense fallback={<RouteFallback defaultTab="social"><SocialPageSkeleton /></RouteFallback>}>
+              <Social />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/messages"
+          element={
+            <Suspense fallback={<RouteFallback defaultTab="social"><MessagesPageSkeleton /></RouteFallback>}>
+              <Messages />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <Suspense fallback={<RouteFallback defaultTab="map"><GenericPageSkeleton /></RouteFallback>}>
+              <AdminDashboard />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/verification-success"
+          element={
+            <Suspense fallback={<NavigationShell />}>
+              <VerificationSuccess />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/unsubscribe"
+          element={
+            <Suspense fallback={<NavigationShell />}>
+              <Unsubscribe />
+            </Suspense>
+          }
+        />
+
+        {/* Legal pages — Footer is embedded inline within these pages */}
+        <Route
+          path="/privacy-policy"
+          element={
+            <Suspense fallback={<NavigationShell />}>
+              <PrivacyPolicy />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/terms-of-service"
+          element={
+            <Suspense fallback={<NavigationShell />}>
+              <TermsOfService />
+            </Suspense>
+          }
+        />
+
+        <Route
+          path="*"
+          element={
+            <Suspense fallback={<NavigationShell />}>
+              <NotFound />
+            </Suspense>
+          }
+        />
+      </Routes>
     </AppShell>
   );
 });
