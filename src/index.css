@@ -331,15 +331,10 @@ All colors MUST be HSL.
   h5 { font-weight: 600; letter-spacing: -0.005em; line-height: 1.35; }
   h6 { font-weight: 700; letter-spacing: 0.06em;   line-height: 1.4; text-transform: uppercase; font-size: 0.75rem; }
 
-  /* Dark luxury display headings — generous tracking, light weight option */
+  /* Dark luxury display headings — subtle off-white instead of pure white */
   .dark h1, .dark h2 {
     /* Subtle off-white instead of pure white for refinement */
     color: hsl(0 0% 96%);
-  }
-  .display-luxe {
-    font-weight: 300;
-    letter-spacing: 0.04em;
-    text-transform: none;
   }
 
   body {
@@ -508,22 +503,6 @@ All colors MUST be HSL.
     display: none;  /* Chrome, Safari, Opera */
   }
 
-  /* Map wrapper - isolates map from parent layout changes */
-  .map-wrapper {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    /* Strict containment for the actual map element */
-    contain: strict;
-    /* Create new stacking context */
-    isolation: isolate;
-    /* GPU acceleration */
-    transform: translateZ(0);
-    will-change: contents;
-  }
-
-
 }
 
 @layer utilities {
@@ -543,97 +522,40 @@ All colors MUST be HSL.
     -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 70%, transparent 100%);
   }
 
-  /* Touch target utilities - ensures minimum 44px touch area for accessibility */
+  /* Touch target utility — ensures minimum 44px touch area for accessibility */
   .touch-target {
     min-width: 44px;
     min-height: 44px;
   }
-  
-  .touch-target-sm {
-    min-width: 36px;
-    min-height: 36px;
-  }
-  
-  .touch-target-lg {
-    min-width: 48px;
-    min-height: 48px;
-  }
 
-  /* Safe area spacing utilities */
-  .safe-area-top {
-    padding-top: var(--safe-area-inset-top);
-  }
-  
-  .safe-area-bottom {
-    padding-bottom: var(--safe-area-inset-bottom);
-  }
-  
-  .safe-area-left {
-    padding-left: var(--safe-area-inset-left);
-  }
-  
-  .safe-area-right {
-    padding-right: var(--safe-area-inset-right);
-  }
-  
+  /* Safe area spacing utility (only the all-sides inset is used) */
   .safe-area-inset {
     padding-top: var(--safe-area-inset-top);
     padding-right: var(--safe-area-inset-right);
     padding-bottom: var(--safe-area-inset-bottom);
     padding-left: var(--safe-area-inset-left);
   }
-  
-  /* Fluid spacing utilities */
-  .space-fluid-xs { padding: var(--space-xs); }
-  .space-fluid-sm { padding: var(--space-sm); }
-  .space-fluid-md { padding: var(--space-md); }
-  .space-fluid-lg { padding: var(--space-lg); }
-  .space-fluid-xl { padding: var(--space-xl); }
-  .space-fluid-2xl { padding: var(--space-2xl); }
-  
-  .p-fluid-xs { padding: var(--space-xs); }
-  .p-fluid-sm { padding: var(--space-sm); }
+
+  /* Fluid spacing utilities — only kept variants that are actually used */
   .p-fluid-md { padding: var(--space-md); }
   .p-fluid-lg { padding: var(--space-lg); }
-  .p-fluid-xl { padding: var(--space-xl); }
-  
-  .px-fluid-xs { padding-left: var(--space-xs); padding-right: var(--space-xs); }
-  .px-fluid-sm { padding-left: var(--space-sm); padding-right: var(--space-sm); }
-  .px-fluid-md { padding-left: var(--space-md); padding-right: var(--space-md); }
-  .px-fluid-lg { padding-left: var(--space-lg); padding-right: var(--space-lg); }
-  .px-fluid-xl { padding-left: var(--space-xl); padding-right: var(--space-xl); }
-  
-  .py-fluid-xs { padding-top: var(--space-xs); padding-bottom: var(--space-xs); }
-  .py-fluid-sm { padding-top: var(--space-sm); padding-bottom: var(--space-sm); }
-  .py-fluid-md { padding-top: var(--space-md); padding-bottom: var(--space-md); }
-  .py-fluid-lg { padding-top: var(--space-lg); padding-bottom: var(--space-lg); }
-  .py-fluid-xl { padding-top: var(--space-xl); padding-bottom: var(--space-xl); }
-  
+
   .mb-fluid-xs { margin-bottom: var(--space-xs); }
-  .mb-fluid-sm { margin-bottom: var(--space-sm); }
   .mb-fluid-md { margin-bottom: var(--space-md); }
   .mb-fluid-lg { margin-bottom: var(--space-lg); }
-  .mb-fluid-xl { margin-bottom: var(--space-xl); }
-  
-  .mt-fluid-xs { margin-top: var(--space-xs); }
-  .mt-fluid-sm { margin-top: var(--space-sm); }
+
   .mt-fluid-md { margin-top: var(--space-md); }
-  .mt-fluid-lg { margin-top: var(--space-lg); }
-  .mt-fluid-xl { margin-top: var(--space-xl); }
-  
+
   .gap-fluid-xs { gap: var(--space-xs); }
   .gap-fluid-sm { gap: var(--space-sm); }
   .gap-fluid-md { gap: var(--space-md); }
   .gap-fluid-lg { gap: var(--space-lg); }
-  .gap-fluid-xl { gap: var(--space-xl); }
-  
-  .space-y-fluid-xs > * + * { margin-top: var(--space-xs); }
+
   .space-y-fluid-sm > * + * { margin-top: var(--space-sm); }
   .space-y-fluid-md > * + * { margin-top: var(--space-md); }
   .space-y-fluid-lg > * + * { margin-top: var(--space-lg); }
-  .space-y-fluid-xl > * + * { margin-top: var(--space-xl); }
-  
-  /* Responsive text sizing */
+
+  /* Responsive text sizing — only kept variants that are actually used */
   .text-fluid-xs { font-size: var(--text-xs); }
   .text-fluid-sm { font-size: var(--text-sm); }
   .text-fluid-base { font-size: var(--text-base); }
@@ -646,104 +568,6 @@ All colors MUST be HSL.
 /* Note: Primary responsive map UI insets are defined earlier in the file */
 
 @layer utilities {
-  .pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite;
-  }
-  
-  @keyframes pulse-glow {
-    0%, 100% {
-      opacity: 1;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 0.7;
-      transform: scale(1.1);
-    }
-  }
-
-  /* Shimmer loading animation for skeletons */
-  .animate-shimmer {
-    animation: shimmer 1.5s ease-in-out infinite;
-    background: linear-gradient(
-      90deg,
-      hsl(var(--card)) 0%,
-      hsl(var(--muted)) 50%,
-      hsl(var(--card)) 100%
-    );
-    background-size: 200% 100%;
-  }
-
-  /* Static skeleton placeholder - animations removed for initial load performance */
-  .shimmer-skeleton {
-    position: relative;
-    overflow: hidden;
-    background: hsl(var(--muted) / 0.5);
-  }
-
-  /* Venue marker pulsating animations */
-  @keyframes venue-pulse-intense {
-    0%, 100% {
-      transform: rotate(-45deg) scale(1);
-      box-shadow: 
-        0 8px 32px currentColor,
-        0 0 0 1px rgba(255, 255, 255, 0.1),
-        0 0 60px currentColor,
-        inset 0 1px 2px rgba(255, 255, 255, 0.4);
-    }
-    50% {
-      transform: rotate(-45deg) scale(1.15);
-      box-shadow: 
-        0 12px 48px currentColor,
-        0 0 0 2px rgba(255, 255, 255, 0.3),
-        0 0 80px currentColor,
-        inset 0 2px 3px rgba(255, 255, 255, 0.5);
-    }
-  }
-
-  @keyframes venue-pulse-moderate {
-    0%, 100% {
-      transform: rotate(-45deg) scale(1);
-      box-shadow: 
-        0 8px 32px currentColor,
-        0 0 0 1px rgba(255, 255, 255, 0.1),
-        0 0 40px currentColor,
-        inset 0 1px 2px rgba(255, 255, 255, 0.4);
-    }
-    50% {
-      transform: rotate(-45deg) scale(1.1);
-      box-shadow: 
-        0 10px 40px currentColor,
-        0 0 0 1.5px rgba(255, 255, 255, 0.2),
-        0 0 50px currentColor,
-        inset 0 1.5px 2.5px rgba(255, 255, 255, 0.45);
-    }
-  }
-
-  @keyframes venue-pulse-subtle {
-    0%, 100% {
-      transform: rotate(-45deg) scale(1);
-      opacity: 0.95;
-    }
-    50% {
-      transform: rotate(-45deg) scale(1.05);
-      opacity: 1;
-    }
-  }
-
-  @keyframes bounce {
-    0%, 100% {
-      transform: rotate(-45deg) translateY(0);
-    }
-    25% {
-      transform: rotate(-45deg) translateY(-10px);
-    }
-    50% {
-      transform: rotate(-45deg) translateY(-5px);
-    }
-    75% {
-      transform: rotate(-45deg) translateY(-7px);
-    }
-  }
 
   @keyframes gradient-shift {
     0%, 100% {
@@ -799,24 +623,6 @@ All colors MUST be HSL.
     }
   }
 
-  .glow-subtle {
-    box-shadow: 0 0 20px hsl(var(--primary) / 0.2);
-    transition: box-shadow 0.3s ease-in-out;
-  }
-
-  .glow-subtle:hover {
-    box-shadow: 0 0 30px hsl(var(--primary) / 0.4);
-  }
-
-  .glow-button {
-    box-shadow: 0 0 15px hsl(var(--primary) / 0.3);
-    transition: all 0.3s ease-in-out;
-  }
-
-  .glow-button:hover {
-    box-shadow: 0 0 25px hsl(var(--primary) / 0.5);
-  }
-  
   /* Mobile map controls - responsive based on device */
   /* Offset Mapbox built-in controls so they never sit under Header/BottomNav */
   .mapboxgl-ctrl-top-left,
@@ -908,50 +714,6 @@ All colors MUST be HSL.
     }
   }
 
-  /* Touch-friendly timelapse swipe control */
-  .timelapse-swipe-control {
-    touch-action: pan-x;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-
-  .timelapse-touch-button {
-    @apply flex items-center justify-center w-8 h-8 rounded-full text-muted-foreground transition-colors;
-    @apply hover:bg-muted/50 hover:text-foreground active:bg-primary/20 active:text-primary;
-    @apply disabled:opacity-50 disabled:pointer-events-none;
-    min-width: 32px;
-    min-height: 32px;
-  }
-
-  /* Compact control panel styles for mobile */
-  .map-control-compact {
-    @apply bg-card/90 backdrop-blur-lg rounded-lg border border-border/50 shadow-md;
-    padding: var(--control-compact-padding, 0.375rem);
-    /* Ensure visibility on mobile */
-    will-change: transform, opacity;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
-
-  /* Mobile-specific control panel adjustments */
-  @media (max-width: 640px) {
-    .map-control-compact {
-      max-width: 160px !important;
-      font-size: 10px !important;
-      padding: 0.25rem;
-    }
-    
-    .map-control-compact select,
-    .map-control-compact button {
-      min-height: 26px !important;
-      font-size: 9px !important;
-    }
-  }
-
-  .map-control-compact .control-header {
-    @apply flex items-center justify-between text-[10px] font-medium text-muted-foreground mb-1;
-  }
-
   /* Path flow compact slider - orange themed */
   .path-flow-slider {
     @apply w-full appearance-none bg-transparent cursor-pointer;
@@ -1001,418 +763,7 @@ All colors MUST be HSL.
     box-shadow: 0 0 12px hsl(var(--primary) / 0.7);
   }
 
-  /* Compact control inline row */
-  .control-inline-row {
-    @apply flex items-center gap-1.5 text-[10px];
-  }
 
-  .control-inline-label {
-    @apply text-muted-foreground whitespace-nowrap min-w-[40px];
-  }
-
-  .control-inline-value {
-    @apply font-medium text-foreground;
-  }
-
-  /* Map controls toggle button */
-  .map-controls-toggle {
-    @apply bg-card/95 backdrop-blur-xl rounded-full p-2 border border-border shadow-lg;
-    @apply transition-all duration-300 hover:bg-card hover:scale-105;
-    @apply focus:outline-none focus:ring-2 focus:ring-primary/50;
-  }
-
-  .map-controls-toggle:active {
-    @apply scale-95;
-  }
-
-  /* Collapsed state indicator */
-  .map-controls-collapsed-hint {
-    @apply absolute bottom-0 right-0 w-1 h-8 bg-primary/50 rounded-full;
-    animation: pulse-hint 2s ease-in-out infinite;
-  }
-
-  @keyframes pulse-hint {
-    0%, 100% {
-      opacity: 0.3;
-    }
-    50% {
-      opacity: 0.7;
-    }
-  }
-
-  /* Cloud/fog flying through animation for sync indicator */
-  @keyframes cloud-drift-left {
-    0% {
-      transform: translateX(100%);
-      opacity: 0;
-    }
-    10% {
-      opacity: 0.8;
-    }
-    90% {
-      opacity: 0.8;
-    }
-    100% {
-      transform: translateX(-100%);
-      opacity: 0;
-    }
-  }
-
-  @keyframes cloud-drift-right {
-    0% {
-      transform: translateX(-100%);
-      opacity: 0;
-    }
-    10% {
-      opacity: 0.6;
-    }
-    90% {
-      opacity: 0.6;
-    }
-    100% {
-      transform: translateX(100%);
-      opacity: 0;
-    }
-  }
-
-  @keyframes airplane-fly {
-    0% {
-      transform: translateX(-20px) translateY(2px) rotate(-5deg);
-      opacity: 0;
-    }
-    10% {
-      opacity: 1;
-    }
-    25% {
-      transform: translateX(0) translateY(-2px) rotate(0deg);
-    }
-    50% {
-      transform: translateX(10px) translateY(1px) rotate(3deg);
-    }
-    75% {
-      transform: translateX(5px) translateY(-1px) rotate(-2deg);
-    }
-    90% {
-      opacity: 1;
-    }
-    100% {
-      transform: translateX(-20px) translateY(2px) rotate(-5deg);
-      opacity: 0;
-    }
-  }
-
-  @keyframes airplane-bob {
-    0%, 100% {
-      transform: translateY(0) rotate(0deg);
-    }
-    25% {
-      transform: translateY(-2px) rotate(2deg);
-    }
-    50% {
-      transform: translateY(1px) rotate(-1deg);
-    }
-    75% {
-      transform: translateY(-1px) rotate(1deg);
-    }
-  }
-
-  .sync-airplane-wrapper {
-    animation: airplane-fly 2.5s ease-in-out infinite;
-  }
-
-  .sync-airplane {
-    animation: airplane-bob 1s ease-in-out infinite;
-    filter: drop-shadow(0 2px 4px hsl(var(--primary) / 0.6));
-  }
-
-  .sync-cloud-bg {
-    animation: cloud-bg-drift 3s ease-in-out infinite;
-  }
-
-  .sync-cloud-bg-2 {
-    animation: cloud-bg-drift 3.5s ease-in-out infinite reverse;
-  }
-
-  @keyframes cloud-bg-drift {
-    0%, 100% {
-      transform: translateX(0) scale(1);
-      opacity: 0.4;
-    }
-    50% {
-      transform: translateX(2px) scale(1.1);
-      opacity: 0.6;
-    }
-  }
-
-  .sync-passing-clouds {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    overflow: hidden;
-  }
-
-  .sync-passing-clouds::before,
-  .sync-passing-clouds::after {
-    content: '';
-    position: absolute;
-    width: 40%;
-    height: 60%;
-    background: radial-gradient(ellipse, hsl(var(--foreground) / 0.15) 0%, transparent 70%);
-    border-radius: 50%;
-    filter: blur(3px);
-    /* CLS-safe: use translateX instead of left for composited animation */
-    left: 0;
-    animation: passing-cloud 4s linear infinite;
-    will-change: transform, opacity;
-  }
-
-  .sync-passing-clouds::before {
-    top: 20%;
-    animation-delay: 0s;
-  }
-
-  .sync-passing-clouds::after {
-    top: 40%;
-    animation-delay: 2s;
-  }
-
-  /* CLS-safe: translateX is a composited animation, doesn't trigger re-layout */
-  @keyframes passing-cloud {
-    0% {
-      transform: translateX(250%);
-      opacity: 0;
-    }
-    10% {
-      opacity: 0.5;
-    }
-    90% {
-      opacity: 0.5;
-    }
-    100% {
-      transform: translateX(-100%);
-      opacity: 0;
-    }
-  }
-
-  @keyframes contrail-fade {
-    0% {
-      opacity: 0.8;
-      transform: scaleX(0.2) translateX(0);
-    }
-    50% {
-      opacity: 0.5;
-    }
-    100% {
-      opacity: 0;
-      transform: scaleX(2) translateX(-10px);
-    }
-  }
-
-  .sync-contrail {
-    position: absolute;
-    right: 100%;
-    top: 50%;
-    height: 1.5px;
-    width: 16px;
-    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.7));
-    transform-origin: right center;
-    animation: contrail-fade 0.8s ease-out infinite;
-    border-radius: 1px;
-  }
-
-  .sync-contrail-1 {
-    top: 30%;
-    animation-delay: 0s;
-  }
-
-  .sync-contrail-2 {
-    top: 70%;
-    animation-delay: 0.15s;
-  }
-
-  @keyframes cloud-float {
-    0%, 100% {
-      transform: translateY(0) scale(1);
-      opacity: 0.7;
-    }
-    50% {
-      transform: translateY(-2px) scale(1.05);
-      opacity: 0.9;
-    }
-  }
-
-  @keyframes sync-glow-pulse {
-    0%, 100% {
-      box-shadow: 0 0 8px hsl(var(--primary) / 0.3);
-    }
-    50% {
-      box-shadow: 0 0 16px hsl(var(--primary) / 0.6);
-    }
-  }
-
-  .sync-cloud-container {
-    position: relative;
-    overflow: hidden;
-    border-radius: 9999px;
-  }
-
-  .sync-cloud-container.syncing {
-    animation: sync-glow-pulse 1.5s ease-in-out infinite;
-  }
-
-  .sync-cloud {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-  }
-
-  .sync-cloud::before,
-  .sync-cloud::after {
-    content: '';
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(4px);
-  }
-
-  .sync-cloud::before {
-    width: 120%;
-    height: 60%;
-    top: 20%;
-    background: radial-gradient(ellipse, hsl(var(--foreground) / 0.15) 0%, transparent 70%);
-    animation: cloud-drift-left 2s ease-in-out infinite;
-  }
-
-  .sync-cloud::after {
-    width: 80%;
-    height: 50%;
-    top: 30%;
-    background: radial-gradient(ellipse, hsl(var(--foreground) / 0.1) 0%, transparent 60%);
-    animation: cloud-drift-right 2.5s ease-in-out infinite 0.3s;
-  }
-
-  .sync-cloud-wisps {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    overflow: hidden;
-  }
-
-  .sync-cloud-wisps::before {
-    content: '';
-    position: absolute;
-    width: 60%;
-    height: 40%;
-    top: 30%;
-    left: 20%;
-    background: radial-gradient(ellipse, hsl(var(--muted-foreground) / 0.2) 0%, transparent 50%);
-    animation: cloud-float 3s ease-in-out infinite;
-    filter: blur(3px);
-  }
-
-  .sync-success-flash {
-    animation: success-flash 0.5s ease-out forwards;
-  }
-
-  @keyframes success-flash {
-    0% {
-      background: hsl(var(--primary) / 0.3);
-      transform: scale(1);
-    }
-    50% {
-      background: hsl(142 76% 45% / 0.4);
-      transform: scale(1.1);
-    }
-    100% {
-      background: transparent;
-      transform: scale(1);
-    }
-  }
-
-
-  .runway-landing-flash {
-    animation: runway-landing 0.6s ease-out forwards;
-  }
-
-  @keyframes runway-landing {
-    0% {
-      box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4);
-    }
-    50% {
-      box-shadow: 0 0 15px 2px hsl(142 76% 45% / 0.5);
-    }
-    100% {
-      box-shadow: 0 0 0 0 transparent;
-    }
-  }
-
-  .landed-airplane {
-    animation: landed-settle 0.5s ease-out forwards;
-  }
-
-  @keyframes landed-settle {
-    0% {
-      transform: translateX(10px) rotate(-15deg);
-      opacity: 0;
-    }
-    60% {
-      transform: translateX(-2px) rotate(-8deg);
-    }
-    100% {
-      transform: translateX(0) rotate(-10deg);
-      opacity: 1;
-    }
-  }
-
-  .arrival-destination {
-    animation: arrival-fade-in 0.8s ease-out 0.3s both;
-  }
-
-  @keyframes arrival-fade-in {
-    0% {
-      opacity: 0;
-      transform: translateX(8px);
-    }
-    60% {
-      opacity: 1;
-    }
-    100% {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-
-  .arrival-city-name {
-    animation: city-slide-in 0.6s ease-out 0.5s both;
-  }
-
-  @keyframes city-slide-in {
-    0% {
-      opacity: 0;
-      transform: translateY(4px);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  /* Glassmorphic orb pulse animation for venue markers */
-  @keyframes orbPulse {
-    0% {
-      transform: scale(1);
-      opacity: 0.6;
-    }
-    50% {
-      transform: scale(1.4);
-      opacity: 0;
-    }
-    100% {
-      transform: scale(1.8);
-      opacity: 0;
-    }
-  }
-
-  /* Orb entrance animation - scale up and fade in (no translate to preserve GPS anchor) */
   /* Marker fade in animation - simple opacity transition */
   @keyframes markerFadeIn {
     0% {
