@@ -12,7 +12,6 @@ import { UpgradePrompt, useFeatureAccess } from "@/components/UpgradePrompt";
 import { ChatDialog } from "@/components/ChatDialog";
 import { useUnreadCounts } from "@/hooks/useMessages";
 import { Badge } from "@/components/ui/badge";
-import { TabPageHeader } from "@/components/TabPageHeader";
 import { PageShell } from "@/components/PageShell";
 import { SocialPageSkeleton } from "@/components/skeletons/PageSkeletons";
 
@@ -289,11 +288,6 @@ export default function Social() {
   return (
     <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
       <PageShell>
-        {/* Page title — uses shared TabPageHeader for cross-tab consistency */}
-        <TabPageHeader
-          title="Crew"
-          subtitle="Connect with friends and share deals together"
-        />
         {/* Messages shortcut */}
         <button
           onClick={() => navigate("/messages")}
