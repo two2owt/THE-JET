@@ -8,7 +8,6 @@ import { PageLayout } from "@/components/PageLayout";
 import { EmptyState } from "@/components/EmptyState";
 import { VirtualGrid } from "@/components/ui/virtual-list";
 import { FavoritesPageSkeleton } from "@/components/skeletons/PageSkeletons";
-import { TabPageHeader } from "@/components/TabPageHeader";
 import { PageShell } from "@/components/PageShell";
 
 interface Deal {
@@ -95,11 +94,6 @@ export default function Favorites() {
   return (
     <PageLayout defaultTab="favorites">
       <PageShell>
-        <TabPageHeader
-          title="Favorites"
-          subtitle={`${deals.length} ${deals.length === 1 ? "deal" : "deals"} saved`}
-        />
-
         {deals.length === 0 ? (
           <EmptyState
             icon={Compass}
