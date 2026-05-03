@@ -321,16 +321,15 @@ All colors MUST be HSL.
     box-sizing: border-box;
   }
 
-  /* Typography tuning — Plus Jakarta Sans Variable */
-  /* Geometric sans-serifs benefit from slightly looser body tracking and tighter heading tracking */
-  /* Luxe heading hierarchy — confident, sparingly weighted, refined tracking.
-     Headings lean lighter than mass-market apps; weight earns attention. */
-  h1 { @apply font-bold;      /* 700 */ letter-spacing: -0.022em; line-height: 1.12; }
-  h2 { @apply font-semibold;  /* 600 */ letter-spacing: -0.018em; line-height: 1.18; }
-  h3 { @apply font-semibold;  /* 600 */ letter-spacing: -0.012em; line-height: 1.25; }
-  h4 { @apply font-medium;    /* 500 */ letter-spacing: -0.005em; line-height: 1.32; }
-  h5 { @apply font-medium;    /* 500 */ letter-spacing: 0;        line-height: 1.4; }
-  h6 { @apply font-semibold;  /* 600 */ letter-spacing: 0.02em;   line-height: 1.4; text-transform: uppercase; font-size: 0.75rem; }
+  /* Typography tuning — Display: Syne Variable, Body: Plus Jakarta Sans Variable.
+     Syne brings bold, fast, spontaneous, modern energy to the brand voice. */
+  h1, h2, h3, h4, h5, h6 { @apply font-display; }
+  h1 { font-weight: 800; letter-spacing: -0.03em;  line-height: 1.05; }
+  h2 { font-weight: 700; letter-spacing: -0.025em; line-height: 1.12; }
+  h3 { font-weight: 700; letter-spacing: -0.02em;  line-height: 1.2; }
+  h4 { font-weight: 600; letter-spacing: -0.012em; line-height: 1.28; }
+  h5 { font-weight: 600; letter-spacing: -0.005em; line-height: 1.35; }
+  h6 { font-weight: 700; letter-spacing: 0.06em;   line-height: 1.4; text-transform: uppercase; font-size: 0.75rem; }
 
   /* Dark luxury display headings — generous tracking, light weight option */
   .dark h1, .dark h2 {
