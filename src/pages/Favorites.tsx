@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { VirtualGrid } from "@/components/ui/virtual-list";
 import { FavoritesPageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { TabPageHeader } from "@/components/TabPageHeader";
+import { PageShell } from "@/components/PageShell";
 
 interface Deal {
   id: string;
@@ -93,10 +94,7 @@ export default function Favorites() {
 
   return (
     <PageLayout defaultTab="favorites">
-      <div
-        className="max-w-7xl mx-auto"
-        style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}
-      >
+      <PageShell>
         <TabPageHeader
           title="Favorites"
           subtitle={`${deals.length} ${deals.length === 1 ? "deal" : "deals"} saved`}
@@ -120,7 +118,7 @@ export default function Favorites() {
             renderItem={(deal, index) => <DealCard deal={deal} index={index} />}
           />
         )}
-      </div>
+      </PageShell>
     </PageLayout>
   );
 }
