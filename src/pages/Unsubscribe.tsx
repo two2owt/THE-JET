@@ -67,7 +67,7 @@ export default function Unsubscribe() {
       if (error) throw error;
       const payload = data as any;
       if (payload?.email) setEmail(payload.email);
-      if (payload?.success === false && payload?.reason === "already_unsubscribed") {
+      if (payload?.reason === "already_unsubscribed" || payload?.valid === false) {
         setStatus("already");
         return;
       }
