@@ -427,7 +427,7 @@ export default function Profile() {
                 </div>
 
                 <div className="flex-1 min-w-0 text-center sm:text-left sm:pb-1">
-                  <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground truncate" style={{ letterSpacing: '-0.02em' }}>
+                  <h1 className="heading-luxe-gradient truncate max-w-full">
                     {displayName || 'User'}
                   </h1>
                   <p className="mt-1 inline-flex items-center gap-1.5 text-sm text-muted-foreground truncate max-w-full">
