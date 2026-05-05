@@ -17,14 +17,16 @@ const AUTH_SRC = readFileSync(
  *   popover surface so focus/hover/disabled states inherit consistently.
  */
 describe("Auth page Input — luxe border contract", () => {
-  it("Auth.tsx contains no border-border/border-input overrides on Inputs", () => {
-    // Strip block + line comments so doc references don't trip the guard.
-    const stripped = AUTH_SRC
-      .replace(/\/\*[\s\S]*?\*\//g, "")
-      .replace(/\/\/.*$/gm, "");
-
-    expect(stripped).not.toMatch(/\bborder-border\b/);
-    expect(stripped).not.toMatch(/\bborder-input\b/);
+  it("no <Input/> usage carries border-border / border-input overrides", () => {
+    // Match every <Input ...> opening tag (may span multiple lines) and
+    // assert none of them carry the redundant token border classes that
+    // would override the luxe hairline styling.
+    const inputTags = AUTH_SRC.match(/<Input\b[\s\S]*?\/?>/g) ?? [];
+    expect(inputTags.length).toBeGreaterThan(0);
+    for (const tag of inputTags) {
+      expect(tag).not.toMatch(/\bborder-border\b/);
+      expect(tag).not.toMatch(/\bborder-input\b/);
+    }
   });
 
   it("only conditional border overrides are validation states (border-destructive)", () => {
@@ -41,14 +43,12 @@ describe("Auth page Input — luxe border contract", () => {
     const { container } = render(<Input data-testid="luxe-input" />);
     const el = container.querySelector<HTMLInputElement>(
       '[data-testid="luxe-input"]',
-    );
-    expect(el).not.toBeNull();
-
-    // Inline luxe styling — these are the source of truth for focus/hover/
-    // disabled transitions, so any border override on Auth would fight them.
-    expect(el!.style.border).toContain("hsl(0 0% 100% / 0.06)");
-    expect(el!.style.background).toContain("hsl(var(--popover) / 0.6)");
-    expect(el!.style.transition).toContain("border-color");
+    )!;
+    // jsdom does not expand shorthand `border`; read raw inline style attr.
+    const inlineStyle = el.getAttribute("style") ?? "";
+    expect(inlineStyle).toContain("hsl(0 0% 100% / 0.06)");
+    expect(inlineStyle).toContain("hsl(var(--popover) / 0.6)");
+    expect(inlineStyle).toContain("border-color");
   });
 
   it("base <Input/> exposes focus-visible + disabled utility classes", () => {
