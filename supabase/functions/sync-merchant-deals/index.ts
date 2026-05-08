@@ -143,6 +143,12 @@ Deno.serve(async (req) => {
         }
 
         console.log('Deal created successfully:', data.id);
+
+        // Fire-and-forget push notification to subscribers
+        if (deal.active) {
+          fireDealPush(supabaseUrl, deal, 'New deal');
+        }
+
         return new Response(
           JSON.stringify({ success: true, deal: data }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -182,6 +188,11 @@ Deno.serve(async (req) => {
         }
 
         console.log('Deal updated successfully:', data.id);
+
+        if (deal.active) {
+          fireDealPush(supabaseUrl, deal, 'Updated deal');
+        }
+
         return new Response(
           JSON.stringify({ success: true, deal: data }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
