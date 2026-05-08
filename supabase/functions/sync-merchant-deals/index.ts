@@ -65,6 +65,24 @@ function mapDealType(incomingType: string): ValidDealType {
 type MerchantDeal = z.infer<typeof MerchantDealSchema>;
 type WebhookPayload = z.infer<typeof WebhookPayloadSchema>;
 
+// Fire a push notification via merchant-send-notification (non-blocking).
+function fireDealPush(supabaseUrl: string, deal: MerchantDeal, prefix: string) {
+  const secret = Deno.env.get('JETBRIDGE_WEBHOOK_SECRET');
+  if (!secret) return;
+  const url = `${supabaseUrl}/functions/v1/merchant-send-notification`;
+  fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-webhook-secret': secret },
+    body: JSON.stringify({
+      title: `${prefix} at ${deal.venue_name}`,
+      body: deal.title,
+      venue_name: deal.venue_name,
+      deal_id: deal.id,
+      neighborhood_id: deal.neighborhood_id ?? undefined,
+    }),
+  }).catch((e) => console.error('push dispatch failed (non-blocking):', e));
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
