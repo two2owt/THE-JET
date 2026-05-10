@@ -11,11 +11,19 @@ interface BottomNavProps {
 }
 
 export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPrefetch }: BottomNavProps) => {
-  const handlePrefetch = useCallback((tab: NavItem) => {
-    if (onPrefetch && tab !== activeTab) {
-      onPrefetch(tab);
-    }
-  }, [onPrefetch, activeTab]);
+  // Delegated prefetch: a single handler on the container reads `data-tab`
+  // off the hovered/touched button instead of attaching one listener per
+  // button. Cuts listener count from ~2*N to 2 total.
+  const handleDelegatedPrefetch = useCallback(
+    (e: React.SyntheticEvent<HTMLDivElement>) => {
+      if (!onPrefetch) return;
+      const target = (e.target as HTMLElement).closest<HTMLElement>('[data-tab]');
+      if (!target) return;
+      const tab = target.dataset.tab as NavItem | undefined;
+      if (tab && tab !== activeTab) onPrefetch(tab);
+    },
+    [onPrefetch, activeTab]
+  );
 
   const [mounted, setMounted] = useState(false);
   const mountedRef = useRef(false);
@@ -91,6 +99,8 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
           margin: '0 auto',
           padding: '0 clamp(8px, 1.5vw, 16px)',
         }}
+        onMouseOver={handleDelegatedPrefetch}
+        onTouchStart={handleDelegatedPrefetch}
       >
         {navItems.map((item, index) => {
           const isActive = activeTab === item.id;
@@ -101,9 +111,8 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
           return (
             <button
               key={item.id}
+              data-tab={item.id}
               onClick={() => onTabChange(item.id)}
-              onMouseEnter={() => handlePrefetch(item.id)}
-              onTouchStart={() => handlePrefetch(item.id)}
               aria-label={`${item.label}${hasNotification ? `, ${notificationCount} unread` : ''}`}
               aria-current={isActive ? "page" : undefined}
               className="touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
