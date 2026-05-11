@@ -237,8 +237,7 @@
     
     <!-- Mapbox CSS -->
     <link rel="preload" href="https://api.mapbox.com/mapbox-gl-js/v3.18.1/mapbox-gl.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <!-- Mapbox JS preload — eager on root route only, since the map is the LCP element on / -->
-    <script>!function(){if(location.pathname==="/"||location.pathname===""){var l=document.createElement("link");l.rel="preload";l.as="script";l.href="https://api.mapbox.com/mapbox-gl-js/v3.18.1/mapbox-gl.js";l.crossOrigin="anonymous";document.head.appendChild(l)}}();</script>
+    <!-- Mapbox JS — deferred via requestIdleCallback/IntersectionObserver on all routes -->
   </head>
   
   <body>
