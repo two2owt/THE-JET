@@ -38,6 +38,48 @@ function getRoot(container: HTMLElement) {
 }
 
 describe("LuxeAvatar — circle shape contract", () => {
+  describe("mismatched width/height classes still render 1:1", () => {
+    const MISMATCHES: Array<{ name: string; className: string }> = [
+      { name: "w-20 h-40 (2x taller)", className: "w-20 h-40" },
+      { name: "w-40 h-10 (4x wider)", className: "w-40 h-10" },
+      { name: "w-8 h-24 (3x taller)", className: "w-8 h-24" },
+      { name: "w-32 h-12 (wide rect)", className: "w-32 h-12" },
+    ];
+
+    for (const { name, className } of MISMATCHES) {
+      it(`${name} — inline aspect-ratio + aspect-square keep box square`, () => {
+        const { container } = render(
+          <LuxeAvatar alt="t" className={className} />,
+        );
+        const root = getRoot(container);
+
+        // Inline aspect-ratio style is the un-overridable runtime guard.
+        expect(root.style.aspectRatio.replace(/\s+/g, "")).toBe("1/1");
+        // Tailwind utility class as belt-and-braces backup.
+        expect(root.className).toMatch(/\baspect-square\b/);
+        // The mismatched caller classes are still applied (we did not strip
+        // them) — proving the shape guarantee comes from the component's
+        // own style, not from sanitising caller input.
+        for (const cls of className.split(/\s+/)) {
+          expect(root.className).toContain(cls);
+        }
+        // Outer wrapper, dark gap and inner Avatar are all rounded-full so
+        // the silhouette is a circle at every layer.
+        expect(root.className).toMatch(/\brounded-full\b/);
+        const gap = root.firstElementChild as HTMLElement;
+        expect(gap.className).toMatch(/\brounded-full\b/);
+        const inner = gap.firstElementChild as HTMLElement;
+        expect(inner.className).toMatch(/\brounded-full\b/);
+        expect(inner.className).toMatch(/\baspect-square\b/);
+
+        // No inline width/height escape hatches that could defeat the
+        // aspect-ratio guard.
+        expect(root.style.width).toBe("");
+        expect(root.style.height).toBe("");
+      });
+    }
+  });
+
   for (const size of SIZES) {
     it(`size="${size}" preserves circular contract`, () => {
       const { container } = render(<LuxeAvatar size={size} alt="t" />);
