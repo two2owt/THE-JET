@@ -21,13 +21,18 @@ import { cn } from "@/lib/utils";
 
 type Size = "xs" | "sm" | "md" | "lg" | "xl";
 
-// Outer photo (square) widths. Frame padding scales from these.
-const SIZE_PX: Record<Size, number> = {
-  xs: 44,
-  sm: 72,
-  md: 96,
-  lg: 128,
-  xl: 176,
+/**
+ * Each size is a `clamp(min, preferred, max)` so the polaroid scales with
+ * viewport width but never overflows its `max-width`. The whole component
+ * is built on em units anchored to this width, so frame padding, caption
+ * text and the bottom strip all scale together.
+ */
+const SIZE_WIDTH: Record<Size, string> = {
+  xs: "clamp(44px, 12vw, 56px)",
+  sm: "clamp(64px, 16vw, 84px)",
+  md: "clamp(88px, 22vw, 112px)",
+  lg: "clamp(112px, 30vw, 160px)",
+  xl: "clamp(144px, 38vw, 220px)",
 };
 
 export interface PolaroidAvatarProps {
@@ -64,11 +69,13 @@ export const PolaroidAvatar = React.forwardRef<
     ref,
   ) => {
     const showIcon = forceIconFallback || !src;
-    const photoSize = SIZE_PX[size];
-    // Polaroid proportions: ~6% frame, ~22% bottom strip relative to photo.
-    const framePad = Math.max(6, Math.round(photoSize * 0.07));
-    const bottomStrip = Math.max(18, Math.round(photoSize * 0.22));
     const tiltDeg = tiltDirection === "left" ? -2 : 2;
+    // Anchor the entire frame to the polaroid's width via font-size.
+    // This makes padding (em), caption (em) and bottom strip (em) all
+    // scale linearly with the responsive width — so the same component
+    // adapts cleanly across phone, tablet and desktop without ever
+    // overflowing its parent.
+    const widthExpr = SIZE_WIDTH[size];
 
     return (
       <div
@@ -78,23 +85,25 @@ export const PolaroidAvatar = React.forwardRef<
         tabIndex={onClick ? 0 : undefined}
         aria-label={rest["aria-label"]}
         className={cn(
-          "polaroid-avatar group/polaroid relative inline-block flex-shrink-0",
+          "polaroid-avatar group/polaroid relative inline-block flex-shrink-0 max-w-full",
           "transition-transform duration-300 ease-out will-change-transform",
           "hover:-translate-y-0.5 focus-visible:-translate-y-0.5",
           onClick && "cursor-pointer",
           className,
         )}
         style={{
+          // Width drives every other dimension via em units.
+          width: widthExpr,
+          fontSize: widthExpr,
           // Hover tilt is composited (transform only) → 0 CLS.
           transform: "rotate(0deg)",
-          padding: framePad,
-          paddingBottom: bottomStrip,
+          // 7% frame on three sides, 22% bottom strip — relative to width.
+          padding: "0.07em 0.07em 0.22em",
           background:
             "linear-gradient(180deg, #FAFAF7 0%, #F2EFE7 100%)",
-          borderRadius: 4,
+          borderRadius: "0.04em",
           boxShadow:
-            "0 1px 0 rgba(255,255,255,0.6) inset, 0 12px 28px -10px rgba(0,0,0,0.55), 0 4px 10px -4px rgba(0,0,0,0.45)",
-          // Tilt on hover/focus only — applied via inline CSS variable swap.
+            "0 1px 0 rgba(255,255,255,0.6) inset, 0 0.12em 0.28em -0.1em rgba(0,0,0,0.55), 0 0.04em 0.1em -0.04em rgba(0,0,0,0.45)",
           ["--polaroid-tilt" as string]: `${tiltDeg}deg`,
         }}
         onMouseEnter={(e) => {
@@ -110,12 +119,11 @@ export const PolaroidAvatar = React.forwardRef<
           e.currentTarget.style.transform = "rotate(0deg)";
         }}
       >
-        {/* Square photo */}
+        {/* Square photo — width:100% of frame, aspect-square locks height. */}
         <div
-          className="relative overflow-hidden"
+          className="relative overflow-hidden w-full aspect-square"
           style={{
-            width: photoSize,
-            height: photoSize,
+            aspectRatio: "1 / 1",
             background:
               "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))",
             boxShadow:
@@ -126,8 +134,10 @@ export const PolaroidAvatar = React.forwardRef<
             <img
               src={src || ""}
               alt={alt}
-              className="w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover block"
               draggable={false}
+              loading="lazy"
+              decoding="async"
             />
           )}
           {showIcon && (
@@ -153,15 +163,17 @@ export const PolaroidAvatar = React.forwardRef<
         {/* Bottom strip caption */}
         {caption && (
           <div
-            className="absolute left-0 right-0 px-2 text-center truncate"
+            className="absolute left-0 right-0 text-center truncate"
             style={{
-              bottom: Math.round(bottomStrip * 0.18),
+              bottom: "0.04em",
+              paddingLeft: "0.06em",
+              paddingRight: "0.06em",
               color: "#1A1A1A",
               fontFamily:
                 "'Caveat', 'Patrick Hand', 'Segoe Script', cursive",
-              fontSize: Math.max(11, Math.round(photoSize * 0.14)),
+              fontSize: "0.14em",
               lineHeight: 1,
-              letterSpacing: 0.2,
+              letterSpacing: "0.01em",
             }}
           >
             {caption}
