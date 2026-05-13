@@ -10,6 +10,7 @@ import { Zap, Sparkles, Loader2, Upload } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PreferencesStep, { PreferencesData } from "@/components/onboarding/PreferencesStep";
 import { Json } from "@/integrations/supabase/types";
+import { LuxeAvatar } from "@/components/ui/luxe-avatar";
 
 const GENDER_OPTIONS = [
   { value: "woman", label: "Woman" },
@@ -301,13 +302,12 @@ const Onboarding = () => {
           <div className="space-y-fluid-lg bg-card border border-border rounded-2xl p-fluid-lg">
             <div className="flex flex-col items-center mb-fluid-lg">
               <div className="relative">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-muted border-2 border-border flex items-center justify-center overflow-hidden">
-                  {avatarPreview ? (
-                    <img src={avatarPreview} alt="Avatar" width={96} height={96} className="w-full h-full object-cover" loading="lazy" decoding="async" />
-                  ) : (
-                    <Upload className="w-8 h-8 text-muted-foreground" />
-                  )}
-                </div>
+                <LuxeAvatar
+                  src={avatarPreview}
+                  alt="Avatar"
+                  forceIconFallback={!avatarPreview}
+                  className="w-20 h-20 sm:w-24 sm:h-24"
+                />
                 <label className="absolute bottom-0 right-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/90 transition-colors">
                   <Upload className="w-4 h-4 text-primary-foreground" />
                   <input

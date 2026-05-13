@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { LuxeAvatar } from "@/components/ui/luxe-avatar";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -394,12 +394,13 @@ export default function Profile() {
               {/* Avatar — overlaps banner */}
               <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-5 -mt-12 sm:-mt-14">
                 <div className="relative mx-auto sm:mx-0 group">
-                  <Avatar className="w-24 h-24 sm:w-28 sm:h-28 ring-4 ring-card shadow-glow">
-                    <AvatarImage src={profile?.avatar_url || undefined} alt={displayName || "User avatar"} />
-                    <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-primary to-primary-glow text-primary-foreground">
-                      {displayName.charAt(0).toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
+                  <LuxeAvatar
+                    src={profile?.avatar_url}
+                    alt={displayName || "User avatar"}
+                    initials={displayName.charAt(0)}
+                    forceIconFallback={!profile?.avatar_url}
+                    className="w-24 h-24 sm:w-28 sm:h-28"
+                  />
                   {isEditing && (
                     <>
                       <label
