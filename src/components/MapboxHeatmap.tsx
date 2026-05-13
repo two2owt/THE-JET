@@ -907,11 +907,39 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       }
     };
 
-    // Initialize map immediately using queueMicrotask for fastest startup
-    // This ensures we start init on the next microtask without blocking the current frame
-    queueMicrotask(initializeMap);
-    
+    // Defer map initialization until AFTER first paint so the heavy synchronous
+    // `new mapboxgl.Map(...)` call (which can block the main thread for 200-600ms
+    // creating WebGL context, parsing style JSON, building workers) never delays
+    // FCP/LCP on the root route. Sequence:
+    //   1. Two RAFs → guarantees the browser has committed at least one paint
+    //   2. requestIdleCallback → yield to any pending input/layout work
+    //   3. Fallback setTimeout(120) for browsers without rIC (Safari)
+    let cancelled = false;
+    let idleHandle: number | null = null;
+    let rafHandle1 = 0;
+    let rafHandle2 = 0;
+    let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
+    const scheduleInit = () => {
+      if (cancelled) return;
+      const ric: any = (window as any).requestIdleCallback;
+      if (typeof ric === 'function') {
+        idleHandle = ric(() => { if (!cancelled) initializeMap(); }, { timeout: 800 });
+      } else {
+        timeoutHandle = setTimeout(() => { if (!cancelled) initializeMap(); }, 120);
+      }
+    };
+    rafHandle1 = requestAnimationFrame(() => {
+      rafHandle2 = requestAnimationFrame(scheduleInit);
+    });
+
     return () => {
+      cancelled = true;
+      cancelAnimationFrame(rafHandle1);
+      cancelAnimationFrame(rafHandle2);
+      if (idleHandle != null && (window as any).cancelIdleCallback) {
+        (window as any).cancelIdleCallback(idleHandle);
+      }
+      if (timeoutHandle) clearTimeout(timeoutHandle);
       cleanupMap();
     };
     
