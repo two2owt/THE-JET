@@ -70,21 +70,59 @@ export const LuxeAvatar = React.forwardRef<HTMLDivElement, LuxeAvatarProps>(
     const showIcon = forceIconFallback || !src;
     const sizeClass = size ? SIZE_CLASS[size] : "";
 
+    // Always-square guard. Two layers of defence:
+    //   1. Inline `aspectRatio: 1` style — runtime CSS guarantee that no
+    //      caller className can make the avatar oval, even if they pass
+    //      mismatched w-*/h-* utilities.
+    //   2. Dev-only ResizeObserver assertion that warns loudly if the
+    //      painted box ever drifts from a 1:1 ratio (tolerance 0.5px).
+    const innerRef = React.useRef<HTMLDivElement | null>(null);
+    const setRefs = React.useCallback(
+      (node: HTMLDivElement | null) => {
+        innerRef.current = node;
+        if (typeof ref === "function") ref(node);
+        else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+      },
+      [ref],
+    );
+
+    React.useEffect(() => {
+      if (import.meta.env.PROD) return;
+      const el = innerRef.current;
+      if (!el || typeof ResizeObserver === "undefined") return;
+      const ro = new ResizeObserver(([entry]) => {
+        const { width, height } = entry.contentRect;
+        if (width === 0 || height === 0) return;
+        if (Math.abs(width - height) > 0.5) {
+          // eslint-disable-next-line no-console
+          console.error(
+            `[LuxeAvatar] Non-square render detected (${width.toFixed(2)}×${height.toFixed(
+              2,
+            )}). Avatar must remain a perfect circle. Check className/size props.`,
+            el,
+          );
+        }
+      });
+      ro.observe(el);
+      return () => ro.disconnect();
+    }, []);
+
     return (
       <div
-        ref={ref}
+        ref={setRefs}
         onClick={onClick}
         role={onClick ? "button" : undefined}
         tabIndex={onClick ? 0 : undefined}
         aria-label={rest["aria-label"]}
         className={cn(
-          "luxe-avatar relative inline-block flex-shrink-0 rounded-full",
+          "luxe-avatar relative inline-block flex-shrink-0 rounded-full aspect-square",
           sizeClass,
           onClick && "cursor-pointer",
           className,
         )}
         style={{
           padding: "2px",
+          aspectRatio: "1 / 1",
           background:
             "linear-gradient(135deg, #FF2D55 0%, #8E2DE2 55%, #C9A961 100%)",
           boxShadow: active
