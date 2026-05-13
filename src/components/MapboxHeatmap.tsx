@@ -170,6 +170,11 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapInitializing, setMapInitializing] = useState(true);
   const [loadingStage, setLoadingStage] = useState<'module' | 'init' | 'style' | 'ready'>('module');
+  // First-time tile settle: flips true the first time Mapbox fires `idle`
+  // (all visible tiles painted, no in-flight requests). Used to keep the
+  // translucent heatmap skeleton up while initial vector tiles stream in,
+  // even after the style itself has loaded.
+  const [tilesIdle, setTilesIdle] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const userMarker = useRef<MapboxGL.Marker | null>(null);
@@ -717,6 +722,11 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           
           // Finalize immediately for fastest LCP
           finalizeMapLoad();
+
+          // One-time: wait for first tile-idle so the skeleton stays up
+          // (translucent) until tiles have actually painted, not just when
+          // the style JSON has been parsed.
+          map.current?.once('idle', () => setTilesIdle(true));
           
           // Add parking lot icons from Mapbox vector tiles
           if (map.current) {
