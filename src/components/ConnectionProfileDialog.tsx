@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { LuxeAvatar } from "@/components/ui/luxe-avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Users, Loader2, Calendar, Instagram, Twitter, Facebook, Linkedin } from "lucide-react";
+import { Loader2, Calendar, Instagram, Twitter, Facebook, Linkedin } from "lucide-react";
 
 interface ConnectionProfileDialogProps {
   connectionId: string | null;
