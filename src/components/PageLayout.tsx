@@ -124,7 +124,9 @@ export function PageLayout({
       {showDesktopSidebar && <DesktopSidebar />}
       <main
         role="main"
-        className={`main-content ${fullBleed ? '' : 'page-container'} ${mainClassName}`}
+        className={`main-content ${fullBleed ? '' : 'page-container'} ${
+          showDesktopSidebar ? 'lg:pl-[var(--desktop-sidebar-width,240px)]' : ''
+        } ${mainClassName}`}
         style={{
           // FIXED dimensions using centralized CSS variables
           flex: '1 1 auto',
@@ -139,11 +141,6 @@ export function PageLayout({
           width: '100%',
           isolation: 'isolate',
           overflow: fullBleed ? 'hidden' : 'auto',
-          // Reserve room on lg+ for the fixed desktop sidebar without
-          // pushing horizontal layout below lg (var defaults to 0).
-          paddingLeft: showDesktopSidebar
-            ? 'var(--desktop-sidebar-width, 0px)'
-            : undefined,
           transition: 'padding-left 200ms ease-out',
         }}
       >
