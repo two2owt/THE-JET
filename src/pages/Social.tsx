@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useConnections } from "@/hooks/useConnections";
 import { Users, UserPlus, Check, X, UserX, Crown, MessageCircle } from "lucide-react";
-import { LuxeAvatar } from "@/components/ui/luxe-avatar";
+import { PolaroidAvatar } from "@/components/ui/polaroid-avatar";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { PageLayout } from "@/components/PageLayout";
@@ -208,8 +208,6 @@ export default function Social() {
   //   • ≥640px (sm: tablets/desktop):        48px — better optical balance
   //   • ≥1024px (lg: desktop):               52px
   // Single shared class so cards align uniformly across every sub-section.
-  const avatarClass = "w-10 h-10 min-[360px]:w-11 min-[360px]:h-11 sm:w-12 sm:h-12 lg:w-[52px] lg:h-[52px] shrink-0";
-  const avatarClassLg = avatarClass;
 
   const nameStyle: React.CSSProperties = {
     fontWeight: 600,
@@ -325,12 +323,11 @@ export default function Social() {
               {pendingRequests.map((request) => (
                 <div key={request.id} style={{ ...cardStyle, flexWrap: 'wrap', rowGap: '12px' }}>
                   <div style={{ ...identityWrap, flex: '1 1 200px' }}>
-                    <LuxeAvatar
+                    <PolaroidAvatar
                       src={request.profile?.avatar_url}
                       alt={request.profile?.display_name || "User"}
-                      initials={request.profile?.display_name?.charAt(0)}
                       forceIconFallback={!request.profile?.avatar_url}
-                      className={avatarClassLg}
+                      size="xs"
                     />
                     <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                       <DisplayName name={request.profile?.display_name || "Friend Request"} style={nameStyle} />
@@ -374,12 +371,11 @@ export default function Social() {
                       style={{ ...identityWrap, textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                       onClick={() => setSelectedProfileId(friendId)}
                     >
-                      <LuxeAvatar
+                      <PolaroidAvatar
                         src={connection.profile?.avatar_url}
                         alt={connection.profile?.display_name || "Friend"}
-                        initials={connection.profile?.display_name?.charAt(0)}
                         forceIconFallback={!connection.profile?.avatar_url}
-                        className={avatarClass}
+                        size="xs"
                       />
                       <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                         <DisplayName name={connection.profile?.display_name || "Friend"} style={nameStyle} />
@@ -440,12 +436,11 @@ export default function Social() {
             {profiles.map((profile) => (
               <div key={profile.id} style={cardStyle}>
                 <div style={identityWrap}>
-                  <LuxeAvatar
+                  <PolaroidAvatar
                     src={profile.avatar_url}
                     alt={profile.display_name || "User"}
-                    initials={profile.display_name?.charAt(0)}
                     forceIconFallback={!profile.avatar_url}
-                    className={avatarClass}
+                    size="xs"
                   />
                   <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                     <DisplayName name={profile.display_name || "User"} style={nameStyle} />

@@ -19,10 +19,11 @@ import { cn } from "@/lib/utils";
  * desired — Profile cards, Social cards, etc.
  */
 
-type Size = "sm" | "md" | "lg" | "xl";
+type Size = "xs" | "sm" | "md" | "lg" | "xl";
 
 // Outer photo (square) widths. Frame padding scales from these.
 const SIZE_PX: Record<Size, number> = {
+  xs: 44,
   sm: 72,
   md: 96,
   lg: 128,
