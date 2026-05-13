@@ -208,8 +208,6 @@ export default function Social() {
   //   • ≥640px (sm: tablets/desktop):        48px — better optical balance
   //   • ≥1024px (lg: desktop):               52px
   // Single shared class so cards align uniformly across every sub-section.
-  const avatarClass = "w-10 h-10 min-[360px]:w-11 min-[360px]:h-11 sm:w-12 sm:h-12 lg:w-[52px] lg:h-[52px] shrink-0";
-  const avatarClassLg = avatarClass;
 
   const nameStyle: React.CSSProperties = {
     fontWeight: 600,
