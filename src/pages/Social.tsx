@@ -325,12 +325,13 @@ export default function Social() {
               {pendingRequests.map((request) => (
                 <div key={request.id} style={{ ...cardStyle, flexWrap: 'wrap', rowGap: '12px' }}>
                   <div style={{ ...identityWrap, flex: '1 1 200px' }}>
-                    <Avatar className={avatarClassLg}>
-                      <AvatarImage src={request.profile?.avatar_url || undefined} alt={request.profile?.display_name || "User"} />
-                      <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary">
-                        {request.profile?.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '50%', height: '50%' }} />}
-                      </AvatarFallback>
-                    </Avatar>
+                    <LuxeAvatar
+                      src={request.profile?.avatar_url}
+                      alt={request.profile?.display_name || "User"}
+                      initials={request.profile?.display_name?.charAt(0)}
+                      forceIconFallback={!request.profile?.avatar_url}
+                      className={avatarClassLg}
+                    />
                     <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                       <DisplayName name={request.profile?.display_name || "Friend Request"} style={nameStyle} />
                       <p style={subtitleStyle}>Wants to connect with you</p>
@@ -373,12 +374,13 @@ export default function Social() {
                       style={{ ...identityWrap, textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                       onClick={() => setSelectedProfileId(friendId)}
                     >
-                      <Avatar className={avatarClass}>
-                        <AvatarImage src={connection.profile?.avatar_url || undefined} alt={connection.profile?.display_name || "Friend"} />
-                        <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary">
-                          {connection.profile?.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '50%', height: '50%' }} />}
-                        </AvatarFallback>
-                      </Avatar>
+                      <LuxeAvatar
+                        src={connection.profile?.avatar_url}
+                        alt={connection.profile?.display_name || "Friend"}
+                        initials={connection.profile?.display_name?.charAt(0)}
+                        forceIconFallback={!connection.profile?.avatar_url}
+                        className={avatarClass}
+                      />
                       <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                         <DisplayName name={connection.profile?.display_name || "Friend"} style={nameStyle} />
                         <p style={subtitleStyle}>Connected</p>
@@ -438,12 +440,13 @@ export default function Social() {
             {profiles.map((profile) => (
               <div key={profile.id} style={cardStyle}>
                 <div style={identityWrap}>
-                  <Avatar className={avatarClass}>
-                    <AvatarImage src={profile.avatar_url || undefined} alt={profile.display_name || "User"} />
-                    <AvatarFallback className="bg-gradient-to-br from-accent/15 to-primary/15 text-accent">
-                      {profile.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '50%', height: '50%' }} />}
-                    </AvatarFallback>
-                  </Avatar>
+                  <LuxeAvatar
+                    src={profile.avatar_url}
+                    alt={profile.display_name || "User"}
+                    initials={profile.display_name?.charAt(0)}
+                    forceIconFallback={!profile.avatar_url}
+                    className={avatarClass}
+                  />
                   <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                     <DisplayName name={profile.display_name || "User"} style={nameStyle} />
                     <p style={subtitleStyle}>Suggested for you</p>
