@@ -4,7 +4,7 @@ import { ChatImage } from "@/components/chat/ChatImage";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { LuxeAvatar } from "@/components/ui/luxe-avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Image as ImageIcon, Check, CheckCheck, Users } from "lucide-react";
 import { useMessages, type Message } from "@/hooks/useMessages";
@@ -82,12 +82,12 @@ export function ChatDialog({
       <DialogContent className="sm:max-w-md max-h-[80vh] flex flex-col p-0 gap-0">
         <DialogHeader className="px-4 py-3 border-b border-border">
           <DialogTitle className="flex items-center gap-3">
-            <Avatar className="w-8 h-8">
-              <AvatarImage src={friendAvatar || undefined} alt={friendName} />
-              <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                {friendName.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <LuxeAvatar
+              src={friendAvatar}
+              alt={friendName}
+              initials={friendName.charAt(0)}
+              className="w-8 h-8"
+            />
             <span className="text-base font-semibold">{friendName}</span>
           </DialogTitle>
         </DialogHeader>
