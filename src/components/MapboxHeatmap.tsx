@@ -170,6 +170,11 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapInitializing, setMapInitializing] = useState(true);
   const [loadingStage, setLoadingStage] = useState<'module' | 'init' | 'style' | 'ready'>('module');
+  // First-time tile settle: flips true the first time Mapbox fires `idle`
+  // (all visible tiles painted, no in-flight requests). Used to keep the
+  // translucent heatmap skeleton up while initial vector tiles stream in,
+  // even after the style itself has loaded.
+  const [tilesIdle, setTilesIdle] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const userMarker = useRef<MapboxGL.Marker | null>(null);
@@ -717,6 +722,11 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           
           // Finalize immediately for fastest LCP
           finalizeMapLoad();
+
+          // One-time: wait for first tile-idle so the skeleton stays up
+          // (translucent) until tiles have actually painted, not just when
+          // the style JSON has been parsed.
+          map.current?.once('idle', () => setTilesIdle(true));
           
           // Add parking lot icons from Mapbox vector tiles
           if (map.current) {
@@ -2100,20 +2110,26 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         isolation: 'isolate',
       }}
     >
-      {/* Loading skeleton during map initialization — translucent so map shows through */}
-      {mapInitializing && !mapError && (
+      {/* Heatmap loading skeleton.
+          Stays mounted until BOTH first tile-idle AND density data have
+          finished loading, so users always see meaningful UI while
+          Mapbox tiles + heatmap data are streaming in.
+          Stages:
+            • module download → opaque luxe ground
+            • style parsed, tiles streaming → translucent (tiles fade through)
+            • tiles idle + density ready → fade out */}
+      {!mapError && (!mapLoaded || !tilesIdle || densityLoading) && (
         <div
+          aria-busy="true"
           style={{
             position: 'absolute',
             inset: 0,
             zIndex: 40,
-            transition: 'opacity 300ms ease-out',
-            opacity: mapLoaded ? 0 : 1,
+            transition: 'opacity 350ms ease-out',
+            opacity: mapLoaded && tilesIdle && !densityLoading ? 0 : 1,
             pointerEvents: mapLoaded ? 'none' : 'auto',
           }}
         >
-          {/* Luxe heatmap skeleton — opaque while the GL module loads, then
-              translucent so tiles fade through as they stream in. */}
           <HeatmapSkeleton translucent={loadingStage !== 'module'} />
         </div>
       )}
