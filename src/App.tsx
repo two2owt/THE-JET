@@ -37,6 +37,11 @@ const VerificationSuccess = lazy(() => import("./pages/VerificationSuccess"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
+// DEV-only harness for Playwright containment tests. Tree-shaken in prod.
+const ContainmentHarness = import.meta.env.DEV
+  ? lazy(() => import("./pages/dev/ContainmentHarness"))
+  : null;
+
 /**
  * Per-route Suspense fallback that mirrors the destination page's
  * PageLayout wrapper. This avoids the "global shell → generic
@@ -200,6 +205,16 @@ const AppLayout = memo(function AppLayout() {
             </Suspense>
           }
         />
+        {ContainmentHarness && (
+          <Route
+            path="/dev/containment-test"
+            element={
+              <Suspense fallback={<NavigationShell />}>
+                <ContainmentHarness />
+              </Suspense>
+            }
+          />
+        )}
       </Routes>
     </AppShell>
   );
