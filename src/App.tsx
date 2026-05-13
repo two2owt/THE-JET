@@ -197,14 +197,6 @@ const AppLayout = memo(function AppLayout() {
           }
         />
 
-        <Route
-          path="*"
-          element={
-            <Suspense fallback={<NavigationShell />}>
-              <NotFound />
-            </Suspense>
-          }
-        />
         {ContainmentHarness && (
           <Route
             path="/dev/containment-test"
@@ -215,6 +207,14 @@ const AppLayout = memo(function AppLayout() {
             }
           />
         )}
+        <Route
+          path="*"
+          element={
+            <Suspense fallback={<NavigationShell />}>
+              <NotFound />
+            </Suspense>
+          }
+        />
       </Routes>
     </AppShell>
   );
