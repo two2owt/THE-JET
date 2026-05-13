@@ -1,5 +1,6 @@
 import { ReactNode, useEffect } from "react";
 import { BottomNav } from "./BottomNav";
+import { DesktopSidebar } from "./DesktopSidebar";
 import { useBottomNavigation, type NavTab } from "@/hooks/useBottomNavigation";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useHeaderConfig } from "@/contexts/HeaderContext";
@@ -42,6 +43,12 @@ interface PageLayoutProps {
   onPrefetch?: (tab: NavTab) => void;
   /** Override notification count (otherwise uses unread from useNotifications) */
   notificationCount?: number;
+  /**
+   * Render the desktop-only left sidebar (≥lg). Used for stationary
+   * dashboard-style pages: Profile, Settings, Social. Below `lg` the
+   * sidebar is `display:none` and BottomNav remains the primary nav.
+   */
+  showDesktopSidebar?: boolean;
 }
 
 /**
@@ -65,6 +72,7 @@ export function PageLayout({
   mainClassName = "",
   onPrefetch,
   notificationCount,
+  showDesktopSidebar = false,
 }: PageLayoutProps) {
   const { activeTab, handleTabChange } = useBottomNavigation({ defaultTab });
   const { notifications } = useNotifications();
@@ -113,6 +121,7 @@ export function PageLayout({
         overflow: 'hidden',
       }}
     >
+      {showDesktopSidebar && <DesktopSidebar />}
       <main
         role="main"
         className={`main-content ${fullBleed ? '' : 'page-container'} ${mainClassName}`}
@@ -130,6 +139,12 @@ export function PageLayout({
           width: '100%',
           isolation: 'isolate',
           overflow: fullBleed ? 'hidden' : 'auto',
+          // Reserve room on lg+ for the fixed desktop sidebar without
+          // pushing horizontal layout below lg (var defaults to 0).
+          paddingLeft: showDesktopSidebar
+            ? 'var(--desktop-sidebar-width, 0px)'
+            : undefined,
+          transition: 'padding-left 200ms ease-out',
         }}
       >
         {showBreadcrumbSpacer && (
