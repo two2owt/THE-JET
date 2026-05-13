@@ -80,7 +80,7 @@ export function HeaderUserMenu({
           className="group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           style={triggerStyle(mounted, isOnAccountRoute)}
         >
-          <Avatar className="h-full w-full" style={avatarInnerStyle}>
+          <Avatar className="h-full w-full avatar-inner" style={avatarInnerStyle}>
             <AvatarImage src={avatarUrl || ""} alt="" />
             <AvatarFallback
               className="text-primary-foreground font-bold tracking-wide"
@@ -93,16 +93,40 @@ export function HeaderUserMenu({
             aria-hidden="true"
             style={{
               position: "absolute",
-              bottom: "1px",
-              right: "1px",
-              width: "10px",
-              height: "10px",
+              bottom: "0px",
+              right: "0px",
+              width: "14px",
+              height: "14px",
               borderRadius: "9999px",
-              background: "hsl(var(--cool, 142 76% 45%))",
-              border: "2px solid hsl(var(--background))",
-              boxShadow: "0 0 6px hsl(var(--cool, 142 76% 45%) / 0.6)",
+              background: "hsl(var(--background))",
+              display: "grid",
+              placeItems: "center",
             }}
-          />
+          >
+            <span
+              style={{
+                position: "relative",
+                width: "9px",
+                height: "9px",
+                borderRadius: "9999px",
+                background: "#10B981",
+                boxShadow: "0 0 8px rgba(16,185,129,0.8)",
+                border: "0.5px solid hsl(var(--background) / 0.3)",
+              }}
+            >
+              <span
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  borderRadius: "9999px",
+                  background: "#10B981",
+                  opacity: 0.3,
+                  animation: "ping 1.6s cubic-bezier(0,0,0.2,1) infinite",
+                }}
+              />
+            </span>
+          </span>
         </button>
       </DropdownMenuTrigger>
 
@@ -202,7 +226,7 @@ function MenuLink({
   );
 }
 
-/** Avatar trigger button styling (gradient ring, mount transition, active glow). */
+/** Avatar trigger button styling — Luxe Gradient Avatar (red → purple → gold). */
 function triggerStyle(mounted: boolean, isActive: boolean): React.CSSProperties {
   return {
     position: "relative",
@@ -210,9 +234,10 @@ function triggerStyle(mounted: boolean, isActive: boolean): React.CSSProperties 
     borderRadius: "9999px",
     width: "clamp(38px, 5vw, 44px)",
     height: "clamp(38px, 5vw, 44px)",
-    padding: "2.5px",
+    padding: "2px",
+    // Brand gradient: JET red → purple → gold luxe accent
     background:
-      "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 50%, hsl(var(--primary-glow, var(--primary))) 100%)",
+      "linear-gradient(135deg, #FF2D55 0%, #8E2DE2 55%, #C9A961 100%)",
     cursor: "pointer",
     border: "none",
     opacity: mounted ? 1 : 0,
@@ -220,16 +245,19 @@ function triggerStyle(mounted: boolean, isActive: boolean): React.CSSProperties 
       ? "translateX(0) scale(1)"
       : "translateX(8px) scale(0.9)",
     transition:
-      "opacity 0.4s ease-out 0.2s, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s, box-shadow 0.3s ease",
+      "opacity 0.4s ease-out 0.2s, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s, box-shadow 0.4s ease",
     boxShadow: isActive
-      ? "0 0 0 2px hsl(var(--primary) / 0.55), 0 4px 18px hsl(var(--primary) / 0.4), 0 0 0 1px hsl(var(--background) / 0.8)"
-      : "0 2px 12px hsl(var(--primary) / 0.25), 0 0 0 1px hsl(var(--background) / 0.6)",
+      ? "0 0 0 1px hsl(var(--background)), 0 0 22px rgba(142,45,226,0.55), 0 4px 18px rgba(255,45,85,0.35)"
+      : "0 0 0 1px hsl(var(--background) / 0.7), 0 4px 14px rgba(0,0,0,0.5)",
   };
 }
 
 const avatarInnerStyle: React.CSSProperties = {
-  border: "2px solid hsl(var(--background))",
-  background: "hsl(var(--background))",
+  // Inner dark gap + silver inset rim for depth (luxe layered look)
+  background: "#1A1A1A",
+  boxShadow:
+    "inset 0 0 0 1.5px #0A0A0A, inset 0 0 0 2.5px rgba(156,163,175,0.22)",
+  transition: "box-shadow 0.4s ease",
 };
 
 const avatarFallbackStyle: React.CSSProperties = {
