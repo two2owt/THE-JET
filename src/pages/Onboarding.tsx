@@ -10,6 +10,7 @@ import { Zap, Sparkles, Loader2, Upload } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PreferencesStep, { PreferencesData } from "@/components/onboarding/PreferencesStep";
 import { Json } from "@/integrations/supabase/types";
+import { LuxeAvatar } from "@/components/ui/luxe-avatar";
 
 const GENDER_OPTIONS = [
   { value: "woman", label: "Woman" },
