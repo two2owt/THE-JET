@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { LuxeAvatar } from "@/components/ui/luxe-avatar";
 import { PolaroidAvatar } from "@/components/ui/polaroid-avatar";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
