@@ -133,5 +133,15 @@ describe("PolaroidAvatar matrix (size × aspect × breakpoint)", () => {
     ]) {
       expect(file).toMatch(prop);
     }
+
+    // And every size's responsive clamp(min, vw, max) is intact.
+    for (const size of SIZES) {
+      const { min, max } = SIZE_CLAMP[size];
+      const re = new RegExp(
+        `${size}:\\s*"clamp\\(${min}px,\\s*\\d+vw,\\s*${max}px\\)"`,
+      );
+      expect(file, `SIZE_WIDTH.${size} must use clamp(${min}px, …, ${max}px)`)
+        .toMatch(re);
+    }
   });
 });
