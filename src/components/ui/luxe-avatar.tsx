@@ -30,15 +30,6 @@ const SIZE_CLASS: Record<Size, string> = {
   "2xl": "w-28 h-28",
 };
 
-// Inner icon size for the paper-plane fallback, scales with avatar size.
-const FALLBACK_ICON_PX: Record<Size, number> = {
-  xs: 12,
-  sm: 16,
-  md: 18,
-  lg: 26,
-  xl: 38,
-  "2xl": 44,
-};
 
 export interface LuxeAvatarProps {
   src?: string | null;
@@ -47,6 +38,7 @@ export interface LuxeAvatarProps {
   initials?: string;
   /** When true, always render the paper-plane icon as fallback (new / unauth users). */
   forceIconFallback?: boolean;
+  /** Predefined size bucket. Omit to size purely via `className`. */
   size?: Size;
   /** Show pulsing online indicator dot. */
   showPresence?: boolean;
@@ -76,8 +68,7 @@ export const LuxeAvatar = React.forwardRef<HTMLDivElement, LuxeAvatarProps>(
     ref,
   ) => {
     const showIcon = forceIconFallback || !src;
-    const sizeClass = SIZE_CLASS[size];
-    const iconPx = FALLBACK_ICON_PX[size];
+    const sizeClass = size ? SIZE_CLASS[size] : "";
 
     return (
       <div
@@ -125,12 +116,12 @@ export const LuxeAvatar = React.forwardRef<HTMLDivElement, LuxeAvatarProps>(
             >
               {showIcon ? (
                 <Send
-                  size={iconPx}
-                  strokeWidth={2}
+                  // Scales relative to the avatar container (cqw via container queries).
                   aria-hidden="true"
                   // The paper-plane silhouette — brand fallback for users
                   // without an uploaded avatar.
-                  className="-translate-x-[1px] translate-y-[1px]"
+                  style={{ width: "44%", height: "44%" }}
+                  className="-translate-x-[2%] translate-y-[2%]"
                 />
               ) : (
                 (initials || "").substring(0, 2).toUpperCase()
