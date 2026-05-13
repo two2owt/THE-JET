@@ -76,14 +76,18 @@ describe("PolaroidAvatar matrix (size × aspect × breakpoint)", () => {
           const root = container.querySelector(".polaroid-avatar") as HTMLElement;
           expect(root, "polaroid root must mount").toBeTruthy();
 
-          // Contract 1: width === font-size === clamp(min, vw, max)
-          const widthExpr = root.style.width;
-          const fontExpr = root.style.fontSize;
-          expect(widthExpr).toBe(fontExpr);
+          // Contract 1: width === font-size === clamp(min, vw, max).
+          // Read from the style attribute directly because jsdom doesn't
+          // parse `clamp()` values into the CSSStyleDeclaration.
+          const styleAttr = root.getAttribute("style") ?? "";
           const expected = SIZE_CLAMP[size];
-          expect(widthExpr).toContain(`${expected.min}px`);
-          expect(widthExpr).toContain(`${expected.max}px`);
-          expect(widthExpr).toMatch(/^clamp\(/);
+          const widthMatch = styleAttr.match(/width:\s*(clamp\([^)]+\))/);
+          const fontMatch = styleAttr.match(/font-size:\s*(clamp\([^)]+\))/);
+          expect(widthMatch, "inline width must use clamp()").not.toBeNull();
+          expect(fontMatch, "inline font-size must use clamp()").not.toBeNull();
+          expect(widthMatch![1]).toBe(fontMatch![1]);
+          expect(widthMatch![1]).toContain(`${expected.min}px`);
+          expect(widthMatch![1]).toContain(`${expected.max}px`);
 
           // Contract 2: outer wrapper cannot push past its parent.
           expect(root.className).toMatch(/inline-block/);
