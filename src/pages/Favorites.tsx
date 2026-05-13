@@ -28,7 +28,9 @@ export default function Favorites() {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
   const [deals, setDeals] = useState<Deal[]>([]);
-  const headerConfig = useMemo(() => ({}), []);
+  // Match the Social page header exactly — no global search, identical
+  // layout/spacing so Favorites and Social feel like sibling tabs.
+  const headerConfig = useMemo(() => ({ hideSearch: true }), []);
 
   const { favorites, loading: favoritesLoading } = useFavorites(user?.id);
 
