@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { LuxeAvatar } from "@/components/ui/luxe-avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Check, MapPin, Loader2 } from "lucide-react";
 import { useConnections } from "@/hooks/useConnections";
@@ -112,12 +112,13 @@ export function ShareToFriendDialog({
                     key={conn.id}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-secondary/40 transition-colors"
                   >
-                    <Avatar className="w-9 h-9 shrink-0">
-                      <AvatarImage src={profile?.avatar_url || undefined} />
-                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                        {(profile?.display_name || "?").charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+                    <LuxeAvatar
+                      src={profile?.avatar_url}
+                      alt={profile?.display_name || "User"}
+                      initials={(profile?.display_name || "?").charAt(0)}
+                      forceIconFallback={!profile?.avatar_url}
+                      className="w-9 h-9 shrink-0"
+                    />
                     <span className="flex-1 text-sm font-medium text-foreground truncate">
                       {profile?.display_name || "Unknown"}
                     </span>
