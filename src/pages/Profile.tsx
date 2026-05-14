@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { PolaroidAvatar } from "@/components/ui/polaroid-avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -347,14 +347,14 @@ export default function Profile() {
   };
   if (isAuthLoading || (user && isLoading)) {
     return (
-      <PageLayout defaultTab="map" headerConfig={headerConfig} showDesktopSidebar>
+      <PageLayout defaultTab="map" headerConfig={headerConfig}>
         <ProfilePageSkeleton />
       </PageLayout>
     );
   }
   if (!user) {
     return (
-      <PageLayout defaultTab="map" notificationCount={0} headerConfig={headerConfig} showDesktopSidebar>
+      <PageLayout defaultTab="map" notificationCount={0} headerConfig={headerConfig}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg" style={{ maxWidth: '1280px', marginLeft: 'auto', marginRight: 'auto', padding: 'clamp(16px, 3vw, 24px)' }}>
           <EmptyState icon={User} title="Sign in to view profile" description="Create an account to access your profile, manage settings, and track your activity" actionLabel="Sign In" onAction={() => navigate("/auth")} />
         </div>
@@ -363,7 +363,7 @@ export default function Profile() {
   }
 
   return (
-    <PageLayout defaultTab="map" headerConfig={headerConfig} showDesktopSidebar>
+    <PageLayout defaultTab="map" headerConfig={headerConfig}>
       <AvatarCropDialog
         open={isCropOpen}
         imageSrc={cropSrc}
@@ -394,13 +394,12 @@ export default function Profile() {
               {/* Avatar — overlaps banner */}
               <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-5 -mt-12 sm:-mt-14">
                 <div className="relative mx-auto sm:mx-0 group">
-                  <PolaroidAvatar
-                    src={profile?.avatar_url}
-                    alt={displayName || "User avatar"}
-                    caption={displayName || undefined}
-                    forceIconFallback={!profile?.avatar_url}
-                    size="lg"
-                  />
+                  <Avatar className="w-24 h-24 sm:w-28 sm:h-28 ring-4 ring-card shadow-glow">
+                    <AvatarImage src={profile?.avatar_url || undefined} alt={displayName || "User avatar"} />
+                    <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-primary to-primary-glow text-primary-foreground">
+                      {displayName.charAt(0).toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
                   {isEditing && (
                     <>
                       <label

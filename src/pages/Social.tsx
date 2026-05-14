@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useConnections } from "@/hooks/useConnections";
 import { Users, UserPlus, Check, X, UserX, Crown, MessageCircle } from "lucide-react";
-import { PolaroidAvatar } from "@/components/ui/polaroid-avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { PageLayout } from "@/components/PageLayout";
@@ -134,7 +134,7 @@ export default function Social() {
 
   if (authLoading) {
     return (
-      <PageLayout defaultTab="social" headerConfig={headerConfig} showDesktopSidebar>
+      <PageLayout defaultTab="social" headerConfig={headerConfig}>
         <PageShell>
           <SocialPageSkeleton />
         </PageShell>
@@ -144,7 +144,7 @@ export default function Social() {
 
   if (!user) {
     return (
-      <PageLayout defaultTab="social" notificationCount={0} headerConfig={headerConfig} showDesktopSidebar>
+      <PageLayout defaultTab="social" notificationCount={0} headerConfig={headerConfig}>
         <PageShell>
           <EmptyState
             icon={Users}
@@ -161,7 +161,7 @@ export default function Social() {
   // Show upgrade prompt for users without JET+ subscription
   if (!canAccessSocialFeatures()) {
     return (
-      <PageLayout defaultTab="social" headerConfig={headerConfig} showDesktopSidebar>
+      <PageLayout defaultTab="social" headerConfig={headerConfig}>
         <PageShell>
           <EmptyState
             icon={Crown}
@@ -208,6 +208,8 @@ export default function Social() {
   //   • ≥640px (sm: tablets/desktop):        48px — better optical balance
   //   • ≥1024px (lg: desktop):               52px
   // Single shared class so cards align uniformly across every sub-section.
+  const avatarClass = "w-10 h-10 min-[360px]:w-11 min-[360px]:h-11 sm:w-12 sm:h-12 lg:w-[52px] lg:h-[52px] shrink-0";
+  const avatarClassLg = avatarClass;
 
   const nameStyle: React.CSSProperties = {
     fontWeight: 600,
@@ -271,7 +273,7 @@ export default function Social() {
   };
 
   return (
-    <PageLayout defaultTab="social" headerConfig={headerConfig} showDesktopSidebar>
+    <PageLayout defaultTab="social" headerConfig={headerConfig}>
       <PageShell>
         <TabPageHeader
           title="Your Crew"
@@ -323,12 +325,12 @@ export default function Social() {
               {pendingRequests.map((request) => (
                 <div key={request.id} style={{ ...cardStyle, flexWrap: 'wrap', rowGap: '12px' }}>
                   <div style={{ ...identityWrap, flex: '1 1 200px' }}>
-                    <PolaroidAvatar
-                      src={request.profile?.avatar_url}
-                      alt={request.profile?.display_name || "User"}
-                      forceIconFallback={!request.profile?.avatar_url}
-                      size="xs"
-                    />
+                    <Avatar className={avatarClassLg}>
+                      <AvatarImage src={request.profile?.avatar_url || undefined} alt={request.profile?.display_name || "User"} />
+                      <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary">
+                        {request.profile?.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '50%', height: '50%' }} />}
+                      </AvatarFallback>
+                    </Avatar>
                     <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                       <DisplayName name={request.profile?.display_name || "Friend Request"} style={nameStyle} />
                       <p style={subtitleStyle}>Wants to connect with you</p>
@@ -371,12 +373,12 @@ export default function Social() {
                       style={{ ...identityWrap, textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                       onClick={() => setSelectedProfileId(friendId)}
                     >
-                      <PolaroidAvatar
-                        src={connection.profile?.avatar_url}
-                        alt={connection.profile?.display_name || "Friend"}
-                        forceIconFallback={!connection.profile?.avatar_url}
-                        size="xs"
-                      />
+                      <Avatar className={avatarClass}>
+                        <AvatarImage src={connection.profile?.avatar_url || undefined} alt={connection.profile?.display_name || "Friend"} />
+                        <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary">
+                          {connection.profile?.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '50%', height: '50%' }} />}
+                        </AvatarFallback>
+                      </Avatar>
                       <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                         <DisplayName name={connection.profile?.display_name || "Friend"} style={nameStyle} />
                         <p style={subtitleStyle}>Connected</p>
@@ -436,12 +438,12 @@ export default function Social() {
             {profiles.map((profile) => (
               <div key={profile.id} style={cardStyle}>
                 <div style={identityWrap}>
-                  <PolaroidAvatar
-                    src={profile.avatar_url}
-                    alt={profile.display_name || "User"}
-                    forceIconFallback={!profile.avatar_url}
-                    size="xs"
-                  />
+                  <Avatar className={avatarClass}>
+                    <AvatarImage src={profile.avatar_url || undefined} alt={profile.display_name || "User"} />
+                    <AvatarFallback className="bg-gradient-to-br from-accent/15 to-primary/15 text-accent">
+                      {profile.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '50%', height: '50%' }} />}
+                    </AvatarFallback>
+                  </Avatar>
                   <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                     <DisplayName name={profile.display_name || "User"} style={nameStyle} />
                     <p style={subtitleStyle}>Suggested for you</p>

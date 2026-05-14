@@ -223,7 +223,7 @@ const Settings = () => {
   // Settings is reached from the Crew (social) tab — keep that highlighted.
   const SettingsLayout = useCallback(
     ({ children }: { children: React.ReactNode }) => (
-      <PageLayout defaultTab="social" headerConfig={headerConfig} showDesktopSidebar>
+      <PageLayout defaultTab="social" headerConfig={headerConfig}>
         {children}
       </PageLayout>
     ),

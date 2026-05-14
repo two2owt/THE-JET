@@ -37,18 +37,6 @@ const VerificationSuccess = lazy(() => import("./pages/VerificationSuccess"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// DEV-only horizontal-overflow detector. Tree-shaken in prod.
-if (import.meta.env.DEV && typeof window !== "undefined") {
-  import("@/lib/overflow-detector").then(({ startOverflowDetector }) => {
-    startOverflowDetector();
-  });
-}
-
-// DEV-only harness for Playwright containment tests. Tree-shaken in prod.
-const ContainmentHarness = import.meta.env.DEV
-  ? lazy(() => import("./pages/dev/ContainmentHarness"))
-  : null;
-
 /**
  * Per-route Suspense fallback that mirrors the destination page's
  * PageLayout wrapper. This avoids the "global shell → generic
@@ -204,16 +192,6 @@ const AppLayout = memo(function AppLayout() {
           }
         />
 
-        {ContainmentHarness && (
-          <Route
-            path="/dev/containment-test"
-            element={
-              <Suspense fallback={<NavigationShell />}>
-                <ContainmentHarness />
-              </Suspense>
-            }
-          />
-        )}
         <Route
           path="*"
           element={

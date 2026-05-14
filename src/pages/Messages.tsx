@@ -7,7 +7,7 @@ import { PageLayout } from "@/components/PageLayout";
 import { EmptyState } from "@/components/EmptyState";
 import { useConversations, type Conversation } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
-import { LuxeAvatar } from "@/components/ui/luxe-avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -221,12 +221,12 @@ function ConversationList({
               style={convoCardStyle}
             >
               <div className="relative shrink-0">
-                <LuxeAvatar
-                  src={c.friendAvatar}
-                  alt={c.friendName}
-                  initials={c.friendName.charAt(0)}
-                  className={avatarClass}
-                />
+                <Avatar className={avatarClass}>
+                  <AvatarImage src={c.friendAvatar || undefined} alt={c.friendName} />
+                  <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary">
+                    {c.friendName.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
                 {c.unreadCount > 0 && (
                   <Badge className="absolute -top-1 -right-1 h-5 min-w-[20px] px-1 text-[10px] bg-destructive text-destructive-foreground">
                     {c.unreadCount}
@@ -328,12 +328,12 @@ function ChatView({
         <Button variant="ghost" size="icon" onClick={onBack} className="flex-shrink-0">
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <LuxeAvatar
-          src={friend?.friendAvatar}
-          alt={friend?.friendName || "Friend"}
-          initials={(friend?.friendName || "F").charAt(0)}
-          className={avatarHeaderClass}
-        />
+        <Avatar className={avatarHeaderClass}>
+          <AvatarImage src={friend?.friendAvatar || undefined} alt={friend?.friendName || "Friend"} />
+          <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary">
+            {(friend?.friendName || "F").charAt(0).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
         <div className="flex-1 min-w-0">
           <DisplayName
             name={friend?.friendName || "Chat"}
