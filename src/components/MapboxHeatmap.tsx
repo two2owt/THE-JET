@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { storeLastKnownLocation } from "@/lib/tile-prefetch";
 import type * as MapboxGL from "mapbox-gl";
 
@@ -2623,67 +2624,78 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             />
 
             {/* Heat filters - shown when heat is on */}
-            <div style={{ overflow: 'hidden', transition: 'max-height 0.2s', maxHeight: showDensityLayer ? '240px' : '0px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '4px' }}>
-                {/* Time-lapse toggle */}
-                <Button
-                  onClick={() => {
-                    triggerHaptic('medium');
-                    const newMode = !timelapseMode;
-                    setTimelapseMode(newMode);
-                    if (newMode) timelapse.loadHourlyData();
-                  }}
-                  variant={timelapseMode ? "default" : "outline"}
-                  size="sm"
-                  className="w-full h-7 text-[10px] font-semibold"
+            <AnimatePresence>
+              {showDensityLayer && (
+                <motion.div
+                  key="heat-filters"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ type: "spring", stiffness: 380, damping: 28 }}
+                  style={{ overflow: 'hidden' }}
                 >
-                  <Clock className="w-3 h-3 mr-1 flex-shrink-0" />
-                  {timelapseMode ? "Time-lapse On" : "Time-lapse"}
-                </Button>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '4px' }}>
+                    {/* Time-lapse toggle */}
+                    <Button
+                      onClick={() => {
+                        triggerHaptic('medium');
+                        const newMode = !timelapseMode;
+                        setTimelapseMode(newMode);
+                        if (newMode) timelapse.loadHourlyData();
+                      }}
+                      variant={timelapseMode ? "default" : "outline"}
+                      size="sm"
+                      className="w-full h-7 text-[10px] font-semibold"
+                    >
+                      <Clock className="w-3 h-3 mr-1 flex-shrink-0" />
+                      {timelapseMode ? "Time-lapse On" : "Time-lapse"}
+                    </Button>
 
-                {/* Time-lapse controls */}
-                {timelapseMode && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingTop: '4px', borderTop: '1px solid hsl(var(--border) / 0.5)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
-                      <Button onClick={() => { triggerHaptic('light'); timelapse.stepBackward(); }} variant="outline" size="sm" className="h-6 w-6 p-0" disabled={timelapse.isPlaying}><SkipBack className="w-3 h-3" /></Button>
-                      <Button onClick={() => { triggerHaptic('medium'); timelapse.isPlaying ? timelapse.pause() : timelapse.play(); }} variant={timelapse.isPlaying ? "default" : "outline"} size="sm" className="h-6 flex-1">{timelapse.isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}</Button>
-                      <Button onClick={() => { triggerHaptic('light'); timelapse.stepForward(); }} variant="outline" size="sm" className="h-6 w-6 p-0" disabled={timelapse.isPlaying}><SkipForward className="w-3 h-3" /></Button>
-                    </div>
-                    <div style={{ textAlign: 'center', fontSize: '10px', fontWeight: 600, color: 'hsl(var(--primary))' }}>{timelapse.formatHour(timelapse.currentHour)}</div>
-                    <Slider value={[timelapse.currentHour]} onValueChange={([v]) => timelapse.setHour(v)} min={0} max={23} step={1} className="w-full" disabled={timelapse.isPlaying} />
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                      {[2, 1, 0.5].map((speed) => (
-                        <Button key={speed} onClick={() => timelapse.setSpeed(speed)} variant={timelapse.speed === speed ? "default" : "outline"} size="sm" className="h-5 flex-1 text-[9px] px-1">{speed === 2 ? '0.5x' : speed === 1 ? '1x' : '2x'}</Button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                    {/* Time-lapse controls */}
+                    {timelapseMode && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingTop: '4px', borderTop: '1px solid hsl(var(--border) / 0.5)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
+                          <Button onClick={() => { triggerHaptic('light'); timelapse.stepBackward(); }} variant="outline" size="sm" className="h-6 w-6 p-0" disabled={timelapse.isPlaying}><SkipBack className="w-3 h-3" /></Button>
+                          <Button onClick={() => { triggerHaptic('medium'); timelapse.isPlaying ? timelapse.pause() : timelapse.play(); }} variant={timelapse.isPlaying ? "default" : "outline"} size="sm" className="h-6 flex-1">{timelapse.isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}</Button>
+                          <Button onClick={() => { triggerHaptic('light'); timelapse.stepForward(); }} variant="outline" size="sm" className="h-6 w-6 p-0" disabled={timelapse.isPlaying}><SkipForward className="w-3 h-3" /></Button>
+                        </div>
+                        <div style={{ textAlign: 'center', fontSize: '10px', fontWeight: 600, color: 'hsl(var(--primary))' }}>{timelapse.formatHour(timelapse.currentHour)}</div>
+                        <Slider value={[timelapse.currentHour]} onValueChange={([v]) => timelapse.setHour(v)} min={0} max={23} step={1} className="w-full" disabled={timelapse.isPlaying} />
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                          {[2, 1, 0.5].map((speed) => (
+                            <Button key={speed} onClick={() => timelapse.setSpeed(speed)} variant={timelapse.speed === speed ? "default" : "outline"} size="sm" className="h-5 flex-1 text-[9px] px-1">{speed === 2 ? '0.5x' : speed === 1 ? '1x' : '2x'}</Button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
-                {/* Regular filters */}
-                {!timelapseMode && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <Select value={timeFilter} onValueChange={(v: any) => setTimeFilter(v)}>
-                      <SelectTrigger className="h-7 text-[10px] bg-background/80"><SelectValue placeholder="Time" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Time</SelectItem>
-                        <SelectItem value="today">Today</SelectItem>
-                        <SelectItem value="this_week">This Week</SelectItem>
-                        <SelectItem value="this_hour">This Hour</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Select value={dayFilter?.toString() || "all"} onValueChange={(v) => setDayFilter(v === "all" ? undefined : parseInt(v))}>
-                      <SelectTrigger className="h-7 text-[10px] bg-background/80"><SelectValue placeholder="Day" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Days</SelectItem>
-                        {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((d, i) => (
-                          <SelectItem key={i} value={i.toString()}>{d}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    {/* Regular filters */}
+                    {!timelapseMode && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <Select value={timeFilter} onValueChange={(v: any) => setTimeFilter(v)}>
+                          <SelectTrigger className="h-7 text-[10px] bg-background/80"><SelectValue placeholder="Time" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Time</SelectItem>
+                            <SelectItem value="today">Today</SelectItem>
+                            <SelectItem value="this_week">This Week</SelectItem>
+                            <SelectItem value="this_hour">This Hour</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Select value={dayFilter?.toString() || "all"} onValueChange={(v) => setDayFilter(v === "all" ? undefined : parseInt(v))}>
+                          <SelectTrigger className="h-7 text-[10px] bg-background/80"><SelectValue placeholder="Day" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Days</SelectItem>
+                            {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((d, i) => (
+                              <SelectItem key={i} value={i.toString()}>{d}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Divider */}
             <div style={{ height: '1px', background: 'hsl(var(--border) / 0.5)' }} />
@@ -2701,40 +2713,51 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             />
 
             {/* Path filters */}
-            <div style={{ overflow: 'hidden', transition: 'max-height 0.2s', maxHeight: showMovementPaths ? '200px' : '0px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingLeft: '4px' }}>
-                {pathsError && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', background: 'hsl(var(--destructive) / 0.1)', borderRadius: '8px', fontSize: '10px' }}>
-                    <AlertCircle style={{ width: '12px', height: '12px', color: 'hsl(var(--destructive))', flexShrink: 0 }} />
-                    <span style={{ color: 'hsl(var(--destructive))' }}>Failed</span>
-                    <Button onClick={refreshPaths} variant="ghost" size="sm" className="h-5 text-[9px] px-1.5 ml-auto">Retry</Button>
+            <AnimatePresence>
+              {showMovementPaths && (
+                <motion.div
+                  key="path-filters"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ type: "spring", stiffness: 380, damping: 28 }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingLeft: '4px' }}>
+                    {pathsError && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', background: 'hsl(var(--destructive) / 0.1)', borderRadius: '8px', fontSize: '10px' }}>
+                        <AlertCircle style={{ width: '12px', height: '12px', color: 'hsl(var(--destructive))', flexShrink: 0 }} />
+                        <span style={{ color: 'hsl(var(--destructive))' }}>Failed</span>
+                        <Button onClick={refreshPaths} variant="ghost" size="sm" className="h-5 text-[9px] px-1.5 ml-auto">Retry</Button>
+                      </div>
+                    )}
+                    <Select value={pathTimeFilter} onValueChange={(v: any) => setPathTimeFilter(v)}>
+                      <SelectTrigger className="h-7 text-[10px] bg-background/80"><SelectValue placeholder="Time" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Time</SelectItem>
+                        <SelectItem value="today">Today</SelectItem>
+                        <SelectItem value="this_week">This Week</SelectItem>
+                        <SelectItem value="this_hour">This Hour</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '9px' }}>
+                        <span style={{ color: 'hsl(var(--muted-foreground))' }}>Min. Frequency</span>
+                        <span style={{ fontWeight: 600, color: 'hsl(var(--primary))' }}>{minPathFrequency}</span>
+                      </div>
+                      <input type="range" min="1" max="10" value={minPathFrequency} onChange={(e) => setMinPathFrequency(parseInt(e.target.value))} className="path-flow-slider w-full" />
+                    </div>
+                    {pathData && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '9px', color: 'hsl(var(--muted-foreground))', paddingTop: '4px', borderTop: '1px solid hsl(var(--border) / 0.3)' }}>
+                        <span>{pathData.stats.total_paths} paths</span>
+                        <span>•</span>
+                        <span>{pathData.stats.unique_users} users</span>
+                      </div>
+                    )}
                   </div>
-                )}
-                <Select value={pathTimeFilter} onValueChange={(v: any) => setPathTimeFilter(v)}>
-                  <SelectTrigger className="h-7 text-[10px] bg-background/80"><SelectValue placeholder="Time" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Time</SelectItem>
-                    <SelectItem value="today">Today</SelectItem>
-                    <SelectItem value="this_week">This Week</SelectItem>
-                    <SelectItem value="this_hour">This Hour</SelectItem>
-                  </SelectContent>
-                </Select>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '9px' }}>
-                    <span style={{ color: 'hsl(var(--muted-foreground))' }}>Min. Frequency</span>
-                    <span style={{ fontWeight: 600, color: 'hsl(var(--primary))' }}>{minPathFrequency}</span>
-                  </div>
-                  <input type="range" min="1" max="10" value={minPathFrequency} onChange={(e) => setMinPathFrequency(parseInt(e.target.value))} className="path-flow-slider w-full" />
-                </div>
-                {pathData && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '9px', color: 'hsl(var(--muted-foreground))', paddingTop: '4px', borderTop: '1px solid hsl(var(--border) / 0.3)' }}>
-                    <span>{pathData.stats.total_paths} paths</span>
-                    <span>•</span>
-                    <span>{pathData.stats.unique_users} users</span>
-                  </div>
-                )}
-              </div>
-            </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Divider */}
             <div style={{ height: '1px', background: 'hsl(var(--border) / 0.5)' }} />
@@ -2786,54 +2809,84 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             marginBottom: '8px',
             justifyContent: 'flex-end',
           }}>
-            {showDensityLayer && (
-              <div style={{
-                width: '28px', height: '28px',
-                borderRadius: '8px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'hsl(var(--primary))',
-                color: 'hsl(var(--primary-foreground))',
-                boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
-              }}>
-                <Layers style={{ width: '14px', height: '14px' }} />
-              </div>
-            )}
-            {showMovementPaths && (
-              <div style={{
-                width: '28px', height: '28px',
-                borderRadius: '8px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'hsl(var(--primary))',
-                color: 'hsl(var(--primary-foreground))',
-                boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
-              }}>
-                <Route style={{ width: '14px', height: '14px' }} />
-              </div>
-            )}
-            {showParking && (
-              <div style={{
-                width: '28px', height: '28px',
-                borderRadius: '8px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'hsl(var(--primary))',
-                color: 'hsl(var(--primary-foreground))',
-                boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
-              }}>
-                <Car style={{ width: '14px', height: '14px' }} />
-              </div>
-            )}
-            {showLiveStats && (
-              <div style={{
-                width: '28px', height: '28px',
-                borderRadius: '8px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'hsl(var(--primary))',
-                color: 'hsl(var(--primary-foreground))',
-                boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
-              }}>
-                <BarChart3 style={{ width: '14px', height: '14px' }} />
-              </div>
-            )}
+            <AnimatePresence mode="popLayout">
+              {showDensityLayer && (
+                <motion.div
+                  key="chip-density"
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.6 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                  style={{
+                    width: '28px', height: '28px',
+                    borderRadius: '8px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'hsl(var(--primary))',
+                    color: 'hsl(var(--primary-foreground))',
+                    boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
+                  }}
+                >
+                  <Layers style={{ width: '14px', height: '14px' }} />
+                </motion.div>
+              )}
+              {showMovementPaths && (
+                <motion.div
+                  key="chip-paths"
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.6 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                  style={{
+                    width: '28px', height: '28px',
+                    borderRadius: '8px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'hsl(var(--primary))',
+                    color: 'hsl(var(--primary-foreground))',
+                    boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
+                  }}
+                >
+                  <Route style={{ width: '14px', height: '14px' }} />
+                </motion.div>
+              )}
+              {showParking && (
+                <motion.div
+                  key="chip-parking"
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.6 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                  style={{
+                    width: '28px', height: '28px',
+                    borderRadius: '8px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'hsl(var(--primary))',
+                    color: 'hsl(var(--primary-foreground))',
+                    boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
+                  }}
+                >
+                  <Car style={{ width: '14px', height: '14px' }} />
+                </motion.div>
+              )}
+              {showLiveStats && (
+                <motion.div
+                  key="chip-stats"
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.6 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                  style={{
+                    width: '28px', height: '28px',
+                    borderRadius: '8px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'hsl(var(--primary))',
+                    color: 'hsl(var(--primary-foreground))',
+                    boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
+                  }}
+                >
+                  <BarChart3 style={{ width: '14px', height: '14px' }} />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
 
