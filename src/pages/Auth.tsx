@@ -809,7 +809,7 @@ const Auth = () => {
   
           {/* Resend Verification Email */}
           {showResendVerification && !isResettingPassword && (
-            <div className="flex flex-col gap-fluid-sm rounded-xl border border-primary/25 bg-card/40 p-fluid-md backdrop-blur-md">
+            <div className="flex flex-col gap-fluid-xs sm:gap-fluid-sm rounded-xl border border-primary/25 bg-card/40 p-fluid-sm sm:p-fluid-md backdrop-blur-md">
               <div className="text-center text-fluid-sm text-muted-foreground">
                 Didn't receive the verification email?
               </div>
