@@ -1,7 +1,7 @@
 import { Store, Sparkles } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { Card, CardContent } from "./ui/card";
 import type { Venue } from "@/types/venue";
 import type { Database } from "@/integrations/supabase/types";
