@@ -11,7 +11,7 @@ import { z } from "zod";
 // Use the new JET logo for auth page
 import jetLogo from "@/assets/jet-auth-logo.png";
 import authBackground from "@/assets/auth-background.webp";
-import { AuthPWAInstallPromptWrapper } from "@/components/AuthPWAInstallPromptWrapper";
+
 
 // Enhanced validation schemas
 const emailSchema = z.string()
@@ -887,8 +887,6 @@ const Auth = () => {
         </div>
       </div>
 
-      {/* Footer now rendered globally */}
-      <AuthPWAInstallPromptWrapper />
     </div>
   );
 };
