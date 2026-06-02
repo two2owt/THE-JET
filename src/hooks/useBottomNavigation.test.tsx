@@ -190,7 +190,7 @@ describe("useBottomNavigation", () => {
 
   describe("tab types", () => {
     it("should handle all valid NavTab values", () => {
-      const tabs: NavTab[] = ["map", "explore", "notifications", "favorites"];
+      const tabs: NavTab[] = ["map", "explore", "notifications"];
       const { result } = renderHook(() => useBottomNavigation(), {
         wrapper: createWrapper("/"),
       });
