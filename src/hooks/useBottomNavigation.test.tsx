@@ -52,12 +52,12 @@ describe("useBottomNavigation", () => {
       expect(result.current.activeTab).toBe("favorites");
     });
 
-    it("should detect social tab from URL path", () => {
+    it("should detect map tab from root URL", () => {
       const { result } = renderHook(() => useBottomNavigation(), {
-        wrapper: createWrapper("/social"),
+        wrapper: createWrapper("/"),
       });
 
-      expect(result.current.activeTab).toBe("social");
+      expect(result.current.activeTab).toBe("map");
     });
 
     it("should detect explore tab from URL search params", () => {
