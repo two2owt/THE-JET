@@ -3452,9 +3452,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 >
                   User Flow Paths
                 </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
                   <div style={{
-                    width: '80px', height: '14px', borderRadius: '6px',
+                    width: '100%', minWidth: 0, height: '14px', borderRadius: '6px',
                     background: 'linear-gradient(to right, rgb(100, 200, 255), rgb(0, 255, 255), rgb(255, 200, 0), rgb(255, 100, 0), rgb(255, 0, 100))',
                     border: '1px solid hsl(var(--gold) / 0.35)',
                     boxShadow:
@@ -3487,9 +3487,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     </div>
                   )}
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
                   <div style={{
-                    width: '80px', height: '14px', borderRadius: '6px',
+                    width: '100%', minWidth: 0, height: '14px', borderRadius: '6px',
                     background: 'linear-gradient(to right, rgba(65, 105, 225, 0.8), rgb(0, 255, 127), rgb(255, 255, 0), rgb(255, 165, 0), rgb(255, 0, 0), rgb(139, 0, 0))',
                     border: '1px solid hsl(var(--gold) / 0.35)',
                     boxShadow:
