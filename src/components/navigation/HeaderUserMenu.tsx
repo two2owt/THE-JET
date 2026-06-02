@@ -6,10 +6,10 @@ import {
   LogOut,
   ShieldCheck,
   Check,
-  Send,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import jetPaperPlaneAsset from "@/assets/jet-paper-plane.png.asset.json";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -181,17 +181,23 @@ export function HeaderUserMenu({
  */
 function PaperPlaneFallback() {
   return (
-    <Send
+    <img
+      src={jetPaperPlaneAsset.url}
+      alt=""
       aria-hidden="true"
-      strokeWidth={2.25}
+      draggable={false}
+      decoding="async"
+      loading="lazy"
       style={{
-        width: "52%",
-        height: "52%",
-        color: "hsl(var(--primary-foreground))",
-        // Optical centering — paper-plane mass sits lower-left
-        transform: "translate(-4%, 4%) rotate(0deg)",
-        filter: "drop-shadow(0 1px 2px hsl(0 0% 0% / 0.35))",
+        width: "70%",
+        height: "70%",
+        objectFit: "contain",
+        objectPosition: "center",
+        // Optical centering — the plane's visual mass sits slightly lower-left
+        transform: "translate(2%, -2%)",
+        filter: "drop-shadow(0 1px 3px hsl(0 0% 0% / 0.45))",
         pointerEvents: "none",
+        userSelect: "none",
       }}
     />
   );
