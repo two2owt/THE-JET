@@ -155,10 +155,15 @@ export function SettingsPageSkeleton() {
 export function ProfilePageSkeleton() {
   return (
     <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg space-y-6">
-      {/* Hero card mirrors real Profile layout to prevent CLS */}
-      <div className="overflow-hidden rounded-2xl border border-border/40 bg-card/90 backdrop-blur-xl shadow-card">
-        {/* Banner */}
-        <Skeleton className="h-28 sm:h-32 w-full rounded-none" />
+      {/* Hero card — mirrors real Profile structure & visuals for 0 CLS */}
+      <div className="overflow-hidden rounded-2xl border border-primary/10 bg-card/90 backdrop-blur-xl shadow-card">
+        {/* Live gradient banner matches the real header, so it never looks
+            like a flat grey block while data loads. */}
+        <div className="relative h-28 sm:h-32 bg-gradient-to-br from-primary via-primary/70 to-accent">
+          <div className="absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_20%_20%,hsl(var(--primary-glow)/0.4),transparent_50%),radial-gradient(circle_at_80%_60%,hsl(var(--accent)/0.4),transparent_50%)]" />
+          {/* "Edit Profile" button placeholder */}
+          <Skeleton className="absolute top-3 right-3 h-8 w-24 rounded-md" />
+        </div>
 
         <div className="px-5 sm:px-7 pb-6">
           {/* Overlapping avatar + identity */}
@@ -170,7 +175,7 @@ export function ProfilePageSkeleton() {
             </div>
           </div>
 
-          {/* Stat chips — match real grid for 0 CLS */}
+          {/* Stat chips — exact match to real grid for 0 CLS */}
           <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-6">
             {Array.from({ length: 3 }).map((_, i) => (
               <div
@@ -184,7 +189,6 @@ export function ProfilePageSkeleton() {
             ))}
           </div>
 
-          {/* Separator */}
           <div className="h-px w-full bg-border/60 my-6" />
 
           {/* Form fields */}
@@ -211,10 +215,45 @@ export function ProfilePageSkeleton() {
         </div>
       </div>
 
-      {/* Secondary cards */}
-      {Array.from({ length: 2 }).map((_, i) => (
-        <Skeleton key={i} className="h-32 w-full rounded-2xl" />
-      ))}
+      {/* Quick Actions section — structured placeholders, not flat blocks */}
+      <div>
+        <div className="flex items-center gap-1.5 mb-3 px-1">
+          <Skeleton className="w-3 h-3 rounded" />
+          <Skeleton className="h-3 w-24 rounded" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-3 w-full p-4 rounded-2xl border border-border/40 bg-card/80 backdrop-blur-sm"
+            >
+              <Skeleton className="w-11 h-11 rounded-xl flex-shrink-0" />
+              <div className="flex-1 min-w-0 space-y-2">
+                <Skeleton className="h-4 w-24 rounded" />
+                <Skeleton className="h-3 w-32 rounded" />
+              </div>
+              <Skeleton className="w-4 h-4 rounded flex-shrink-0" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Sign Out card */}
+      <div className="p-4 rounded-2xl border border-destructive/15 bg-card/80 backdrop-blur-xl shadow-card">
+        <Skeleton className="h-10 w-full rounded-md" />
+      </div>
+
+      {/* Account section placeholder */}
+      <div className="p-5 rounded-2xl border border-border/40 bg-card/80 backdrop-blur-xl shadow-card space-y-4">
+        <div className="space-y-2">
+          <Skeleton className="h-5 w-40 rounded" />
+          <Skeleton className="h-3 w-56 rounded" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Skeleton className="h-10 w-full rounded-md" />
+          <Skeleton className="h-10 w-full rounded-md" />
+        </div>
+      </div>
     </div>
   );
 }
