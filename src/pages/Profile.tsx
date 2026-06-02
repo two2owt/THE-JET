@@ -15,7 +15,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useConnections } from "@/hooks/useConnections";
 import { useProfile } from "@/hooks/useProfile";
-import { User, Camera, Edit2, X, Save, Settings, Heart, Users, Shield, LogOut, Loader2, Instagram, Twitter, Facebook, Linkedin, Video, Mail, Sparkles, Bell, ChevronRight, Link2 } from "lucide-react";
+import { User, Camera, Edit2, X, Save, Heart, Users, Shield, LogOut, Loader2, Instagram, Twitter, Facebook, Linkedin, Video, Mail, Sparkles, Bell, ChevronRight, Link2 } from "lucide-react";
 
 import { toast } from "sonner";
 import { z } from "zod";
@@ -576,7 +576,6 @@ export default function Profile() {
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
-                { label: 'Settings', sub: 'Notifications & preferences', icon: Settings, to: '/settings', tone: 'primary' as const },
                 { label: 'Favorites', sub: `${favorites.length} saved deal${favorites.length === 1 ? '' : 's'}`, icon: Heart, to: '/favorites', tone: 'accent' as const },
                 { label: 'Social', sub: `${connections.length} connection${connections.length === 1 ? '' : 's'}`, icon: Users, to: '/social', tone: 'primary' as const },
                 ...(isAdmin
