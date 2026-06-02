@@ -223,6 +223,17 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   type LayerName = keyof typeof LAYER_KEYS;
   const KNOWN_LAYERS = new Set<LayerName>(Object.keys(LAYER_KEYS) as LayerName[]);
 
+  // Filter / time-lapse localStorage keys
+  const FILTER_KEYS = {
+    timeFilter: "jet-map-time-filter",
+    pathTimeFilter: "jet-map-path-time-filter",
+    dayFilter: "jet-map-day-filter",
+    timelapseMode: "jet-map-timelapse-mode",
+    timelapseSpeed: "jet-map-timelapse-speed",
+  } as const;
+  const VALID_TIME_FILTERS = new Set<'all' | 'today' | 'this_week' | 'this_hour'>(['all', 'today', 'this_week', 'this_hour']);
+  const VALID_SPEEDS = new Set<number>([0.5, 1, 2]);
+
   const getLayerState = (layer: LayerName, fallback: boolean): boolean => {
     try {
       const params = new URLSearchParams(window.location.search);
@@ -247,14 +258,51 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     }
   };
 
+  const getPersistedTimeFilter = (key: string, fallback: 'all' | 'today' | 'this_week' | 'this_hour'): 'all' | 'today' | 'this_week' | 'this_hour' => {
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw && VALID_TIME_FILTERS.has(raw as any)) return raw as 'all' | 'today' | 'this_week' | 'this_hour';
+    } catch { /* ignore */ }
+    return fallback;
+  };
+
+  const getPersistedDayFilter = (): number | undefined => {
+    try {
+      const raw = localStorage.getItem(FILTER_KEYS.dayFilter);
+      if (raw === null || raw === "undefined" || raw === "all") return undefined;
+      const n = parseInt(raw, 10);
+      if (!Number.isNaN(n) && n >= 0 && n <= 6) return n;
+    } catch { /* ignore */ }
+    return undefined;
+  };
+
+  const getPersistedTimelapseMode = (): boolean => {
+    try {
+      const raw = localStorage.getItem(FILTER_KEYS.timelapseMode);
+      return raw === "true";
+    } catch { /* ignore */ }
+    return false;
+  };
+
+  const getPersistedTimelapseSpeed = (): number => {
+    try {
+      const raw = localStorage.getItem(FILTER_KEYS.timelapseSpeed);
+      if (raw) {
+        const n = parseFloat(raw);
+        if (VALID_SPEEDS.has(n)) return n;
+      }
+    } catch { /* ignore */ }
+    return 1;
+  };
+
   // Density heatmap state
   const [showDensityLayer, setShowDensityLayer] = useState(() => getLayerState("density", false));
   const [showParking, setShowParking] = useState(() => getLayerState("parking", false));
   // Live Stats panel — hidden by default, opt-in via layers toggle
   const [showLiveStats, setShowLiveStats] = useState(() => getLayerState("stats", false));
-  const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>('all');
+  const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.timeFilter, 'all'));
   const [hourFilter, setHourFilter] = useState<number | undefined>();
-  const [dayFilter, setDayFilter] = useState<number | undefined>();
+  const [dayFilter, setDayFilter] = useState<number | undefined>(() => getPersistedDayFilter());
   // Auto-detect time of day based on local time
   const getTimeOfDayPreset = (): 'dawn' | 'day' | 'dusk' | 'night' => {
     const hour = new Date().getHours();
@@ -273,11 +321,11 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [show3DTerrain, setShow3DTerrain] = useState(false);
 
   // Time-lapse mode state
-  const [timelapseMode, setTimelapseMode] = useState(false);
+  const [timelapseMode, setTimelapseMode] = useState(() => getPersistedTimelapseMode());
 
   // Movement paths state
   const [showMovementPaths, setShowMovementPaths] = useState(() => getLayerState("paths", false));
-  const [pathTimeFilter, setPathTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>('all');
+  const [pathTimeFilter, setPathTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.pathTimeFilter, 'all'));
 
   // Sync active layer toggles to URL query params for shareability
   const syncLayersToUrl = useCallback(() => {
@@ -309,6 +357,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   useEffect(() => { localStorage.setItem(LAYER_KEYS.paths, String(showMovementPaths)); }, [showMovementPaths]);
   useEffect(() => { localStorage.setItem(LAYER_KEYS.parking, String(showParking)); }, [showParking]);
   useEffect(() => { localStorage.setItem(LAYER_KEYS.stats, String(showLiveStats)); }, [showLiveStats]);
+
+  // Persist filter / time-lapse selections to localStorage
+  useEffect(() => { localStorage.setItem(FILTER_KEYS.timeFilter, timeFilter); }, [timeFilter]);
+  useEffect(() => { localStorage.setItem(FILTER_KEYS.pathTimeFilter, pathTimeFilter); }, [pathTimeFilter]);
+  useEffect(() => { localStorage.setItem(FILTER_KEYS.dayFilter, dayFilter === undefined ? "all" : String(dayFilter)); }, [dayFilter]);
+  useEffect(() => { localStorage.setItem(FILTER_KEYS.timelapseMode, String(timelapseMode)); }, [timelapseMode]);
   
   // CLS fix: Defer layer controls render until map is loaded
   // This ensures controls appear immediately after map is ready, not a fixed delay
@@ -395,8 +449,14 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     minFrequency: minPathFrequency,
   });
   
-  // Time-lapse hook
-  const timelapse = useHeatmapTimelapse(dayFilter);
+  // Time-lapse hook (restore persisted speed)
+  const initialTimelapseSpeed = useRef(getPersistedTimelapseSpeed());
+  const timelapse = useHeatmapTimelapse(dayFilter, initialTimelapseSpeed.current);
+
+  // Persist timelapse playback speed
+  useEffect(() => {
+    localStorage.setItem(FILTER_KEYS.timelapseSpeed, String(timelapse.speed));
+  }, [timelapse.speed]);
 
   // Handle map resize on viewport changes - optimized for all mobile devices
   useEffect(() => {

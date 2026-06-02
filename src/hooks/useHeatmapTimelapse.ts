@@ -21,11 +21,11 @@ interface TimelapseState {
   error: string | null;
 }
 
-export const useHeatmapTimelapse = (dayFilter?: number) => {
+export const useHeatmapTimelapse = (dayFilter?: number, initialSpeed = 1) => {
   const [state, setState] = useState<TimelapseState>({
     isPlaying: false,
     currentHour: 0,
-    speed: 1,
+    speed: initialSpeed,
     hourlyData: [],
     loading: false,
     error: null,
