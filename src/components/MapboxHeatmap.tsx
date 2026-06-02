@@ -443,6 +443,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [detectedCity, setDetectedCity] = useState<City | null>(null); // Nearest predefined city for filtering
   const [detectedLocationName, setDetectedLocationName] = useState<string | null>(null); // Actual city name from reverse geocoding
   const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(true); // Default to current location
+  // Ref mirror so the (one-time-bound) geolocate event handler always sees the
+  // latest value without needing to re-subscribe.
+  const isUsingCurrentLocationRef = useRef(true);
+  useEffect(() => {
+    isUsingCurrentLocationRef.current = isUsingCurrentLocation;
+  }, [isUsingCurrentLocation]);
 
   // City selector search query
   const [citySearchQuery, setCitySearchQuery] = useState("");
