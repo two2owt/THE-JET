@@ -2857,23 +2857,38 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                         className="w-full text-[11px] font-display font-semibold rounded-[10px] min-h-0"
                         style={{
                           padding: '7px 10px',
-                          border: '1px solid hsl(var(--border) / 0.5)',
-                          background: 'hsl(var(--card) / 0.5)',
+                          border: timeFilter !== 'all'
+                            ? '1px solid hsl(var(--primary) / 0.45)'
+                            : '1px solid hsl(var(--border) / 0.5)',
+                          background: timeFilter !== 'all'
+                            ? 'linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--primary-glow) / 0.14))'
+                            : 'hsl(var(--card) / 0.5)',
                           backdropFilter: 'blur(12px) saturate(1.4)',
                           WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
-                          boxShadow: 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
+                          boxShadow: timeFilter !== 'all'
+                            ? '0 8px 24px -10px hsl(var(--primary) / 0.55), inset 0 0 0 1px hsl(var(--primary-glow) / 0.18)'
+                            : 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
                           letterSpacing: '-0.005em',
-                          transition: 'background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms ease, box-shadow 220ms ease',
+                          color: timeFilter !== 'all' ? 'hsl(var(--foreground))' : undefined,
+                          transition: 'background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms ease, box-shadow 220ms ease, color 220ms ease',
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
                           <span style={{
                             width: '22px', height: '22px', borderRadius: '7px',
                             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                            background: 'hsl(var(--background) / 0.6)',
-                            border: '1px solid hsl(var(--border) / 0.6)',
+                            background: timeFilter !== 'all'
+                              ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
+                              : 'hsl(var(--background) / 0.6)',
+                            border: timeFilter !== 'all'
+                              ? '1px solid transparent'
+                              : '1px solid hsl(var(--border) / 0.6)',
+                            boxShadow: timeFilter !== 'all'
+                              ? '0 4px 12px -4px hsl(var(--primary) / 0.6)'
+                              : 'none',
+                            transition: 'background 220ms ease, border-color 220ms ease, box-shadow 220ms ease',
                           }}>
-                            <Clock style={{ width: '12px', height: '12px', color: 'hsl(var(--muted-foreground))' }} strokeWidth={2.25} />
+                            <Clock style={{ width: '12px', height: '12px', color: timeFilter !== 'all' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))' }} strokeWidth={2.25} />
                           </span>
                           <SelectValue placeholder="Time" />
                         </div>
@@ -2890,23 +2905,38 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                         className="w-full text-[11px] font-display font-semibold rounded-[10px] min-h-0"
                         style={{
                           padding: '7px 10px',
-                          border: '1px solid hsl(var(--border) / 0.5)',
-                          background: 'hsl(var(--card) / 0.5)',
+                          border: dayFilter !== undefined
+                            ? '1px solid hsl(var(--primary) / 0.45)'
+                            : '1px solid hsl(var(--border) / 0.5)',
+                          background: dayFilter !== undefined
+                            ? 'linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--primary-glow) / 0.14))'
+                            : 'hsl(var(--card) / 0.5)',
                           backdropFilter: 'blur(12px) saturate(1.4)',
                           WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
-                          boxShadow: 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
+                          boxShadow: dayFilter !== undefined
+                            ? '0 8px 24px -10px hsl(var(--primary) / 0.55), inset 0 0 0 1px hsl(var(--primary-glow) / 0.18)'
+                            : 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
                           letterSpacing: '-0.005em',
-                          transition: 'background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms ease, box-shadow 220ms ease',
+                          color: dayFilter !== undefined ? 'hsl(var(--foreground))' : undefined,
+                          transition: 'background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms ease, box-shadow 220ms ease, color 220ms ease',
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
                           <span style={{
                             width: '22px', height: '22px', borderRadius: '7px',
                             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                            background: 'hsl(var(--background) / 0.6)',
-                            border: '1px solid hsl(var(--border) / 0.6)',
+                            background: dayFilter !== undefined
+                              ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
+                              : 'hsl(var(--background) / 0.6)',
+                            border: dayFilter !== undefined
+                              ? '1px solid transparent'
+                              : '1px solid hsl(var(--border) / 0.6)',
+                            boxShadow: dayFilter !== undefined
+                              ? '0 4px 12px -4px hsl(var(--primary) / 0.6)'
+                              : 'none',
+                            transition: 'background 220ms ease, border-color 220ms ease, box-shadow 220ms ease',
                           }}>
-                            <Calendar style={{ width: '12px', height: '12px', color: 'hsl(var(--muted-foreground))' }} strokeWidth={2.25} />
+                            <Calendar style={{ width: '12px', height: '12px', color: dayFilter !== undefined ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))' }} strokeWidth={2.25} />
                           </span>
                           <SelectValue placeholder="Day" />
                         </div>
@@ -2953,23 +2983,38 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     className="w-full text-[11px] font-display font-semibold rounded-[10px] min-h-0"
                     style={{
                       padding: '7px 10px',
-                      border: '1px solid hsl(var(--border) / 0.5)',
-                      background: 'hsl(var(--card) / 0.5)',
+                      border: pathTimeFilter !== 'all'
+                        ? '1px solid hsl(var(--primary) / 0.45)'
+                        : '1px solid hsl(var(--border) / 0.5)',
+                      background: pathTimeFilter !== 'all'
+                        ? 'linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--primary-glow) / 0.14))'
+                        : 'hsl(var(--card) / 0.5)',
                       backdropFilter: 'blur(12px) saturate(1.4)',
                       WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
-                      boxShadow: 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
+                      boxShadow: pathTimeFilter !== 'all'
+                        ? '0 8px 24px -10px hsl(var(--primary) / 0.55), inset 0 0 0 1px hsl(var(--primary-glow) / 0.18)'
+                        : 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
                       letterSpacing: '-0.005em',
-                      transition: 'background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms ease, box-shadow 220ms ease',
+                      color: pathTimeFilter !== 'all' ? 'hsl(var(--foreground))' : undefined,
+                      transition: 'background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms ease, box-shadow 220ms ease, color 220ms ease',
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
                       <span style={{
                         width: '22px', height: '22px', borderRadius: '7px',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                        background: 'hsl(var(--background) / 0.6)',
-                        border: '1px solid hsl(var(--border) / 0.6)',
+                        background: pathTimeFilter !== 'all'
+                          ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
+                          : 'hsl(var(--background) / 0.6)',
+                        border: pathTimeFilter !== 'all'
+                          ? '1px solid transparent'
+                          : '1px solid hsl(var(--border) / 0.6)',
+                        boxShadow: pathTimeFilter !== 'all'
+                          ? '0 4px 12px -4px hsl(var(--primary) / 0.6)'
+                          : 'none',
+                        transition: 'background 220ms ease, border-color 220ms ease, box-shadow 220ms ease',
                       }}>
-                        <Clock style={{ width: '12px', height: '12px', color: 'hsl(var(--muted-foreground))' }} strokeWidth={2.25} />
+                        <Clock style={{ width: '12px', height: '12px', color: pathTimeFilter !== 'all' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))' }} strokeWidth={2.25} />
                       </span>
                       <SelectValue placeholder="Time" />
                     </div>
