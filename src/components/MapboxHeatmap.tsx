@@ -3388,6 +3388,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           bottom: 'var(--map-fixed-bottom)',
           left: 'var(--map-ui-inset-left)',
           maxWidth: 'var(--map-control-max-width)',
+          width: 'clamp(160px, 38vw, 240px)',
           zIndex: 30,
           // Dark luxe legend — vertical gradient surface, hairline border,
           // soft ambient gold glow, inset highlight for refined depth.
