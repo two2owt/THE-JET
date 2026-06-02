@@ -612,6 +612,9 @@ export default function Profile() {
             </div>
           </div>
 
+          {/* Settings — notifications, preferences, privacy, subscription, account */}
+          <Settings embedded />
+
           {/* Sign Out */}
           <Card className="p-4 bg-card/80 backdrop-blur-xl shadow-card border-destructive/15 rounded-2xl">
             <AlertDialog>
