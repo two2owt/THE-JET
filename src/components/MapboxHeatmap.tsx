@@ -458,6 +458,47 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     localStorage.setItem(FILTER_KEYS.timelapseSpeed, String(timelapse.speed));
   }, [timelapse.speed]);
 
+  // Reset to defaults — clears localStorage and restores factory settings
+  const handleResetToDefaults = useCallback(() => {
+    triggerHaptic('medium');
+
+    // Clear persisted layer toggles
+    Object.values(LAYER_KEYS).forEach((key) => {
+      try { localStorage.removeItem(key); } catch { /* ignore */ }
+    });
+
+    // Clear persisted filter / time-lapse settings
+    Object.values(FILTER_KEYS).forEach((key) => {
+      try { localStorage.removeItem(key); } catch { /* ignore */ }
+    });
+
+    // Reset all state to defaults
+    setShowDensityLayer(false);
+    setShowParking(false);
+    setShowLiveStats(false);
+    setShowMovementPaths(false);
+    setTimeFilter('all');
+    setPathTimeFilter('all');
+    setDayFilter(undefined);
+    setHourFilter(undefined);
+    setTimelapseMode(false);
+    setMinPathFrequency(2);
+
+    // Reset time-lapse playback
+    if (timelapse.isPlaying) timelapse.pause();
+    timelapse.setSpeed(1);
+    timelapse.setHour(new Date().getHours());
+
+    // Strip layers from URL
+    try {
+      const params = new URLSearchParams(window.location.search);
+      params.delete('layers');
+      const search = params.toString();
+      const newUrl = search ? `${window.location.pathname}?${search}` : window.location.pathname;
+      window.history.replaceState(null, '', newUrl);
+    } catch { /* ignore */ }
+  }, [timelapse]);
+
   // Handle map resize on viewport changes - optimized for all mobile devices
   useEffect(() => {
     let resizeTimeout: ReturnType<typeof setTimeout>;
