@@ -1,7 +1,7 @@
 import { MapPinned, Flame, Bell, Heart } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-type NavItem = "map" | "explore" | "notifications" | "favorites" | "social";
+type NavItem = "map" | "explore" | "notifications" | "favorites";
 
 interface BottomNavProps {
   activeTab: NavItem;
