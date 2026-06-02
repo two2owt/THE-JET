@@ -3581,50 +3581,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         )}
       </div>
 
-      {/* Enhanced Heatmap Loading Overlay */}
-      {showDensityLayer && densityLoading && (
-        <div 
-          style={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'hsl(var(--background) / 0.3)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-            zIndex: 20,
-            animation: 'fadeIn 200ms ease-out forwards',
-          }}
-        >
-          <div 
-            style={{
-              background: 'hsl(var(--card) / 0.95)',
-              backdropFilter: 'blur(24px) saturate(1.6)',
-              WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
-              borderRadius: '12px',
-              border: '1px solid hsl(var(--border))',
-              padding: '24px',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '16px',
-              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
-              transform: 'translateZ(0)',
-            }}
-          >
-            <div style={{ position: 'relative', width: '48px', height: '48px' }}>
-              <div style={{ position: 'absolute', inset: 0, width: '48px', height: '48px', border: '4px solid hsl(var(--primary) / 0.3)', borderRadius: '50%' }} />
-              <div className="animate-spin" style={{ position: 'absolute', inset: 0, width: '48px', height: '48px', border: '4px solid hsl(var(--primary))', borderTopColor: 'transparent', borderRadius: '50%' }} />
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <p style={{ fontSize: '14px', fontWeight: 600, color: 'hsl(var(--foreground))', marginBottom: '4px' }}>Loading Density Data</p>
-              <p style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))' }}>Analyzing user hotspots...</p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Enhanced animations and styles */}
       <style>{`
         /* CLS-safe fadeIn animation - opacity only, no transforms */
