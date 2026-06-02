@@ -537,14 +537,25 @@ All colors MUST be HSL.
   }
 
   /* Fluid spacing utilities — only kept variants that are actually used */
+  .p-fluid-xs { padding: var(--space-xs); }
+  .p-fluid-sm { padding: var(--space-sm); }
   .p-fluid-md { padding: var(--space-md); }
   .p-fluid-lg { padding: var(--space-lg); }
 
   .mb-fluid-xs { margin-bottom: var(--space-xs); }
+  .mb-fluid-sm { margin-bottom: var(--space-sm); }
   .mb-fluid-md { margin-bottom: var(--space-md); }
   .mb-fluid-lg { margin-bottom: var(--space-lg); }
 
+  .mt-fluid-xs { margin-top: var(--space-xs); }
+  .mt-fluid-sm { margin-top: var(--space-sm); }
   .mt-fluid-md { margin-top: var(--space-md); }
+  .mt-fluid-lg { margin-top: var(--space-lg); }
+
+  .my-fluid-xs { margin-top: var(--space-xs); margin-bottom: var(--space-xs); }
+  .my-fluid-sm { margin-top: var(--space-sm); margin-bottom: var(--space-sm); }
+  .my-fluid-md { margin-top: var(--space-md); margin-bottom: var(--space-md); }
+  .my-fluid-lg { margin-top: var(--space-lg); margin-bottom: var(--space-lg); }
 
   .gap-fluid-xs { gap: var(--space-xs); }
   .gap-fluid-sm { gap: var(--space-sm); }
