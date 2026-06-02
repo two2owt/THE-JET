@@ -291,10 +291,10 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
   );
 
   return (
-    <div className="space-y-4 bg-card border border-border rounded-2xl p-4">
+    <div className="flex flex-col gap-fluid-sm">
       <div className="space-y-3">
         <div>
-          <Label className="text-sm mb-1 block">Select up to 3 categories</Label>
+          <Label className="heading-luxe-eyebrow mb-1 block text-left">Select up to 3 categories</Label>
           <p className="text-xs text-muted-foreground mb-3">Tap a category to select, then expand to set preferences</p>
           
           <div className="space-y-2">
@@ -404,10 +404,10 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
           </div>
         </div>
 
-        <div className="space-y-3 pt-3 border-t border-border">
-          <Label className="text-sm">Live Discovery</Label>
+        <div className="space-y-3 pt-3 border-t border-border/40">
+          <Label className="heading-luxe-eyebrow text-left">Live Discovery</Label>
           
-          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+          <div className="flex items-center justify-between p-3 bg-card/40 border border-border/40 rounded-xl backdrop-blur-sm">
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-primary" />
               <div>
@@ -421,7 +421,7 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
             />
           </div>
 
-          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+          <div className="flex items-center justify-between p-3 bg-card/40 border border-border/40 rounded-xl backdrop-blur-sm">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-primary" />
               <div>
@@ -441,8 +441,8 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
         <Button
           variant="outline"
           onClick={onBack}
-          className="flex-1"
-          size="sm"
+          className="flex-1 rounded-full border-primary/40 bg-transparent text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary"
+          size="lg"
         >
           Back
         </Button>
@@ -450,10 +450,10 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
           onClick={handleNext}
           disabled={isLoading || selectedCategories.length === 0}
           variant="jet"
-          className="flex-1"
-          size="sm"
+          size="lg"
+          className="flex-1 rounded-full text-fluid-base font-semibold tracking-wide shadow-lg shadow-primary/20"
         >
-          Next
+          Continue
         </Button>
       </div>
     </div>
