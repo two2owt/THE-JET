@@ -65,9 +65,6 @@ export function useBottomNavigation(options: UseBottomNavigationOptions = {}) {
       case "favorites":
         navigate("/favorites");
         break;
-      case "social":
-        navigate("/social");
-        break;
     }
   }, [navigate, onBeforeNavigate]);
 
