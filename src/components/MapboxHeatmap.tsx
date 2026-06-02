@@ -2913,7 +2913,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <Select value={timeFilter} onValueChange={(v: any) => setTimeFilter(v)}>
                       <SelectTrigger
-                        className="w-full font-display font-semibold rounded-[10px] min-h-0 h-auto [&>svg.lucide-chevron-down]:hidden"
+                        className="w-full font-display font-semibold rounded-[10px] min-h-0 h-auto [&>svg]:hidden"
                         style={{
                           padding: 'clamp(6px, 1.6vw, 8px) clamp(8px, 2.2vw, 12px)',
                           fontSize: 'clamp(10px, 2.6vw, 12px)',
@@ -2966,7 +2966,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     </Select>
                     <Select value={dayFilter?.toString() || "all"} onValueChange={(v) => setDayFilter(v === "all" ? undefined : parseInt(v))}>
                       <SelectTrigger
-                        className="w-full font-display font-semibold rounded-[10px] min-h-0 h-auto [&>svg.lucide-chevron-down]:hidden"
+                        className="w-full font-display font-semibold rounded-[10px] min-h-0 h-auto [&>svg]:hidden"
                         style={{
                           padding: 'clamp(6px, 1.6vw, 8px) clamp(8px, 2.2vw, 12px)',
                           fontSize: 'clamp(10px, 2.6vw, 12px)',
@@ -3049,7 +3049,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 )}
                 <Select value={pathTimeFilter} onValueChange={(v: any) => setPathTimeFilter(v)}>
                   <SelectTrigger
-                    className="w-full font-display font-semibold rounded-[10px] min-h-0 h-auto [&>svg.lucide-chevron-down]:hidden"
+                    className="w-full font-display font-semibold rounded-[10px] min-h-0 h-auto [&>svg]:hidden"
                     style={{
                       padding: 'clamp(6px, 1.6vw, 8px) clamp(8px, 2.2vw, 12px)',
                       fontSize: 'clamp(10px, 2.6vw, 12px)',
