@@ -59,9 +59,6 @@ export function useBottomNavigation(options: UseBottomNavigationOptions = {}) {
       case "notifications":
         navigate("/?tab=notifications", { replace: true });
         break;
-      case "favorites":
-        navigate("/favorites");
-        break;
     }
   }, [navigate, onBeforeNavigate]);
 
