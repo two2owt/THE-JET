@@ -2452,6 +2452,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             
             if (value === "current-location") {
               setIsUsingCurrentLocation(true);
+              // Immediately sync the parent's selectedCity to the already-known
+              // nearest city so data filters update without waiting for a fresh
+              // geolocate event.
+              if (detectedCity && detectedCity.id !== selectedCity.id) {
+                onCityChange(detectedCity);
+              }
               // Fly to user's current location if known
               if (userLocation && map.current) {
                 map.current.flyTo({
