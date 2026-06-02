@@ -443,6 +443,18 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [detectedCity, setDetectedCity] = useState<City | null>(null); // Nearest predefined city for filtering
   const [detectedLocationName, setDetectedLocationName] = useState<string | null>(null); // Actual city name from reverse geocoding
   const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(true); // Default to current location
+  // Ref mirror so the (one-time-bound) geolocate event handler always sees the
+  // latest value without needing to re-subscribe.
+  const isUsingCurrentLocationRef = useRef(true);
+  useEffect(() => {
+    isUsingCurrentLocationRef.current = isUsingCurrentLocation;
+  }, [isUsingCurrentLocation]);
+  // Mirror selectedCity + onCityChange so the (one-time) geolocate handler
+  // can sync the parent without re-subscribing on every prop change.
+  const selectedCityRef = useRef(selectedCity);
+  const onCityChangeRef = useRef(onCityChange);
+  useEffect(() => { selectedCityRef.current = selectedCity; }, [selectedCity]);
+  useEffect(() => { onCityChangeRef.current = onCityChange; }, [onCityChange]);
 
   // City selector search query
   const [citySearchQuery, setCitySearchQuery] = useState("");
@@ -892,6 +904,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           // Notify parent of detected city on initial geolocate (auto-select nearest city)
           if (isInitialGeolocate && onNearestCityDetected) {
             onNearestCityDetected(nearestCity);
+          }
+
+          // If the user is in "Use Current Location" mode, keep the parent's
+          // selectedCity in sync with the nearest detected city so data filters
+          // (deals, density, paths) match where the user actually is.
+          if (
+            isUsingCurrentLocationRef.current &&
+            nearestCity.id !== selectedCityRef.current.id
+          ) {
+            onCityChangeRef.current(nearestCity);
           }
           
           // Only fly to user location on initial load (default behavior)
@@ -2439,6 +2461,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             
             if (value === "current-location") {
               setIsUsingCurrentLocation(true);
+              // Immediately sync the parent's selectedCity to the already-known
+              // nearest city so data filters update without waiting for a fresh
+              // geolocate event.
+              if (detectedCity && detectedCity.id !== selectedCity.id) {
+                onCityChange(detectedCity);
+              }
               // Fly to user's current location if known
               if (userLocation && map.current) {
                 map.current.flyTo({
