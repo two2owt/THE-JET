@@ -155,8 +155,9 @@ export const Header = () => {
         {/* Logo — always visible unless mobile search is expanded */}
         {!(isMobile && searchExpanded) && (
           <div
-            role="img"
-            aria-label="JET"
+            role="link"
+            aria-label="JET — go home"
+            onClick={() => navigate('/')}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -165,7 +166,7 @@ export const Header = () => {
               paddingLeft: '2px',
               paddingRight: 'clamp(8px, 1.5vw, 14px)',
               marginRight: 'clamp(4px, 1vw, 8px)',
-              cursor: 'default',
+              cursor: 'pointer',
               userSelect: 'none',
               opacity: mounted ? 1 : 0,
               transform: mounted ? 'translateX(0)' : 'translateX(-8px)',
