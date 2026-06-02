@@ -229,9 +229,9 @@ All colors MUST be HSL.
     --header-height: 48px;
     --bottom-nav-height: 56px;
     --map-ui-inset-top: 0.5rem;
-    --map-ui-inset-right: 0.5rem;
+    --map-ui-inset-right: calc(0.5rem + env(safe-area-inset-right, 0px));
     --map-ui-inset-bottom: 0.5rem;
-    --map-ui-inset-left: 0.5rem;
+    --map-ui-inset-left: calc(0.5rem + env(safe-area-inset-left, 0px));
     --map-fixed-bottom: calc(var(--bottom-nav-total-height) + 0.5rem);
     --map-control-max-width: 120px;
     --venue-marker-base: 26px;
@@ -248,9 +248,9 @@ All colors MUST be HSL.
     --header-height: 52px;
     --bottom-nav-height: 60px;
     --map-ui-inset-top: 0.75rem;
-    --map-ui-inset-right: 0.75rem;
+    --map-ui-inset-right: calc(0.75rem + env(safe-area-inset-right, 0px));
     --map-ui-inset-bottom: 0.75rem;
-    --map-ui-inset-left: 0.75rem;
+    --map-ui-inset-left: calc(0.75rem + env(safe-area-inset-left, 0px));
     --map-fixed-bottom: calc(var(--bottom-nav-total-height) + 0.75rem);
     --map-control-max-width: 140px;
   }
@@ -262,9 +262,9 @@ All colors MUST be HSL.
     --header-height: 56px;
     --bottom-nav-height: 64px;
     --map-ui-inset-top: 1rem;
-    --map-ui-inset-right: 1rem;
+    --map-ui-inset-right: calc(1rem + env(safe-area-inset-right, 0px));
     --map-ui-inset-bottom: 1rem;
-    --map-ui-inset-left: 1rem;
+    --map-ui-inset-left: calc(1rem + env(safe-area-inset-left, 0px));
     --map-fixed-bottom: calc(var(--bottom-nav-total-height) + 1rem);
     --map-control-max-width: 180px;
     --venue-marker-base: 36px;
@@ -281,9 +281,9 @@ All colors MUST be HSL.
     --header-height: 60px;
     --bottom-nav-height: 68px;
     --map-ui-inset-top: 1.25rem;
-    --map-ui-inset-right: 1.25rem;
+    --map-ui-inset-right: calc(1.25rem + env(safe-area-inset-right, 0px));
     --map-ui-inset-bottom: 1.25rem;
-    --map-ui-inset-left: 1.25rem;
+    --map-ui-inset-left: calc(1.25rem + env(safe-area-inset-left, 0px));
     --map-fixed-bottom: calc(var(--bottom-nav-total-height) + 1.25rem);
     --map-control-max-width: 220px;
     --venue-marker-base: 40px;
@@ -298,9 +298,9 @@ All colors MUST be HSL.
     --header-height: 64px;
     --bottom-nav-height: 72px;
     --map-ui-inset-top: 1.5rem;
-    --map-ui-inset-right: 1.5rem;
+    --map-ui-inset-right: calc(1.5rem + env(safe-area-inset-right, 0px));
     --map-ui-inset-bottom: 1.5rem;
-    --map-ui-inset-left: 1.5rem;
+    --map-ui-inset-left: calc(1.5rem + env(safe-area-inset-left, 0px));
     --map-fixed-bottom: calc(var(--bottom-nav-total-height) + 1.5rem);
     --map-control-max-width: 260px;
   }
