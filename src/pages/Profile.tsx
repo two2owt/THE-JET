@@ -284,11 +284,11 @@ export default function Profile() {
         onCropComplete={handleCroppedAvatarSave}
         isProcessing={isUploading}
       />
-      <PageShell>
+      <PageShell gap="0">
         <TabPageHeader title="Profile" subtitle="Manage your account, preferences, and connections" />
 
         {/* Identity card */}
-        <section className="rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg glow-ambient">
+        <section className="mt-fluid-lg rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg glow-ambient">
           <div className="flex items-start justify-between gap-3 mb-fluid-md">
             <div className="flex items-center gap-2">
               <span className="dot-gold" />
@@ -307,7 +307,7 @@ export default function Profile() {
             )}
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-fluid-sm sm:gap-fluid-md">
             <div className="relative mx-auto sm:mx-0 group shrink-0">
               <div className="absolute -inset-1 rounded-full bg-[radial-gradient(circle,hsl(var(--primary)/0.25)_0%,transparent_70%)] blur-md pointer-events-none" />
               <Avatar className="relative w-24 h-24 sm:w-28 sm:h-28 ring-2 ring-primary/30 shadow-[0_4px_20px_hsl(var(--primary)/0.25)]">
@@ -373,7 +373,7 @@ export default function Profile() {
         </section>
 
         {/* Profile form card */}
-        <section className="rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg">
+        <section className="mt-fluid-md rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg">
           <div className="flex items-center gap-2 mb-fluid-md">
             <span className="dot-gold" />
             <span className="heading-luxe-eyebrow">Account Details</span>
@@ -432,7 +432,7 @@ export default function Profile() {
                   </p>}
               </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-fluid-sm sm:gap-fluid-md">
                 <div className="flex flex-col gap-fluid-xs">
                   <Label className="heading-luxe-eyebrow text-left">
                     Gender <span className="text-destructive">*</span>
@@ -479,57 +479,40 @@ export default function Profile() {
               </div>
 
               {isEditing && <>
-                  <div className="divider-luxe my-fluid-xs" />
+                  <div className="divider-luxe my-fluid-md" />
 
                   <div className="flex flex-col gap-fluid-sm">
-                    <Label className="heading-luxe-eyebrow text-left">Social Media Links</Label>
-                    
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Instagram className="w-4 h-4 text-muted-foreground" />
-                        <Input value={instagramUrl} onChange={e => setInstagramUrl(e.target.value)} placeholder="Instagram profile URL" />
-                      </div>
+                    <div className="flex items-center gap-2">
+                      <span className="dot-gold" />
+                      <span className="heading-luxe-eyebrow">Social Media Links</span>
                     </div>
-
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Twitter className="w-4 h-4 text-muted-foreground" />
-                        <Input value={twitterUrl} onChange={e => setTwitterUrl(e.target.value)} placeholder="Twitter/X profile URL" />
+                    {[
+                      { icon: Instagram, value: instagramUrl, setter: setInstagramUrl, placeholder: "Instagram profile URL" },
+                      { icon: Twitter, value: twitterUrl, setter: setTwitterUrl, placeholder: "Twitter/X profile URL" },
+                      { icon: Facebook, value: facebookUrl, setter: setFacebookUrl, placeholder: "Facebook profile URL" },
+                      { icon: Linkedin, value: linkedinUrl, setter: setLinkedinUrl, placeholder: "LinkedIn profile URL" },
+                      { icon: Video, value: tiktokUrl, setter: setTiktokUrl, placeholder: "TikTok profile URL" },
+                    ].map(({ icon: Icon, value, setter, placeholder }) => (
+                      <div key={placeholder} className="flex items-center gap-fluid-xs">
+                        <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
+                        <Input value={value} onChange={e => setter(e.target.value)} placeholder={placeholder} />
                       </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Facebook className="w-4 h-4 text-muted-foreground" />
-                        <Input value={facebookUrl} onChange={e => setFacebookUrl(e.target.value)} placeholder="Facebook profile URL" />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Linkedin className="w-4 h-4 text-muted-foreground" />
-                        <Input value={linkedinUrl} onChange={e => setLinkedinUrl(e.target.value)} placeholder="LinkedIn profile URL" />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Video className="w-4 h-4 text-muted-foreground" />
-                        <Input value={tiktokUrl} onChange={e => setTiktokUrl(e.target.value)} placeholder="TikTok profile URL" />
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </>}
 
               {/* Social Links Display */}
               {!isEditing && (instagramUrl || twitterUrl || facebookUrl || linkedinUrl || tiktokUrl) && (
                 <>
-                  <div className="divider-luxe my-fluid-xs" />
+                  <div className="divider-luxe my-fluid-md" />
                   <div>
-                    <h3 className="flex items-center gap-1.5 heading-luxe-eyebrow mb-fluid-sm">
-                      <Link2 className="w-3 h-3" />
-                      Social Media
-                    </h3>
+                    <div className="flex items-center gap-2 mb-fluid-sm">
+                      <span className="dot-gold" />
+                      <h3 className="heading-luxe-eyebrow inline-flex items-center gap-1.5">
+                        <Link2 className="w-3 h-3" />
+                        Social Media
+                      </h3>
+                    </div>
                     <div className="flex flex-wrap gap-2">
                       {[
                         { url: instagramUrl, icon: Instagram, label: 'Instagram' },
@@ -556,7 +539,7 @@ export default function Profile() {
                 </>
               )}
 
-              {isEditing && <div className="flex gap-2 pt-fluid-sm">
+              {isEditing && <div className="flex gap-fluid-sm pt-fluid-md">
                   <Button
                     onClick={handleSaveProfile}
                     disabled={isSaving || !displayName.trim()}
@@ -600,7 +583,7 @@ export default function Profile() {
             <button
               type="button"
               onClick={() => navigate('/admin')}
-              className="group flex items-center gap-3 w-full text-left p-fluid-sm rounded-2xl border-hairline bg-card/40 backdrop-blur-xl hover:border-primary/50 hover:bg-card/60 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all"
+              className="group mt-fluid-md flex items-center gap-fluid-sm w-full text-left p-fluid-sm rounded-2xl border-hairline bg-card/40 backdrop-blur-xl hover:border-primary/50 hover:bg-card/60 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all"
             >
               <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary/20 to-primary-glow/10 text-primary border-hairline">
                 <Shield className="w-5 h-5" />
@@ -614,10 +597,12 @@ export default function Profile() {
           )}
 
           {/* Settings — notifications, preferences, privacy, subscription, account */}
-          <Settings embedded />
+          <div className="mt-fluid-md">
+            <Settings embedded />
+          </div>
 
           {/* Sign Out */}
-          <section className="rounded-2xl border-hairline border-destructive/20 bg-card/40 backdrop-blur-xl p-fluid-sm">
+          <section className="mt-fluid-md rounded-2xl border-hairline border-destructive/20 bg-card/40 backdrop-blur-xl p-fluid-sm sm:p-fluid-md">
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
