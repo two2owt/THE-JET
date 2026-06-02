@@ -831,7 +831,7 @@ const Auth = () => {
   
           {/* Forgot password link — signin only */}
           {mode === "signin" && (
-            <div className="-mt-fluid-sm flex justify-end">
+            <div className="mt-0 sm:mt-fluid-xs flex justify-end">
               <button
                 type="button"
                 onClick={() => setIsForgotPassword(true)}
