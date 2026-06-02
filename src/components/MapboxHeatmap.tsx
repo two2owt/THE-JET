@@ -2887,16 +2887,29 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     </Select>
                     <Select value={dayFilter?.toString() || "all"} onValueChange={(v) => setDayFilter(v === "all" ? undefined : parseInt(v))}>
                       <SelectTrigger
-                        className="h-8 text-[11px] font-display font-semibold rounded-[10px] border-border/50"
+                        className="w-full text-[11px] font-display font-semibold rounded-[10px] min-h-0"
                         style={{
+                          padding: '7px 10px',
+                          border: '1px solid hsl(var(--border) / 0.5)',
                           background: 'hsl(var(--card) / 0.5)',
                           backdropFilter: 'blur(12px) saturate(1.4)',
                           WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
                           boxShadow: 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
                           letterSpacing: '-0.005em',
+                          transition: 'background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms ease, box-shadow 220ms ease',
                         }}
                       >
-                        <SelectValue placeholder="Day" />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                          <span style={{
+                            width: '22px', height: '22px', borderRadius: '7px',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                            background: 'hsl(var(--background) / 0.6)',
+                            border: '1px solid hsl(var(--border) / 0.6)',
+                          }}>
+                            <Calendar style={{ width: '12px', height: '12px', color: 'hsl(var(--muted-foreground))' }} strokeWidth={2.25} />
+                          </span>
+                          <SelectValue placeholder="Day" />
+                        </div>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Days</SelectItem>
@@ -2937,16 +2950,29 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 )}
                 <Select value={pathTimeFilter} onValueChange={(v: any) => setPathTimeFilter(v)}>
                   <SelectTrigger
-                    className="h-8 text-[11px] font-display font-semibold rounded-[10px] border-border/50"
+                    className="w-full text-[11px] font-display font-semibold rounded-[10px] min-h-0"
                     style={{
+                      padding: '7px 10px',
+                      border: '1px solid hsl(var(--border) / 0.5)',
                       background: 'hsl(var(--card) / 0.5)',
                       backdropFilter: 'blur(12px) saturate(1.4)',
                       WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
                       boxShadow: 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
                       letterSpacing: '-0.005em',
+                      transition: 'background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms ease, box-shadow 220ms ease',
                     }}
                   >
-                    <SelectValue placeholder="Time" />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                      <span style={{
+                        width: '22px', height: '22px', borderRadius: '7px',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                        background: 'hsl(var(--background) / 0.6)',
+                        border: '1px solid hsl(var(--border) / 0.6)',
+                      }}>
+                        <Clock style={{ width: '12px', height: '12px', color: 'hsl(var(--muted-foreground))' }} strokeWidth={2.25} />
+                      </span>
+                      <SelectValue placeholder="Time" />
+                    </div>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Time</SelectItem>
