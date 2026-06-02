@@ -2787,54 +2787,84 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             marginBottom: '8px',
             justifyContent: 'flex-end',
           }}>
-            {showDensityLayer && (
-              <div style={{
-                width: '28px', height: '28px',
-                borderRadius: '8px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'hsl(var(--primary))',
-                color: 'hsl(var(--primary-foreground))',
-                boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
-              }}>
-                <Layers style={{ width: '14px', height: '14px' }} />
-              </div>
-            )}
-            {showMovementPaths && (
-              <div style={{
-                width: '28px', height: '28px',
-                borderRadius: '8px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'hsl(var(--primary))',
-                color: 'hsl(var(--primary-foreground))',
-                boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
-              }}>
-                <Route style={{ width: '14px', height: '14px' }} />
-              </div>
-            )}
-            {showParking && (
-              <div style={{
-                width: '28px', height: '28px',
-                borderRadius: '8px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'hsl(var(--primary))',
-                color: 'hsl(var(--primary-foreground))',
-                boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
-              }}>
-                <Car style={{ width: '14px', height: '14px' }} />
-              </div>
-            )}
-            {showLiveStats && (
-              <div style={{
-                width: '28px', height: '28px',
-                borderRadius: '8px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'hsl(var(--primary))',
-                color: 'hsl(var(--primary-foreground))',
-                boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
-              }}>
-                <BarChart3 style={{ width: '14px', height: '14px' }} />
-              </div>
-            )}
+            <AnimatePresence mode="popLayout">
+              {showDensityLayer && (
+                <motion.div
+                  key="chip-density"
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.6 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                  style={{
+                    width: '28px', height: '28px',
+                    borderRadius: '8px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'hsl(var(--primary))',
+                    color: 'hsl(var(--primary-foreground))',
+                    boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
+                  }}
+                >
+                  <Layers style={{ width: '14px', height: '14px' }} />
+                </motion.div>
+              )}
+              {showMovementPaths && (
+                <motion.div
+                  key="chip-paths"
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.6 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                  style={{
+                    width: '28px', height: '28px',
+                    borderRadius: '8px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'hsl(var(--primary))',
+                    color: 'hsl(var(--primary-foreground))',
+                    boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
+                  }}
+                >
+                  <Route style={{ width: '14px', height: '14px' }} />
+                </motion.div>
+              )}
+              {showParking && (
+                <motion.div
+                  key="chip-parking"
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.6 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                  style={{
+                    width: '28px', height: '28px',
+                    borderRadius: '8px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'hsl(var(--primary))',
+                    color: 'hsl(var(--primary-foreground))',
+                    boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
+                  }}
+                >
+                  <Car style={{ width: '14px', height: '14px' }} />
+                </motion.div>
+              )}
+              {showLiveStats && (
+                <motion.div
+                  key="chip-stats"
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.6 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                  style={{
+                    width: '28px', height: '28px',
+                    borderRadius: '8px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'hsl(var(--primary))',
+                    color: 'hsl(var(--primary-foreground))',
+                    boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
+                  }}
+                >
+                  <BarChart3 style={{ width: '14px', height: '14px' }} />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
 
