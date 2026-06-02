@@ -149,10 +149,10 @@ describe("useBottomNavigation", () => {
       const initialTab = result.current.activeTab;
 
       act(() => {
-        result.current.handleTabChange("favorites");
+        result.current.handleTabChange("explore");
       });
 
-      expect(onBeforeNavigate).toHaveBeenCalledWith("favorites");
+      expect(onBeforeNavigate).toHaveBeenCalledWith("explore");
       expect(mockNavigate).not.toHaveBeenCalled();
       expect(result.current.activeTab).toBe(initialTab);
     });
