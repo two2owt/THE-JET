@@ -507,7 +507,7 @@ const Auth = () => {
 
       <div className="relative z-10 mx-auto w-full max-w-[420px] sm:max-w-md">
         {/* Glassmorphic Card */}
-        <div className="flex flex-col gap-fluid-md sm:gap-fluid-lg rounded-3xl border-hairline bg-background/30 p-fluid-md sm:p-fluid-lg backdrop-blur-2xl glow-ambient">
+        <div className="flex flex-col gap-fluid-sm sm:gap-fluid-md rounded-3xl border-hairline bg-background/30 p-fluid-sm sm:p-fluid-md lg:p-fluid-lg backdrop-blur-2xl glow-ambient">
           {/* Header */}
           <div className="flex flex-col items-center gap-fluid-xs sm:gap-fluid-sm text-center">
             <div className="relative flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center">
