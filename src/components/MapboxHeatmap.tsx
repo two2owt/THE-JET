@@ -899,6 +899,13 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           if (isInitialGeolocate && onNearestCityDetected) {
             onNearestCityDetected(nearestCity);
           }
+
+          // If the user is in "Use Current Location" mode, keep the parent's
+          // selectedCity in sync with the nearest detected city so data filters
+          // (deals, density, paths) match where the user actually is.
+          if (isUsingCurrentLocationRef.current && nearestCity.id !== selectedCity.id) {
+            onCityChange(nearestCity);
+          }
           
           // Only fly to user location on initial load (default behavior)
           // After that, users can pan/zoom freely without being pulled back
