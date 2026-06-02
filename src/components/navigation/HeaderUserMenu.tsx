@@ -181,21 +181,17 @@ export function HeaderUserMenu({
  */
 function PaperPlaneFallback() {
   return (
-    <img
-      src={jetPaperPlaneAsset.url}
-      alt=""
+    <Send
       aria-hidden="true"
-      draggable={false}
+      strokeWidth={2.25}
       style={{
-        width: "62%",
-        height: "62%",
-        objectFit: "contain",
-        objectPosition: "center",
-        // Slight optical centering — the plane's mass sits lower-left
-        transform: "translate(1%, 2%)",
-        filter: "drop-shadow(0 1px 2px hsl(var(--background) / 0.4))",
+        width: "52%",
+        height: "52%",
+        color: "hsl(var(--primary-foreground))",
+        // Optical centering — paper-plane mass sits lower-left
+        transform: "translate(-4%, 4%) rotate(0deg)",
+        filter: "drop-shadow(0 1px 2px hsl(0 0% 0% / 0.35))",
         pointerEvents: "none",
-        userSelect: "none",
       }}
     />
   );
