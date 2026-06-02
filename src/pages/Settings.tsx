@@ -512,23 +512,9 @@ const Settings = () => {
           </div>
         </Card>
 
-        {/* Danger Zone - Account Deletion */}
+        {/* Account — email, password, and account deletion */}
         {userId && (
-          <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 border-destructive/30 bg-card/90 backdrop-blur-xl shadow-card">
-            <SectionTitle
-              subtitle="Permanently delete your account and all associated data"
-              className="mb-0"
-            >
-              <span className="inline-flex items-center gap-2 text-destructive">
-                <Trash2 className="w-5 h-5" />
-                Danger Zone
-              </span>
-            </SectionTitle>
-
-            <Separator />
-
-            <DeleteAccountDialog userId={userId} />
-          </Card>
+          <AccountSection userId={userId} currentEmail={user?.email} />
         )}
 
         {/* Save Button — only appears when notification/location toggles changed.
