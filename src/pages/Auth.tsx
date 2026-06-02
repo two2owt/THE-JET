@@ -477,12 +477,12 @@ const Auth = () => {
       {/* Editorial vignette — keeps focus on the card */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,hsl(0_0%_0%/0.55)_100%)]" />
 
-      <div className="relative z-10 w-full max-w-md">
+      <div className="relative z-10 mx-auto w-full max-w-[420px] sm:max-w-md">
         {/* Glassmorphic Card */}
-        <div className="flex flex-col gap-fluid-lg rounded-2xl border-hairline bg-background/30 p-fluid-lg backdrop-blur-2xl glow-ambient">
+        <div className="flex flex-col gap-fluid-md sm:gap-fluid-lg rounded-3xl border-hairline bg-background/30 p-fluid-md sm:p-fluid-lg backdrop-blur-2xl glow-ambient">
           {/* Header */}
-          <div className="flex flex-col items-center gap-fluid-sm text-center">
-            <div className="relative flex h-20 w-20 items-center justify-center">
+          <div className="flex flex-col items-center gap-fluid-xs sm:gap-fluid-sm text-center">
+            <div className="relative flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center">
               <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,hsl(var(--primary)/0.25)_0%,transparent_70%)] blur-md" />
               <img
                 src={jetLogo}
