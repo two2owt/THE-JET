@@ -355,7 +355,7 @@ export default function Profile() {
   if (!user) {
     return (
       <PageLayout defaultTab="map" notificationCount={0} headerConfig={headerConfig}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg" style={{ maxWidth: '1280px', marginLeft: 'auto', marginRight: 'auto', padding: 'clamp(16px, 3vw, 24px)' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg">
           <EmptyState icon={User} title="Sign in to view profile" description="Create an account to access your profile, manage settings, and track your activity" actionLabel="Sign In" onAction={() => navigate("/auth")} />
         </div>
       </PageLayout>
@@ -454,7 +454,7 @@ export default function Profile() {
               <Separator className="my-6" />
 
             {/* Profile Form */}
-              <div className="space-y-4" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="display_name">Display Name *</Label>
                 <Input
@@ -553,7 +553,7 @@ export default function Profile() {
               {isEditing && <>
                   <Separator className="my-6" />
                   
-                  <div className="space-y-4" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div className="space-y-4">
                     <Label>Social Media Links</Label>
                     
                     <div className="space-y-2">
@@ -628,7 +628,7 @@ export default function Profile() {
                 </>
               )}
 
-              {isEditing && <div className="flex gap-2 pt-4" style={{ display: 'flex', gap: '8px', paddingTop: '16px' }}>
+              {isEditing && <div className="flex gap-2 pt-4">
                   <Button onClick={handleSaveProfile} disabled={isSaving || !displayName.trim()} className="flex-1" variant="jet">
                     {isSaving ? <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />

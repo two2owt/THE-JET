@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useId } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface MovementPathData {
@@ -21,6 +21,8 @@ export const useMovementPaths = (filters: MovementPathFilters = {}) => {
   const [pathData, setPathData] = useState<MovementPathData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Per-instance channel name prevents silent dedupe on remount.
+  const instanceId = useId();
 
   const loadPathData = async () => {
     try {
@@ -52,7 +54,7 @@ export const useMovementPaths = (filters: MovementPathFilters = {}) => {
 
     // Set up realtime subscription to user_locations
     const channel = supabase
-      .channel('movement-path-updates')
+      .channel(`movement-path-updates:${instanceId}`)
       .on(
         'postgres_changes',
         {
@@ -61,7 +63,6 @@ export const useMovementPaths = (filters: MovementPathFilters = {}) => {
           table: 'user_locations',
         },
         () => {
-          console.log('New location added, refreshing movement paths');
           loadPathData();
         }
       )
@@ -70,7 +71,7 @@ export const useMovementPaths = (filters: MovementPathFilters = {}) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [filters.timeFilter, filters.minFrequency]);
+  }, [filters.timeFilter, filters.minFrequency, instanceId]);
 
   return { pathData, loading, error, refresh: loadPathData };
 };

@@ -207,9 +207,6 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
 
       if (error) throw error;
       
-      console.log('User location:', userLocation);
-      console.log('Raw deals data:', data);
-      
       // Calculate distances for deals with neighborhood data
       const dealsWithDistance = (data || []).map(deal => {
         if (userLocation && deal.neighborhoods) {
@@ -219,14 +216,11 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
             deal.neighborhoods.center_lat,
             deal.neighborhoods.center_lng
           );
-          console.log(`Deal ${deal.title} distance: ${distance}km`);
           return { ...deal, distance };
         }
-        console.log(`Deal ${deal.title} - no location data`);
         return deal;
       });
 
-      console.log('Deals with distance:', dealsWithDistance);
       setDeals(dealsWithDistance);
       
       // Extract unique categories
@@ -242,13 +236,9 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
 
   const filterDeals = () => {
     let filtered = [...deals];
-    
-    console.log('Starting filterDeals with', deals.length, 'deals');
-    console.log('User location available:', !!userLocation);
-    
+
     // Apply preference-based filter if enabled - but only if it would leave some results
     if (preferenceFilterEnabled && userPreferences?.categories && userPreferences.categories.length > 0) {
-      const beforeFilter = filtered.length;
       const filteredByPreference = filtered.filter(deal => {
         const dealCategory = dealTypeToCategory[deal.deal_type] || deal.deal_type;
         return userPreferences.categories!.some(cat => 
@@ -259,31 +249,21 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
       // Only apply preference filter if it leaves some results, otherwise show all
       if (filteredByPreference.length > 0) {
         filtered = filteredByPreference;
-        console.log(`Preference filter: ${beforeFilter} -> ${filtered.length} deals`);
-      } else {
-        console.log(`Preference filter would return 0 deals, showing all ${beforeFilter} deals instead`);
       }
     }
     
     // Apply location-based filter if user location is available
     if (userLocation) {
-      const beforeFilter = filtered.length;
       filtered = filtered.filter(deal => {
         // Only show deals with distance data
         if (deal.distance === undefined) {
-          console.log(`Excluding ${deal.title} - no distance data`);
           return false;
         }
         
         // Get dynamic radius based on neighborhood
         const radius = getDynamicRadius(deal.neighborhoods?.name);
-        const isWithinRadius = deal.distance <= radius;
-        
-        console.log(`${deal.title}: ${deal.distance.toFixed(2)}km (max: ${radius}km) - ${isWithinRadius ? 'INCLUDED' : 'EXCLUDED'}`);
-        return isWithinRadius;
+        return deal.distance <= radius;
       });
-      
-      console.log(`Location filter: ${beforeFilter} -> ${filtered.length} deals`);
 
       // Sort by distance (closest first)
       filtered.sort((a, b) => {
@@ -291,22 +271,17 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
         if (b.distance === undefined) return -1;
         return a.distance - b.distance;
       });
-    } else {
-      console.log('No user location - showing all deals');
     }
     
     // Apply category filter (manual override)
     if (selectedCategories.length > 0) {
-      const beforeFilter = filtered.length;
       filtered = filtered.filter(deal => 
         selectedCategories.includes(deal.deal_type)
       );
-      console.log(`Category filter: ${beforeFilter} -> ${filtered.length} deals`);
     }
     
     // Apply search filter
     if (searchQuery.trim()) {
-      const beforeFilter = filtered.length;
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (deal) =>
@@ -315,10 +290,8 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
           deal.venue_name.toLowerCase().includes(query) ||
           deal.deal_type.toLowerCase().includes(query)
       );
-      console.log(`Search filter: ${beforeFilter} -> ${filtered.length} deals`);
     }
-    
-    console.log('Final filtered deals:', filtered.length);
+
     setFilteredDeals(filtered);
   };
 

@@ -1,5 +1,5 @@
-import { useEffect, lazy, Suspense } from "react";
-import { useNavigate } from "react-router";
+import { lazy, Suspense } from "react";
+import { Navigate, useNavigate } from "react-router";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Shield, ArrowLeft } from "lucide-react";
@@ -16,12 +16,6 @@ export default function AdminDashboard() {
   const { isAdmin, loading } = useIsAdmin();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!loading && !isAdmin) {
-      navigate('/');
-    }
-  }, [isAdmin, loading, navigate]);
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -30,8 +24,9 @@ export default function AdminDashboard() {
     );
   }
 
+  // Route-level guard: non-admins are redirected before any admin UI renders.
   if (!isAdmin) {
-    return null;
+    return <Navigate to="/" replace />;
   }
 
   return (

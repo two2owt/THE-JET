@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useId } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface DensityData {
@@ -23,6 +23,9 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
   const [error, setError] = useState<string | null>(null);
   const lastDataHashRef = useRef<string>('');
   const isLoadingRef = useRef(false);
+  // Per-instance channel name prevents the Supabase client from silently
+  // deduping concurrent subscriptions when the hook remounts (e.g. city switch).
+  const instanceId = useId();
 
   const loadDensityData = useCallback(async () => {
     // Prevent concurrent requests
@@ -65,7 +68,7 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
     // Set up realtime subscription with debounce
     let debounceTimer: NodeJS.Timeout;
     const channel = supabase
-      .channel('location-density-updates')
+      .channel(`location-density-updates:${instanceId}`)
       .on(
         'postgres_changes',
         {
@@ -77,7 +80,6 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
           // Debounce to prevent rapid re-fetching
           clearTimeout(debounceTimer);
           debounceTimer = setTimeout(() => {
-            console.log('New location added, refreshing density data');
             loadDensityData();
           }, 2000);
         }
@@ -88,7 +90,7 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
       clearTimeout(debounceTimer);
       supabase.removeChannel(channel);
     };
-  }, [loadDensityData]);
+  }, [loadDensityData, instanceId]);
 
   return { densityData, loading, error, refresh: loadDensityData };
 };
