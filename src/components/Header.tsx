@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { Search, Sparkles } from "lucide-react";
+import { Search } from "lucide-react";
 import { IconButton } from "./ui/icon-button";
 import { supabase } from "@/integrations/supabase/client";
 import { useSearchHistory } from "@/hooks/useSearchHistory";
@@ -158,10 +158,11 @@ export const Header = () => {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
               flexShrink: 0,
               height: 'var(--touch-target-min, 44px)',
-              padding: '0 4px',
+              paddingLeft: '2px',
+              paddingRight: 'clamp(8px, 1.5vw, 14px)',
+              marginRight: 'clamp(4px, 1vw, 8px)',
               cursor: 'default',
               userSelect: 'none',
               opacity: mounted ? 1 : 0,
@@ -169,18 +170,9 @@ export const Header = () => {
               transition: 'opacity 0.4s ease-out, transform 0.4s ease-out',
             }}
           >
-            <Sparkles
-              style={{
-                width: 'clamp(16px, 2.5vw, 20px)',
-                height: 'clamp(16px, 2.5vw, 20px)',
-                color: 'hsl(var(--primary))',
-                filter: 'drop-shadow(0 0 6px hsl(var(--primary) / 0.5))',
-              }}
-              aria-hidden="true"
-            />
             <span
               style={{
-                fontSize: 'clamp(18px, 3vw, 24px)',
+                fontSize: 'clamp(16px, 2.6vw, 22px)',
                 lineHeight: 1,
                 fontWeight: 800,
                 letterSpacing: '-0.025em',
@@ -189,6 +181,7 @@ export const Header = () => {
                 backgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 color: 'transparent',
+                whiteSpace: 'nowrap',
               }}
             >
               JET
