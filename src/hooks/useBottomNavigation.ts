@@ -21,17 +21,14 @@ export function useBottomNavigation(options: UseBottomNavigationOptions = {}) {
 
   // Determine initial tab from URL or default
   const getTabFromLocation = useCallback((): NavTab => {
-    // If we're on a dedicated page, use that as the tab
-    if (location.pathname === "/favorites") return "favorites";
-    
-    // Otherwise check URL params for Index page tabs
+    // Check URL params for Index page tabs
     const searchParams = new URLSearchParams(location.search);
     const tabParam = searchParams.get("tab");
     if (tabParam === "explore") return "explore";
     if (tabParam === "notifications") return "notifications";
     
     return defaultTab;
-  }, [location.pathname, location.search, defaultTab]);
+  }, [location.search, defaultTab]);
 
   const [activeTab, setActiveTab] = useState<NavTab>(getTabFromLocation);
 
