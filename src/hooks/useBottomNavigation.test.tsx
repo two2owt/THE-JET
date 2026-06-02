@@ -109,17 +109,17 @@ describe("useBottomNavigation", () => {
       expect(result.current.activeTab).toBe("notifications");
     });
 
-    it("should navigate to /favorites when favorites is selected", () => {
+    it("should navigate to /?tab=explore when explore is selected", () => {
       const { result } = renderHook(() => useBottomNavigation(), {
         wrapper: createWrapper("/"),
       });
 
       act(() => {
-        result.current.handleTabChange("favorites");
+        result.current.handleTabChange("explore");
       });
 
-      expect(mockNavigate).toHaveBeenCalledWith("/favorites");
-      expect(result.current.activeTab).toBe("favorites");
+      expect(mockNavigate).toHaveBeenCalledWith("/?tab=explore", { replace: true });
+      expect(result.current.activeTab).toBe("explore");
     });
 
   });
