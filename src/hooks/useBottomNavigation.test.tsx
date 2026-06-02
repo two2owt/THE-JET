@@ -165,11 +165,11 @@ describe("useBottomNavigation", () => {
       );
 
       act(() => {
-        result.current.handleTabChange("favorites");
+        result.current.handleTabChange("explore");
       });
 
-      expect(mockNavigate).toHaveBeenCalledWith("/favorites");
-      expect(result.current.activeTab).toBe("favorites");
+      expect(mockNavigate).toHaveBeenCalledWith("/?tab=explore", { replace: true });
+      expect(result.current.activeTab).toBe("explore");
     });
   });
 
