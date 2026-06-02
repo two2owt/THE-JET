@@ -633,13 +633,8 @@ const Auth = () => {
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
                       value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        setValidationErrors((prev) => ({
-                          ...prev,
-                          password: undefined,
-                        }));
-                      }}
+                      onChange={(e) => handleFieldChange("password", e.target.value)}
+                      onBlur={() => handleBlur("password")}
                       required
                       className={`pl-10 pr-12 ${
                         validationErrors.password ? "border-destructive" : ""
