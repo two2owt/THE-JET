@@ -596,21 +596,19 @@ const Auth = () => {
                     aria-hidden="true"
                     className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
                   />
-                  <Input
-                    id="auth-email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      setValidationErrors((prev) => ({ ...prev, email: undefined }));
-                    }}
-                    required
-                    className={`pl-10 ${
-                      validationErrors.email ? "border-destructive" : ""
-                    }`}
-                    autoComplete="email"
-                  />
+                    <Input
+                      id="auth-email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => handleFieldChange("email", e.target.value)}
+                      onBlur={() => handleBlur("email")}
+                      required
+                      className={`pl-10 ${
+                        validationErrors.email ? "border-destructive" : ""
+                      }`}
+                      autoComplete="email"
+                    />
                 </div>
                 {validationErrors.email && (
                   <p className="text-fluid-xs text-destructive">{validationErrors.email}</p>
