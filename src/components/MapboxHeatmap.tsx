@@ -909,8 +909,11 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           // If the user is in "Use Current Location" mode, keep the parent's
           // selectedCity in sync with the nearest detected city so data filters
           // (deals, density, paths) match where the user actually is.
-          if (isUsingCurrentLocationRef.current && nearestCity.id !== selectedCity.id) {
-            onCityChange(nearestCity);
+          if (
+            isUsingCurrentLocationRef.current &&
+            nearestCity.id !== selectedCityRef.current.id
+          ) {
+            onCityChangeRef.current(nearestCity);
           }
           
           // Only fly to user location on initial load (default behavior)
