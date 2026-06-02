@@ -2777,6 +2777,66 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           </div>
         </div>
 
+        {/* Active layer icon chips — visible when panel is collapsed */}
+        {controlsCollapsed && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            marginBottom: '8px',
+            justifyContent: 'flex-end',
+          }}>
+            {showDensityLayer && (
+              <div style={{
+                width: '28px', height: '28px',
+                borderRadius: '8px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'hsl(var(--primary))',
+                color: 'hsl(var(--primary-foreground))',
+                boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
+              }}>
+                <Layers style={{ width: '14px', height: '14px' }} />
+              </div>
+            )}
+            {showMovementPaths && (
+              <div style={{
+                width: '28px', height: '28px',
+                borderRadius: '8px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'hsl(var(--primary))',
+                color: 'hsl(var(--primary-foreground))',
+                boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
+              }}>
+                <Route style={{ width: '14px', height: '14px' }} />
+              </div>
+            )}
+            {showParking && (
+              <div style={{
+                width: '28px', height: '28px',
+                borderRadius: '8px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'hsl(var(--primary))',
+                color: 'hsl(var(--primary-foreground))',
+                boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
+              }}>
+                <Car style={{ width: '14px', height: '14px' }} />
+              </div>
+            )}
+            {showLiveStats && (
+              <div style={{
+                width: '28px', height: '28px',
+                borderRadius: '8px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'hsl(var(--primary))',
+                color: 'hsl(var(--primary-foreground))',
+                boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
+              }}>
+                <BarChart3 style={{ width: '14px', height: '14px' }} />
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Layers FAB */}
         <button
           onClick={() => { triggerHaptic('light'); setControlsCollapsed(!controlsCollapsed); }}
@@ -2806,15 +2866,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             <Layers style={{ width: '20px', height: '20px' }} />
           ) : (
             <X style={{ width: '20px', height: '20px' }} />
-          )}
-          {/* Active indicator dot */}
-          {(showDensityLayer || showMovementPaths || showParking) && controlsCollapsed && (
-            <div style={{
-              position: 'absolute', top: '-2px', right: '-2px',
-              width: '10px', height: '10px',
-              background: 'hsl(var(--accent))', borderRadius: '50%',
-              border: '2px solid hsl(var(--card))',
-            }} />
           )}
         </button>
       </div>
