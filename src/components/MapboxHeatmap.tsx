@@ -357,6 +357,13 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   useEffect(() => { localStorage.setItem(LAYER_KEYS.paths, String(showMovementPaths)); }, [showMovementPaths]);
   useEffect(() => { localStorage.setItem(LAYER_KEYS.parking, String(showParking)); }, [showParking]);
   useEffect(() => { localStorage.setItem(LAYER_KEYS.stats, String(showLiveStats)); }, [showLiveStats]);
+
+  // Persist filter / time-lapse selections to localStorage
+  useEffect(() => { localStorage.setItem(FILTER_KEYS.timeFilter, timeFilter); }, [timeFilter]);
+  useEffect(() => { localStorage.setItem(FILTER_KEYS.pathTimeFilter, pathTimeFilter); }, [pathTimeFilter]);
+  useEffect(() => { localStorage.setItem(FILTER_KEYS.dayFilter, dayFilter === undefined ? "all" : String(dayFilter)); }, [dayFilter]);
+  useEffect(() => { localStorage.setItem(FILTER_KEYS.timelapseMode, String(timelapseMode)); }, [timelapseMode]);
+  useEffect(() => { localStorage.setItem(FILTER_KEYS.timelapseSpeed, String(timelapse.speed)); }, [timelapse.speed]);
   
   // CLS fix: Defer layer controls render until map is loaded
   // This ensures controls appear immediately after map is ready, not a fixed delay
