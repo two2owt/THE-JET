@@ -93,7 +93,7 @@ export default function Favorites() {
   }
 
   return (
-    <PageLayout defaultTab="favorites" headerConfig={headerConfig}>
+    <PageLayout defaultTab="explore" headerConfig={headerConfig}>
       <PageShell>
         <TabPageHeader
           title="Your Favorites"
