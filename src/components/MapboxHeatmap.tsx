@@ -522,10 +522,13 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     timelapse.setSpeed(1);
     timelapse.setHour(new Date().getHours());
 
-    // Strip layers from URL
+    // Strip layers and filters from URL
     try {
       const params = new URLSearchParams(window.location.search);
       params.delete('layers');
+      params.delete('time');
+      params.delete('day');
+      params.delete('pathTime');
       const search = params.toString();
       const newUrl = search ? `${window.location.pathname}?${search}` : window.location.pathname;
       window.history.replaceState(null, '', newUrl);
