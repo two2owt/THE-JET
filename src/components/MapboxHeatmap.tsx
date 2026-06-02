@@ -258,7 +258,18 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     }
   };
 
-  const getPersistedTimeFilter = (key: string, fallback: 'all' | 'today' | 'this_week' | 'this_hour'): 'all' | 'today' | 'this_week' | 'this_hour' => {
+  const getPersistedTimeFilter = (
+    key: string,
+    fallback: 'all' | 'today' | 'this_week' | 'this_hour',
+    urlKey?: string
+  ): 'all' | 'today' | 'this_week' | 'this_hour' => {
+    try {
+      if (urlKey) {
+        const params = new URLSearchParams(window.location.search);
+        const raw = params.get(urlKey);
+        if (raw && VALID_TIME_FILTERS.has(raw as any)) return raw as 'all' | 'today' | 'this_week' | 'this_hour';
+      }
+    } catch { /* ignore */ }
     try {
       const raw = localStorage.getItem(key);
       if (raw && VALID_TIME_FILTERS.has(raw as any)) return raw as 'all' | 'today' | 'this_week' | 'this_hour';
@@ -267,6 +278,14 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   };
 
   const getPersistedDayFilter = (): number | undefined => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const raw = params.get('day');
+      if (raw !== null) {
+        const n = parseInt(raw, 10);
+        if (!Number.isNaN(n) && n >= 0 && n <= 6) return n;
+      }
+    } catch { /* ignore */ }
     try {
       const raw = localStorage.getItem(FILTER_KEYS.dayFilter);
       if (raw === null || raw === "undefined" || raw === "all") return undefined;
@@ -300,7 +319,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [showParking, setShowParking] = useState(() => getLayerState("parking", false));
   // Live Stats panel — hidden by default, opt-in via layers toggle
   const [showLiveStats, setShowLiveStats] = useState(() => getLayerState("stats", false));
-  const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.timeFilter, 'all'));
+  const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.timeFilter, 'all', 'time'));
   const [hourFilter, setHourFilter] = useState<number | undefined>();
   const [dayFilter, setDayFilter] = useState<number | undefined>(() => getPersistedDayFilter());
   // Auto-detect time of day based on local time
@@ -325,32 +344,46 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
   // Movement paths state
   const [showMovementPaths, setShowMovementPaths] = useState(() => getLayerState("paths", false));
-  const [pathTimeFilter, setPathTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.pathTimeFilter, 'all'));
+  const [pathTimeFilter, setPathTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.pathTimeFilter, 'all', 'pathTime'));
 
-  // Sync active layer toggles to URL query params for shareability
-  const syncLayersToUrl = useCallback(() => {
+  // Sync active layer toggles and filter selections to URL query params for shareability
+  const syncUrlParams = useCallback(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    // Layers
     const active: LayerName[] = [];
     if (showDensityLayer) active.push("density");
     if (showMovementPaths) active.push("paths");
     if (showParking) active.push("parking");
     if (showLiveStats) active.push("stats");
-    const params = new URLSearchParams(window.location.search);
-    const current = params.get("layers");
-    const next = active.length > 0 ? active.join(",") : null;
-    if (next === current) return;
-    if (next) {
-      params.set("layers", next);
-    } else {
-      params.delete("layers");
+    const currentLayers = params.get("layers");
+    const nextLayers = active.length > 0 ? active.join(",") : null;
+    if (nextLayers !== currentLayers) {
+      if (nextLayers) {
+        params.set("layers", nextLayers);
+      } else {
+        params.delete("layers");
+      }
     }
+
+    // Filters
+    if (timeFilter !== 'all') params.set("time", timeFilter);
+    else params.delete("time");
+
+    if (dayFilter !== undefined) params.set("day", String(dayFilter));
+    else params.delete("day");
+
+    if (pathTimeFilter !== 'all') params.set("pathTime", pathTimeFilter);
+    else params.delete("pathTime");
+
     const search = params.toString();
     const newUrl = search ? `${window.location.pathname}?${search}` : window.location.pathname;
     window.history.replaceState(null, "", newUrl);
-  }, [showDensityLayer, showMovementPaths, showParking, showLiveStats]);
+  }, [showDensityLayer, showMovementPaths, showParking, showLiveStats, timeFilter, dayFilter, pathTimeFilter]);
 
   useEffect(() => {
-    syncLayersToUrl();
-  }, [syncLayersToUrl]);
+    syncUrlParams();
+  }, [syncUrlParams]);
 
   // Persist layer toggles to localStorage as fallback
   useEffect(() => { localStorage.setItem(LAYER_KEYS.density, String(showDensityLayer)); }, [showDensityLayer]);
@@ -489,10 +522,13 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     timelapse.setSpeed(1);
     timelapse.setHour(new Date().getHours());
 
-    // Strip layers from URL
+    // Strip layers and filters from URL
     try {
       const params = new URLSearchParams(window.location.search);
       params.delete('layers');
+      params.delete('time');
+      params.delete('day');
+      params.delete('pathTime');
       const search = params.toString();
       const newUrl = search ? `${window.location.pathname}?${search}` : window.location.pathname;
       window.history.replaceState(null, '', newUrl);
