@@ -1,5 +1,4 @@
 import { LucideIcon } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
 
 interface LayerToggleRowProps {
   label: string;
@@ -12,9 +11,11 @@ interface LayerToggleRowProps {
 /**
  * Single layer toggle row used inside the map's Layers panel.
  *
- * Renders as `div role="button"` (not `<button>`) so the inner Radix
- * `<Switch>` — which itself renders a `<button>` — does not produce
- * an invalid button-in-button DOM nesting warning.
+ * Tap-to-toggle pill with a glassmorphic Dark Luxe finish — no nested
+ * Switch control. Active state uses the JET primary→primary-glow gradient
+ * with a soft outer glow; inactive state is a subtle hairline-bordered
+ * glass row. A small status dot replaces the previous Switch so the row
+ * never reads as two stacked toggles.
  */
 export const LayerToggleRow = ({
   label,
@@ -42,48 +43,85 @@ export const LayerToggleRow = ({
         width: "100%",
         display: "flex",
         alignItems: "center",
-        gap: "8px",
-        padding: "8px",
-        borderRadius: "8px",
+        gap: "10px",
+        padding: "8px 10px",
+        borderRadius: "10px",
         fontSize: "11px",
         fontWeight: 600,
-        transition: "all 0.2s",
+        letterSpacing: "0.01em",
+        transition:
+          "background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms ease, box-shadow 220ms ease, color 220ms ease",
         cursor: "pointer",
         userSelect: "none",
         border: active
-          ? "1px solid hsl(var(--primary) / 0.3)"
-          : "1px solid transparent",
+          ? "1px solid hsl(var(--primary) / 0.45)"
+          : "1px solid hsl(var(--border) / 0.5)",
         background: active
-          ? "hsl(var(--primary) / 0.15)"
-          : "hsl(var(--secondary) / 0.3)",
-        color: active ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
+          ? "linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--primary-glow) / 0.14))"
+          : "hsl(var(--card) / 0.5)",
+        backdropFilter: "blur(12px) saturate(1.4)",
+        WebkitBackdropFilter: "blur(12px) saturate(1.4)",
+        boxShadow: active
+          ? "0 8px 24px -10px hsl(var(--primary) / 0.55), inset 0 0 0 1px hsl(var(--primary-glow) / 0.18)"
+          : "inset 0 0 0 1px hsl(0 0% 100% / 0.03)",
+        color: active ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
       }}
     >
       <div
         style={{
-          width: "24px",
-          height: "24px",
-          borderRadius: "6px",
+          width: "26px",
+          height: "26px",
+          borderRadius: "8px",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          flexShrink: 0,
           background: active
-            ? "hsl(var(--primary))"
-            : "hsl(var(--muted-foreground) / 0.12)",
+            ? "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))"
+            : "hsl(var(--background) / 0.6)",
           color: active
             ? "hsl(var(--primary-foreground))"
             : "hsl(var(--muted-foreground))",
-          transition: "background 0.2s, color 0.2s",
+          border: active
+            ? "1px solid transparent"
+            : "1px solid hsl(var(--border) / 0.6)",
+          boxShadow: active
+            ? "0 4px 12px -4px hsl(var(--primary) / 0.6)"
+            : "none",
+          transition: "background 220ms ease, color 220ms ease, box-shadow 220ms ease",
         }}
       >
-        <Icon style={{ width: "14px", height: "14px" }} />
+        <Icon style={{ width: "14px", height: "14px" }} strokeWidth={2.25} />
       </div>
-      <span>{label}</span>
-      <Switch
-        checked={active}
-        tabIndex={-1}
+      <span
+        className="font-display"
+        style={{
+          flex: 1,
+          textAlign: "left",
+          fontSize: "12px",
+          fontWeight: 700,
+          letterSpacing: "-0.005em",
+          color: active ? "hsl(var(--foreground))" : "hsl(var(--foreground) / 0.75)",
+        }}
+      >
+        {label}
+      </span>
+      {/* Status dot — replaces the nested Switch */}
+      <span
         aria-hidden="true"
-        style={{ marginLeft: "auto", pointerEvents: "none" }}
+        style={{
+          width: "8px",
+          height: "8px",
+          borderRadius: "9999px",
+          flexShrink: 0,
+          background: active
+            ? "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))"
+            : "hsl(var(--muted-foreground) / 0.25)",
+          boxShadow: active
+            ? "0 0 10px hsl(var(--primary) / 0.7), 0 0 2px hsl(var(--primary-glow) / 0.6)"
+            : "inset 0 0 0 1px hsl(var(--border))",
+          transition: "background 220ms ease, box-shadow 220ms ease",
+        }}
       />
     </div>
   );
