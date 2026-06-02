@@ -17,7 +17,6 @@ import { Home, ChevronRight } from "lucide-react";
 /** Friendly labels for known path segments. Keep in sync with src/App.tsx routes. */
 const SEGMENT_LABELS: Record<string, string> = {
   profile: "Profile",
-  settings: "Settings",
   favorites: "Saved",
   social: "Crew",
   messages: "Messages",
@@ -25,11 +24,26 @@ const SEGMENT_LABELS: Record<string, string> = {
   "privacy-policy": "Privacy Policy",
   "terms-of-service": "Terms of Service",
   "verification-success": "Verification",
-  dev: "Dev",
 };
 
 /** Routes where breadcrumbs should never render. */
 const HIDDEN_ROUTES = new Set(["/", "/auth", "/onboarding"]);
+
+/** Paths that map to real routes in App.tsx. Intermediate crumbs whose
+ *  href is not in this set render as non-clickable text instead of links
+ *  (prevents users landing on NotFound via fabricated paths like
+ *  /profile/settings/social or /admin/dev). */
+const VALID_PATHS = new Set([
+  "/profile",
+  "/favorites",
+  "/social",
+  "/messages",
+  "/admin",
+  "/privacy-policy",
+  "/terms-of-service",
+  "/verification-success",
+  "/unsubscribe",
+]);
 
 const humanize = (slug: string): string =>
   slug
@@ -58,6 +72,7 @@ export function Breadcrumbs() {
         label: SEGMENT_LABELS[seg] ?? humanize(seg),
         href,
         isCurrent: idx === segments.length - 1,
+        isValid: VALID_PATHS.has(href),
       };
     });
   }, [pathname]);
@@ -109,14 +124,20 @@ export function Breadcrumbs() {
                 <ChevronRight style={{ width: 12, height: 12, flexShrink: 0 }} />
               </li>
               <li className="flex items-center shrink-0" style={{ listStyle: "none" }}>
-                {crumb.isCurrent ? (
+                {crumb.isCurrent || !crumb.isValid ? (
                   <span
-                    aria-current="page"
-                    className="rounded-md px-1.5 py-1 text-foreground"
+                    aria-current={crumb.isCurrent ? "page" : undefined}
+                    className={
+                      crumb.isCurrent
+                        ? "rounded-md px-1.5 py-1 text-foreground"
+                        : "rounded-md px-1.5 py-1 text-muted-foreground"
+                    }
                     style={{
+                      ...(crumb.isCurrent ? {
                       background:
                         "linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(var(--accent) / 0.12))",
                       boxShadow: "inset 0 0 0 1px hsl(var(--primary) / 0.18)",
+                      } : {}),
                     }}
                   >
                     {crumb.label}
