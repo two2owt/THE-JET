@@ -234,6 +234,9 @@ export const Header = () => {
             and shrink the input. */}
         {!showSearchBar && <div style={{ flex: '1 1 0%', minWidth: 0 }} />}
 
+        {/* Spacer pushes avatar flush to the right edge of the header */}
+        <div style={{ flex: '1 1 0%', minWidth: 0 }} />
+
         {/* Avatar + dropdown menu (Profile / Settings / Admin / Sign out) */}
         <HeaderUserMenu
           mounted={mounted}
