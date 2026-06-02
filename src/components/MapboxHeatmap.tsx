@@ -211,8 +211,20 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     return () => { mounted = false; };
   }, [retryCount]); // Re-run when retryCount changes
   
-  // Layer persistence helpers
+  // Layer persistence helpers (URL params take priority, localStorage fallback)
   const getLayerState = (key: string, fallback: boolean): boolean => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const layers = params.get("layers");
+      if (layers !== null) {
+        const set = new Set(layers.split(",").map((s) => s.trim()));
+        if (key === "jet-map-layer-density") return set.has("density");
+        if (key === "jet-map-layer-parking") return set.has("parking");
+        if (key === "jet-map-layer-paths") return set.has("paths");
+      }
+    } catch {
+      // ignore
+    }
     try {
       const raw = localStorage.getItem(key);
       return raw !== null ? raw === "true" : fallback;
@@ -251,7 +263,31 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [showMovementPaths, setShowMovementPaths] = useState(() => getLayerState("jet-map-layer-paths", false));
   const [pathTimeFilter, setPathTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>('all');
 
-  // Persist layer toggles to localStorage
+  // Sync active layer toggles to URL query params for shareability
+  const syncLayersToUrl = useCallback(() => {
+    const active: string[] = [];
+    if (showDensityLayer) active.push("density");
+    if (showMovementPaths) active.push("paths");
+    if (showParking) active.push("parking");
+    const params = new URLSearchParams(window.location.search);
+    const current = params.get("layers");
+    const next = active.length > 0 ? active.join(",") : null;
+    if (next === current) return;
+    if (next) {
+      params.set("layers", next);
+    } else {
+      params.delete("layers");
+    }
+    const search = params.toString();
+    const newUrl = search ? `${window.location.pathname}?${search}` : window.location.pathname;
+    window.history.replaceState(null, "", newUrl);
+  }, [showDensityLayer, showMovementPaths, showParking]);
+
+  useEffect(() => {
+    syncLayersToUrl();
+  }, [syncLayersToUrl]);
+
+  // Persist layer toggles to localStorage as fallback
   useEffect(() => { localStorage.setItem("jet-map-layer-density", String(showDensityLayer)); }, [showDensityLayer]);
   useEffect(() => { localStorage.setItem("jet-map-layer-paths", String(showMovementPaths)); }, [showMovementPaths]);
   useEffect(() => { localStorage.setItem("jet-map-layer-parking", String(showParking)); }, [showParking]);
