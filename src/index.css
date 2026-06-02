@@ -1111,3 +1111,8 @@ All colors MUST be HSL.
 @media (prefers-reduced-motion: reduce) {
   .heatmap-skeleton-shimmer { animation: none; opacity: 0; }
 }
+
+/* Hide default chevron on map filter SelectTriggers — icon + label already
+   communicate the selection affordance, and keeping the trigger as a single
+   row prevents the chevron from wrapping below the label on narrow panels. */
+.map-filter-pill > svg { display: none !important; }
