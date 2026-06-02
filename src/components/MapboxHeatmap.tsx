@@ -453,6 +453,11 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const initialTimelapseSpeed = useRef(getPersistedTimelapseSpeed());
   const timelapse = useHeatmapTimelapse(dayFilter, initialTimelapseSpeed.current);
 
+  // Persist timelapse playback speed
+  useEffect(() => {
+    localStorage.setItem(FILTER_KEYS.timelapseSpeed, String(timelapse.speed));
+  }, [timelapse.speed]);
+
   // Handle map resize on viewport changes - optimized for all mobile devices
   useEffect(() => {
     let resizeTimeout: ReturnType<typeof setTimeout>;
