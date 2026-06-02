@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
 
-export type NavTab = "map" | "explore" | "notifications" | "favorites";
+export type NavTab = "map" | "explore" | "notifications";
 
 interface UseBottomNavigationOptions {
   /** The default tab when on this page */
