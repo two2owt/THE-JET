@@ -2824,7 +2824,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
       {/* Statistics Panel - Shows active data counts */}
       {/* CRITICAL: Uses only opacity transition to avoid CLS - no translate/scale animations */}
-      {(showDensityLayer || showMovementPaths) && (densityData || pathData) && (
+      {/* Hidden by default — only renders when the user explicitly enables the Live Stats layer toggle */}
+      {showLiveStats && (showDensityLayer || showMovementPaths) && (densityData || pathData) && (
         <div 
           style={{
             position: 'absolute',
