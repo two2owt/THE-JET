@@ -1,4 +1,4 @@
-import { MapPinned, Flame, Bell, Heart } from "lucide-react";
+import { MapPinned, Flame, Bell } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type NavItem = "map" | "explore" | "notifications" | "favorites";
