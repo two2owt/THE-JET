@@ -50,9 +50,6 @@ import { Map as MapIcon, Bell } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
-// Mapbox is always ready - no deferral needed (direct-rendering architecture)
-const MAPBOX_ALWAYS_READY = true;
-
 // Top 10 most popular venues in Charlotte, NC metropolitan area with real addresses
 const charlotteVenues: Venue[] = [
   { id: "merchant-trade", name: "Merchant & Trade", lat: 35.2271, lng: -80.8393, activity: 95, category: "Rooftop Bar", neighborhood: "Uptown", address: "201 S College St, Charlotte, NC 28202" },
@@ -72,8 +69,6 @@ const Index = () => {
   
   // Use shared navigation hook for consistent tab handling
   const { activeTab, setActiveTab, handleTabChange } = useBottomNavigation({ defaultTab: "map" });
-  // Direct rendering - Mapbox loads immediately (no deferral)
-  const [isMapboxReady] = useState(MAPBOX_ALWAYS_READY);
   const [mapUIResetKey, setMapUIResetKey] = useState(0); // Increments when switching to map tab to reset collapsed UI
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [selectedParking, setSelectedParking] = useState<{ lat: number; lng: number; name?: string } | null>(null);
@@ -377,7 +372,7 @@ const Index = () => {
             <div 
               className="absolute inset-0 w-full h-full"
               style={{
-                opacity: isMapboxReady && mapboxToken ? 1 : 0,
+                opacity: mapboxToken ? 1 : 0,
                 transition: 'opacity 300ms ease-out',
               }}
             >
@@ -571,7 +566,7 @@ const Index = () => {
         onTabChange={handleTabChange}
         onPrefetch={(tab) => {
           // Prefetch Mapbox chunk on hover/touch of map tab
-          if (tab === "map" && !isMapboxReady) {
+          if (tab === "map") {
             import("@/components/MapboxHeatmap");
           }
         }}

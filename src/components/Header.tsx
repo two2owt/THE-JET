@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSearchHistory } from "@/hooks/useSearchHistory";
 import { useHeaderContext } from "@/contexts/HeaderContext";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { HeaderUserMenu } from "./navigation/HeaderUserMenu";
 import { InlineBreadcrumbs } from "./navigation/InlineBreadcrumbs";
 import { HeaderSearch } from "./navigation/HeaderSearch";
@@ -21,7 +22,7 @@ export const Header = () => {
   const [displayName, setDisplayName] = useState<string>("JT");
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const [userEmail, setUserEmail] = useState<string | undefined>(undefined);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { isAdmin } = useIsAdmin();
   const { addToSearchHistory } = useSearchHistory(userId);
   const historyDebounceRef = useRef<number | null>(null);
 
@@ -47,19 +48,6 @@ export const Header = () => {
           if (profile) {
             setAvatarUrl(profile.avatar_url);
             setDisplayName(profile.display_name || user.email?.substring(0, 2).toUpperCase() || "JT");
-          }
-          // Best-effort admin check (RLS-aware via has_role function).
-          // Failure simply leaves the Admin menu hidden — no UX impact.
-          try {
-            const { data: roleRow } = await supabase
-              .from('user_roles')
-              .select('role')
-              .eq('user_id', user.id)
-              .eq('role', 'admin')
-              .maybeSingle();
-            setIsAdmin(!!roleRow);
-          } catch {
-            setIsAdmin(false);
           }
         }
       } catch {
