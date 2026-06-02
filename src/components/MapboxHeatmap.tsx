@@ -75,6 +75,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useOpenVenues } from "@/hooks/useOpenVenues";
 import { triggerHaptic } from "@/lib/haptics";
 import { Button } from "./ui/button";
+import { LayerToggleRow } from "./map/LayerToggleRow";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Slider } from "./ui/slider";
 import { Switch } from "./ui/switch";
