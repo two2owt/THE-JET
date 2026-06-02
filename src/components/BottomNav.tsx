@@ -190,7 +190,7 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
                   transition: 'color 0.2s, transform 0.2s',
                   transform: isActive ? 'scale(1.05)' : 'scale(1)',
                 }}
-                fill={isActive && item.id === 'favorites' ? 'currentColor' : 'none'}
+                fill="none"
                 aria-hidden="true"
               />
 
