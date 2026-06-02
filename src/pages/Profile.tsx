@@ -22,7 +22,6 @@ import { z } from "zod";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { AvatarCropDialog } from "@/components/AvatarCropDialog";
-import { AccountSection } from "@/components/settings/AccountSection";
 import { useAuth } from "@/contexts/AuthContext";
 
 const profileSchema = z.object({
