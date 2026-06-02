@@ -449,6 +449,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   useEffect(() => {
     isUsingCurrentLocationRef.current = isUsingCurrentLocation;
   }, [isUsingCurrentLocation]);
+  // Mirror selectedCity + onCityChange so the (one-time) geolocate handler
+  // can sync the parent without re-subscribing on every prop change.
+  const selectedCityRef = useRef(selectedCity);
+  const onCityChangeRef = useRef(onCityChange);
+  useEffect(() => { selectedCityRef.current = selectedCity; }, [selectedCity]);
+  useEffect(() => { onCityChangeRef.current = onCityChange; }, [onCityChange]);
 
   // City selector search query
   const [citySearchQuery, setCitySearchQuery] = useState("");
