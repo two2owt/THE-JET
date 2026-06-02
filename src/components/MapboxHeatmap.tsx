@@ -2624,46 +2624,146 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
             {/* Heat filters - shown when heat is on */}
             <div style={{ overflow: 'hidden', transition: 'max-height 0.2s', maxHeight: showDensityLayer ? '240px' : '0px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '4px' }}>
-                {/* Time-lapse toggle */}
-                <Button
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '10px', paddingTop: '8px', paddingBottom: '2px' }}>
+                {/* Time-lapse toggle — glassmorphic pill matching LayerToggleRow */}
+                <button
+                  type="button"
+                  aria-pressed={timelapseMode}
                   onClick={() => {
                     triggerHaptic('medium');
                     const newMode = !timelapseMode;
                     setTimelapseMode(newMode);
                     if (newMode) timelapse.loadHourlyData();
                   }}
-                  variant={timelapseMode ? "default" : "outline"}
-                  size="sm"
-                  className="w-full h-7 text-[10px] font-semibold"
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '7px 10px',
+                    borderRadius: '10px',
+                    cursor: 'pointer',
+                    border: timelapseMode
+                      ? '1px solid hsl(var(--primary) / 0.45)'
+                      : '1px solid hsl(var(--border) / 0.5)',
+                    background: timelapseMode
+                      ? 'linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--primary-glow) / 0.14))'
+                      : 'hsl(var(--card) / 0.5)',
+                    backdropFilter: 'blur(12px) saturate(1.4)',
+                    WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
+                    boxShadow: timelapseMode
+                      ? '0 8px 24px -10px hsl(var(--primary) / 0.55), inset 0 0 0 1px hsl(var(--primary-glow) / 0.18)'
+                      : 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
+                    transition: 'background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms ease, box-shadow 220ms ease',
+                  }}
                 >
-                  <Clock className="w-3 h-3 mr-1 flex-shrink-0" />
-                  {timelapseMode ? "Time-lapse On" : "Time-lapse"}
-                </Button>
+                  <span
+                    style={{
+                      width: '22px', height: '22px', borderRadius: '7px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                      background: timelapseMode
+                        ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
+                        : 'hsl(var(--background) / 0.6)',
+                      color: timelapseMode ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
+                      border: timelapseMode ? '1px solid transparent' : '1px solid hsl(var(--border) / 0.6)',
+                      boxShadow: timelapseMode ? '0 4px 12px -4px hsl(var(--primary) / 0.6)' : 'none',
+                    }}
+                  >
+                    <Clock style={{ width: '12px', height: '12px' }} strokeWidth={2.25} />
+                  </span>
+                  <span className="font-display" style={{ flex: 1, textAlign: 'left', fontSize: '11px', fontWeight: 700, letterSpacing: '-0.005em', color: timelapseMode ? 'hsl(var(--foreground))' : 'hsl(var(--foreground) / 0.75)' }}>
+                    {timelapseMode ? 'Time-lapse On' : 'Time-lapse'}
+                  </span>
+                  <span aria-hidden="true" style={{
+                    width: '7px', height: '7px', borderRadius: '9999px', flexShrink: 0,
+                    background: timelapseMode
+                      ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
+                      : 'hsl(var(--muted-foreground) / 0.25)',
+                    boxShadow: timelapseMode
+                      ? '0 0 10px hsl(var(--primary) / 0.7), 0 0 2px hsl(var(--primary-glow) / 0.6)'
+                      : 'inset 0 0 0 1px hsl(var(--border))',
+                  }} />
+                </button>
 
-                {/* Time-lapse controls */}
+                {/* Time-lapse controls — glassmorphic card */}
                 {timelapseMode && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingTop: '4px', borderTop: '1px solid hsl(var(--border) / 0.5)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
-                      <Button onClick={() => { triggerHaptic('light'); timelapse.stepBackward(); }} variant="outline" size="sm" className="h-6 w-6 p-0" disabled={timelapse.isPlaying}><SkipBack className="w-3 h-3" /></Button>
-                      <Button onClick={() => { triggerHaptic('medium'); timelapse.isPlaying ? timelapse.pause() : timelapse.play(); }} variant={timelapse.isPlaying ? "default" : "outline"} size="sm" className="h-6 flex-1">{timelapse.isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}</Button>
-                      <Button onClick={() => { triggerHaptic('light'); timelapse.stepForward(); }} variant="outline" size="sm" className="h-6 w-6 p-0" disabled={timelapse.isPlaying}><SkipForward className="w-3 h-3" /></Button>
+                  <div style={{
+                    display: 'flex', flexDirection: 'column', gap: '8px',
+                    padding: '10px',
+                    borderRadius: '10px',
+                    background: 'hsl(var(--card) / 0.5)',
+                    border: '1px solid hsl(var(--border) / 0.5)',
+                    backdropFilter: 'blur(12px) saturate(1.4)',
+                    WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
+                    boxShadow: 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <button type="button" onClick={() => { triggerHaptic('light'); timelapse.stepBackward(); }} disabled={timelapse.isPlaying}
+                        style={{ width: '26px', height: '26px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', border: '1px solid hsl(var(--border) / 0.6)', background: 'hsl(var(--background) / 0.6)', color: 'hsl(var(--foreground) / 0.8)', cursor: timelapse.isPlaying ? 'not-allowed' : 'pointer', opacity: timelapse.isPlaying ? 0.5 : 1 }}>
+                        <SkipBack style={{ width: '12px', height: '12px' }} />
+                      </button>
+                      <button type="button" onClick={() => { triggerHaptic('medium'); timelapse.isPlaying ? timelapse.pause() : timelapse.play(); }}
+                        style={{
+                          flex: 1, height: '26px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
+                          borderRadius: '8px',
+                          border: timelapse.isPlaying ? '1px solid transparent' : '1px solid hsl(var(--border) / 0.6)',
+                          background: timelapse.isPlaying
+                            ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
+                            : 'hsl(var(--background) / 0.6)',
+                          color: timelapse.isPlaying ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
+                          fontSize: '10px', fontWeight: 700, cursor: 'pointer',
+                          boxShadow: timelapse.isPlaying ? '0 4px 12px -4px hsl(var(--primary) / 0.6)' : 'none',
+                        }}>
+                        {timelapse.isPlaying ? <Pause style={{ width: '12px', height: '12px' }} /> : <Play style={{ width: '12px', height: '12px' }} />}
+                      </button>
+                      <button type="button" onClick={() => { triggerHaptic('light'); timelapse.stepForward(); }} disabled={timelapse.isPlaying}
+                        style={{ width: '26px', height: '26px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', border: '1px solid hsl(var(--border) / 0.6)', background: 'hsl(var(--background) / 0.6)', color: 'hsl(var(--foreground) / 0.8)', cursor: timelapse.isPlaying ? 'not-allowed' : 'pointer', opacity: timelapse.isPlaying ? 0.5 : 1 }}>
+                        <SkipForward style={{ width: '12px', height: '12px' }} />
+                      </button>
                     </div>
-                    <div style={{ textAlign: 'center', fontSize: '10px', fontWeight: 600, color: 'hsl(var(--primary))' }}>{timelapse.formatHour(timelapse.currentHour)}</div>
+                    <div className="font-display" style={{ textAlign: 'center', fontSize: '11px', fontWeight: 700, letterSpacing: '0.02em', background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{timelapse.formatHour(timelapse.currentHour)}</div>
                     <Slider value={[timelapse.currentHour]} onValueChange={([v]) => timelapse.setHour(v)} min={0} max={23} step={1} className="w-full" disabled={timelapse.isPlaying} />
                     <div style={{ display: 'flex', gap: '4px' }}>
-                      {[2, 1, 0.5].map((speed) => (
-                        <Button key={speed} onClick={() => timelapse.setSpeed(speed)} variant={timelapse.speed === speed ? "default" : "outline"} size="sm" className="h-5 flex-1 text-[9px] px-1">{speed === 2 ? '0.5x' : speed === 1 ? '1x' : '2x'}</Button>
-                      ))}
+                      {[2, 1, 0.5].map((speed) => {
+                        const isActive = timelapse.speed === speed;
+                        return (
+                          <button key={speed} type="button" onClick={() => timelapse.setSpeed(speed)}
+                            style={{
+                              flex: 1, height: '22px', borderRadius: '7px',
+                              fontSize: '9px', fontWeight: 700, letterSpacing: '0.02em',
+                              border: isActive ? '1px solid transparent' : '1px solid hsl(var(--border) / 0.6)',
+                              background: isActive
+                                ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
+                                : 'hsl(var(--background) / 0.6)',
+                              color: isActive ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground) / 0.75)',
+                              boxShadow: isActive ? '0 4px 12px -4px hsl(var(--primary) / 0.6)' : 'none',
+                              cursor: 'pointer',
+                              transition: 'background 200ms ease, color 200ms ease, box-shadow 200ms ease',
+                            }}>
+                            {speed === 2 ? '0.5x' : speed === 1 ? '1x' : '2x'}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
 
-                {/* Regular filters */}
+                {/* Regular filters — glassmorphic selects */}
                 {!timelapseMode && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <Select value={timeFilter} onValueChange={(v: any) => setTimeFilter(v)}>
-                      <SelectTrigger className="h-7 text-[10px] bg-background/80"><SelectValue placeholder="Time" /></SelectTrigger>
+                      <SelectTrigger
+                        className="h-8 text-[11px] font-display font-semibold rounded-[10px] border-border/50"
+                        style={{
+                          background: 'hsl(var(--card) / 0.5)',
+                          backdropFilter: 'blur(12px) saturate(1.4)',
+                          WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
+                          boxShadow: 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
+                          letterSpacing: '-0.005em',
+                        }}
+                      >
+                        <SelectValue placeholder="Time" />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Time</SelectItem>
                         <SelectItem value="today">Today</SelectItem>
@@ -2672,7 +2772,18 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                       </SelectContent>
                     </Select>
                     <Select value={dayFilter?.toString() || "all"} onValueChange={(v) => setDayFilter(v === "all" ? undefined : parseInt(v))}>
-                      <SelectTrigger className="h-7 text-[10px] bg-background/80"><SelectValue placeholder="Day" /></SelectTrigger>
+                      <SelectTrigger
+                        className="h-8 text-[11px] font-display font-semibold rounded-[10px] border-border/50"
+                        style={{
+                          background: 'hsl(var(--card) / 0.5)',
+                          backdropFilter: 'blur(12px) saturate(1.4)',
+                          WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
+                          boxShadow: 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
+                          letterSpacing: '-0.005em',
+                        }}
+                      >
+                        <SelectValue placeholder="Day" />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Days</SelectItem>
                         {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((d, i) => (
@@ -2711,7 +2822,18 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   </div>
                 )}
                 <Select value={pathTimeFilter} onValueChange={(v: any) => setPathTimeFilter(v)}>
-                  <SelectTrigger className="h-7 text-[10px] bg-background/80"><SelectValue placeholder="Time" /></SelectTrigger>
+                  <SelectTrigger
+                    className="h-8 text-[11px] font-display font-semibold rounded-[10px] border-border/50"
+                    style={{
+                      background: 'hsl(var(--card) / 0.5)',
+                      backdropFilter: 'blur(12px) saturate(1.4)',
+                      WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
+                      boxShadow: 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
+                      letterSpacing: '-0.005em',
+                    }}
+                  >
+                    <SelectValue placeholder="Time" />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Time</SelectItem>
                     <SelectItem value="today">Today</SelectItem>
