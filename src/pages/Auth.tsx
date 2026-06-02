@@ -681,13 +681,8 @@ const Auth = () => {
                         type={showConfirmPassword ? "text" : "password"}
                         placeholder="••••••••"
                         value={confirmPassword}
-                        onChange={(e) => {
-                          setConfirmPassword(e.target.value);
-                          setValidationErrors((prev) => ({
-                            ...prev,
-                            confirmPassword: undefined,
-                          }));
-                        }}
+                        onChange={(e) => handleFieldChange("confirmPassword", e.target.value)}
+                        onBlur={() => handleBlur("confirmPassword")}
                         required
                         className={`pl-10 pr-12 ${
                           validationErrors.confirmPassword
