@@ -16,9 +16,6 @@ import { ChevronRight } from "lucide-react";
 const SEGMENT_LABELS: Record<string, string> = {
   profile: "Profile",
   settings: "Settings",
-  
-  social: "Crew",
-  messages: "Messages",
   admin: "Admin",
   "privacy-policy": "Privacy Policy",
   "terms-of-service": "Terms of Service",
@@ -26,7 +23,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   dev: "Dev",
 };
 
-const HIDDEN_ROUTES = new Set(["/", "/auth", "/onboarding"]);
+const HIDDEN_ROUTES = new Set(["/", "/auth", "/onboarding", "/messages"]);
 
 const humanize = (slug: string): string =>
   slug
