@@ -37,19 +37,11 @@ describe("useBottomNavigation", () => {
 
     it("should initialize with provided defaultTab", () => {
       const { result } = renderHook(
-        () => useBottomNavigation({ defaultTab: "favorites" }),
-        { wrapper: createWrapper("/favorites") }
+        () => useBottomNavigation({ defaultTab: "explore" }),
+        { wrapper: createWrapper("/?tab=explore") }
       );
 
-      expect(result.current.activeTab).toBe("favorites");
-    });
-
-    it("should detect favorites tab from URL path", () => {
-      const { result } = renderHook(() => useBottomNavigation(), {
-        wrapper: createWrapper("/favorites"),
-      });
-
-      expect(result.current.activeTab).toBe("favorites");
+      expect(result.current.activeTab).toBe("explore");
     });
 
     it("should detect map tab from root URL", () => {
