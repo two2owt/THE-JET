@@ -258,7 +258,18 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     }
   };
 
-  const getPersistedTimeFilter = (key: string, fallback: 'all' | 'today' | 'this_week' | 'this_hour'): 'all' | 'today' | 'this_week' | 'this_hour' => {
+  const getPersistedTimeFilter = (
+    key: string,
+    fallback: 'all' | 'today' | 'this_week' | 'this_hour',
+    urlKey?: string
+  ): 'all' | 'today' | 'this_week' | 'this_hour' => {
+    try {
+      if (urlKey) {
+        const params = new URLSearchParams(window.location.search);
+        const raw = params.get(urlKey);
+        if (raw && VALID_TIME_FILTERS.has(raw as any)) return raw as 'all' | 'today' | 'this_week' | 'this_hour';
+      }
+    } catch { /* ignore */ }
     try {
       const raw = localStorage.getItem(key);
       if (raw && VALID_TIME_FILTERS.has(raw as any)) return raw as 'all' | 'today' | 'this_week' | 'this_hour';
