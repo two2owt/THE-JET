@@ -84,9 +84,8 @@ const ROUTE_IMPORTS = {
     () => import("@/pages/Social"),
     () => import("@/pages/Profile"),
   ],
-  // Medium priority: settings, auth
+  // Medium priority: auth (Settings is now embedded inside Profile)
   medium: [
-    () => import("@/pages/Settings"),
     () => import("@/pages/Auth"),
   ],
   // Low priority: less frequently accessed
