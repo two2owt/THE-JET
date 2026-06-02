@@ -4,9 +4,9 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { MapPin, Sparkles, ChevronDown, ChevronUp, Check, Loader2, UtensilsCrossed, Wine, Moon, CalendarDays, LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Json } from "@/integrations/supabase/types";
+import { useProfile } from "@/hooks/useProfile";
 
 interface PreferencesEditorProps {
   userId: string;
@@ -72,8 +72,12 @@ const EVENTS_OPTIONS = {
 };
 
 const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const {
+    profile,
+    isLoading,
+    updatePreferences,
+    isSavingPreferences: isSaving,
+  } = useProfile(userId);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   
@@ -102,55 +106,31 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
   const [activityInArea, setActivityInArea] = useState(false);
 
   useEffect(() => {
-    loadPreferences();
-  }, [userId]);
+    if (!profile?.preferences) return;
+    const prefs = profile.preferences as unknown as ProfilePreferences;
 
-  const loadPreferences = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('preferences')
-        .eq('id', userId)
-        .single();
+    setSelectedCategories(prefs.categories || []);
+    setTrendingVenues(prefs.trendingVenues ?? true);
+    setActivityInArea(prefs.activityInArea ?? false);
 
-      if (error) throw error;
+    setFoodCuisine(prefs.food?.cuisineType || []);
+    setFoodDietary(prefs.food?.dietaryPreference || []);
+    setFoodMeal(prefs.food?.mealOccasion || []);
 
-      if (data?.preferences) {
-        const prefs = data.preferences as ProfilePreferences;
-        
-        setSelectedCategories(prefs.categories || []);
-        setTrendingVenues(prefs.trendingVenues ?? true);
-        setActivityInArea(prefs.activityInArea ?? false);
-        
-        // Food
-        setFoodCuisine(prefs.food?.cuisineType || []);
-        setFoodDietary(prefs.food?.dietaryPreference || []);
-        setFoodMeal(prefs.food?.mealOccasion || []);
-        
-        // Drink
-        setDrinkCoffee(prefs.drink?.coffeeTea || []);
-        setDrinkBar(prefs.drink?.barCocktail || []);
-        setDrinkAtmosphere(prefs.drink?.atmosphere || []);
-        
-        // Nightlife
-        setNightlifeVenue(prefs.nightlife?.venueType || []);
-        setNightlifeMusic(prefs.nightlife?.musicPreference || []);
-        setNightlifeCrowd(prefs.nightlife?.crowdVibe || []);
-        
-        // Events
-        setEventsType(prefs.events?.eventType || []);
-        setEventsGroup(prefs.events?.groupType || []);
-        setEventsTime(prefs.events?.timeSetting || []);
-      }
-    } catch (error) {
-      console.error('Error loading preferences:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    setDrinkCoffee(prefs.drink?.coffeeTea || []);
+    setDrinkBar(prefs.drink?.barCocktail || []);
+    setDrinkAtmosphere(prefs.drink?.atmosphere || []);
+
+    setNightlifeVenue(prefs.nightlife?.venueType || []);
+    setNightlifeMusic(prefs.nightlife?.musicPreference || []);
+    setNightlifeCrowd(prefs.nightlife?.crowdVibe || []);
+
+    setEventsType(prefs.events?.eventType || []);
+    setEventsGroup(prefs.events?.groupType || []);
+    setEventsTime(prefs.events?.timeSetting || []);
+  }, [profile?.preferences]);
 
   const handleSave = async () => {
-    setIsSaving(true);
     try {
       const preferencesJson = {
         categories: selectedCategories,
@@ -178,22 +158,12 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
         activityInArea,
       };
 
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          preferences: preferencesJson as unknown as Json,
-        })
-        .eq('id', userId);
-
-      if (error) throw error;
-
+      await updatePreferences(preferencesJson as unknown as Json);
       toast.success('Preferences saved successfully');
       onSaved?.();
     } catch (error) {
       console.error('Error saving preferences:', error);
       toast.error('Failed to save preferences');
-    } finally {
-      setIsSaving(false);
     }
   };
 
