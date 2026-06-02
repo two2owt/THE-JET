@@ -513,7 +513,7 @@ const Auth = () => {
             <div
               role="tablist"
               aria-label="Authentication mode"
-              className="relative grid grid-cols-2 gap-1 rounded-xl border-hairline bg-card/40 p-1 backdrop-blur-sm"
+              className="relative grid grid-cols-2 gap-1 rounded-full border-hairline bg-card/40 p-1 backdrop-blur-sm"
             >
               <button
                 type="button"
@@ -521,7 +521,7 @@ const Auth = () => {
                 aria-selected={mode === "signin"}
                 onClick={() => switchToMode("signin")}
                 disabled={isLoading}
-                className={`min-h-[40px] rounded-lg text-fluid-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
+                className={`min-h-[40px] rounded-full text-fluid-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
                   mode === "signin"
                     ? "bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-md"
                     : "text-muted-foreground hover:text-foreground"
@@ -535,7 +535,7 @@ const Auth = () => {
                 aria-selected={mode === "signup"}
                 onClick={() => switchToMode("signup")}
                 disabled={isLoading}
-                className={`min-h-[40px] rounded-lg text-fluid-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
+                className={`min-h-[40px] rounded-full text-fluid-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
                   mode === "signup"
                     ? "bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-md"
                     : "text-muted-foreground hover:text-foreground"
