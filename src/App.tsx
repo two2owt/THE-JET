@@ -13,7 +13,6 @@ import type { NavTab } from "@/hooks/useBottomNavigation";
 import {
   FavoritesPageSkeleton,
   SocialPageSkeleton,
-  SettingsPageSkeleton,
   ProfilePageSkeleton,
   MessagesPageSkeleton,
   GenericPageSkeleton,
