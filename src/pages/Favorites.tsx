@@ -58,7 +58,7 @@ export default function Favorites() {
 
   if (authLoading) {
     return (
-      <PageLayout defaultTab="favorites" headerConfig={headerConfig}>
+      <PageLayout defaultTab="explore" headerConfig={headerConfig}>
         <PageShell>
           <FavoritesPageSkeleton />
         </PageShell>
