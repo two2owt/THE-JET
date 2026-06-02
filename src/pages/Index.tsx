@@ -72,7 +72,28 @@ const Index = () => {
   const [mapUIResetKey, setMapUIResetKey] = useState(0); // Increments when switching to map tab to reset collapsed UI
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [selectedParking, setSelectedParking] = useState<{ lat: number; lng: number; name?: string } | null>(null);
-  const [selectedCity, setSelectedCity] = useState<City>(CITIES[0]); // Default to Charlotte
+  // Persisted city — initialized synchronously from localStorage so the first
+  // paint already shows the user's last city (no flash of Charlotte default).
+  const [selectedCity, setSelectedCity] = useState<City>(() => {
+    try {
+      const savedId = typeof window !== 'undefined'
+        ? window.localStorage.getItem('jet-map-selected-city')
+        : null;
+      const match = savedId ? CITIES.find((c) => c.id === savedId) : undefined;
+      return match ?? CITIES[0]; // Default to Charlotte
+    } catch {
+      return CITIES[0];
+    }
+  });
+
+  // Persist selectedCity changes for the next session.
+  useEffect(() => {
+    try {
+      window.localStorage.setItem('jet-map-selected-city', selectedCity.id);
+    } catch {
+      /* storage disabled — ignore */
+    }
+  }, [selectedCity]);
   const [detectedLocationName, setDetectedLocationName] = useState<string | null>(null); // Actual city from reverse geocoding
   const [showDirectionsDialog, setShowDirectionsDialog] = useState(false);
   const [showSendDialog, setShowSendDialog] = useState(false);
