@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Bell, MapPin, Radio, Loader2, Save, Moon, Smartphone, User, Heart, Shield, Trash2, CreditCard, ShieldCheck } from "lucide-react";
+import { Bell, MapPin, Radio, Loader2, Save, Moon, Smartphone, User, Heart, Shield, CreditCard, ShieldCheck } from "lucide-react";
 
 import { toast } from "sonner";
 import { z } from "zod";
@@ -15,7 +15,7 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 import PreferencesEditor from "@/components/settings/PreferencesEditor";
 import PrivacySettings from "@/components/settings/PrivacySettings";
-import { DeleteAccountDialog } from "@/components/settings/DeleteAccountDialog";
+import { AccountSection } from "@/components/settings/AccountSection";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { isMonetizationEnabled } from "@/lib/monetization";
@@ -512,23 +512,9 @@ const Settings = () => {
           </div>
         </Card>
 
-        {/* Danger Zone - Account Deletion */}
+        {/* Account — email, password, and account deletion */}
         {userId && (
-          <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 border-destructive/30 bg-card/90 backdrop-blur-xl shadow-card">
-            <SectionTitle
-              subtitle="Permanently delete your account and all associated data"
-              className="mb-0"
-            >
-              <span className="inline-flex items-center gap-2 text-destructive">
-                <Trash2 className="w-5 h-5" />
-                Danger Zone
-              </span>
-            </SectionTitle>
-
-            <Separator />
-
-            <DeleteAccountDialog userId={userId} />
-          </Card>
+          <AccountSection userId={userId} currentEmail={user?.email} />
         )}
 
         {/* Save Button — only appears when notification/location toggles changed.
