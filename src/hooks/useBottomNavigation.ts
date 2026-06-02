@@ -23,7 +23,6 @@ export function useBottomNavigation(options: UseBottomNavigationOptions = {}) {
   const getTabFromLocation = useCallback((): NavTab => {
     // If we're on a dedicated page, use that as the tab
     if (location.pathname === "/favorites") return "favorites";
-    if (location.pathname === "/social") return "social";
     
     // Otherwise check URL params for Index page tabs
     const searchParams = new URLSearchParams(location.search);
