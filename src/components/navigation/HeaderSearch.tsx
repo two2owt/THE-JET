@@ -3,6 +3,9 @@ import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { IconButton } from "@/components/ui/icon-button";
 import type { Venue } from "@/types/venue";
+import type { Database } from "@/integrations/supabase/types";
+
+type Deal = Database["public"]["Tables"]["deals"]["Row"];
 
 const SearchResults = lazy(() =>
   import("@/components/SearchResults").then((m) => ({ default: m.SearchResults }))
@@ -23,8 +26,8 @@ export interface HeaderSearchProps {
   showResults: boolean;
   /** Data passed through to SearchResults. */
   venues: Venue[];
-  deals: unknown[];
-  onVenueSelect: (venue: Venue) => void;
+  deals: Deal[];
+  onVenueSelect: (venue: Venue | string) => void;
   /** Setters / handlers wired from parent. */
   onQueryChange: (next: string) => void;
   onClear: () => void;
@@ -197,7 +200,7 @@ export function HeaderSearch({
           <SearchResults
             query={query}
             venues={venues}
-            deals={deals as never}
+            deals={deals}
             onVenueSelect={onVenueSelect}
             onClose={onCloseResults}
             isVisible={showResults}
