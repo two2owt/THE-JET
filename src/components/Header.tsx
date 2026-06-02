@@ -1,6 +1,5 @@
-import { useState, useEffect, lazy, Suspense, useRef } from "react";
-import { Search, Sparkles, X } from "lucide-react";
-import { Input } from "./ui/input";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Search, Sparkles } from "lucide-react";
 import { IconButton } from "./ui/icon-button";
 import { supabase } from "@/integrations/supabase/client";
 import { useSearchHistory } from "@/hooks/useSearchHistory";
@@ -8,12 +7,7 @@ import { useHeaderContext } from "@/contexts/HeaderContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { HeaderUserMenu } from "./navigation/HeaderUserMenu";
 import { InlineBreadcrumbs } from "./navigation/InlineBreadcrumbs";
-
-const SearchResults = lazy(() => import("./SearchResults").then(m => ({ default: m.SearchResults })));
-
-const validateSearchQuery = (value: string): boolean => {
-  return typeof value === 'string' && value.length <= 100;
-};
+import { HeaderSearch } from "./navigation/HeaderSearch";
 
 export const Header = () => {
   const { venues, deals, onVenueSelect, hideSearch } = useHeaderContext();
@@ -23,13 +17,13 @@ export const Header = () => {
   const [mounted, setMounted] = useState(false);
   const mountedRef = useRef(false);
   const [searchExpanded, setSearchExpanded] = useState(false);
-  const searchWrapperRef = useRef<HTMLDivElement>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string>("JT");
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const [userEmail, setUserEmail] = useState<string | undefined>(undefined);
   const [isAdmin, setIsAdmin] = useState(false);
   const { addToSearchHistory } = useSearchHistory(userId);
+  const historyDebounceRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!mountedRef.current) {
@@ -75,45 +69,41 @@ export const Header = () => {
     fetchProfile();
   }, []);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (!validateSearchQuery(value)) return;
-    setSearchQuery(value);
-    // Always reflect query state — never collapse while user is typing
-    const hasQuery = value.trim().length > 0;
-    setShowResults(hasQuery);
-    if (value.trim().length > 2) {
-      const timeoutId = setTimeout(() => {
-        addToSearchHistory(value.trim());
-      }, 1000);
-      return () => clearTimeout(timeoutId);
-    }
-  };
+  // Debounced "save-to-history" — fires once typing pauses for 1s.
+  const handleQueryChange = useCallback(
+    (next: string) => {
+      setSearchQuery(next);
+      setShowResults(next.trim().length > 0);
+      if (historyDebounceRef.current) {
+        window.clearTimeout(historyDebounceRef.current);
+      }
+      const trimmed = next.trim();
+      if (trimmed.length > 2) {
+        historyDebounceRef.current = window.setTimeout(() => {
+          addToSearchHistory(trimmed);
+        }, 1000);
+      }
+    },
+    [addToSearchHistory]
+  );
 
-  const handleCloseResults = () => setShowResults(false);
-  const handleCollapseSearch = () => {
+  useEffect(
+    () => () => {
+      if (historyDebounceRef.current) window.clearTimeout(historyDebounceRef.current);
+    },
+    []
+  );
+
+  const handleCloseResults = useCallback(() => setShowResults(false), []);
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery("");
+    setShowResults(false);
+  }, []);
+  const handleCollapseSearch = useCallback(() => {
     setSearchExpanded(false);
     setSearchQuery("");
     setShowResults(false);
-  };
-
-  const handleClearSearch = () => {
-    setSearchQuery("");
-    setShowResults(false);
-  };
-
-  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Escape") {
-      e.preventDefault();
-      if (searchQuery) {
-        handleClearSearch();
-      } else if (isMobile && searchExpanded) {
-        handleCollapseSearch();
-      } else {
-        e.currentTarget.blur();
-      }
-    }
-  };
+  }, []);
 
   const showSearchBar = !hideSearch && (!isMobile || searchExpanded);
   const showSearchIcon = !hideSearch && isMobile && !searchExpanded;
@@ -244,133 +234,20 @@ export const Header = () => {
 
         {/* Search bar — expands to fill remaining space */}
         {showSearchBar && (
-          <div
-            ref={searchWrapperRef}
-            style={{
-              position: 'relative',
-              flex: '1 1 0%',
-              // On desktop cap width so the bar doesn't stretch edge-to-edge;
-              // on mobile fill all remaining space between logo/icon and avatar.
-              maxWidth: isMobile ? 'none' : 'clamp(240px, 42vw, 520px)',
-              minWidth: '0',
-              opacity: mounted ? 1 : 0,
-              transform: mounted ? 'translateY(0)' : 'translateY(-6px)',
-              transition: 'opacity 0.4s ease-out 0.1s, transform 0.4s ease-out 0.1s',
-            }}
-          >
-            <div
-              style={{
-                position: 'absolute',
-                left: '12px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                zIndex: 10,
-                pointerEvents: 'none',
-              }}
-            >
-              <Search style={{ width: '16px', height: '16px', color: 'hsl(var(--muted-foreground) / 0.6)' }} />
-            </div>
-            <Input
-              type="text"
-              placeholder="Search venues, deals, neighborhoods..."
-              value={searchQuery}
-              onChange={handleSearchChange}
-              onKeyDown={handleSearchKeyDown}
-              onFocus={(e) => {
-                // Re-open results whenever input gains focus and there's a query
-                if (searchQuery.trim()) setShowResults(true);
-                e.currentTarget.style.background = 'hsl(var(--muted) / 0.55)';
-                e.currentTarget.style.borderColor = 'hsl(var(--primary) / 0.5)';
-                e.currentTarget.style.boxShadow = '0 0 0 3px hsl(var(--primary) / 0.1), 0 0 12px hsl(var(--primary) / 0.08)';
-              }}
-              onBlur={(e) => {
-                // Restyle only — never toggle results visibility on blur.
-                // Closing is handled explicitly by the close button, Escape, or outside-click via the mobile backdrop.
-                e.currentTarget.style.background = 'hsl(var(--muted) / 0.35)';
-                e.currentTarget.style.borderColor = 'hsl(var(--border) / 0.5)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
-              maxLength={100}
-              aria-label="Search venues and deals"
-              enterKeyHint="search"
-              autoComplete="off"
-              autoCorrect="off"
-              spellCheck={false}
-              inputMode="search"
-              autoFocus={isMobile && searchExpanded}
-              style={{
-                width: '100%',
-                height: 'clamp(34px, 5vw, 40px)',
-                paddingLeft: '36px',
-                // Reserve room for: close button (mobile expanded) + clear button (when query present)
-                paddingRight:
-                  isMobile && searchExpanded
-                    ? (searchQuery ? '80px' : '44px')
-                    : (searchQuery ? '44px' : '16px'),
-                borderRadius: '9999px',
-                border: '1.5px solid hsl(var(--border) / 0.5)',
-                background: 'hsl(var(--muted) / 0.35)',
-                fontSize: '14px',
-                color: 'hsl(var(--foreground))',
-                outline: 'none',
-                transition: 'background 0.2s, border-color 0.3s, box-shadow 0.3s',
-              }}
-            />
-            {/* Clear button — visible whenever there is text */}
-            {searchQuery && (
-              <IconButton
-                size="bare"
-                ariaLabel="Clear search"
-                onClick={handleClearSearch}
-                className="rounded-full hover:bg-muted/80 transition-colors"
-                style={{
-                  position: 'absolute',
-                  right: isMobile && searchExpanded ? '44px' : '8px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  zIndex: 10,
-                  width: '28px',
-                  height: '28px',
-                  background: 'hsl(var(--muted) / 0.6)',
-                  border: 'none',
-                  cursor: 'pointer',
-                }}
-              >
-                <X style={{ width: '12px', height: '12px', color: 'hsl(var(--muted-foreground))' }} />
-              </IconButton>
-            )}
-            {isMobile && searchExpanded && (
-              <IconButton
-                size="bare"
-                ariaLabel="Close search"
-                onClick={handleCollapseSearch}
-                className="rounded-full hover:bg-muted/60 transition-colors"
-                style={{
-                  position: 'absolute',
-                  right: '8px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  zIndex: 10,
-                  width: '28px',
-                  height: '28px',
-                }}
-              >
-                <X style={{ width: '14px', height: '14px', color: 'hsl(var(--muted-foreground))' }} />
-              </IconButton>
-            )}
-            {showResults && (
-              <Suspense fallback={null}>
-                <SearchResults
-                  query={searchQuery}
-                  venues={venues}
-                  deals={deals}
-                  onVenueSelect={onVenueSelect}
-                  onClose={handleCloseResults}
-                  isVisible={showResults}
-                />
-              </Suspense>
-            )}
-          </div>
+          <HeaderSearch
+            mounted={mounted}
+            isMobile={isMobile}
+            expanded={searchExpanded}
+            query={searchQuery}
+            showResults={showResults}
+            venues={venues}
+            deals={deals}
+            onVenueSelect={onVenueSelect}
+            onQueryChange={handleQueryChange}
+            onClear={handleClearSearch}
+            onCloseResults={handleCloseResults}
+            onCollapse={handleCollapseSearch}
+          />
         )}
 
         {/* Spacer — only needed when the search bar isn't rendered (mobile
