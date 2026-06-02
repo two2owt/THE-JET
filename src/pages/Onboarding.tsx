@@ -255,62 +255,95 @@ const Onboarding = () => {
   };
 
 
+  const eyebrow =
+    step === 1 ? "Create Profile" : step === 2 ? "Personalize" : "All Set";
+  const headline =
+    step === 1 ? "Welcome to JET" : step === 2 ? "Tune Your Taste" : "You're In";
+  const subtitle =
+    step === 1
+      ? "Tell us a little about yourself to get started."
+      : step === 2
+      ? "Pick the categories you love so we can curate Charlotte for you."
+      : "Based on your preferences, we'll surface the best of Charlotte.";
+
   return (
-    <div 
-      className="min-h-screen min-h-[100dvh] bg-background flex items-center justify-center px-fluid-md py-fluid-lg"
-      style={{
-        paddingTop: 'max(env(safe-area-inset-top, 0px), var(--space-lg))',
-        paddingBottom: 'max(env(safe-area-inset-bottom, 0px), var(--space-lg))',
-      }}
+    <div
+      className="relative flex flex-1 min-h-screen min-h-[100dvh] w-full items-center justify-center overflow-y-auto bg-background bg-cover bg-center bg-no-repeat px-fluid-sm sm:px-fluid-md pt-[max(env(safe-area-inset-top,0px),var(--space-lg))] pb-[max(env(safe-area-inset-bottom,0px),var(--space-lg))]"
+      style={{ backgroundImage: `url(${authBackground})` }}
     >
-      <div className="w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-fluid-lg">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-r from-primary to-primary-glow rounded-2xl flex items-center justify-center mx-auto mb-fluid-md shadow-[var(--shadow-glow)]">
-            <Zap className="w-8 h-8 sm:w-10 sm:h-10 text-primary-foreground" />
-          </div>
-          <div className="flex items-center justify-center gap-fluid-md mb-fluid-xs">
-            <h1 className="text-fluid-2xl sm:text-fluid-3xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-              {step === 1 && "Create User Profile"}
-              {step === 2 && "Set Personal Preferences"}
-              {step === 3 && "Review Suggestions"}
-            </h1>
+      {/* Animated matte black/grey gradient overlay */}
+      <div className="absolute inset-0 auth-gradient-overlay" />
+      {/* Editorial vignette — keeps focus on the card */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,hsl(0_0%_0%/0.55)_100%)]" />
+
+      <div className="relative z-10 mx-auto w-full max-w-[420px] sm:max-w-md">
+        {/* Glassmorphic Card */}
+        <div className="flex flex-col gap-fluid-sm sm:gap-fluid-md rounded-3xl border-hairline bg-background/30 p-fluid-sm sm:p-fluid-md lg:p-fluid-lg backdrop-blur-2xl glow-ambient">
+          {/* Header */}
+          <div className="flex flex-col items-center gap-fluid-xs sm:gap-fluid-sm text-center">
+            <div className="relative flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center">
+              <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,hsl(var(--primary)/0.25)_0%,transparent_70%)] blur-md" />
+              <img
+                src={jetLogo}
+                alt="JET Logo"
+                className="relative h-full w-full object-contain drop-shadow-[0_4px_20px_hsl(var(--primary)/0.35)]"
+                width="80"
+                height="80"
+                fetchPriority="high"
+                decoding="async"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="dot-gold" />
+              <span className="heading-luxe-eyebrow">{eyebrow}</span>
+              <span className="dot-gold" />
+            </div>
+            <h1 className="heading-luxe-gradient">{headline}</h1>
+            <div className="divider-luxe mx-auto" style={{ maxWidth: "72px" }} />
+            <p className="max-w-xs text-fluid-sm text-muted-foreground">
+              {subtitle}
+            </p>
+
+            {/* Progress dots */}
+            <div className="mt-fluid-xs flex items-center justify-center gap-2" aria-label={`Step ${step} of 3`}>
+              {[1, 2, 3].map((s) => (
+                <div
+                  key={s}
+                  className={`h-1.5 rounded-full transition-all ${
+                    s === step
+                      ? "w-8 bg-gradient-to-r from-primary to-primary-glow shadow-[0_0_8px_hsl(var(--primary)/0.5)]"
+                      : s < step
+                      ? "w-2 bg-primary/60"
+                      : "w-2 bg-muted"
+                  }`}
+                />
+              ))}
+            </div>
+
             {step === 2 && (
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
+                type="button"
                 onClick={() => setStep(3)}
-                className="text-muted-foreground hover:text-foreground text-fluid-sm"
+                className="mt-fluid-xs rounded-full px-3 py-1 text-fluid-xs font-medium text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
               >
-                Skip
-              </Button>
+                Skip for now
+              </button>
             )}
           </div>
-          <div className="flex justify-center gap-2 mt-fluid-md">
-            {[1, 2, 3].map((s) => (
-              <div
-                key={s}
-                className={`h-2 rounded-full transition-all ${
-                  s === step ? "w-8 bg-primary" : "w-2 bg-muted"
-                }`}
-              />
-            ))}
-          </div>
-        </div>
 
-        {/* Step 1: Profile */}
-        {step === 1 && (
-          <div className="space-y-fluid-lg bg-card border border-border rounded-2xl p-fluid-lg">
+          {/* Step 1: Profile */}
+          {step === 1 && (
+            <div className="flex flex-col gap-fluid-sm sm:gap-fluid-md">
             <div className="flex flex-col items-center mb-fluid-lg">
               <div className="relative">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-muted border-2 border-border flex items-center justify-center overflow-hidden">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-card/40 border border-border/60 backdrop-blur-sm flex items-center justify-center overflow-hidden">
                   {avatarPreview ? (
                     <img src={avatarPreview} alt="Avatar" width={96} height={96} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                   ) : (
                     <Upload className="w-8 h-8 text-muted-foreground" />
                   )}
                 </div>
-                <label className="absolute bottom-0 right-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/90 transition-colors">
+                <label className="absolute bottom-0 right-0 w-8 h-8 bg-gradient-to-r from-primary to-primary-glow rounded-full flex items-center justify-center cursor-pointer shadow-md shadow-primary/30 transition-transform hover:scale-105">
                   <Upload className="w-4 h-4 text-primary-foreground" />
                   <input
                     type="file"
@@ -323,8 +356,10 @@ const Onboarding = () => {
               <p className="text-xs text-muted-foreground mt-2">Upload profile picture</p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="displayName">Display Name <span className="text-destructive">*</span></Label>
+            <div className="flex flex-col gap-fluid-xs">
+              <Label htmlFor="displayName" className="heading-luxe-eyebrow text-left">
+                Display Name <span className="text-destructive">*</span>
+              </Label>
               <Input
                 id="displayName"
                 placeholder="Enter your name"
@@ -334,8 +369,10 @@ const Onboarding = () => {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="bio">Bio (Optional)</Label>
+            <div className="flex flex-col gap-fluid-xs">
+              <Label htmlFor="bio" className="heading-luxe-eyebrow text-left">
+                Bio <span className="text-muted-foreground/70 normal-case">(optional)</span>
+              </Label>
               <Textarea
                 id="bio"
                 placeholder="Tell us about yourself"
@@ -347,22 +384,26 @@ const Onboarding = () => {
               <p className="text-xs text-muted-foreground text-right">{bio.length}/200</p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="birthdate">Birthdate <span className="text-destructive">*</span></Label>
+            <div className="flex flex-col gap-fluid-xs">
+              <Label htmlFor="birthdate" className="heading-luxe-eyebrow text-left">
+                Birthdate <span className="text-destructive">*</span>
+              </Label>
               <Input
                 id="birthdate"
                 type="date"
                 value={birthdate}
                 onChange={(e) => setBirthdate(e.target.value)}
-                className="bg-card"
+                className="bg-card/60"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Gender <span className="text-destructive">*</span></Label>
+              <div className="flex flex-col gap-fluid-xs">
+                <Label className="heading-luxe-eyebrow text-left">
+                  Gender <span className="text-destructive">*</span>
+                </Label>
                 <Select value={gender} onValueChange={setGender}>
-                  <SelectTrigger className="bg-card">
+                  <SelectTrigger className="bg-card/60">
                     <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
                   <SelectContent>
@@ -375,10 +416,12 @@ const Onboarding = () => {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label>Pronouns <span className="text-muted-foreground text-xs">(optional)</span></Label>
+              <div className="flex flex-col gap-fluid-xs">
+                <Label className="heading-luxe-eyebrow text-left">
+                  Pronouns <span className="text-muted-foreground/70 normal-case">(optional)</span>
+                </Label>
                 <Select value={pronouns} onValueChange={setPronouns}>
-                  <SelectTrigger className="bg-card">
+                  <SelectTrigger className="bg-card/60">
                     <SelectValue placeholder="Select pronouns" />
                   </SelectTrigger>
                   <SelectContent>
@@ -396,42 +439,43 @@ const Onboarding = () => {
               onClick={handleStep1Next}
               disabled={isLoading}
               variant="jet"
-              className="w-full py-6 rounded-xl"
+              size="lg"
+              className="mt-fluid-xs w-full rounded-full text-fluid-base font-semibold tracking-wide shadow-lg shadow-primary/20"
             >
-              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Next"}
+              {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Continue"}
             </Button>
-          </div>
-        )}
+            </div>
+          )}
 
-        {/* Step 2: Preferences */}
-        {step === 2 && (
-          <PreferencesStep
-            onBack={() => setStep(1)}
-            onNext={handleStep2Next}
-            isLoading={isLoading}
-          />
-        )}
+          {/* Step 2: Preferences */}
+          {step === 2 && (
+            <PreferencesStep
+              onBack={() => setStep(1)}
+              onNext={handleStep2Next}
+              isLoading={isLoading}
+            />
+          )}
 
-        {/* Step 3: Suggestions */}
-        {step === 3 && (
-          <div className="space-y-fluid-lg bg-card border border-border rounded-2xl p-fluid-lg">
+          {/* Step 3: Suggestions */}
+          {step === 3 && (
+            <div className="flex flex-col gap-fluid-md">
             <div className="space-y-fluid-md">
-              <div className="bg-gradient-to-br from-primary/20 to-primary-glow/20 rounded-xl p-fluid-lg border border-primary/30">
+              <div className="bg-gradient-to-br from-primary/15 to-primary-glow/10 rounded-2xl p-fluid-lg border border-primary/30 backdrop-blur-sm text-center">
                 <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 text-primary mb-fluid-md mx-auto" />
-                <h3 className="text-fluid-lg sm:text-fluid-xl font-bold text-center mb-fluid-xs">All Set!</h3>
-                <p className="text-center text-fluid-sm text-muted-foreground">
+                <h3 className="heading-luxe-card mb-fluid-xs">All Set!</h3>
+                <p className="text-fluid-sm text-muted-foreground">
                   Based on your preferences, we'll show you the best deals in Charlotte
                 </p>
               </div>
 
               {savedPreferences && (
-                <div className="space-y-fluid-sm">
-                  <h4 className="font-semibold text-fluid-sm">Your Preferences:</h4>
+                <div className="flex flex-col gap-fluid-sm rounded-xl border-hairline bg-card/30 p-fluid-sm sm:p-fluid-md backdrop-blur-sm">
+                  <p className="heading-luxe-eyebrow">Your Preferences</p>
                   <div className="flex flex-wrap gap-fluid-xs">
                     {savedPreferences.categories.map((type) => (
                       <span
                         key={type}
-                        className="px-3 py-1 bg-primary/20 text-primary text-fluid-xs font-medium rounded-full"
+                        className="px-3 py-1 bg-primary/15 border border-primary/30 text-primary text-fluid-xs font-medium rounded-full"
                       >
                         {type}
                       </span>
@@ -439,12 +483,12 @@ const Onboarding = () => {
                   </div>
                   {savedPreferences.trendingVenues && (
                     <p className="text-fluid-sm text-muted-foreground flex items-center gap-fluid-xs">
-                      <Sparkles className="w-4 h-4" /> Trending venues enabled
+                      <span className="dot-gold" /> Trending venues enabled
                     </p>
                   )}
                   {savedPreferences.activityInArea && (
                     <p className="text-fluid-sm text-muted-foreground flex items-center gap-fluid-xs">
-                      <Sparkles className="w-4 h-4" /> Location-based alerts enabled
+                      <span className="dot-gold" /> Location-based alerts enabled
                     </p>
                   )}
                 </div>
@@ -455,12 +499,14 @@ const Onboarding = () => {
               onClick={handleComplete}
               disabled={isLoading}
               variant="jet"
-              className="w-full py-6 rounded-xl"
+              size="lg"
+              className="w-full rounded-full text-fluid-base font-semibold tracking-wide shadow-lg shadow-primary/20"
             >
-              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Get Started"}
+              {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Get Started"}
             </Button>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
