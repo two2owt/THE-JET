@@ -39,6 +39,7 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; consent?: string; locationConsent?: string }>({});
+  const [touched, setTouched] = useState<{ email?: boolean; password?: boolean; confirmPassword?: boolean }>({});
   const [showResendVerification, setShowResendVerification] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [isResending, setIsResending] = useState(false);
@@ -84,49 +85,76 @@ const Auth = () => {
     }
   }, [resendCooldown]);
 
-  // Validate inputs before submission
+  // Single-field validation for inline feedback
+  const getFieldError = (field: "email" | "password" | "confirmPassword"): string | undefined => {
+    if (field === "email") {
+      const result = emailSchema.safeParse(email);
+      return result.success ? undefined : result.error.errors[0].message;
+    }
+    if (field === "password") {
+      if (!isForgotPassword && (isSignUp || isResettingPassword)) {
+        const result = passwordSchema.safeParse(password);
+        return result.success ? undefined : result.error.errors[0].message;
+      }
+      if (!isForgotPassword && !isSignUp && !isResettingPassword && (!password || password.length === 0)) {
+        return "Password is required";
+      }
+      return undefined;
+    }
+    if (field === "confirmPassword") {
+      if ((isSignUp || isResettingPassword) && password !== confirmPassword) {
+        return "Passwords do not match";
+      }
+      return undefined;
+    }
+    return undefined;
+  };
+
   const validateInputs = (): boolean => {
     const errors: { email?: string; password?: string; confirmPassword?: string; consent?: string; locationConsent?: string } = {};
-    
-    // Validate email
-    const emailResult = emailSchema.safeParse(email);
-    if (!emailResult.success) {
-      errors.email = emailResult.error.errors[0].message;
-    }
-    
-    // Validate password - strict validation ONLY for signup, basic check for signin
+
+    const emailErr = getFieldError("email");
+    if (emailErr) errors.email = emailErr;
+
     if (!isForgotPassword) {
-      if (isSignUp || isResettingPassword) {
-        // Strict password validation for new passwords
-        const passwordResult = passwordSchema.safeParse(password);
-        if (!passwordResult.success) {
-          errors.password = passwordResult.error.errors[0].message;
-        }
-      } else {
-        // For signin, only check that password is not empty (min length 1)
-        if (!password || password.length === 0) {
-          errors.password = "Password is required";
-        }
-      }
-      
-      // Validate password confirmation for signup and password reset
-      if ((isSignUp || isResettingPassword) && password !== confirmPassword) {
-        errors.confirmPassword = "Passwords do not match";
-      }
-      
-      // Validate consent for signup only
+      const pwErr = getFieldError("password");
+      if (pwErr) errors.password = pwErr;
+
+      const confirmErr = getFieldError("confirmPassword");
+      if (confirmErr) errors.confirmPassword = confirmErr;
+
       if (isSignUp && !dataProcessingConsent) {
         errors.consent = "You must agree to the Privacy Policy and Terms of Service";
       }
-      
-      // Validate location consent for signup only
       if (isSignUp && !locationConsent) {
         errors.locationConsent = "Location consent is required to receive personalized deals";
       }
     }
-    
+
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
+  };
+
+  const handleBlur = (field: "email" | "password" | "confirmPassword") => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    const error = getFieldError(field);
+    setValidationErrors((prev) => ({ ...prev, [field]: error }));
+  };
+
+  const handleFieldChange = (
+    field: "email" | "password" | "confirmPassword",
+    value: string
+  ) => {
+    if (field === "email") setEmail(value);
+    if (field === "password") setPassword(value);
+    if (field === "confirmPassword") setConfirmPassword(value);
+
+    if (touched[field]) {
+      const error = getFieldError(field);
+      setValidationErrors((prev) => ({ ...prev, [field]: error }));
+    } else {
+      setValidationErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
   };
 
   const handleResendVerification = async () => {
@@ -568,21 +596,19 @@ const Auth = () => {
                     aria-hidden="true"
                     className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
                   />
-                  <Input
-                    id="auth-email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      setValidationErrors((prev) => ({ ...prev, email: undefined }));
-                    }}
-                    required
-                    className={`pl-10 ${
-                      validationErrors.email ? "border-destructive" : ""
-                    }`}
-                    autoComplete="email"
-                  />
+                    <Input
+                      id="auth-email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => handleFieldChange("email", e.target.value)}
+                      onBlur={() => handleBlur("email")}
+                      required
+                      className={`pl-10 ${
+                        validationErrors.email ? "border-destructive" : ""
+                      }`}
+                      autoComplete="email"
+                    />
                 </div>
                 {validationErrors.email && (
                   <p className="text-fluid-xs text-destructive">{validationErrors.email}</p>
@@ -607,13 +633,8 @@ const Auth = () => {
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
                       value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        setValidationErrors((prev) => ({
-                          ...prev,
-                          password: undefined,
-                        }));
-                      }}
+                      onChange={(e) => handleFieldChange("password", e.target.value)}
+                      onBlur={() => handleBlur("password")}
                       required
                       className={`pl-10 pr-12 ${
                         validationErrors.password ? "border-destructive" : ""
@@ -660,13 +681,8 @@ const Auth = () => {
                         type={showConfirmPassword ? "text" : "password"}
                         placeholder="••••••••"
                         value={confirmPassword}
-                        onChange={(e) => {
-                          setConfirmPassword(e.target.value);
-                          setValidationErrors((prev) => ({
-                            ...prev,
-                            confirmPassword: undefined,
-                          }));
-                        }}
+                        onChange={(e) => handleFieldChange("confirmPassword", e.target.value)}
+                        onBlur={() => handleBlur("confirmPassword")}
                         required
                         className={`pl-10 pr-12 ${
                           validationErrors.confirmPassword
