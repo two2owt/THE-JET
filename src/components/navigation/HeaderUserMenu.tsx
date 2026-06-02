@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import jetPaperPlaneAsset from "@/assets/jet-paper-plane.png.asset.json";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -64,7 +65,7 @@ export function HeaderUserMenu({
             className="text-primary-foreground font-bold tracking-wide"
             style={avatarFallbackStyle}
           >
-            ?
+            <PaperPlaneFallback />
           </AvatarFallback>
         </Avatar>
       </button>
@@ -85,8 +86,9 @@ export function HeaderUserMenu({
             <AvatarFallback
               className="text-primary-foreground font-bold tracking-wide"
               style={avatarFallbackStyle}
+              delayMs={avatarUrl ? 400 : 0}
             >
-              {displayName.substring(0, 2).toUpperCase()}
+              <PaperPlaneFallback />
             </AvatarFallback>
           </Avatar>
           <span
@@ -170,6 +172,32 @@ export function HeaderUserMenu({
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+/**
+ * Default avatar shown until a user uploads their own image.
+ * Uses the JET paper-plane logo centered on the gradient ring background.
+ */
+function PaperPlaneFallback() {
+  return (
+    <img
+      src={jetPaperPlaneAsset.url}
+      alt=""
+      aria-hidden="true"
+      draggable={false}
+      style={{
+        width: "62%",
+        height: "62%",
+        objectFit: "contain",
+        objectPosition: "center",
+        // Slight optical centering — the plane's mass sits lower-left
+        transform: "translate(1%, 2%)",
+        filter: "drop-shadow(0 1px 2px hsl(var(--background) / 0.4))",
+        pointerEvents: "none",
+        userSelect: "none",
+      }}
+    />
   );
 }
 
