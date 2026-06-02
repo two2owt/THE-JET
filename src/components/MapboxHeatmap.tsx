@@ -346,30 +346,44 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [showMovementPaths, setShowMovementPaths] = useState(() => getLayerState("paths", false));
   const [pathTimeFilter, setPathTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.pathTimeFilter, 'all', 'pathTime'));
 
-  // Sync active layer toggles to URL query params for shareability
-  const syncLayersToUrl = useCallback(() => {
+  // Sync active layer toggles and filter selections to URL query params for shareability
+  const syncUrlParams = useCallback(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    // Layers
     const active: LayerName[] = [];
     if (showDensityLayer) active.push("density");
     if (showMovementPaths) active.push("paths");
     if (showParking) active.push("parking");
     if (showLiveStats) active.push("stats");
-    const params = new URLSearchParams(window.location.search);
-    const current = params.get("layers");
-    const next = active.length > 0 ? active.join(",") : null;
-    if (next === current) return;
-    if (next) {
-      params.set("layers", next);
-    } else {
-      params.delete("layers");
+    const currentLayers = params.get("layers");
+    const nextLayers = active.length > 0 ? active.join(",") : null;
+    if (nextLayers !== currentLayers) {
+      if (nextLayers) {
+        params.set("layers", nextLayers);
+      } else {
+        params.delete("layers");
+      }
     }
+
+    // Filters
+    if (timeFilter !== 'all') params.set("time", timeFilter);
+    else params.delete("time");
+
+    if (dayFilter !== undefined) params.set("day", String(dayFilter));
+    else params.delete("day");
+
+    if (pathTimeFilter !== 'all') params.set("pathTime", pathTimeFilter);
+    else params.delete("pathTime");
+
     const search = params.toString();
     const newUrl = search ? `${window.location.pathname}?${search}` : window.location.pathname;
     window.history.replaceState(null, "", newUrl);
-  }, [showDensityLayer, showMovementPaths, showParking, showLiveStats]);
+  }, [showDensityLayer, showMovementPaths, showParking, showLiveStats, timeFilter, dayFilter, pathTimeFilter]);
 
   useEffect(() => {
-    syncLayersToUrl();
-  }, [syncLayersToUrl]);
+    syncUrlParams();
+  }, [syncUrlParams]);
 
   // Persist layer toggles to localStorage as fallback
   useEffect(() => { localStorage.setItem(LAYER_KEYS.density, String(showDensityLayer)); }, [showDensityLayer]);
