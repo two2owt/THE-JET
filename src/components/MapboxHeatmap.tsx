@@ -443,8 +443,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     minFrequency: minPathFrequency,
   });
   
-  // Time-lapse hook
-  const timelapse = useHeatmapTimelapse(dayFilter);
+  // Time-lapse hook (restore persisted speed)
+  const initialTimelapseSpeed = useRef(getPersistedTimelapseSpeed());
+  const timelapse = useHeatmapTimelapse(dayFilter, initialTimelapseSpeed.current);
 
   // Handle map resize on viewport changes - optimized for all mobile devices
   useEffect(() => {
