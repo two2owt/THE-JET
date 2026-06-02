@@ -6,7 +6,7 @@ import { IconButton } from "@/components/ui/icon-button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
 import { z } from "zod";
 // Use the new JET logo for auth page
 import jetLogo from "@/assets/jet-auth-logo.png";
