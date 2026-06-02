@@ -2913,9 +2913,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <Select value={timeFilter} onValueChange={(v: any) => setTimeFilter(v)}>
                       <SelectTrigger
-                        className="w-full text-[11px] font-display font-semibold rounded-[10px] min-h-0"
+                        className="w-full font-display font-semibold rounded-[10px] min-h-0"
                         style={{
-                          padding: '7px 10px',
+                          padding: 'clamp(6px, 1.6vw, 8px) clamp(8px, 2.2vw, 12px)',
+                          fontSize: 'clamp(10px, 2.6vw, 12px)',
                           border: timeFilter !== 'all'
                             ? '1px solid hsl(var(--primary) / 0.45)'
                             : '1px solid hsl(var(--border) / 0.5)',
@@ -2932,9 +2933,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                           transition: 'background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms ease, box-shadow 220ms ease, color 220ms ease',
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(6px, 1.6vw, 10px)', flex: 1, minWidth: 0 }}>
                           <span style={{
-                            width: '22px', height: '22px', borderRadius: '7px',
+                            width: 'clamp(20px, 5.2vw, 24px)', height: 'clamp(20px, 5.2vw, 24px)', borderRadius: '7px',
                             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                             background: timeFilter !== 'all'
                               ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
@@ -2949,7 +2950,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                           }}>
                             <Clock style={{ width: '12px', height: '12px', color: timeFilter !== 'all' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))' }} strokeWidth={2.25} />
                           </span>
-                          <SelectValue placeholder="Time" />
+                          <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left' }}>
+                            <SelectValue placeholder="Time" />
+                          </span>
                         </div>
                       </SelectTrigger>
                       <SelectContent>
@@ -2961,9 +2964,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     </Select>
                     <Select value={dayFilter?.toString() || "all"} onValueChange={(v) => setDayFilter(v === "all" ? undefined : parseInt(v))}>
                       <SelectTrigger
-                        className="w-full text-[11px] font-display font-semibold rounded-[10px] min-h-0"
+                        className="w-full font-display font-semibold rounded-[10px] min-h-0"
                         style={{
-                          padding: '7px 10px',
+                          padding: 'clamp(6px, 1.6vw, 8px) clamp(8px, 2.2vw, 12px)',
+                          fontSize: 'clamp(10px, 2.6vw, 12px)',
                           border: dayFilter !== undefined
                             ? '1px solid hsl(var(--primary) / 0.45)'
                             : '1px solid hsl(var(--border) / 0.5)',
@@ -2980,9 +2984,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                           transition: 'background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms ease, box-shadow 220ms ease, color 220ms ease',
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(6px, 1.6vw, 10px)', flex: 1, minWidth: 0 }}>
                           <span style={{
-                            width: '22px', height: '22px', borderRadius: '7px',
+                            width: 'clamp(20px, 5.2vw, 24px)', height: 'clamp(20px, 5.2vw, 24px)', borderRadius: '7px',
                             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                             background: dayFilter !== undefined
                               ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
@@ -2997,7 +3001,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                           }}>
                             <Calendar style={{ width: '12px', height: '12px', color: dayFilter !== undefined ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))' }} strokeWidth={2.25} />
                           </span>
-                          <SelectValue placeholder="Day" />
+                          <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left' }}>
+                            <SelectValue placeholder="Day" />
+                          </span>
                         </div>
                       </SelectTrigger>
                       <SelectContent>
@@ -3039,9 +3045,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 )}
                 <Select value={pathTimeFilter} onValueChange={(v: any) => setPathTimeFilter(v)}>
                   <SelectTrigger
-                    className="w-full text-[11px] font-display font-semibold rounded-[10px] min-h-0"
+                    className="w-full font-display font-semibold rounded-[10px] min-h-0"
                     style={{
-                      padding: '7px 10px',
+                      padding: 'clamp(6px, 1.6vw, 8px) clamp(8px, 2.2vw, 12px)',
+                      fontSize: 'clamp(10px, 2.6vw, 12px)',
                       border: pathTimeFilter !== 'all'
                         ? '1px solid hsl(var(--primary) / 0.45)'
                         : '1px solid hsl(var(--border) / 0.5)',
@@ -3058,9 +3065,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                       transition: 'background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms ease, box-shadow 220ms ease, color 220ms ease',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(6px, 1.6vw, 10px)', flex: 1, minWidth: 0 }}>
                       <span style={{
-                        width: '22px', height: '22px', borderRadius: '7px',
+                        width: 'clamp(20px, 5.2vw, 24px)', height: 'clamp(20px, 5.2vw, 24px)', borderRadius: '7px',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                         background: pathTimeFilter !== 'all'
                           ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
@@ -3075,7 +3082,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                       }}>
                         <Clock style={{ width: '12px', height: '12px', color: pathTimeFilter !== 'all' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))' }} strokeWidth={2.25} />
                       </span>
-                      <SelectValue placeholder="Time" />
+                      <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left' }}>
+                        <SelectValue placeholder="Time" />
+                      </span>
                     </div>
                   </SelectTrigger>
                   <SelectContent>
