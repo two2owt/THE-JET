@@ -56,6 +56,7 @@ interface Crumb {
   label: string;
   href: string;
   isCurrent: boolean;
+  isValid: boolean;
 }
 
 export function Breadcrumbs() {
