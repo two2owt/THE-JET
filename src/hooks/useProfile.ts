@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 export interface Profile {
   id: string;
@@ -14,6 +15,7 @@ export interface Profile {
   facebook_url: string | null;
   linkedin_url: string | null;
   tiktok_url: string | null;
+  preferences: Json | null;
 }
 
 export interface UpdateProfileInput {
@@ -130,6 +132,24 @@ export function useProfile(userId: string | undefined) {
     },
   });
 
+  const updatePreferences = useMutation({
+    mutationFn: async (preferences: Json) => {
+      if (!userId) throw new Error("No user");
+      const { error } = await supabase
+        .from("profiles")
+        .update({ preferences })
+        .eq("id", userId);
+      if (error) throw error;
+      return preferences;
+    },
+    onSuccess: (preferences) => {
+      queryClient.setQueryData<Profile | undefined>(key, (prev) =>
+        prev ? { ...prev, preferences } : prev,
+      );
+      queryClient.invalidateQueries({ queryKey: key });
+    },
+  });
+
   const checkDisplayNameUnique = useCallback(
     async (name: string): Promise<boolean> => {
       if (!userId) return true;
@@ -157,6 +177,8 @@ export function useProfile(userId: string | undefined) {
     isSaving: updateProfile.isPending,
     uploadAvatar: uploadAvatar.mutateAsync,
     isUploading: uploadAvatar.isPending,
+    updatePreferences: updatePreferences.mutateAsync,
+    isSavingPreferences: updatePreferences.isPending,
     checkDisplayNameUnique,
   };
 }
