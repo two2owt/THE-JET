@@ -477,12 +477,12 @@ const Auth = () => {
       {/* Editorial vignette — keeps focus on the card */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,hsl(0_0%_0%/0.55)_100%)]" />
 
-      <div className="relative z-10 w-full max-w-md">
+      <div className="relative z-10 mx-auto w-full max-w-[420px] sm:max-w-md">
         {/* Glassmorphic Card */}
-        <div className="flex flex-col gap-fluid-lg rounded-2xl border-hairline bg-background/30 p-fluid-lg backdrop-blur-2xl glow-ambient">
+        <div className="flex flex-col gap-fluid-md sm:gap-fluid-lg rounded-3xl border-hairline bg-background/30 p-fluid-md sm:p-fluid-lg backdrop-blur-2xl glow-ambient">
           {/* Header */}
-          <div className="flex flex-col items-center gap-fluid-sm text-center">
-            <div className="relative flex h-20 w-20 items-center justify-center">
+          <div className="flex flex-col items-center gap-fluid-xs sm:gap-fluid-sm text-center">
+            <div className="relative flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center">
               <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,hsl(var(--primary)/0.25)_0%,transparent_70%)] blur-md" />
               <img
                 src={jetLogo}
@@ -513,7 +513,7 @@ const Auth = () => {
             <div
               role="tablist"
               aria-label="Authentication mode"
-              className="relative grid grid-cols-2 gap-1 rounded-xl border-hairline bg-card/40 p-1 backdrop-blur-sm"
+              className="relative grid grid-cols-2 gap-1 rounded-full border-hairline bg-card/40 p-1 backdrop-blur-sm"
             >
               <button
                 type="button"
@@ -521,7 +521,7 @@ const Auth = () => {
                 aria-selected={mode === "signin"}
                 onClick={() => switchToMode("signin")}
                 disabled={isLoading}
-                className={`min-h-[40px] rounded-lg text-fluid-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
+                className={`min-h-[40px] rounded-full text-fluid-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
                   mode === "signin"
                     ? "bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-md"
                     : "text-muted-foreground hover:text-foreground"
@@ -535,7 +535,7 @@ const Auth = () => {
                 aria-selected={mode === "signup"}
                 onClick={() => switchToMode("signup")}
                 disabled={isLoading}
-                className={`min-h-[40px] rounded-lg text-fluid-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
+                className={`min-h-[40px] rounded-full text-fluid-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
                   mode === "signup"
                     ? "bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-md"
                     : "text-muted-foreground hover:text-foreground"
@@ -714,7 +714,7 @@ const Auth = () => {
                       />
                       <label
                         htmlFor="dataConsent"
-                        className="cursor-pointer text-fluid-xs leading-relaxed text-muted-foreground"
+                        className="cursor-pointer text-fluid-sm leading-relaxed text-foreground/85"
                       >
                         I agree to the{" "}
                         <Link
@@ -758,7 +758,7 @@ const Auth = () => {
                       />
                       <label
                         htmlFor="locationConsent"
-                        className="cursor-pointer text-fluid-xs leading-relaxed text-muted-foreground"
+                        className="cursor-pointer text-fluid-sm leading-relaxed text-foreground/85"
                       >
                         I consent to location tracking to receive personalized
                         deals and push notifications. You can disable this
@@ -781,7 +781,7 @@ const Auth = () => {
             disabled={isLoading}
             variant="jet"
             size="lg"
-            className="mt-fluid-xs w-full rounded-xl text-fluid-base font-semibold tracking-wide shadow-lg shadow-primary/20"
+            className="mt-fluid-xs w-full rounded-full text-fluid-base font-semibold tracking-wide shadow-lg shadow-primary/20"
           >
             {isLoading ? (
               <Loader2 className="h-5 w-5 animate-spin" />
@@ -803,7 +803,7 @@ const Auth = () => {
                 disabled={isResending || resendCooldown > 0}
                 variant="outline"
                 size="sm"
-                className="w-full rounded-xl border-primary/40 bg-transparent text-foreground transition-all hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:border-primary/70 focus-visible:ring-2 focus-visible:ring-primary/50 disabled:cursor-not-allowed disabled:border-border/40 disabled:bg-transparent disabled:text-muted-foreground disabled:opacity-60"
+                className="w-full rounded-full border-primary/40 bg-transparent text-foreground transition-all hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:border-primary/70 focus-visible:ring-2 focus-visible:ring-primary/50 disabled:cursor-not-allowed disabled:border-border/40 disabled:bg-transparent disabled:text-muted-foreground disabled:opacity-60"
               >
                 {isResending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {resendCooldown > 0
@@ -820,7 +820,7 @@ const Auth = () => {
                 type="button"
                 onClick={() => setIsForgotPassword(true)}
                 disabled={isLoading}
-                className="rounded-md px-2 py-1 text-fluid-xs font-medium text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none disabled:opacity-50"
+                className="rounded-full px-3 py-1.5 text-fluid-sm font-medium text-foreground/80 transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none disabled:opacity-50"
               >
                 Forgot password?
               </button>
@@ -837,7 +837,7 @@ const Auth = () => {
                 setValidationErrors({});
               }}
               disabled={isLoading}
-              className="inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-fluid-sm font-medium text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 self-center rounded-full border border-border/40 bg-card/30 px-4 py-2 text-fluid-sm font-medium text-foreground/90 transition-colors hover:border-primary/50 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none disabled:opacity-50"
             >
               <ArrowLeft className="h-4 w-4" />
               Back to sign in
