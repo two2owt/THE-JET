@@ -228,11 +228,6 @@ export const Header = () => {
           />
         )}
 
-        {/* Spacer — only needed when the search bar isn't rendered (mobile
-            collapsed or hideSearch). When the search bar is visible it already
-            uses flex:1 to fill the gap, so a second spacer would steal width
-            and shrink the input. */}
-        {!showSearchBar && <div style={{ flex: '1 1 0%', minWidth: 0 }} />}
 
         {/* Spacer pushes avatar flush to the right edge of the header */}
         <div style={{ flex: '1 1 0%', minWidth: 0 }} />
