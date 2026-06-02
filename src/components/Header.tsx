@@ -13,6 +13,7 @@ import { InlineBreadcrumbs } from "./navigation/InlineBreadcrumbs";
 import { HeaderSearch } from "./navigation/HeaderSearch";
 
 export const Header = () => {
+  const navigate = useNavigate();
   const { venues, deals, onVenueSelect, hideSearch } = useHeaderContext();
   const isMobile = useIsMobile();
   const [searchQuery, setSearchQuery] = useState("");
