@@ -6,10 +6,10 @@ import {
   LogOut,
   ShieldCheck,
   Check,
+  Send,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import jetPaperPlaneAsset from "@/assets/jet-paper-plane.png.asset.json";
 import {
   DropdownMenu,
   DropdownMenuContent,
