@@ -385,6 +385,29 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     syncUrlParams();
   }, [syncUrlParams]);
 
+  // Sync state FROM URL on browser back/forward navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+
+      const timeRaw = params.get('time');
+      setTimeFilter(timeRaw && VALID_TIME_FILTERS.has(timeRaw as any) ? (timeRaw as any) : 'all');
+
+      const pathTimeRaw = params.get('pathTime');
+      setPathTimeFilter(pathTimeRaw && VALID_TIME_FILTERS.has(pathTimeRaw as any) ? (pathTimeRaw as any) : 'all');
+
+      const dayRaw = params.get('day');
+      if (dayRaw === null) {
+        setDayFilter(undefined);
+      } else {
+        const n = parseInt(dayRaw, 10);
+        setDayFilter(!Number.isNaN(n) && n >= 0 && n <= 6 ? n : undefined);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   // Persist layer toggles to localStorage as fallback
   useEffect(() => { localStorage.setItem(LAYER_KEYS.density, String(showDensityLayer)); }, [showDensityLayer]);
   useEffect(() => { localStorage.setItem(LAYER_KEYS.paths, String(showMovementPaths)); }, [showMovementPaths]);
