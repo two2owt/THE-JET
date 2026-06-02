@@ -2759,9 +2759,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               }}
             />
 
-          </div>
-        </div>
-
             {/* Divider */}
             <div style={{ height: '1px', background: 'hsl(var(--border) / 0.5)' }} />
 
@@ -2776,6 +2773,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 setShowLiveStats(!showLiveStats);
               }}
             />
+
+          </div>
+        </div>
 
         {/* Layers FAB */}
         <button
