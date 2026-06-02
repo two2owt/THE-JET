@@ -6,10 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Zap, Sparkles, Loader2, Upload } from "lucide-react";
+import { Sparkles, Loader2, Upload } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PreferencesStep, { PreferencesData } from "@/components/onboarding/PreferencesStep";
 import { Json } from "@/integrations/supabase/types";
+import jetLogo from "@/assets/jet-auth-logo.png";
+import authBackground from "@/assets/auth-background.webp";
 
 const GENDER_OPTIONS = [
   { value: "woman", label: "Woman" },
