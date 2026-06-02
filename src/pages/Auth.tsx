@@ -862,7 +862,7 @@ const Auth = () => {
 
           {/* Features — signup only, dot-gold bullets */}
           {mode === "signup" && (
-            <div className="flex flex-col gap-fluid-sm rounded-xl border-hairline bg-card/30 p-fluid-md backdrop-blur-sm">
+            <div className="flex flex-col gap-fluid-xs sm:gap-fluid-sm rounded-xl border-hairline bg-card/30 p-fluid-sm sm:p-fluid-md backdrop-blur-sm">
               <p className="heading-luxe-eyebrow">Member Benefits</p>
               <ul className="flex list-none flex-col gap-fluid-xs p-0 text-fluid-xs text-muted-foreground">
                 <li className="flex items-start gap-2">
