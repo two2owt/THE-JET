@@ -15,7 +15,7 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 import PreferencesEditor from "@/components/settings/PreferencesEditor";
 import PrivacySettings from "@/components/settings/PrivacySettings";
-import { DeleteAccountDialog } from "@/components/settings/DeleteAccountDialog";
+import { AccountSection } from "@/components/settings/AccountSection";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { isMonetizationEnabled } from "@/lib/monetization";
