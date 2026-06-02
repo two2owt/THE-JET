@@ -344,7 +344,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
   // Movement paths state
   const [showMovementPaths, setShowMovementPaths] = useState(() => getLayerState("paths", false));
-  const [pathTimeFilter, setPathTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.pathTimeFilter, 'all'));
+  const [pathTimeFilter, setPathTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.pathTimeFilter, 'all', 'pathTime'));
 
   // Sync active layer toggles to URL query params for shareability
   const syncLayersToUrl = useCallback(() => {
