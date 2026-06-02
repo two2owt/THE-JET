@@ -66,7 +66,7 @@ const loadMapboxGL = async (): Promise<MapboxGLModule> => {
   }
   return mapboxLoadPromise;
 };
-import { MapPin, Layers, X, AlertCircle, Route, Play, Pause, SkipBack, SkipForward, Clock, ChevronDown, ChevronUp, Car } from "lucide-react";
+import { MapPin, Layers, X, AlertCircle, Route, Play, Pause, SkipBack, SkipForward, Clock, ChevronDown, ChevronUp, Car, BarChart3 } from "lucide-react";
 import { HeatmapSkeleton } from "@/components/skeletons/HeatmapSkeleton";
 import { useLocationDensity } from "@/hooks/useLocationDensity";
 import { useMovementPaths } from "@/hooks/useMovementPaths";
@@ -211,22 +211,36 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     return () => { mounted = false; };
   }, [retryCount]); // Re-run when retryCount changes
   
-  // Layer persistence helpers (URL params take priority, localStorage fallback)
-  const getLayerState = (key: string, fallback: boolean): boolean => {
+  // Layer persistence helpers (URL params take priority, localStorage fallback).
+  // Unknown keys in the URL are ignored; any layer missing from the URL falls
+  // back to localStorage, then to the hard-coded default below.
+  const LAYER_KEYS = {
+    density: "jet-map-layer-density",
+    paths: "jet-map-layer-paths",
+    parking: "jet-map-layer-parking",
+    stats: "jet-map-layer-stats",
+  } as const;
+  type LayerName = keyof typeof LAYER_KEYS;
+  const KNOWN_LAYERS = new Set<LayerName>(Object.keys(LAYER_KEYS) as LayerName[]);
+
+  const getLayerState = (layer: LayerName, fallback: boolean): boolean => {
     try {
       const params = new URLSearchParams(window.location.search);
       const layers = params.get("layers");
       if (layers !== null) {
-        const set = new Set(layers.split(",").map((s) => s.trim()));
-        if (key === "jet-map-layer-density") return set.has("density");
-        if (key === "jet-map-layer-parking") return set.has("parking");
-        if (key === "jet-map-layer-paths") return set.has("paths");
+        const tokens = layers
+          .split(",")
+          .map((s) => s.trim().toLowerCase())
+          .filter((s) => KNOWN_LAYERS.has(s as LayerName)) as LayerName[];
+        // URL is authoritative only for layers it mentions; for layers it
+        // omits we still fall back to localStorage / defaults below.
+        if (tokens.includes(layer)) return true;
       }
     } catch {
       // ignore
     }
     try {
-      const raw = localStorage.getItem(key);
+      const raw = localStorage.getItem(LAYER_KEYS[layer]);
       return raw !== null ? raw === "true" : fallback;
     } catch {
       return fallback;
@@ -234,8 +248,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   };
 
   // Density heatmap state
-  const [showDensityLayer, setShowDensityLayer] = useState(() => getLayerState("jet-map-layer-density", false));
-  const [showParking, setShowParking] = useState(() => getLayerState("jet-map-layer-parking", false));
+  const [showDensityLayer, setShowDensityLayer] = useState(() => getLayerState("density", false));
+  const [showParking, setShowParking] = useState(() => getLayerState("parking", false));
+  // Live Stats panel — hidden by default, opt-in via layers toggle
+  const [showLiveStats, setShowLiveStats] = useState(() => getLayerState("stats", false));
   const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>('all');
   const [hourFilter, setHourFilter] = useState<number | undefined>();
   const [dayFilter, setDayFilter] = useState<number | undefined>();
@@ -260,15 +276,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [timelapseMode, setTimelapseMode] = useState(false);
 
   // Movement paths state
-  const [showMovementPaths, setShowMovementPaths] = useState(() => getLayerState("jet-map-layer-paths", false));
+  const [showMovementPaths, setShowMovementPaths] = useState(() => getLayerState("paths", false));
   const [pathTimeFilter, setPathTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>('all');
 
   // Sync active layer toggles to URL query params for shareability
   const syncLayersToUrl = useCallback(() => {
-    const active: string[] = [];
+    const active: LayerName[] = [];
     if (showDensityLayer) active.push("density");
     if (showMovementPaths) active.push("paths");
     if (showParking) active.push("parking");
+    if (showLiveStats) active.push("stats");
     const params = new URLSearchParams(window.location.search);
     const current = params.get("layers");
     const next = active.length > 0 ? active.join(",") : null;
@@ -281,16 +298,17 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     const search = params.toString();
     const newUrl = search ? `${window.location.pathname}?${search}` : window.location.pathname;
     window.history.replaceState(null, "", newUrl);
-  }, [showDensityLayer, showMovementPaths, showParking]);
+  }, [showDensityLayer, showMovementPaths, showParking, showLiveStats]);
 
   useEffect(() => {
     syncLayersToUrl();
   }, [syncLayersToUrl]);
 
   // Persist layer toggles to localStorage as fallback
-  useEffect(() => { localStorage.setItem("jet-map-layer-density", String(showDensityLayer)); }, [showDensityLayer]);
-  useEffect(() => { localStorage.setItem("jet-map-layer-paths", String(showMovementPaths)); }, [showMovementPaths]);
-  useEffect(() => { localStorage.setItem("jet-map-layer-parking", String(showParking)); }, [showParking]);
+  useEffect(() => { localStorage.setItem(LAYER_KEYS.density, String(showDensityLayer)); }, [showDensityLayer]);
+  useEffect(() => { localStorage.setItem(LAYER_KEYS.paths, String(showMovementPaths)); }, [showMovementPaths]);
+  useEffect(() => { localStorage.setItem(LAYER_KEYS.parking, String(showParking)); }, [showParking]);
+  useEffect(() => { localStorage.setItem(LAYER_KEYS.stats, String(showLiveStats)); }, [showLiveStats]);
   
   // CLS fix: Defer layer controls render until map is loaded
   // This ensures controls appear immediately after map is ready, not a fixed delay
