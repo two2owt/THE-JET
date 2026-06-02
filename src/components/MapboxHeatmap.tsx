@@ -2807,15 +2807,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           ) : (
             <X style={{ width: '20px', height: '20px' }} />
           )}
-          {/* Active indicator dot */}
-          {(showDensityLayer || showMovementPaths || showParking) && controlsCollapsed && (
-            <div style={{
-              position: 'absolute', top: '-2px', right: '-2px',
-              width: '10px', height: '10px',
-              background: 'hsl(var(--accent))', borderRadius: '50%',
-              border: '2px solid hsl(var(--card))',
-            }} />
-          )}
         </button>
       </div>
       )}
