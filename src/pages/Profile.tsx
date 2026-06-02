@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { EmptyState } from "@/components/EmptyState";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useConnections } from "@/hooks/useConnections";
+import { useProfile } from "@/hooks/useProfile";
 import { User, Camera, Edit2, X, Save, Settings, Heart, Users, Shield, LogOut, Loader2, Instagram, Twitter, Facebook, Linkedin, Video, Mail, Sparkles, Bell, ChevronRight, Link2 } from "lucide-react";
 
 import { toast } from "sonner";
@@ -85,19 +86,6 @@ const PRONOUN_OPTIONS = [{
   value: "other",
   label: "Other"
 }];
-interface Profile {
-  id: string;
-  display_name: string | null;
-  avatar_url: string | null;
-  bio: string | null;
-  gender: string | null;
-  pronouns: string | null;
-  instagram_url: string | null;
-  twitter_url: string | null;
-  facebook_url: string | null;
-  linkedin_url: string | null;
-  tiktok_url: string | null;
-}
 export default function Profile() {
   const navigate = useNavigate();
   const {
@@ -106,7 +94,15 @@ export default function Profile() {
   const { user, isLoading: isAuthLoading } = useAuth();
   // Stable header config so PageLayout effect doesn't churn.
   const headerConfig = useMemo(() => ({ hideSearch: true }), []);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const {
+    profile,
+    isLoading: isProfileLoading,
+    updateProfile,
+    isSaving,
+    uploadAvatar,
+    isUploading,
+    checkDisplayNameUnique,
+  } = useProfile(user?.id);
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [instagramUrl, setInstagramUrl] = useState("");
@@ -116,9 +112,6 @@ export default function Profile() {
   const [tiktokUrl, setTiktokUrl] = useState("");
   const [gender, setGender] = useState("");
   const [pronouns, setPronouns] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [isCropOpen, setIsCropOpen] = useState(false);
@@ -130,67 +123,21 @@ export default function Profile() {
   const {
     connections
   } = useConnections(user?.id);
+  // Sync hydrated profile into the editable form state. Only fires when
+  // a fresh profile object arrives from the cache/network.
   useEffect(() => {
-    if (isAuthLoading) return;
-    if (user) {
-      loadProfile();
-    } else {
-      setIsLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthLoading, user?.id]);
-  const loadProfile = async () => {
-    if (!user) return;
-    try {
-      const {
-        data,
-        error
-      } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-      if (error) {
-        if (error.code === 'PGRST116') {
-          await createDefaultProfile();
-          return;
-        }
-        throw error;
-      }
-      if (data) {
-        setProfile(data);
-        setDisplayName(data.display_name || "");
-        setBio(data.bio || "");
-        setGender(data.gender || "");
-        setPronouns(data.pronouns || "");
-        setInstagramUrl(data.instagram_url || "");
-        setTwitterUrl(data.twitter_url || "");
-        setFacebookUrl(data.facebook_url || "");
-        setLinkedinUrl(data.linkedin_url || "");
-        setTiktokUrl(data.tiktok_url || "");
-      }
-    } catch (error) {
-      console.error('Error loading profile:', error);
-      toast.error('Failed to load profile');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  const createDefaultProfile = async () => {
-    if (!user) return;
-    try {
-      const {
-        data,
-        error
-      } = await supabase.from('profiles').insert({
-        id: user.id,
-        display_name: user.email?.split('@')[0] || 'User'
-      }).select().single();
-      if (error) throw error;
-      setProfile(data);
-      setDisplayName(data.display_name || "");
-      toast.success('Profile created');
-    } catch (error) {
-      console.error('Error creating profile:', error);
-      toast.error('Failed to create profile');
-    }
-  };
+    if (!profile) return;
+    setDisplayName(profile.display_name || "");
+    setBio(profile.bio || "");
+    setGender(profile.gender || "");
+    setPronouns(profile.pronouns || "");
+    setInstagramUrl(profile.instagram_url || "");
+    setTwitterUrl(profile.twitter_url || "");
+    setFacebookUrl(profile.facebook_url || "");
+    setLinkedinUrl(profile.linkedin_url || "");
+    setTiktokUrl(profile.tiktok_url || "");
+  }, [profile]);
+
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     // Reset the input so selecting the same file twice still triggers change
@@ -219,43 +166,15 @@ export default function Profile() {
 
   const handleCroppedAvatarSave = async (blob: Blob) => {
     if (!profile || !user) return;
-    setIsUploading(true);
     try {
-      const fileName = `${user.id}/avatar.jpg`;
-      if (profile?.avatar_url) {
-        const oldPath = profile.avatar_url.split('/').slice(-2).join('/');
-        await supabase.storage.from('avatars').remove([oldPath]);
-      }
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, blob, { upsert: true, contentType: 'image/jpeg' });
-      if (uploadError) throw uploadError;
-      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName);
-      // Cache-bust so the new image shows immediately
-      const bustedUrl = `${publicUrl}?t=${Date.now()}`;
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ avatar_url: bustedUrl })
-        .eq('id', user.id);
-      if (updateError) throw updateError;
-      setProfile(prev => prev ? { ...prev, avatar_url: bustedUrl } : null);
+      await uploadAvatar(blob);
       toast.success('Avatar updated');
       setIsCropOpen(false);
       setCropSrc(null);
     } catch (error) {
       console.error('Error uploading avatar:', error);
       toast.error('Failed to upload avatar');
-    } finally {
-      setIsUploading(false);
     }
-  };
-  const checkDisplayNameUnique = async (name: string): Promise<boolean> => {
-    const {
-      data,
-      error
-    } = await supabase.from("profiles").select("id").eq("display_name", name).neq("id", user?.id || "").limit(1);
-    if (error) return true;
-    return !data || data.length === 0;
   };
   const handleSaveProfile = async () => {
     if (!user) return;
@@ -281,7 +200,6 @@ export default function Profile() {
         linkedin_url: linkedinUrl || '',
         tiktok_url: tiktokUrl || ''
       });
-      setIsSaving(true);
 
       // Check unique display name
       const isUnique = await checkDisplayNameUnique(validatedData.display_name);
@@ -290,35 +208,32 @@ export default function Profile() {
         toast.error("Display name taken", {
           description: "This display name is already in use. Please choose another."
         });
-        setIsSaving(false);
         return;
       }
-      const {
-        error
-      } = await supabase.from('profiles').update({
-        display_name: validatedData.display_name,
-        bio: validatedData.bio || null,
-        gender: gender,
-        pronouns: pronouns || null,
-        instagram_url: validatedSocial.instagram_url || null,
-        twitter_url: validatedSocial.twitter_url || null,
-        facebook_url: validatedSocial.facebook_url || null,
-        linkedin_url: validatedSocial.linkedin_url || null,
-        tiktok_url: validatedSocial.tiktok_url || null
-      }).eq('id', user.id);
-      if (error) {
-        if (error.code === '23505') {
+      try {
+        await updateProfile({
+          display_name: validatedData.display_name,
+          bio: validatedData.bio || null,
+          gender: gender,
+          pronouns: pronouns || null,
+          instagram_url: validatedSocial.instagram_url || null,
+          twitter_url: validatedSocial.twitter_url || null,
+          facebook_url: validatedSocial.facebook_url || null,
+          linkedin_url: validatedSocial.linkedin_url || null,
+          tiktok_url: validatedSocial.tiktok_url || null,
+        });
+      } catch (err: any) {
+        if (err?.code === '23505') {
           setFieldErrors({ display_name: "This display name is already in use" });
           toast.error("Display name taken", {
-            description: "This display name is already in use. Please choose another."
+            description: "This display name is already in use. Please choose another.",
           });
           return;
         }
-        throw error;
+        throw err;
       }
       toast.success('Profile updated');
       setIsEditing(false);
-      await loadProfile();
     } catch (error) {
       if (error instanceof z.ZodError) {
         // Map every zod issue to its field for inline display.
@@ -332,8 +247,6 @@ export default function Profile() {
       } else {
         toast.error('Failed to update profile');
       }
-    } finally {
-      setIsSaving(false);
     }
   };
   const handleSignOut = async () => {
@@ -345,7 +258,7 @@ export default function Profile() {
       toast.error('Failed to sign out');
     }
   };
-  if (isAuthLoading || (user && isLoading)) {
+  if (isAuthLoading || (user && isProfileLoading)) {
     return (
       <PageLayout defaultTab="map" headerConfig={headerConfig}>
         <ProfilePageSkeleton />
