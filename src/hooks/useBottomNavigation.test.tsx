@@ -37,19 +37,27 @@ describe("useBottomNavigation", () => {
 
     it("should initialize with provided defaultTab", () => {
       const { result } = renderHook(
-        () => useBottomNavigation({ defaultTab: "explore" }),
-        { wrapper: createWrapper("/?tab=explore") }
+        () => useBottomNavigation({ defaultTab: "favorites" }),
+        { wrapper: createWrapper("/favorites") }
       );
 
-      expect(result.current.activeTab).toBe("explore");
+      expect(result.current.activeTab).toBe("favorites");
     });
 
-    it("should detect map tab from root URL", () => {
+    it("should detect favorites tab from URL path", () => {
       const { result } = renderHook(() => useBottomNavigation(), {
-        wrapper: createWrapper("/"),
+        wrapper: createWrapper("/favorites"),
       });
 
-      expect(result.current.activeTab).toBe("map");
+      expect(result.current.activeTab).toBe("favorites");
+    });
+
+    it("should detect social tab from URL path", () => {
+      const { result } = renderHook(() => useBottomNavigation(), {
+        wrapper: createWrapper("/social"),
+      });
+
+      expect(result.current.activeTab).toBe("social");
     });
 
     it("should detect explore tab from URL search params", () => {
@@ -109,19 +117,31 @@ describe("useBottomNavigation", () => {
       expect(result.current.activeTab).toBe("notifications");
     });
 
-    it("should navigate to /?tab=explore when explore is selected", () => {
+    it("should navigate to /favorites when favorites is selected", () => {
       const { result } = renderHook(() => useBottomNavigation(), {
         wrapper: createWrapper("/"),
       });
 
       act(() => {
-        result.current.handleTabChange("explore");
+        result.current.handleTabChange("favorites");
       });
 
-      expect(mockNavigate).toHaveBeenCalledWith("/?tab=explore", { replace: true });
-      expect(result.current.activeTab).toBe("explore");
+      expect(mockNavigate).toHaveBeenCalledWith("/favorites");
+      expect(result.current.activeTab).toBe("favorites");
     });
 
+    it("should navigate to /social when social is selected", () => {
+      const { result } = renderHook(() => useBottomNavigation(), {
+        wrapper: createWrapper("/"),
+      });
+
+      act(() => {
+        result.current.handleTabChange("social");
+      });
+
+      expect(mockNavigate).toHaveBeenCalledWith("/social");
+      expect(result.current.activeTab).toBe("social");
+    });
   });
 
   describe("onBeforeNavigate callback", () => {
@@ -133,10 +153,10 @@ describe("useBottomNavigation", () => {
       );
 
       act(() => {
-        result.current.handleTabChange("explore");
+        result.current.handleTabChange("favorites");
       });
 
-      expect(onBeforeNavigate).toHaveBeenCalledWith("explore");
+      expect(onBeforeNavigate).toHaveBeenCalledWith("favorites");
     });
 
     it("should prevent navigation when onBeforeNavigate returns false", () => {
@@ -149,10 +169,10 @@ describe("useBottomNavigation", () => {
       const initialTab = result.current.activeTab;
 
       act(() => {
-        result.current.handleTabChange("explore");
+        result.current.handleTabChange("favorites");
       });
 
-      expect(onBeforeNavigate).toHaveBeenCalledWith("explore");
+      expect(onBeforeNavigate).toHaveBeenCalledWith("favorites");
       expect(mockNavigate).not.toHaveBeenCalled();
       expect(result.current.activeTab).toBe(initialTab);
     });
@@ -165,11 +185,11 @@ describe("useBottomNavigation", () => {
       );
 
       act(() => {
-        result.current.handleTabChange("explore");
+        result.current.handleTabChange("social");
       });
 
-      expect(mockNavigate).toHaveBeenCalledWith("/?tab=explore", { replace: true });
-      expect(result.current.activeTab).toBe("explore");
+      expect(mockNavigate).toHaveBeenCalledWith("/social");
+      expect(result.current.activeTab).toBe("social");
     });
   });
 
@@ -190,7 +210,7 @@ describe("useBottomNavigation", () => {
 
   describe("tab types", () => {
     it("should handle all valid NavTab values", () => {
-      const tabs: NavTab[] = ["map", "explore", "notifications"];
+      const tabs: NavTab[] = ["map", "explore", "notifications", "favorites", "social"];
       const { result } = renderHook(() => useBottomNavigation(), {
         wrapper: createWrapper("/"),
       });

@@ -58,7 +58,7 @@ export default function Favorites() {
 
   if (authLoading) {
     return (
-      <PageLayout defaultTab="explore" headerConfig={headerConfig}>
+      <PageLayout defaultTab="favorites" headerConfig={headerConfig}>
         <PageShell>
           <FavoritesPageSkeleton />
         </PageShell>
@@ -68,7 +68,7 @@ export default function Favorites() {
 
   if (!user) {
     return (
-      <PageLayout defaultTab="explore" notificationCount={0} headerConfig={headerConfig}>
+      <PageLayout defaultTab="favorites" notificationCount={0} headerConfig={headerConfig}>
         <PageShell>
           <EmptyState
             icon={Heart}
@@ -84,7 +84,7 @@ export default function Favorites() {
 
   if (favoritesLoading) {
     return (
-      <PageLayout defaultTab="explore" headerConfig={headerConfig}>
+      <PageLayout defaultTab="favorites" headerConfig={headerConfig}>
         <PageShell>
           <FavoritesPageSkeleton />
         </PageShell>
@@ -93,7 +93,7 @@ export default function Favorites() {
   }
 
   return (
-    <PageLayout defaultTab="explore" headerConfig={headerConfig}>
+    <PageLayout defaultTab="favorites" headerConfig={headerConfig}>
       <PageShell>
         <TabPageHeader
           title="Your Favorites"

@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
 
-export type NavTab = "map" | "explore" | "notifications";
+export type NavTab = "map" | "explore" | "notifications" | "favorites" | "social";
 
 interface UseBottomNavigationOptions {
   /** The default tab when on this page */
@@ -21,14 +21,18 @@ export function useBottomNavigation(options: UseBottomNavigationOptions = {}) {
 
   // Determine initial tab from URL or default
   const getTabFromLocation = useCallback((): NavTab => {
-    // Check URL params for Index page tabs
+    // If we're on a dedicated page, use that as the tab
+    if (location.pathname === "/favorites") return "favorites";
+    if (location.pathname === "/social") return "social";
+    
+    // Otherwise check URL params for Index page tabs
     const searchParams = new URLSearchParams(location.search);
     const tabParam = searchParams.get("tab");
     if (tabParam === "explore") return "explore";
     if (tabParam === "notifications") return "notifications";
     
     return defaultTab;
-  }, [location.search, defaultTab]);
+  }, [location.pathname, location.search, defaultTab]);
 
   const [activeTab, setActiveTab] = useState<NavTab>(getTabFromLocation);
 
@@ -58,6 +62,12 @@ export function useBottomNavigation(options: UseBottomNavigationOptions = {}) {
         break;
       case "notifications":
         navigate("/?tab=notifications", { replace: true });
+        break;
+      case "favorites":
+        navigate("/favorites");
+        break;
+      case "social":
+        navigate("/social");
         break;
     }
   }, [navigate, onBeforeNavigate]);

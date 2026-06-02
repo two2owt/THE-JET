@@ -120,7 +120,7 @@ const AppLayout = memo(function AppLayout() {
         <Route
           path="/settings"
           element={
-            <Suspense fallback={<RouteFallback defaultTab="map"><SettingsPageSkeleton /></RouteFallback>}>
+            <Suspense fallback={<RouteFallback defaultTab="social"><SettingsPageSkeleton /></RouteFallback>}>
               <Settings />
             </Suspense>
           }
@@ -128,7 +128,7 @@ const AppLayout = memo(function AppLayout() {
         <Route
           path="/favorites"
           element={
-            <Suspense fallback={<RouteFallback defaultTab="explore"><FavoritesPageSkeleton /></RouteFallback>}>
+            <Suspense fallback={<RouteFallback defaultTab="favorites"><FavoritesPageSkeleton /></RouteFallback>}>
               <Favorites />
             </Suspense>
           }
@@ -136,7 +136,7 @@ const AppLayout = memo(function AppLayout() {
         <Route
           path="/social"
           element={
-            <Suspense fallback={<RouteFallback defaultTab="map"><SocialPageSkeleton /></RouteFallback>}>
+            <Suspense fallback={<RouteFallback defaultTab="social"><SocialPageSkeleton /></RouteFallback>}>
               <Social />
             </Suspense>
           }
@@ -144,7 +144,7 @@ const AppLayout = memo(function AppLayout() {
         <Route
           path="/messages"
           element={
-            <Suspense fallback={<RouteFallback defaultTab="map"><MessagesPageSkeleton /></RouteFallback>}>
+            <Suspense fallback={<RouteFallback defaultTab="social"><MessagesPageSkeleton /></RouteFallback>}>
               <Messages />
             </Suspense>
           }
