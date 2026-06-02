@@ -2762,6 +2762,21 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           </div>
         </div>
 
+            {/* Divider */}
+            <div style={{ height: '1px', background: 'hsl(var(--border) / 0.5)' }} />
+
+            {/* Live Stats toggle row */}
+            <LayerToggleRow
+              label="Live Stats"
+              Icon={BarChart3}
+              active={showLiveStats}
+              ariaLabel="Toggle live stats panel"
+              onToggle={() => {
+                triggerHaptic('medium');
+                setShowLiveStats(!showLiveStats);
+              }}
+            />
+
         {/* Layers FAB */}
         <button
           onClick={() => { triggerHaptic('light'); setControlsCollapsed(!controlsCollapsed); }}
