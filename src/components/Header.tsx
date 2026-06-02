@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Search, Sparkles } from "lucide-react";
 import { IconButton } from "./ui/icon-button";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +6,7 @@ import { useSearchHistory } from "@/hooks/useSearchHistory";
 import { useHeaderContext } from "@/contexts/HeaderContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { useProfile } from "@/hooks/useProfile";
 import { HeaderUserMenu } from "./navigation/HeaderUserMenu";
 import { InlineBreadcrumbs } from "./navigation/InlineBreadcrumbs";
 import { HeaderSearch } from "./navigation/HeaderSearch";
@@ -18,11 +19,10 @@ export const Header = () => {
   const [mounted, setMounted] = useState(false);
   const mountedRef = useRef(false);
   const [searchExpanded, setSearchExpanded] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [displayName, setDisplayName] = useState<string>("JT");
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const [userEmail, setUserEmail] = useState<string | undefined>(undefined);
   const { isAdmin } = useIsAdmin();
+  const { profile } = useProfile(userId);
   const { addToSearchHistory } = useSearchHistory(userId);
   const historyDebounceRef = useRef<number | null>(null);
 
@@ -34,28 +34,25 @@ export const Header = () => {
   }, []);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          setUserId(user.id);
-          setUserEmail(user.email);
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('avatar_url, display_name')
-            .eq('id', user.id)
-            .single();
-          if (profile) {
-            setAvatarUrl(profile.avatar_url);
-            setDisplayName(profile.display_name || user.email?.substring(0, 2).toUpperCase() || "JT");
-          }
-        }
-      } catch {
-        // Profile fetch failed, use defaults
-      }
+    let cancelled = false;
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (cancelled || !user) return;
+      setUserId(user.id);
+      setUserEmail(user.email);
+    });
+    return () => {
+      cancelled = true;
     };
-    fetchProfile();
   }, []);
+
+  const avatarUrl = profile?.avatar_url ?? null;
+  const displayName = useMemo(
+    () =>
+      profile?.display_name ||
+      userEmail?.substring(0, 2).toUpperCase() ||
+      "JT",
+    [profile?.display_name, userEmail],
+  );
 
   // Debounced "save-to-history" — fires once typing pauses for 1s.
   const handleQueryChange = useCallback(
