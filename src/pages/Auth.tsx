@@ -583,7 +583,7 @@ const Auth = () => {
                 ? handleForgotPassword
                 : handleAuth
             }
-            className="flex flex-col gap-fluid-md"
+            className="flex flex-col gap-fluid-sm sm:gap-fluid-md"
           >
             {/* Email field - only show if not resetting password */}
             {!isResettingPassword && (
