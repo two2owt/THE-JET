@@ -714,7 +714,7 @@ const Auth = () => {
                       />
                       <label
                         htmlFor="dataConsent"
-                        className="cursor-pointer text-fluid-xs leading-relaxed text-muted-foreground"
+                        className="cursor-pointer text-fluid-sm leading-relaxed text-foreground/85"
                       >
                         I agree to the{" "}
                         <Link
@@ -758,7 +758,7 @@ const Auth = () => {
                       />
                       <label
                         htmlFor="locationConsent"
-                        className="cursor-pointer text-fluid-xs leading-relaxed text-muted-foreground"
+                        className="cursor-pointer text-fluid-sm leading-relaxed text-foreground/85"
                       >
                         I consent to location tracking to receive personalized
                         deals and push notifications. You can disable this
@@ -820,7 +820,7 @@ const Auth = () => {
                 type="button"
                 onClick={() => setIsForgotPassword(true)}
                 disabled={isLoading}
-                className="rounded-md px-2 py-1 text-fluid-xs font-medium text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none disabled:opacity-50"
+                className="rounded-full px-3 py-1.5 text-fluid-sm font-medium text-foreground/80 transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none disabled:opacity-50"
               >
                 Forgot password?
               </button>
