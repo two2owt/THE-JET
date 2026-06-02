@@ -2713,40 +2713,51 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             />
 
             {/* Path filters */}
-            <div style={{ overflow: 'hidden', transition: 'max-height 0.2s', maxHeight: showMovementPaths ? '200px' : '0px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingLeft: '4px' }}>
-                {pathsError && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', background: 'hsl(var(--destructive) / 0.1)', borderRadius: '8px', fontSize: '10px' }}>
-                    <AlertCircle style={{ width: '12px', height: '12px', color: 'hsl(var(--destructive))', flexShrink: 0 }} />
-                    <span style={{ color: 'hsl(var(--destructive))' }}>Failed</span>
-                    <Button onClick={refreshPaths} variant="ghost" size="sm" className="h-5 text-[9px] px-1.5 ml-auto">Retry</Button>
+            <AnimatePresence>
+              {showMovementPaths && (
+                <motion.div
+                  key="path-filters"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ type: "spring", stiffness: 380, damping: 28 }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingLeft: '4px' }}>
+                    {pathsError && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', background: 'hsl(var(--destructive) / 0.1)', borderRadius: '8px', fontSize: '10px' }}>
+                        <AlertCircle style={{ width: '12px', height: '12px', color: 'hsl(var(--destructive))', flexShrink: 0 }} />
+                        <span style={{ color: 'hsl(var(--destructive))' }}>Failed</span>
+                        <Button onClick={refreshPaths} variant="ghost" size="sm" className="h-5 text-[9px] px-1.5 ml-auto">Retry</Button>
+                      </div>
+                    )}
+                    <Select value={pathTimeFilter} onValueChange={(v: any) => setPathTimeFilter(v)}>
+                      <SelectTrigger className="h-7 text-[10px] bg-background/80"><SelectValue placeholder="Time" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Time</SelectItem>
+                        <SelectItem value="today">Today</SelectItem>
+                        <SelectItem value="this_week">This Week</SelectItem>
+                        <SelectItem value="this_hour">This Hour</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '9px' }}>
+                        <span style={{ color: 'hsl(var(--muted-foreground))' }}>Min. Frequency</span>
+                        <span style={{ fontWeight: 600, color: 'hsl(var(--primary))' }}>{minPathFrequency}</span>
+                      </div>
+                      <input type="range" min="1" max="10" value={minPathFrequency} onChange={(e) => setMinPathFrequency(parseInt(e.target.value))} className="path-flow-slider w-full" />
+                    </div>
+                    {pathData && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '9px', color: 'hsl(var(--muted-foreground))', paddingTop: '4px', borderTop: '1px solid hsl(var(--border) / 0.3)' }}>
+                        <span>{pathData.stats.total_paths} paths</span>
+                        <span>•</span>
+                        <span>{pathData.stats.unique_users} users</span>
+                      </div>
+                    )}
                   </div>
-                )}
-                <Select value={pathTimeFilter} onValueChange={(v: any) => setPathTimeFilter(v)}>
-                  <SelectTrigger className="h-7 text-[10px] bg-background/80"><SelectValue placeholder="Time" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Time</SelectItem>
-                    <SelectItem value="today">Today</SelectItem>
-                    <SelectItem value="this_week">This Week</SelectItem>
-                    <SelectItem value="this_hour">This Hour</SelectItem>
-                  </SelectContent>
-                </Select>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '9px' }}>
-                    <span style={{ color: 'hsl(var(--muted-foreground))' }}>Min. Frequency</span>
-                    <span style={{ fontWeight: 600, color: 'hsl(var(--primary))' }}>{minPathFrequency}</span>
-                  </div>
-                  <input type="range" min="1" max="10" value={minPathFrequency} onChange={(e) => setMinPathFrequency(parseInt(e.target.value))} className="path-flow-slider w-full" />
-                </div>
-                {pathData && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '9px', color: 'hsl(var(--muted-foreground))', paddingTop: '4px', borderTop: '1px solid hsl(var(--border) / 0.3)' }}>
-                    <span>{pathData.stats.total_paths} paths</span>
-                    <span>•</span>
-                    <span>{pathData.stats.unique_users} users</span>
-                  </div>
-                )}
-              </div>
-            </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Divider */}
             <div style={{ height: '1px', background: 'hsl(var(--border) / 0.5)' }} />
