@@ -66,7 +66,7 @@ const loadMapboxGL = async (): Promise<MapboxGLModule> => {
   }
   return mapboxLoadPromise;
 };
-import { MapPin, Layers, X, AlertCircle, Route, Play, Pause, SkipBack, SkipForward, Clock, ChevronDown, ChevronUp, Car, BarChart3 } from "lucide-react";
+import { MapPin, Layers, X, AlertCircle, Route, Play, Pause, SkipBack, SkipForward, Clock, ChevronDown, ChevronUp, Car, BarChart3, RotateCcw } from "lucide-react";
 import { HeatmapSkeleton } from "@/components/skeletons/HeatmapSkeleton";
 import { useLocationDensity } from "@/hooks/useLocationDensity";
 import { useMovementPaths } from "@/hooks/useMovementPaths";
@@ -377,7 +377,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   }, [mapLoaded]);
   const [minPathFrequency, setMinPathFrequency] = useState(2);
   const [isTabVisible, setIsTabVisible] = useState(!document.hidden);
-  
+
   // Controls visibility state - collapsed by default for maximum map visibility
   const [controlsCollapsed, setControlsCollapsed] = useState(true);
   const [legendCollapsed, setLegendCollapsed] = useState(true);
@@ -457,6 +457,47 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   useEffect(() => {
     localStorage.setItem(FILTER_KEYS.timelapseSpeed, String(timelapse.speed));
   }, [timelapse.speed]);
+
+  // Reset to defaults — clears localStorage and restores factory settings
+  const handleResetToDefaults = useCallback(() => {
+    triggerHaptic('medium');
+
+    // Clear persisted layer toggles
+    Object.values(LAYER_KEYS).forEach((key) => {
+      try { localStorage.removeItem(key); } catch { /* ignore */ }
+    });
+
+    // Clear persisted filter / time-lapse settings
+    Object.values(FILTER_KEYS).forEach((key) => {
+      try { localStorage.removeItem(key); } catch { /* ignore */ }
+    });
+
+    // Reset all state to defaults
+    setShowDensityLayer(false);
+    setShowParking(false);
+    setShowLiveStats(false);
+    setShowMovementPaths(false);
+    setTimeFilter('all');
+    setPathTimeFilter('all');
+    setDayFilter(undefined);
+    setHourFilter(undefined);
+    setTimelapseMode(false);
+    setMinPathFrequency(2);
+
+    // Reset time-lapse playback
+    if (timelapse.isPlaying) timelapse.pause();
+    timelapse.setSpeed(1);
+    timelapse.setHour(new Date().getHours());
+
+    // Strip layers from URL
+    try {
+      const params = new URLSearchParams(window.location.search);
+      params.delete('layers');
+      const search = params.toString();
+      const newUrl = search ? `${window.location.pathname}?${search}` : window.location.pathname;
+      window.history.replaceState(null, '', newUrl);
+    } catch { /* ignore */ }
+  }, [timelapse]);
 
   // Handle map resize on viewport changes - optimized for all mobile devices
   useEffect(() => {
@@ -2955,6 +2996,42 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 setShowLiveStats(!showLiveStats);
               }}
             />
+
+            {/* Reset to defaults */}
+            <button
+              type="button"
+              onClick={handleResetToDefaults}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                padding: '6px 8px',
+                borderRadius: '8px',
+                border: '1px solid hsl(var(--border) / 0.4)',
+                background: 'transparent',
+                color: 'hsl(var(--muted-foreground))',
+                fontSize: '10px',
+                fontWeight: 600,
+                letterSpacing: '0.02em',
+                cursor: 'pointer',
+                transition: 'color 200ms ease, border-color 200ms ease, background 200ms ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'hsl(var(--foreground))';
+                e.currentTarget.style.borderColor = 'hsl(var(--border) / 0.7)';
+                e.currentTarget.style.background = 'hsl(var(--card) / 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'hsl(var(--muted-foreground))';
+                e.currentTarget.style.borderColor = 'hsl(var(--border) / 0.4)';
+                e.currentTarget.style.background = 'transparent';
+              }}
+            >
+              <RotateCcw style={{ width: '12px', height: '12px' }} />
+              Reset to defaults
+            </button>
 
           </div>
         </div>
