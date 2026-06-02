@@ -68,7 +68,7 @@ export default function Favorites() {
 
   if (!user) {
     return (
-      <PageLayout defaultTab="favorites" notificationCount={0} headerConfig={headerConfig}>
+      <PageLayout defaultTab="explore" notificationCount={0} headerConfig={headerConfig}>
         <PageShell>
           <EmptyState
             icon={Heart}
