@@ -18,7 +18,7 @@ import { Home, ChevronRight } from "lucide-react";
 const SEGMENT_LABELS: Record<string, string> = {
   profile: "Profile",
   settings: "Settings",
-  favorites: "Saved",
+  
   social: "Crew",
   messages: "Messages",
   admin: "Admin",

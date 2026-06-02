@@ -128,7 +128,7 @@ const AppLayout = memo(function AppLayout() {
         <Route
           path="/favorites"
           element={
-            <Suspense fallback={<RouteFallback defaultTab="favorites"><FavoritesPageSkeleton /></RouteFallback>}>
+            <Suspense fallback={<RouteFallback defaultTab="explore"><FavoritesPageSkeleton /></RouteFallback>}>
               <Favorites />
             </Suspense>
           }

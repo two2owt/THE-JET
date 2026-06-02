@@ -1,7 +1,7 @@
-import { MapPinned, Flame, Bell, Heart } from "lucide-react";
+import { MapPinned, Flame, Bell } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-type NavItem = "map" | "explore" | "notifications" | "favorites";
+type NavItem = "map" | "explore" | "notifications";
 
 interface BottomNavProps {
   activeTab: NavItem;
@@ -39,7 +39,6 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
     { id: "map" as NavItem, icon: MapPinned, label: "Map" },
     { id: "explore" as NavItem, icon: Flame, label: "Hot" },
     { id: "notifications" as NavItem, icon: Bell, label: "Alerts" },
-    { id: "favorites" as NavItem, icon: Heart, label: "Saved" },
   ];
 
   return (
@@ -191,7 +190,7 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
                   transition: 'color 0.2s, transform 0.2s',
                   transform: isActive ? 'scale(1.05)' : 'scale(1)',
                 }}
-                fill={isActive && item.id === 'favorites' ? 'currentColor' : 'none'}
+                fill="none"
                 aria-hidden="true"
               />
 

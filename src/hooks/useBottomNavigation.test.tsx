@@ -37,19 +37,11 @@ describe("useBottomNavigation", () => {
 
     it("should initialize with provided defaultTab", () => {
       const { result } = renderHook(
-        () => useBottomNavigation({ defaultTab: "favorites" }),
-        { wrapper: createWrapper("/favorites") }
+        () => useBottomNavigation({ defaultTab: "explore" }),
+        { wrapper: createWrapper("/?tab=explore") }
       );
 
-      expect(result.current.activeTab).toBe("favorites");
-    });
-
-    it("should detect favorites tab from URL path", () => {
-      const { result } = renderHook(() => useBottomNavigation(), {
-        wrapper: createWrapper("/favorites"),
-      });
-
-      expect(result.current.activeTab).toBe("favorites");
+      expect(result.current.activeTab).toBe("explore");
     });
 
     it("should detect map tab from root URL", () => {
@@ -117,17 +109,17 @@ describe("useBottomNavigation", () => {
       expect(result.current.activeTab).toBe("notifications");
     });
 
-    it("should navigate to /favorites when favorites is selected", () => {
+    it("should navigate to /?tab=explore when explore is selected", () => {
       const { result } = renderHook(() => useBottomNavigation(), {
         wrapper: createWrapper("/"),
       });
 
       act(() => {
-        result.current.handleTabChange("favorites");
+        result.current.handleTabChange("explore");
       });
 
-      expect(mockNavigate).toHaveBeenCalledWith("/favorites");
-      expect(result.current.activeTab).toBe("favorites");
+      expect(mockNavigate).toHaveBeenCalledWith("/?tab=explore", { replace: true });
+      expect(result.current.activeTab).toBe("explore");
     });
 
   });
@@ -141,10 +133,10 @@ describe("useBottomNavigation", () => {
       );
 
       act(() => {
-        result.current.handleTabChange("favorites");
+        result.current.handleTabChange("explore");
       });
 
-      expect(onBeforeNavigate).toHaveBeenCalledWith("favorites");
+      expect(onBeforeNavigate).toHaveBeenCalledWith("explore");
     });
 
     it("should prevent navigation when onBeforeNavigate returns false", () => {
@@ -157,10 +149,10 @@ describe("useBottomNavigation", () => {
       const initialTab = result.current.activeTab;
 
       act(() => {
-        result.current.handleTabChange("favorites");
+        result.current.handleTabChange("explore");
       });
 
-      expect(onBeforeNavigate).toHaveBeenCalledWith("favorites");
+      expect(onBeforeNavigate).toHaveBeenCalledWith("explore");
       expect(mockNavigate).not.toHaveBeenCalled();
       expect(result.current.activeTab).toBe(initialTab);
     });
@@ -173,11 +165,11 @@ describe("useBottomNavigation", () => {
       );
 
       act(() => {
-        result.current.handleTabChange("favorites");
+        result.current.handleTabChange("explore");
       });
 
-      expect(mockNavigate).toHaveBeenCalledWith("/favorites");
-      expect(result.current.activeTab).toBe("favorites");
+      expect(mockNavigate).toHaveBeenCalledWith("/?tab=explore", { replace: true });
+      expect(result.current.activeTab).toBe("explore");
     });
   });
 
@@ -198,7 +190,7 @@ describe("useBottomNavigation", () => {
 
   describe("tab types", () => {
     it("should handle all valid NavTab values", () => {
-      const tabs: NavTab[] = ["map", "explore", "notifications", "favorites"];
+      const tabs: NavTab[] = ["map", "explore", "notifications"];
       const { result } = renderHook(() => useBottomNavigation(), {
         wrapper: createWrapper("/"),
       });
