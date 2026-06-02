@@ -15,7 +15,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useConnections } from "@/hooks/useConnections";
 import { useProfile } from "@/hooks/useProfile";
-import { User, Camera, Edit2, X, Save, Settings, Heart, Users, Shield, LogOut, Loader2, Instagram, Twitter, Facebook, Linkedin, Video, Mail, Sparkles, Bell, ChevronRight, Link2 } from "lucide-react";
+import { User, Camera, Edit2, X, Save, Heart, Users, Shield, LogOut, Loader2, Instagram, Twitter, Facebook, Linkedin, Video, Mail, Sparkles, Bell, ChevronRight, Link2 } from "lucide-react";
 
 import { toast } from "sonner";
 import { z } from "zod";
@@ -23,6 +23,7 @@ import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { AvatarCropDialog } from "@/components/AvatarCropDialog";
 import { useAuth } from "@/contexts/AuthContext";
+import Settings from "@/pages/Settings";
 
 const profileSchema = z.object({
   display_name: z.string().trim().min(1, "Display name is required").max(100, "Display name must be less than 100 characters"),
@@ -576,7 +577,6 @@ export default function Profile() {
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
-                { label: 'Settings', sub: 'Notifications & preferences', icon: Settings, to: '/settings', tone: 'primary' as const },
                 { label: 'Favorites', sub: `${favorites.length} saved deal${favorites.length === 1 ? '' : 's'}`, icon: Heart, to: '/favorites', tone: 'accent' as const },
                 { label: 'Social', sub: `${connections.length} connection${connections.length === 1 ? '' : 's'}`, icon: Users, to: '/social', tone: 'primary' as const },
                 ...(isAdmin
@@ -611,6 +611,9 @@ export default function Profile() {
               ))}
             </div>
           </div>
+
+          {/* Settings — notifications, preferences, privacy, subscription, account */}
+          <Settings embedded />
 
           {/* Sign Out */}
           <Card className="p-4 bg-card/80 backdrop-blur-xl shadow-card border-destructive/15 rounded-2xl">

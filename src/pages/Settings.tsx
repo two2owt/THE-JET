@@ -38,7 +38,13 @@ interface UserPreferences {
   background_tracking_enabled: boolean;
 }
 
-const Settings = () => {
+interface SettingsProps {
+  /** When true, skip the page layout chrome (header, page title, profile link card)
+   *  so Settings can be embedded inside another page (e.g. Profile). */
+  embedded?: boolean;
+}
+
+const Settings = ({ embedded = false }: SettingsProps = {}) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { isRegistered: isPushRegistered, isNative, initializePushNotifications, unregister: unregisterPush } = usePushNotifications();
@@ -222,12 +228,15 @@ const Settings = () => {
   // Consistent layout wrapper for Settings page.
   // Settings is reached from the Crew (social) tab — keep that highlighted.
   const SettingsLayout = useCallback(
-    ({ children }: { children: React.ReactNode }) => (
-      <PageLayout defaultTab="social" headerConfig={headerConfig}>
-        {children}
-      </PageLayout>
-    ),
-    [headerConfig]
+    ({ children }: { children: React.ReactNode }) =>
+      embedded ? (
+        <>{children}</>
+      ) : (
+        <PageLayout defaultTab="social" headerConfig={headerConfig}>
+          {children}
+        </PageLayout>
+      ),
+    [headerConfig, embedded]
   );
 
   if (isAuthLoading || isLoading) {
@@ -259,28 +268,32 @@ const Settings = () => {
   return (
     <SettingsLayout>
       <PageShell variant="relaxed" className="!max-w-3xl">
-        <PageTitle subtitle="Manage your account, preferences, and privacy.">
-          Settings
-        </PageTitle>
+        {!embedded && (
+          <PageTitle subtitle="Manage your account, preferences, and privacy.">
+            Settings
+          </PageTitle>
+        )}
 
-        {/* Profile Link */}
-        <Card className="p-4 sm:p-5 md:p-6 bg-card/90 backdrop-blur-sm shadow-card">
-          <Button
-            onClick={() => navigate("/profile")}
-            variant="outline"
-            className="w-full h-auto py-4 justify-start"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center">
-                <User className="w-5 h-5 text-primary" />
+        {!embedded && (
+          /* Profile Link — only shown when accessed as a standalone page */
+          <Card className="p-4 sm:p-5 md:p-6 bg-card/90 backdrop-blur-sm shadow-card">
+            <Button
+              onClick={() => navigate("/profile")}
+              variant="outline"
+              className="w-full h-auto py-4 justify-start"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center">
+                  <User className="w-5 h-5 text-primary" />
+                </div>
+                <div className="text-left">
+                  <div className="font-semibold text-foreground">My Profile</div>
+                  <div className="text-xs text-muted-foreground">View and edit your profile</div>
+                </div>
               </div>
-              <div className="text-left">
-                <div className="font-semibold text-foreground">My Profile</div>
-                <div className="text-xs text-muted-foreground">View and edit your profile</div>
-              </div>
-            </div>
-          </Button>
-        </Card>
+            </Button>
+          </Card>
+        )}
 
         {/* Subscription Section - visible when monetization is enabled OR user is admin */}
         {userId && showSubscriptionSection && (

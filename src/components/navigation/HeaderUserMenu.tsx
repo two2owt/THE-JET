@@ -26,7 +26,7 @@ export function HeaderUserMenu({
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
-  const activeRoutes = ["/profile", "/settings", "/admin"];
+  const activeRoutes = ["/profile", "/admin"];
   const isOnAccountRoute = activeRoutes.some((p) => pathname.startsWith(p));
 
   const target = userId ? "/profile" : "/auth";
