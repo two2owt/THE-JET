@@ -133,10 +133,10 @@ describe("useBottomNavigation", () => {
       );
 
       act(() => {
-        result.current.handleTabChange("favorites");
+        result.current.handleTabChange("explore");
       });
 
-      expect(onBeforeNavigate).toHaveBeenCalledWith("favorites");
+      expect(onBeforeNavigate).toHaveBeenCalledWith("explore");
     });
 
     it("should prevent navigation when onBeforeNavigate returns false", () => {
