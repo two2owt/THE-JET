@@ -279,6 +279,14 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
   const getPersistedDayFilter = (): number | undefined => {
     try {
+      const params = new URLSearchParams(window.location.search);
+      const raw = params.get('day');
+      if (raw !== null) {
+        const n = parseInt(raw, 10);
+        if (!Number.isNaN(n) && n >= 0 && n <= 6) return n;
+      }
+    } catch { /* ignore */ }
+    try {
       const raw = localStorage.getItem(FILTER_KEYS.dayFilter);
       if (raw === null || raw === "undefined" || raw === "all") return undefined;
       const n = parseInt(raw, 10);
