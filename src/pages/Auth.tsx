@@ -421,6 +421,52 @@ const Auth = () => {
     }
   };
 
+  const mode: "signin" | "signup" | "forgot" | "reset" = isResettingPassword
+    ? "reset"
+    : isForgotPassword
+    ? "forgot"
+    : isSignUp
+    ? "signup"
+    : "signin";
+
+  const eyebrow =
+    mode === "reset"
+      ? "New Password"
+      : mode === "forgot"
+      ? "Account Recovery"
+      : mode === "signup"
+      ? "Create Account"
+      : "Welcome Back";
+
+  const subtitle =
+    mode === "reset"
+      ? "Set your new password to secure your account."
+      : mode === "forgot"
+      ? "We'll email you a secure link to reset your password."
+      : mode === "signup"
+      ? "Join JET and discover what's hot near you."
+      : "Sign in to discover what's hot in your area.";
+
+  const primaryLabel =
+    mode === "reset"
+      ? "Update Password"
+      : mode === "forgot"
+      ? "Send Reset Link"
+      : mode === "signup"
+      ? "Create Account"
+      : "Sign In";
+
+  const switchToMode = (next: "signin" | "signup") => {
+    setIsSignUp(next === "signup");
+    setIsForgotPassword(false);
+    setShowResendVerification(false);
+    setValidationErrors({});
+    setPassword("");
+    setConfirmPassword("");
+    setDataProcessingConsent(false);
+    setLocationConsent(false);
+  };
+
   return (
     <div
       className="relative flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto bg-background bg-cover bg-center bg-no-repeat px-fluid-md pt-[max(env(safe-area-inset-top,0px),var(--space-lg))] pb-[max(env(safe-area-inset-bottom,0px),var(--space-lg))]"
@@ -428,37 +474,77 @@ const Auth = () => {
     >
       {/* Animated matte black/grey gradient overlay */}
       <div className="absolute inset-0 auth-gradient-overlay" />
+      {/* Editorial vignette — keeps focus on the card */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,hsl(0_0%_0%/0.55)_100%)]" />
 
       <div className="relative z-10 w-full max-w-md">
         {/* Glassmorphic Card */}
-        <div className="flex flex-col gap-fluid-lg rounded-2xl border border-border/30 bg-background/20 p-fluid-lg shadow-2xl backdrop-blur-xl">
+        <div className="flex flex-col gap-fluid-lg rounded-2xl border-hairline bg-background/30 p-fluid-lg backdrop-blur-2xl glow-ambient">
           {/* Header */}
           <div className="flex flex-col items-center gap-fluid-sm text-center">
-            <div className="flex h-24 w-24 items-center justify-center">
+            <div className="relative flex h-20 w-20 items-center justify-center">
+              <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,hsl(var(--primary)/0.25)_0%,transparent_70%)] blur-md" />
               <img
                 src={jetLogo}
                 alt="JET Logo"
-                className="h-full w-full object-contain drop-shadow-lg"
-                width="96"
-                height="96"
+                className="relative h-full w-full object-contain drop-shadow-[0_4px_20px_hsl(var(--primary)/0.35)]"
+                width="80"
+                height="80"
                 fetchPriority="high"
                 decoding="async"
               />
             </div>
+            <div className="flex items-center gap-2">
+              <span className="dot-gold" />
+              <span className="heading-luxe-eyebrow">{eyebrow}</span>
+              <span className="dot-gold" />
+            </div>
             <h1 className="heading-luxe-gradient">
-              Welcome to JET
+              {mode === "signup" ? "Join JET" : "Welcome to JET"}
             </h1>
-            <div className="divider-luxe mx-auto" style={{ maxWidth: '64px' }} />
-            <p className="text-fluid-sm text-muted-foreground">
-              {isResettingPassword
-                ? "Set your new password"
-                : isForgotPassword
-                ? "Reset your password"
-                : isSignUp
-                ? "Join JET and find what's hot near you"
-                : "Sign in to discover what's hot in your area"}
+            <div className="divider-luxe mx-auto" style={{ maxWidth: "72px" }} />
+            <p className="max-w-xs text-fluid-sm text-muted-foreground">
+              {subtitle}
             </p>
           </div>
+
+          {/* Segmented mode switcher — only for primary auth states */}
+          {mode !== "reset" && mode !== "forgot" && (
+            <div
+              role="tablist"
+              aria-label="Authentication mode"
+              className="relative grid grid-cols-2 gap-1 rounded-xl border-hairline bg-card/40 p-1 backdrop-blur-sm"
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === "signin"}
+                onClick={() => switchToMode("signin")}
+                disabled={isLoading}
+                className={`min-h-[40px] rounded-lg text-fluid-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
+                  mode === "signin"
+                    ? "bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-md"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === "signup"}
+                onClick={() => switchToMode("signup")}
+                disabled={isLoading}
+                className={`min-h-[40px] rounded-lg text-fluid-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
+                  mode === "signup"
+                    ? "bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-md"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Sign Up
+              </button>
+            </div>
+          )}
 
           {/* Form */}
           <form
@@ -474,20 +560,30 @@ const Auth = () => {
             {/* Email field - only show if not resetting password */}
             {!isResettingPassword && (
               <div className="flex flex-col gap-fluid-xs">
-                <Input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    setValidationErrors((prev) => ({ ...prev, email: undefined }));
-                  }}
-                  required
-                  className={`bg-card ${
-                    validationErrors.email ? "border-destructive" : ""
-                  }`}
-                  autoComplete="email"
-                />
+                <label className="heading-luxe-eyebrow text-left" htmlFor="auth-email">
+                  Email
+                </label>
+                <div className="relative">
+                  <Mail
+                    aria-hidden="true"
+                    className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                  />
+                  <Input
+                    id="auth-email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setValidationErrors((prev) => ({ ...prev, email: undefined }));
+                    }}
+                    required
+                    className={`pl-10 ${
+                      validationErrors.email ? "border-destructive" : ""
+                    }`}
+                    autoComplete="email"
+                  />
+                </div>
                 {validationErrors.email && (
                   <p className="text-fluid-xs text-destructive">{validationErrors.email}</p>
                 )}
@@ -498,10 +594,18 @@ const Auth = () => {
             {!isForgotPassword && (
               <>
                 <div className="flex flex-col gap-fluid-xs">
+                  <label className="heading-luxe-eyebrow text-left" htmlFor="auth-password">
+                    Password
+                  </label>
                   <div className="relative">
+                    <Lock
+                      aria-hidden="true"
+                      className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                    />
                     <Input
+                      id="auth-password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="Password"
+                      placeholder="••••••••"
                       value={password}
                       onChange={(e) => {
                         setPassword(e.target.value);
@@ -511,7 +615,7 @@ const Auth = () => {
                         }));
                       }}
                       required
-                      className={`bg-card pr-12 ${
+                      className={`pl-10 pr-12 ${
                         validationErrors.password ? "border-destructive" : ""
                       }`}
                       autoComplete={isSignUp ? "new-password" : "current-password"}
@@ -543,10 +647,18 @@ const Auth = () => {
 
                 {(isSignUp || isResettingPassword) && (
                   <div className="flex flex-col gap-fluid-xs">
+                    <label className="heading-luxe-eyebrow text-left" htmlFor="auth-confirm-password">
+                      Confirm Password
+                    </label>
                     <div className="relative">
+                      <Lock
+                        aria-hidden="true"
+                        className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                      />
                       <Input
+                        id="auth-confirm-password"
                         type={showConfirmPassword ? "text" : "password"}
-                        placeholder="Confirm Password"
+                        placeholder="••••••••"
                         value={confirmPassword}
                         onChange={(e) => {
                           setConfirmPassword(e.target.value);
@@ -556,7 +668,7 @@ const Auth = () => {
                           }));
                         }}
                         required
-                        className={`bg-card pr-12 ${
+                        className={`pl-10 pr-12 ${
                           validationErrors.confirmPassword
                             ? "border-destructive"
                             : ""
@@ -707,64 +819,61 @@ const Auth = () => {
             </div>
           )}
   
-          {/* Toggle & Forgot Password */}
-          {!isResettingPassword && (
-            <div className="flex flex-col gap-1 text-center">
-              {!isForgotPassword && !isSignUp && (
-                <button
-                  type="button"
-                  onClick={() => setIsForgotPassword(true)}
-                  disabled={isLoading}
-                  className="flex min-h-[44px] w-full touch-manipulation items-center justify-center rounded-lg border border-transparent bg-transparent text-fluid-sm font-medium text-muted-foreground transition-colors hover:border-primary/20 hover:bg-primary/10 hover:text-primary active:text-primary-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:pointer-events-none disabled:opacity-50"
-                >
-                  Forgot password?
-                </button>
-              )}
-  
+          {/* Forgot password link — signin only */}
+          {mode === "signin" && (
+            <div className="-mt-fluid-sm flex justify-end">
               <button
                 type="button"
-                onClick={() => {
-                  setIsSignUp(!isSignUp);
-                  setIsForgotPassword(false);
-                  setShowResendVerification(false);
-                  setValidationErrors({});
-                  setPassword("");
-                  setConfirmPassword("");
-                  setDataProcessingConsent(false);
-                  setLocationConsent(false);
-                }}
+                onClick={() => setIsForgotPassword(true)}
                 disabled={isLoading}
-                className="flex min-h-[44px] w-full touch-manipulation items-center justify-center rounded-lg border border-transparent bg-transparent text-fluid-sm text-muted-foreground transition-colors hover:border-primary/20 hover:bg-primary/10 hover:text-primary active:text-primary-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary disabled:pointer-events-none disabled:opacity-50"
+                className="rounded-md px-2 py-1 text-fluid-xs font-medium text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none disabled:opacity-50"
               >
-                {isForgotPassword ? (
-                  "Back to sign in"
-                ) : isSignUp ? (
-                  <>
-                    Already have an account?{" "}
-                    <span className="ml-1 font-semibold text-primary">Sign in</span>
-                  </>
-                ) : (
-                  <>
-                    Don't have an account?{" "}
-                    <span className="ml-1 font-semibold text-primary">Sign up</span>
-                  </>
-                )}
+                Forgot password?
               </button>
             </div>
           )}
-  
-          {/* Features */}
-          <div className="flex flex-col gap-fluid-xs rounded-xl border border-border/30 bg-card/30 p-fluid-md backdrop-blur-sm">
-            <p className="text-fluid-xs font-semibold text-foreground">
-              With an account you can:
-            </p>
-            <ul className="flex list-none flex-col gap-1 p-0 text-fluid-xs text-muted-foreground">
-              <li>• Get real-time notifications for nearby deals</li>
-              <li>• Save your favorite venues</li>
-              <li>• Receive personalized recommendations</li>
-              <li>• Track your activity and rewards</li>
-            </ul>
-          </div>
+
+          {/* Back link for recovery / reset flows */}
+          {(mode === "forgot" || mode === "reset") && (
+            <button
+              type="button"
+              onClick={() => {
+                setIsForgotPassword(false);
+                setIsResettingPassword(false);
+                setValidationErrors({});
+              }}
+              disabled={isLoading}
+              className="inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-fluid-sm font-medium text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none disabled:opacity-50"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to sign in
+            </button>
+          )}
+
+          {/* Features — signup only, dot-gold bullets */}
+          {mode === "signup" && (
+            <div className="flex flex-col gap-fluid-sm rounded-xl border-hairline bg-card/30 p-fluid-md backdrop-blur-sm">
+              <p className="heading-luxe-eyebrow">Member Benefits</p>
+              <ul className="flex list-none flex-col gap-fluid-xs p-0 text-fluid-xs text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <span className="dot-gold mt-1.5 shrink-0" />
+                  Real-time alerts for nearby deals
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="dot-gold mt-1.5 shrink-0" />
+                  Save and revisit your favorite venues
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="dot-gold mt-1.5 shrink-0" />
+                  Personalized recommendations
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="dot-gold mt-1.5 shrink-0" />
+                  Track your activity and rewards
+                </li>
+              </ul>
+            </div>
+          )}
         </div>
       </div>
 
