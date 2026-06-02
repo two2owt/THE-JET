@@ -442,7 +442,26 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [detectedCity, setDetectedCity] = useState<City | null>(null); // Nearest predefined city for filtering
   const [detectedLocationName, setDetectedLocationName] = useState<string | null>(null); // Actual city name from reverse geocoding
-  const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(true); // Default to current location
+  // Persisted across sessions so a returning user lands in the same mode
+  // (selected city vs. current-location) without a brief flash.
+  const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState<boolean>(() => {
+    try {
+      const raw = typeof window !== 'undefined'
+        ? window.localStorage.getItem('jet-map-use-current-location')
+        : null;
+      if (raw === 'true') return true;
+      if (raw === 'false') return false;
+    } catch { /* ignore */ }
+    return true; // Default: use current location
+  });
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        'jet-map-use-current-location',
+        String(isUsingCurrentLocation),
+      );
+    } catch { /* ignore */ }
+  }, [isUsingCurrentLocation]);
   // Ref mirror so the (one-time-bound) geolocate event handler always sees the
   // latest value without needing to re-subscribe.
   const isUsingCurrentLocationRef = useRef(true);
