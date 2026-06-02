@@ -3462,8 +3462,14 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                       'inset 0 1px 3px rgba(0,0,0,0.3), 0 0 12px hsl(var(--gold) / 0.15)',
                   }} />
                   <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '9px', color: 'hsl(var(--muted-foreground))', fontWeight: 500 }}>
-                    <span>Less Traffic</span>
-                    <span>High Traffic</span>
+                    <span>
+                      {pathData?.stats?.max_frequency ? '1 trip' : 'Less Traffic'}
+                    </span>
+                    <span>
+                      {pathData?.stats?.max_frequency
+                        ? `${pathData.stats.max_frequency.toLocaleString()} trips`
+                        : 'High Traffic'}
+                    </span>
                   </div>
                 </div>
               </>
