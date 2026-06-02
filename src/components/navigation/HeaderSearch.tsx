@@ -92,7 +92,6 @@ export function HeaderSearch({
       style={{
         position: "relative",
         flex: "1 1 0%",
-        maxWidth: isMobile ? "none" : "clamp(240px, 42vw, 520px)",
         minWidth: 0,
         opacity: mounted ? 1 : 0,
         transform: mounted ? "translateY(0)" : "translateY(-6px)",
