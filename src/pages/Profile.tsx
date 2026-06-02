@@ -343,25 +343,37 @@ export default function Profile() {
                   label ("Connections") doesn't push the grid wider than
                   the parent. Tracking + uppercase are tightened on small
                   screens to keep the label inside the chip. */}
+              {/* Stat chips double as navigation — tapping a stat takes you
+                  to its detail page. This replaces the redundant
+                  "Quick Actions" grid that previously repeated the same
+                  Favorites / Connections targets below the form. */}
               <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-6">
                 {[
-                  { icon: Heart, label: 'Favorites', value: favorites.length },
-                  { icon: Users, label: 'Connections', value: connections.length },
-                  { icon: Bell, label: 'Alerts', value: 0 },
-                ].map(({ icon: Icon, label, value }) => (
-                  <div
-                    key={label}
-                    className="min-w-0 flex flex-col items-center justify-center rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm py-3 px-2 hover:border-primary/40 hover:bg-primary/5 transition-colors"
-                  >
-                    <Icon className="w-4 h-4 text-primary mb-1" />
-                    <div className="text-xl sm:text-2xl font-bold text-foreground tabular-nums" style={{ letterSpacing: '-0.02em' }}>
-                      {value}
-                    </div>
-                    <div className="max-w-full text-[10px] sm:text-xs font-semibold uppercase tracking-[0.04em] sm:tracking-wider text-muted-foreground mt-0.5 text-center leading-tight truncate">
-                      {label}
-                    </div>
-                  </div>
-                ))}
+                  { icon: Heart, label: 'Favorites', value: favorites.length, to: '/favorites' },
+                  { icon: Users, label: 'Connections', value: connections.length, to: '/social' },
+                  { icon: Bell, label: 'Alerts', value: 0, to: null as string | null },
+                ].map(({ icon: Icon, label, value, to }) => {
+                  const className =
+                    "min-w-0 flex flex-col items-center justify-center rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm py-3 px-2 hover:border-primary/40 hover:bg-primary/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50";
+                  const content = (
+                    <>
+                      <Icon className="w-4 h-4 text-primary mb-1" />
+                      <div className="text-xl sm:text-2xl font-bold text-foreground tabular-nums" style={{ letterSpacing: '-0.02em' }}>
+                        {value}
+                      </div>
+                      <div className="max-w-full text-[10px] sm:text-xs font-semibold uppercase tracking-[0.04em] sm:tracking-wider text-muted-foreground mt-0.5 text-center leading-tight truncate">
+                        {label}
+                      </div>
+                    </>
+                  );
+                  return to ? (
+                    <button key={label} type="button" onClick={() => navigate(to)} className={className}>
+                      {content}
+                    </button>
+                  ) : (
+                    <div key={label} className={className}>{content}</div>
+                  );
+                })}
               </div>
 
               <Separator className="my-6" />
@@ -569,48 +581,24 @@ export default function Profile() {
             </div>
           </Card>
 
-          {/* Quick Actions */}
-          <div>
-            <h2 className="flex items-center gap-1.5 heading-luxe-eyebrow mb-3 px-1">
-              <Sparkles className="w-3 h-3" />
-              Quick Actions
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {[
-                { label: 'Favorites', sub: `${favorites.length} saved deal${favorites.length === 1 ? '' : 's'}`, icon: Heart, to: '/favorites', tone: 'accent' as const },
-                { label: 'Social', sub: `${connections.length} connection${connections.length === 1 ? '' : 's'}`, icon: Users, to: '/social', tone: 'primary' as const },
-                ...(isAdmin
-                  ? [{ label: 'Admin', sub: 'Dashboard & analytics', icon: Shield, to: '/admin', tone: 'destructive' as const }]
-                  : []),
-              ].map(({ label, sub, icon: Icon, to, tone }) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => navigate(to)}
-                  className="group flex items-center gap-3 w-full text-left p-4 rounded-2xl border border-border/40 bg-card/80 backdrop-blur-sm hover:border-primary/40 hover:bg-card hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all"
-                >
-                  <div
-                    className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                      tone === 'destructive'
-                        ? 'bg-destructive/10 text-destructive'
-                        : tone === 'accent'
-                        ? 'bg-accent/15 text-accent'
-                        : 'bg-primary/15 text-primary'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-bold text-sm text-foreground" style={{ letterSpacing: '-0.01em' }}>
-                      {label}
-                    </div>
-                    <div className="text-xs text-muted-foreground truncate">{sub}</div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0" />
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* Admin entry — only redundant Favorites/Social tiles were removed;
+              admins still need a quick path into the dashboard. */}
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={() => navigate('/admin')}
+              className="group flex items-center gap-3 w-full text-left p-4 rounded-2xl border border-border/40 bg-card/80 backdrop-blur-sm hover:border-primary/40 hover:bg-card hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all"
+            >
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-destructive/10 text-destructive">
+                <Shield className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-bold text-sm text-foreground" style={{ letterSpacing: '-0.01em' }}>Admin</div>
+                <div className="text-xs text-muted-foreground truncate">Dashboard &amp; analytics</div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+            </button>
+          )}
 
           {/* Settings — notifications, preferences, privacy, subscription, account */}
           <Settings embedded />
