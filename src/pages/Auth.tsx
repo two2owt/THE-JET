@@ -887,8 +887,6 @@ const Auth = () => {
         </div>
       </div>
 
-      {/* Footer now rendered globally */}
-      <AuthPWAInstallPromptWrapper />
     </div>
   );
 };
