@@ -497,7 +497,7 @@ const Auth = () => {
 
   return (
     <div
-      className="relative flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto bg-background bg-cover bg-center bg-no-repeat px-fluid-md pt-[max(env(safe-area-inset-top,0px),var(--space-lg))] pb-[max(env(safe-area-inset-bottom,0px),var(--space-lg))]"
+      className="relative flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto bg-background bg-cover bg-center bg-no-repeat px-fluid-sm sm:px-fluid-md pt-[max(env(safe-area-inset-top,0px),var(--space-lg))] pb-[max(env(safe-area-inset-bottom,0px),var(--space-lg))]"
       style={{ backgroundImage: `url(${authBackground})` }}
     >
       {/* Animated matte black/grey gradient overlay */}
@@ -507,7 +507,7 @@ const Auth = () => {
 
       <div className="relative z-10 mx-auto w-full max-w-[420px] sm:max-w-md">
         {/* Glassmorphic Card */}
-        <div className="flex flex-col gap-fluid-md sm:gap-fluid-lg rounded-3xl border-hairline bg-background/30 p-fluid-md sm:p-fluid-lg backdrop-blur-2xl glow-ambient">
+        <div className="flex flex-col gap-fluid-sm sm:gap-fluid-md rounded-3xl border-hairline bg-background/30 p-fluid-sm sm:p-fluid-md lg:p-fluid-lg backdrop-blur-2xl glow-ambient">
           {/* Header */}
           <div className="flex flex-col items-center gap-fluid-xs sm:gap-fluid-sm text-center">
             <div className="relative flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center">
@@ -583,7 +583,7 @@ const Auth = () => {
                 ? handleForgotPassword
                 : handleAuth
             }
-            className="flex flex-col gap-fluid-md"
+            className="flex flex-col gap-fluid-sm sm:gap-fluid-md"
           >
             {/* Email field - only show if not resetting password */}
             {!isResettingPassword && (
@@ -809,7 +809,7 @@ const Auth = () => {
   
           {/* Resend Verification Email */}
           {showResendVerification && !isResettingPassword && (
-            <div className="flex flex-col gap-fluid-sm rounded-xl border border-primary/25 bg-card/40 p-fluid-md backdrop-blur-md">
+            <div className="flex flex-col gap-fluid-xs sm:gap-fluid-sm rounded-xl border border-primary/25 bg-card/40 p-fluid-sm sm:p-fluid-md backdrop-blur-md">
               <div className="text-center text-fluid-sm text-muted-foreground">
                 Didn't receive the verification email?
               </div>
@@ -831,7 +831,7 @@ const Auth = () => {
   
           {/* Forgot password link — signin only */}
           {mode === "signin" && (
-            <div className="-mt-fluid-sm flex justify-end">
+            <div className="mt-0 sm:mt-fluid-xs flex justify-end">
               <button
                 type="button"
                 onClick={() => setIsForgotPassword(true)}
@@ -862,7 +862,7 @@ const Auth = () => {
 
           {/* Features — signup only, dot-gold bullets */}
           {mode === "signup" && (
-            <div className="flex flex-col gap-fluid-sm rounded-xl border-hairline bg-card/30 p-fluid-md backdrop-blur-sm">
+            <div className="flex flex-col gap-fluid-xs sm:gap-fluid-sm rounded-xl border-hairline bg-card/30 p-fluid-sm sm:p-fluid-md backdrop-blur-sm">
               <p className="heading-luxe-eyebrow">Member Benefits</p>
               <ul className="flex list-none flex-col gap-fluid-xs p-0 text-fluid-xs text-muted-foreground">
                 <li className="flex items-start gap-2">
