@@ -52,12 +52,12 @@ describe("useBottomNavigation", () => {
       expect(result.current.activeTab).toBe("favorites");
     });
 
-    it("should detect social tab from URL path", () => {
+    it("should detect map tab from root URL", () => {
       const { result } = renderHook(() => useBottomNavigation(), {
-        wrapper: createWrapper("/social"),
+        wrapper: createWrapper("/"),
       });
 
-      expect(result.current.activeTab).toBe("social");
+      expect(result.current.activeTab).toBe("map");
     });
 
     it("should detect explore tab from URL search params", () => {
@@ -130,18 +130,6 @@ describe("useBottomNavigation", () => {
       expect(result.current.activeTab).toBe("favorites");
     });
 
-    it("should navigate to /social when social is selected", () => {
-      const { result } = renderHook(() => useBottomNavigation(), {
-        wrapper: createWrapper("/"),
-      });
-
-      act(() => {
-        result.current.handleTabChange("social");
-      });
-
-      expect(mockNavigate).toHaveBeenCalledWith("/social");
-      expect(result.current.activeTab).toBe("social");
-    });
   });
 
   describe("onBeforeNavigate callback", () => {
@@ -185,11 +173,11 @@ describe("useBottomNavigation", () => {
       );
 
       act(() => {
-        result.current.handleTabChange("social");
+        result.current.handleTabChange("favorites");
       });
 
-      expect(mockNavigate).toHaveBeenCalledWith("/social");
-      expect(result.current.activeTab).toBe("social");
+      expect(mockNavigate).toHaveBeenCalledWith("/favorites");
+      expect(result.current.activeTab).toBe("favorites");
     });
   });
 
@@ -210,7 +198,7 @@ describe("useBottomNavigation", () => {
 
   describe("tab types", () => {
     it("should handle all valid NavTab values", () => {
-      const tabs: NavTab[] = ["map", "explore", "notifications", "favorites", "social"];
+      const tabs: NavTab[] = ["map", "explore", "notifications", "favorites"];
       const { result } = renderHook(() => useBottomNavigation(), {
         wrapper: createWrapper("/"),
       });

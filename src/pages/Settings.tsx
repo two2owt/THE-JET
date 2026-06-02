@@ -220,10 +220,9 @@ const Settings = () => {
   };
 
   // Consistent layout wrapper for Settings page.
-  // Settings is reached from the Crew (social) tab — keep that highlighted.
   const SettingsLayout = useCallback(
     ({ children }: { children: React.ReactNode }) => (
-      <PageLayout defaultTab="social" headerConfig={headerConfig}>
+      <PageLayout defaultTab="map" headerConfig={headerConfig}>
         {children}
       </PageLayout>
     ),

@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
 
-export type NavTab = "map" | "explore" | "notifications" | "favorites" | "social";
+export type NavTab = "map" | "explore" | "notifications" | "favorites";
 
 interface UseBottomNavigationOptions {
   /** The default tab when on this page */
@@ -23,7 +23,6 @@ export function useBottomNavigation(options: UseBottomNavigationOptions = {}) {
   const getTabFromLocation = useCallback((): NavTab => {
     // If we're on a dedicated page, use that as the tab
     if (location.pathname === "/favorites") return "favorites";
-    if (location.pathname === "/social") return "social";
     
     // Otherwise check URL params for Index page tabs
     const searchParams = new URLSearchParams(location.search);
@@ -65,9 +64,6 @@ export function useBottomNavigation(options: UseBottomNavigationOptions = {}) {
         break;
       case "favorites":
         navigate("/favorites");
-        break;
-      case "social":
-        navigate("/social");
         break;
     }
   }, [navigate, onBeforeNavigate]);

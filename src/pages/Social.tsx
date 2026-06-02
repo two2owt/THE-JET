@@ -134,7 +134,7 @@ export default function Social() {
 
   if (authLoading) {
     return (
-      <PageLayout defaultTab="social" headerConfig={headerConfig}>
+      <PageLayout defaultTab="map" headerConfig={headerConfig}>
         <PageShell>
           <SocialPageSkeleton />
         </PageShell>
@@ -144,7 +144,7 @@ export default function Social() {
 
   if (!user) {
     return (
-      <PageLayout defaultTab="social" notificationCount={0} headerConfig={headerConfig}>
+      <PageLayout defaultTab="map" notificationCount={0} headerConfig={headerConfig}>
         <PageShell>
           <EmptyState
             icon={Users}
@@ -161,7 +161,7 @@ export default function Social() {
   // Show upgrade prompt for users without JET+ subscription
   if (!canAccessSocialFeatures()) {
     return (
-      <PageLayout defaultTab="social" headerConfig={headerConfig}>
+      <PageLayout defaultTab="map" headerConfig={headerConfig}>
         <PageShell>
           <EmptyState
             icon={Crown}
@@ -273,7 +273,7 @@ export default function Social() {
   };
 
   return (
-    <PageLayout defaultTab="social" headerConfig={headerConfig}>
+    <PageLayout defaultTab="map" headerConfig={headerConfig}>
       <PageShell>
         <TabPageHeader
           title="Your Crew"
