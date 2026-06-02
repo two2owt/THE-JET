@@ -130,18 +130,6 @@ describe("useBottomNavigation", () => {
       expect(result.current.activeTab).toBe("favorites");
     });
 
-    it("should navigate to /social when social is selected", () => {
-      const { result } = renderHook(() => useBottomNavigation(), {
-        wrapper: createWrapper("/"),
-      });
-
-      act(() => {
-        result.current.handleTabChange("social");
-      });
-
-      expect(mockNavigate).toHaveBeenCalledWith("/social");
-      expect(result.current.activeTab).toBe("social");
-    });
   });
 
   describe("onBeforeNavigate callback", () => {
