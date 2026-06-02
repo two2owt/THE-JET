@@ -2997,6 +2997,42 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               }}
             />
 
+            {/* Reset to defaults */}
+            <button
+              type="button"
+              onClick={handleResetToDefaults}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                padding: '6px 8px',
+                borderRadius: '8px',
+                border: '1px solid hsl(var(--border) / 0.4)',
+                background: 'transparent',
+                color: 'hsl(var(--muted-foreground))',
+                fontSize: '10px',
+                fontWeight: 600,
+                letterSpacing: '0.02em',
+                cursor: 'pointer',
+                transition: 'color 200ms ease, border-color 200ms ease, background 200ms ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'hsl(var(--foreground))';
+                e.currentTarget.style.borderColor = 'hsl(var(--border) / 0.7)';
+                e.currentTarget.style.background = 'hsl(var(--card) / 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'hsl(var(--muted-foreground))';
+                e.currentTarget.style.borderColor = 'hsl(var(--border) / 0.4)';
+                e.currentTarget.style.background = 'transparent';
+              }}
+            >
+              <RotateCcw style={{ width: '12px', height: '12px' }} />
+              Reset to defaults
+            </button>
+
           </div>
         </div>
 
