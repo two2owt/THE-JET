@@ -781,18 +781,12 @@ const Auth = () => {
             disabled={isLoading}
             variant="jet"
             size="lg"
-            className="w-full rounded-xl text-fluid-base"
+            className="mt-fluid-xs w-full rounded-xl text-fluid-base font-semibold tracking-wide shadow-lg shadow-primary/20"
           >
             {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : isResettingPassword ? (
-              "Update Password"
-            ) : isForgotPassword ? (
-              "Send Reset Link"
-            ) : isSignUp ? (
-              "Sign Up"
+              <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
-              "Sign In"
+              primaryLabel
             )}
           </Button>
           </form>
