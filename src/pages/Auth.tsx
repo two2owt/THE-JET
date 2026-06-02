@@ -781,7 +781,7 @@ const Auth = () => {
             disabled={isLoading}
             variant="jet"
             size="lg"
-            className="mt-fluid-xs w-full rounded-xl text-fluid-base font-semibold tracking-wide shadow-lg shadow-primary/20"
+            className="mt-fluid-xs w-full rounded-full text-fluid-base font-semibold tracking-wide shadow-lg shadow-primary/20"
           >
             {isLoading ? (
               <Loader2 className="h-5 w-5 animate-spin" />
@@ -803,7 +803,7 @@ const Auth = () => {
                 disabled={isResending || resendCooldown > 0}
                 variant="outline"
                 size="sm"
-                className="w-full rounded-xl border-primary/40 bg-transparent text-foreground transition-all hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:border-primary/70 focus-visible:ring-2 focus-visible:ring-primary/50 disabled:cursor-not-allowed disabled:border-border/40 disabled:bg-transparent disabled:text-muted-foreground disabled:opacity-60"
+                className="w-full rounded-full border-primary/40 bg-transparent text-foreground transition-all hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:border-primary/70 focus-visible:ring-2 focus-visible:ring-primary/50 disabled:cursor-not-allowed disabled:border-border/40 disabled:bg-transparent disabled:text-muted-foreground disabled:opacity-60"
               >
                 {isResending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {resendCooldown > 0
@@ -837,7 +837,7 @@ const Auth = () => {
                 setValidationErrors({});
               }}
               disabled={isLoading}
-              className="inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-fluid-sm font-medium text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 self-center rounded-full border border-border/40 bg-card/30 px-4 py-2 text-fluid-sm font-medium text-foreground/90 transition-colors hover:border-primary/50 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none disabled:opacity-50"
             >
               <ArrowLeft className="h-4 w-4" />
               Back to sign in
