@@ -211,9 +211,19 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     return () => { mounted = false; };
   }, [retryCount]); // Re-run when retryCount changes
   
+  // Layer persistence helpers
+  const getLayerState = (key: string, fallback: boolean): boolean => {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw !== null ? raw === "true" : fallback;
+    } catch {
+      return fallback;
+    }
+  };
+
   // Density heatmap state
-  const [showDensityLayer, setShowDensityLayer] = useState(false);
-  const [showParking, setShowParking] = useState(false);
+  const [showDensityLayer, setShowDensityLayer] = useState(() => getLayerState("jet-map-layer-density", false));
+  const [showParking, setShowParking] = useState(() => getLayerState("jet-map-layer-parking", false));
   const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>('all');
   const [hourFilter, setHourFilter] = useState<number | undefined>();
   const [dayFilter, setDayFilter] = useState<number | undefined>();
@@ -225,7 +235,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     if (hour >= 17 && hour < 20) return 'dusk';
     return 'night';
   };
-  
+
   // Auto-detect theme for initial map style
   const [mapStyle, setMapStyle] = useState<'light' | 'dark' | 'streets' | 'satellite'>(() => {
     const isDark = document.documentElement.classList.contains('dark');
@@ -233,13 +243,18 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   });
   const [lightPreset] = useState<'dawn' | 'day' | 'dusk' | 'night'>(getTimeOfDayPreset);
   const [show3DTerrain, setShow3DTerrain] = useState(false);
-  
+
   // Time-lapse mode state
   const [timelapseMode, setTimelapseMode] = useState(false);
-  
+
   // Movement paths state
-  const [showMovementPaths, setShowMovementPaths] = useState(false);
+  const [showMovementPaths, setShowMovementPaths] = useState(() => getLayerState("jet-map-layer-paths", false));
   const [pathTimeFilter, setPathTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>('all');
+
+  // Persist layer toggles to localStorage
+  useEffect(() => { localStorage.setItem("jet-map-layer-density", String(showDensityLayer)); }, [showDensityLayer]);
+  useEffect(() => { localStorage.setItem("jet-map-layer-paths", String(showMovementPaths)); }, [showMovementPaths]);
+  useEffect(() => { localStorage.setItem("jet-map-layer-parking", String(showParking)); }, [showParking]);
   
   // CLS fix: Defer layer controls render until map is loaded
   // This ensures controls appear immediately after map is ready, not a fixed delay
