@@ -2589,7 +2589,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   value={city.id}
                   className="py-2.5 px-2.5 my-0.5 rounded-lg focus:bg-primary/10"
                 >
-                  <div className="flex items-center w-full gap-3 min-w-0">
+                  <div
+                    className="flex items-center w-full min-w-0"
+                    style={{ gap: 'clamp(6px, 1.5vw, 12px)' }}
+                  >
                     {/* City name — flexes and truncates so it never wraps */}
                     <span
                       className="font-display font-bold text-[13px] sm:text-sm text-foreground truncate min-w-0 flex-1"
@@ -2601,7 +2604,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     {/* State code — fixed-width chip, never shrinks */}
                     <span
                       className="text-[10px] sm:text-[11px] font-semibold uppercase text-muted-foreground tabular-nums flex-shrink-0"
-                      style={{ letterSpacing: '0.1em', minWidth: '1.75rem', textAlign: 'center' }}
+                      style={{ letterSpacing: '0.1em', minWidth: '1.75rem', textAlign: 'center', paddingLeft: 'clamp(2px, 0.5vw, 6px)', paddingRight: 'clamp(2px, 0.5vw, 6px)' }}
                     >
                       {city.state}
                     </span>
@@ -2610,7 +2613,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     {distanceMiles !== null && (
                       <span
                         className="text-[10px] sm:text-[11px] font-semibold uppercase text-muted-foreground/80 tabular-nums flex-shrink-0 text-right"
-                        style={{ letterSpacing: '0.08em', minWidth: '3.5rem' }}
+                        style={{ letterSpacing: '0.08em', minWidth: '3.5rem', marginLeft: 'clamp(2px, 0.5vw, 6px)' }}
                       >
                         {distanceMiles < 1 ? '<1' : Math.round(distanceMiles)} mi
                       </span>
