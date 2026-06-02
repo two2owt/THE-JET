@@ -173,11 +173,11 @@ describe("useBottomNavigation", () => {
       );
 
       act(() => {
-        result.current.handleTabChange("social");
+        result.current.handleTabChange("favorites");
       });
 
-      expect(mockNavigate).toHaveBeenCalledWith("/social");
-      expect(result.current.activeTab).toBe("social");
+      expect(mockNavigate).toHaveBeenCalledWith("/favorites");
+      expect(result.current.activeTab).toBe("favorites");
     });
   });
 
