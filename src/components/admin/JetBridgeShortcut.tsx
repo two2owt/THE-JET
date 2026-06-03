@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
+import { OnboardingStatusBadge } from "./OnboardingStatusBadge";
 
 const MERCHANT_PORTAL_URL = "https://www.jetbridge.partners";
 const MERCHANT_SIGNUP_URL = "https://www.jetlanding.app";
@@ -17,6 +18,9 @@ type SyncedDeal = {
   active: boolean;
   created_at: string;
   updated_at: string;
+  merchant_id: string | null;
+  onboarding_started_at: string | null;
+  onboarding_completed_at: string | null;
 };
 
 export function JetBridgeShortcut() {
@@ -28,7 +32,7 @@ export function JetBridgeShortcut() {
     setLoading(true);
     const { data, error } = await supabase
       .from("deals")
-      .select("id,title,venue_name,deal_type,active,created_at,updated_at")
+      .select("id,title,venue_name,deal_type,active,created_at,updated_at,merchant_id,onboarding_started_at,onboarding_completed_at")
       .order("updated_at", { ascending: false })
       .limit(5);
     if (!error && data) {
@@ -115,6 +119,13 @@ export function JetBridgeShortcut() {
                     <div className="text-sm font-medium truncate">{d.title}</div>
                     <div className="text-xs text-muted-foreground truncate">
                       {d.venue_name} · {d.deal_type}
+                    </div>
+                    <div className="mt-1">
+                      <OnboardingStatusBadge
+                        startedAt={d.onboarding_started_at}
+                        completedAt={d.onboarding_completed_at}
+                        merchantId={d.merchant_id}
+                      />
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">

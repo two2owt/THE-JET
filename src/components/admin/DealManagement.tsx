@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Plus, Edit, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { DealForm } from "./DealForm";
+import { OnboardingStatusBadge } from "./OnboardingStatusBadge";
 import type { Database } from "@/integrations/supabase/types";
 
 type Deal = Database['public']['Tables']['deals']['Row'];
@@ -93,6 +94,13 @@ export const DealManagement = () => {
                 <div>
                   <CardTitle>{deal.title}</CardTitle>
                   <CardDescription>{deal.venue_name}</CardDescription>
+                  <div className="mt-2">
+                    <OnboardingStatusBadge
+                      startedAt={deal.onboarding_started_at}
+                      completedAt={deal.onboarding_completed_at}
+                      merchantId={deal.merchant_id}
+                    />
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <Button
