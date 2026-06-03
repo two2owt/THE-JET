@@ -525,13 +525,13 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
   
-  const { densityData, loading: densityLoading } = useLocationDensity({
+  const { densityData } = useLocationDensity({
     timeFilter,
     hourOfDay: timelapseMode ? undefined : hourFilter,
     dayOfWeek: dayFilter,
   });
 
-  const { pathData, loading: pathsLoading, error: pathsError, refresh: refreshPaths } = useMovementPaths({
+  const { pathData, error: pathsError, refresh: refreshPaths } = useMovementPaths({
     timeFilter: pathTimeFilter,
     minFrequency: minPathFrequency,
   });
