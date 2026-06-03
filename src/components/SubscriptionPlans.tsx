@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Loader2, Zap, Crown, Sparkles } from "lucide-react";
 import { useSubscription, SUBSCRIPTION_TIERS, SubscriptionTier } from "@/hooks/useSubscription";
 import { toast } from "sonner";
+import { canPurchaseSubscription } from "@/lib/platform";
 
 const tierIcons: Record<SubscriptionTier, React.ReactNode> = {
   free: <Zap className="w-6 h-6" />,
@@ -16,6 +17,9 @@ export const SubscriptionPlans = () => {
   const { tier: currentTier, createCheckout, openCustomerPortal, isSubscribed, loading } = useSubscription();
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
+  // App Store policy: hide all subscription CTAs inside the iOS native shell.
+  // Web and Android keep full Stripe checkout flow.
+  const canPurchase = canPurchaseSubscription();
 
   const handleSubscribe = async (tierKey: SubscriptionTier) => {
     const tierInfo = SUBSCRIPTION_TIERS[tierKey];
@@ -132,6 +136,10 @@ export const SubscriptionPlans = () => {
                 ) : tierKey === "free" ? (
                   <Button variant="ghost" className="w-full" disabled>
                     Free Forever
+                  </Button>
+                ) : !canPurchase ? (
+                  <Button variant="outline" className="w-full" disabled>
+                    Available on web
                   </Button>
                 ) : (
                   <Button

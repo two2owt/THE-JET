@@ -9,6 +9,7 @@ import {
 } from "./ui/dialog";
 import { useSubscription, SubscriptionTier, SUBSCRIPTION_TIERS } from "@/hooks/useSubscription";
 import { useState } from "react";
+import { canPurchaseSubscription } from "@/lib/platform";
 
 interface UpgradePromptProps {
   requiredTier: SubscriptionTier;
@@ -26,6 +27,7 @@ export const UpgradePrompt = ({
   const { createCheckout } = useSubscription();
   const [loading, setLoading] = useState(false);
   const tierInfo = SUBSCRIPTION_TIERS[requiredTier];
+  const canPurchase = canPurchaseSubscription();
 
   const handleUpgrade = async () => {
     if (!tierInfo.priceId) return;
@@ -82,16 +84,22 @@ export const UpgradePrompt = ({
               className="flex-1"
               disabled={loading}
             >
-              Maybe Later
+              {canPurchase ? "Maybe Later" : "Close"}
             </Button>
-            <Button
-              onClick={handleUpgrade}
-              variant="jet"
-              className="flex-1"
-              disabled={loading}
-            >
-              {loading ? "Loading..." : "Upgrade Now"}
-            </Button>
+            {canPurchase ? (
+              <Button
+                onClick={handleUpgrade}
+                variant="jet"
+                className="flex-1"
+                disabled={loading}
+              >
+                {loading ? "Loading..." : "Upgrade Now"}
+              </Button>
+            ) : (
+              <Button variant="jet" className="flex-1" disabled>
+                Available on web
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>
