@@ -48,7 +48,7 @@ export function PageShell({
   const safePadding = `calc(${resolvedPadding} + env(safe-area-inset-top, 0px)) calc(${resolvedPadding} + env(safe-area-inset-right, 0px)) calc(${resolvedPadding} + env(safe-area-inset-bottom, 0px)) calc(${resolvedPadding} + env(safe-area-inset-left, 0px))`;
   return (
     <div
-      className={`max-w-7xl mx-auto${className ? ` ${className}` : ""}`}
+      className={`w-full max-w-7xl mx-auto${className ? ` ${className}` : ""}`}
       style={{
         padding: safePadding,
         display: "flex",
