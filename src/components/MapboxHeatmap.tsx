@@ -3416,13 +3416,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               </div>
             )}
             
-            {/* Loading indicator */}
-            {(densityLoading || pathsLoading) && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', paddingTop: '4px', borderTop: '1px solid hsl(var(--border) / 0.5)' }}>
-                <div className="animate-spin" style={{ width: '8px', height: '8px', border: '1px solid hsl(var(--primary))', borderTopColor: 'transparent', borderRadius: '50%' }} />
-                <span style={{ fontSize: '9px', color: 'hsl(var(--muted-foreground))' }}>Updating...</span>
-              </div>
-            )}
           </div>
         </div>
       )}
