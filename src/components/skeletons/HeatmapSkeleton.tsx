@@ -1,5 +1,4 @@
 import { MapPin } from "lucide-react";
-import { MapUISkeleton } from "./MapUISkeleton";
 
 /**
  * Luxe full-surface skeleton for the Mapbox heatmap while the GL module
@@ -111,7 +110,6 @@ export function HeatmapSkeleton({ translucent = false }: { translucent?: boolean
       </div>
 
       {/* Map UI control placeholders */}
-      <MapUISkeleton />
     </div>
   );
 }
