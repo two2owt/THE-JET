@@ -2373,20 +2373,30 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         isolation: 'isolate',
       }}
     >
-      {/* Loading skeleton during map initialization — translucent so map shows through */}
-      {mapInitializing && !mapError && (
+      {/* Single crossfade source of truth: HeatmapSkeleton -> interactive map.
+          Opacity is driven solely by `mapLoaded`. When the fade-out finishes
+          we unmount via onTransitionEnd so the skeleton stops painting. No
+          intermediate opacity gates anywhere in the render path. */}
+      {skeletonMounted && !mapError && (
         <div
+          aria-hidden={mapLoaded}
+          onTransitionEnd={(e) => {
+            if (e.propertyName === 'opacity' && mapLoaded) {
+              setSkeletonMounted(false);
+            }
+          }}
           style={{
             position: 'absolute',
             inset: 0,
             zIndex: 40,
-            transition: 'opacity 300ms ease-out',
+            transition: 'opacity 400ms ease-out',
             opacity: mapLoaded ? 0 : 1,
             pointerEvents: mapLoaded ? 'none' : 'auto',
+            willChange: 'opacity',
           }}
         >
-          {/* Luxe heatmap skeleton — opaque while the GL module loads, then
-              translucent so tiles fade through as they stream in. */}
+          {/* Opaque while the GL module loads, then translucent so tiles
+              bleed through during the single crossfade. */}
           <HeatmapSkeleton translucent={loadingStage !== 'module'} />
         </div>
       )}
