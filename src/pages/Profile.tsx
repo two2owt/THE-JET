@@ -404,6 +404,7 @@ export default function Profile() {
                   disabled={!isEditing}
                   aria-invalid={!!fieldErrors.display_name}
                   aria-describedby={fieldErrors.display_name ? "display_name-error" : undefined}
+                  className="profile-input"
                 />
                 {fieldErrors.display_name && (
                   <p id="display_name-error" role="alert" className="text-xs font-medium text-destructive">
@@ -427,7 +428,7 @@ export default function Profile() {
                   maxLength={500}
                   rows={4}
                   disabled={!isEditing}
-                  className="resize-none"
+                  className="resize-none profile-textarea"
                   aria-invalid={!!fieldErrors.bio}
                   aria-describedby={fieldErrors.bio ? "bio-error" : undefined}
                 />
@@ -454,7 +455,7 @@ export default function Profile() {
                     }}
                     disabled={!isEditing}
                   >
-                    <SelectTrigger className="bg-card/60">
+                    <SelectTrigger className="bg-card/60 profile-select-trigger">
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
                     <SelectContent>
@@ -475,7 +476,7 @@ export default function Profile() {
                     Pronouns <span className="text-muted-foreground/70 normal-case">(optional)</span>
                   </Label>
                   <Select value={pronouns} onValueChange={setPronouns} disabled={!isEditing}>
-                    <SelectTrigger className="bg-card/60">
+                    <SelectTrigger className="bg-card/60 profile-select-trigger">
                       <SelectValue placeholder="Select pronouns" />
                     </SelectTrigger>
                     <SelectContent>
@@ -502,9 +503,14 @@ export default function Profile() {
                       { icon: Linkedin, value: linkedinUrl, setter: setLinkedinUrl, placeholder: "LinkedIn profile URL" },
                       { icon: Video, value: tiktokUrl, setter: setTiktokUrl, placeholder: "TikTok profile URL" },
                     ].map(({ icon: Icon, value, setter, placeholder }) => (
-                      <div key={placeholder} className="flex items-center gap-fluid-xs">
-                        <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
-                        <Input value={value} onChange={e => setter(e.target.value)} placeholder={placeholder} />
+                      <div key={placeholder} className="profile-social-row">
+                        <Icon className="w-4 h-4 text-muted-foreground" />
+                        <Input
+                          value={value}
+                          onChange={e => setter(e.target.value)}
+                          placeholder={placeholder}
+                          className="profile-input"
+                        />
                       </div>
                     ))}
                   </div>
