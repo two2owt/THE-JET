@@ -2427,6 +2427,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 onClick={() => {
                   setMapError(null);
                   setMapInitializing(true);
+                  setSkeletonMounted(true);
                   setLoadingStage('module');
                   // Reset the module promise to force a fresh load attempt
                   mapboxLoadPromise = null;
