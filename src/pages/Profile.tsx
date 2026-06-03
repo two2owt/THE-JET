@@ -288,87 +288,95 @@ export default function Profile() {
         <TabPageHeader title="Profile" subtitle="Manage your account, preferences, and connections" />
 
         {/* Identity card */}
-        <section className="mt-fluid-lg rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg glow-ambient">
-          <div className="flex items-start justify-between gap-3 mb-fluid-md">
-            <div className="flex items-center gap-2">
-              <span className="dot-gold" />
-              <span className="heading-luxe-eyebrow">Your Identity</span>
+        {/* Identity hero — centered, gradient glow, edit pencil top-right */}
+        <section className="relative mt-fluid-lg rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg glow-ambient overflow-hidden">
+          {/* Ambient radial accent behind avatar */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.18)_0%,transparent_70%)]"
+          />
+
+          {!isEditing && (
+            <button
+              type="button"
+              onClick={() => setIsEditing(true)}
+              aria-label="Edit profile"
+              className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 h-9 px-3 rounded-full border border-primary/40 bg-card/60 backdrop-blur-md text-xs font-semibold text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors"
+            >
+              <Edit2 className="w-3.5 h-3.5" />
+              Edit
+            </button>
+          )}
+
+          <div className="relative flex flex-col items-center text-center">
+            {/* Avatar with primary glow */}
+            <div className="relative group">
+              <div
+                aria-hidden="true"
+                className="absolute -inset-2 rounded-full bg-[radial-gradient(circle,hsl(var(--primary)/0.35)_0%,transparent_70%)] blur-xl pointer-events-none"
+              />
+              <Avatar className="relative w-24 h-24 sm:w-28 sm:h-28 ring-2 ring-primary/40 shadow-[0_8px_30px_hsl(var(--primary)/0.35)]">
+                <AvatarImage src={profile?.avatar_url || undefined} alt={displayName || "User avatar"} />
+                <AvatarFallback className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-primary to-primary-glow text-primary-foreground">
+                  {displayName.charAt(0).toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              {isEditing && (
+                <>
+                  <label
+                    htmlFor="avatar-upload"
+                    className="absolute bottom-0 right-0 w-9 h-9 rounded-full bg-gradient-to-r from-primary to-primary-glow text-primary-foreground flex items-center justify-center cursor-pointer shadow-md shadow-primary/30 ring-2 ring-background hover:scale-105 active:scale-95 transition-transform focus-within:ring-2 focus-within:ring-primary/50"
+                    aria-label="Upload new avatar"
+                  >
+                    {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+                  </label>
+                  <input id="avatar-upload" type="file" accept="image/*" onChange={handleAvatarUpload} disabled={isUploading} className="sr-only" />
+                </>
+              )}
             </div>
-            {!isEditing && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsEditing(true)}
-                className="rounded-full border-primary/40 bg-transparent text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:ring-2 focus-visible:ring-primary/50"
-              >
-                <Edit2 className="w-3.5 h-3.5 mr-1.5" />
-                Edit
-              </Button>
+
+            <h2 className="mt-fluid-sm heading-luxe-card truncate max-w-full">
+              {displayName || 'User'}
+            </h2>
+            {pronouns && (
+              <span className="mt-1 inline-flex items-center px-2 py-0.5 rounded-full border-hairline bg-card/40 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                {pronouns}
+              </span>
             )}
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:items-center gap-fluid-sm sm:gap-fluid-md">
-            <div className="relative mx-auto sm:mx-0 group shrink-0">
-              <div className="absolute -inset-1 rounded-full bg-[radial-gradient(circle,hsl(var(--primary)/0.25)_0%,transparent_70%)] blur-md pointer-events-none" />
-              <Avatar className="relative w-24 h-24 sm:w-28 sm:h-28 ring-2 ring-primary/30 shadow-[0_4px_20px_hsl(var(--primary)/0.25)]">
-                    <AvatarImage src={profile?.avatar_url || undefined} alt={displayName || "User avatar"} />
-                    <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-primary to-primary-glow text-primary-foreground">
-                      {displayName.charAt(0).toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  {isEditing && (
-                    <>
-                      <label
-                        htmlFor="avatar-upload"
-                        className="absolute bottom-0 right-0 w-9 h-9 rounded-full bg-gradient-to-r from-primary to-primary-glow text-primary-foreground flex items-center justify-center cursor-pointer shadow-md shadow-primary/30 ring-2 ring-background hover:scale-105 active:scale-95 transition-transform focus-within:ring-2 focus-within:ring-primary/50"
-                        aria-label="Upload new avatar"
-                      >
-                        {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
-                      </label>
-                      <input id="avatar-upload" type="file" accept="image/*" onChange={handleAvatarUpload} disabled={isUploading} className="sr-only" />
-                    </>
-                  )}
-                </div>
-
-            <div className="flex-1 min-w-0 text-center sm:text-left">
-              <h2 className="heading-luxe-card truncate max-w-full">
-                {displayName || 'User'}
-              </h2>
-              <p className="mt-1 inline-flex items-center gap-1.5 text-fluid-sm text-muted-foreground truncate max-w-full">
-                <Mail className="w-3.5 h-3.5 flex-shrink-0" />
-                <span className="truncate">{user.email}</span>
-              </p>
-            </div>
+            <p className="mt-1.5 inline-flex items-center gap-1.5 text-fluid-sm text-muted-foreground max-w-full">
+              <Mail className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="truncate">{user.email}</span>
+            </p>
           </div>
 
           <div className="divider-luxe my-fluid-md" />
 
           {/* Stat chips double as navigation. */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                {[
-                  { icon: Heart, label: 'Favorites', value: favorites.length, to: '/favorites' },
-                  { icon: Users, label: 'Connections', value: connections.length, to: '/social' },
-                  { icon: Bell, label: 'Alerts', value: 0, to: null as string | null },
-                ].map(({ icon: Icon, label, value, to }) => {
-                  const className =
-                    "min-w-0 flex flex-col items-center justify-center rounded-xl border-hairline bg-card/30 backdrop-blur-sm py-3 px-2 hover:border-primary/40 hover:bg-primary/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50";
-                  const content = (
-                    <>
-                      <Icon className="w-4 h-4 text-primary mb-1" />
-                      <div className="text-xl sm:text-2xl font-bold text-foreground tabular-nums" style={{ letterSpacing: '-0.02em' }}>
-                        {value}
-                      </div>
-                      <div className="heading-luxe-eyebrow mt-0.5 text-center truncate">{label}</div>
-                    </>
-                  );
-                  return to ? (
-                    <button key={label} type="button" onClick={() => navigate(to)} className={className}>
-                      {content}
-                    </button>
-                  ) : (
-                    <div key={label} className={className}>{content}</div>
-                  );
-                })}
+          <div className="relative grid grid-cols-3 gap-2 sm:gap-3">
+            {[
+              { icon: Heart, label: 'Favorites', value: favorites.length, to: '/favorites' },
+              { icon: Users, label: 'Connections', value: connections.length, to: '/social' },
+              { icon: Bell, label: 'Alerts', value: 0, to: null as string | null },
+            ].map(({ icon: Icon, label, value, to }) => {
+              const className =
+                "min-w-0 flex flex-col items-center justify-center rounded-xl border-hairline bg-card/30 backdrop-blur-sm py-3 px-2 hover:border-primary/40 hover:bg-primary/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50";
+              const content = (
+                <>
+                  <Icon className="w-4 h-4 text-primary mb-1" />
+                  <div className="text-xl sm:text-2xl font-bold text-foreground tabular-nums leading-none" style={{ letterSpacing: '-0.02em' }}>
+                    {value}
+                  </div>
+                  <div className="heading-luxe-eyebrow mt-1 text-center truncate">{label}</div>
+                </>
+              );
+              return to ? (
+                <button key={label} type="button" onClick={() => navigate(to)} className={className}>
+                  {content}
+                </button>
+              ) : (
+                <div key={label} className={className}>{content}</div>
+              );
+            })}
           </div>
         </section>
 
