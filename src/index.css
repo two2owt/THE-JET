@@ -958,6 +958,35 @@ All colors MUST be HSL.
     }
   }
 
+  /* ----------------------------------------------------------------------
+     Profile page — pill-styled form controls so the page matches the
+     rounded-pill language used elsewhere (edit pill, social pills,
+     sign-out button, primary CTAs).
+     ---------------------------------------------------------------------- */
+  .profile-input {
+    border-radius: 9999px !important;
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+  .profile-textarea {
+    border-radius: 20px !important;
+    padding: 14px 18px !important;
+  }
+  .profile-select-trigger {
+    border-radius: 9999px !important;
+    padding-left: 18px !important;
+    padding-right: 14px !important;
+  }
+  /* Social input row — keep icon aligned with the pill input. */
+  .profile-social-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .profile-social-row > svg {
+    flex-shrink: 0;
+  }
+
   /* ====================================================================
      Luxe typography system — single source of truth for headings & body.
      Apply these utility classes anywhere a page needs the canonical look.
