@@ -10,8 +10,8 @@ const Avatar = React.forwardRef<
   <AvatarPrimitive.Root
     ref={ref}
     className={cn(
-      // Container-adaptive: square aspect, never overflows. Default size h-10 w-10 — override via className/style.
-      "relative flex shrink-0 overflow-hidden rounded-full aspect-square h-10 w-10",
+      // Container-adaptive: never overflows. Default size h-10 w-10 — override via className/style.
+      "relative flex shrink-0 overflow-hidden rounded-full h-10 w-10",
       className
     )}
     // containerType enables `cqw` units in AvatarFallback so text scales to container size.
