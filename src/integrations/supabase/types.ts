@@ -83,7 +83,10 @@ export type Database = {
           expires_at: string
           id: string
           image_url: string | null
+          merchant_id: string | null
           neighborhood_id: string | null
+          onboarding_completed_at: string | null
+          onboarding_started_at: string | null
           starts_at: string
           title: string
           updated_at: string | null
@@ -101,7 +104,10 @@ export type Database = {
           expires_at: string
           id?: string
           image_url?: string | null
+          merchant_id?: string | null
           neighborhood_id?: string | null
+          onboarding_completed_at?: string | null
+          onboarding_started_at?: string | null
           starts_at: string
           title: string
           updated_at?: string | null
@@ -119,7 +125,10 @@ export type Database = {
           expires_at?: string
           id?: string
           image_url?: string | null
+          merchant_id?: string | null
           neighborhood_id?: string | null
+          onboarding_completed_at?: string | null
+          onboarding_started_at?: string | null
           starts_at?: string
           title?: string
           updated_at?: string | null

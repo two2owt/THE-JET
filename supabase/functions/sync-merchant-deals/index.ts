@@ -26,6 +26,8 @@ const MerchantDealSchema = z.object({
   image_url: z.string().url().max(2000).optional().nullable(),
   website_url: z.string().url().max(2000).optional().nullable(),
   neighborhood_id: z.string().uuid().optional().nullable(),
+  onboarding_started_at: z.string().datetime({ offset: true }).optional().nullable(),
+  onboarding_completed_at: z.string().datetime({ offset: true }).optional().nullable(),
 });
 
 const WebhookPayloadSchema = z.object({
@@ -138,6 +140,7 @@ Deno.serve(async (req) => {
           .from('deals')
           .insert({
             id: deal.id, // Use the same ID from JET Bridge for sync
+            merchant_id: deal.merchant_id ?? null,
             venue_id: deal.venue_id,
             venue_name: deal.venue_name,
             venue_address: deal.venue_address,
@@ -151,6 +154,8 @@ Deno.serve(async (req) => {
             image_url: deal.image_url,
             website_url: deal.website_url,
             neighborhood_id: deal.neighborhood_id,
+            onboarding_started_at: deal.onboarding_started_at ?? null,
+            onboarding_completed_at: deal.onboarding_completed_at ?? null,
           })
           .select()
           .single();
@@ -182,6 +187,7 @@ Deno.serve(async (req) => {
         const { data, error } = await supabase
           .from('deals')
           .update({
+            merchant_id: deal.merchant_id ?? null,
             venue_id: deal.venue_id,
             venue_name: deal.venue_name,
             venue_address: deal.venue_address,
@@ -195,6 +201,8 @@ Deno.serve(async (req) => {
             image_url: deal.image_url,
             website_url: deal.website_url,
             neighborhood_id: deal.neighborhood_id,
+            onboarding_started_at: deal.onboarding_started_at ?? null,
+            onboarding_completed_at: deal.onboarding_completed_at ?? null,
           })
           .eq('id', deal.id)
           .select()
