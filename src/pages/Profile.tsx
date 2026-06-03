@@ -293,7 +293,7 @@ export default function Profile() {
           {/* Ambient radial accent behind avatar */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.18)_0%,transparent_70%)]"
+            className="pointer-events-none absolute inset-x-0 top-0 h-40 profile-hero-accent"
           />
 
           {!isEditing && (
@@ -313,9 +313,9 @@ export default function Profile() {
             <div className="relative group">
               <div
                 aria-hidden="true"
-                className="absolute -inset-2 rounded-full bg-[radial-gradient(circle,hsl(var(--primary)/0.35)_0%,transparent_70%)] blur-xl pointer-events-none"
+                className="absolute -inset-2 rounded-full profile-avatar-halo blur-xl pointer-events-none"
               />
-              <Avatar className="relative w-24 h-24 sm:w-28 sm:h-28 ring-2 ring-primary/40 shadow-[0_8px_30px_hsl(var(--primary)/0.35)]">
+              <Avatar className="relative w-24 h-24 sm:w-28 sm:h-28 ring-2 ring-primary/40 profile-avatar-shadow">
                 <AvatarImage src={profile?.avatar_url || undefined} alt={displayName || "User avatar"} />
                 <AvatarFallback className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-primary to-primary-glow text-primary-foreground">
                   {displayName.charAt(0).toUpperCase() || 'U'}
@@ -363,7 +363,7 @@ export default function Profile() {
               const content = (
                 <>
                   <Icon className="w-4 h-4 text-primary mb-1" />
-                  <div className="text-xl sm:text-2xl font-bold text-foreground tabular-nums leading-none" style={{ letterSpacing: '-0.02em' }}>
+                  <div className="text-luxe-stat text-xl sm:text-2xl text-foreground leading-none">
                     {value}
                   </div>
                   <div className="heading-luxe-eyebrow mt-1 text-center truncate">{label}</div>
