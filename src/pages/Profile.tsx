@@ -284,12 +284,12 @@ export default function Profile() {
         onCropComplete={handleCroppedAvatarSave}
         isProcessing={isUploading}
       />
-      <PageShell gap="0" className="profile-scroll">
+      <PageShell className="profile-scroll">
         <TabPageHeader title="Profile" subtitle="Manage your account, preferences, and connections" />
 
         {/* Identity card */}
         {/* Identity hero — centered, gradient glow, edit pencil top-right */}
-        <section className="relative mt-fluid-lg rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg glow-ambient overflow-hidden">
+        <section className="relative rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg glow-ambient overflow-hidden">
           {/* Ambient radial accent behind avatar */}
           <div
             aria-hidden="true"
@@ -382,7 +382,7 @@ export default function Profile() {
         </section>
 
         {/* Profile form card */}
-        <section className="mt-fluid-md rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg">
+        <section className="rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg">
           <div className="flex items-center gap-2 mb-fluid-md">
             <span className="dot-gold" />
             <span className="heading-luxe-eyebrow">Account Details</span>
@@ -598,7 +598,7 @@ export default function Profile() {
             <button
               type="button"
               onClick={() => navigate('/admin')}
-              className="group mt-fluid-md flex items-center gap-fluid-sm w-full text-left p-fluid-sm rounded-2xl border-hairline bg-card/40 backdrop-blur-xl hover:border-primary/50 hover:bg-card/60 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all"
+              className="group flex items-center gap-fluid-sm w-full text-left p-fluid-sm rounded-2xl border-hairline bg-card/40 backdrop-blur-xl hover:border-primary/50 hover:bg-card/60 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all"
             >
               <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary/20 to-primary-glow/10 text-primary border-hairline">
                 <Shield className="w-5 h-5" />
@@ -612,12 +612,10 @@ export default function Profile() {
           )}
 
           {/* Settings — notifications, preferences, privacy, subscription, account */}
-          <div className="mt-fluid-md">
-            <Settings embedded />
-          </div>
+          <Settings embedded />
 
           {/* Sign Out */}
-          <section className="mt-fluid-md rounded-2xl border-hairline border-destructive/20 bg-card/40 backdrop-blur-xl p-fluid-sm sm:p-fluid-md">
+          <section className="rounded-2xl border-hairline border-destructive/20 bg-card/40 backdrop-blur-xl p-fluid-sm sm:p-fluid-md">
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
