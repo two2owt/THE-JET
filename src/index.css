@@ -542,6 +542,27 @@ All colors MUST be HSL.
   .p-fluid-md { padding: var(--space-md); }
   .p-fluid-lg { padding: var(--space-lg); }
 
+  .py-fluid-xs { padding-top: var(--space-xs); padding-bottom: var(--space-xs); }
+  .py-fluid-sm { padding-top: var(--space-sm); padding-bottom: var(--space-sm); }
+  .py-fluid-md { padding-top: var(--space-md); padding-bottom: var(--space-md); }
+  .py-fluid-lg { padding-top: var(--space-lg); padding-bottom: var(--space-lg); }
+
+  .px-fluid-xs { padding-left: var(--space-xs); padding-right: var(--space-xs); }
+  .px-fluid-sm { padding-left: var(--space-sm); padding-right: var(--space-sm); }
+  .px-fluid-md { padding-left: var(--space-md); padding-right: var(--space-md); }
+  .px-fluid-lg { padding-left: var(--space-lg); padding-right: var(--space-lg); }
+
+  .pt-fluid-xs { padding-top: var(--space-xs); }
+  .pt-fluid-sm { padding-top: var(--space-sm); }
+  .pt-fluid-md { padding-top: var(--space-md); }
+  .pt-fluid-lg { padding-top: var(--space-lg); }
+
+  .pb-fluid-xs { padding-bottom: var(--space-xs); }
+  .pb-fluid-sm { padding-bottom: var(--space-sm); }
+  .pb-fluid-md { padding-bottom: var(--space-md); }
+  .pb-fluid-lg { padding-bottom: var(--space-lg); }
+  .pb-fluid-2xl { padding-bottom: var(--space-2xl); }
+
   .mb-fluid-xs { margin-bottom: var(--space-xs); }
   .mb-fluid-sm { margin-bottom: var(--space-sm); }
   .mb-fluid-md { margin-bottom: var(--space-md); }
