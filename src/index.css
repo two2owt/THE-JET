@@ -927,13 +927,6 @@ All colors MUST be HSL.
     z-index: 10;
   }
 
-  /* Profile hero — Sign-out pill floats top-left, mirrors Edit pill */
-  .profile-signout-pill {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    z-index: 10;
-  }
 
   /* Smooth, momentum-friendly scrolling for the Profile page.
      Apply on the PageShell wrapper. Container scroll lives on PageLayout's
