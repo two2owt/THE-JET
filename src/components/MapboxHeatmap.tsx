@@ -169,6 +169,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [mapboxLoaded, setMapboxLoaded] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapInitializing, setMapInitializing] = useState(true);
+  // Drives the single crossfade from HeatmapSkeleton -> interactive map.
+  // Stays true until the opacity transition completes after mapLoaded flips.
+  const [skeletonMounted, setSkeletonMounted] = useState(true);
   const [loadingStage, setLoadingStage] = useState<'module' | 'init' | 'style' | 'ready'>('module');
   const [mapError, setMapError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
