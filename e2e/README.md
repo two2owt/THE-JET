@@ -35,3 +35,22 @@ bunx playwright test --ui
 - **Assertions**: inline `role="alert"` errors, sonner toast text, and
   the captured request bodies (proving `updateUser` was called with the
   right shape — or not called at all when validation fails).
+
+## Visual regression
+
+`visual-regression-tabs.spec.ts` snapshots Hot, Social, Admin, Settings,
+Messages, and Profile at 360px (Android) and 390px (iOS) — 12 baselines
+total. The goal is catching divider / section-spacing drift in the
+PageShell chrome (`divider-luxe`, `dot-gold`, `heading-luxe-eyebrow`,
+`*-fluid-*` utilities, `--space-*` tokens).
+
+First run — generate baselines locally:
+
+```bash
+bunx playwright test e2e/visual-regression-tabs.spec.ts --update-snapshots
+```
+
+Subsequent runs compare against the committed baselines under
+`e2e/visual-regression-tabs.spec.ts-snapshots/`. Animations are disabled
+and avatars / canvases / timestamps are masked so only layout rhythm is
+compared.
