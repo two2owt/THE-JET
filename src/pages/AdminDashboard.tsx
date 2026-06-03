@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 
 // Lazy load admin components to reduce initial bundle - especially UserAnalytics which pulls in recharts (~200KB)
 const DealManagement = lazy(() => import("@/components/admin/DealManagement").then(m => ({ default: m.DealManagement })));
+const JetBridgeShortcut = lazy(() => import("@/components/admin/JetBridgeShortcut").then(m => ({ default: m.JetBridgeShortcut })));
 const UserAnalytics = lazy(() => import("@/components/admin/UserAnalytics").then(m => ({ default: m.UserAnalytics })));
 const NeighborhoodManagement = lazy(() => import("@/components/admin/NeighborhoodManagement").then(m => ({ default: m.NeighborhoodManagement })));
 const MonetizationToggle = lazy(() => import("@/components/admin/MonetizationToggle").then(m => ({ default: m.MonetizationToggle })));
@@ -59,7 +60,10 @@ export default function AdminDashboard() {
 
           <TabsContent value="deals">
             <Suspense fallback={<div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
-              <DealManagement />
+              <div className="space-y-6">
+                <JetBridgeShortcut />
+                <DealManagement />
+              </div>
             </Suspense>
           </TabsContent>
 
