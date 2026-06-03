@@ -276,7 +276,7 @@ export default function Profile() {
   }
 
   return (
-    <PageLayout defaultTab="map" headerConfig={headerConfig}>
+    <PageLayout defaultTab="map" headerConfig={headerConfig} mainClassName="profile-scroll-root">
       <AvatarCropDialog
         open={isCropOpen}
         imageSrc={cropSrc}
@@ -284,7 +284,7 @@ export default function Profile() {
         onCropComplete={handleCroppedAvatarSave}
         isProcessing={isUploading}
       />
-      <PageShell gap="0">
+      <PageShell gap="0" className="profile-scroll">
         <TabPageHeader title="Profile" subtitle="Manage your account, preferences, and connections" />
 
         {/* Identity card */}
@@ -295,6 +295,31 @@ export default function Profile() {
             aria-hidden="true"
             className="pointer-events-none absolute inset-x-0 top-0 h-40 profile-hero-accent"
           />
+
+          {/* Quick Sign Out — icon-only pill, top-left of hero */}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button
+                type="button"
+                aria-label="Sign out"
+                className="profile-signout-pill inline-flex items-center justify-center h-9 w-9 rounded-full border border-destructive/40 bg-card/60 backdrop-blur-md text-destructive hover:bg-destructive/10 hover:border-destructive/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/50 transition-colors"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Sign out of your account?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  You'll need to sign in again to access your profile and favorites.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleSignOut}>Sign Out</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
           {!isEditing && (
             <button

@@ -927,6 +927,30 @@ All colors MUST be HSL.
     z-index: 10;
   }
 
+  /* Profile hero — Sign-out pill floats top-left, mirrors Edit pill */
+  .profile-signout-pill {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 10;
+  }
+
+  /* Smooth, momentum-friendly scrolling for the Profile page.
+     Apply on the PageShell wrapper. Container scroll lives on PageLayout's
+     <main>, so we cascade behaviors and add scroll padding so the last
+     section clears the bottom nav. */
+  .profile-scroll {
+    scroll-behavior: smooth;
+    scroll-padding-bottom: calc(var(--bottom-nav-total-height, 60px) + 24px);
+    padding-bottom: calc(var(--bottom-nav-total-height, 60px) + 24px) !important;
+  }
+  .profile-scroll-root {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    scrollbar-gutter: stable;
+  }
+
   /* Profile stats — always 3 equal columns, never wraps */
   .profile-stats-grid {
     display: grid;
