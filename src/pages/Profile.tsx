@@ -301,14 +301,14 @@ export default function Profile() {
               type="button"
               onClick={() => setIsEditing(true)}
               aria-label="Edit profile"
-              className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 h-9 px-3 rounded-full border border-primary/40 bg-card/60 backdrop-blur-md text-xs font-semibold text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors"
+              className="profile-edit-pill inline-flex items-center gap-1.5 h-9 px-3 rounded-full border border-primary/40 bg-card/60 backdrop-blur-md text-xs font-semibold text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors"
             >
               <Edit2 className="w-3.5 h-3.5" />
               Edit
             </button>
           )}
 
-          <div className="relative flex flex-col items-center text-center">
+          <div className="profile-hero-stack">
             {/* Avatar with primary glow */}
             <div className="relative group">
               <div
@@ -352,7 +352,7 @@ export default function Profile() {
           <div className="divider-luxe my-fluid-md" />
 
           {/* Stat chips double as navigation. */}
-          <div className="relative grid grid-cols-3 gap-2 sm:gap-3">
+          <div className="profile-stats-grid">
             {[
               { icon: Heart, label: 'Favorites', value: favorites.length, to: '/favorites' },
               { icon: Users, label: 'Connections', value: connections.length, to: '/social' },
