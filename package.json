@@ -14,6 +14,16 @@
     "audit:css:json": "node scripts/find-unused-css.mjs --json"
   },
   "dependencies": {
+    "@capacitor/android": "^8.4.0",
+    "@capacitor/app": "^8.1.0",
+    "@capacitor/core": "^8.4.0",
+    "@capacitor/geolocation": "^8.2.0",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/ios": "^8.4.0",
+    "@capacitor/push-notifications": "^8.1.1",
+    "@capacitor/share": "^8.0.1",
+    "@capacitor/splash-screen": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.2",
     "@fontsource-variable/plus-jakarta-sans": "^5.2.8",
     "@fontsource-variable/syne": "^5.2.7",
     "@hookform/resolvers": "^3.10.0",
@@ -69,6 +79,8 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.4.0",
     "@eslint/js": "^9.32.0",
     "@playwright/test": "^1.59.1",
     "@tailwindcss/typography": "^0.5.16",
@@ -82,9 +94,9 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^15.15.0",
+    "jsdom": "^20.0.3",
     "lovable-tagger": "^1.1.11",
     "postcss": "^8.5.6",
-    "jsdom": "^20.0.3",
     "rollup-plugin-visualizer": "^6.0.5",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.3",
