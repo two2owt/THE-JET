@@ -392,10 +392,6 @@ const Index = () => {
             
             <div 
               className="absolute inset-0 w-full h-full"
-              style={{
-                opacity: mapboxToken ? 1 : 0,
-                transition: 'opacity 300ms ease-out',
-              }}
             >
               {mapboxToken && (
                 <Suspense fallback={null}>
