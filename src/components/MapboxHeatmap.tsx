@@ -1002,17 +1002,19 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 canvas.height = size;
                 const ctx = canvas.getContext('2d');
                 if (ctx) {
-                  // Circle background
+                  // Neon green glow background
                   ctx.beginPath();
-                  ctx.arc(size / 2, size / 2, size / 2 - 3, 0, Math.PI * 2);
-                  ctx.fillStyle = '#16a34a'; // bold green
+                  ctx.arc(size / 2, size / 2, size / 2 - 1, 0, Math.PI * 2);
+                  ctx.fillStyle = '#39ff14'; // neon green
                   ctx.fill();
-                  ctx.lineWidth = 3;
-                  ctx.strokeStyle = '#ffffff';
-                  ctx.stroke();
-                  // Bold P
-                  ctx.fillStyle = '#ffffff';
-                  ctx.font = 'bold 44px system-ui, -apple-system, Arial, sans-serif';
+                  // Dark inner circle for contrast
+                  ctx.beginPath();
+                  ctx.arc(size / 2, size / 2, size / 2 - 6, 0, Math.PI * 2);
+                  ctx.fillStyle = '#0a0a0a';
+                  ctx.fill();
+                  // Bold neon P
+                  ctx.fillStyle = '#39ff14';
+                  ctx.font = 'bold 48px system-ui, -apple-system, Arial, sans-serif';
                   ctx.textAlign = 'center';
                   ctx.textBaseline = 'middle';
                   ctx.fillText('P', size / 2, size / 2 + 2);
