@@ -593,6 +593,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_consents: {
+        Row: {
+          consent_type: Database["public"]["Enums"]["consent_type"]
+          created_at: string
+          granted: boolean
+          granted_at: string | null
+          id: string
+          policy_version: string
+          revoked_at: string | null
+          source: string | null
+          user_id: string
+        }
+        Insert: {
+          consent_type: Database["public"]["Enums"]["consent_type"]
+          created_at?: string
+          granted: boolean
+          granted_at?: string | null
+          id?: string
+          policy_version?: string
+          revoked_at?: string | null
+          source?: string | null
+          user_id: string
+        }
+        Update: {
+          consent_type?: Database["public"]["Enums"]["consent_type"]
+          created_at?: string
+          granted?: boolean
+          granted_at?: string | null
+          id?: string
+          policy_version?: string
+          revoked_at?: string | null
+          source?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_favorites: {
         Row: {
           created_at: string
@@ -906,6 +942,11 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      consent_type:
+        | "foreground_location"
+        | "background_tracking"
+        | "push_notifications"
+        | "messaging_analytics"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1034,6 +1075,12 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      consent_type: [
+        "foreground_location",
+        "background_tracking",
+        "push_notifications",
+        "messaging_analytics",
+      ],
     },
   },
 } as const

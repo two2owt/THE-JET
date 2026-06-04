@@ -15,6 +15,7 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 import PreferencesEditor from "@/components/settings/PreferencesEditor";
 import PrivacySettings from "@/components/settings/PrivacySettings";
+import ConsentCenter from "@/components/settings/ConsentCenter";
 import { AccountSection } from "@/components/settings/AccountSection";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
@@ -355,6 +356,25 @@ const Settings = ({ embedded = false }: SettingsProps = {}) => {
             <Separator />
 
             <PrivacySettings userId={userId} />
+          </Card>
+        )}
+
+        {/* Consent Center — versioned, per-purpose consent records */}
+        {userId && (
+          <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
+            <SectionTitle
+              subtitle="Granular, versioned consent for location, notifications, and analytics"
+              className="mb-0"
+            >
+              <span className="inline-flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-primary" />
+                Consent Center
+              </span>
+            </SectionTitle>
+
+            <Separator />
+
+            <ConsentCenter userId={userId} />
           </Card>
         )}
 
