@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { loadConsents } from "@/lib/consent";
 
 interface AuthContextType {
   user: User | null;
@@ -59,6 +60,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setUser(currentSession?.user ?? null);
         setIsLoading(false);
 
+        // Refresh runtime consent cache whenever auth identity changes
+        loadConsents(currentSession?.user?.id ?? null).catch(() => undefined);
+
         // Handle specific auth events
         if (event === "TOKEN_REFRESHED") {
           console.log("Session token refreshed successfully");
@@ -85,6 +89,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setSession(existingSession);
       setUser(existingSession?.user ?? null);
       setIsLoading(false);
+      loadConsents(existingSession?.user?.id ?? null).catch(() => undefined);
     });
 
     // Listen for session changes from other tabs/windows
