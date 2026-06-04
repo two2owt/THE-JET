@@ -53,7 +53,7 @@ export const shareDeal = async (deal: Deal, userId: string | undefined) => {
 };
 
 export const shareVenue = async (venue: Pick<Venue, 'id' | 'name'>) => {
-  const shareUrl = `${window.location.origin}/?venue=${encodeURIComponent(venue.name)}`;
+  const shareUrl = `${window.location.origin}/?venue=${encodeURIComponent(venue.id)}`;
   const shareText = `Check out ${venue.name} on JET!`;
 
   // Use Web Share API if available
@@ -87,7 +87,8 @@ export const getDealDeepLink = (dealId: string) => {
   return `${window.location.origin}/?deal=${dealId}`;
 };
 
-// Generate a deep link URL for a venue
-export const getVenueDeepLink = (venueName: string) => {
-  return `${window.location.origin}/?venue=${encodeURIComponent(venueName)}`;
+// Generate a deep link URL for a venue. Uses the stable venue id so links
+// keep resolving even if the venue's display name changes.
+export const getVenueDeepLink = (venueId: string) => {
+  return `${window.location.origin}/?venue=${encodeURIComponent(venueId)}`;
 };
