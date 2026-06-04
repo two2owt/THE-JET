@@ -12,7 +12,7 @@ import PreferencesStep, { PreferencesData } from "@/components/onboarding/Prefer
 import { Json } from "@/integrations/supabase/types";
 import jetLogo from "@/assets/jet-auth-logo.png";
 import authBackground from "@/assets/auth-background.webp";
-import { consumePostAuthRedirect, peekPostAuthRedirect } from "@/lib/postAuthRedirect";
+import { consumePostAuthRedirect } from "@/lib/postAuthRedirect";
 
 const GENDER_OPTIONS = [
   { value: "woman", label: "Woman" },
