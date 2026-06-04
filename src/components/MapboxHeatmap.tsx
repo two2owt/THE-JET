@@ -1489,29 +1489,41 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           0.9, 'rgba(255, 0, 0, 1)',          // red
           1, 'rgba(139, 0, 0, 1)',            // dark red
         ],
-        // Adaptive radius for better visualization at all zoom levels
+        // Adaptive radius — smooth cubic-bezier easing across the full zoom
+        // range with intermediate stops so blobs grow/shrink fluidly during
+        // pinch-zoom instead of stepping between sparse interpolation points.
         'heatmap-radius': [
           'interpolate',
-          ['exponential', 1.8],
+          ['cubic-bezier', 0.4, 0, 0.2, 1],
           ['zoom'],
-          0, isMobile ? 26 : 20,
-          9, isMobile ? 60 : 50,
+          0,  isMobile ? 26 : 20,
+          5,  isMobile ? 38 : 30,
+          9,  isMobile ? 60 : 50,
+          11, isMobile ? 72 : 60,
           12, isMobile ? 82 : 70,
+          13, isMobile ? 94 : 80,
           15, isMobile ? 115 : 100,
+          17, isMobile ? 130 : 115,
         ],
-        // Smooth opacity curve for better blending
+        // Opacity eased with cubic-bezier and extra anchor stops so the layer
+        // never abruptly washes out as the user zooms in or out.
         'heatmap-opacity': [
           'interpolate',
-          ['linear'],
+          ['cubic-bezier', 0.4, 0, 0.2, 1],
           ['zoom'],
-          7, isMobile ? 0.82 : 0.95,
+          5,  isMobile ? 0.85 : 1,
+          7,  isMobile ? 0.82 : 0.95,
+          10, isMobile ? 0.8  : 0.92,
           12, isMobile ? 0.78 : 0.9,
-          15, isMobile ? 0.7 : 0.85,
+          14, isMobile ? 0.74 : 0.87,
+          15, isMobile ? 0.7  : 0.85,
+          17, isMobile ? 0.6  : 0.75,
         ],
-        'heatmap-opacity-transition': {
-          duration: 1000,
-          delay: 0
-        }
+        // Paint-property transitions: smoothly tween between values when the
+        // layer is re-evaluated (city switch, time-lapse hour change, mobile
+        // class flip). Pair with a matching radius transition for parity.
+        'heatmap-radius-transition': { duration: 450, delay: 0 },
+        'heatmap-opacity-transition': { duration: 600, delay: 0 },
       },
     });
 
@@ -2244,21 +2256,28 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             // Radius increases at lower zoom, decreases when zoomed in
             'heatmap-radius': [
               'interpolate',
-              ['linear'],
+              ['cubic-bezier', 0.4, 0, 0.2, 1],
               ['zoom'],
               8, isMobile ? 40 : 30,
+              10, isMobile ? 34 : 25,
               12, isMobile ? 28 : 20,
+              13, isMobile ? 22 : 16,
               15, isMobile ? 14 : 10
             ],
             // Fade out opacity as zoom increases (individual markers take over)
             'heatmap-opacity': [
               'interpolate',
-              ['linear'],
+              ['cubic-bezier', 0.4, 0, 0.2, 1],
               ['zoom'],
               10, isMobile ? 0.7 : 0.8,
+              11.5, isMobile ? 0.58 : 0.65,
               13, isMobile ? 0.32 : 0.4,
+              14, isMobile ? 0.15 : 0.2,
               15, 0
-            ]
+            ],
+            // Smooth tween between paint updates (city switch, viewport flip)
+            'heatmap-radius-transition': { duration: 400, delay: 0 },
+            'heatmap-opacity-transition': { duration: 500, delay: 0 }
           }
         }, 'waterway-label'); // Insert below labels
       }
