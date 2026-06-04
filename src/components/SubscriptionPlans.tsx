@@ -134,11 +134,11 @@ export const SubscriptionPlans = () => {
                     </Button>
                   )
                 ) : tierKey === "free" ? (
-                  <Button variant="ghost" className="w-full" disabled>
+                  <Button variant="ghost" className="w-full rounded-full" disabled>
                     Free Forever
                   </Button>
                 ) : !canPurchase ? (
-                  <Button variant="outline" className="w-full" disabled>
+                  <Button variant="outline" className="w-full rounded-full" disabled>
                     Available on web
                   </Button>
                 ) : (
