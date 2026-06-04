@@ -2575,17 +2575,17 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             }}
           >
             <div className="flex items-center gap-2.5 w-full">
-              <MapPin className="w-4 h-4 text-primary flex-shrink-0" aria-hidden="true" />
+              <MapPin className="w-4 h-4 text-primary flex-shrink-0 self-center" aria-hidden="true" />
               <span
-                className="font-display font-bold truncate flex-1 text-left text-foreground text-[12px] sm:text-[13px]"
-                style={{ letterSpacing: '-0.015em', lineHeight: 1.15 }}
+                className="font-display font-bold truncate flex-1 text-left text-foreground text-[12px] sm:text-[13px] leading-tight self-center"
+                style={{ letterSpacing: '-0.015em' }}
               >
-                {isUsingCurrentLocation 
+                {isUsingCurrentLocation
                   ? (detectedLocationName || (detectedCity ? `${detectedCity.name}, ${detectedCity.state}` : "Locating..."))
                   : `${selectedCity.name}, ${selectedCity.state}`}
               </span>
               {isUsingCurrentLocation && (detectedLocationName || detectedCity) && (
-                <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse flex-shrink-0" aria-hidden="true" />
+                <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse flex-shrink-0 self-center" aria-hidden="true" />
               )}
             </div>
           </SelectTrigger>
