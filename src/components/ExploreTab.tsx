@@ -12,6 +12,7 @@ import { EmptyState } from "./EmptyState";
 import { TabPageHeader } from "./TabPageHeader";
 import { calculateDistance, getDynamicRadius, formatDistance } from "@/utils/geospatialUtils";
 import { useFavorites } from "@/hooks/useFavorites";
+import { requireConsent } from "@/lib/consent";
 
 import type { User } from "@supabase/supabase-js";
 
@@ -159,6 +160,12 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
   const getUserLocation = () => {
     if (!navigator.geolocation) {
       setLocationError("Geolocation is not supported by your browser");
+      return;
+    }
+
+    // Runtime guard: foreground location requires explicit consent
+    if (!requireConsent("foreground_location")) {
+      setLocationError("Foreground location consent is disabled");
       return;
     }
 

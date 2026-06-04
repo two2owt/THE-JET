@@ -5,6 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, MapPin, Radio, Bell, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
+import { refreshConsents } from "@/lib/consent";
 
 /**
  * Current policy version for the consent surface. Bump when the wording
@@ -131,6 +132,8 @@ export const ConsentCenter = ({ userId }: ConsentCenterProps) => {
     toast.success(nextGranted ? "Consent granted" : "Consent revoked");
     setPending(null);
     load();
+    // Keep the runtime guard cache in sync so features react immediately
+    refreshConsents().catch(() => undefined);
   };
 
   if (loading) {
