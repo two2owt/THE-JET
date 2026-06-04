@@ -77,6 +77,7 @@ export default function Social() {
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [chatFriend, setChatFriend] = useState<{ id: string; name: string; avatar?: string | null } | null>(null);
+  const [sentRequestIds, setSentRequestIds] = useState<Set<string>>(new Set());
   const unreadCounts = useUnreadCounts(user?.id);
   const { canAccessSocialFeatures } = useFeatureAccess();
   const headerConfig = useMemo(() => ({ hideSearch: true }), []);
@@ -137,10 +138,10 @@ export default function Social() {
         .limit(50);
 
       if (error) throw error;
-      // Exclude the current user, accepted connections, and anyone with a
-      // pending request in either direction. Discover should only surface
-      // signed-up, discoverable users that the viewer is NOT already
-      // connected to in any way.
+      // Exclude the current user, accepted connections, anyone with a
+      // pending request in either direction, and profiles the user just
+      // sent a request to. Discover should only surface signed-up,
+      // discoverable users that the viewer is NOT already connected to.
       const excludedIds = new Set<string>();
       if (user?.id) excludedIds.add(user.id);
       for (const c of connections) {
@@ -151,6 +152,7 @@ export default function Social() {
         excludedIds.add(r.user_id);
         excludedIds.add(r.friend_id);
       }
+      sentRequestIds.forEach((id) => excludedIds.add(id));
       setProfiles((data || []).filter((p) => !excludedIds.has(p.id)).slice(0, 20));
     } catch (error) {
       console.error("Error fetching profiles:", error);
@@ -161,6 +163,7 @@ export default function Social() {
     const result = await sendRequest(friendId);
     if (result.success) {
       toast.success("Friend request sent!");
+      setSentRequestIds((prev) => new Set(prev).add(friendId));
     } else {
       toast.error("Failed to send request");
     }
@@ -600,26 +603,36 @@ export default function Social() {
             Discover People
           </SectionTitle>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {profiles.map((profile) => (
-              <div key={profile.id} style={cardStyle}>
-                <div style={identityWrap}>
-                  <Avatar className={avatarClass}>
-                    <AvatarImage src={profile.avatar_url || undefined} alt={profile.display_name || "User"} />
-                    <AvatarFallback className="bg-gradient-to-br from-accent/15 to-primary/15 text-accent">
-                      {profile.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '50%', height: '50%' }} />}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    <DisplayName name={profile.display_name || "User"} style={nameStyle} />
-                    <p style={subtitleStyle}>Suggested for you</p>
+            {profiles.map((profile) => {
+              const isSent = sentRequestIds.has(profile.id);
+              return (
+                <div key={profile.id} style={cardStyle}>
+                  <div style={identityWrap}>
+                    <Avatar className={avatarClass}>
+                      <AvatarImage src={profile.avatar_url || undefined} alt={profile.display_name || "User"} />
+                      <AvatarFallback className="bg-gradient-to-br from-accent/15 to-primary/15 text-accent">
+                        {profile.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '50%', height: '50%' }} />}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <DisplayName name={profile.display_name || "User"} style={nameStyle} />
+                      <p style={subtitleStyle}>{isSent ? "Request sent" : "Suggested for you"}</p>
+                    </div>
                   </div>
+                  {isSent ? (
+                    <button disabled style={{ ...primaryActionStyle, opacity: 0.6, cursor: 'default' }}>
+                      <Check style={{ width: '14px', height: '14px' }} />
+                      Sent
+                    </button>
+                  ) : (
+                    <button onClick={() => handleSendRequest(profile.id)} style={primaryActionStyle}>
+                      <UserPlus style={{ width: '14px', height: '14px' }} />
+                      Add
+                    </button>
+                  )}
                 </div>
-                <button onClick={() => handleSendRequest(profile.id)} style={primaryActionStyle}>
-                  <UserPlus style={{ width: '14px', height: '14px' }} />
-                  Add
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       </PageShell>
