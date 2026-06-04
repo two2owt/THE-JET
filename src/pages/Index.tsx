@@ -330,11 +330,14 @@ const Index = () => {
         imageUrl: getVenueImage(venue.name) || venue.imageUrl,
       };
       setSelectedVenue(venueWithImage);
+      // Always surface the JetCard on the map so the marker context lines up
+      // with the card (and the card isn't obscured by other tabs' chrome).
+      setActiveTab('map');
       toast.success(`Selected ${venue.name}`, {
         description: `${venue.activity}% active in ${venue.neighborhood}`
       });
     }
-  }, [venues, getVenueImage]);
+  }, [venues, getVenueImage, setActiveTab]);
 
   const handleParkingSelect = useCallback((parking: { lat: number; lng: number; name?: string }) => {
     setSelectedVenue(null); // Close venue card if open
