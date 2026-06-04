@@ -1,5 +1,5 @@
 import { memo, useState, useEffect } from "react";
-import { MapPin, Users, Star, TrendingUp, X, Share2, Send, Car, Navigation } from "lucide-react";
+import { MapPin, Users, Star, TrendingUp, X, Share2, Send, Car, Navigation, Phone, Globe } from "lucide-react";
 import { glideHaptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -291,6 +291,59 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               </span>
             )}
           </div>
+          {(venue.phone || venue.website) && (
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              gap: '10px',
+              marginTop: '6px',
+              fontSize: '11px',
+            }}>
+              {venue.phone && (
+                <a
+                  href={`tel:${venue.phone.replace(/[^+\d]/g, '')}`}
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    color: 'hsl(var(--gold))',
+                    textDecoration: 'none',
+                    fontWeight: 600,
+                  }}
+                  aria-label={`Call ${venue.name}`}
+                >
+                  <Phone style={{ width: '12px', height: '12px' }} />
+                  {venue.phone}
+                </a>
+              )}
+              {venue.website && (
+                <a
+                  href={venue.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    color: 'hsl(var(--primary))',
+                    textDecoration: 'none',
+                    fontWeight: 600,
+                    maxWidth: '200px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                  aria-label={`Visit ${venue.name} website`}
+                >
+                  <Globe style={{ width: '12px', height: '12px', flexShrink: 0 }} />
+                  Website
+                </a>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Hairline gold divider above key metrics */}
