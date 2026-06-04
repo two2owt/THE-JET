@@ -12,6 +12,7 @@ import PreferencesStep, { PreferencesData } from "@/components/onboarding/Prefer
 import { Json } from "@/integrations/supabase/types";
 import jetLogo from "@/assets/jet-auth-logo.png";
 import authBackground from "@/assets/auth-background.webp";
+import { consumePostAuthRedirect } from "@/lib/postAuthRedirect";
 
 const GENDER_OPTIONS = [
   { value: "woman", label: "Woman" },
@@ -67,7 +68,7 @@ const Onboarding = () => {
         .single();
       
       if (profile?.onboarding_completed) {
-        navigate("/");
+        navigate(consumePostAuthRedirect("/"), { replace: true });
       }
     };
     
@@ -246,7 +247,7 @@ const Onboarding = () => {
       if (error) throw error;
       
       toast.success("Welcome to JET Charlotte!", { description: "Let's discover what's hot" });
-      navigate("/");
+      navigate(consumePostAuthRedirect("/"));
     } catch (error: any) {
       toast.error("Failed to complete onboarding", { description: error.message });
     } finally {
