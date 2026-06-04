@@ -518,7 +518,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
         </div>
 
         {/* Nearby Parking Section */}
-        {(parkingLoading || nearbyParking.length > 0) && (
+        {venue.lat && venue.lng && (
           <div style={{
             borderTop: '1px solid hsl(var(--border) / 0.5)',
             paddingTop: '8px',
@@ -538,9 +538,46 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
             }}>
               <Car style={{ width: '12px', height: '12px' }} />
               <span>Nearby Parking</span>
+              <button
+                type="button"
+                onClick={handleRefreshParking}
+                disabled={parkingLoading}
+                aria-label="Refresh nearby parking"
+                style={{
+                  marginLeft: 'auto',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  background: 'hsl(var(--secondary) / 0.5)',
+                  border: '1px solid hsl(var(--border) / 0.4)',
+                  color: 'hsl(var(--foreground))',
+                  padding: '3px 8px',
+                  borderRadius: '9999px',
+                  fontSize: '10px',
+                  fontWeight: 600,
+                  letterSpacing: '0.04em',
+                  cursor: parkingLoading ? 'wait' : 'pointer',
+                  opacity: parkingLoading ? 0.6 : 1,
+                }}
+              >
+                <RefreshCw
+                  className={parkingLoading ? 'animate-spin' : ''}
+                  style={{ width: '11px', height: '11px' }}
+                />
+                Refresh
+              </button>
             </div>
 
             {parkingLoading && nearbyParking.length === 0 && <JetCardParkingSkeleton />}
+            {!parkingLoading && nearbyParking.length === 0 && (
+              <div style={{
+                fontSize: '11px',
+                color: 'hsl(var(--muted-foreground))',
+                padding: '4px 2px',
+              }}>
+                No parking found nearby. Tap Refresh to try again.
+              </div>
+            )}
 
             {nearbyParking.map((parking, i) => (
               <button
