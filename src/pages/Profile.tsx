@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router";
+import { Navigate, useNavigate } from "react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { PageLayout } from "@/components/PageLayout";
 import { ProfilePageSkeleton } from "@/components/skeletons/PageSkeletons";
@@ -9,13 +9,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { EmptyState } from "@/components/EmptyState";
 import { PageShell } from "@/components/PageShell";
 import { TabPageHeader } from "@/components/TabPageHeader";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useConnections } from "@/hooks/useConnections";
 import { useProfile } from "@/hooks/useProfile";
-import { User, Camera, Edit2, X, Save, Heart, Users, Shield, LogOut, Loader2, Instagram, Twitter, Facebook, Linkedin, Video, Mail, Bell, ChevronRight, Link2 } from "lucide-react";
+import { Camera, Edit2, X, Save, Heart, Users, Shield, LogOut, Loader2, Instagram, Twitter, Facebook, Linkedin, Video, Mail, Bell, ChevronRight, Link2 } from "lucide-react";
 
 import { toast } from "sonner";
 import { z } from "zod";
@@ -251,12 +250,17 @@ export default function Profile() {
   };
   const handleSignOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      // Local scope clears the persisted browser session immediately. A global
+      // logout can fail on an expired token before local auth state is removed.
+      const { error } = await supabase.auth.signOut({ scope: 'local' });
+      if (error) {
+        console.warn('Local sign out returned an error:', error.message);
+      }
       toast.success('Signed out');
       // Hard redirect to ensure all auth-dependent state is reset
       window.location.replace('/auth');
     } catch (error) {
+      console.error('Sign out failed:', error);
       toast.error('Failed to sign out');
     }
   };
@@ -270,13 +274,7 @@ export default function Profile() {
     );
   }
   if (!user) {
-    return (
-      <PageLayout defaultTab="map" notificationCount={0} headerConfig={headerConfig}>
-        <PageShell>
-          <EmptyState icon={User} title="Sign in to view profile" description="Create an account to access your profile, manage settings, and track your activity" actionLabel="Sign In" onAction={() => navigate("/auth")} />
-        </PageShell>
-      </PageLayout>
-    );
+    return <Navigate to="/auth" replace />;
   }
 
   return (
