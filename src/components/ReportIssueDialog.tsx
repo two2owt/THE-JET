@@ -105,7 +105,7 @@ export const ReportIssueDialog = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} className="rounded-full shadow-lg shadow-primary/20 font-semibold tracking-wide">
               {isSubmitting ? "Sending..." : "Submit Report"}
             </Button>
           </DialogFooter>
