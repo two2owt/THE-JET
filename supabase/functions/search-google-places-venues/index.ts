@@ -483,7 +483,7 @@ Deno.serve(async (req) => {
         if (venues.length > 0) {
           console.log(`Returning ${venues.length} venues (API + fallback)`);
           return new Response(
-            JSON.stringify({ venues: venues.slice(0, 10), total: venues.length }),
+            JSON.stringify({ venues, total: venues.length }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
