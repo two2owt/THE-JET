@@ -76,7 +76,7 @@ export function PageLayout({
   // the fixed breadcrumb bar doesn't overlap the first paragraph.
   // Routes that hide breadcrumbs entirely — keep in sync with
   // HIDDEN_ROUTES in navigation/Breadcrumbs.tsx + InlineBreadcrumbs.tsx
-  const BREADCRUMB_HIDDEN_ROUTES = new Set(["/", "/auth", "/onboarding", "/favorites"]);
+  const BREADCRUMB_HIDDEN_ROUTES = new Set(["/", "/auth", "/onboarding", "/favorites", "/social", "/profile"]);
   const showBreadcrumbSpacer = !BREADCRUMB_HIDDEN_ROUTES.has(pathname) && !fullBleed;
 
   // Use provided notification count or calculate from notifications
