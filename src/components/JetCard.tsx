@@ -1,5 +1,5 @@
-import { memo, useState, useEffect } from "react";
-import { MapPin, Users, Star, TrendingUp, X, Share2, Send, Car, Navigation, Phone, Globe } from "lucide-react";
+import { memo, useState, useEffect, useCallback } from "react";
+import { MapPin, Users, Star, TrendingUp, X, Share2, Send, Car, Navigation, Phone, Globe, RefreshCw } from "lucide-react";
 import { glideHaptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,27 +32,41 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
   const [nearbyParking, setNearbyParking] = useState<NearbyParking[]>([]);
   const [parkingLoading, setParkingLoading] = useState(false);
 
+  const loadParking = useCallback(async (showToast = false) => {
+    if (!venue.lat || !venue.lng) return;
+    setParkingLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('get-nearby-parking', {
+        body: JSON.stringify({ lat: venue.lat, lng: venue.lng, radius: 1000 }),
+      });
+      if (error) throw error;
+      const results = data?.results ?? [];
+      setNearbyParking(results);
+      if (showToast) {
+        if (results.length > 0) {
+          toast.success(`Found ${results.length} nearby parking spot${results.length === 1 ? '' : 's'}`);
+        } else {
+          toast.message('No parking found nearby');
+        }
+      }
+    } catch {
+      if (showToast) toast.error("Couldn't refresh parking");
+    } finally {
+      setParkingLoading(false);
+    }
+  }, [venue.lat, venue.lng]);
+
   // Fetch nearby parking when venue changes
   useEffect(() => {
-    if (!venue.lat || !venue.lng) return;
-    let cancelled = false;
-    setParkingLoading(true);
     setNearbyParking([]);
+    loadParking(false);
+  }, [venue.id, loadParking]);
 
-    supabase.functions.invoke('get-nearby-parking', {
-      body: JSON.stringify({ lat: venue.lat, lng: venue.lng, radius: 1000 }),
-    }).then(({ data, error }) => {
-      if (cancelled) return;
-      setParkingLoading(false);
-      if (!error && data?.results) {
-        setNearbyParking(data.results);
-      }
-    }).catch(() => {
-      if (!cancelled) setParkingLoading(false);
-    });
-
-    return () => { cancelled = true; };
-  }, [venue.id, venue.lat, venue.lng]);
+  const handleRefreshParking = async () => {
+    if (parkingLoading) return;
+    await glideHaptic();
+    await loadParking(true);
+  };
 
   const getActivityLevel = (activity: number) => {
     if (activity >= 80) return { label: "🔥 Very Busy", color: 'hsl(var(--hot))' };
