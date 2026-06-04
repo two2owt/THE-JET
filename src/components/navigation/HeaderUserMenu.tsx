@@ -84,13 +84,15 @@ function PaperPlaneFallback() {
       decoding="async"
       loading="lazy"
       style={{
-        width: "100%",
-        height: "100%",
+        // Fill the avatar circle with consistent inset padding so the
+        // plane never stretches and never crowds the gradient ring.
+        width: "72%",
+        height: "72%",
         objectFit: "contain",
         objectPosition: "center",
         // Optical centering — plane's visual mass sits slightly lower-left
-        transform: "translate(3%, -3%) scale(0.78)",
-        filter: "drop-shadow(0 1px 2px hsl(0 0% 0% / 0.35))",
+        transform: "translate(4%, -3%)",
+        filter: "drop-shadow(0 1px 2px hsl(0 0% 0% / 0.4))",
         pointerEvents: "none",
         userSelect: "none",
       }}
