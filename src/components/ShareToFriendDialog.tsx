@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Check, MapPin, Loader2 } from "lucide-react";
 import { useConnections } from "@/hooks/useConnections";
 import { supabase } from "@/integrations/supabase/client";
-import { getVenueDeepLink } from "@/utils/shareUtils";
+import { getVenueDeepLink, shareVenue } from "@/utils/shareUtils";
 import { toast } from "sonner";
 
 interface ShareToFriendDialogProps {
@@ -61,6 +61,24 @@ export function ShareToFriendDialog({
   const handleClose = () => {
     setSentTo(new Set());
     onClose();
+  };
+
+  const handleShareExternal = async () => {
+    const result = await shareVenue({ id: venue.id, name: venue.name });
+    if (result.success) {
+      toast.success(
+        result.method === "native" ? "Shared!" : "Link copied",
+        {
+          description:
+            result.method === "native"
+              ? `${venue.name} shared`
+              : "Paste it anywhere to share",
+        },
+      );
+      handleClose();
+    } else if (result.method !== "native") {
+      toast.error("Couldn't share", { description: "Please try again" });
+    }
   };
 
   return (
@@ -152,6 +170,18 @@ export function ShareToFriendDialog({
             </div>
           )}
         </ScrollArea>
+
+        {/* Share to external apps (iMessage, WhatsApp, social, etc.) */}
+        <div className="px-4 py-3 border-t border-border/50">
+          <Button
+            onClick={handleShareExternal}
+            variant="outline"
+            className="w-full h-10 gap-2 text-sm font-semibold"
+          >
+            <Send className="w-4 h-4" />
+            Share via Messages, Social & More
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
