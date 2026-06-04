@@ -382,7 +382,7 @@ function ChatView({
                       padding: 'clamp(6px, 1.6vw, 10px) clamp(10px, 2.6vw, 14px)',
                     }}
                   >
-                    {msg.image_url && <ChatImage value={msg.image_url} />}
+                    {msg.image_url && <ChatImage value={msg.image_url} cacheBust={msg.created_at} />}
                     {msg.content && (
                       <MessageContent content={msg.content} isMine={isMine} />
                     )}
