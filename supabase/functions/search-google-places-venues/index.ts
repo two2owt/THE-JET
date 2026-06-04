@@ -349,7 +349,7 @@ const CHARLOTTE_TOP_VENUES = [
     googleRating: 4.6,
     googleTotalRatings: 1900,
     activity: 88,
-    phone: "(980) augm-0850".replace("augm-", "266-"),
+    phone: "(980) 237-1322",
     website: "https://sealevelnc.com",
   },
   {
