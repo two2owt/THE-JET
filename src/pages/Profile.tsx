@@ -261,7 +261,9 @@ export default function Profile() {
   if (isAuthLoading || (user && isProfileLoading)) {
     return (
       <PageLayout defaultTab="map" headerConfig={headerConfig}>
-        <ProfilePageSkeleton />
+        <PageShell>
+          <ProfilePageSkeleton />
+        </PageShell>
       </PageLayout>
     );
   }
@@ -284,7 +286,7 @@ export default function Profile() {
         onCropComplete={handleCroppedAvatarSave}
         isProcessing={isUploading}
       />
-      <PageShell className="profile-scroll">
+      <PageShell>
         <TabPageHeader title="Profile" subtitle="Manage your account, preferences, and connections" />
 
         {/* Identity card */}
