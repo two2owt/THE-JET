@@ -143,7 +143,7 @@ export const SubscriptionPlans = () => {
                   </Button>
                 ) : (
                   <Button
-                    className={`w-full ${
+                    className={`w-full rounded-full shadow-lg shadow-primary/20 font-semibold tracking-wide ${
                       tierKey === "jetx" ? "bg-gradient-primary hover:opacity-90" : ""
                     }`}
                     onClick={() => handleSubscribe(tierKey)}
