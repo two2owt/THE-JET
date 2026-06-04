@@ -117,7 +117,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
         background: 'linear-gradient(135deg, hsl(var(--primary) / 0.3), hsl(var(--accent) / 0.2))',
         overflow: 'hidden',
       }}>
-        {venue.imageUrl && (
+        {venue.imageUrl ? (
           <img
             src={venue.imageUrl}
             alt={venue.name}
@@ -129,9 +129,38 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               objectFit: 'cover',
             }}
             loading="lazy"
-            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+            onError={(e) => { e.currentTarget.src = '/placeholder.svg'; e.currentTarget.alt = 'Placeholder'; e.currentTarget.style.filter = 'brightness(0.25)'; }}
+          />
+        ) : (
+          <img
+            src="/placeholder.svg"
+            alt="Placeholder"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              filter: 'brightness(0.25)',
+            }}
+            loading="lazy"
           />
         )}
+        {/* JET branding watermark */}
+        <img
+          src="/jet-email-logo.png"
+          alt="JET"
+          style={{
+            position: 'absolute',
+            bottom: '8px',
+            right: '8px',
+            width: '28px',
+            height: '28px',
+            opacity: 0.5,
+            objectFit: 'contain',
+            pointerEvents: 'none',
+          }}
+        />
         <div style={{
           position: 'absolute',
           inset: 0,
