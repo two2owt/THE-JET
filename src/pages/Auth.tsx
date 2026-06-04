@@ -197,6 +197,29 @@ const Auth = () => {
     setLocationConsent(false);
   }, []);
 
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        throw result.error;
+      }
+      if (result.redirected) {
+        return;
+      }
+      toast.success("Signed in with Google");
+      navigate("/");
+    } catch {
+      toast.error("Google sign-in failed", {
+        description: "Please try again or use email sign-in.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   /** Map common Supabase error messages to a uniform toast. Returns true if handled. */
   const handleCommonAuthError = (error: { message?: string } | null | undefined): boolean => {
     const msg = error?.message?.toLowerCase() ?? "";
