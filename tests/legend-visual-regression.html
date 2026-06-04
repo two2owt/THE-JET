@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Activity Legend — Visual Regression</title>
+<style>
+  :root { color-scheme: dark; --foreground: 0 0% 95%; --gold: 43 55% 54%; --silver: 220 9% 65%; }
+  body { margin: 0; padding: 24px; background:#0a0a0a; color:#eee; font: 13px/1.4 system-ui, sans-serif; }
+  h1 { font-size: 16px; margin: 0 0 16px; }
+  h2 { font-size: 12px; margin: 24px 0 8px; color:#aaa; text-transform: uppercase; letter-spacing: .08em; }
+  .row { display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; }
+  .frame { position:relative; border:1px dashed #333; padding:8px; border-radius:8px; }
+  .frame > .label { position:absolute; top:-10px; left:8px; background:#0a0a0a; padding:0 6px; font-size:10px; color:#888; }
+  /* center guide */
+  .legend { position:relative; }
+  .legend::after {
+    content:''; position:absolute; left:50%; top:0; bottom:0; width:1px;
+    background: rgba(255,0,128,.5); transform: translateX(-0.5px);
+  }
+  .legend-shell {
+    display:flex; flex-direction:column; gap:4px;
+    background: rgba(20,20,20,.85); backdrop-filter: blur(8px);
+    border:1px solid rgba(255,255,255,.08); border-radius:12px;
+    padding:8px 10px;
+  }
+  .title {
+    font-size:9px; font-weight:600; color:hsl(var(--gold));
+    margin-bottom:4px; text-transform:uppercase; letter-spacing:.12em;
+    text-align:center; width:100%;
+  }
+  .bar { height:4px; border-radius:9999px; width:100%; }
+  .ratings { display:flex; width:100%; font-size:9px; color: hsl(var(--foreground)); }
+  .ratings > span { flex:1; text-align:center; }
+  .activity-row { display:flex; width:100%; justify-content:center; align-items:center; gap:8px; }
+  .activity-item { display:flex; align-items:center; justify-content:center; gap:6px; flex:1; }
+  .activity-item.mobile { flex:none; }
+  .dot { width:8px; height:8px; border-radius:50%; }
+  .dot.hot { background:hsl(0,100%,65%); box-shadow:0 0 6px hsl(0 100% 65% / .6); }
+  .dot.warm { background:hsl(var(--gold)); box-shadow:0 0 6px hsl(var(--gold) / .55); }
+  .dot.cool { background:hsl(var(--silver)); box-shadow:0 0 6px hsl(var(--silver) / .5); }
+  .mobile-col { flex-direction:column; gap:4px; }
+  .assert { margin-top:6px; font-size:10px; font-family: ui-monospace, monospace; }
+  .pass { color:#3fbf7f; }
+  .fail { color:#ff5577; }
+</style>
+</head>
+<body>
+<h1>Activity Legend — iPhone &amp; Android breakpoints</h1>
+<p style="color:#888;max-width:60ch">
+  Renders the three legend variants (User Flow Paths, User Density Heatmap, Activity)
+  at the most common phone widths. The pink vertical guide marks the legend's center.
+  Each rating block should be evenly spaced and the visual midpoint of "Medium" / "Warm"
+  should align with the guide.
+</p>
+
+<div id="root"></div>
+
+<script>
+  // Common iPhone + Android CSS widths
+  const breakpoints = [
+    { name: 'iPhone SE',        w: 320 },
+    { name: 'Android small',    w: 360 },
+    { name: 'iPhone 13 mini',   w: 375 },
+    { name: 'iPhone 14/15',     w: 390 },
+    { name: 'Pixel 7',          w: 412 },
+    { name: 'iPhone 14 Plus',   w: 414 },
+    { name: 'iPhone 15 Pro Max',w: 430 },
+  ];
+
+  function legendBlock(title, bar, isMobile) {
+    return `
+      <div class="legend-shell" style="width: calc(100% - 16px); max-width: 220px;">
+        <div class="title">${title}</div>
+        <div class="bar" style="background:${bar}"></div>
+        <div class="ratings">
+          <span>Low</span><span>Medium</span><span>High</span>
+        </div>
+      </div>`;
+  }
+
+  function activityBlock(isMobile) {
+    const itemCls = isMobile ? 'activity-item mobile' : 'activity-item';
+    const rowCls  = isMobile ? 'activity-row mobile-col' : 'activity-row';
+    return `
+      <div class="legend-shell" style="width: calc(100% - 16px); max-width: 260px;">
+        <div class="title">Activity</div>
+        <div class="${rowCls}">
+          <div class="${itemCls}"><div class="dot hot"></div><span>Hot</span></div>
+          <div class="${itemCls}"><div class="dot warm"></div><span>Warm</span></div>
+          <div class="${itemCls}"><div class="dot cool"></div><span>Cool</span></div>
+        </div>
+      </div>`;
+  }
+
+  function frame(label, w, inner) {
+    return `
+      <div class="frame" style="width:${w}px">
+        <span class="label">${label} · ${w}px</span>
+        <div class="legend">${inner}</div>
+        <div class="assert" data-w="${w}"></div>
+      </div>`;
+  }
+
+  const flowBar = 'linear-gradient(to right, hsl(200 80% 55%), hsl(140 70% 55%), hsl(50 95% 55%), hsl(0 100% 60%))';
+  const densBar = 'linear-gradient(to right, hsl(220 9% 65%), hsl(43 55% 54%), hsl(0 100% 65%))';
+
+  const sections = [
+    { id: 'flow',    title: 'User Flow Paths legend',     render: () => legendBlock('User Flow Paths',    flowBar) },
+    { id: 'density', title: 'User Density Heatmap legend',render: () => legendBlock('User Density Heatmap',densBar) },
+    { id: 'act-row', title: 'Activity legend (row, ≥768)',render: () => activityBlock(false) },
+    { id: 'act-col', title: 'Activity legend (mobile column)', render: () => activityBlock(true) },
+  ];
+
+  const root = document.getElementById('root');
+  root.innerHTML = sections.map(s => `
+    <section>
+      <h2>${s.title}</h2>
+      <div class="row">${breakpoints.map(bp => frame(bp.name, bp.w, s.render())).join('')}</div>
+    </section>
+  `).join('');
+
+  // Geometry assertions: each rating cell must have equal width (±1px) and the
+  // shell must be horizontally symmetrical relative to its parent frame.
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.frame').forEach(f => {
+      const out = f.querySelector('.assert');
+      const shell = f.querySelector('.legend-shell');
+      const cells = f.querySelectorAll('.ratings > span, .activity-item');
+      const widths = [...cells].map(c => Math.round(c.getBoundingClientRect().width));
+      const evenly = widths.length === 0 || (Math.max(...widths) - Math.min(...widths) <= 1);
+      const fRect = f.getBoundingClientRect();
+      const sRect = shell.getBoundingClientRect();
+      const leftPad  = Math.round(sRect.left  - fRect.left);
+      const rightPad = Math.round(fRect.right - sRect.right);
+      const centered = Math.abs(leftPad - rightPad) <= 2;
+      const ok = evenly && centered;
+      out.classList.toggle('pass', ok);
+      out.classList.toggle('fail', !ok);
+      out.textContent =
+        `cells=[${widths.join(',')}]  pad L/R=${leftPad}/${rightPad}  ` +
+        (ok ? 'PASS ✓' : 'FAIL ✗');
+    });
+  });
+</script>
+</body>
+</html>
