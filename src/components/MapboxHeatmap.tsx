@@ -1041,13 +1041,14 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   'icon-image': 'jet-parking-p',
                   'icon-size': [
                     'interpolate', ['linear'], ['zoom'],
-                    14, 0.5,
+                    12, 0.45,
+                    14, 0.6,
                     16, 0.9,
                     18, 1.3,
                   ],
                   'icon-allow-overlap': true,
                   'icon-ignore-placement': false,
-                  'text-field': ['step', ['zoom'], '', 16, ['get', 'name']],
+                  'text-field': ['step', ['zoom'], '', 14, ['get', 'name']],
                   'text-font': ['DIN Pro Medium', 'Arial Unicode MS Regular'],
                   'text-size': 11,
                   'text-offset': [0, 1.3],
@@ -1058,15 +1059,15 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 paint: {
                   'icon-opacity': [
                     'interpolate', ['linear'], ['zoom'],
-                    14, 0.0,
-                    15, 0.85,
-                    16, 1,
+                    12, 0.7,
+                    13, 0.85,
+                    14, 1,
                   ],
                   'text-color': '#39ff14',
                   'text-halo-color': '#0a0a0a',
                   'text-halo-width': 2,
                 },
-                minzoom: 14,
+                minzoom: 12,
               });
               console.log('MapboxHeatmap: Parking icons layer added');
 
