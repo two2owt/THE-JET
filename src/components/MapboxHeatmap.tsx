@@ -2277,7 +2277,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         }
       }
     };
-  }, [venues, mapLoaded]);
+  }, [venues, mapLoaded, isMobile]);
 
   // Add smooth zoom and pan transitions
   useEffect(() => {
