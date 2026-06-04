@@ -42,7 +42,7 @@ const ShareToFriendDialog = lazy(() => import("@/components/ShareToFriendDialog"
 
 // Lazy load non-critical UI - deferred until after FCP
 const OfflineBanner = lazy(() => import("@/components/OfflineBanner").then(m => ({ default: m.OfflineBanner })));
-const PWAInstallPrompt = lazy(() => import("@/components/PWAInstallPrompt").then(m => ({ default: m.PWAInstallPrompt })));
+const AuthPWAInstallPromptWrapper = lazy(() => import("@/components/AuthPWAInstallPromptWrapper").then(m => ({ default: m.AuthPWAInstallPromptWrapper })));
 const PushNotificationPrompt = lazy(() => import("@/components/PushNotificationPrompt").then(m => ({ default: m.PushNotificationPrompt })));
 
 // Minimal critical imports
@@ -617,11 +617,12 @@ const Index = () => {
         </Suspense>
       )}
 
-      {/* PWA Install Prompt - lazy loaded. No skeleton fallback: a placeholder
-          fixed at the bottom would overlap the map's bottom controls and bottom
-          nav while loading, making it look like the map is broken. */}
+      {/* PWA Install Prompt — only after sign-in + profile created, only on `/`.
+          Lazy loaded. No skeleton fallback: a placeholder fixed at the bottom
+          would overlap the map's bottom controls and bottom nav while loading,
+          making it look like the map is broken. */}
       <Suspense fallback={null}>
-        <PWAInstallPrompt />
+        <AuthPWAInstallPromptWrapper />
       </Suspense>
 
       {/* Push Notification Prompt - shows after PWA install */}
