@@ -101,6 +101,31 @@ export const useDeepLinking = (handlers?: DeepLinkHandler) => {
     }
   }, [searchParams, handleDealDeepLink, handleVenueDeepLink]);
 
+  // Listen for deep-link messages from the push service worker. When a
+  // pushed notification is tapped and the tab is already open, the SW
+  // posts { type: 'DEEP_LINK', url } so the SPA can navigate without
+  // a full reload — this is what makes the JetCard (with parking,
+  // share, and directions) open from a notification tap.
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
+      return;
+    }
+    const onMessage = (event: MessageEvent) => {
+      const data = event.data as { type?: string; url?: string } | undefined;
+      if (!data || data.type !== "DEEP_LINK" || !data.url) return;
+      try {
+        const target = new URL(data.url, window.location.origin);
+        // Same-origin only.
+        if (target.origin !== window.location.origin) return;
+        navigate(`${target.pathname}${target.search}${target.hash}`);
+      } catch {
+        // Ignore malformed URLs.
+      }
+    };
+    navigator.serviceWorker.addEventListener("message", onMessage);
+    return () => navigator.serviceWorker.removeEventListener("message", onMessage);
+  }, [navigate]);
+
   return {
     navigateToDeal,
     navigateToVenue,
