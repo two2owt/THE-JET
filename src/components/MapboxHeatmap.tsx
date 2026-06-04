@@ -3548,6 +3548,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     marginBottom: '6px',
                     textTransform: 'uppercase',
                     letterSpacing: '0.1em',
+                    textAlign: 'center',
+                    width: '100%',
                   }}
                 >
                   User Flow Paths
