@@ -11,6 +11,7 @@ import { FavoritesPageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { PageShell } from "@/components/PageShell";
 import { useAuth } from "@/contexts/AuthContext";
 import { TabPageHeader } from "@/components/TabPageHeader";
+import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 
 interface Deal {
   id: string;
@@ -75,7 +76,7 @@ export default function Favorites() {
             title="Sign in to view favorites"
             description="Create an account to save and track your favorite deals across all venues"
             actionLabel="Sign In"
-            onAction={() => navigate("/auth")}
+            onAction={() => { rememberPostAuthRedirect(); navigate("/auth"); }}
           />
         </PageShell>
       </PageLayout>
