@@ -268,7 +268,7 @@ const Onboarding = () => {
 
   return (
     <div
-      className="relative flex flex-1 min-h-screen min-h-[100dvh] w-full items-center justify-center overflow-y-auto bg-background bg-cover bg-center bg-no-repeat px-fluid-sm sm:px-fluid-md pt-[max(env(safe-area-inset-top,0px),var(--space-lg))] pb-[max(env(safe-area-inset-bottom,0px),var(--space-lg))]"
+      className="relative flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto bg-background bg-cover bg-center bg-no-repeat px-fluid-sm sm:px-fluid-md pt-[max(env(safe-area-inset-top,0px),var(--space-lg))] pb-[max(env(safe-area-inset-bottom,0px),var(--space-lg))]"
       style={{ backgroundImage: `url(${authBackground})` }}
     >
       {/* Animated matte black/grey gradient overlay */}
