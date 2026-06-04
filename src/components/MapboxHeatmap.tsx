@@ -3548,6 +3548,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     marginBottom: '6px',
                     textTransform: 'uppercase',
                     letterSpacing: '0.1em',
+                    textAlign: 'center',
+                    width: '100%',
                   }}
                 >
                   User Flow Paths
@@ -3574,7 +3576,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               </>
             ) : showDensityLayer ? (
               <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '6px' }}>
                   <p
                     style={{
                       fontSize: '10px',
@@ -3582,6 +3584,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                       color: 'hsl(var(--gold))',
                       textTransform: 'uppercase',
                       letterSpacing: '0.1em',
+                      textAlign: 'center',
                     }}
                   >
                     {timelapseMode ? 'Time-lapse' : 'User Density Heatmap'}
@@ -3618,6 +3621,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     marginBottom: '4px',
                     textTransform: 'uppercase',
                     letterSpacing: '0.12em',
+                    textAlign: 'center',
+                    width: '100%',
                   }}
                 >
                   Activity
