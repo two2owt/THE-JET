@@ -613,8 +613,11 @@ export default function Profile() {
             </button>
           )}
 
-          {/* Settings — notifications, preferences, privacy, subscription, account */}
-          <Settings embedded />
+          {/* Settings — notifications, preferences, privacy, subscription, account.
+              Revealed only while the user is editing their profile so the Profile
+              page acts as the single entry point to all profile/preferences/settings
+              edits via the Edit button. */}
+          {isEditing && <Settings embedded />}
 
           {/* Sign Out */}
           <section className="rounded-2xl border-hairline border-destructive/20 bg-card/40 backdrop-blur-xl p-fluid-sm sm:p-fluid-md">
