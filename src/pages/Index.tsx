@@ -100,6 +100,7 @@ const allCharlotteVenues: Venue[] = [...charlotteVenues, ...charlotteExpandedVen
 
 const Index = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   
   // Use shared navigation hook for consistent tab handling
   const { activeTab, setActiveTab, handleTabChange } = useBottomNavigation({ defaultTab: "map" });
