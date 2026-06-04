@@ -1,6 +1,7 @@
-import { MapPin, Tag, X, Search as SearchIcon, Store, Sparkles } from "lucide-react";
+import { MapPin, Tag, X, Search as SearchIcon, Store, Sparkles, Compass, LayoutGrid } from "lucide-react";
 import { createPortal } from "react-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router";
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
 import type { Venue } from "./MapboxHeatmap";
@@ -17,14 +18,27 @@ interface SearchResultsProps {
   isVisible: boolean;
 }
 
-export const SearchResults = ({ 
-  query, 
-  venues, 
-  deals, 
-  onVenueSelect, 
+/** Lightweight relevance score: 3 = exact, 2 = prefix, 1 = substring, 0 = no match. */
+const matchScore = (haystack: string | null | undefined, q: string): number => {
+  if (!haystack) return 0;
+  const h = haystack.toLowerCase();
+  if (h === q) return 3;
+  if (h.startsWith(q)) return 2;
+  if (h.includes(q)) return 1;
+  return 0;
+};
+
+const MAX_PER_SECTION = 6;
+
+export const SearchResults = ({
+  query,
+  venues,
+  deals,
+  onVenueSelect,
   onClose,
-  isVisible 
+  isVisible,
 }: SearchResultsProps) => {
+  const navigate = useNavigate();
   // Position version — bumped whenever we should recalc (resize, orientation, dropdown open/close).
   // Used as a key on the panel so layout-affecting CSS variables are re-read.
   const [posVersion, setPosVersion] = useState(0);
@@ -50,25 +64,126 @@ export const SearchResults = ({
     };
   }, [isVisible]);
 
-  if (!isVisible || !query.trim()) return null;
+  const q = query.trim().toLowerCase();
 
-  // Filter venues by name, category, or neighborhood
-  const filteredVenues = venues.filter(venue => 
-    venue.name.toLowerCase().includes(query.toLowerCase()) ||
-    venue.category.toLowerCase().includes(query.toLowerCase()) ||
-    venue.neighborhood.toLowerCase().includes(query.toLowerCase())
-  );
+  // Memoize result groups — all four sections derive from the same `venues` + `deals` props,
+  // ranked by best-field match so the most relevant items float to the top of each section.
+  const groups = useMemo(() => {
+    if (!q) {
+      return { venues: [], deals: [], areas: [], categories: [] };
+    }
 
-  // Filter deals by title, description, or venue name
-  const filteredDeals = deals.filter(deal =>
-    deal.title.toLowerCase().includes(query.toLowerCase()) ||
-    deal.description.toLowerCase().includes(query.toLowerCase()) ||
-    deal.venue_name.toLowerCase().includes(query.toLowerCase()) ||
-    deal.deal_type.toLowerCase().includes(query.toLowerCase())
-  );
+    // --- Venues (rank by best field match across name / category / neighborhood) ---
+    const rankedVenues = venues
+      .map((v) => ({
+        venue: v,
+        score: Math.max(
+          matchScore(v.name, q) * 3, // name weighted highest
+          matchScore(v.category, q) * 2,
+          matchScore(v.neighborhood, q) * 2,
+          matchScore(v.address ?? "", q),
+        ),
+      }))
+      .filter((r) => r.score > 0)
+      .sort((a, b) => b.score - a.score || b.venue.activity - a.venue.activity);
 
-  const hasResults = filteredVenues.length > 0 || filteredDeals.length > 0;
-  const totalCount = filteredVenues.length + filteredDeals.length;
+    // --- Deals (rank across title / description / venue / type) ---
+    const rankedDeals = deals
+      .map((d) => ({
+        deal: d,
+        score: Math.max(
+          matchScore(d.title, q) * 3,
+          matchScore(d.venue_name, q) * 2,
+          matchScore(d.deal_type, q) * 2,
+          matchScore(d.description, q),
+        ),
+      }))
+      .filter((r) => r.score > 0)
+      .sort((a, b) => b.score - a.score);
+
+    // --- Areas (distinct neighborhoods from venues that match the query) ---
+    const areaMap = new Map<string, { name: string; count: number; score: number }>();
+    for (const v of venues) {
+      const score = matchScore(v.neighborhood, q);
+      if (!score) continue;
+      const key = v.neighborhood.toLowerCase();
+      const existing = areaMap.get(key);
+      if (existing) existing.count += 1;
+      else areaMap.set(key, { name: v.neighborhood, count: 1, score });
+    }
+    const areas = Array.from(areaMap.values()).sort(
+      (a, b) => b.score - a.score || b.count - a.count,
+    );
+
+    // --- Categories (distinct venue categories + deal_types that match the query) ---
+    const catMap = new Map<
+      string,
+      { name: string; count: number; score: number; source: "venue" | "deal" }
+    >();
+    for (const v of venues) {
+      const score = matchScore(v.category, q);
+      if (!score) continue;
+      const key = v.category.toLowerCase();
+      const existing = catMap.get(key);
+      if (existing) existing.count += 1;
+      else catMap.set(key, { name: v.category, count: 1, score, source: "venue" });
+    }
+    for (const d of deals) {
+      const score = matchScore(d.deal_type, q);
+      if (!score) continue;
+      const key = d.deal_type.toLowerCase();
+      const existing = catMap.get(key);
+      if (existing) existing.count += 1;
+      else catMap.set(key, { name: d.deal_type, count: 1, score, source: "deal" });
+    }
+    const categories = Array.from(catMap.values()).sort(
+      (a, b) => b.score - a.score || b.count - a.count,
+    );
+
+    return { venues: rankedVenues, deals: rankedDeals, areas, categories };
+  }, [q, venues, deals]);
+
+  if (!isVisible || !q) return null;
+
+  const filteredVenues = groups.venues.slice(0, MAX_PER_SECTION).map((r) => r.venue);
+  const filteredDeals = groups.deals.slice(0, MAX_PER_SECTION).map((r) => r.deal);
+  const filteredAreas = groups.areas.slice(0, MAX_PER_SECTION);
+  const filteredCategories = groups.categories.slice(0, MAX_PER_SECTION);
+
+  const totalCount =
+    filteredVenues.length +
+    filteredDeals.length +
+    filteredAreas.length +
+    filteredCategories.length;
+  const hasResults = totalCount > 0;
+
+  /** Pick the best venue in a neighborhood (sorted by activity), then select it on the map. */
+  const handleAreaSelect = (areaName: string) => {
+    const match = venues
+      .filter((v) => v.neighborhood.toLowerCase() === areaName.toLowerCase())
+      .sort((a, b) => b.activity - a.activity)[0];
+    if (match) {
+      onVenueSelect(match);
+    }
+    onClose();
+  };
+
+  /** Pick the most active venue in a category and select it. */
+  const handleCategorySelect = (categoryName: string) => {
+    const match = venues
+      .filter((v) => v.category.toLowerCase() === categoryName.toLowerCase())
+      .sort((a, b) => b.activity - a.activity)[0];
+    if (match) {
+      onVenueSelect(match);
+    }
+    onClose();
+  };
+
+  /** Open a deal via the app's existing ?deal= deep-link contract handled in Index.tsx. */
+  const handleDealSelect = (deal: Deal) => {
+    navigate(`/?deal=${deal.id}`);
+    onClose();
+  };
 
   if (typeof document === 'undefined') return null;
 
@@ -129,9 +244,61 @@ export const SearchResults = ({
                 </div>
                 <p className="text-sm font-semibold text-foreground">No results found</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Try a venue name, category, or deal type
+                  Try a venue, area, category, or deal
                 </p>
               </div>
+            )}
+
+            {/* Areas (neighborhoods) */}
+            {filteredAreas.length > 0 && (
+              <section className="space-y-1.5">
+                <h4 className="flex items-center gap-1.5 heading-luxe-eyebrow px-1">
+                  <Compass className="w-3 h-3" />
+                  Areas
+                  <span className="ml-auto text-muted-foreground/60 tabular-nums">{filteredAreas.length}</span>
+                </h4>
+                <div className="flex flex-wrap gap-1.5">
+                  {filteredAreas.map((area) => (
+                    <button
+                      key={`area-${area.name}`}
+                      onClick={() => handleAreaSelect(area.name)}
+                      className="group inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-secondary/60 hover:bg-primary/10 hover:text-primary border border-border/60 hover:border-primary/40 text-xs font-semibold text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95"
+                    >
+                      <MapPin className="w-3 h-3" />
+                      <span className="truncate max-w-[140px]">{area.name}</span>
+                      <span className="text-[10px] font-medium text-muted-foreground tabular-nums group-hover:text-primary/80">
+                        {area.count}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Categories (venue categories + deal types) */}
+            {filteredCategories.length > 0 && (
+              <section className="space-y-1.5">
+                <h4 className="flex items-center gap-1.5 heading-luxe-eyebrow px-1">
+                  <LayoutGrid className="w-3 h-3" />
+                  Categories
+                  <span className="ml-auto text-muted-foreground/60 tabular-nums">{filteredCategories.length}</span>
+                </h4>
+                <div className="flex flex-wrap gap-1.5">
+                  {filteredCategories.map((cat) => (
+                    <button
+                      key={`cat-${cat.source}-${cat.name}`}
+                      onClick={() => handleCategorySelect(cat.name)}
+                      className="group inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-secondary/60 hover:bg-primary/10 hover:text-primary border border-border/60 hover:border-primary/40 text-xs font-semibold text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95"
+                    >
+                      <Tag className="w-3 h-3" />
+                      <span className="truncate max-w-[160px]">{cat.name}</span>
+                      <span className="text-[10px] font-medium text-muted-foreground tabular-nums group-hover:text-primary/80">
+                        {cat.count}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </section>
             )}
 
             {/* Venues */}
@@ -192,11 +359,12 @@ export const SearchResults = ({
                 </h4>
                 <div className="space-y-1">
                   {filteredDeals.map((deal) => (
-                    <div
+                    <button
                       key={deal.id}
-                      className="p-2.5 rounded-xl hover:bg-primary/5 transition-colors"
+                      onClick={() => handleDealSelect(deal)}
+                      className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-none focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"
                     >
-                      <h5 className="font-semibold text-sm text-foreground truncate">
+                      <h5 className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors">
                         {deal.title}
                       </h5>
                       <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 leading-snug">
@@ -212,7 +380,7 @@ export const SearchResults = ({
                           <span className="truncate">{deal.venue_name}</span>
                         </span>
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </section>
