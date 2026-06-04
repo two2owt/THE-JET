@@ -2224,9 +2224,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               'interpolate',
               ['linear'],
               ['zoom'],
-              8, 0.6,
-              12, 1,
-              15, 1.5
+              8, isMobile ? 0.75 : 0.6,
+              12, isMobile ? 0.9 : 1,
+              15, isMobile ? 1.25 : 1.5
             ],
             // Color gradient - matches app theme (orange/red primary)
             'heatmap-color': [
@@ -2246,17 +2246,17 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               'interpolate',
               ['linear'],
               ['zoom'],
-              8, 30,
-              12, 20,
-              15, 10
+              8, isMobile ? 40 : 30,
+              12, isMobile ? 28 : 20,
+              15, isMobile ? 14 : 10
             ],
             // Fade out opacity as zoom increases (individual markers take over)
             'heatmap-opacity': [
               'interpolate',
               ['linear'],
               ['zoom'],
-              10, 0.8,
-              13, 0.4,
+              10, isMobile ? 0.7 : 0.8,
+              13, isMobile ? 0.32 : 0.4,
               15, 0
             ]
           }
