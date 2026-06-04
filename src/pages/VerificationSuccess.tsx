@@ -214,8 +214,13 @@ export default function VerificationSuccess() {
 
   const isLocked = resendStatus === "sending" || resendStatus === "sent";
 
+  // Hide the global search bar on this page
+  useEffect(() => {
+    setHeaderConfig({ hideSearch: true });
+  }, [setHeaderConfig]);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 sm:px-6 md:px-8 lg:px-10">
+    <div className="flex-1 flex items-center justify-center bg-background overflow-y-auto px-4 sm:px-6 md:px-8 lg:px-10" style={{ WebkitOverflowScrolling: 'touch' }}>
       <div className="max-w-md w-full text-center space-y-6">
         <div className="flex justify-center">
           <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center ring-2 ring-primary/30 shadow-glow">
