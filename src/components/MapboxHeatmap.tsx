@@ -3573,10 +3573,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     boxShadow:
                       'inset 0 1px 3px rgba(0,0,0,0.3), 0 0 12px hsl(var(--gold) / 0.15)',
                   }} />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '9px', color: 'hsl(var(--muted-foreground))', fontWeight: 500 }}>
-                    <span>Low</span>
-                    <span>Medium</span>
-                    <span>High</span>
+                  <div style={{ display: 'flex', width: '100%', fontSize: '9px', color: 'hsl(var(--muted-foreground))', fontWeight: 500 }}>
+                    <span style={{ flex: 1, textAlign: 'center' }}>Low</span>
+                    <span style={{ flex: 1, textAlign: 'center' }}>Medium</span>
+                    <span style={{ flex: 1, textAlign: 'center' }}>High</span>
                   </div>
                 </div>
               </>
@@ -3610,10 +3610,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     boxShadow:
                       'inset 0 1px 3px rgba(0,0,0,0.3), 0 0 12px hsl(var(--gold) / 0.15)',
                   }} />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '9px', color: 'hsl(var(--muted-foreground))', fontWeight: 500 }}>
-                    <span>Low</span>
-                    <span>Medium</span>
-                    <span>High</span>
+                  <div style={{ display: 'flex', width: '100%', fontSize: '9px', color: 'hsl(var(--muted-foreground))', fontWeight: 500 }}>
+                    <span style={{ flex: 1, textAlign: 'center' }}>Low</span>
+                    <span style={{ flex: 1, textAlign: 'center' }}>Medium</span>
+                    <span style={{ flex: 1, textAlign: 'center' }}>High</span>
                   </div>
                 </div>
               </>
