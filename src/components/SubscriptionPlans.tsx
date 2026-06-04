@@ -119,7 +119,7 @@ export const SubscriptionPlans = () => {
                   isSubscribed ? (
                     <Button
                       variant="outline"
-                      className="w-full"
+                      className="w-full rounded-full border-primary/40 bg-transparent text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary"
                       onClick={handleManageSubscription}
                       disabled={portalLoading}
                     >
@@ -129,7 +129,7 @@ export const SubscriptionPlans = () => {
                       Manage Subscription
                     </Button>
                   ) : (
-                    <Button variant="outline" className="w-full" disabled>
+                    <Button variant="outline" className="w-full rounded-full" disabled>
                       Current Plan
                     </Button>
                   )
