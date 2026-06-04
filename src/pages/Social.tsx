@@ -603,26 +603,36 @@ export default function Social() {
             Discover People
           </SectionTitle>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {profiles.map((profile) => (
-              <div key={profile.id} style={cardStyle}>
-                <div style={identityWrap}>
-                  <Avatar className={avatarClass}>
-                    <AvatarImage src={profile.avatar_url || undefined} alt={profile.display_name || "User"} />
-                    <AvatarFallback className="bg-gradient-to-br from-accent/15 to-primary/15 text-accent">
-                      {profile.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '50%', height: '50%' }} />}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    <DisplayName name={profile.display_name || "User"} style={nameStyle} />
-                    <p style={subtitleStyle}>Suggested for you</p>
+            {profiles.map((profile) => {
+              const isSent = sentRequestIds.has(profile.id);
+              return (
+                <div key={profile.id} style={cardStyle}>
+                  <div style={identityWrap}>
+                    <Avatar className={avatarClass}>
+                      <AvatarImage src={profile.avatar_url || undefined} alt={profile.display_name || "User"} />
+                      <AvatarFallback className="bg-gradient-to-br from-accent/15 to-primary/15 text-accent">
+                        {profile.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '50%', height: '50%' }} />}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <DisplayName name={profile.display_name || "User"} style={nameStyle} />
+                      <p style={subtitleStyle}>{isSent ? "Request sent" : "Suggested for you"}</p>
+                    </div>
                   </div>
+                  {isSent ? (
+                    <button disabled style={{ ...primaryActionStyle, opacity: 0.6, cursor: 'default' }}>
+                      <Check style={{ width: '14px', height: '14px' }} />
+                      Sent
+                    </button>
+                  ) : (
+                    <button onClick={() => handleSendRequest(profile.id)} style={primaryActionStyle}>
+                      <UserPlus style={{ width: '14px', height: '14px' }} />
+                      Add
+                    </button>
+                  )}
                 </div>
-                <button onClick={() => handleSendRequest(profile.id)} style={primaryActionStyle}>
-                  <UserPlus style={{ width: '14px', height: '14px' }} />
-                  Add
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       </PageShell>
