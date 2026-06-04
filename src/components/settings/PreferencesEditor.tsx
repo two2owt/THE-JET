@@ -497,7 +497,7 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
       <button
         onClick={handleSave}
         disabled={isSaving}
-        className="w-full mt-4 bg-primary text-primary-foreground py-2.5 rounded-lg font-medium text-sm hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+        className="w-full mt-4 bg-primary text-primary-foreground py-2.5 rounded-full font-semibold tracking-wide shadow-lg shadow-primary/20 text-sm hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
       >
         {isSaving ? (
           <>
