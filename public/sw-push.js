@@ -61,12 +61,17 @@ self.addEventListener('notificationclick', function(event) {
   const notificationData = event.notification.data || {};
   let urlToOpen = notificationData.url || '/';
 
-  // Build deep link URL if we have deal data
+  // Build deep link URL from payload so the app opens the exact JetCard /
+  // deal sheet with parking, share and directions wired up.
   if (notificationData.dealId) {
-    urlToOpen = `/?deal=${notificationData.dealId}`;
+    urlToOpen = `/?deal=${encodeURIComponent(notificationData.dealId)}`;
     if (notificationData.venueName) {
       urlToOpen += `&venue=${encodeURIComponent(notificationData.venueName)}`;
     }
+  } else if (notificationData.venueName) {
+    urlToOpen = `/?venue=${encodeURIComponent(notificationData.venueName)}`;
+  } else if (notificationData.venueId) {
+    urlToOpen = `/?venue=${encodeURIComponent(notificationData.venueId)}`;
   }
 
   event.waitUntil(
@@ -75,8 +80,15 @@ self.addEventListener('notificationclick', function(event) {
         for (let i = 0; i < clientList.length; i++) {
           const client = clientList[i];
           if (client.url.includes(self.location.origin) && 'focus' in client) {
-            client.navigate(urlToOpen);
-            return client.focus();
+            // Always navigate so the SPA re-reads search params even when the
+            // tab is already at "/". postMessage as a belt-and-suspenders signal
+            // for the React layer to re-trigger deep-link handlers.
+            return client.focus().then(function () {
+              try { client.postMessage({ type: 'DEEP_LINK', url: urlToOpen }); } catch (e) {}
+              return client.navigate(urlToOpen).catch(function () {
+                if (clients.openWindow) return clients.openWindow(urlToOpen);
+              });
+            });
           }
         }
         if (clients.openWindow) {
