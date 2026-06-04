@@ -316,6 +316,119 @@ export default function Social() {
           title="Your Crew"
           subtitle="Friends, requests, and people to discover"
         />
+        {/* Search users — only matches signed-up, discoverable end users. */}
+        <section style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ position: 'relative' }}>
+            <Search
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                left: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '16px',
+                height: '16px',
+                color: 'hsl(var(--muted-foreground))',
+                pointerEvents: 'none',
+              }}
+            />
+            <Input
+              type="search"
+              inputMode="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search people by name"
+              aria-label="Search users by display name"
+              style={{ paddingLeft: '36px', paddingRight: searchQuery ? '36px' : '12px' }}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                aria-label="Clear search"
+                style={{
+                  position: 'absolute',
+                  right: '8px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  height: '24px',
+                  width: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '6px',
+                  border: 'none',
+                  background: 'transparent',
+                  color: 'hsl(var(--muted-foreground))',
+                  cursor: 'pointer',
+                }}
+              >
+                <X style={{ width: '14px', height: '14px' }} />
+              </button>
+            )}
+          </div>
+
+          {searchQuery.trim().length >= 2 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {isSearching ? (
+                <div style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  gap: '8px', padding: '12px', color: 'hsl(var(--muted-foreground))',
+                  fontSize: '13px',
+                }}>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Searching…
+                </div>
+              ) : searchResults.length === 0 ? (
+                <p style={{
+                  padding: '12px',
+                  fontSize: '13px',
+                  color: 'hsl(var(--muted-foreground))',
+                  textAlign: 'center',
+                }}>
+                  No users found matching "{searchQuery.trim()}"
+                </p>
+              ) : (
+                searchResults.map((profile) => {
+                  const isConnected = connections.some(
+                    (c) => c.user_id === profile.id || c.friend_id === profile.id,
+                  );
+                  const isPending = pendingRequests.some(
+                    (r) => r.profile?.id === profile.id,
+                  );
+                  return (
+                    <div key={profile.id} style={cardStyle}>
+                      <button
+                        style={{ ...identityWrap, textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                        onClick={() => setSelectedProfileId(profile.id)}
+                      >
+                        <Avatar className={avatarClass}>
+                          <AvatarImage src={profile.avatar_url || undefined} alt={profile.display_name || "User"} />
+                          <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary">
+                            {profile.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '50%', height: '50%' }} />}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <DisplayName name={profile.display_name || "User"} style={nameStyle} />
+                          <p style={subtitleStyle}>
+                            {isConnected ? "Connected" : isPending ? "Request pending" : "Tap to view profile"}
+                          </p>
+                        </div>
+                      </button>
+                      {!isConnected && !isPending && (
+                        <button onClick={() => handleSendRequest(profile.id)} style={primaryActionStyle}>
+                          <UserPlus style={{ width: '14px', height: '14px' }} />
+                          Add
+                        </button>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )}
+        </section>
+
         {/* Messages shortcut */}
         <button
           onClick={() => navigate("/messages")}
