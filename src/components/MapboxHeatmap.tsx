@@ -1445,7 +1445,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       data: activeData.geojson,
     });
 
-    // Add enhanced heatmap layer with glow effect
+    // Add enhanced heatmap layer with glow effect.
+    // Mobile viewports get larger radii, slightly lower peak opacity, and a
+    // gentler intensity curve so the heat stays readable on small screens
+    // (and doesn't blow out into solid red when users pinch-zoom).
     map.current.addLayer({
       id: layerId,
       type: 'heatmap',
@@ -1465,9 +1468,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           'interpolate',
           ['exponential', 2],
           ['zoom'],
-          0, 2,
-          9, 3,
-          15, 5,
+          0, isMobile ? 2.2 : 2,
+          9, isMobile ? 2.6 : 3,
+          15, isMobile ? 4 : 5,
         ],
         // Enhanced vibrant color ramp with smooth gradients
         'heatmap-color': [
@@ -1491,19 +1494,19 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           'interpolate',
           ['exponential', 1.8],
           ['zoom'],
-          0, 20,
-          9, 50,
-          12, 70,
-          15, 100,
+          0, isMobile ? 26 : 20,
+          9, isMobile ? 60 : 50,
+          12, isMobile ? 82 : 70,
+          15, isMobile ? 115 : 100,
         ],
         // Smooth opacity curve for better blending
         'heatmap-opacity': [
           'interpolate',
           ['linear'],
           ['zoom'],
-          7, 0.95,
-          12, 0.9,
-          15, 0.85,
+          7, isMobile ? 0.82 : 0.95,
+          12, isMobile ? 0.78 : 0.9,
+          15, isMobile ? 0.7 : 0.85,
         ],
         'heatmap-opacity-transition': {
           duration: 1000,
@@ -1590,7 +1593,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     });
 
     console.log('Density heatmap layer added with', activeData.stats.grid_cells, 'points', timelapseMode ? `(hour ${timelapse.currentHour})` : '');
-  }, [mapLoaded, densityData, showDensityLayer, timelapseMode, timelapse.currentData, timelapse.currentHour]);
+  }, [mapLoaded, densityData, showDensityLayer, timelapseMode, timelapse.currentData, timelapse.currentHour, isMobile]);
 
   // Add/update movement paths layer with animated flow
   useEffect(() => {
@@ -2221,9 +2224,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               'interpolate',
               ['linear'],
               ['zoom'],
-              8, 0.6,
-              12, 1,
-              15, 1.5
+              8, isMobile ? 0.75 : 0.6,
+              12, isMobile ? 0.9 : 1,
+              15, isMobile ? 1.25 : 1.5
             ],
             // Color gradient - matches app theme (orange/red primary)
             'heatmap-color': [
@@ -2243,17 +2246,17 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               'interpolate',
               ['linear'],
               ['zoom'],
-              8, 30,
-              12, 20,
-              15, 10
+              8, isMobile ? 40 : 30,
+              12, isMobile ? 28 : 20,
+              15, isMobile ? 14 : 10
             ],
             // Fade out opacity as zoom increases (individual markers take over)
             'heatmap-opacity': [
               'interpolate',
               ['linear'],
               ['zoom'],
-              10, 0.8,
-              13, 0.4,
+              10, isMobile ? 0.7 : 0.8,
+              13, isMobile ? 0.32 : 0.4,
               15, 0
             ]
           }
@@ -2274,7 +2277,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         }
       }
     };
-  }, [venues, mapLoaded]);
+  }, [venues, mapLoaded, isMobile]);
 
   // Add smooth zoom and pan transitions
   useEffect(() => {
