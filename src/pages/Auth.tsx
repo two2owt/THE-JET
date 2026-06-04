@@ -10,6 +10,7 @@ import { Loader2, Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
 import { z } from "zod";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/contexts/AuthContext";
+import { consumePostAuthRedirect } from "@/lib/postAuthRedirect";
 // Use the new JET logo for auth page
 import jetLogo from "@/assets/jet-auth-logo.png";
 import authBackground from "@/assets/auth-background.webp";
@@ -70,7 +71,7 @@ const Auth = () => {
   // If already signed in, redirect to home
   useEffect(() => {
     if (authUser && (mode === "signin" || mode === "signup")) {
-      navigate("/");
+      navigate(consumePostAuthRedirect("/"), { replace: true });
     }
   }, [authUser, mode, navigate]);
 
@@ -412,7 +413,7 @@ const Auth = () => {
       .single();
 
     toast.success("Signed in successfully");
-    navigate(profile?.onboarding_completed ? "/" : "/onboarding");
+    navigate(profile?.onboarding_completed ? consumePostAuthRedirect("/") : "/onboarding");
   };
 
   const doForgotPassword = async () => {
