@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, lazy, Suspense, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { type Venue } from "@/types/venue";
 import { CITIES, type City } from "@/types/cities";
@@ -100,6 +100,7 @@ const allCharlotteVenues: Venue[] = [...charlotteVenues, ...charlotteExpandedVen
 
 const Index = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   
   // Use shared navigation hook for consistent tab handling
   const { activeTab, setActiveTab, handleTabChange } = useBottomNavigation({ defaultTab: "map" });
@@ -186,6 +187,42 @@ const Index = () => {
     }
     return Array.from(map.values());
   }, [realVenues]);
+
+  // Two-way sync: selectedVenue ⇄ `?venue=<name>` URL param so the open
+  // JetCard survives reloads and is shareable. Restoration happens once
+  // venues are loaded; clearing the venue strips the param.
+  const venueRestoredRef = useRef(false);
+  useEffect(() => {
+    if (venueRestoredRef.current) return;
+    if (!venues.length) return;
+    const venueParam = searchParams.get("venue");
+    if (!venueParam) {
+      venueRestoredRef.current = true;
+      return;
+    }
+    const decoded = decodeURIComponent(venueParam).toLowerCase();
+    const match = venues.find((v) => v.name.toLowerCase() === decoded);
+    if (match) {
+      setSelectedVenue({
+        ...match,
+        imageUrl: getVenueImage(match.name) || match.imageUrl,
+      });
+    }
+    venueRestoredRef.current = true;
+  }, [venues, searchParams, getVenueImage]);
+
+  useEffect(() => {
+    // Don't write the URL until the initial restoration pass has run, or we
+    // could blow away a deep-linked `?venue=` before it's read.
+    if (!venueRestoredRef.current) return;
+    const currentParam = searchParams.get("venue");
+    const nextParam = selectedVenue ? encodeURIComponent(selectedVenue.name) : null;
+    if (currentParam === nextParam) return;
+    const next = new URLSearchParams(searchParams);
+    if (nextParam) next.set("venue", nextParam);
+    else next.delete("venue");
+    setSearchParams(next, { replace: true });
+  }, [selectedVenue, searchParams, setSearchParams]);
 
   // Handle deep linked deal - select the venue associated with the deal
   const handleDeepLinkDeal = useCallback(async (_dealId: string, dealData: any) => {

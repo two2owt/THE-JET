@@ -52,25 +52,29 @@ export function useBottomNavigation(options: UseBottomNavigationOptions = {}) {
 
     setActiveTab(tab);
 
-    // Navigate based on tab
+    // Preserve other query params (q, venue, layers, etc.) so search query,
+    // open JetCard, and map filters survive tab changes and remain shareable.
+    const params = new URLSearchParams(location.search);
     switch (tab) {
       case "map":
-        navigate("/", { replace: true });
+        params.delete("tab");
         break;
       case "explore":
-        navigate("/?tab=explore", { replace: true });
+        params.set("tab", "explore");
         break;
       case "notifications":
-        navigate("/?tab=notifications", { replace: true });
+        params.set("tab", "notifications");
         break;
       case "favorites":
-        navigate("/favorites");
-        break;
+        navigate({ pathname: "/favorites", search: params.toString() ? `?${params.toString()}` : "" });
+        return;
       case "social":
-        navigate("/social");
-        break;
+        navigate({ pathname: "/social", search: params.toString() ? `?${params.toString()}` : "" });
+        return;
     }
-  }, [navigate, onBeforeNavigate]);
+    const search = params.toString();
+    navigate({ pathname: "/", search: search ? `?${search}` : "" }, { replace: true });
+  }, [navigate, onBeforeNavigate, location.search]);
 
   return {
     activeTab,

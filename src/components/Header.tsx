@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { Search } from "lucide-react";
 import { IconButton } from "./ui/icon-button";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,18 +14,20 @@ import { HeaderSearch } from "./navigation/HeaderSearch";
 
 export const Header = () => {
   const navigate = useNavigate();
+  const [urlSearchParams, setUrlSearchParams] = useSearchParams();
   const { venues, deals, onVenueSelect, hideSearch } = useHeaderContext();
   const isMobile = useIsMobile();
-  // Persist search query + expanded state across tab switches and reloads so
-  // results stay in sync with whichever JetCard / map state the user opened.
-  // sessionStorage keeps it scoped to the current browsing session.
+  // Search query is mirrored to the URL as `?q=...` so it's shareable and
+  // survives reloads. We also keep a sessionStorage fallback for cases where
+  // the URL is rewritten externally without preserving the param.
   const SEARCH_QUERY_KEY = "jet-header-search-query";
   const SEARCH_EXPANDED_KEY = "jet-header-search-expanded";
   const [searchQuery, setSearchQuery] = useState<string>(() => {
     try {
-      return typeof window !== "undefined"
-        ? window.sessionStorage.getItem(SEARCH_QUERY_KEY) ?? ""
-        : "";
+      if (typeof window === "undefined") return "";
+      const url = new URLSearchParams(window.location.search).get("q");
+      if (url) return url;
+      return window.sessionStorage.getItem(SEARCH_QUERY_KEY) ?? "";
     } catch {
       return "";
     }
@@ -56,8 +58,8 @@ export const Header = () => {
     }
   }, []);
 
-  // Persist on change. Use sessionStorage so the value survives tab switches
-  // and route changes but doesn't leak across browser sessions.
+  // Persist on change to BOTH sessionStorage (fast hydration) and the URL
+  // (?q=) so the query is shareable / restorable via reload.
   useEffect(() => {
     try {
       if (searchQuery) window.sessionStorage.setItem(SEARCH_QUERY_KEY, searchQuery);
@@ -65,7 +67,25 @@ export const Header = () => {
     } catch {
       /* storage disabled — ignore */
     }
-  }, [searchQuery]);
+    const current = urlSearchParams.get("q") ?? "";
+    if (current === searchQuery) return;
+    const next = new URLSearchParams(urlSearchParams);
+    if (searchQuery) next.set("q", searchQuery);
+    else next.delete("q");
+    setUrlSearchParams(next, { replace: true });
+  }, [searchQuery, urlSearchParams, setUrlSearchParams]);
+
+  // React to external URL changes (back/forward, deep links) by syncing the
+  // query state in the opposite direction.
+  useEffect(() => {
+    const fromUrl = urlSearchParams.get("q") ?? "";
+    if (fromUrl !== searchQuery) {
+      setSearchQuery(fromUrl);
+      setShowResults(fromUrl.trim().length > 0);
+    }
+    // Only react to URL changes, not local typing.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlSearchParams]);
 
   useEffect(() => {
     try {
