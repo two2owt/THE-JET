@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AuthPWAInstallPromptWrapper } from "@/components/AuthPWAInstallPromptWrapper";
+import { useHeaderConfig } from "@/contexts/HeaderContext";
 
 const RESEND_EMAIL_KEY = "jet_verification_email";
 const WELCOME_SENT_PREFIX = "jet_welcome_sent:";
@@ -12,6 +13,7 @@ const WELCOME_SENT_PREFIX = "jet_welcome_sent:";
 export default function VerificationSuccess() {
   const navigate = useNavigate();
   const location = useLocation();
+  const setHeaderConfig = useHeaderConfig();
   const [countdown, setCountdown] = useState(5);
   const [resendEmail, setResendEmail] = useState("");
   const [resendStatus, setResendStatus] = useState<
@@ -212,8 +214,13 @@ export default function VerificationSuccess() {
 
   const isLocked = resendStatus === "sending" || resendStatus === "sent";
 
+  // Hide the global search bar on this page
+  useEffect(() => {
+    setHeaderConfig({ hideSearch: true });
+  }, [setHeaderConfig]);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 sm:px-6 md:px-8 lg:px-10">
+    <div className="flex-1 flex items-center justify-center bg-background overflow-y-auto px-4 sm:px-6 md:px-8 lg:px-10" style={{ WebkitOverflowScrolling: 'touch' }}>
       <div className="max-w-md w-full text-center space-y-6">
         <div className="flex justify-center">
           <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center ring-2 ring-primary/30 shadow-glow">
