@@ -92,6 +92,19 @@ export const Header = () => {
     setShowResults(false);
   }, []);
 
+  // Wrap the context's onVenueSelect so picking a result from the dropdown
+  // also collapses the search pill (mobile) and clears the query. This keeps
+  // the JetCard fully visible — the search panel never overlays the map card.
+  const handleVenueSelectFromSearch = useCallback(
+    (venue: Parameters<typeof onVenueSelect>[0]) => {
+      onVenueSelect(venue);
+      setSearchQuery("");
+      setShowResults(false);
+      setSearchExpanded(false);
+    },
+    [onVenueSelect]
+  );
+
   const showSearchBar = !hideSearch && (!isMobile || searchExpanded);
   const showSearchIcon = !hideSearch && isMobile && !searchExpanded;
 
@@ -223,7 +236,7 @@ export const Header = () => {
             showResults={showResults}
             venues={venues}
             deals={deals}
-            onVenueSelect={onVenueSelect}
+            onVenueSelect={handleVenueSelectFromSearch}
             onQueryChange={handleQueryChange}
             onClear={handleClearSearch}
             onCloseResults={handleCloseResults}
