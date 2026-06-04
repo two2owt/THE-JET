@@ -13,6 +13,7 @@ import { ChatDialog } from "@/components/ChatDialog";
 import { useUnreadCounts } from "@/hooks/useMessages";
 import { Badge } from "@/components/ui/badge";
 import { PageShell } from "@/components/PageShell";
+import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { SocialPageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { SectionTitle } from "@/components/ui/page-title";
 import { useAuth } from "@/contexts/AuthContext";
@@ -206,7 +207,7 @@ export default function Social() {
             title="Sign in to connect"
             description="Create an account to find and connect with friends, share deals, and build your social network"
             actionLabel="Sign In"
-            onAction={() => navigate("/auth")}
+            onAction={() => { rememberPostAuthRedirect(); navigate("/auth"); }}
           />
         </PageShell>
       </PageLayout>
