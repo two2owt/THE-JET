@@ -251,9 +251,11 @@ export default function Profile() {
   };
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
       toast.success('Signed out');
-      navigate('/auth');
+      // Hard redirect to ensure all auth-dependent state is reset
+      window.location.replace('/auth');
     } catch (error) {
       toast.error('Failed to sign out');
     }
