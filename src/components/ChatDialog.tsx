@@ -120,7 +120,7 @@ export function ChatDialog({
                           : "bg-muted text-foreground rounded-bl-md"
                       }`}
                     >
-                      {msg.image_url && <ChatImage value={msg.image_url} />}
+                      {msg.image_url && <ChatImage value={msg.image_url} cacheBust={msg.created_at} />}
                       {msg.content && (
                         <MessageContent content={msg.content} isMine={isMine} />
                       )}
