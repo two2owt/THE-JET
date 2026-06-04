@@ -273,12 +273,14 @@ const Index = () => {
     }, 300);
   }, [venues, selectedCity, getVenueImage]);
 
-  // Handle deep linked venue
-  const handleDeepLinkVenue = useCallback((venueName: string) => {
+  // Handle deep linked venue. Accepts a stable venue id (preferred) or a
+  // legacy venue name for backward compatibility with old shared links.
+  const handleDeepLinkVenue = useCallback((venueIdOrName: string) => {
     setActiveTab("map");
-    const venue = venues.find(v => 
-      v.name.toLowerCase() === venueName.toLowerCase()
-    );
+    const lower = venueIdOrName.toLowerCase();
+    const venue =
+      venues.find((v) => v.id === venueIdOrName) ??
+      venues.find((v) => v.name.toLowerCase() === lower);
     
     if (venue) {
       const venueWithImage = {
