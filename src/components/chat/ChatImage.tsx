@@ -3,6 +3,7 @@ import { useChatImagePair } from "@/lib/chat-image";
 
 interface ChatImageProps {
   value: string | null | undefined;
+  cacheBust?: string | null;
 }
 
 /**
@@ -13,8 +14,8 @@ interface ChatImageProps {
  * staying within project-wide chat image constraints (≤240×280). Aspect ratio
  * is preserved and a muted placeholder reserves space to prevent CLS.
  */
-export function ChatImage({ value }: ChatImageProps) {
-  const { thumbUrl, fullUrl } = useChatImagePair(value);
+export function ChatImage({ value, cacheBust }: ChatImageProps) {
+  const { thumbUrl, fullUrl } = useChatImagePair(value, cacheBust);
   const [fullLoaded, setFullLoaded] = useState(false);
   if (!value) return null;
 
