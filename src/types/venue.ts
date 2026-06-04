@@ -19,4 +19,6 @@ export interface Venue {
   }>;
   isOpen?: boolean | null;
   openingHours?: string[];
+  phone?: string;
+  website?: string;
 }

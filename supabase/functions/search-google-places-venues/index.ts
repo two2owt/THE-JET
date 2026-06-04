@@ -349,6 +349,8 @@ const CHARLOTTE_TOP_VENUES = [
     googleRating: 4.6,
     googleTotalRatings: 1900,
     activity: 88,
+    phone: "(980) 237-1322",
+    website: "https://sealevelnc.com",
   },
   {
     id: "oceanaire-seafood",
@@ -360,6 +362,8 @@ const CHARLOTTE_TOP_VENUES = [
     googleRating: 4.5,
     googleTotalRatings: 1700,
     activity: 85,
+    phone: "(704) 333-2434",
+    website: "https://www.theoceanaire.com/locations/charlotte",
   },
   {
     id: "rock-salt-charlotte",
@@ -371,6 +375,8 @@ const CHARLOTTE_TOP_VENUES = [
     googleRating: 4.5,
     googleTotalRatings: 1500,
     activity: 83,
+    phone: "(704) 503-7625",
+    website: "https://rocksaltcharlotte.com",
   },
   {
     id: "mccormick-schmicks",
@@ -382,6 +388,8 @@ const CHARLOTTE_TOP_VENUES = [
     googleRating: 4.3,
     googleTotalRatings: 1400,
     activity: 80,
+    phone: "(704) 377-0201",
+    website: "https://www.mccormickandschmicks.com/location/charlotte",
   },
   {
     id: "blue-restaurant-bar",
@@ -393,6 +401,8 @@ const CHARLOTTE_TOP_VENUES = [
     googleRating: 4.5,
     googleTotalRatings: 1300,
     activity: 82,
+    phone: "(704) 927-2583",
+    website: "https://www.bluecharlotte.com",
   },
 ];
 
