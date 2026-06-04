@@ -2678,8 +2678,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     {/* Distance — right-aligned, fixed width, never wraps */}
                     {distanceMiles !== null && (
                       <span
-                        className="text-[10px] sm:text-[11px] font-semibold uppercase text-muted-foreground/80 tabular-nums flex-shrink-0 text-right"
-                        style={{ letterSpacing: '0.08em', minWidth: '3.5rem', marginLeft: 'clamp(2px, 0.5vw, 6px)' }}
+                        className="text-[10px] sm:text-[11px] font-medium text-muted-foreground/80 tabular-nums flex-shrink-0 text-right whitespace-nowrap"
+                        style={{ letterSpacing: '0.02em', minWidth: '5.5rem', marginLeft: 'clamp(2px, 0.5vw, 6px)' }}
                       >
                         {distanceMiles < 1 ? 'Nearby' : `${Math.round(distanceMiles)} mi away`}
                       </span>
