@@ -13,6 +13,7 @@ const WELCOME_SENT_PREFIX = "jet_welcome_sent:";
 export default function VerificationSuccess() {
   const navigate = useNavigate();
   const location = useLocation();
+  const setHeaderConfig = useHeaderConfig();
   const [countdown, setCountdown] = useState(5);
   const [resendEmail, setResendEmail] = useState("");
   const [resendStatus, setResendStatus] = useState<
