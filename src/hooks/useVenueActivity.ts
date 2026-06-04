@@ -22,7 +22,7 @@ const fetchPopularVenuesFromGooglePlaces = async (): Promise<Venue[]> => {
     }
 
     // Map the response to our Venue interface
-    const venues: Venue[] = (data.venues || []).slice(0, 10).map((v: any) => ({
+    const venues: Venue[] = (data.venues || []).map((v: any) => ({
       id: v.id,
       name: v.name,
       lat: v.lat,
@@ -35,6 +35,8 @@ const fetchPopularVenuesFromGooglePlaces = async (): Promise<Venue[]> => {
       googleTotalRatings: v.googleTotalRatings,
       isOpen: v.isOpen,
       openingHours: v.openingHours || [],
+      phone: v.phone,
+      website: v.website,
     }));
     
     console.log(`Fetched ${venues.length} Charlotte venues:`);
