@@ -41,14 +41,14 @@ const ITEMS: ConsentItem[] = [
     type: "foreground_location",
     label: "Location tracking",
     description:
-      "Allow JET to use your location while the app is open so we can show deals, venues, and friends nearby.",
+      "While the app is open, we use your location to show nearby deals, venues, and friends on the map. Turn this off and the map will center on your default city instead.",
     Icon: MapPin,
   },
   {
     type: "background_tracking",
     label: "Background location",
     description:
-      "Let JET check your location in the background so we can send alerts when you walk near a hot deal — even with the app closed.",
+      "When the app is closed, we still check your location so we can send a push alert if you walk or drive near a hot deal. For example, if a flash deal drops near your office while your phone is in your pocket, you'll get notified instantly.",
     Icon: Radio,
   },
   {
