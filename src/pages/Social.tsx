@@ -162,6 +162,7 @@ export default function Social() {
     const result = await sendRequest(friendId);
     if (result.success) {
       toast.success("Friend request sent!");
+      setSentRequestIds((prev) => new Set(prev).add(friendId));
     } else {
       toast.error("Failed to send request");
     }
