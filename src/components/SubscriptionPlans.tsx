@@ -119,7 +119,7 @@ export const SubscriptionPlans = () => {
                   isSubscribed ? (
                     <Button
                       variant="outline"
-                      className="w-full"
+                      className="w-full rounded-full border-primary/40 bg-transparent text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary"
                       onClick={handleManageSubscription}
                       disabled={portalLoading}
                     >
@@ -129,21 +129,21 @@ export const SubscriptionPlans = () => {
                       Manage Subscription
                     </Button>
                   ) : (
-                    <Button variant="outline" className="w-full" disabled>
+                    <Button variant="outline" className="w-full rounded-full" disabled>
                       Current Plan
                     </Button>
                   )
                 ) : tierKey === "free" ? (
-                  <Button variant="ghost" className="w-full" disabled>
+                  <Button variant="ghost" className="w-full rounded-full" disabled>
                     Free Forever
                   </Button>
                 ) : !canPurchase ? (
-                  <Button variant="outline" className="w-full" disabled>
+                  <Button variant="outline" className="w-full rounded-full" disabled>
                     Available on web
                   </Button>
                 ) : (
                   <Button
-                    className={`w-full ${
+                    className={`w-full rounded-full shadow-lg shadow-primary/20 font-semibold tracking-wide ${
                       tierKey === "jetx" ? "bg-gradient-primary hover:opacity-90" : ""
                     }`}
                     onClick={() => handleSubscribe(tierKey)}
@@ -163,7 +163,7 @@ export const SubscriptionPlans = () => {
 
       {isSubscribed && (
         <div className="text-center">
-          <Button variant="link" onClick={handleManageSubscription} disabled={portalLoading}>
+          <Button variant="link" onClick={handleManageSubscription} disabled={portalLoading} className="rounded-full">
             {portalLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
             Manage billing, cancel, or change plan
           </Button>

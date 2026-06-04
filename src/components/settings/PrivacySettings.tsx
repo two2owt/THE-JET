@@ -204,7 +204,7 @@ const PrivacySettings = ({ userId }: PrivacySettingsProps) => {
           <Button
             onClick={handleSave}
             disabled={isSaving}
-            className="w-full"
+            className="w-full rounded-full shadow-lg shadow-primary/20 font-semibold tracking-wide"
           >
             {isSaving ? (
               <>

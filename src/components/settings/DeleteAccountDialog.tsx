@@ -124,7 +124,7 @@ export const DeleteAccountDialog = ({ userId }: DeleteAccountDialogProps) => {
       <AlertDialogTrigger asChild>
         <Button 
           variant="destructive" 
-          className="w-full"
+          className="w-full rounded-full shadow-lg shadow-destructive/20 font-semibold tracking-wide"
         >
           <Trash2 className="w-4 h-4 mr-2" />
           Delete Account
@@ -164,11 +164,11 @@ export const DeleteAccountDialog = ({ userId }: DeleteAccountDialogProps) => {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isDeleting} className="rounded-full border-primary/40 bg-transparent text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary">Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDeleteAccount}
             disabled={isDeleting || confirmText !== "DELETE"}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg shadow-destructive/20 font-semibold tracking-wide"
           >
             {isDeleting ? (
               <>

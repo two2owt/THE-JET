@@ -536,7 +536,7 @@ const Settings = ({ embedded = false }: SettingsProps = {}) => {
           <Button
             onClick={handleSaveSettings}
             disabled={isSaving}
-            className="w-full text-sm sm:text-base"
+            className="w-full text-sm sm:text-base rounded-full shadow-lg shadow-primary/20 font-semibold tracking-wide"
             size="lg"
             variant="jet"
           >
