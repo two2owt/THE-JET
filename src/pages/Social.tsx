@@ -93,7 +93,7 @@ export default function Social() {
     if (user) {
       fetchProfiles();
     }
-  }, [user]);
+  }, [user, connections, pendingRequests]);
 
   // Debounced search across discoverable end-user profiles.
   // Uses the `discoverable_profiles` view so RLS + discoverability
@@ -133,10 +133,25 @@ export default function Social() {
       const { data, error } = await supabase
         .from("discoverable_profiles")
         .select("id, display_name, avatar_url")
-        .limit(20);
+        .neq("id", user?.id ?? "")
+        .limit(50);
 
       if (error) throw error;
-      setProfiles(data || []);
+      // Exclude the current user, accepted connections, and anyone with a
+      // pending request in either direction. Discover should only surface
+      // signed-up, discoverable users that the viewer is NOT already
+      // connected to in any way.
+      const excludedIds = new Set<string>();
+      if (user?.id) excludedIds.add(user.id);
+      for (const c of connections) {
+        excludedIds.add(c.user_id === user?.id ? c.friend_id : c.user_id);
+      }
+      for (const r of pendingRequests) {
+        if (r.profile?.id) excludedIds.add(r.profile.id);
+        excludedIds.add(r.user_id);
+        excludedIds.add(r.friend_id);
+      }
+      setProfiles((data || []).filter((p) => !excludedIds.has(p.id)).slice(0, 20));
     } catch (error) {
       console.error("Error fetching profiles:", error);
     }
