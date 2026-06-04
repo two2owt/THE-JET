@@ -1624,20 +1624,26 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     const particleLayerId = 'movement-paths-particles';
 
     try {
-      // Remove existing layers and source if they exist - check style is loaded first
-      if (map.current?.style?.loaded()) {
-        [particleLayerId, arrowLayerId, glowLayerId, lineLayerId].forEach(id => {
+      // Always attempt to remove existing layers/sources before re-adding to
+      // avoid "There is already a source with ID" errors when the style
+      // reports not-yet-loaded but the source was previously registered.
+      [particleLayerId, arrowLayerId, glowLayerId, lineLayerId].forEach(id => {
+        try {
           if (map.current?.getLayer(id)) {
             map.current.removeLayer(id);
           }
-        });
+        } catch (_) { /* no-op */ }
+      });
+      try {
         if (map.current?.getSource(sourceId)) {
           map.current.removeSource(sourceId);
         }
+      } catch (_) { /* no-op */ }
+      try {
         if (map.current?.getSource(`${sourceId}-particles`)) {
           map.current.removeSource(`${sourceId}-particles`);
         }
-      }
+      } catch (_) { /* no-op */ }
     } catch (error) {
       console.error('Error removing existing movement path layers:', error);
       return;
@@ -1645,12 +1651,17 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
     if (!showMovementPaths) return;
 
-    // Add movement paths source
-    map.current.addSource(sourceId, {
-      type: 'geojson',
-      data: pathData.geojson,
-      lineMetrics: true,
-    });
+    // Defensive: if source still somehow exists, update its data instead of re-adding
+    const existing = map.current.getSource(sourceId) as any;
+    if (existing) {
+      try { existing.setData(pathData.geojson); } catch (_) { /* no-op */ }
+    } else {
+      map.current.addSource(sourceId, {
+        type: 'geojson',
+        data: pathData.geojson,
+        lineMetrics: true,
+      });
+    }
 
     // Add glow effect layer (behind main line)
     map.current.addLayer({
