@@ -16,11 +16,32 @@ export const Header = () => {
   const navigate = useNavigate();
   const { venues, deals, onVenueSelect, hideSearch } = useHeaderContext();
   const isMobile = useIsMobile();
-  const [searchQuery, setSearchQuery] = useState("");
+  // Persist search query + expanded state across tab switches and reloads so
+  // results stay in sync with whichever JetCard / map state the user opened.
+  // sessionStorage keeps it scoped to the current browsing session.
+  const SEARCH_QUERY_KEY = "jet-header-search-query";
+  const SEARCH_EXPANDED_KEY = "jet-header-search-expanded";
+  const [searchQuery, setSearchQuery] = useState<string>(() => {
+    try {
+      return typeof window !== "undefined"
+        ? window.sessionStorage.getItem(SEARCH_QUERY_KEY) ?? ""
+        : "";
+    } catch {
+      return "";
+    }
+  });
   const [showResults, setShowResults] = useState(false);
   const [mounted, setMounted] = useState(false);
   const mountedRef = useRef(false);
-  const [searchExpanded, setSearchExpanded] = useState(false);
+  const [searchExpanded, setSearchExpanded] = useState<boolean>(() => {
+    try {
+      return typeof window !== "undefined"
+        ? window.sessionStorage.getItem(SEARCH_EXPANDED_KEY) === "1"
+        : false;
+    } catch {
+      return false;
+    }
+  });
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const [userEmail, setUserEmail] = useState<string | undefined>(undefined);
   const { isAdmin } = useIsAdmin();
@@ -34,6 +55,26 @@ export const Header = () => {
       requestAnimationFrame(() => setMounted(true));
     }
   }, []);
+
+  // Persist on change. Use sessionStorage so the value survives tab switches
+  // and route changes but doesn't leak across browser sessions.
+  useEffect(() => {
+    try {
+      if (searchQuery) window.sessionStorage.setItem(SEARCH_QUERY_KEY, searchQuery);
+      else window.sessionStorage.removeItem(SEARCH_QUERY_KEY);
+    } catch {
+      /* storage disabled — ignore */
+    }
+  }, [searchQuery]);
+
+  useEffect(() => {
+    try {
+      if (searchExpanded) window.sessionStorage.setItem(SEARCH_EXPANDED_KEY, "1");
+      else window.sessionStorage.removeItem(SEARCH_EXPANDED_KEY);
+    } catch {
+      /* storage disabled — ignore */
+    }
+  }, [searchExpanded]);
 
   useEffect(() => {
     let cancelled = false;
@@ -88,17 +129,18 @@ export const Header = () => {
   }, []);
   const handleCollapseSearch = useCallback(() => {
     setSearchExpanded(false);
-    setSearchQuery("");
+    // Keep the query so re-opening search restores the prior context that
+    // matches the currently open JetCard / map filters.
     setShowResults(false);
   }, []);
 
   // Wrap the context's onVenueSelect so picking a result from the dropdown
-  // also collapses the search pill (mobile) and clears the query. This keeps
-  // the JetCard fully visible — the search panel never overlays the map card.
+  // closes the results panel (and collapses the mobile pill) so the JetCard
+  // is unobstructed — but keeps the query intact so it stays consistent
+  // with the venue/marker currently open on the map.
   const handleVenueSelectFromSearch = useCallback(
     (venue: Parameters<typeof onVenueSelect>[0]) => {
       onVenueSelect(venue);
-      setSearchQuery("");
       setShowResults(false);
       setSearchExpanded(false);
     },
