@@ -85,7 +85,7 @@ export const useMapboxToken = (options: UseMapboxTokenOptions = {}) => {
   const [loading, setLoading] = useState(!initialCachedToken && enabled);
   const [error, setError] = useState<string | null>(null);
   const fetchStartedRef = useRef(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchToken = useCallback(async () => {
     // Check cache first (includes preloaded token from HTML shell)
