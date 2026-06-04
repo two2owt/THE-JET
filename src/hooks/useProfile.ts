@@ -109,34 +109,29 @@ export function useProfile(userId: string | undefined) {
         throw new Error("Image is too large. Max size is 2 MB.");
       }
 
-      const ext = contentType === "image/png" ? "png" : contentType === "image/webp" ? "webp" : "jpg";
+      const ext =
+        contentType === "image/png" ? "png" : contentType === "image/webp" ? "webp" : "jpg";
       // Stable per-user path so re-uploads overwrite cleanly.
       const fileName = `${userId}/avatar.${ext}`;
 
-      // Best-effort cleanup of any other avatar variants the user might have left behind.
-      const { data: existing } = await supabase.storage
-        .from("profile-avatars")
-        .list(userId);
+      // Clean up any other avatar variants (different extensions) the user may have.
+      const { data: existing } = await supabase.storage.from("avatars").list(userId);
       if (existing?.length) {
         const stale = existing
           .map((f) => `${userId}/${f.name}`)
           .filter((p) => p !== fileName);
-        if (stale.length) await supabase.storage.from("profile-avatars").remove(stale);
+        if (stale.length) await supabase.storage.from("avatars").remove(stale);
       }
 
       const { error: uploadError } = await supabase.storage
-        .from("profile-avatars")
-        .upload(fileName, blob, { upsert: true, contentType });
+        .from("avatars")
+        .upload(fileName, blob, { upsert: true, contentType, cacheControl: "3600" });
       if (uploadError) throw uploadError;
 
-      // Bucket is private — mint a long-lived signed URL (1 year) and cache-bust.
-      const { data: signed, error: signError } = await supabase.storage
-        .from("profile-avatars")
-        .createSignedUrl(fileName, 60 * 60 * 24 * 365);
-      if (signError || !signed?.signedUrl) {
-        throw signError ?? new Error("Failed to generate avatar URL");
-      }
-      const bustedUrl = `${signed.signedUrl}&t=${Date.now()}`;
+      // Public bucket — derive the public URL and append a cache-buster so the
+      // <img> reloads immediately after an upsert overwrite.
+      const { data: pub } = supabase.storage.from("avatars").getPublicUrl(fileName);
+      const bustedUrl = `${pub.publicUrl}?t=${Date.now()}`;
 
       const { error: updateError } = await supabase
         .from("profiles")
