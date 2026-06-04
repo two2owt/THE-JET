@@ -251,12 +251,17 @@ export default function Profile() {
   };
   const handleSignOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      // Local scope clears the persisted browser session immediately. A global
+      // logout can fail on an expired token before local auth state is removed.
+      const { error } = await supabase.auth.signOut({ scope: 'local' });
+      if (error) {
+        console.warn('Local sign out returned an error:', error.message);
+      }
       toast.success('Signed out');
       // Hard redirect to ensure all auth-dependent state is reset
       window.location.replace('/auth');
     } catch (error) {
+      console.error('Sign out failed:', error);
       toast.error('Failed to sign out');
     }
   };
