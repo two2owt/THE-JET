@@ -66,7 +66,7 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
     loadDensityData();
 
     // Set up realtime subscription with debounce
-    let debounceTimer: NodeJS.Timeout;
+    let debounceTimer: ReturnType<typeof setTimeout>;
     const channel = supabase
       .channel(`location-density-updates:${instanceId}`)
       .on(

@@ -31,7 +31,7 @@ export const useHeatmapTimelapse = (dayFilter?: number, initialSpeed = 1) => {
     error: null,
   });
   
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   // Fetch data for all 24 hours
