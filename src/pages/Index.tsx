@@ -188,9 +188,11 @@ const Index = () => {
     return Array.from(map.values());
   }, [realVenues]);
 
-  // Two-way sync: selectedVenue ⇄ `?venue=<name>` URL param so the open
-  // JetCard survives reloads and is shareable. Restoration happens once
-  // venues are loaded; clearing the venue strips the param.
+  // Two-way sync: selectedVenue ⇄ `?venue=<id>` URL param so the open
+  // JetCard survives reloads and is shareable. The param is a stable
+  // venue id (legacy name-based links still resolve via fallback).
+  // Restoration happens once venues are loaded; clearing the venue
+  // strips the param.
   const venueRestoredRef = useRef(false);
   useEffect(() => {
     if (venueRestoredRef.current) return;
@@ -200,8 +202,13 @@ const Index = () => {
       venueRestoredRef.current = true;
       return;
     }
-    const decoded = decodeURIComponent(venueParam).toLowerCase();
-    const match = venues.find((v) => v.name.toLowerCase() === decoded);
+    const decoded = decodeURIComponent(venueParam);
+    const decodedLower = decoded.toLowerCase();
+    // Prefer exact id match; fall back to case-insensitive name match so
+    // links shared before the id migration keep working.
+    const match =
+      venues.find((v) => v.id === decoded) ??
+      venues.find((v) => v.name.toLowerCase() === decodedLower);
     if (match) {
       setSelectedVenue({
         ...match,
@@ -216,7 +223,7 @@ const Index = () => {
     // could blow away a deep-linked `?venue=` before it's read.
     if (!venueRestoredRef.current) return;
     const currentParam = searchParams.get("venue");
-    const nextParam = selectedVenue ? encodeURIComponent(selectedVenue.name) : null;
+    const nextParam = selectedVenue ? encodeURIComponent(selectedVenue.id) : null;
     if (currentParam === nextParam) return;
     const next = new URLSearchParams(searchParams);
     if (nextParam) next.set("venue", nextParam);
@@ -266,12 +273,14 @@ const Index = () => {
     }, 300);
   }, [venues, selectedCity, getVenueImage]);
 
-  // Handle deep linked venue
-  const handleDeepLinkVenue = useCallback((venueName: string) => {
+  // Handle deep linked venue. Accepts a stable venue id (preferred) or a
+  // legacy venue name for backward compatibility with old shared links.
+  const handleDeepLinkVenue = useCallback((venueIdOrName: string) => {
     setActiveTab("map");
-    const venue = venues.find(v => 
-      v.name.toLowerCase() === venueName.toLowerCase()
-    );
+    const lower = venueIdOrName.toLowerCase();
+    const venue =
+      venues.find((v) => v.id === venueIdOrName) ??
+      venues.find((v) => v.name.toLowerCase() === lower);
     
     if (venue) {
       const venueWithImage = {

@@ -36,7 +36,7 @@ export function ShareToFriendDialog({
     setSending(friendId);
     try {
       const conversationId = [userId, friendId].sort().join("_");
-      const deepLink = getVenueDeepLink(venue.name);
+      const deepLink = getVenueDeepLink(venue.id);
       const message = `📍 Check out ${venue.name}${venue.neighborhood ? ` in ${venue.neighborhood}` : ""}!\n${deepLink}`;
 
       const { error } = await supabase.from("messages").insert({

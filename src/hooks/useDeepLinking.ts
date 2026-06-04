@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 interface DeepLinkHandler {
   onDealOpen?: (dealId: string, dealData: any) => void;
-  onVenueOpen?: (venueName: string) => void;
+  onVenueOpen?: (venueIdOrName: string) => void;
 }
 
 export const useDeepLinking = (handlers?: DeepLinkHandler) => {
@@ -66,10 +66,12 @@ export const useDeepLinking = (handlers?: DeepLinkHandler) => {
     }
   }, [handlers, searchParams, setSearchParams]);
 
-  // Handle venue deep link
-  const handleVenueDeepLink = useCallback((venueName: string) => {
+  // Handle venue deep link. The `?venue=` param is now a stable venue id,
+  // but we accept legacy name-based links too — the page-level handler
+  // resolves either form against the loaded venue list.
+  const handleVenueDeepLink = useCallback((venueIdOrName: string) => {
     if (handlers?.onVenueOpen) {
-      handlers.onVenueOpen(venueName);
+      handlers.onVenueOpen(venueIdOrName);
     }
     // Note: we intentionally DO NOT clear the `?venue=` param so the URL
     // stays shareable — reloads or shared links will reopen the same
@@ -82,22 +84,22 @@ export const useDeepLinking = (handlers?: DeepLinkHandler) => {
     navigate(`/?deal=${dealId}`);
   }, [navigate]);
 
-  // Navigate to a venue
-  const navigateToVenue = useCallback((venueName: string) => {
-    navigate(`/?venue=${encodeURIComponent(venueName)}`);
+  // Navigate to a venue by its stable id.
+  const navigateToVenue = useCallback((venueId: string) => {
+    navigate(`/?venue=${encodeURIComponent(venueId)}`);
   }, [navigate]);
 
   // Check for deep links on mount and URL changes
   useEffect(() => {
     const dealId = searchParams.get("deal");
-    const venueName = searchParams.get("venue");
+    const venueParam = searchParams.get("venue");
 
     if (dealId) {
       handleDealDeepLink(dealId);
     }
 
-    if (venueName) {
-      handleVenueDeepLink(decodeURIComponent(venueName));
+    if (venueParam) {
+      handleVenueDeepLink(decodeURIComponent(venueParam));
     }
   }, [searchParams, handleDealDeepLink, handleVenueDeepLink]);
 
