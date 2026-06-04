@@ -634,8 +634,14 @@ export default function Profile() {
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleSignOut}>
+                  <AlertDialogCancel className="rounded-full border-primary/40 bg-transparent text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary">
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleSignOut}
+                    className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg shadow-destructive/20 font-semibold tracking-wide"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
                     Sign Out
                   </AlertDialogAction>
                 </AlertDialogFooter>
