@@ -1002,17 +1002,19 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 canvas.height = size;
                 const ctx = canvas.getContext('2d');
                 if (ctx) {
-                  // Circle background
+                  // Neon green glow background
                   ctx.beginPath();
-                  ctx.arc(size / 2, size / 2, size / 2 - 3, 0, Math.PI * 2);
-                  ctx.fillStyle = '#16a34a'; // bold green
+                  ctx.arc(size / 2, size / 2, size / 2 - 1, 0, Math.PI * 2);
+                  ctx.fillStyle = '#39ff14'; // neon green
                   ctx.fill();
-                  ctx.lineWidth = 3;
-                  ctx.strokeStyle = '#ffffff';
-                  ctx.stroke();
-                  // Bold P
-                  ctx.fillStyle = '#ffffff';
-                  ctx.font = 'bold 44px system-ui, -apple-system, Arial, sans-serif';
+                  // Dark inner circle for contrast
+                  ctx.beginPath();
+                  ctx.arc(size / 2, size / 2, size / 2 - 6, 0, Math.PI * 2);
+                  ctx.fillStyle = '#0a0a0a';
+                  ctx.fill();
+                  // Bold neon P
+                  ctx.fillStyle = '#39ff14';
+                  ctx.font = 'bold 48px system-ui, -apple-system, Arial, sans-serif';
                   ctx.textAlign = 'center';
                   ctx.textBaseline = 'middle';
                   ctx.fillText('P', size / 2, size / 2 + 2);
@@ -1039,15 +1041,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   'icon-image': 'jet-parking-p',
                   'icon-size': [
                     'interpolate', ['linear'], ['zoom'],
-                    12, 0.45,
-                    16, 0.8,
+                    14, 0.5,
+                    16, 0.9,
+                    18, 1.3,
                   ],
-                  'icon-allow-overlap': false,
+                  'icon-allow-overlap': true,
                   'icon-ignore-placement': false,
-                  'text-field': ['step', ['zoom'], '', 15, ['get', 'name']],
+                  'text-field': ['step', ['zoom'], '', 16, ['get', 'name']],
                   'text-font': ['DIN Pro Medium', 'Arial Unicode MS Regular'],
-                  'text-size': 10,
-                  'text-offset': [0, 1.2],
+                  'text-size': 11,
+                  'text-offset': [0, 1.3],
                   'text-anchor': 'top',
                   'text-optional': true,
                   'visibility': showParking ? 'visible' : 'none',
@@ -1055,14 +1058,15 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 paint: {
                   'icon-opacity': [
                     'interpolate', ['linear'], ['zoom'],
-                    12, 0.85,
-                    15, 1,
+                    14, 0.0,
+                    15, 0.85,
+                    16, 1,
                   ],
-                  'text-color': 'hsl(210, 20%, 70%)',
-                  'text-halo-color': 'hsl(0, 0%, 10%)',
-                  'text-halo-width': 1,
+                  'text-color': '#39ff14',
+                  'text-halo-color': '#0a0a0a',
+                  'text-halo-width': 2,
                 },
-                minzoom: 8,
+                minzoom: 14,
               });
               console.log('MapboxHeatmap: Parking icons layer added');
 
