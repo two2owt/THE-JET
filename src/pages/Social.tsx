@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useConnections } from "@/hooks/useConnections";
-import { Users, UserPlus, Check, X, UserX, Crown, MessageCircle } from "lucide-react";
+import { Users, UserPlus, Check, X, UserX, Crown, MessageCircle, Search, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -17,6 +17,7 @@ import { SocialPageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { SectionTitle } from "@/components/ui/page-title";
 import { useAuth } from "@/contexts/AuthContext";
 import { TabPageHeader } from "@/components/TabPageHeader";
+import { Input } from "@/components/ui/input";
 
 // Tap-to-expand display name with native tooltip on hover-capable devices.
 // Truncates to a single line by default (clean ellipsis, zero CLS); on tap
@@ -70,6 +71,9 @@ export default function Social() {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<Profile[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [chatFriend, setChatFriend] = useState<{ id: string; name: string; avatar?: string | null } | null>(null);
@@ -90,6 +94,39 @@ export default function Social() {
       fetchProfiles();
     }
   }, [user]);
+
+  // Debounced search across discoverable end-user profiles.
+  // Uses the `discoverable_profiles` view so RLS + discoverability
+  // rules apply — only real signed-up users that opted into discovery
+  // are searchable, and the current user is excluded server-side.
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (!user || q.length < 2) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+    setIsSearching(true);
+    const handle = setTimeout(async () => {
+      try {
+        const { data, error } = await supabase
+          .from("discoverable_profiles")
+          .select("id, display_name, avatar_url")
+          .ilike("display_name", `%${q}%`)
+          .neq("id", user.id)
+          .order("display_name", { ascending: true })
+          .limit(25);
+        if (error) throw error;
+        setSearchResults(data || []);
+      } catch (err) {
+        console.error("Error searching users:", err);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 250);
+    return () => clearTimeout(handle);
+  }, [searchQuery, user]);
 
   const fetchProfiles = async () => {
     try {
