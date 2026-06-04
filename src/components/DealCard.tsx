@@ -121,11 +121,21 @@ export const DealCard = memo(({ deal, index = 0 }: DealCardProps) => {
             deferLoad={index >= 2}
             eager={index === 0}
             fetchPriority={index === 0 ? "high" : undefined}
-            onError={(e) => {
-              e.currentTarget.style.display = "none";
-            }}
+            fallback={
+              <img
+                src="/placeholder.svg"
+                alt="Placeholder"
+                className="absolute inset-0 w-full h-full object-cover brightness-[0.25]"
+              />
+            }
           />
-        ) : null}
+        ) : (
+          <img
+            src="/placeholder.svg"
+            alt="Placeholder"
+            className="absolute inset-0 w-full h-full object-cover brightness-[0.25]"
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
 
         {/* Favorite Button */}
