@@ -163,7 +163,7 @@ export const SubscriptionPlans = () => {
 
       {isSubscribed && (
         <div className="text-center">
-          <Button variant="link" onClick={handleManageSubscription} disabled={portalLoading}>
+          <Button variant="link" onClick={handleManageSubscription} disabled={portalLoading} className="rounded-full">
             {portalLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
             Manage billing, cancel, or change plan
           </Button>
