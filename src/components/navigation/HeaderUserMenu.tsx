@@ -1,6 +1,5 @@
 import { useLocation, useNavigate } from "react-router";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import jetPaperPlaneAsset from "@/assets/jet-paper-plane.png.asset.json";
 
 interface HeaderUserMenuProps {
   /** Whether the parent header has finished its mount transition */
@@ -31,6 +30,7 @@ export function HeaderUserMenu({
 
   const target = userId ? "/profile" : "/auth";
   const label = userId ? "Go to profile" : "Sign in";
+  const initials = getInitials(displayName);
 
   return (
     <button
@@ -43,11 +43,21 @@ export function HeaderUserMenu({
       <Avatar className="h-full w-full" style={avatarInnerStyle}>
         <AvatarImage src={avatarUrl || ""} alt="" />
         <AvatarFallback
-          className="text-primary-foreground font-bold tracking-wide"
+          className="text-primary-foreground font-bold tracking-wide flex items-center justify-center"
           style={avatarFallbackStyle}
           delayMs={avatarUrl ? 400 : 0}
         >
-          <PaperPlaneFallback />
+          <span
+            aria-hidden="true"
+            style={{
+              lineHeight: 1,
+              fontSize: "clamp(13px, 1.6vw, 15px)",
+              textShadow: "0 1px 2px hsl(0 0% 0% / 0.35)",
+              userSelect: "none",
+            }}
+          >
+            {initials}
+          </span>
         </AvatarFallback>
       </Avatar>
       {userId && (
@@ -70,34 +80,16 @@ export function HeaderUserMenu({
   );
 }
 
-/**
- * Default avatar shown until a user uploads their own image.
- * Uses the JET paper-plane logo centered on the gradient ring background.
- */
-function PaperPlaneFallback() {
-  return (
-    <img
-      src={jetPaperPlaneAsset.url}
-      alt=""
-      aria-hidden="true"
-      draggable={false}
-      decoding="async"
-      loading="lazy"
-      style={{
-        // Fill the avatar circle with consistent inset padding so the
-        // plane never stretches and never crowds the gradient ring.
-        width: "72%",
-        height: "72%",
-        objectFit: "contain",
-        objectPosition: "center",
-        // Optical centering — plane's visual mass sits slightly lower-left
-        transform: "translate(4%, -3%)",
-        filter: "drop-shadow(0 1px 2px hsl(0 0% 0% / 0.4))",
-        pointerEvents: "none",
-        userSelect: "none",
-      }}
-    />
-  );
+/** Derive up to 2 uppercase initials from a display name, falling back to "JA". */
+function getInitials(name: string): string {
+  const cleaned = (name || "").trim();
+  if (!cleaned) return "JA";
+  const parts = cleaned.split(/\s+/).filter(Boolean);
+  const letters =
+    parts.length === 1
+      ? parts[0].slice(0, 2)
+      : parts[0][0] + parts[parts.length - 1][0];
+  return letters.toUpperCase();
 }
 
 /** Avatar trigger button styling (gradient ring, mount transition, active glow). */
