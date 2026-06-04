@@ -3633,16 +3633,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 >
                   Activity
                 </p>
-                <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '4px' : '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '4px' : '8px', width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flex: isMobile ? 'none' : 1 }}>
                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(0, 100%, 65%)', boxShadow: '0 0 6px hsl(0, 100%, 65% / 0.6)' }} />
                     <span style={{ fontSize: '9px', color: 'hsl(var(--foreground))' }}>Hot</span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flex: isMobile ? 'none' : 1 }}>
                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(var(--gold))', boxShadow: '0 0 6px hsl(var(--gold) / 0.55)' }} />
                     <span style={{ fontSize: '9px', color: 'hsl(var(--foreground))' }}>Warm</span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flex: isMobile ? 'none' : 1 }}>
                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(var(--silver))', boxShadow: '0 0 6px hsl(var(--silver) / 0.5)' }} />
                     <span style={{ fontSize: '9px', color: 'hsl(var(--foreground))' }}>Cool</span>
                   </div>
