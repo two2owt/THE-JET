@@ -372,7 +372,7 @@ export default function VerificationSuccess() {
         )}
       </div>
       {/* Surface the install prompt right after a successful verification */}
-      <AuthPWAInstallPromptWrapper armOnMount />
+      <AuthPWAInstallPromptWrapper armOnMount ignoreRoute />
     </div>
   );
 }
