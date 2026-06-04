@@ -27,7 +27,7 @@ const SEGMENT_LABELS: Record<string, string> = {
 };
 
 /** Routes where breadcrumbs should never render. */
-const HIDDEN_ROUTES = new Set(["/", "/auth", "/onboarding"]);
+const HIDDEN_ROUTES = new Set(["/", "/auth", "/onboarding", "/favorites"]);
 
 /** Paths that map to real routes in App.tsx. Intermediate crumbs whose
  *  href is not in this set render as non-clickable text instead of links
