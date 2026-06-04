@@ -37,7 +37,7 @@ export function HeaderUserMenu({
       onClick={() => navigate(target)}
       aria-label={label}
       title={userId ? displayName : label}
-      className="group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+      className="group focus:outline-none focus-visible:outline-none"
       style={triggerStyle(mounted, isOnAccountRoute)}
     >
       <Avatar className="h-full w-full" style={avatarInnerStyle}>
@@ -84,13 +84,13 @@ function PaperPlaneFallback() {
       decoding="async"
       loading="lazy"
       style={{
-        width: "70%",
-        height: "70%",
+        width: "100%",
+        height: "100%",
         objectFit: "contain",
         objectPosition: "center",
-        // Optical centering — the plane's visual mass sits slightly lower-left
-        transform: "translate(2%, -2%)",
-        filter: "drop-shadow(0 1px 3px hsl(0 0% 0% / 0.45))",
+        // Optical centering — plane's visual mass sits slightly lower-left
+        transform: "translate(3%, -3%) scale(0.78)",
+        filter: "drop-shadow(0 1px 2px hsl(0 0% 0% / 0.35))",
         pointerEvents: "none",
         userSelect: "none",
       }}
