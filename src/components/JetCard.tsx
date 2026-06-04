@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Venue } from "./MapboxHeatmap";
 import { UpgradePrompt, useFeatureAccess } from "./UpgradePrompt";
 import { shareVenue } from "@/utils/shareUtils";
-import { JetCardParkingSkeleton } from "@/components/skeletons/JetCardSkeleton";
+
 
 interface NearbyParking {
   name: string;
