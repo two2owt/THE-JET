@@ -77,6 +77,7 @@ export default function Social() {
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [chatFriend, setChatFriend] = useState<{ id: string; name: string; avatar?: string | null } | null>(null);
+  const [sentRequestIds, setSentRequestIds] = useState<Set<string>>(new Set());
   const unreadCounts = useUnreadCounts(user?.id);
   const { canAccessSocialFeatures } = useFeatureAccess();
   const headerConfig = useMemo(() => ({ hideSearch: true }), []);
