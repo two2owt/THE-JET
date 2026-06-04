@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -535,13 +535,7 @@ const Auth = () => {
 
           {/* Form */}
           <form
-            onSubmit={
-              isResettingPassword
-                ? handlePasswordReset
-                : isForgotPassword
-                ? handleForgotPassword
-                : handleAuth
-            }
+            onSubmit={handleSubmit}
             className="flex flex-col gap-fluid-sm sm:gap-fluid-md"
           >
             {/* Email field - only show if not resetting password */}
