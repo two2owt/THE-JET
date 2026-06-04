@@ -39,30 +39,30 @@ interface ConsentItem {
 const ITEMS: ConsentItem[] = [
   {
     type: "foreground_location",
-    label: "Foreground location",
+    label: "Location tracking",
     description:
-      "Use your location while the app is open to show nearby venues and deals.",
+      "Allow JET to use your location while the app is open so we can show deals, venues, and friends nearby.",
     Icon: MapPin,
   },
   {
     type: "background_tracking",
-    label: "Background tracking",
+    label: "Background location",
     description:
-      "Continue tracking your location when the app is closed to trigger geofenced alerts.",
+      "Let JET check your location in the background so we can send alerts when you walk near a hot deal — even with the app closed.",
     Icon: Radio,
   },
   {
     type: "push_notifications",
     label: "Push notifications",
     description:
-      "Send push notifications about deals, friend activity, and time-sensitive alerts.",
+      "Get push alerts for new deals near you, friend activity, and time-sensitive offers. You can turn this off anytime.",
     Icon: Bell,
   },
   {
     type: "messaging_analytics",
-    label: "Messaging analytics",
+    label: "Messaging insights",
     description:
-      "Use aggregated message metadata (not content) to improve safety, abuse detection, and product quality.",
+      "Share anonymous activity from your chats (never the message content) to help us keep messaging safe and improve the experience.",
     Icon: MessageSquare,
   },
 ];

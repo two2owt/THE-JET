@@ -296,6 +296,33 @@ const Auth = () => {
           location_consent_date: locationConsent ? new Date().toISOString() : null,
         })
         .eq("id", signUpData.user.id);
+
+      // Seed the consent center based on the boxes the user just ticked.
+      // Location consent at signup unlocks both foreground and background
+      // location tracking by default; users can revoke either one at any
+      // time from Settings → Consent Center.
+      const now = new Date().toISOString();
+      const seedRows = [
+        {
+          user_id: signUpData.user.id,
+          consent_type: "foreground_location" as const,
+          granted: locationConsent,
+          policy_version: "2025-06",
+          source: "auth.signup",
+          granted_at: locationConsent ? now : null,
+          revoked_at: locationConsent ? null : now,
+        },
+        {
+          user_id: signUpData.user.id,
+          consent_type: "background_tracking" as const,
+          granted: locationConsent,
+          policy_version: "2025-06",
+          source: "auth.signup",
+          granted_at: locationConsent ? now : null,
+          revoked_at: locationConsent ? null : now,
+        },
+      ];
+      await supabase.from("user_consents").insert(seedRows);
     }
 
     toast.success("Check your email!", {
