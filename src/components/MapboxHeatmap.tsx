@@ -2611,13 +2611,18 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             <SelectItem value="current-location" className="py-3 px-2.5 my-0.5 rounded-lg focus:bg-primary/10">
               <div className="flex items-center gap-3 w-full min-w-0">
                 <span className="w-2 h-2 bg-primary rounded-full animate-pulse flex-shrink-0" aria-hidden="true" />
-                <span className="font-display font-bold text-sm text-foreground truncate flex-1 min-w-0" style={{ letterSpacing: '-0.01em' }}>
-                  {detectedLocationName 
-                    ? `${detectedLocationName}` 
-                    : (detectedCity ? `${detectedCity.name}, ${detectedCity.state}` : "Use Current Location")}
-                </span>
-                <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-primary/80 flex-shrink-0">
-                  Current
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className="font-display font-bold text-sm text-foreground truncate" style={{ letterSpacing: '-0.01em', lineHeight: 1.2 }}>
+                    {detectedLocationName
+                      ? detectedLocationName
+                      : (detectedCity ? `${detectedCity.name}, ${detectedCity.state}` : "Use my location")}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground truncate" style={{ lineHeight: 1.2 }}>
+                    {userLocation ? "Where you are right now" : "Tap to detect your spot"}
+                  </span>
+                </div>
+                <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-primary/90 flex-shrink-0 px-1.5 py-0.5 rounded-full border border-primary/30 bg-primary/10">
+                  Live
                 </span>
               </div>
             </SelectItem>
