@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { hasConsent } from "@/lib/consent";
 
 // Generate a simple session ID for grouping events
 const getSessionId = (): string => {
@@ -63,6 +64,17 @@ class Analytics {
   }
 
   track(eventName: string, properties?: Record<string, unknown>) {
+    // Runtime guard: messaging-category events require explicit
+    // messaging_analytics consent. Silently drop otherwise.
+    const category =
+      typeof properties?.category === "string" ? (properties.category as string) : "";
+    const isMessaging =
+      category === "messaging" ||
+      /^(Message|Chat|Conversation)\b/i.test(eventName);
+    if (isMessaging && !hasConsent("messaging_analytics")) {
+      return;
+    }
+
     if (!this.initialized) {
       this.queue.push({ event_name: eventName, event_data: properties || {}, page_path: window.location.pathname });
       return;
