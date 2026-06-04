@@ -101,6 +101,8 @@ function triggerStyle(mounted: boolean, isActive: boolean): React.CSSProperties 
     width: "clamp(38px, 5vw, 44px)",
     height: "clamp(38px, 5vw, 44px)",
     padding: "2.5px",
+    overflow: "hidden",
+    boxSizing: "border-box",
     background:
       "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 50%, hsl(var(--primary-glow, var(--primary))) 100%)",
     cursor: "pointer",
@@ -120,6 +122,9 @@ function triggerStyle(mounted: boolean, isActive: boolean): React.CSSProperties 
 const avatarInnerStyle: React.CSSProperties = {
   border: "2px solid hsl(var(--background))",
   background: "hsl(var(--background))",
+  boxSizing: "border-box",
+  overflow: "hidden",
+  borderRadius: "9999px",
 };
 
 const avatarFallbackStyle: React.CSSProperties = {
