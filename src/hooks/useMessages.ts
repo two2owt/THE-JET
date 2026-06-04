@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { generateThumbnail, thumbnailPathFor } from "@/lib/image-thumbnail";
 
 export interface Message {
   id: string;
@@ -86,6 +87,11 @@ export const useMessages = (userId?: string, friendId?: string) => {
       // Path must start with the uploader's user id to satisfy storage RLS
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
       const path = `${userId}/${conversationId}/${Date.now()}_${safeName}`;
+
+      // Generate thumbnail in parallel with full upload so the recipient can
+      // render something almost immediately while the full image streams in.
+      const thumbPromise = generateThumbnail(file);
+
       const { error: uploadError } = await supabase.storage
         .from("chat-images")
         .upload(path, file, { cacheControl: "3600", contentType: file.type });
@@ -93,6 +99,20 @@ export const useMessages = (userId?: string, friendId?: string) => {
         console.error("Upload error:", uploadError);
         return;
       }
+
+      // Best-effort thumbnail upload — failures must not block the message.
+      const thumb = await thumbPromise;
+      if (thumb) {
+        const thumbPath = thumbnailPathFor(path);
+        const { error: thumbErr } = await supabase.storage
+          .from("chat-images")
+          .upload(thumbPath, thumb.blob, {
+            cacheControl: "86400",
+            contentType: "image/jpeg",
+          });
+        if (thumbErr) console.warn("Thumbnail upload failed:", thumbErr);
+      }
+
       // Store the storage path (not a public URL) — bucket is private; we sign on read
       await supabase.from("messages").insert({
         conversation_id: conversationId,
