@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,16 @@ const passwordSchema = z.string()
   .regex(/[a-z]/, { message: "Password must contain at least one lowercase letter" })
   .regex(/[0-9]/, { message: "Password must contain at least one number" });
 
+type AuthMode = "signin" | "signup" | "forgot" | "reset";
+type FieldName = "email" | "password" | "confirmPassword";
+type ValidationErrors = Partial<Record<FieldName | "consent" | "locationConsent", string>>;
+
+/** Always send Supabase email links to the production origin when running locally. */
+const getAppUrl = (): string =>
+  window.location.origin.includes("localhost")
+    ? "https://jet-around.com"
+    : window.location.origin;
+
 const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -38,13 +48,21 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; consent?: string; locationConsent?: string }>({});
-  const [touched, setTouched] = useState<{ email?: boolean; password?: boolean; confirmPassword?: boolean }>({});
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+  const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
   const [showResendVerification, setShowResendVerification] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [isResending, setIsResending] = useState(false);
   const [dataProcessingConsent, setDataProcessingConsent] = useState(false);
   const [locationConsent, setLocationConsent] = useState(false);
+
+  const mode: AuthMode = isResettingPassword
+    ? "reset"
+    : isForgotPassword
+    ? "forgot"
+    : isSignUp
+    ? "signup"
+    : "signin";
 
   // Handle URL mode parameter (signin/signup)
   useEffect(() => {
@@ -86,23 +104,23 @@ const Auth = () => {
   }, [resendCooldown]);
 
   // Single-field validation for inline feedback
-  const getFieldError = (field: "email" | "password" | "confirmPassword"): string | undefined => {
+  const getFieldError = (field: FieldName): string | undefined => {
     if (field === "email") {
       const result = emailSchema.safeParse(email);
       return result.success ? undefined : result.error.errors[0].message;
     }
     if (field === "password") {
-      if (!isForgotPassword && (isSignUp || isResettingPassword)) {
+      if (mode === "signup" || mode === "reset") {
         const result = passwordSchema.safeParse(password);
         return result.success ? undefined : result.error.errors[0].message;
       }
-      if (!isForgotPassword && !isSignUp && !isResettingPassword && (!password || password.length === 0)) {
+      if (mode === "signin" && !password) {
         return "Password is required";
       }
       return undefined;
     }
     if (field === "confirmPassword") {
-      if ((isSignUp || isResettingPassword) && password !== confirmPassword) {
+      if ((mode === "signup" || mode === "reset") && password !== confirmPassword) {
         return "Passwords do not match";
       }
       return undefined;
@@ -111,23 +129,28 @@ const Auth = () => {
   };
 
   const validateInputs = (): boolean => {
-    const errors: { email?: string; password?: string; confirmPassword?: string; consent?: string; locationConsent?: string } = {};
+    const errors: ValidationErrors = {};
 
-    const emailErr = getFieldError("email");
-    if (emailErr) errors.email = emailErr;
+    // Email is required in every mode except "reset" (no email field shown).
+    if (mode !== "reset") {
+      const emailErr = getFieldError("email");
+      if (emailErr) errors.email = emailErr;
+    }
 
-    if (!isForgotPassword) {
+    if (mode !== "forgot") {
       const pwErr = getFieldError("password");
       if (pwErr) errors.password = pwErr;
 
       const confirmErr = getFieldError("confirmPassword");
       if (confirmErr) errors.confirmPassword = confirmErr;
 
-      if (isSignUp && !dataProcessingConsent) {
-        errors.consent = "You must agree to the Privacy Policy and Terms of Service";
-      }
-      if (isSignUp && !locationConsent) {
-        errors.locationConsent = "Location consent is required to receive personalized deals";
+      if (mode === "signup") {
+        if (!dataProcessingConsent) {
+          errors.consent = "You must agree to the Privacy Policy and Terms of Service";
+        }
+        if (!locationConsent) {
+          errors.locationConsent = "Location consent is required to receive personalized deals";
+        }
       }
     }
 
@@ -135,16 +158,13 @@ const Auth = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const handleBlur = (field: "email" | "password" | "confirmPassword") => {
+  const handleBlur = (field: FieldName) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
     const error = getFieldError(field);
     setValidationErrors((prev) => ({ ...prev, [field]: error }));
   };
 
-  const handleFieldChange = (
-    field: "email" | "password" | "confirmPassword",
-    value: string
-  ) => {
+  const handleFieldChange = (field: FieldName, value: string) => {
     if (field === "email") setEmail(value);
     if (field === "password") setPassword(value);
     if (field === "confirmPassword") setConfirmPassword(value);
@@ -155,6 +175,28 @@ const Auth = () => {
     } else {
       setValidationErrors((prev) => ({ ...prev, [field]: undefined }));
     }
+  };
+
+  /** Reset transient form state and bounce the user back to the sign-in tab. */
+  const resetToSignIn = useCallback(() => {
+    setIsSignUp(false);
+    setIsForgotPassword(false);
+    setPassword("");
+    setConfirmPassword("");
+    setDataProcessingConsent(false);
+    setLocationConsent(false);
+  }, []);
+
+  /** Map common Supabase error messages to a uniform toast. Returns true if handled. */
+  const handleCommonAuthError = (error: { message?: string } | null | undefined): boolean => {
+    const msg = error?.message?.toLowerCase() ?? "";
+    if (msg.includes("rate limit")) {
+      toast.error("Too many attempts", {
+        description: "Please wait a few minutes before trying again.",
+      });
+      return true;
+    }
+    return false;
   };
 
   const handleResendVerification = async () => {
@@ -180,30 +222,22 @@ const Auth = () => {
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: email.trim(),
-        options: {
-          emailRedirectTo: window.location.origin.includes('localhost') 
-            ? 'https://jet-around.com/verification-success'
-            : `${window.location.origin}/verification-success`,
-        },
+        options: { emailRedirectTo: `${getAppUrl()}/verification-success` },
       });
 
       if (error) {
-        if (error.message?.includes("rate limit")) {
-          toast.error("Too many attempts", {
-            description: "Please wait a few minutes before trying again.",
-          });
+        if (handleCommonAuthError(error)) {
           setResendCooldown(60);
-        } else {
-          throw error;
+          return;
         }
-        return;
+        throw error;
       }
 
       toast.success("Verification email sent!", {
         description: "Please check your inbox and spam folder.",
       });
       setResendCooldown(60); // 60 second cooldown
-    } catch (error: any) {
+    } catch {
       toast.error("Failed to resend email", {
         description: "Please try again or contact support if the issue persists.",
       });
@@ -212,235 +246,168 @@ const Auth = () => {
     }
   };
 
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setValidationErrors({});
+  // -- Per-mode action handlers (each returns; outer dispatcher manages
+  // shared validation, loading state, and the generic error fallback).
 
-    try {
-      // Validate email
-      const emailResult = emailSchema.safeParse(email);
-      if (!emailResult.success) {
-        setValidationErrors({ email: emailResult.error.errors[0].message });
+  const doSignUp = async () => {
+    const { data: signUpData, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: { emailRedirectTo: `${getAppUrl()}/verification-success` },
+    });
+
+    const accountExistsToast = () =>
+      toast.error("Account already exists", {
+        description: "This email is already registered. Please sign in instead.",
+      });
+
+    if (error) {
+      const msg = error.message?.toLowerCase() ?? "";
+      if (
+        msg.includes("already registered") ||
+        msg.includes("already been registered") ||
+        msg.includes("user already exists")
+      ) {
+        accountExistsToast();
+        resetToSignIn();
         return;
       }
-
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth?reset=true`,
-      });
-
-      if (error) throw error;
-
-      toast.success("Password reset email sent", {
-        description: "Check your email for the password reset link.",
-      });
-      setEmail("");
-      setIsForgotPassword(false);
-    } catch (error: any) {
-      // Enhanced error handling
-      if (error.message?.includes("rate limit")) {
-        toast.error("Too many requests", {
-          description: "Please wait a few minutes before trying again.",
-        });
-      } else {
-        toast.error("Error sending reset email", {
-          description: "Please check your email and try again.",
-        });
-      }
-    } finally {
-      setIsLoading(false);
+      if (handleCommonAuthError(error)) return;
+      throw error;
     }
-  };
 
-  const handlePasswordReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setValidationErrors({});
-
-    try {
-      // Validate password
-      const passwordResult = passwordSchema.safeParse(password);
-      if (!passwordResult.success) {
-        setValidationErrors({ password: passwordResult.error.errors[0].message });
-        return;
-      }
-
-      // Validate password confirmation
-      if (password !== confirmPassword) {
-        setValidationErrors({ confirmPassword: "Passwords do not match" });
-        return;
-      }
-
-      const { error } = await supabase.auth.updateUser({
-        password: password,
-      });
-
-      if (error) throw error;
-
-      toast.success("Password updated successfully", {
-        description: "You can now sign in with your new password.",
-      });
-      
-      // Clear the form and redirect to sign in
-      setPassword("");
-      setConfirmPassword("");
-      setIsResettingPassword(false);
-      navigate("/auth");
-    } catch (error: any) {
-      toast.error("Error updating password", {
-        description: "Please try again or request a new reset link.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setValidationErrors({});
-    
-    // Validate inputs
-    if (!validateInputs()) {
+    // Supabase returns a user with empty `identities` when the email is already
+    // registered (no error thrown) — surface it instead of silently "succeeding".
+    const identities = (signUpData.user as { identities?: unknown[] } | null)?.identities;
+    if (signUpData.user && Array.isArray(identities) && identities.length === 0) {
+      accountExistsToast();
+      resetToSignIn();
       return;
     }
-    
-    setIsLoading(true);
 
-    try {
-      if (isSignUp) {
-        // Use production URL, never localhost
-        const appUrl = window.location.origin.includes('localhost') 
-          ? 'https://jet-around.com'
-          : window.location.origin;
-        
-        const { data: signUpData, error } = await supabase.auth.signUp({
-          email: email.trim(),
-          password,
-          options: {
-            emailRedirectTo: `${appUrl}/verification-success`,
-          },
+    // Persist consent on the freshly created profile.
+    if (signUpData.user) {
+      await supabase
+        .from("profiles")
+        .update({
+          data_processing_consent: dataProcessingConsent,
+          data_processing_consent_date: new Date().toISOString(),
+          location_consent_given: locationConsent,
+          location_consent_date: locationConsent ? new Date().toISOString() : null,
+        })
+        .eq("id", signUpData.user.id);
+    }
+
+    toast.success("Check your email!", {
+      description:
+        'We sent you a verification link. If it doesn\'t arrive in a minute, tap "Resend verification email" below.',
+      duration: 8000,
+    });
+    localStorage.setItem("jet_verification_email", email.trim().toLowerCase());
+    setShowResendVerification(true);
+    setPassword("");
+    setConfirmPassword("");
+    setDataProcessingConsent(false);
+    setLocationConsent(false);
+  };
+
+  const doSignIn = async () => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+
+    if (error) {
+      const msg = error.message ?? "";
+      if (msg.includes("Invalid login credentials")) {
+        toast.error("Invalid credentials", {
+          description: "The email or password you entered is incorrect.",
         });
-
-        // Enhanced error handling for signup
-        if (error) {
-          const msg = error.message?.toLowerCase() ?? "";
-          if (
-            msg.includes("already registered") ||
-            msg.includes("already been registered") ||
-            msg.includes("user already exists")
-          ) {
-            toast.error("Account already exists", {
-              description: "This email is already registered. Please sign in instead.",
-            });
-            setIsSignUp(false);
-            setPassword("");
-            setConfirmPassword("");
-            return;
-          } else if (msg.includes("rate limit")) {
-            toast.error("Too many attempts", {
-              description: "Please wait a few minutes before trying again.",
-            });
-            return;
-          }
-          throw error;
-        }
-
-        // Supabase returns a user with empty identities when the email is
-        // already registered (no error thrown). Detect and surface clearly
-        // instead of silently "succeeding".
-        const identities = (signUpData.user as any)?.identities;
-        if (signUpData.user && Array.isArray(identities) && identities.length === 0) {
-          toast.error("Account already exists", {
-            description: "This email is already registered. Please sign in instead.",
-          });
-          setIsSignUp(false);
-          setPassword("");
-          setConfirmPassword("");
-          setDataProcessingConsent(false);
-          setLocationConsent(false);
-          return;
-        }
-
-        // Store consent in profile after signup
-        if (signUpData.user) {
-          await supabase.from("profiles").update({
-            data_processing_consent: dataProcessingConsent,
-            data_processing_consent_date: new Date().toISOString(),
-            location_consent_given: locationConsent,
-            location_consent_date: locationConsent ? new Date().toISOString() : null,
-          }).eq("id", signUpData.user.id);
-        }
-
-        toast.success("Check your email!", {
-          description:
-            "We sent you a verification link. If it doesn't arrive in a minute, tap \"Resend verification email\" below.",
-          duration: 8000,
-        });
-        // Store email for auto-fill on verification-success page
-        localStorage.setItem("jet_verification_email", email.trim().toLowerCase());
-        setShowResendVerification(true);
-        setPassword("");
-        setConfirmPassword("");
-        setDataProcessingConsent(false);
-        setLocationConsent(false);
         return;
-      } else {
-        const { error, data } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
-          password,
-        });
-
-        // Enhanced error handling for signin
-        if (error) {
-          if (error.message?.includes("Invalid login credentials")) {
-            toast.error("Invalid credentials", {
-              description: "The email or password you entered is incorrect.",
-            });
-            return;
-          } else if (error.message?.includes("Email not confirmed")) {
-            toast.error("Email not verified", {
-              description: "Please check your email and click the verification link.",
-            });
-            setShowResendVerification(true);
-            return;
-          } else if (error.message?.includes("rate limit")) {
-            toast.error("Too many attempts", {
-              description: "Please wait a few minutes before trying again.",
-            });
-            return;
-          }
-          throw error;
-        }
-
-        // Check if email is verified
-        if (!data.user.email_confirmed_at) {
-          await supabase.auth.signOut();
-          toast.error("Email not verified", {
-            description: "Please check your email and click the verification link before signing in.",
-          });
-          setShowResendVerification(true);
-          setIsLoading(false);
-          return;
-        }
-
-        // Check if onboarding is completed
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("onboarding_completed")
-          .eq("id", data.user.id)
-          .single();
-
-        toast.success("Signed in successfully");
-        
-        if (!profile?.onboarding_completed) {
-          navigate("/onboarding");
-          return;
-        }
       }
+      if (msg.includes("Email not confirmed")) {
+        toast.error("Email not verified", {
+          description: "Please check your email and click the verification link.",
+        });
+        setShowResendVerification(true);
+        return;
+      }
+      if (handleCommonAuthError(error)) return;
+      throw error;
+    }
 
-      navigate("/");
-    } catch (error: any) {
-      // Generic error fallback (don't log sensitive data)
+    if (!data.user.email_confirmed_at) {
+      await supabase.auth.signOut();
+      toast.error("Email not verified", {
+        description: "Please check your email and click the verification link before signing in.",
+      });
+      setShowResendVerification(true);
+      return;
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("onboarding_completed")
+      .eq("id", data.user.id)
+      .single();
+
+    toast.success("Signed in successfully");
+    navigate(profile?.onboarding_completed ? "/" : "/onboarding");
+  };
+
+  const doForgotPassword = async () => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${getAppUrl()}/auth?reset=true`,
+    });
+    if (error) {
+      if (handleCommonAuthError(error)) return;
+      throw error;
+    }
+    toast.success("Password reset email sent", {
+      description: "Check your email for the password reset link.",
+    });
+    setEmail("");
+    setIsForgotPassword(false);
+  };
+
+  const doPasswordReset = async () => {
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) {
+      if (handleCommonAuthError(error)) return;
+      throw error;
+    }
+    toast.success("Password updated successfully", {
+      description: "You can now sign in with your new password.",
+    });
+    setPassword("");
+    setConfirmPassword("");
+    setIsResettingPassword(false);
+    navigate("/auth");
+  };
+
+  /** Single submit pipeline: validate → dispatch by mode → unified error/loading handling. */
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setValidationErrors({});
+    if (!validateInputs()) return;
+
+    setIsLoading(true);
+    try {
+      switch (mode) {
+        case "signup":
+          await doSignUp();
+          break;
+        case "signin":
+          await doSignIn();
+          break;
+        case "forgot":
+          await doForgotPassword();
+          break;
+        case "reset":
+          await doPasswordReset();
+          break;
+      }
+    } catch {
       toast.error("Authentication error", {
         description: "An unexpected error occurred. Please try again.",
       });
@@ -448,14 +415,6 @@ const Auth = () => {
       setIsLoading(false);
     }
   };
-
-  const mode: "signin" | "signup" | "forgot" | "reset" = isResettingPassword
-    ? "reset"
-    : isForgotPassword
-    ? "forgot"
-    : isSignUp
-    ? "signup"
-    : "signin";
 
   const eyebrow =
     mode === "reset"
