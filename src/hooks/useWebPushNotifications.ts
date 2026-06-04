@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { requireConsent } from "@/lib/consent";
 
 // VAPID public key for web push authentication
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || '';
@@ -91,6 +92,12 @@ export const useWebPushNotifications = () => {
   const subscribe = useCallback(async (): Promise<boolean> => {
     if (!isSupported) {
       toast.error("Push notifications not supported in this browser");
+      return false;
+    }
+
+    // Runtime guard: do not request OS-level permission or create a
+    // subscription unless the user has granted push notification consent.
+    if (!requireConsent("push_notifications")) {
       return false;
     }
 
