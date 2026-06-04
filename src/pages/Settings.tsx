@@ -23,6 +23,7 @@ import { isMonetizationEnabled } from "@/lib/monetization";
 import { PageLayout } from "@/components/PageLayout";
 import { PageShell } from "@/components/PageShell";
 import { SettingsPageSkeleton } from "@/components/skeletons/PageSkeletons";
+import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { PageTitle, SectionTitle } from "@/components/ui/page-title";
 import { useAuth } from "@/contexts/AuthContext";
 const preferencesSchema = z.object({
@@ -257,7 +258,7 @@ const Settings = ({ embedded = false }: SettingsProps = {}) => {
               <Bell className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
             </div>
             <p className="text-fluid-sm text-muted-foreground mb-fluid-md">Please sign in to access settings</p>
-            <Button onClick={() => navigate("/auth")} variant="jet">
+            <Button onClick={() => { rememberPostAuthRedirect(); navigate("/auth"); }} variant="jet">
               Sign In
             </Button>
           </Card>
