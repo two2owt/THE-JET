@@ -97,25 +97,46 @@ export function useProfile(userId: string | undefined) {
   const uploadAvatar = useMutation({
     mutationFn: async (blob: Blob) => {
       if (!userId) throw new Error("No user");
-      const fileName = `${userId}/avatar.jpg`;
 
-      // Best-effort cleanup of the previous object (ignore failures).
-      const current = query.data?.avatar_url;
-      if (current) {
-        const oldPath = current.split("?")[0].split("/").slice(-2).join("/");
-        await supabase.storage.from("avatars").remove([oldPath]);
+      // Client-side guardrails mirroring the bucket constraints.
+      const MAX_BYTES = 2 * 1024 * 1024; // 2 MB
+      const ALLOWED = ["image/jpeg", "image/png", "image/webp"];
+      const contentType = blob.type || "image/jpeg";
+      if (!ALLOWED.includes(contentType)) {
+        throw new Error("Unsupported image type. Use JPEG, PNG, or WebP.");
+      }
+      if (blob.size > MAX_BYTES) {
+        throw new Error("Image is too large. Max size is 2 MB.");
+      }
+
+      const ext = contentType === "image/png" ? "png" : contentType === "image/webp" ? "webp" : "jpg";
+      // Stable per-user path so re-uploads overwrite cleanly.
+      const fileName = `${userId}/avatar.${ext}`;
+
+      // Best-effort cleanup of any other avatar variants the user might have left behind.
+      const { data: existing } = await supabase.storage
+        .from("profile-avatars")
+        .list(userId);
+      if (existing?.length) {
+        const stale = existing
+          .map((f) => `${userId}/${f.name}`)
+          .filter((p) => p !== fileName);
+        if (stale.length) await supabase.storage.from("profile-avatars").remove(stale);
       }
 
       const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(fileName, blob, { upsert: true, contentType: "image/jpeg" });
+        .from("profile-avatars")
+        .upload(fileName, blob, { upsert: true, contentType });
       if (uploadError) throw uploadError;
 
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("avatars").getPublicUrl(fileName);
-      // Cache-bust so the new image renders immediately.
-      const bustedUrl = `${publicUrl}?t=${Date.now()}`;
+      // Bucket is private — mint a long-lived signed URL (1 year) and cache-bust.
+      const { data: signed, error: signError } = await supabase.storage
+        .from("profile-avatars")
+        .createSignedUrl(fileName, 60 * 60 * 24 * 365);
+      if (signError || !signed?.signedUrl) {
+        throw signError ?? new Error("Failed to generate avatar URL");
+      }
+      const bustedUrl = `${signed.signedUrl}&t=${Date.now()}`;
 
       const { error: updateError } = await supabase
         .from("profiles")
