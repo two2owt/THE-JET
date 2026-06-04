@@ -74,7 +74,10 @@ export function PageLayout({
   // Breadcrumbs render on every sub-route except map root and headerless
   // routes. When they are visible, push the inner page content down so
   // the fixed breadcrumb bar doesn't overlap the first paragraph.
-  const showBreadcrumbSpacer = pathname !== "/" && !fullBleed;
+  // Routes that hide breadcrumbs entirely — keep in sync with
+  // HIDDEN_ROUTES in navigation/Breadcrumbs.tsx + InlineBreadcrumbs.tsx
+  const BREADCRUMB_HIDDEN_ROUTES = new Set(["/", "/auth", "/onboarding", "/favorites"]);
+  const showBreadcrumbSpacer = !BREADCRUMB_HIDDEN_ROUTES.has(pathname) && !fullBleed;
 
   // Use provided notification count or calculate from notifications
   const unreadCount = notificationCount ?? notifications.filter(n => !n.read).length;

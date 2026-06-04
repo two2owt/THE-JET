@@ -24,7 +24,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   "verification-success": "Verification",
 };
 
-const HIDDEN_ROUTES = new Set(["/", "/auth", "/onboarding"]);
+const HIDDEN_ROUTES = new Set(["/", "/auth", "/onboarding", "/favorites"]);
 
 /** Only these paths map to real routes; intermediate segments outside
  *  this set render as non-clickable text so users can't navigate to
