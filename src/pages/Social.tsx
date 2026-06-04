@@ -138,10 +138,10 @@ export default function Social() {
         .limit(50);
 
       if (error) throw error;
-      // Exclude the current user, accepted connections, and anyone with a
-      // pending request in either direction. Discover should only surface
-      // signed-up, discoverable users that the viewer is NOT already
-      // connected to in any way.
+      // Exclude the current user, accepted connections, anyone with a
+      // pending request in either direction, and profiles the user just
+      // sent a request to. Discover should only surface signed-up,
+      // discoverable users that the viewer is NOT already connected to.
       const excludedIds = new Set<string>();
       if (user?.id) excludedIds.add(user.id);
       for (const c of connections) {
@@ -152,6 +152,7 @@ export default function Social() {
         excludedIds.add(r.user_id);
         excludedIds.add(r.friend_id);
       }
+      sentRequestIds.forEach((id) => excludedIds.add(id));
       setProfiles((data || []).filter((p) => !excludedIds.has(p.id)).slice(0, 20));
     } catch (error) {
       console.error("Error fetching profiles:", error);
