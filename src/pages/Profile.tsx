@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router";
+import { Navigate, useNavigate } from "react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { PageLayout } from "@/components/PageLayout";
 import { ProfilePageSkeleton } from "@/components/skeletons/PageSkeletons";
@@ -275,13 +275,7 @@ export default function Profile() {
     );
   }
   if (!user) {
-    return (
-      <PageLayout defaultTab="map" notificationCount={0} headerConfig={headerConfig}>
-        <PageShell>
-          <EmptyState icon={User} title="Sign in to view profile" description="Create an account to access your profile, manage settings, and track your activity" actionLabel="Sign In" onAction={() => navigate("/auth")} />
-        </PageShell>
-      </PageLayout>
-    );
+    return <Navigate to="/auth" replace />;
   }
 
   return (
