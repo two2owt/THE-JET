@@ -32,7 +32,6 @@ const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const VerificationSuccess = lazy(() => import("./pages/VerificationSuccess"));
-const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 /**
@@ -157,15 +156,6 @@ const AppLayout = memo(function AppLayout() {
             </Suspense>
           }
         />
-        <Route
-          path="/unsubscribe"
-          element={
-            <Suspense fallback={<NavigationShell />}>
-              <Unsubscribe />
-            </Suspense>
-          }
-        />
-
         {/* Legal pages — Footer is embedded inline within these pages */}
         <Route
           path="/privacy-policy"
