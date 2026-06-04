@@ -2256,21 +2256,28 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             // Radius increases at lower zoom, decreases when zoomed in
             'heatmap-radius': [
               'interpolate',
-              ['linear'],
+              ['cubic-bezier', 0.4, 0, 0.2, 1],
               ['zoom'],
               8, isMobile ? 40 : 30,
+              10, isMobile ? 34 : 25,
               12, isMobile ? 28 : 20,
+              13, isMobile ? 22 : 16,
               15, isMobile ? 14 : 10
             ],
             // Fade out opacity as zoom increases (individual markers take over)
             'heatmap-opacity': [
               'interpolate',
-              ['linear'],
+              ['cubic-bezier', 0.4, 0, 0.2, 1],
               ['zoom'],
               10, isMobile ? 0.7 : 0.8,
+              11.5, isMobile ? 0.58 : 0.65,
               13, isMobile ? 0.32 : 0.4,
+              14, isMobile ? 0.15 : 0.2,
               15, 0
-            ]
+            ],
+            // Smooth tween between paint updates (city switch, viewport flip)
+            'heatmap-radius-transition': { duration: 400, delay: 0 },
+            'heatmap-opacity-transition': { duration: 500, delay: 0 }
           }
         }, 'waterway-label'); // Insert below labels
       }
