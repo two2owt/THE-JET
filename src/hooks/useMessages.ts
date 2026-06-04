@@ -74,12 +74,21 @@ export const useMessages = (userId?: string, friendId?: string) => {
   const sendImage = useCallback(
     async (file: File) => {
       if (!userId || !friendId || !conversationId) return;
+      // Guardrails: only images, max 5MB
+      if (!file.type.startsWith("image/")) {
+        console.error("Chat upload rejected: not an image");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        console.error("Chat upload rejected: file exceeds 5MB");
+        return;
+      }
       // Path must start with the uploader's user id to satisfy storage RLS
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
       const path = `${userId}/${conversationId}/${Date.now()}_${safeName}`;
       const { error: uploadError } = await supabase.storage
         .from("chat-images")
-        .upload(path, file);
+        .upload(path, file, { cacheControl: "3600", contentType: file.type });
       if (uploadError) {
         console.error("Upload error:", uploadError);
         return;
