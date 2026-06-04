@@ -71,11 +71,11 @@ export const useDeepLinking = (handlers?: DeepLinkHandler) => {
     if (handlers?.onVenueOpen) {
       handlers.onVenueOpen(venueName);
     }
-
-    // Clear the venue param after handling
-    searchParams.delete("venue");
-    setSearchParams(searchParams);
-  }, [handlers, searchParams, setSearchParams]);
+    // Note: we intentionally DO NOT clear the `?venue=` param so the URL
+    // stays shareable — reloads or shared links will reopen the same
+    // JetCard. The param is removed only when the JetCard is closed
+    // (handled in the page that owns the selected-venue state).
+  }, [handlers]);
 
   // Navigate to a deal (for use from notifications)
   const navigateToDeal = useCallback((dealId: string) => {
