@@ -57,6 +57,14 @@ const Auth = () => {
   const [isResending, setIsResending] = useState(false);
   const [dataProcessingConsent, setDataProcessingConsent] = useState(false);
   const [locationConsent, setLocationConsent] = useState(false);
+  const { user: authUser } = useAuth();
+
+  // If already signed in, redirect to home
+  useEffect(() => {
+    if (authUser && (mode === "signin" || mode === "signup")) {
+      navigate("/");
+    }
+  }, [authUser, mode, navigate]);
 
   const mode: AuthMode = isResettingPassword
     ? "reset"
