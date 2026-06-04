@@ -994,6 +994,36 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           // Add parking lot icons from Mapbox vector tiles
           if (map.current) {
             try {
+              // Create a bold green "P" icon for parking
+              if (!map.current.hasImage('jet-parking-p')) {
+                const size = 64;
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                  // Circle background
+                  ctx.beginPath();
+                  ctx.arc(size / 2, size / 2, size / 2 - 3, 0, Math.PI * 2);
+                  ctx.fillStyle = '#16a34a'; // bold green
+                  ctx.fill();
+                  ctx.lineWidth = 3;
+                  ctx.strokeStyle = '#ffffff';
+                  ctx.stroke();
+                  // Bold P
+                  ctx.fillStyle = '#ffffff';
+                  ctx.font = 'bold 44px system-ui, -apple-system, Arial, sans-serif';
+                  ctx.textAlign = 'center';
+                  ctx.textBaseline = 'middle';
+                  ctx.fillText('P', size / 2, size / 2 + 2);
+                  map.current.addImage('jet-parking-p', {
+                    width: size,
+                    height: size,
+                    data: ctx.getImageData(0, 0, size, size).data,
+                  } as any, { pixelRatio: 2 });
+                }
+              }
+
               // Add a symbol layer for parking POIs using built-in Mapbox data
               map.current.addLayer({
                 id: 'parking-icons',
@@ -1006,11 +1036,11 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   ['==', ['get', 'maki'], 'parking-garage'],
                 ],
                 layout: {
-                  'icon-image': 'parking',
+                  'icon-image': 'jet-parking-p',
                   'icon-size': [
                     'interpolate', ['linear'], ['zoom'],
-                    12, 0.5,
-                    16, 0.9,
+                    12, 0.45,
+                    16, 0.8,
                   ],
                   'icon-allow-overlap': false,
                   'icon-ignore-placement': false,
@@ -1020,13 +1050,13 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   'text-offset': [0, 1.2],
                   'text-anchor': 'top',
                   'text-optional': true,
-                  'visibility': 'visible',
+                  'visibility': showParking ? 'visible' : 'none',
                 },
                 paint: {
                   'icon-opacity': [
                     'interpolate', ['linear'], ['zoom'],
-                    12, 0.6,
-                    15, 0.9,
+                    12, 0.85,
+                    15, 1,
                   ],
                   'text-color': 'hsl(210, 20%, 70%)',
                   'text-halo-color': 'hsl(0, 0%, 10%)',
