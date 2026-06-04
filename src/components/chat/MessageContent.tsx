@@ -38,7 +38,7 @@ export function MessageContent({ content, isMine }: MessageContentProps) {
           // Extract the path portion
           try {
             const url = new URL(part);
-            const venueName = url.searchParams.get("venue");
+            const venueParam = url.searchParams.get("venue");
             const dealId = url.searchParams.get("deal");
 
             const handleClick = (e: React.MouseEvent) => {
@@ -57,8 +57,8 @@ export function MessageContent({ content, isMine }: MessageContentProps) {
                 }`}
               >
                 <MapPin className="w-3.5 h-3.5 inline-block flex-shrink-0" />
-                {venueName
-                  ? `Open ${decodeURIComponent(venueName)} on map`
+                {venueParam
+                  ? "Open venue on map"
                   : dealId
                   ? "View deal on map"
                   : "Open link"}
