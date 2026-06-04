@@ -2640,7 +2640,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                       : (detectedCity ? `${detectedCity.name}, ${detectedCity.state}` : "Use my location")}
                   </span>
                   <span className="text-[10px] text-muted-foreground truncate" style={{ lineHeight: 1.2 }}>
-                    {userLocation ? "Where you are right now" : "Tap to detect your spot"}
+                    {userLocation ? "Current Location" : "Tap to detect your spot"}
                   </span>
                 </div>
                 <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-primary/90 flex-shrink-0 px-1.5 py-0.5 rounded-full border border-primary/30 bg-primary/10">
