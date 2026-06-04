@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router";
 import { PageLayout } from "@/components/PageLayout";
 import { EmptyState } from "@/components/EmptyState";
+import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { useConversations, type Conversation } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -146,7 +147,7 @@ export default function Messages() {
             title="Sign in to message"
             description="Create an account to chat with your friends"
             actionLabel="Sign In"
-            onAction={() => navigate("/auth")}
+            onAction={() => { rememberPostAuthRedirect(); navigate("/auth"); }}
           />
         </div>
       </PageLayout>
