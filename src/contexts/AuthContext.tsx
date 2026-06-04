@@ -42,10 +42,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         console.error("Session refresh error:", error.message);
         return;
       }
-      if (refreshedSession) {
-        setSession(refreshedSession);
-        setUser(refreshedSession.user);
-      }
+      setSession(refreshedSession);
+      setUser(refreshedSession?.user ?? null);
     } catch (err) {
       console.error("Session refresh failed:", err);
     }
