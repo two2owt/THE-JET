@@ -1,12 +1,12 @@
 import { memo, useState, useEffect, useCallback } from "react";
-import { MapPin, Users, Star, TrendingUp, X, Share2, Send, Car, Navigation, Phone, Globe, RefreshCw } from "lucide-react";
+import { MapPin, Users, Star, TrendingUp, X, Share2, Send, Car, Navigation, Phone, Globe, RefreshCw, Loader2 } from "lucide-react";
 import { glideHaptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Venue } from "./MapboxHeatmap";
 import { UpgradePrompt, useFeatureAccess } from "./UpgradePrompt";
 import { shareVenue } from "@/utils/shareUtils";
-import { JetCardParkingSkeleton } from "@/components/skeletons/JetCardSkeleton";
+
 
 interface NearbyParking {
   name: string;
@@ -556,19 +556,33 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
                   fontSize: '10px',
                   fontWeight: 600,
                   letterSpacing: '0.04em',
-                  cursor: parkingLoading ? 'wait' : 'pointer',
-                  opacity: parkingLoading ? 0.6 : 1,
+                  cursor: parkingLoading ? 'not-allowed' : 'pointer',
+                  opacity: parkingLoading ? 0.5 : 1,
                 }}
               >
-                <RefreshCw
-                  className={parkingLoading ? 'animate-spin' : ''}
-                  style={{ width: '11px', height: '11px' }}
-                />
-                Refresh
+                {parkingLoading ? (
+                  <Loader2 className="animate-spin" style={{ width: '11px', height: '11px' }} />
+                ) : (
+                  <RefreshCw style={{ width: '11px', height: '11px' }} />
+                )}
+                {parkingLoading ? 'Loading...' : 'Refresh'}
               </button>
             </div>
 
-            {parkingLoading && nearbyParking.length === 0 && <JetCardParkingSkeleton />}
+            {parkingLoading && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                padding: '10px 0',
+                fontSize: '11px',
+                color: 'hsl(var(--muted-foreground))',
+              }}>
+                <Loader2 className="animate-spin" style={{ width: '14px', height: '14px' }} />
+                <span>Finding nearest parking...</span>
+              </div>
+            )}
             {!parkingLoading && nearbyParking.length === 0 && (
               <div style={{
                 fontSize: '11px',
