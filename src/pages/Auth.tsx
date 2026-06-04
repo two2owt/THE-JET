@@ -67,6 +67,13 @@ const Auth = () => {
     ? "signup"
     : "signin";
 
+  // If already signed in, redirect to home
+  useEffect(() => {
+    if (authUser && (mode === "signin" || mode === "signup")) {
+      navigate("/");
+    }
+  }, [authUser, mode, navigate]);
+
   // Handle URL mode parameter (signin/signup)
   useEffect(() => {
     const mode = searchParams.get('mode');
