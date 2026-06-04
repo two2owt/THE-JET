@@ -179,7 +179,7 @@ export function AccountSection({ userId, currentEmail }: AccountSectionProps) {
             </p>
           )}
         </div>
-        <Button type="submit" variant="jet" disabled={isSavingEmail || !newEmail.trim()}>
+        <Button type="submit" variant="jet" disabled={isSavingEmail || !newEmail.trim()} className="rounded-full shadow-lg shadow-primary/20 font-semibold tracking-wide">
           {isSavingEmail ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
