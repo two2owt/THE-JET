@@ -64,6 +64,40 @@ const charlotteVenues: Venue[] = [
   { id: "wooden-robot", name: "Wooden Robot Brewery", lat: 35.2156, lng: -80.8485, activity: 78, category: "Brewery", neighborhood: "South End", address: "1440 S Tryon St Suite 110, Charlotte, NC 28203" },
 ];
 
+// Expanded metro venues — kept as a static fallback so the map always shows
+// the full set of previous markers alongside the seafood additions, even
+// before the Google Places edge function resolves.
+const charlotteExpandedVenues: Venue[] = [
+  { id: "the-cellar-at-duckworths", name: "The Cellar at Duckworth's", lat: 35.2270, lng: -80.8419, activity: 84, category: "Cocktail Bar", neighborhood: "Uptown", address: "330 N Tryon St, Charlotte, NC 28202" },
+  { id: "soul-gastrolounge", name: "Soul Gastrolounge", lat: 35.2138, lng: -80.8290, activity: 89, category: "Restaurant", neighborhood: "Plaza Midwood", address: "1500 Central Ave, Charlotte, NC 28205" },
+  { id: "kindred-davidson", name: "Kindred", lat: 35.4993, lng: -80.8486, activity: 81, category: "Restaurant", neighborhood: "Davidson", address: "131 N Main St, Davidson, NC 28036" },
+  { id: "leahandlouise", name: "Leah & Louise", lat: 35.2490, lng: -80.8068, activity: 79, category: "Restaurant", neighborhood: "Camp North End", address: "301 Camp Rd #101, Charlotte, NC 28206" },
+  { id: "optimist-hall", name: "Optimist Hall", lat: 35.2336, lng: -80.8197, activity: 93, category: "Food Hall", neighborhood: "Optimist Park", address: "1115 N Brevard St, Charlotte, NC 28206" },
+  { id: "noble-smoke", name: "Noble Smoke", lat: 35.2274, lng: -80.8665, activity: 84, category: "BBQ", neighborhood: "West Charlotte", address: "2216 Freedom Dr, Charlotte, NC 28208" },
+  { id: "the-waterman", name: "The Waterman Fish Bar", lat: 35.2095, lng: -80.8556, activity: 80, category: "Seafood", neighborhood: "South End", address: "2729 South Blvd, Charlotte, NC 28209" },
+  { id: "futo-buta", name: "Futo Buta", lat: 35.2106, lng: -80.8546, activity: 76, category: "Ramen", neighborhood: "South End", address: "222 E Bland St, Charlotte, NC 28203" },
+  { id: "the-goodyear-house", name: "The Goodyear House", lat: 35.2492, lng: -80.8061, activity: 82, category: "Restaurant", neighborhood: "NoDa", address: "3032 N Davidson St, Charlotte, NC 28205" },
+  { id: "rooster-noda", name: "Rooster's Wood-Fired Kitchen NoDa", lat: 35.2480, lng: -80.8074, activity: 78, category: "Restaurant", neighborhood: "NoDa", address: "3055 N Davidson St, Charlotte, NC 28205" },
+  { id: "vbgb-beer-hall", name: "VBGB Beer Hall & Garden", lat: 35.2364, lng: -80.8221, activity: 85, category: "Beer Garden", neighborhood: "Optimist Park", address: "920 Hamilton St #100, Charlotte, NC 28206" },
+  { id: "sycamore-brewing", name: "Sycamore Brewing", lat: 35.2087, lng: -80.8559, activity: 90, category: "Brewery", neighborhood: "South End", address: "2161 Hawkins St, Charlotte, NC 28203" },
+  { id: "resident-culture", name: "Resident Culture Brewing Company", lat: 35.2196, lng: -80.8147, activity: 83, category: "Brewery", neighborhood: "Plaza Midwood", address: "2101 Central Ave, Charlotte, NC 28205" },
+  { id: "lincolns-haberdashery", name: "Lincoln's Haberdashery", lat: 35.2272, lng: -80.8590, activity: 70, category: "Cafe", neighborhood: "South End", address: "1340 S Mint St, Charlotte, NC 28203" },
+  { id: "littas-pizza", name: "Inizio Pizza Napoletana", lat: 35.2259, lng: -80.8408, activity: 75, category: "Pizza", neighborhood: "Uptown", address: "210 E Trade St #C220, Charlotte, NC 28202" },
+  { id: "the-improper-pig", name: "The Improper Pig", lat: 35.1978, lng: -80.8237, activity: 73, category: "BBQ", neighborhood: "Elizabeth", address: "807 Providence Rd, Charlotte, NC 28207" },
+  { id: "amelies-bakery", name: "Amélie's French Bakery & Café", lat: 35.2470, lng: -80.8087, activity: 86, category: "Bakery", neighborhood: "NoDa", address: "2424 N Davidson St, Charlotte, NC 28205" },
+  { id: "midwood-smokehouse", name: "Midwood Smokehouse", lat: 35.2167, lng: -80.8118, activity: 88, category: "BBQ", neighborhood: "Plaza Midwood", address: "1401 Central Ave, Charlotte, NC 28205" },
+  { id: "300-east", name: "300 East", lat: 35.2050, lng: -80.8385, activity: 74, category: "Restaurant", neighborhood: "Dilworth", address: "300 East Blvd, Charlotte, NC 28203" },
+  { id: "the-stanley", name: "The Stanley", lat: 35.1969, lng: -80.8261, activity: 72, category: "Restaurant", neighborhood: "Elizabeth", address: "1961 E 7th St, Charlotte, NC 28204" },
+  // Seafood
+  { id: "sea-level-nc", name: "Sea Level NC", lat: 35.2272, lng: -80.8417, activity: 88, category: "Seafood", neighborhood: "Uptown", address: "129 E 5th St, Charlotte, NC 28202", phone: "(980) 237-1322", website: "https://sealevelnc.com" },
+  { id: "oceanaire-seafood", name: "The Oceanaire Seafood Room", lat: 35.2263, lng: -80.8430, activity: 85, category: "Seafood", neighborhood: "Uptown", address: "100 N Tryon St Ste 100, Charlotte, NC 28202", phone: "(704) 333-2434", website: "https://www.theoceanaire.com/locations/charlotte" },
+  { id: "rock-salt-charlotte", name: "Rock Salt", lat: 35.1909, lng: -80.8211, activity: 83, category: "Seafood", neighborhood: "SouthPark", address: "4625 Piedmont Row Dr Suite 145A, Charlotte, NC 28210", phone: "(704) 503-7625", website: "https://rocksaltcharlotte.com" },
+  { id: "mccormick-schmicks", name: "McCormick & Schmick's", lat: 35.2266, lng: -80.8438, activity: 80, category: "Seafood", neighborhood: "Uptown", address: "200 S Tryon St, Charlotte, NC 28202", phone: "(704) 377-0201", website: "https://www.mccormickandschmicks.com/location/charlotte" },
+  { id: "blue-restaurant-bar", name: "BLUE Restaurant & Bar", lat: 35.2270, lng: -80.8425, activity: 82, category: "Seafood", neighborhood: "Uptown", address: "206 N College St, Charlotte, NC 28202", phone: "(704) 927-2583", website: "https://www.bluecharlotte.com" },
+];
+
+const allCharlotteVenues: Venue[] = [...charlotteVenues, ...charlotteExpandedVenues];
+
 const Index = () => {
   const navigate = useNavigate();
   
@@ -141,8 +175,17 @@ const Index = () => {
     direction: 'down'
   });
 
-  // Use real venues when available, fallback to Charlotte venues
-  const venues = realVenues && realVenues.length > 0 ? realVenues : charlotteVenues;
+  // Merge real (edge-fetched) venues with the static fallback set so previous
+  // markers always render alongside any newly added seafood / Google-enriched
+  // venues. Dedupe by venue id, preferring the real (live) entry.
+  const venues = useMemo(() => {
+    const map = new Map<string, Venue>();
+    for (const v of allCharlotteVenues) map.set(v.id, v);
+    if (realVenues && realVenues.length > 0) {
+      for (const v of realVenues) map.set(v.id, v);
+    }
+    return Array.from(map.values());
+  }, [realVenues]);
 
   // Handle deep linked deal - select the venue associated with the deal
   const handleDeepLinkDeal = useCallback(async (_dealId: string, dealData: any) => {
