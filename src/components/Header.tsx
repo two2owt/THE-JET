@@ -14,6 +14,7 @@ import { HeaderSearch } from "./navigation/HeaderSearch";
 
 export const Header = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [urlSearchParams, setUrlSearchParams] = useSearchParams();
   const { venues, deals, onVenueSelect, hideSearch } = useHeaderContext();
   const isMobile = useIsMobile();
