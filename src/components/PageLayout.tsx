@@ -3,7 +3,6 @@ import { BottomNav } from "./BottomNav";
 import { useBottomNavigation, type NavTab } from "@/hooks/useBottomNavigation";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useHeaderConfig } from "@/contexts/HeaderContext";
-import { useLocation } from "react-router";
 import type { Venue } from "@/types/venue";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -69,7 +68,6 @@ export function PageLayout({
   const { activeTab, handleTabChange } = useBottomNavigation({ defaultTab });
   const { notifications } = useNotifications();
   const setHeaderConfig = useHeaderConfig();
-  const { pathname } = useLocation();
 
   // Use provided notification count or calculate from notifications
   const unreadCount = notificationCount ?? notifications.filter(n => !n.read).length;
