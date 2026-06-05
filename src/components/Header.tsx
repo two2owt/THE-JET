@@ -297,8 +297,8 @@ export const Header = () => {
             mounted={mounted}
             isMobile={isMobile}
             expanded={searchExpanded}
-            query={searchQuery}
-            showResults={showResults}
+            query={debouncedQuery}
+            showResults={showResults && debouncedQuery.trim().length > 0}
             venues={venues}
             deals={deals}
             onVenueSelect={handleVenueSelectFromSearch}
