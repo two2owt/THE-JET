@@ -99,8 +99,41 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
   };
 
   const openParkingDirections = (parking: NearbyParking) => {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${parking.lat},${parking.lng}&destination_place_id=${parking.placeId}&travelmode=driving`;
-    window.open(url, '_blank');
+    // Guard against malformed coordinates so we never open a broken Maps URL.
+    if (
+      typeof parking.lat !== 'number' ||
+      typeof parking.lng !== 'number' ||
+      Number.isNaN(parking.lat) ||
+      Number.isNaN(parking.lng)
+    ) {
+      toast.error("Couldn't open directions", { description: "Missing parking coordinates" });
+      return;
+    }
+
+    const params = new URLSearchParams({
+      api: '1',
+      destination: `${parking.lat},${parking.lng}`,
+      travelmode: 'driving',
+      dir_action: 'navigate',
+    });
+
+    // Prefer a stable Place ID destination when available (more accurate pin).
+    if (parking.placeId) {
+      params.set('destination_place_id', parking.placeId);
+    }
+
+    // Anchor the route at the selected venue so the user sees venue → parking.
+    if (
+      typeof venue.lat === 'number' &&
+      typeof venue.lng === 'number' &&
+      !Number.isNaN(venue.lat) &&
+      !Number.isNaN(venue.lng)
+    ) {
+      params.set('origin', `${venue.lat},${venue.lng}`);
+    }
+
+    const url = `https://www.google.com/maps/dir/?${params.toString()}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const activityLevel = getActivityLevel(venue.activity);
