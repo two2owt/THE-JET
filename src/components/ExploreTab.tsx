@@ -157,7 +157,7 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
 
   useEffect(() => {
     filterDeals();
-  }, [searchQuery, deals, selectedCategories, userPreferences, preferenceFilterEnabled]);
+  }, [debouncedSearchQuery, deals, selectedCategories, userPreferences, preferenceFilterEnabled]);
 
   const getUserLocation = () => {
     if (!navigator.geolocation) {
