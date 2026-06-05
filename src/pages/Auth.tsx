@@ -68,11 +68,26 @@ const Auth = () => {
     ? "signup"
     : "signin";
 
-  // If already signed in, redirect to home
+  // If already signed in, route based on onboarding status (covers OAuth return
+  // and revisits to /auth by an authenticated user).
   useEffect(() => {
-    if (authUser && (mode === "signin" || mode === "signup")) {
-      navigate(consumePostAuthRedirect("/"), { replace: true });
-    }
+    if (!authUser || (mode !== "signin" && mode !== "signup")) return;
+    let cancelled = false;
+    (async () => {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("onboarding_completed")
+        .eq("id", authUser.id)
+        .maybeSingle();
+      if (cancelled) return;
+      const target = profile?.onboarding_completed
+        ? consumePostAuthRedirect("/")
+        : "/onboarding";
+      navigate(target, { replace: true });
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [authUser, mode, navigate]);
 
   // Handle URL mode parameter (signin/signup)
@@ -211,7 +226,8 @@ const Auth = () => {
         return;
       }
       toast.success("Signed in with Google");
-      navigate("/");
+      // Post-OAuth routing is handled by the authUser effect above, which
+      // checks onboarding_completed and the remembered redirect.
     } catch {
       toast.error("Google sign-in failed", {
         description: "Please try again or use email sign-in.",
@@ -413,7 +429,10 @@ const Auth = () => {
       .single();
 
     toast.success("Signed in successfully");
-    navigate(profile?.onboarding_completed ? consumePostAuthRedirect("/") : "/onboarding");
+    navigate(
+      profile?.onboarding_completed ? consumePostAuthRedirect("/") : "/onboarding",
+      { replace: true },
+    );
   };
 
   const doForgotPassword = async () => {

@@ -247,7 +247,7 @@ const Onboarding = () => {
       if (error) throw error;
       
       toast.success("Welcome to JET Charlotte!", { description: "Let's discover what's hot" });
-      navigate(consumePostAuthRedirect("/"));
+      navigate(consumePostAuthRedirect("/"), { replace: true });
     } catch (error: any) {
       toast.error("Failed to complete onboarding", { description: error.message });
     } finally {
