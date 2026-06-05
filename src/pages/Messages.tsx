@@ -26,6 +26,8 @@ import { format, isToday, isYesterday } from "date-fns";
 import { MessagesPageSkeleton } from "@/components/skeletons/PageSkeletons";
 
 /* ─── Shared adaptive style tokens (mirrors Social page) ─── */
+const DEFAULT_AVATAR_SRC = "/jet-email-logo.png";
+
 const convoCardStyle: React.CSSProperties = {
   gap: 'clamp(10px, 3vw, 14px)',
   padding: 'clamp(10px, 2.8vw, 14px) clamp(12px, 3.2vw, 16px)',
@@ -60,10 +62,15 @@ const subtitleStyle: React.CSSProperties = {
   minHeight: 'calc(1.3em)',
 };
 
+// Consistent, fluid avatar sizing — keeps the JET mark legible from 320px to desktop
+// while preserving the 44x44 minimum touch target on mobile.
 const avatarClass =
-  "w-10 h-10 min-[360px]:w-11 min-[360px]:h-11 sm:w-12 sm:h-12 lg:w-[52px] lg:h-[52px] shrink-0";
+  "size-11 sm:size-12 lg:size-[52px] shrink-0 ring-1 ring-border/60";
 const avatarHeaderClass =
-  "w-9 h-9 min-[360px]:w-10 min-[360px]:h-10 sm:w-11 sm:h-11 shrink-0";
+  "size-10 sm:size-11 shrink-0 ring-1 ring-border/60";
+const avatarImageClass = "object-cover";
+const avatarFallbackClass =
+  "bg-gradient-to-br from-primary/20 to-accent/20 text-primary font-medium";
 
 function DisplayName({
   name,
@@ -223,13 +230,20 @@ function ConversationList({
             >
               <div className="relative shrink-0">
                 <Avatar className={avatarClass}>
-                  <AvatarImage src={c.friendAvatar || undefined} alt={c.friendName} />
-                  <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary">
+                  <AvatarImage
+                    src={c.friendAvatar || DEFAULT_AVATAR_SRC}
+                    alt={c.friendName}
+                    className={avatarImageClass}
+                  />
+                  <AvatarFallback className={avatarFallbackClass} delayMs={400}>
                     {c.friendName.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 {c.unreadCount > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-5 min-w-[20px] px-1 text-[10px] bg-destructive text-destructive-foreground">
+                  <Badge
+                    className="absolute -top-1 -right-1 h-5 min-w-[20px] px-1 text-[10px] bg-destructive text-destructive-foreground ring-2 ring-background"
+                    aria-label={`${c.unreadCount} unread message${c.unreadCount === 1 ? '' : 's'}`}
+                  >
                     {c.unreadCount}
                   </Badge>
                 )}
@@ -324,14 +338,24 @@ function ChatView({
       {/* Chat header */}
       <div
         className="flex items-center border-b border-border/60 bg-card/60 backdrop-blur-sm"
-        style={convoCardStyle}
+        style={{ ...convoCardStyle, gap: 'clamp(8px, 2.4vw, 12px)' }}
       >
-        <Button variant="ghost" size="icon" onClick={onBack} className="flex-shrink-0">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onBack}
+          className="flex-shrink-0 -ml-1"
+          aria-label="Back to conversations"
+        >
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <Avatar className={avatarHeaderClass}>
-          <AvatarImage src={friend?.friendAvatar || undefined} alt={friend?.friendName || "Friend"} />
-          <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary">
+          <AvatarImage
+            src={friend?.friendAvatar || DEFAULT_AVATAR_SRC}
+            alt={friend?.friendName || "Friend"}
+            className={avatarImageClass}
+          />
+          <AvatarFallback className={avatarFallbackClass} delayMs={400}>
             {(friend?.friendName || "F").charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
