@@ -98,19 +98,21 @@ export default function Social() {
     }
   }, [user, connections, pendingRequests]);
 
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
   // Debounced search across discoverable end-user profiles.
   // Uses the `discoverable_profiles` view so RLS + discoverability
   // rules apply — only real signed-up users that opted into discovery
   // are searchable, and the current user is excluded server-side.
   useEffect(() => {
-    const q = searchQuery.trim();
+    const q = debouncedSearchQuery.trim();
     if (!user || q.length < 2) {
       setSearchResults([]);
       setIsSearching(false);
       return;
     }
     setIsSearching(true);
-    const handle = setTimeout(async () => {
+    (async () => {
       try {
         const { data, error } = await supabase
           .from("discoverable_profiles")
@@ -127,9 +129,8 @@ export default function Social() {
       } finally {
         setIsSearching(false);
       }
-    }, 250);
-    return () => clearTimeout(handle);
-  }, [searchQuery, user]);
+    })();
+  }, [debouncedSearchQuery, user]);
 
   const fetchProfiles = async () => {
     try {
