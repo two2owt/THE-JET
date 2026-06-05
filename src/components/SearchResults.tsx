@@ -181,7 +181,21 @@ export const SearchResults = ({
 
   /** Open a deal via the app's existing ?deal= deep-link contract handled in Index.tsx. */
   const handleDealSelect = (deal: Deal) => {
-    navigate(`/?deal=${deal.id}`);
+    // Prefer surfacing the venue's JetCard (so users land on the same
+    // surface they would from a venue/area/category selection). When the
+    // deal's venue is loaded, select it — Index.tsx syncs `?venue=` into
+    // the URL so the link stays shareable. Fall back to the `?deal=`
+    // deep-link contract when the venue isn't in the current dataset.
+    const venueMatch = deal.venue_id
+      ? venues.find((v) => v.id === deal.venue_id)
+      : venues.find(
+          (v) => v.name.toLowerCase() === (deal.venue_name ?? "").toLowerCase(),
+        );
+    if (venueMatch) {
+      onVenueSelect(venueMatch);
+    } else {
+      navigate(`/?deal=${deal.id}`);
+    }
     onClose();
   };
 
