@@ -103,6 +103,29 @@ export const Header = () => {
     }
   }, [searchExpanded]);
 
+  // Reset search state when navigating to a different page so old queries
+  // and dropdowns don't leak into the next view.
+  const prevPathnameRef = useRef(location.pathname);
+  useEffect(() => {
+    if (prevPathnameRef.current === location.pathname) return;
+    prevPathnameRef.current = location.pathname;
+
+    setSearchQuery("");
+    setShowResults(false);
+    setSearchExpanded(false);
+    try {
+      window.sessionStorage.removeItem(SEARCH_QUERY_KEY);
+      window.sessionStorage.removeItem(SEARCH_EXPANDED_KEY);
+    } catch {
+      /* storage disabled — ignore */
+    }
+    const next = new URLSearchParams(urlSearchParams);
+    if (next.has("q")) {
+      next.delete("q");
+      setUrlSearchParams(next, { replace: true });
+    }
+  }, [location.pathname, urlSearchParams, setUrlSearchParams]);
+
   useEffect(() => {
     let cancelled = false;
     supabase.auth.getUser().then(({ data: { user } }) => {
