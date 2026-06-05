@@ -123,8 +123,6 @@ export const Header = () => {
     [profile?.display_name, userEmail],
   );
 
-  const debouncedQuery = useDebounce(searchQuery, 300);
-
   // Debounced "save-to-history" — fires once typing pauses for 1s.
   const handleQueryChange = useCallback(
     (next: string) => {
