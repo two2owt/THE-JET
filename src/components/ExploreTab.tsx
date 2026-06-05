@@ -94,6 +94,7 @@ interface ExploreTabProps {
 
 export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [filteredDeals, setFilteredDeals] = useState<Deal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
