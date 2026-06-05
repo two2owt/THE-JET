@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { useNavigate, useSearchParams } from "react-router";
+import { useNavigate, useSearchParams, useLocation } from "react-router";
 import { Search } from "lucide-react";
 import { IconButton } from "./ui/icon-button";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +14,7 @@ import { HeaderSearch } from "./navigation/HeaderSearch";
 
 export const Header = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [urlSearchParams, setUrlSearchParams] = useSearchParams();
   const { venues, deals, onVenueSelect, hideSearch } = useHeaderContext();
   const isMobile = useIsMobile();
@@ -101,6 +102,29 @@ export const Header = () => {
       /* storage disabled — ignore */
     }
   }, [searchExpanded]);
+
+  // Reset search state when navigating to a different page so old queries
+  // and dropdowns don't leak into the next view.
+  const prevPathnameRef = useRef(location.pathname);
+  useEffect(() => {
+    if (prevPathnameRef.current === location.pathname) return;
+    prevPathnameRef.current = location.pathname;
+
+    setSearchQuery("");
+    setShowResults(false);
+    setSearchExpanded(false);
+    try {
+      window.sessionStorage.removeItem(SEARCH_QUERY_KEY);
+      window.sessionStorage.removeItem(SEARCH_EXPANDED_KEY);
+    } catch {
+      /* storage disabled — ignore */
+    }
+    const next = new URLSearchParams(urlSearchParams);
+    if (next.has("q")) {
+      next.delete("q");
+      setUrlSearchParams(next, { replace: true });
+    }
+  }, [location.pathname, urlSearchParams, setUrlSearchParams]);
 
   useEffect(() => {
     let cancelled = false;
