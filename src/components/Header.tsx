@@ -9,7 +9,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useProfile } from "@/hooks/useProfile";
 import { HeaderUserMenu } from "./navigation/HeaderUserMenu";
-import { InlineBreadcrumbs } from "./navigation/InlineBreadcrumbs";
 import { HeaderSearch } from "./navigation/HeaderSearch";
 
 export const Header = () => {
@@ -266,9 +265,6 @@ export const Header = () => {
             </span>
           </div>
         )}
-
-        {/* Inline breadcrumbs — desktop only, sits next to the logo SaaS-style */}
-        {!isMobile && <InlineBreadcrumbs />}
 
         {/* Search icon — mobile collapsed state */}
         {showSearchIcon && (
