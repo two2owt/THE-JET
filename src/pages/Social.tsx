@@ -111,6 +111,8 @@ export default function Social() {
       setIsSearching(false);
       return;
     }
+    let cancelled = false;
+    const controller = new AbortController();
     setIsSearching(true);
     (async () => {
       try {
@@ -120,16 +122,23 @@ export default function Social() {
           .ilike("display_name", `%${q}%`)
           .neq("id", user.id)
           .order("display_name", { ascending: true })
-          .limit(25);
+          .limit(25)
+          .abortSignal(controller.signal);
+        if (cancelled) return;
         if (error) throw error;
         setSearchResults(data || []);
       } catch (err) {
+        if (cancelled || (err as { name?: string })?.name === "AbortError") return;
         console.error("Error searching users:", err);
         setSearchResults([]);
       } finally {
-        setIsSearching(false);
+        if (!cancelled) setIsSearching(false);
       }
     })();
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
   }, [debouncedSearchQuery, user]);
 
   const fetchProfiles = async () => {
