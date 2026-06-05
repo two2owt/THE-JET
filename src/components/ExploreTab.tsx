@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useDebounce } from "@/hooks/useDebounce";
 import { Input } from "./ui/input";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -93,6 +94,7 @@ interface ExploreTabProps {
 
 export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [filteredDeals, setFilteredDeals] = useState<Deal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -155,7 +157,7 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
 
   useEffect(() => {
     filterDeals();
-  }, [searchQuery, deals, selectedCategories, userPreferences, preferenceFilterEnabled]);
+  }, [debouncedSearchQuery, deals, selectedCategories, userPreferences, preferenceFilterEnabled]);
 
   const getUserLocation = () => {
     if (!navigator.geolocation) {
@@ -288,8 +290,8 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
     }
     
     // Apply search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
+    if (debouncedSearchQuery.trim()) {
+      const query = debouncedSearchQuery.toLowerCase();
       filtered = filtered.filter(
         (deal) =>
           deal.title.toLowerCase().includes(query) ||

@@ -8,6 +8,7 @@ import { useHeaderContext } from "@/contexts/HeaderContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useProfile } from "@/hooks/useProfile";
+import { useDebounce } from "@/hooks/useDebounce";
 import { HeaderUserMenu } from "./navigation/HeaderUserMenu";
 import { HeaderSearch } from "./navigation/HeaderSearch";
 
@@ -50,6 +51,8 @@ export const Header = () => {
   const { addToSearchHistory } = useSearchHistory(userId);
   const historyDebounceRef = useRef<number | null>(null);
 
+  const debouncedQuery = useDebounce(searchQuery, 300);
+
   useEffect(() => {
     if (!mountedRef.current) {
       mountedRef.current = true;
@@ -66,13 +69,17 @@ export const Header = () => {
     } catch {
       /* storage disabled — ignore */
     }
+  }, [searchQuery]);
+
+  // Sync debounced query to the URL so results don't churn while typing.
+  useEffect(() => {
     const current = urlSearchParams.get("q") ?? "";
-    if (current === searchQuery) return;
+    if (current === debouncedQuery) return;
     const next = new URLSearchParams(urlSearchParams);
-    if (searchQuery) next.set("q", searchQuery);
+    if (debouncedQuery) next.set("q", debouncedQuery);
     else next.delete("q");
     setUrlSearchParams(next, { replace: true });
-  }, [searchQuery, urlSearchParams, setUrlSearchParams]);
+  }, [debouncedQuery, urlSearchParams, setUrlSearchParams]);
 
   // React to external URL changes (back/forward, deep links) by syncing the
   // query state in the opposite direction.
@@ -290,8 +297,8 @@ export const Header = () => {
             mounted={mounted}
             isMobile={isMobile}
             expanded={searchExpanded}
-            query={searchQuery}
-            showResults={showResults}
+            query={debouncedQuery}
+            showResults={showResults && debouncedQuery.trim().length > 0}
             venues={venues}
             deals={deals}
             onVenueSelect={handleVenueSelectFromSearch}
