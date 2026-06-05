@@ -61,10 +61,8 @@ export const useDeepLinking = (handlers?: DeepLinkHandler) => {
         return;
       }
 
-      // Call the handler if provided
-      if (handlers?.onDealOpen) {
-        handlers.onDealOpen(dealId, deal);
-      }
+      // Call the handler if provided (read via ref so this callback is stable).
+      handlersRef.current?.onDealOpen?.(dealId, deal);
 
       // Show success toast
       toast.success(`${deal.title}`, {
@@ -79,20 +77,18 @@ export const useDeepLinking = (handlers?: DeepLinkHandler) => {
       console.error("Error handling deal deep link:", error);
       toast.error("Failed to load deal");
     }
-  }, [handlers, searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams]);
 
   // Handle venue deep link. The `?venue=` param is now a stable venue id,
   // but we accept legacy name-based links too — the page-level handler
   // resolves either form against the loaded venue list.
   const handleVenueDeepLink = useCallback((venueIdOrName: string) => {
-    if (handlers?.onVenueOpen) {
-      handlers.onVenueOpen(venueIdOrName);
-    }
+    handlersRef.current?.onVenueOpen?.(venueIdOrName);
     // Note: we intentionally DO NOT clear the `?venue=` param so the URL
     // stays shareable — reloads or shared links will reopen the same
     // JetCard. The param is removed only when the JetCard is closed
     // (handled in the page that owns the selected-venue state).
-  }, [handlers]);
+  }, []);
 
   // Navigate to a deal (for use from notifications)
   const navigateToDeal = useCallback((dealId: string) => {
