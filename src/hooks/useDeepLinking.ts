@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -11,6 +11,21 @@ interface DeepLinkHandler {
 export const useDeepLinking = (handlers?: DeepLinkHandler) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Keep a live ref to handlers so the effect below doesn't re-fire every
+  // render just because the caller passes a fresh `handlers` object literal.
+  // Without this, setSelectedVenue → URL sync → searchParams change →
+  // handler runs again → setSelectedVenue → infinite loop (JetCard never
+  // mounts, so its buttons + nearby parking never appear).
+  const handlersRef = useRef(handlers);
+  useEffect(() => {
+    handlersRef.current = handlers;
+  }, [handlers]);
+
+  // Track the last deal/venue param we've already handled so we don't
+  // re-trigger handlers on unrelated searchParams changes.
+  const lastHandledDealRef = useRef<string | null>(null);
+  const lastHandledVenueRef = useRef<string | null>(null);
 
   // Handle deal deep link
   const handleDealDeepLink = useCallback(async (dealId: string) => {
@@ -89,17 +104,24 @@ export const useDeepLinking = (handlers?: DeepLinkHandler) => {
     navigate(`/?venue=${encodeURIComponent(venueId)}`);
   }, [navigate]);
 
-  // Check for deep links on mount and URL changes
+  // Check for deep links on mount and URL changes. Only fire each handler
+  // when the underlying param value actually changes.
   useEffect(() => {
     const dealId = searchParams.get("deal");
     const venueParam = searchParams.get("venue");
 
-    if (dealId) {
+    if (dealId && dealId !== lastHandledDealRef.current) {
+      lastHandledDealRef.current = dealId;
       handleDealDeepLink(dealId);
+    } else if (!dealId) {
+      lastHandledDealRef.current = null;
     }
 
-    if (venueParam) {
+    if (venueParam && venueParam !== lastHandledVenueRef.current) {
+      lastHandledVenueRef.current = venueParam;
       handleVenueDeepLink(decodeURIComponent(venueParam));
+    } else if (!venueParam) {
+      lastHandledVenueRef.current = null;
     }
   }, [searchParams, handleDealDeepLink, handleVenueDeepLink]);
 
