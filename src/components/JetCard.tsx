@@ -144,38 +144,68 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               objectFit: 'cover',
             }}
             loading="lazy"
-            onError={(e) => { e.currentTarget.src = '/placeholder.svg'; e.currentTarget.alt = 'Placeholder'; e.currentTarget.style.filter = 'brightness(0.25)'; }}
+            onError={(e) => {
+              // Swap to the centered JET-mark placeholder rather than the
+              // generic stretched placeholder.svg so the card stays on-brand.
+              const img = e.currentTarget;
+              img.src = '/jet-email-logo.png';
+              img.alt = 'JET';
+              img.style.objectFit = 'contain';
+              img.style.padding = 'clamp(12px, 4%, 22px)';
+              img.style.filter = 'none';
+              img.style.opacity = '0.85';
+            }}
           />
         ) : (
-          <img
-            src="/placeholder.svg"
-            alt="Placeholder"
+          // No venue image — render the JET mark, centered with adaptive
+          // breathing room so it scales gracefully across viewport widths.
+          <div
+            aria-hidden="true"
             style={{
               position: 'absolute',
               inset: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              filter: 'brightness(0.25)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 'clamp(10px, 4%, 20px)',
+              background:
+                'radial-gradient(circle at 50% 50%, hsl(var(--primary) / 0.18), transparent 70%)',
             }}
-            loading="lazy"
+          >
+            <img
+              src="/jet-email-logo.png"
+              alt=""
+              loading="lazy"
+              style={{
+                maxWidth: '46%',
+                maxHeight: '78%',
+                width: 'auto',
+                height: 'auto',
+                objectFit: 'contain',
+                opacity: 0.9,
+                filter: 'drop-shadow(0 2px 8px hsl(var(--primary) / 0.35))',
+              }}
+            />
+          </div>
+        )}
+        {/* JET watermark — only render over real venue photos so the
+            placeholder (which is the same mark, centered) isn't duplicated. */}
+        {venue.imageUrl && (
+          <img
+            src="/jet-email-logo.png"
+            alt="JET"
+            style={{
+              position: 'absolute',
+              bottom: '8px',
+              right: '8px',
+              width: '28px',
+              height: '28px',
+              opacity: 0.5,
+              objectFit: 'contain',
+              pointerEvents: 'none',
+            }}
           />
         )}
-        {/* JET branding watermark */}
-        <img
-          src="/jet-email-logo.png"
-          alt="JET"
-          style={{
-            position: 'absolute',
-            bottom: '8px',
-            right: '8px',
-            width: '28px',
-            height: '28px',
-            opacity: 0.5,
-            objectFit: 'contain',
-            pointerEvents: 'none',
-          }}
-        />
         <div style={{
           position: 'absolute',
           inset: 0,
