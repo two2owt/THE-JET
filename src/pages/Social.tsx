@@ -415,6 +415,7 @@ export default function Social() {
                   const isPending = pendingRequests.some(
                     (r) => r.profile?.id === profile.id,
                   );
+                  const isSent = sentRequestIds.has(profile.id);
                   return (
                     <div key={profile.id} style={cardStyle}>
                       <button
@@ -430,15 +431,35 @@ export default function Social() {
                         <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                           <DisplayName name={profile.display_name || "User"} style={nameStyle} />
                           <p style={subtitleStyle}>
-                            {isConnected ? "Connected" : isPending ? "Request pending" : "Tap to view profile"}
+                            {isConnected
+                              ? "Connected"
+                              : isPending
+                                ? "Wants to connect with you"
+                                : isSent
+                                  ? "Request sent"
+                                  : "Tap to view profile"}
                           </p>
                         </div>
                       </button>
-                      {!isConnected && !isPending && (
+                      {!isConnected && !isPending && !isSent && (
                         <button onClick={() => handleSendRequest(profile.id)} style={primaryActionStyle}>
                           <UserPlus style={{ width: '14px', height: '14px' }} />
                           Add
                         </button>
+                      )}
+                      {isSent && (
+                        <span
+                          style={{
+                            ...primaryActionStyle,
+                            background: 'hsl(var(--muted) / 0.6)',
+                            color: 'hsl(var(--muted-foreground))',
+                            cursor: 'default',
+                          }}
+                          aria-label="Friend request already sent"
+                        >
+                          <Check style={{ width: '14px', height: '14px' }} />
+                          Sent
+                        </span>
                       )}
                     </div>
                   );
