@@ -51,6 +51,8 @@ export const Header = () => {
   const { addToSearchHistory } = useSearchHistory(userId);
   const historyDebounceRef = useRef<number | null>(null);
 
+  const debouncedQuery = useDebounce(searchQuery, 300);
+
   useEffect(() => {
     if (!mountedRef.current) {
       mountedRef.current = true;
