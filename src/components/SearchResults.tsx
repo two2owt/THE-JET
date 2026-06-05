@@ -1,6 +1,6 @@
 import { MapPin, Tag, X, Search as SearchIcon, Store, Sparkles, Compass, LayoutGrid } from "lucide-react";
 import { createPortal } from "react-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -42,6 +42,7 @@ export const SearchResults = ({
   // Position version — bumped whenever we should recalc (resize, orientation, dropdown open/close).
   // Used as a key on the panel so layout-affecting CSS variables are re-read.
   const [posVersion, setPosVersion] = useState(0);
+  const panelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!isVisible) return;
@@ -63,6 +64,24 @@ export const SearchResults = ({
       vv?.removeEventListener('resize', recalc);
     };
   }, [isVisible]);
+
+  // Desktop click-outside dismiss. Mobile already has a tap-through backdrop.
+  // We exclude the header search input itself so typing/focusing the pill
+  // doesn't close the panel that just opened.
+  useEffect(() => {
+    if (!isVisible) return;
+    const handlePointerDown = (e: PointerEvent) => {
+      const target = e.target as Node | null;
+      if (!target) return;
+      if (panelRef.current?.contains(target)) return;
+      const headerEl = document.querySelector('header[role="banner"]');
+      if (headerEl?.contains(target)) return;
+      onClose();
+    };
+    // Use pointerdown so we beat focus/blur races on touch + mouse.
+    document.addEventListener('pointerdown', handlePointerDown, true);
+    return () => document.removeEventListener('pointerdown', handlePointerDown, true);
+  }, [isVisible, onClose]);
 
   const q = query.trim().toLowerCase();
 
@@ -213,6 +232,7 @@ export const SearchResults = ({
 
       <div
         key={posVersion}
+        ref={panelRef}
         role="dialog"
         aria-label="Search results"
         className="fixed left-2 right-2 sm:left-auto sm:right-4 z-[9999] animate-fade-in sm:w-[420px] sm:max-w-[min(420px,calc(100vw-2rem))]"
