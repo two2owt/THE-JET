@@ -8,6 +8,7 @@ import { useHeaderContext } from "@/contexts/HeaderContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useProfile } from "@/hooks/useProfile";
+import { useDebounce } from "@/hooks/useDebounce";
 import { HeaderUserMenu } from "./navigation/HeaderUserMenu";
 import { HeaderSearch } from "./navigation/HeaderSearch";
 
