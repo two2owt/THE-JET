@@ -1,6 +1,13 @@
 import { useLocation, useNavigate } from "react-router";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+/**
+ * Default avatar artwork — the JET mark. Served from `public/` so it doesn't
+ * need bundler resolution and is shared with other surfaces (JetCard, email).
+ * Used for both signed-out users and signed-in users who haven't set an avatar.
+ */
+const DEFAULT_AVATAR_SRC = "/jet-email-logo.png";
+
 interface HeaderUserMenuProps {
   /** Whether the parent header has finished its mount transition */
   mounted: boolean;
@@ -31,6 +38,9 @@ export function HeaderUserMenu({
   const target = userId ? "/profile" : "/auth";
   const label = userId ? "Go to profile" : "Sign in";
   const initials = getInitials(displayName);
+  // Prefer the user's uploaded avatar; otherwise fall back to the JET mark
+  // so the button never renders bare initials when a brand image is available.
+  const imageSrc = avatarUrl || DEFAULT_AVATAR_SRC;
 
   return (
     <button
@@ -41,11 +51,18 @@ export function HeaderUserMenu({
       style={triggerStyle(mounted, isOnAccountRoute)}
     >
       <Avatar className="h-full w-full" style={avatarInnerStyle}>
-        <AvatarImage src={avatarUrl || ""} alt="" />
+        <AvatarImage
+          src={imageSrc}
+          alt=""
+          // Center the JET mark inside the circular frame with a touch of
+          // breathing room. `object-contain` prevents the logo from being
+          // cropped to a square edge like a photo avatar would be.
+          className={avatarUrl ? "object-cover" : "object-contain p-1 bg-background"}
+        />
         <AvatarFallback
           className="text-primary-foreground font-bold tracking-wide flex items-center justify-center"
           style={avatarFallbackStyle}
-          delayMs={avatarUrl ? 400 : 0}
+          delayMs={400}
         >
           <span
             aria-hidden="true"
