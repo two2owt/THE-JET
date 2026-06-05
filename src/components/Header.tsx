@@ -266,9 +266,6 @@ export const Header = () => {
           </div>
         )}
 
-        {/* Inline breadcrumbs — desktop only, sits next to the logo SaaS-style */}
-        {!isMobile && <InlineBreadcrumbs />}
-
         {/* Search icon — mobile collapsed state */}
         {showSearchIcon && (
           <IconButton
