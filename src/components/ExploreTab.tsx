@@ -290,8 +290,8 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
     }
     
     // Apply search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
+    if (debouncedSearchQuery.trim()) {
+      const query = debouncedSearchQuery.toLowerCase();
       filtered = filtered.filter(
         (deal) =>
           deal.title.toLowerCase().includes(query) ||
