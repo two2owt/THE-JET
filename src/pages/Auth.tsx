@@ -544,7 +544,7 @@ const Auth = () => {
       {/* Editorial vignette — keeps focus on the card */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,hsl(0_0%_0%/0.55)_100%)]" />
 
-      <div className="relative z-10 mx-auto w-full max-w-[420px] sm:max-w-md">
+      <div className="relative z-10 mx-auto w-full max-w-md">
         {/* Glassmorphic Card */}
         <div className="flex flex-col gap-fluid-sm sm:gap-fluid-md rounded-3xl border-hairline bg-background/30 p-fluid-sm sm:p-fluid-md lg:p-fluid-lg backdrop-blur-2xl glow-ambient">
           {/* Header */}
@@ -569,7 +569,7 @@ const Auth = () => {
             <h1 className="heading-luxe-gradient">
               {mode === "signup" ? "Join JET" : "Welcome to JET"}
             </h1>
-            <div className="divider-luxe mx-auto" style={{ maxWidth: "72px" }} />
+            <div className="divider-luxe mx-auto max-w-[72px]" />
             <p className="max-w-xs text-fluid-sm text-muted-foreground">
               {subtitle}
             </p>
@@ -588,7 +588,7 @@ const Auth = () => {
                 aria-selected={mode === "signin"}
                 onClick={() => switchToMode("signin")}
                 disabled={isLoading}
-                className={`min-h-[40px] rounded-full text-fluid-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
+                className={`min-h-10 rounded-full text-fluid-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
                   mode === "signin"
                     ? "bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-md"
                     : "text-muted-foreground hover:text-foreground"
@@ -602,7 +602,7 @@ const Auth = () => {
                 aria-selected={mode === "signup"}
                 onClick={() => switchToMode("signup")}
                 disabled={isLoading}
-                className={`min-h-[40px] rounded-full text-fluid-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
+                className={`min-h-10 rounded-full text-fluid-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
                   mode === "signup"
                     ? "bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-md"
                     : "text-muted-foreground hover:text-foreground"
@@ -913,7 +913,7 @@ const Auth = () => {
   
           {/* Forgot password link — signin only */}
           {mode === "signin" && (
-            <div className="mt-0 sm:mt-fluid-xs flex justify-end">
+            <div className="flex justify-end">
               <button
                 type="button"
                 onClick={() => setIsForgotPassword(true)}
