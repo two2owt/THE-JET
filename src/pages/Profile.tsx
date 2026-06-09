@@ -344,19 +344,18 @@ export default function Profile() {
             </p>
 
             {!isEditing && (
-              <button
+              <Button
                 type="button"
                 onClick={() => setIsEditing(true)}
+                variant="outline"
+                size="sm"
                 aria-label="Edit profile"
-                /* Use an explicit floor (16px) on top margin so the pill
-                   never collides with the email row on the narrowest phones
-                   (320px), where clamp()-driven --space-lg can compress. */
                 style={{ marginTop: 'max(16px, var(--space-lg))' }}
-                className="relative z-10 inline-flex items-center gap-1.5 h-9 px-4 rounded-full border border-primary/40 bg-card/60 backdrop-blur-md text-xs font-semibold text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors"
+                className="relative z-10 rounded-full border-primary/40 bg-card/60 backdrop-blur-md text-xs font-semibold hover:border-primary/70 hover:bg-primary/10 hover:text-primary"
               >
                 <Edit2 className="w-3.5 h-3.5" />
                 Edit profile
-              </button>
+              </Button>
             )}
           </div>
 
