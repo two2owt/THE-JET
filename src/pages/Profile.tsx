@@ -14,6 +14,7 @@ import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useConnections } from "@/hooks/useConnections";
 import { useProfile } from "@/hooks/useProfile";
+import { useNotifications } from "@/hooks/useNotifications";
 import { Camera, Edit2, X, Save, Heart, Users, Shield, LogOut, Loader2, Instagram, Twitter, Facebook, Linkedin, Video, Mail, Bell, ChevronRight, Link2, Share2, Activity as ActivityIcon } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/EmptyState";
@@ -125,6 +126,9 @@ export default function Profile() {
   const {
     connections
   } = useConnections(user?.id);
+  const {
+    notifications
+  } = useNotifications(!!user);
   // Sync hydrated profile into the editable form state. Only fires when
   // a fresh profile object arrives from the cache/network.
   useEffect(() => {
@@ -448,7 +452,7 @@ export default function Profile() {
             {[
               { icon: Heart, label: 'Favorites', value: favorites.length, to: '/favorites' },
               { icon: Users, label: 'Connections', value: connections.length, to: '/social' },
-              { icon: Bell, label: 'Alerts', value: 0, to: '/?tab=notifications' as string | null },
+              { icon: Bell, label: 'Alerts', value: notifications.filter(n => !n.read).length, to: '/?tab=notifications' },
             ].map(({ icon: Icon, label, value, to }) => {
               const cn =
                 "min-w-0 flex flex-col items-center justify-center rounded-2xl border-hairline bg-card/40 backdrop-blur-xl py-4 px-2 hover:border-primary/40 hover:bg-primary/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50";
