@@ -894,8 +894,8 @@ const Auth = () => {
                       </label>
                     </div>
                     {validationErrors.consent && (
-                      <p id="auth-consent-error" className="ml-6 inline-flex items-center gap-1.5 text-xs text-destructive">
-                        <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+                      <p id="auth-consent-error" className="auth-field-error auth-field-error--indented">
+                        <AlertCircle />
                         {validationErrors.consent}
                       </p>
                     )}
@@ -917,8 +917,8 @@ const Auth = () => {
                       </label>
                     </div>
                     {validationErrors.locationConsent && (
-                      <p id="auth-location-consent-error" className="ml-6 inline-flex items-center gap-1.5 text-xs text-destructive">
-                        <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+                      <p id="auth-location-consent-error" className="auth-field-error auth-field-error--indented">
+                        <AlertCircle />
                         {validationErrors.locationConsent}
                       </p>
                     )}
