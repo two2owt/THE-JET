@@ -655,6 +655,145 @@ All colors MUST be HSL.
     }
   }
 
+  /* ====================================================================
+     Auth page — full-screen layout, mesh gradient, floating blobs,
+     48px inputs, shake-on-error, layered card shadow.
+     All animations use GPU-only transform/opacity for 0 CLS.
+     ==================================================================== */
+  .auth-card {
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+    border-radius: 16px;
+    padding: 28px;
+    background: hsl(var(--background) / 0.55);
+    border: 1px solid hsl(0 0% 100% / 0.06);
+    backdrop-filter: blur(28px) saturate(140%);
+    -webkit-backdrop-filter: blur(28px) saturate(140%);
+    box-shadow:
+      0 0 0 1px hsl(0 0% 100% / 0.03),
+      0 1px 0 hsl(0 0% 100% / 0.06) inset,
+      0 20px 50px -20px hsl(0 0% 0% / 0.7),
+      0 40px 80px -30px hsl(var(--primary) / 0.25),
+      0 0 60px -10px hsl(var(--gold) / 0.08);
+    position: relative;
+    z-index: 10;
+  }
+  @media (min-width: 640px) {
+    .auth-card { padding: 40px; }
+  }
+  .auth-card-logo {
+    height: 48px;
+    width: 48px;
+    margin: 0 auto 20px;
+    display: block;
+    filter: drop-shadow(0 6px 22px hsl(var(--primary) / 0.45));
+  }
+
+  /* Mesh / radial gradient backdrop layered behind the card */
+  .auth-mesh-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 15%, hsl(var(--primary) / 0.30) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 35% at 85% 25%, hsl(var(--accent) / 0.22) 0%, transparent 60%),
+      radial-gradient(ellipse 55% 45% at 75% 85%, hsl(var(--primary-glow) / 0.20) 0%, transparent 60%),
+      radial-gradient(ellipse 45% 35% at 15% 90%, hsl(var(--gold) / 0.10) 0%, transparent 60%);
+  }
+  /* Geometric pattern overlay — low opacity dots */
+  .auth-pattern {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.06;
+    background-image: radial-gradient(hsl(var(--foreground)) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  /* Floating animated blobs — composited transforms only */
+  .auth-blob {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(60px);
+    opacity: 0.5;
+    pointer-events: none;
+    will-change: transform;
+  }
+  .auth-blob-1 {
+    width: 320px; height: 320px;
+    top: -80px; left: -80px;
+    background: hsl(var(--primary) / 0.5);
+    animation: auth-float-1 16s ease-in-out infinite;
+  }
+  .auth-blob-2 {
+    width: 260px; height: 260px;
+    bottom: -60px; right: -40px;
+    background: hsl(var(--accent) / 0.45);
+    animation: auth-float-2 20s ease-in-out infinite;
+  }
+  .auth-blob-3 {
+    width: 220px; height: 220px;
+    top: 40%; right: 15%;
+    background: hsl(var(--gold) / 0.25);
+    animation: auth-float-3 24s ease-in-out infinite;
+  }
+  @keyframes auth-float-1 {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    50%      { transform: translate3d(40px, 30px, 0) scale(1.1); }
+  }
+  @keyframes auth-float-2 {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    50%      { transform: translate3d(-30px, -40px, 0) scale(1.08); }
+  }
+  @keyframes auth-float-3 {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    50%      { transform: translate3d(20px, -25px, 0) scale(0.95); }
+  }
+
+  /* 48px tall input override (auth only) */
+  .auth-input {
+    height: 48px !important;
+    min-height: 48px !important;
+    padding: 12px 14px !important;
+    border-radius: 10px !important;
+    font-size: 15px !important;
+  }
+  .auth-input:focus-visible {
+    border-color: hsl(var(--primary) / 0.6) !important;
+    box-shadow:
+      0 0 0 3px hsl(var(--primary) / 0.18),
+      0 0 0 1px hsl(var(--primary) / 0.5) inset !important;
+  }
+
+  /* Shake animation on form error */
+  .auth-shake { animation: auth-shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+  @keyframes auth-shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+    40%, 60% { transform: translate3d(4px, 0, 0); }
+  }
+
+  /* Loading overlay covering the form */
+  .auth-loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: hsl(var(--background) / 0.5);
+    backdrop-filter: blur(2px);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    pointer-events: all;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .auth-blob-1, .auth-blob-2, .auth-blob-3 { animation: none; }
+    .auth-shake { animation: none; }
+  }
+
   /* Mobile map controls - responsive based on device */
   /* Offset Mapbox built-in controls so they never sit under Header/BottomNav */
   .mapboxgl-ctrl-top-left,
