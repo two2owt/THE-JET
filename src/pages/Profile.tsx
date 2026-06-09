@@ -617,12 +617,20 @@ export default function Profile() {
               onClick={() => navigate(to)}
               className="group flex items-center gap-fluid-sm w-full text-left p-fluid-sm rounded-full border-hairline bg-card/40 backdrop-blur-xl hover:border-primary/50 hover:bg-card/60 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all"
             >
-              <span className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary/20 to-primary-glow/10 text-primary border-hairline">
+              <span className="w-11 h-11 rounded-full inline-flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary/20 to-primary-glow/10 text-primary border-hairline">
                 <Icon className="w-5 h-5" />
               </span>
-              <span className="flex-1 min-w-0">
-                <span className="heading-luxe-card text-fluid-sm block">{label}</span>
-                <span className="text-xs text-muted-foreground truncate block">{desc}</span>
+              <span
+                className="flex-1 min-w-0"
+                style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}
+              >
+                <span className="heading-luxe-card text-fluid-sm" style={{ display: 'block' }}>{label}</span>
+                <span
+                  className="text-xs text-muted-foreground"
+                  style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                >
+                  {desc}
+                </span>
               </span>
               <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0" />
             </button>
