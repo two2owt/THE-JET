@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Bell, MapPin, Radio, Loader2, Save, Moon, Smartphone, User, Heart, Shield, CreditCard, ShieldCheck } from "lucide-react";
+import { Bell, MapPin, Radio, Loader2, Save, Moon, Smartphone, User, Heart, Shield, CreditCard, ShieldCheck, ChevronLeft } from "lucide-react";
 
 import { toast } from "sonner";
 import { z } from "zod";
@@ -40,13 +40,7 @@ interface UserPreferences {
   background_tracking_enabled: boolean;
 }
 
-interface SettingsProps {
-  /** When true, skip the page layout chrome (header, page title, profile link card)
-   *  so Settings can be embedded inside another page (e.g. Profile). */
-  embedded?: boolean;
-}
-
-const Settings = ({ embedded = false }: SettingsProps = {}) => {
+const Settings = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { isRegistered: isPushRegistered, isNative, initializePushNotifications, unregister: unregisterPush } = usePushNotifications();
@@ -230,15 +224,12 @@ const Settings = ({ embedded = false }: SettingsProps = {}) => {
   // Consistent layout wrapper for Settings page.
   // Settings is reached from the Crew (social) tab — keep that highlighted.
   const SettingsLayout = useCallback(
-    ({ children }: { children: React.ReactNode }) =>
-      embedded ? (
-        <>{children}</>
-      ) : (
-        <PageLayout defaultTab="social" headerConfig={headerConfig}>
-          {children}
-        </PageLayout>
-      ),
-    [headerConfig, embedded]
+    ({ children }: { children: React.ReactNode }) => (
+      <PageLayout defaultTab="social" headerConfig={headerConfig}>
+        {children}
+      </PageLayout>
+    ),
+    [headerConfig]
   );
 
   if (isAuthLoading || isLoading) {
@@ -270,32 +261,24 @@ const Settings = ({ embedded = false }: SettingsProps = {}) => {
   return (
     <SettingsLayout>
       <PageShell variant="relaxed" className="!max-w-3xl">
-        {!embedded && (
-          <PageTitle subtitle="Manage your account, preferences, and privacy.">
-            Settings
-          </PageTitle>
-        )}
+        {/* Breadcrumb — slim link back to Profile so the two pages have a clear
+            parent/child relationship without duplicating each other's content. */}
+        <nav aria-label="Breadcrumb" className="mb-fluid-sm">
+          <button
+            type="button"
+            onClick={() => navigate("/profile")}
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full border border-primary/30 bg-card/50 backdrop-blur-md text-xs font-semibold text-muted-foreground hover:border-primary/60 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+            <span>Profile</span>
+            <span aria-hidden="true" className="text-muted-foreground/50">/</span>
+            <span className="text-foreground">Settings</span>
+          </button>
+        </nav>
 
-        {!embedded && (
-          /* Profile Link — only shown when accessed as a standalone page */
-          <Card className="p-4 sm:p-5 md:p-6 bg-card/90 backdrop-blur-sm shadow-card">
-            <Button
-              onClick={() => navigate("/profile")}
-              variant="outline"
-              className="w-full h-auto py-4 justify-start"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center">
-                  <User className="w-5 h-5 text-primary" />
-                </div>
-                <div className="text-left">
-                  <div className="font-semibold text-foreground">My Profile</div>
-                  <div className="text-xs text-muted-foreground">View and edit your profile</div>
-                </div>
-              </div>
-            </Button>
-          </Card>
-        )}
+        <PageTitle subtitle="Preferences, privacy, notifications, and subscription.">
+          Settings
+        </PageTitle>
 
         {/* Subscription Section - visible when monetization is enabled OR user is admin */}
         {userId && showSubscriptionSection && (
