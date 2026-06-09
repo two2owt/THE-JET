@@ -296,15 +296,13 @@ function ChatView({
 
   const friend = conversations.find((c) => c.friendId === friendId);
 
-  const { messages, loading, sendMessage, sendImage, markAsRead } = useMessages(
-    userId,
-    friendId
-  );
+  const { messages, loading, sendMessage, sendImage, markAsRead, isFriendTyping, sendTyping } =
+    useMessages(userId, friendId);
 
   // Scroll to bottom on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, isFriendTyping]);
 
   // Mark as read
   useEffect(() => {
@@ -436,6 +434,18 @@ function ChatView({
                 </div>
               );
             })}
+            {isFriendTyping && (
+              <div className="flex justify-start" aria-live="polite" aria-label={`${friend?.friendName || 'Friend'} is typing`}>
+                <div
+                  className="bg-muted text-foreground rounded-2xl rounded-bl-md inline-flex items-center gap-1"
+                  style={{ padding: 'clamp(8px, 2vw, 12px) clamp(12px, 2.6vw, 16px)' }}
+                >
+                  <span className="typing-dot" style={{ animationDelay: '0ms' }} />
+                  <span className="typing-dot" style={{ animationDelay: '150ms' }} />
+                  <span className="typing-dot" style={{ animationDelay: '300ms' }} />
+                </div>
+              </div>
+            )}
             <div ref={bottomRef} />
           </div>
         )}
@@ -468,7 +478,10 @@ function ChatView({
         </Button>
         <Input
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => {
+            setText(e.target.value);
+            if (e.target.value.trim()) sendTyping();
+          }}
           onKeyDown={handleKeyDown}
           placeholder="Type a message…"
           className="flex-1"

@@ -21,7 +21,10 @@ function getConversationId(userA: string, userB: string): string {
 export const useMessages = (userId?: string, friendId?: string) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isFriendTyping, setIsFriendTyping] = useState(false);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const typingTimeoutRef = useRef<number | null>(null);
+  const lastTypingSentRef = useRef<number>(0);
 
   const conversationId = userId && friendId ? getConversationId(userId, friendId) : null;
 
@@ -157,6 +160,10 @@ export const useMessages = (userId?: string, friendId?: string) => {
         (payload) => {
           if (payload.eventType === "INSERT") {
             setMessages((prev) => [...prev, payload.new as Message]);
+            // A real message lands → clear the typing indicator immediately.
+            if ((payload.new as Message).sender_id === friendId) {
+              setIsFriendTyping(false);
+            }
           } else if (payload.eventType === "UPDATE") {
             setMessages((prev) =>
               prev.map((m) =>
@@ -172,12 +179,35 @@ export const useMessages = (userId?: string, friendId?: string) => {
           }
         }
       )
+      .on("broadcast", { event: "typing" }, (payload) => {
+        const fromId = (payload?.payload as { userId?: string } | undefined)?.userId;
+        if (!fromId || fromId === userId) return;
+        setIsFriendTyping(true);
+        if (typingTimeoutRef.current) window.clearTimeout(typingTimeoutRef.current);
+        // Auto-clear if no further typing event lands within 3s.
+        typingTimeoutRef.current = window.setTimeout(() => setIsFriendTyping(false), 3000);
+      })
       .subscribe();
 
     return () => {
       channelRef.current?.unsubscribe();
+      if (typingTimeoutRef.current) window.clearTimeout(typingTimeoutRef.current);
+      setIsFriendTyping(false);
     };
-  }, [conversationId, fetchMessages]);
+  }, [conversationId, fetchMessages, userId, friendId]);
+
+  // Throttled typing broadcast — fires at most every 1.5s while user is typing.
+  const sendTyping = useCallback(() => {
+    if (!userId || !conversationId || !channelRef.current) return;
+    const now = Date.now();
+    if (now - lastTypingSentRef.current < 1500) return;
+    lastTypingSentRef.current = now;
+    channelRef.current.send({
+      type: "broadcast",
+      event: "typing",
+      payload: { userId },
+    });
+  }, [userId, conversationId]);
 
   // Get unread count for a specific friend
   const getUnreadCount = useCallback(
@@ -196,6 +226,8 @@ export const useMessages = (userId?: string, friendId?: string) => {
     shareDeal,
     markAsRead,
     getUnreadCount,
+    isFriendTyping,
+    sendTyping,
   };
 };
 
