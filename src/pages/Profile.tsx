@@ -338,7 +338,7 @@ export default function Profile() {
                 {pronouns}
               </span>
             )}
-            <p className="mt-1.5 inline-flex items-center gap-1.5 text-fluid-sm text-muted-foreground max-w-full">
+            <p className="mt-2 inline-flex items-center gap-1.5 text-fluid-sm text-muted-foreground max-w-full">
               <Mail className="w-3.5 h-3.5 flex-shrink-0" />
               <span className="truncate">{user.email}</span>
             </p>
@@ -348,9 +348,10 @@ export default function Profile() {
                 type="button"
                 onClick={() => setIsEditing(true)}
                 aria-label="Edit profile"
-                /* mt-fluid-md gives the focus ring (4px gold outline) clear
-                   breathing room from the email row above on small phones. */
-                className="mt-fluid-md inline-flex items-center gap-1.5 h-9 px-4 rounded-full border border-primary/40 bg-card/60 backdrop-blur-md text-xs font-semibold text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors"
+                /* mt-fluid-lg keeps the Edit pill clear of the email row's
+                   line-box on small phones (prevents pill background from
+                   visually colliding with the email text/icon). */
+                className="mt-fluid-lg relative z-10 inline-flex items-center gap-1.5 h-9 px-4 rounded-full border border-primary/40 bg-card/60 backdrop-blur-md text-xs font-semibold text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors"
               >
                 <Edit2 className="w-3.5 h-3.5" />
                 Edit profile
