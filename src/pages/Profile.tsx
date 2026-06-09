@@ -344,18 +344,19 @@ export default function Profile() {
             </p>
 
             {!isEditing && (
-              <Button
+              <button
                 type="button"
                 onClick={() => setIsEditing(true)}
-                variant="outline"
-                size="sm"
                 aria-label="Edit profile"
+                /* Use an explicit floor (16px) on top margin so the pill
+                   never collides with the email row on the narrowest phones
+                   (320px), where clamp()-driven --space-lg can compress. */
                 style={{ marginTop: 'max(16px, var(--space-lg))' }}
-                className="relative z-10 rounded-full border-primary/40 bg-card/60 backdrop-blur-md text-xs font-semibold hover:border-primary/70 hover:bg-primary/10 hover:text-primary"
+                className="relative z-10 inline-flex items-center gap-1.5 h-9 px-4 rounded-full border border-primary/40 bg-card/60 backdrop-blur-md text-xs font-semibold text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors"
               >
                 <Edit2 className="w-3.5 h-3.5" />
                 Edit profile
-              </Button>
+              </button>
             )}
           </div>
 
@@ -610,133 +611,77 @@ export default function Profile() {
           </div>
         </section>
 
-          {/* Unified Quick Actions — every account entry point shares one
-              row pattern (icon tile + label + sublabel + chevron) so Admin,
-              Settings, Favorites, Connections, and Sign Out read as a single
-              cohesive menu across phone, tablet, and desktop. */}
-          <section
-            aria-label="Account actions"
-            className="rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-sm sm:p-fluid-md"
-          >
-            <div className="mb-fluid-sm flex items-center gap-2">
-              <span className="dot-gold flex-shrink-0" />
-              <span className="heading-luxe-eyebrow">Quick Actions</span>
-            </div>
-            <ul
-              role="list"
-              className="grid gap-2 sm:gap-2.5 sm:grid-cols-2"
+          {/* Admin entry */}
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={() => navigate('/admin')}
+              className="group flex items-center gap-fluid-sm w-full text-left p-fluid-sm rounded-full border-hairline bg-card/40 backdrop-blur-xl hover:border-primary/50 hover:bg-card/60 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all"
             >
-              {isAdmin && (
-                <li>
-                  <ProfileActionRow
-                    icon={Shield}
-                    label="Admin"
-                    sublabel="Dashboard & analytics"
-                    onClick={() => navigate('/admin')}
-                  />
-                </li>
-              )}
-              <li>
-                <ProfileActionRow
-                  icon={SettingsIcon}
-                  label="Settings"
-                  sublabel="Preferences, privacy & subscription"
-                  onClick={() => navigate('/settings')}
-                />
-              </li>
-              <li>
-                <ProfileActionRow
-                  icon={Heart}
-                  label="Favorites"
-                  sublabel={`${favorites.length} saved ${favorites.length === 1 ? 'place' : 'places'}`}
-                  onClick={() => navigate('/favorites')}
-                />
-              </li>
-              <li>
-                <ProfileActionRow
-                  icon={Users}
-                  label="Connections"
-                  sublabel={`${connections.length} ${connections.length === 1 ? 'friend' : 'friends'}`}
-                  onClick={() => navigate('/social')}
-                />
-              </li>
-              <li className="sm:col-span-2">
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <button
-                      type="button"
-                      aria-label="Sign out"
-                      className="group flex items-center gap-3 w-full text-left p-3 rounded-xl border-hairline border-destructive/30 bg-destructive/5 hover:border-destructive/60 hover:bg-destructive/10 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/50 transition-all"
-                    >
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-destructive/15 text-destructive border-hairline border-destructive/30">
-                        <LogOut className="w-4 h-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="heading-luxe-card text-fluid-sm text-destructive">Sign Out</div>
-                        <div className="text-xs text-muted-foreground truncate">End your session on this device</div>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-destructive/60 group-hover:text-destructive group-hover:translate-x-0.5 transition-all flex-shrink-0" />
-                    </button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Sign out of your account?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        You'll need to sign in again to access your profile and favorites.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel className="rounded-full border-primary/40 bg-transparent text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary">
-                        Cancel
-                      </AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleSignOut}
-                        className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg shadow-destructive/20 font-semibold tracking-wide"
-                      >
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Sign Out
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </li>
-            </ul>
+              <div className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary/20 to-primary-glow/10 text-primary border-hairline">
+                <Shield className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="heading-luxe-card text-fluid-sm">Admin</div>
+                <div className="text-xs text-muted-foreground truncate">Dashboard &amp; analytics</div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+            </button>
+          )}
+
+          {/* Settings entry — preferences, privacy, subscription, and account
+              all live on the dedicated /settings page. Profile stays focused
+              on identity to avoid duplicating the same forms in two places. */}
+          <button
+            type="button"
+            onClick={() => navigate('/settings')}
+            className="group flex items-center gap-fluid-sm w-full text-left p-fluid-sm rounded-full border-hairline bg-card/40 backdrop-blur-xl hover:border-primary/50 hover:bg-card/60 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all"
+          >
+            <div className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary/20 to-primary-glow/10 text-primary border-hairline">
+              <SettingsIcon className="w-5 h-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="heading-luxe-card text-fluid-sm">Settings</div>
+              <div className="text-xs text-muted-foreground truncate">Preferences, privacy, notifications &amp; subscription</div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+          </button>
+
+          {/* Sign Out */}
+          <section className="rounded-2xl border-hairline border-destructive/20 bg-card/40 backdrop-blur-xl p-fluid-sm sm:p-fluid-md">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full rounded-full border-destructive/40 bg-transparent text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/60 focus-visible:ring-2 focus-visible:ring-destructive/40"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Sign out of your account?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    You'll need to sign in again to access your profile and favorites.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="rounded-full border-primary/40 bg-transparent text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary">
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleSignOut}
+                    className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg shadow-destructive/20 font-semibold tracking-wide"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </section>
       </PageShell>
     </PageLayout>
-  );
-}
-
-/**
- * Single unified row pattern used by every navigational account action
- * (Admin, Settings, Favorites, Connections). Keeps spacing, focus ring,
- * and hover treatment identical across breakpoints.
- */
-function ProfileActionRow({
-  icon: Icon,
-  label,
-  sublabel,
-  onClick,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  sublabel: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="group flex items-center gap-3 w-full text-left p-3 rounded-xl border-hairline bg-card/40 backdrop-blur-xl hover:border-primary/50 hover:bg-card/60 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all"
-    >
-      <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary/20 to-primary-glow/10 text-primary border-hairline">
-        <Icon className="w-5 h-5" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="heading-luxe-card text-fluid-sm">{label}</div>
-        <div className="text-xs text-muted-foreground truncate">{sublabel}</div>
-      </div>
-      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0" />
-    </button>
   );
 }
