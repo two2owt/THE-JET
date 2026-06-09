@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Bell, MapPin, Radio, Loader2, Save, Moon, Smartphone, Heart, Shield, CreditCard, ShieldCheck } from "lucide-react";
+import { Bell, MapPin, Radio, Loader2, Save, Moon, Smartphone, Heart, Shield, CreditCard, ShieldCheck, ChevronLeft } from "lucide-react";
 
 import { toast } from "sonner";
 import { z } from "zod";
@@ -25,7 +25,6 @@ import { PageShell } from "@/components/PageShell";
 import { SettingsPageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { PageTitle, SectionTitle } from "@/components/ui/page-title";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { useAuth } from "@/contexts/AuthContext";
 const preferencesSchema = z.object({
   notifications_enabled: z.boolean(),
@@ -262,13 +261,20 @@ const Settings = () => {
   return (
     <SettingsLayout>
       <PageShell variant="relaxed" className="!max-w-3xl">
-        <Breadcrumbs
-          className="mb-fluid-sm"
-          items={[
-            { label: "Profile", href: "/profile" },
-            { label: "Settings", current: true },
-          ]}
-        />
+        {/* Breadcrumb — slim link back to Profile so the two pages have a clear
+            parent/child relationship without duplicating each other's content. */}
+        <nav aria-label="Breadcrumb" className="mb-fluid-sm">
+          <button
+            type="button"
+            onClick={() => navigate("/profile")}
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full border border-primary/30 bg-card/50 backdrop-blur-md text-xs font-semibold text-muted-foreground hover:border-primary/60 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+            <span>Profile</span>
+            <span aria-hidden="true" className="text-muted-foreground/50">/</span>
+            <span className="text-foreground">Settings</span>
+          </button>
+        </nav>
 
         <PageTitle subtitle="Preferences, privacy, notifications, and subscription.">
           Settings

@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageShell } from "@/components/PageShell";
 import { TabPageHeader } from "@/components/TabPageHeader";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useConnections } from "@/hooks/useConnections";
@@ -290,7 +289,6 @@ export default function Profile() {
         isProcessing={isUploading}
       />
       <PageShell>
-        <Breadcrumbs items={[{ label: "Profile", current: true }]} className="mb-fluid-sm" />
         <TabPageHeader title="Profile" subtitle="Your identity, connections, and social links" />
 
         {/* Identity hero — centered, gradient glow */}
