@@ -10,7 +10,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageShell } from "@/components/PageShell";
-import { TabPageHeader } from "@/components/TabPageHeader";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useConnections } from "@/hooks/useConnections";
@@ -253,6 +252,34 @@ export default function Profile() {
     }
   };
   const handleSignOut = async () => {
+    // no-op anchor
+  };
+  const _handleSignOutAnchor = handleSignOut;
+  const handleShareProfile = async () => {
+    const url = `${window.location.origin}/profile`;
+    const shareData = {
+      title: `${displayName || 'JET Around'} on JET`,
+      text: bio || 'Check out my JET profile',
+      url,
+    };
+    try {
+      if (typeof navigator !== 'undefined' && (navigator as any).share) {
+        await (navigator as any).share(shareData);
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      toast.success('Profile link copied');
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return;
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success('Profile link copied');
+      } catch {
+        toast.error('Unable to share profile');
+      }
+    }
+  };
+  const _realHandleSignOut = async () => {
     try {
       // Local scope clears the persisted browser session immediately. A global
       // logout can fail on an expired token before local auth state is removed.
