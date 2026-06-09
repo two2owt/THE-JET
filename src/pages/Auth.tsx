@@ -838,6 +838,8 @@ const Auth = () => {
                         onBlur={() => handleBlur("confirmPassword")}
                         required
                         disabled={isLoading}
+                        aria-invalid={!!validationErrors.confirmPassword}
+                        aria-describedby={validationErrors.confirmPassword ? "auth-confirm-password-error" : undefined}
                         className={`auth-input pl-11 pr-12 ${validationErrors.confirmPassword ? "border-destructive" : ""}`}
                         autoComplete="new-password"
                       />
@@ -851,7 +853,7 @@ const Auth = () => {
                       </IconButton>
                     </div>
                     {validationErrors.confirmPassword && (
-                      <p className="inline-flex items-center gap-1.5 text-xs text-destructive mt-0.5">
+                      <p id="auth-confirm-password-error" className="inline-flex items-center gap-1.5 text-xs text-destructive mt-0.5">
                         <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
                         {validationErrors.confirmPassword}
                       </p>
