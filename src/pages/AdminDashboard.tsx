@@ -5,6 +5,7 @@ import { PageLayout } from "@/components/PageLayout";
 import { AdminPageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { AdminTopbar } from "@/components/admin/AdminTopbar";
 import {
   ChevronsLeft, ChevronsRight, Menu, Tag, BarChart3, MapPinned, Settings2,
 } from "lucide-react";
@@ -158,6 +159,11 @@ export default function AdminDashboard() {
         {/* ===== Content column ===== */}
         <section className="admin-content" aria-labelledby="admin-section-title">
           <div className="admin-content-inner">
+            {/* Topbar: blur search, notifications, user menu */}
+            <AdminTopbar
+              items={SECTIONS.map(s => ({ id: s.id, label: s.label, description: s.description }))}
+              onSelect={(id) => handleSelect(id as SectionId)}
+            />
             {/* Page header: trigger + title + description + (future actions slot) */}
             <header className="admin-page-header">
               <button
