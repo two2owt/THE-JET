@@ -23,7 +23,7 @@ import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { AvatarCropDialog } from "@/components/AvatarCropDialog";
 import { useAuth } from "@/contexts/AuthContext";
-import Settings from "@/pages/Settings";
+import { Settings as SettingsIcon } from "lucide-react";
 
 const profileSchema = z.object({
   display_name: z.string().trim().min(1, "Display name is required").max(100, "Display name must be less than 100 characters"),
@@ -289,7 +289,7 @@ export default function Profile() {
         isProcessing={isUploading}
       />
       <PageShell>
-        <TabPageHeader title="Profile" subtitle="Manage your account, preferences, and connections" />
+        <TabPageHeader title="Profile" subtitle="Your identity, connections, and social links" />
 
         {/* Identity hero — centered, gradient glow */}
         <section className="relative rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg glow-ambient overflow-hidden">
