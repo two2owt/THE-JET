@@ -37,7 +37,7 @@ interface AdminTopbarProps {
 export function AdminTopbar({ items, onSelect }: AdminTopbarProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { data: profile } = useProfile(user?.id);
+  const { profile } = useProfile(user?.id);
   const { notifications } = useNotifications(!!user);
 
   const unread = notifications.filter((n) => !n.read).length;
