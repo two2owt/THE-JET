@@ -987,6 +987,20 @@ All colors MUST be HSL.
     flex-shrink: 0;
   }
 
+  /* Profile form — responsive 2-column grid for Gender/Pronouns and similar
+     paired fields. Single column on mobile, two columns from sm: up.
+     Lives in CSS (not Tailwind class string) so it's resilient to any
+     class-stripping regressions in the build pipeline. */
+  .profile-2col-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 640px) {
+    .profile-2col-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-md) !important;
+    }
+  }
+
   /* ====================================================================
      Luxe typography system — single source of truth for headings & body.
      Apply these utility classes anywhere a page needs the canonical look.
