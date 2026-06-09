@@ -291,8 +291,7 @@ export default function Profile() {
       <PageShell>
         <TabPageHeader title="Profile" subtitle="Manage your account, preferences, and connections" />
 
-        {/* Identity card */}
-        {/* Identity hero — centered, gradient glow, edit pencil top-right */}
+        {/* Identity hero — centered, gradient glow */}
         <section className="relative rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg glow-ambient overflow-hidden">
           {/* Ambient radial accent behind avatar */}
           <div
@@ -300,29 +299,18 @@ export default function Profile() {
             className="pointer-events-none absolute inset-x-0 top-0 h-40 profile-hero-accent"
           />
 
-
-          {!isEditing && (
-            <button
-              type="button"
-              onClick={() => setIsEditing(true)}
-              aria-label="Edit profile"
-              className="profile-edit-pill inline-flex items-center gap-1.5 h-9 px-3 rounded-full border border-primary/40 bg-card/60 backdrop-blur-md text-xs font-semibold text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors"
-            >
-              <Edit2 className="w-3.5 h-3.5" />
-              Edit
-            </button>
-          )}
-
           <div className="profile-hero-stack">
-            {/* Avatar with primary glow */}
-            <div className="relative group">
-              <div
-                aria-hidden="true"
-                className="absolute -inset-2 rounded-full profile-avatar-halo blur-xl pointer-events-none"
-              />
-              <Avatar className="relative w-24 h-24 sm:w-28 sm:h-28 ring-2 ring-primary/40 profile-avatar-shadow">
+            {/* Avatar — explicit pixel sizing so the image can never escape its container */}
+            <div
+              className="relative"
+              style={{ width: 104, height: 104, flexShrink: 0 }}
+            >
+              <Avatar
+                className="ring-2 ring-primary/40 profile-avatar-shadow"
+                style={{ width: 104, height: 104 }}
+              >
                 <AvatarImage src={profile?.avatar_url || undefined} alt={displayName || "User avatar"} />
-                <AvatarFallback className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-primary to-primary-glow text-primary-foreground">
+                <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-primary to-primary-glow text-primary-foreground">
                   {displayName.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
@@ -352,6 +340,18 @@ export default function Profile() {
               <Mail className="w-3.5 h-3.5 flex-shrink-0" />
               <span className="truncate">{user.email}</span>
             </p>
+
+            {!isEditing && (
+              <button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                aria-label="Edit profile"
+                className="mt-fluid-sm inline-flex items-center gap-1.5 h-9 px-4 rounded-full border border-primary/40 bg-card/60 backdrop-blur-md text-xs font-semibold text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors"
+              >
+                <Edit2 className="w-3.5 h-3.5" />
+                Edit profile
+              </button>
+            )}
           </div>
 
           <div className="divider-luxe my-fluid-md" />
@@ -387,12 +387,15 @@ export default function Profile() {
 
         {/* Profile form card */}
         <section className="rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg">
-          <div className="flex items-center gap-2 mb-fluid-md">
-            <span className="dot-gold" />
+          <div
+            className="mb-fluid-md"
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <span className="dot-gold" style={{ flexShrink: 0 }} />
             <span className="heading-luxe-eyebrow">Account Details</span>
           </div>
-          <div className="flex flex-col gap-fluid-sm sm:gap-fluid-md">
-              <div className="flex flex-col gap-fluid-xs">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)' }}>
                 <Label htmlFor="display_name" className="heading-luxe-eyebrow text-left">
                   Display Name <span className="text-destructive">*</span>
                 </Label>
@@ -409,6 +412,7 @@ export default function Profile() {
                   aria-invalid={!!fieldErrors.display_name}
                   aria-describedby={fieldErrors.display_name ? "display_name-error" : undefined}
                   className="profile-input"
+                  style={{ width: '100%' }}
                 />
                 {fieldErrors.display_name && (
                   <p id="display_name-error" role="alert" className="text-xs font-medium text-destructive">
@@ -417,7 +421,7 @@ export default function Profile() {
                 )}
               </div>
 
-              <div className="flex flex-col gap-fluid-xs">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)' }}>
                 <Label htmlFor="bio" className="heading-luxe-eyebrow text-left">
                   Bio <span className="text-muted-foreground/70 normal-case">(optional)</span>
                 </Label>
@@ -433,6 +437,7 @@ export default function Profile() {
                   rows={4}
                   disabled={!isEditing}
                   className="resize-none profile-textarea"
+                  style={{ width: '100%' }}
                   aria-invalid={!!fieldErrors.bio}
                   aria-describedby={fieldErrors.bio ? "bio-error" : undefined}
                 />
@@ -446,8 +451,11 @@ export default function Profile() {
                   </p>}
               </div>
 
-                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-fluid-sm sm:gap-fluid-md">
-                <div className="flex flex-col gap-fluid-xs">
+              <div
+                className="profile-2col-grid"
+                style={{ display: 'grid', gap: 'var(--space-sm)' }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)', minWidth: 0 }}>
                   <Label className="heading-luxe-eyebrow text-left">
                     Gender <span className="text-destructive">*</span>
                   </Label>
@@ -459,7 +467,7 @@ export default function Profile() {
                     }}
                     disabled={!isEditing}
                   >
-                    <SelectTrigger className="bg-card/60 profile-select-trigger">
+                    <SelectTrigger className="bg-card/60 profile-select-trigger" style={{ width: '100%' }}>
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
                     <SelectContent>
@@ -475,12 +483,12 @@ export default function Profile() {
                   )}
                 </div>
 
-                <div className="flex flex-col gap-fluid-xs">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)', minWidth: 0 }}>
                   <Label className="heading-luxe-eyebrow text-left">
                     Pronouns <span className="text-muted-foreground/70 normal-case">(optional)</span>
                   </Label>
                   <Select value={pronouns} onValueChange={setPronouns} disabled={!isEditing}>
-                    <SelectTrigger className="bg-card/60 profile-select-trigger">
+                    <SelectTrigger className="bg-card/60 profile-select-trigger" style={{ width: '100%' }}>
                       <SelectValue placeholder="Select pronouns" />
                     </SelectTrigger>
                     <SelectContent>
@@ -495,9 +503,9 @@ export default function Profile() {
               {isEditing && <>
                   <div className="divider-luxe my-fluid-md" />
 
-                  <div className="flex flex-col gap-fluid-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="dot-gold" />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="dot-gold" style={{ flexShrink: 0 }} />
                       <span className="heading-luxe-eyebrow">Social Media Links</span>
                     </div>
                     {[
@@ -558,7 +566,7 @@ export default function Profile() {
                 </>
               )}
 
-              {isEditing && <div className="flex gap-fluid-sm pt-fluid-md">
+              {isEditing && <div style={{ display: 'flex', gap: 'var(--space-sm)', paddingTop: 'var(--space-md)' }}>
                   <Button
                     onClick={handleSaveProfile}
                     disabled={isSaving || !displayName.trim()}
