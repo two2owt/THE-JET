@@ -789,9 +789,25 @@ All colors MUST be HSL.
     pointer-events: all;
   }
 
+  /* Smooth crossfade when switching auth modes (login ↔ signup) */
+  .auth-crossfade {
+    animation: auth-crossfade 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @keyframes auth-crossfade {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 10px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .auth-blob-1, .auth-blob-2, .auth-blob-3 { animation: none; }
     .auth-shake { animation: none; }
+    .auth-crossfade { animation: none; }
   }
 
   /* ====================================================================

@@ -636,6 +636,7 @@ const Auth = () => {
 
         {/* Centered Card */}
         <div className={`auth-card ${shake ? "auth-shake" : ""}`}>
+          <div key={mode} className="auth-crossfade">
           {/* Eyebrow + title */}
           <div className="flex flex-col items-center gap-2 text-center mb-5">
             <div className="flex items-center gap-2">
@@ -1013,6 +1014,7 @@ const Auth = () => {
               </button>
             </p>
           )}
+        </div>
         </div>
 
         {/* Footer links */}
