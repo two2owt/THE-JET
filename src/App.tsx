@@ -114,8 +114,6 @@ const AppLayout = memo(function AppLayout() {
             </Suspense>
           }
         />
-        {/* /settings is consolidated into /profile — redirect for any old links */}
-        <Route path="/settings" element={<Navigate to="/profile" replace />} />
         <Route
           path="/favorites"
           element={
@@ -143,7 +141,7 @@ const AppLayout = memo(function AppLayout() {
         <Route
           path="/admin"
           element={
-            <Suspense fallback={<RouteFallback defaultTab="map"><GenericPageSkeleton /></RouteFallback>}>
+            <Suspense fallback={<RouteFallback defaultTab="map"><AdminPageSkeleton /></RouteFallback>}>
               <AdminDashboard />
             </Suspense>
           }
