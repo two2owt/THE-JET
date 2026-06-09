@@ -13,7 +13,6 @@ import { DealForm } from "./DealForm";
 import { OnboardingStatusBadge } from "./OnboardingStatusBadge";
 import type { Database } from "@/integrations/supabase/types";
 import {
-  FILTER_KEYS,
   PRIORITY_OPTIONS,
   NONE_KEY,
   DAY_LABELS,
