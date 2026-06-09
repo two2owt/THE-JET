@@ -452,7 +452,7 @@ export default function Profile() {
             {[
               { icon: Heart, label: 'Favorites', value: favorites.length, to: '/favorites' },
               { icon: Users, label: 'Connections', value: connections.length, to: '/social' },
-              { icon: Bell, label: 'Alerts', value: 0, to: '/?tab=notifications' as string | null },
+              { icon: Bell, label: 'Alerts', value: notifications.filter(n => !n.read).length, to: '/?tab=notifications' },
             ].map(({ icon: Icon, label, value, to }) => {
               const cn =
                 "min-w-0 flex flex-col items-center justify-center rounded-2xl border-hairline bg-card/40 backdrop-blur-xl py-4 px-2 hover:border-primary/40 hover:bg-primary/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50";
