@@ -2193,3 +2193,18 @@ All colors MUST be HSL.
    communicate the selection affordance, and keeping the trigger as a single
    row prevents the chevron from wrapping below the label on narrow panels. */
 .map-filter-pill > svg { display: none !important; }
+
+/* ─── Chat typing indicator ─── */
+.typing-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: hsl(var(--muted-foreground) / 0.7);
+  animation: typing-bounce 1.2s infinite ease-in-out;
+  will-change: transform, opacity;
+}
+@keyframes typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+  30% { transform: translateY(-3px); opacity: 1; }
+}
