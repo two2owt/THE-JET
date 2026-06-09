@@ -6,7 +6,7 @@ import { IconButton } from "@/components/ui/icon-button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Loader2, Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
+import { Loader2, Eye, EyeOff, Mail, Lock, ArrowLeft, AlertCircle, CheckCircle2 } from "lucide-react";
 import { z } from "zod";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/contexts/AuthContext";
@@ -58,6 +58,9 @@ const Auth = () => {
   const [isResending, setIsResending] = useState(false);
   const [dataProcessingConsent, setDataProcessingConsent] = useState(false);
   const [locationConsent, setLocationConsent] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [shake, setShake] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const { user: authUser } = useAuth();
 
   const mode: AuthMode = isResettingPassword
@@ -181,7 +184,17 @@ const Auth = () => {
     }
 
     setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
+    const ok = Object.keys(errors).length === 0;
+    if (!ok) {
+      // Surface the first error at the form level + trigger shake.
+      const first = Object.values(errors).find(Boolean) as string | undefined;
+      setFormError(first ?? "Please fix the highlighted fields.");
+      setShake(true);
+      window.setTimeout(() => setShake(false), 450);
+    } else {
+      setFormError(null);
+    }
+    return ok;
   };
 
   const handleBlur = (field: FieldName) => {
