@@ -745,12 +745,14 @@ const Auth = () => {
                     onBlur={() => handleBlur("email")}
                     required
                     disabled={isLoading}
+                    aria-invalid={!!validationErrors.email}
+                    aria-describedby={validationErrors.email ? "auth-email-error" : undefined}
                     className={`auth-input pl-11 ${validationErrors.email ? "border-destructive" : ""}`}
                     autoComplete="email"
                   />
                 </div>
                 {validationErrors.email && (
-                  <p className="inline-flex items-center gap-1.5 text-xs text-destructive mt-0.5">
+                  <p id="auth-email-error" className="inline-flex items-center gap-1.5 text-xs text-destructive mt-0.5">
                     <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
                     {validationErrors.email}
                   </p>
