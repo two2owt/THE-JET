@@ -472,10 +472,14 @@ const Auth = () => {
     toast.success("Password updated successfully", {
       description: "You can now sign in with your new password.",
     });
+    setSuccessMessage("Password updated — redirecting you to sign in…");
     setPassword("");
     setConfirmPassword("");
-    setIsResettingPassword(false);
-    navigate("/auth");
+    window.setTimeout(() => {
+      setSuccessMessage(null);
+      setIsResettingPassword(false);
+      navigate("/auth");
+    }, 1200);
   };
 
   /** Single submit pipeline: validate → dispatch by mode → unified error/loading handling. */
