@@ -43,7 +43,7 @@ interface ProfileSettingsPanelProps {
 /**
  * Full settings surface (preferences, privacy, consent, notifications, theme,
  * location, subscription, support, account) rendered inline inside /profile
- * when the user enters edit mode. Replaces the standalone /settings route.
+ * when the user enters edit mode. Consolidated into the Profile page.
  */
 export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanelProps) {
   const { isRegistered: isPushRegistered, isNative, initializePushNotifications, unregister: unregisterPush } = usePushNotifications();
