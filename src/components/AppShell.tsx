@@ -2,7 +2,7 @@ import { ReactNode, memo } from "react";
 import { useLocation } from "react-router";
 import { Header } from "@/components/Header";
 
-/** Routes where the global Header + Breadcrumbs should be hidden (full-bleed standalone pages) */
+/** Routes where the global Header should be hidden (full-bleed standalone pages) */
 export const HEADERLESS_ROUTES = ["/auth", "/onboarding"];
 
 interface AppShellProps {
