@@ -1677,12 +1677,12 @@ All colors MUST be HSL.
     width: 100%;
     max-width: 920px;
     margin: 0 auto;
-    padding: 0 calc(16px + env(safe-area-inset-left, 0px)) 0 calc(16px + env(safe-area-inset-right, 0px));
+    padding: 0 calc(20px + env(safe-area-inset-right, 0px)) var(--space-md) calc(20px + env(safe-area-inset-left, 0px));
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: 8px;
+    gap: 12px;
   }
   @media (min-width: 768px) {
     .profile-identity {
@@ -1690,9 +1690,10 @@ All colors MUST be HSL.
       text-align: left;
       flex-direction: row;
       flex-wrap: wrap;
-      gap: 16px;
-      padding-left: 24px;
-      padding-right: 24px;
+      gap: 20px;
+      padding-left: 32px;
+      padding-right: 32px;
+      padding-bottom: var(--space-lg);
     }
   }
   .profile-avatar-wrap {
@@ -1834,11 +1835,11 @@ All colors MUST be HSL.
     width: 100%;
     max-width: 920px;
     margin: 0 auto;
-    padding: 0 calc(16px + env(safe-area-inset-left, 0px)) 0 calc(16px + env(safe-area-inset-right, 0px));
-    margin-top: var(--space-md);
+    padding: 0 calc(20px + env(safe-area-inset-right, 0px)) 0 calc(20px + env(safe-area-inset-left, 0px));
+    margin-top: var(--space-lg);
   }
   @media (min-width: 768px) {
-    .profile-section { padding-left: 24px; padding-right: 24px; }
+    .profile-section { padding-left: 32px; padding-right: 32px; margin-top: var(--space-xl); }
   }
 
   /* Profile tabs — underline-pill style consistent with luxe theme */
