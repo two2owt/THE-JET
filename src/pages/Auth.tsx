@@ -753,13 +753,13 @@ const Auth = () => {
                     disabled={isLoading}
                     aria-invalid={!!validationErrors.email}
                     aria-describedby={validationErrors.email ? "auth-email-error" : undefined}
-                    className={`auth-input pl-11 ${validationErrors.email ? "border-destructive" : ""}`}
+                    className={`auth-input pl-11 ${validationErrors.email ? "auth-input-error" : ""}`}
                     autoComplete="email"
                   />
                 </div>
                 {validationErrors.email && (
-                  <p id="auth-email-error" className="inline-flex items-center gap-1.5 text-xs text-destructive mt-0.5">
-                    <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+                  <p id="auth-email-error" className="auth-field-error">
+                    <AlertCircle />
                     {validationErrors.email}
                   </p>
                 )}
@@ -801,7 +801,7 @@ const Auth = () => {
                       disabled={isLoading}
                       aria-invalid={!!validationErrors.password}
                       aria-describedby={validationErrors.password ? "auth-password-error" : undefined}
-                      className={`auth-input pl-11 pr-12 ${validationErrors.password ? "border-destructive" : ""}`}
+                      className={`auth-input pl-11 pr-12 ${validationErrors.password ? "auth-input-error" : ""}`}
                       autoComplete={isSignUp ? "new-password" : "current-password"}
                     />
                     <IconButton
@@ -814,8 +814,8 @@ const Auth = () => {
                     </IconButton>
                   </div>
                   {validationErrors.password ? (
-                    <p id="auth-password-error" className="inline-flex items-center gap-1.5 text-xs text-destructive mt-0.5">
-                      <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+                    <p id="auth-password-error" className="auth-field-error">
+                      <AlertCircle />
                       {validationErrors.password}
                     </p>
                   ) : (isSignUp || isResettingPassword) ? (
@@ -846,7 +846,7 @@ const Auth = () => {
                         disabled={isLoading}
                         aria-invalid={!!validationErrors.confirmPassword}
                         aria-describedby={validationErrors.confirmPassword ? "auth-confirm-password-error" : undefined}
-                        className={`auth-input pl-11 pr-12 ${validationErrors.confirmPassword ? "border-destructive" : ""}`}
+                        className={`auth-input pl-11 pr-12 ${validationErrors.confirmPassword ? "auth-input-error" : ""}`}
                         autoComplete="new-password"
                       />
                       <IconButton
@@ -859,8 +859,8 @@ const Auth = () => {
                       </IconButton>
                     </div>
                     {validationErrors.confirmPassword && (
-                      <p id="auth-confirm-password-error" className="inline-flex items-center gap-1.5 text-xs text-destructive mt-0.5">
-                        <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+                      <p id="auth-confirm-password-error" className="auth-field-error">
+                        <AlertCircle />
                         {validationErrors.confirmPassword}
                       </p>
                     )}
@@ -894,8 +894,8 @@ const Auth = () => {
                       </label>
                     </div>
                     {validationErrors.consent && (
-                      <p id="auth-consent-error" className="ml-6 inline-flex items-center gap-1.5 text-xs text-destructive">
-                        <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+                      <p id="auth-consent-error" className="auth-field-error auth-field-error--indented">
+                        <AlertCircle />
                         {validationErrors.consent}
                       </p>
                     )}
@@ -917,8 +917,8 @@ const Auth = () => {
                       </label>
                     </div>
                     {validationErrors.locationConsent && (
-                      <p id="auth-location-consent-error" className="ml-6 inline-flex items-center gap-1.5 text-xs text-destructive">
-                        <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+                      <p id="auth-location-consent-error" className="auth-field-error auth-field-error--indented">
+                        <AlertCircle />
                         {validationErrors.locationConsent}
                       </p>
                     )}
