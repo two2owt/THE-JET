@@ -10,12 +10,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageShell } from "@/components/PageShell";
-import { TabPageHeader } from "@/components/TabPageHeader";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useConnections } from "@/hooks/useConnections";
 import { useProfile } from "@/hooks/useProfile";
-import { Camera, Edit2, X, Save, Heart, Users, Shield, LogOut, Loader2, Instagram, Twitter, Facebook, Linkedin, Video, Mail, Bell, ChevronRight, Link2 } from "lucide-react";
+import { Camera, Edit2, X, Save, Heart, Users, Shield, LogOut, Loader2, Instagram, Twitter, Facebook, Linkedin, Video, Mail, Bell, ChevronRight, Link2, Share2, Activity as ActivityIcon } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { EmptyState } from "@/components/EmptyState";
 
 import { toast } from "sonner";
 import { z } from "zod";
@@ -113,6 +114,7 @@ export default function Profile() {
   const [gender, setGender] = useState("");
   const [pronouns, setPronouns] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("about");
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [isCropOpen, setIsCropOpen] = useState(false);
   // Inline field-level validation errors for the profile form.
@@ -249,6 +251,30 @@ export default function Profile() {
       }
     }
   };
+  const handleShareProfile = async () => {
+    const url = `${window.location.origin}/profile`;
+    const shareData = {
+      title: `${displayName || 'JET Around'} on JET`,
+      text: bio || 'Check out my JET profile',
+      url,
+    };
+    try {
+      if (typeof navigator !== 'undefined' && (navigator as any).share) {
+        await (navigator as any).share(shareData);
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      toast.success('Profile link copied');
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return;
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success('Profile link copied');
+      } catch {
+        toast.error('Unable to share profile');
+      }
+    }
+  };
   const handleSignOut = async () => {
     try {
       // Local scope clears the persisted browser session immediately. A global
@@ -286,31 +312,25 @@ export default function Profile() {
         onCropComplete={handleCroppedAvatarSave}
         isProcessing={isUploading}
       />
-      <PageShell>
-        <TabPageHeader title="Profile" subtitle="Your identity, connections, and social links" />
+      <PageShell padding="0px" gap="0px" className="profile-scroll">
+        {/* =====================================================
+            HEADER — Cover image + overlapping avatar + identity
+            ===================================================== */}
+        <header className="profile-header">
+          {/* Cover banner */}
+          <div className="profile-cover" aria-hidden="true">
+            <div className="profile-cover-gradient" />
+            <div className="profile-cover-accent" />
+          </div>
 
-        {/* Identity hero — centered, gradient glow */}
-        <section className="relative rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg glow-ambient overflow-hidden">
-          {/* Ambient radial accent behind avatar */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 top-0 h-40 profile-hero-accent"
-          />
-
-          <div className="profile-hero-stack">
-            {/* Avatar — explicit pixel sizing so the image can never escape its container.
-                overflow:visible keeps the ring/shadow halo + the edit-mode camera
-                upload pill from being clipped by any ancestor. */}
-            <div
-              className="relative"
-              style={{ width: 104, height: 104, flexShrink: 0, overflow: 'visible' }}
-            >
+          {/* Identity block overlapping cover */}
+          <div className="profile-identity">
+            <div className="profile-avatar-wrap">
               <Avatar
-                className="ring-2 ring-primary/40 profile-avatar-shadow"
-                style={{ width: 104, height: 104 }}
+                className="ring-4 ring-background profile-avatar-shadow profile-avatar-img"
               >
                 <AvatarImage src={profile?.avatar_url || undefined} alt={displayName || "User avatar"} />
-                <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-primary to-primary-glow text-primary-foreground">
+                <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-primary to-primary-glow text-primary-foreground">
                   {displayName.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
@@ -318,7 +338,7 @@ export default function Profile() {
                 <>
                   <label
                     htmlFor="avatar-upload"
-                    className="absolute bottom-0 right-0 w-9 h-9 rounded-full bg-gradient-to-r from-primary to-primary-glow text-primary-foreground flex items-center justify-center cursor-pointer shadow-md shadow-primary/30 ring-2 ring-background hover:scale-105 active:scale-95 transition-transform focus-within:ring-2 focus-within:ring-primary/50"
+                    className="profile-avatar-camera"
                     aria-label="Upload new avatar"
                   >
                     {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
@@ -328,213 +348,178 @@ export default function Profile() {
               )}
             </div>
 
-            <h2 className="mt-fluid-md heading-luxe-card truncate max-w-full">
-              {displayName || 'User'}
-            </h2>
-            {pronouns && (
-              <span className="mt-1 inline-flex items-center px-2 py-0.5 rounded-full border-hairline bg-card/40 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                {pronouns}
-              </span>
-            )}
-            <p className="mt-2 inline-flex items-center gap-1.5 text-fluid-sm text-muted-foreground max-w-full">
-              <Mail className="w-3.5 h-3.5 flex-shrink-0" />
-              <span className="truncate">{user.email}</span>
-            </p>
+            <div className="profile-identity-text">
+              <h1 className="profile-name">{displayName || 'User'}</h1>
+              {pronouns && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full border-hairline bg-card/50 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  {pronouns}
+                </span>
+              )}
+              {bio && !isEditing && (
+                <p className="profile-bio">{bio}</p>
+              )}
+              <p className="inline-flex items-center gap-1.5 text-fluid-sm text-muted-foreground max-w-full">
+                <Mail className="w-3.5 h-3.5 flex-shrink-0" />
+                <span className="truncate">{user.email}</span>
+              </p>
+            </div>
 
-            {!isEditing && (
+            {/* Action button row */}
+            <div className="profile-actions">
+              {!isEditing ? (
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(true)}
+                  className="profile-action-btn profile-action-primary"
+                >
+                  <Edit2 className="w-4 h-4" />
+                  Edit Profile
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditing(false);
+                    setDisplayName(profile?.display_name || "");
+                    setBio(profile?.bio || "");
+                    setInstagramUrl(profile?.instagram_url || "");
+                    setTwitterUrl(profile?.twitter_url || "");
+                    setFacebookUrl(profile?.facebook_url || "");
+                    setLinkedinUrl(profile?.linkedin_url || "");
+                    setTiktokUrl(profile?.tiktok_url || "");
+                    setFieldErrors({});
+                  }}
+                  className="profile-action-btn profile-action-secondary"
+                >
+                  <X className="w-4 h-4" />
+                  Cancel
+                </button>
+              )}
               <button
                 type="button"
-                onClick={() => setIsEditing(true)}
-                aria-label="Edit profile"
-                /* Use an explicit floor (16px) on top margin so the pill
-                   never collides with the email row on the narrowest phones
-                   (320px), where clamp()-driven --space-lg can compress. */
-                style={{ marginTop: 'max(16px, var(--space-lg))' }}
-                className="relative z-10 inline-flex items-center gap-1.5 h-9 px-4 rounded-full border border-primary/40 bg-card/60 backdrop-blur-md text-xs font-semibold text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors"
+                onClick={handleShareProfile}
+                className="profile-action-btn profile-action-secondary"
+                aria-label="Share profile"
               >
-                <Edit2 className="w-3.5 h-3.5" />
-                Edit profile
+                <Share2 className="w-4 h-4" />
+                <span className="profile-action-label">Share</span>
               </button>
-            )}
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button
+                    type="button"
+                    className="profile-action-btn profile-action-danger"
+                    aria-label="Sign out"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span className="profile-action-label">Sign Out</span>
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Sign out of your account?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      You'll need to sign in again to access your profile and favorites.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel className="rounded-full border-primary/40 bg-transparent text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary">
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleSignOut}
+                      className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg shadow-destructive/20 font-semibold tracking-wide"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </div>
+        </header>
 
-          <div className="divider-luxe my-fluid-md" />
-
-          {/* Stat chips double as navigation. */}
+        {/* =====================================================
+            STATS ROW
+            ===================================================== */}
+        <section aria-label="Profile stats" className="profile-section">
           <div className="profile-stats-grid">
             {[
               { icon: Heart, label: 'Favorites', value: favorites.length, to: '/favorites' },
               { icon: Users, label: 'Connections', value: connections.length, to: '/social' },
               { icon: Bell, label: 'Alerts', value: 0, to: null as string | null },
             ].map(({ icon: Icon, label, value, to }) => {
-              const className =
-                "min-w-0 flex flex-col items-center justify-center rounded-xl border-hairline bg-card/30 backdrop-blur-sm py-3 px-2 hover:border-primary/40 hover:bg-primary/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50";
+              const cn =
+                "min-w-0 flex flex-col items-center justify-center rounded-2xl border-hairline bg-card/40 backdrop-blur-xl py-4 px-2 hover:border-primary/40 hover:bg-primary/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50";
               const content = (
                 <>
-                  <Icon className="w-4 h-4 text-primary mb-1" />
-                  <div className="text-luxe-stat text-xl sm:text-2xl text-foreground leading-none">
+                  <Icon className="w-4 h-4 text-primary mb-1.5" />
+                  <div className="text-luxe-stat text-2xl sm:text-[28px] text-foreground leading-none font-bold">
                     {value}
                   </div>
-                  <div className="heading-luxe-eyebrow mt-1 text-center truncate">{label}</div>
+                  <div className="text-[13px] sm:text-sm text-muted-foreground mt-1.5 text-center truncate">{label}</div>
                 </>
               );
               return to ? (
-                <button key={label} type="button" onClick={() => navigate(to)} className={className}>
-                  {content}
-                </button>
+                <button key={label} type="button" onClick={() => navigate(to)} className={cn}>{content}</button>
               ) : (
-                <div key={label} className={className}>{content}</div>
+                <div key={label} className={cn}>{content}</div>
               );
             })}
           </div>
         </section>
 
-        {/* Profile form card */}
-        <section className="rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg">
-          <div className="mb-fluid-md flex items-center gap-2">
-            <span className="dot-gold shrink-0" />
-            <span className="heading-luxe-eyebrow">Account Details</span>
-          </div>
-          <div className="flex flex-col" style={{ gap: 'var(--space-sm)' }}>
-              <div className="flex flex-col" style={{ gap: 'var(--space-xs)' }}>
-                <Label htmlFor="display_name" className="heading-luxe-eyebrow text-left">
-                  Display Name <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="display_name"
-                  value={displayName}
-                  onChange={e => {
-                    setDisplayName(e.target.value);
-                    if (fieldErrors.display_name) setFieldErrors(p => ({ ...p, display_name: undefined }));
-                  }}
-                  placeholder="Your display name"
-                  maxLength={100}
-                  disabled={!isEditing}
-                  aria-invalid={!!fieldErrors.display_name}
-                  aria-describedby={fieldErrors.display_name ? "display_name-error" : undefined}
-                  className="profile-input w-full"
-                />
-                {fieldErrors.display_name && (
-                  <p id="display_name-error" role="alert" className="text-xs font-medium text-destructive">
-                    {fieldErrors.display_name}
-                  </p>
-                )}
-              </div>
+        {/* =====================================================
+            TABBED CONTENT — About | Activity | Account
+            ===================================================== */}
+        <section aria-label="Profile content" className="profile-section">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="profile-tabs-list">
+              <TabsTrigger value="about" className="profile-tab-trigger">About</TabsTrigger>
+              <TabsTrigger value="activity" className="profile-tab-trigger">Activity</TabsTrigger>
+              <TabsTrigger value="account" className="profile-tab-trigger">Account</TabsTrigger>
+            </TabsList>
 
-              <div className="flex flex-col" style={{ gap: 'var(--space-xs)' }}>
-                <Label htmlFor="bio" className="heading-luxe-eyebrow text-left">
-                  Bio <span className="text-muted-foreground/70 normal-case">(optional)</span>
-                </Label>
-                <Textarea
-                  id="bio"
-                  value={bio}
-                  onChange={e => {
-                    setBio(e.target.value);
-                    if (fieldErrors.bio) setFieldErrors(p => ({ ...p, bio: undefined }));
-                  }}
-                  placeholder="Tell us about yourself..."
-                  maxLength={500}
-                  rows={4}
-                  disabled={!isEditing}
-                  className="resize-none profile-textarea w-full"
-                  aria-invalid={!!fieldErrors.bio}
-                  aria-describedby={fieldErrors.bio ? "bio-error" : undefined}
-                />
-                {fieldErrors.bio && (
-                  <p id="bio-error" role="alert" className="text-xs font-medium text-destructive">
-                    {fieldErrors.bio}
-                  </p>
-                )}
-                {isEditing && <p className="text-xs text-muted-foreground text-right">
-                    {bio.length}/500
-                  </p>}
-              </div>
-
-              <div className="profile-2col-grid grid" style={{ gap: 'var(--space-sm)' }}>
-                <div className="flex flex-col min-w-0" style={{ gap: 'var(--space-xs)' }}>
-                  <Label className="heading-luxe-eyebrow text-left">
-                    Gender <span className="text-destructive">*</span>
-                  </Label>
-                  <Select
-                    value={gender}
-                    onValueChange={(v) => {
-                      setGender(v);
-                      if (fieldErrors.gender) setFieldErrors(p => ({ ...p, gender: undefined }));
-                    }}
-                    disabled={!isEditing}
-                  >
-                    <SelectTrigger className="bg-card/60 profile-select-trigger w-full">
-                      <SelectValue placeholder="Select gender" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {GENDER_OPTIONS.map(option => <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  {fieldErrors.gender && (
-                    <p role="alert" className="text-xs font-medium text-destructive">
-                      {fieldErrors.gender}
-                    </p>
-                  )}
+            {/* ABOUT */}
+            <TabsContent value="about" className="profile-tab-content">
+              <div className="rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg">
+                <div className="mb-fluid-sm flex items-center gap-2">
+                  <span className="dot-gold shrink-0" />
+                  <span className="heading-luxe-eyebrow">About</span>
                 </div>
+                {bio ? (
+                  <p className="text-fluid-base text-foreground/90 leading-relaxed whitespace-pre-wrap">{bio}</p>
+                ) : (
+                  <p className="text-fluid-sm text-muted-foreground italic">No bio yet. Add one in the Account tab.</p>
+                )}
 
-                <div className="flex flex-col min-w-0" style={{ gap: 'var(--space-xs)' }}>
-                  <Label className="heading-luxe-eyebrow text-left">
-                    Pronouns <span className="text-muted-foreground/70 normal-case">(optional)</span>
-                  </Label>
-                  <Select value={pronouns} onValueChange={setPronouns} disabled={!isEditing}>
-                    <SelectTrigger className="bg-card/60 profile-select-trigger w-full">
-                      <SelectValue placeholder="Select pronouns" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PRONOUN_OPTIONS.map(option => <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {isEditing && <>
-                  <div className="divider-luxe my-fluid-md" />
-
-                  <div className="flex flex-col" style={{ gap: 'var(--space-sm)' }}>
-                    <div className="flex items-center gap-2">
-                      <span className="dot-gold shrink-0" />
-                      <span className="heading-luxe-eyebrow">Social Media Links</span>
+                {(gender || pronouns) && (
+                  <>
+                    <div className="divider-luxe my-fluid-md" />
+                    <div className="grid grid-cols-2 gap-fluid-sm">
+                      {gender && (
+                        <div>
+                          <div className="heading-luxe-eyebrow mb-1">Gender</div>
+                          <div className="text-fluid-sm text-foreground capitalize">{gender.replace(/-/g, ' ')}</div>
+                        </div>
+                      )}
+                      {pronouns && (
+                        <div>
+                          <div className="heading-luxe-eyebrow mb-1">Pronouns</div>
+                          <div className="text-fluid-sm text-foreground">{pronouns}</div>
+                        </div>
+                      )}
                     </div>
-                    {[
-                      { icon: Instagram, value: instagramUrl, setter: setInstagramUrl, placeholder: "Instagram profile URL" },
-                      { icon: Twitter, value: twitterUrl, setter: setTwitterUrl, placeholder: "Twitter/X profile URL" },
-                      { icon: Facebook, value: facebookUrl, setter: setFacebookUrl, placeholder: "Facebook profile URL" },
-                      { icon: Linkedin, value: linkedinUrl, setter: setLinkedinUrl, placeholder: "LinkedIn profile URL" },
-                      { icon: Video, value: tiktokUrl, setter: setTiktokUrl, placeholder: "TikTok profile URL" },
-                    ].map(({ icon: Icon, value, setter, placeholder }) => (
-                      <div key={placeholder} className="profile-social-row">
-                        <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
-                        <Input
-                          value={value}
-                          onChange={e => setter(e.target.value)}
-                          placeholder={placeholder}
-                          className="profile-input w-full"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </>}
+                  </>
+                )}
 
-              {/* Social Links Display */}
-              {!isEditing && (instagramUrl || twitterUrl || facebookUrl || linkedinUrl || tiktokUrl) && (
-                <>
-                  <div className="divider-luxe my-fluid-md" />
-                  <div>
+                {(instagramUrl || twitterUrl || facebookUrl || linkedinUrl || tiktokUrl) && (
+                  <>
+                    <div className="divider-luxe my-fluid-md" />
                     <div className="flex items-center gap-2 mb-fluid-sm">
-                      <span className="dot-gold" />
-                      <h3 className="heading-luxe-eyebrow inline-flex items-center gap-1.5">
-                        <Link2 className="w-3 h-3" />
-                        Social Media
-                      </h3>
+                      <Link2 className="w-3.5 h-3.5 text-primary" />
+                      <h3 className="heading-luxe-eyebrow">Social Media</h3>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {[
@@ -558,155 +543,207 @@ export default function Profile() {
                           </a>
                         ))}
                     </div>
+                  </>
+                )}
+              </div>
+            </TabsContent>
+
+            {/* ACTIVITY */}
+            <TabsContent value="activity" className="profile-tab-content">
+              <div className="rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg">
+                <EmptyState
+                  icon={ActivityIcon}
+                  title="No activity yet"
+                  description="When you save deals, connect with people, or get alerts, you'll see them here."
+                  actionLabel="Explore the map"
+                  onAction={() => navigate('/')}
+                />
+              </div>
+            </TabsContent>
+
+            {/* ACCOUNT — form + admin + settings */}
+            <TabsContent value="account" className="profile-tab-content">
+              <div className="flex flex-col" style={{ gap: 'var(--space-md)' }}>
+                {/* Profile form card */}
+                <div className="rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg">
+                  <div className="mb-fluid-md flex items-center gap-2">
+                    <span className="dot-gold shrink-0" />
+                    <span className="heading-luxe-eyebrow">Account Details</span>
                   </div>
-                </>
-              )}
+                  <div className="flex flex-col" style={{ gap: 'var(--space-sm)' }}>
+                    <div className="flex flex-col" style={{ gap: 'var(--space-xs)' }}>
+                      <Label htmlFor="display_name" className="heading-luxe-eyebrow text-left">
+                        Display Name <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        id="display_name"
+                        value={displayName}
+                        onChange={e => {
+                          setDisplayName(e.target.value);
+                          if (fieldErrors.display_name) setFieldErrors(p => ({ ...p, display_name: undefined }));
+                        }}
+                        placeholder="Your display name"
+                        maxLength={100}
+                        disabled={!isEditing}
+                        aria-invalid={!!fieldErrors.display_name}
+                        aria-describedby={fieldErrors.display_name ? "display_name-error" : undefined}
+                        className="profile-input w-full"
+                      />
+                      {fieldErrors.display_name && (
+                        <p id="display_name-error" role="alert" className="text-xs font-medium text-destructive">
+                          {fieldErrors.display_name}
+                        </p>
+                      )}
+                    </div>
 
-              {isEditing && <div className="flex" style={{ gap: 'var(--space-sm)', paddingTop: 'var(--space-md)' }}>
-                  <Button
-                    onClick={handleSaveProfile}
-                    disabled={isSaving || !displayName.trim()}
-                    variant="jet"
-                    size="lg"
-                    className="flex-1 rounded-full text-fluid-base font-semibold tracking-wide shadow-lg shadow-primary/20"
-                  >
-                    {isSaving ? <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Saving...
-                      </> : <>
-                        <Save className="w-4 h-4 mr-2" />
-                        Save Changes
-                      </>}
-                  </Button>
-                  <Button
-                    onClick={() => {
-                setIsEditing(false);
-                setDisplayName(profile?.display_name || "");
-                setBio(profile?.bio || "");
-                setInstagramUrl(profile?.instagram_url || "");
-                setTwitterUrl(profile?.twitter_url || "");
-                setFacebookUrl(profile?.facebook_url || "");
-                setLinkedinUrl(profile?.linkedin_url || "");
-                setTiktokUrl(profile?.tiktok_url || "");
-              }}
-                    variant="outline"
-                    size="lg"
-                    disabled={isSaving}
-                    className="rounded-full border-primary/40 bg-transparent text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary"
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Cancel
-                  </Button>
-                </div>}
-          </div>
+                    <div className="flex flex-col" style={{ gap: 'var(--space-xs)' }}>
+                      <Label htmlFor="bio" className="heading-luxe-eyebrow text-left">
+                        Bio <span className="text-muted-foreground/70 normal-case">(optional)</span>
+                      </Label>
+                      <Textarea
+                        id="bio"
+                        value={bio}
+                        onChange={e => {
+                          setBio(e.target.value);
+                          if (fieldErrors.bio) setFieldErrors(p => ({ ...p, bio: undefined }));
+                        }}
+                        placeholder="Tell us about yourself..."
+                        maxLength={500}
+                        rows={4}
+                        disabled={!isEditing}
+                        className="resize-none profile-textarea w-full"
+                        aria-invalid={!!fieldErrors.bio}
+                        aria-describedby={fieldErrors.bio ? "bio-error" : undefined}
+                      />
+                      {fieldErrors.bio && (
+                        <p id="bio-error" role="alert" className="text-xs font-medium text-destructive">
+                          {fieldErrors.bio}
+                        </p>
+                      )}
+                      {isEditing && <p className="text-xs text-muted-foreground text-right">{bio.length}/500</p>}
+                    </div>
+
+                    <div className="profile-2col-grid grid" style={{ gap: 'var(--space-sm)' }}>
+                      <div className="flex flex-col min-w-0" style={{ gap: 'var(--space-xs)' }}>
+                        <Label className="heading-luxe-eyebrow text-left">
+                          Gender <span className="text-destructive">*</span>
+                        </Label>
+                        <Select
+                          value={gender}
+                          onValueChange={(v) => {
+                            setGender(v);
+                            if (fieldErrors.gender) setFieldErrors(p => ({ ...p, gender: undefined }));
+                          }}
+                          disabled={!isEditing}
+                        >
+                          <SelectTrigger className="bg-card/60 profile-select-trigger w-full">
+                            <SelectValue placeholder="Select gender" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {GENDER_OPTIONS.map(option => <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        {fieldErrors.gender && (
+                          <p role="alert" className="text-xs font-medium text-destructive">
+                            {fieldErrors.gender}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col min-w-0" style={{ gap: 'var(--space-xs)' }}>
+                        <Label className="heading-luxe-eyebrow text-left">
+                          Pronouns <span className="text-muted-foreground/70 normal-case">(optional)</span>
+                        </Label>
+                        <Select value={pronouns} onValueChange={setPronouns} disabled={!isEditing}>
+                          <SelectTrigger className="bg-card/60 profile-select-trigger w-full">
+                            <SelectValue placeholder="Select pronouns" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {PRONOUN_OPTIONS.map(option => <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    {isEditing && <>
+                      <div className="divider-luxe my-fluid-md" />
+                      <div className="flex flex-col" style={{ gap: 'var(--space-sm)' }}>
+                        <div className="flex items-center gap-2">
+                          <span className="dot-gold shrink-0" />
+                          <span className="heading-luxe-eyebrow">Social Media Links</span>
+                        </div>
+                        {[
+                          { icon: Instagram, value: instagramUrl, setter: setInstagramUrl, placeholder: "Instagram profile URL" },
+                          { icon: Twitter, value: twitterUrl, setter: setTwitterUrl, placeholder: "Twitter/X profile URL" },
+                          { icon: Facebook, value: facebookUrl, setter: setFacebookUrl, placeholder: "Facebook profile URL" },
+                          { icon: Linkedin, value: linkedinUrl, setter: setLinkedinUrl, placeholder: "LinkedIn profile URL" },
+                          { icon: Video, value: tiktokUrl, setter: setTiktokUrl, placeholder: "TikTok profile URL" },
+                        ].map(({ icon: Icon, value, setter, placeholder }) => (
+                          <div key={placeholder} className="profile-social-row">
+                            <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
+                            <Input
+                              value={value}
+                              onChange={e => setter(e.target.value)}
+                              placeholder={placeholder}
+                              className="profile-input w-full"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </>}
+
+                    {isEditing && <div className="flex" style={{ gap: 'var(--space-sm)', paddingTop: 'var(--space-md)' }}>
+                      <Button
+                        onClick={handleSaveProfile}
+                        disabled={isSaving || !displayName.trim()}
+                        variant="jet"
+                        size="lg"
+                        className="flex-1 rounded-full text-fluid-base font-semibold tracking-wide shadow-lg shadow-primary/20"
+                      >
+                        {isSaving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : <><Save className="w-4 h-4 mr-2" />Save Changes</>}
+                      </Button>
+                    </div>}
+                  </div>
+                </div>
+
+                {/* Admin shortcut */}
+                {isAdmin && (
+                  <nav aria-label="Account navigation" className="flex flex-col" style={{ gap: 'var(--space-sm)' }}>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/admin')}
+                      className="group w-full text-left rounded-2xl border-hairline bg-card/40 backdrop-blur-xl hover:border-primary/50 hover:bg-card/60 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all"
+                      style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', padding: 'var(--space-sm)', minWidth: 0 }}
+                    >
+                      <span
+                        className="rounded-full bg-gradient-to-br from-primary/20 to-primary-glow/10 text-primary border-hairline"
+                        style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, flexShrink: 0 }}
+                      >
+                        <Shield className="w-5 h-5" />
+                      </span>
+                      <span style={{ display: 'flex', flexDirection: 'column', flex: '1 1 0%', minWidth: 0 }}>
+                        <span className="heading-luxe-card text-fluid-sm">Admin</span>
+                        <span className="text-xs text-muted-foreground" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          Dashboard & analytics
+                        </span>
+                      </span>
+                      <ChevronRight className="text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" style={{ width: 16, height: 16, flexShrink: 0 }} />
+                    </button>
+                  </nav>
+                )}
+
+                {/* Preferences / privacy / consent / notifications (when editing) */}
+                {isEditing && user?.id && (
+                  <ProfileSettingsPanel userId={user.id} userEmail={user.email} />
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
         </section>
-
-        {/* Admin shortcut (admins only) — grouped as a sibling of the
-            form/hero sections inside PageShell so spacing is driven by
-            PageShell's gap, not nested margins. */}
-        {isAdmin && (
-          <nav aria-label="Account navigation" className="flex flex-col" style={{ gap: 'var(--space-sm)' }}>
-            {([
-              { to: '/admin', icon: Shield, label: 'Admin', desc: 'Dashboard & analytics' },
-            ] as const).map(({ to, icon: Icon, label, desc }) => (
-            <button
-              key={to}
-              type="button"
-              onClick={() => navigate(to)}
-              className="group w-full text-left rounded-2xl border-hairline bg-card/40 backdrop-blur-xl hover:border-primary/50 hover:bg-card/60 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all"
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 'var(--space-sm)',
-                padding: 'var(--space-sm)',
-                minWidth: 0,
-              }}
-            >
-              <span
-                className="rounded-full bg-gradient-to-br from-primary/20 to-primary-glow/10 text-primary border-hairline"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: 44,
-                  height: 44,
-                  flexShrink: 0,
-                }}
-              >
-                <Icon className="w-5 h-5" />
-              </span>
-              <span
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  flex: '1 1 0%',
-                  minWidth: 0,
-                }}
-              >
-                <span className="heading-luxe-card text-fluid-sm" style={{ display: 'block' }}>{label}</span>
-                <span
-                  className="text-xs text-muted-foreground"
-                  style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-                >
-                  {desc}
-                </span>
-              </span>
-              <ChevronRight
-                className="text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all"
-                style={{ width: 16, height: 16, flexShrink: 0 }}
-              />
-            </button>
-            ))}
-          </nav>
-        )}
-
-        {/* Account & preferences — privacy, consent, notifications, theme,
-            location, subscription, support, and account management. Revealed
-            only when the user enters edit mode, mirroring the Edit affordance. */}
-        {isEditing && user?.id && (
-          <section aria-label="Account and preferences" className="flex flex-col" style={{ gap: 'var(--space-md)' }}>
-            <ProfileSettingsPanel userId={user.id} userEmail={user.email} />
-          </section>
-        )}
-
-        {/* Sign Out */}
-        <section
-          aria-label="Sign out"
-          className="rounded-2xl border-hairline border-destructive/20 bg-card/40 backdrop-blur-xl p-fluid-sm sm:p-fluid-md"
-        >
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full rounded-full border-destructive/40 bg-transparent text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/60 focus-visible:ring-2 focus-visible:ring-destructive/40"
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sign Out
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Sign out of your account?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    You'll need to sign in again to access your profile and favorites.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel className="rounded-full border-primary/40 bg-transparent text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary">
-                    Cancel
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleSignOut}
-                    className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg shadow-destructive/20 font-semibold tracking-wide"
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </section>
       </PageShell>
     </PageLayout>
   );
