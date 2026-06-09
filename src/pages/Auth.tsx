@@ -157,6 +157,28 @@ const Auth = () => {
     return undefined;
   };
 
+  const fieldToElementId: Record<string, string> = {
+    email: "auth-email",
+    password: "auth-password",
+    confirmPassword: "auth-confirm-password",
+    consent: "dataConsent",
+    locationConsent: "locationConsent",
+  };
+
+  const focusFirstError = (errors: ValidationErrors) => {
+    const firstKey = (Object.keys(errors) as (keyof typeof errors)[]).find((k) => errors[k]);
+    if (!firstKey) return;
+    const elId = fieldToElementId[firstKey as string];
+    if (!elId) return;
+    window.setTimeout(() => {
+      const el = document.getElementById(elId);
+      if (el) {
+        (el as HTMLElement).focus();
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 0);
+  };
+
   const validateInputs = (): boolean => {
     const errors: ValidationErrors = {};
 
@@ -191,6 +213,7 @@ const Auth = () => {
       setFormError(first ?? "Please fix the highlighted fields.");
       setShake(true);
       window.setTimeout(() => setShake(false), 450);
+      focusFirstError(errors);
     } else {
       setFormError(null);
     }
