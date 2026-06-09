@@ -23,7 +23,7 @@ import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { AvatarCropDialog } from "@/components/AvatarCropDialog";
 import { useAuth } from "@/contexts/AuthContext";
-import { Settings as SettingsIcon } from "lucide-react";
+import { ProfileSettingsPanel } from "@/components/settings/ProfileSettingsPanel";
 
 const profileSchema = z.object({
   display_name: z.string().trim().min(1, "Display name is required").max(100, "Display name must be less than 100 characters"),
@@ -606,11 +606,11 @@ export default function Profile() {
         {/* Navigation cards — Settings, Admin (if applicable), and Sign Out.
             Grouped as siblings of the form/hero sections inside PageShell so
             spacing is driven by PageShell's gap, not nested margins. */}
-        <nav aria-label="Account navigation" className="flex flex-col" style={{ gap: 'var(--space-sm)' }}>
-          {([
-            { to: '/settings', icon: SettingsIcon, label: 'Settings', desc: 'Preferences, privacy, notifications & subscription' },
-            ...(isAdmin ? [{ to: '/admin', icon: Shield, label: 'Admin', desc: 'Dashboard & analytics' }] : []),
-          ] as const).map(({ to, icon: Icon, label, desc }) => (
+        {isAdmin && (
+          <nav aria-label="Account navigation" className="flex flex-col" style={{ gap: 'var(--space-sm)' }}>
+            {([
+              { to: '/admin', icon: Shield, label: 'Admin', desc: 'Dashboard & analytics' },
+            ] as const).map(({ to, icon: Icon, label, desc }) => (
             <button
               key={to}
               type="button"
@@ -659,8 +659,18 @@ export default function Profile() {
                 style={{ width: 16, height: 16, flexShrink: 0 }}
               />
             </button>
-          ))}
-        </nav>
+            ))}
+          </nav>
+        )}
+
+        {/* Settings — preferences, privacy, consent, notifications, theme,
+            location, subscription, support, and account. Revealed only when
+            the user enters edit mode, mirroring the Edit profile affordance. */}
+        {isEditing && user?.id && (
+          <section aria-label="Settings" className="flex flex-col" style={{ gap: 'var(--space-md)' }}>
+            <ProfileSettingsPanel userId={user.id} userEmail={user.email} />
+          </section>
+        )}
 
         {/* Sign Out */}
         <section
