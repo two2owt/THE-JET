@@ -126,6 +126,9 @@ export default function Profile() {
   const {
     connections
   } = useConnections(user?.id);
+  const {
+    notifications
+  } = useNotifications(!!user);
   // Sync hydrated profile into the editable form state. Only fires when
   // a fresh profile object arrives from the cache/network.
   useEffect(() => {
