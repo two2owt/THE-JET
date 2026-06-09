@@ -988,16 +988,46 @@ All colors MUST be HSL.
   }
 
   /* Profile form — responsive 2-column grid for Gender/Pronouns and similar
-     paired fields. Single column on mobile, two columns from sm: up.
-     Lives in CSS (not Tailwind class string) so it's resilient to any
-     class-stripping regressions in the build pipeline. */
+     paired fields. Tuned across the full mobile→tablet range so inputs stay
+     aligned and never overflow. Lives in CSS (not Tailwind class string) so
+     it's resilient to any class-stripping regressions in the build pipeline.
+
+     Breakpoints:
+       - ≤ 359px (small phones, iPhone SE 1st-gen): single column, tighter gap
+       - 360-479px (typical phones): single column, default gap
+       - 480-639px (large phones / phablets): single column, roomier gap
+       - 640-767px (small tablets portrait): two columns, medium gap
+       - 768-1023px (tablets): two columns, larger gap
+       - ≥ 1024px (desktop): two columns, max gap (capped)
+  */
   .profile-2col-grid {
     grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-xs) !important;
+  }
+  @media (min-width: 360px) {
+    .profile-2col-grid {
+      gap: var(--space-sm) !important;
+    }
+  }
+  @media (min-width: 480px) {
+    .profile-2col-grid {
+      gap: var(--space-md) !important;
+    }
   }
   @media (min-width: 640px) {
     .profile-2col-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-sm) !important;
+    }
+  }
+  @media (min-width: 768px) {
+    .profile-2col-grid {
       gap: var(--space-md) !important;
+    }
+  }
+  @media (min-width: 1024px) {
+    .profile-2col-grid {
+      gap: var(--space-lg) !important;
     }
   }
 
