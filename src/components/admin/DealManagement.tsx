@@ -16,7 +16,9 @@ import type { Database } from "@/integrations/supabase/types";
 type Deal = Database['public']['Tables']['deals']['Row'];
 
 /* ------------ URL <-> filter helpers ------------ */
-const FILTER_KEYS = ["q", "types", "status", "from", "to"] as const;
+const FILTER_KEYS = ["q", "types", "status", "from", "to", "priority", "merchants", "neighborhoods", "days"] as const;
+
+type Priority = "high" | "medium" | "low";
 
 interface Filters {
   q: string;
@@ -24,16 +26,46 @@ interface Filters {
   status: "all" | "active" | "inactive" | "expired" | "upcoming";
   from: string; // YYYY-MM-DD
   to: string;
+  priority: Priority[];
+  merchants: string[];      // merchant_id values; "__none__" = unassigned
+  neighborhoods: string[];  // neighborhood_id values; "__none__" = unassigned
+  days: number[];           // 0=Sun .. 6=Sat
+}
+
+const PRIORITY_OPTIONS: Priority[] = ["high", "medium", "low"];
+const NONE_KEY = "__none__";
+const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+/** Derive a "priority" bucket from expiry urgency (no schema field exists). */
+function dealPriority(deal: Deal, now = new Date()): Priority | null {
+  if (!deal.expires_at) return "low";
+  const expires = new Date(deal.expires_at);
+  const diffDays = (expires.getTime() - now.getTime()) / 86_400_000;
+  if (diffDays < 0) return null; // expired — exclude from priority counts
+  if (diffDays <= 7) return "high";
+  if (diffDays <= 30) return "medium";
+  return "low";
 }
 
 function readFilters(params: URLSearchParams): Filters {
   const status = (params.get("status") as Filters["status"]) || "all";
+  const priority = (params.get("priority") || "")
+    .split(",")
+    .filter((p): p is Priority => (PRIORITY_OPTIONS as string[]).includes(p));
+  const days = (params.get("days") || "")
+    .split(",")
+    .map((d) => Number(d))
+    .filter((n) => Number.isInteger(n) && n >= 0 && n <= 6);
   return {
     q: params.get("q") || "",
     types: (params.get("types") || "").split(",").filter(Boolean),
     status: ["all", "active", "inactive", "expired", "upcoming"].includes(status) ? status : "all",
     from: params.get("from") || "",
     to: params.get("to") || "",
+    priority,
+    merchants: (params.get("merchants") || "").split(",").filter(Boolean),
+    neighborhoods: (params.get("neighborhoods") || "").split(",").filter(Boolean),
+    days,
   };
 }
 
@@ -56,6 +88,22 @@ function matchesFilters(deal: Deal, f: Filters, now = new Date()): boolean {
   }
   if (f.from && expires && expires < new Date(f.from)) return false;
   if (f.to && starts && starts > new Date(f.to + "T23:59:59")) return false;
+  if (f.priority.length) {
+    const p = dealPriority(deal, now);
+    if (!p || !f.priority.includes(p)) return false;
+  }
+  if (f.merchants.length) {
+    const key = deal.merchant_id ?? NONE_KEY;
+    if (!f.merchants.includes(key)) return false;
+  }
+  if (f.neighborhoods.length) {
+    const key = deal.neighborhood_id ?? NONE_KEY;
+    if (!f.neighborhoods.includes(key)) return false;
+  }
+  if (f.days.length) {
+    const days = deal.active_days ?? [];
+    if (!f.days.some((d) => days.includes(d))) return false;
+  }
   return true;
 }
 
@@ -87,6 +135,10 @@ export const DealManagement = () => {
       if (merged.status !== "all") params.set("status", merged.status);
       if (merged.from) params.set("from", merged.from);
       if (merged.to) params.set("to", merged.to);
+      if (merged.priority.length) params.set("priority", merged.priority.join(","));
+      if (merged.merchants.length) params.set("merchants", merged.merchants.join(","));
+      if (merged.neighborhoods.length) params.set("neighborhoods", merged.neighborhoods.join(","));
+      if (merged.days.length) params.set("days", merged.days.join(","));
       setSearchParams(params, { replace: true });
     },
     [filters, searchParams, setSearchParams],
@@ -110,6 +162,22 @@ export const DealManagement = () => {
       return data;
     },
   });
+
+  // Resolve neighborhood ids → names for facet labels.
+  const { data: neighborhoods } = useQuery({
+    queryKey: ['admin-neighborhoods-lookup'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('neighborhoods').select('id,name');
+      if (error) throw error;
+      return data ?? [];
+    },
+    staleTime: 5 * 60_000,
+  });
+  const neighborhoodNameById = useMemo(() => {
+    const m = new Map<string, string>();
+    (neighborhoods ?? []).forEach((n) => m.set(n.id, n.name));
+    return m;
+  }, [neighborhoods]);
 
   const deleteMutation = useMutation({
     mutationFn: async (dealId: string) => {
@@ -152,6 +220,43 @@ export const DealManagement = () => {
     return counts;
   }, [deals]);
 
+  const priorityCounts = useMemo(() => {
+    const counts: Record<Priority, number> = { high: 0, medium: 0, low: 0 };
+    (deals ?? []).forEach((d) => {
+      const p = dealPriority(d);
+      if (p) counts[p] += 1;
+    });
+    return counts;
+  }, [deals]);
+
+  const merchantCounts = useMemo(() => {
+    const map = new Map<string, number>();
+    (deals ?? []).forEach((d) => {
+      const key = d.merchant_id ?? NONE_KEY;
+      map.set(key, (map.get(key) ?? 0) + 1);
+    });
+    return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
+  }, [deals]);
+
+  const neighborhoodCounts = useMemo(() => {
+    const map = new Map<string, number>();
+    (deals ?? []).forEach((d) => {
+      const key = d.neighborhood_id ?? NONE_KEY;
+      map.set(key, (map.get(key) ?? 0) + 1);
+    });
+    return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
+  }, [deals]);
+
+  const dayCounts = useMemo(() => {
+    const counts = [0, 0, 0, 0, 0, 0, 0];
+    (deals ?? []).forEach((d) => {
+      (d.active_days ?? []).forEach((n) => {
+        if (Number.isInteger(n) && n >= 0 && n <= 6) counts[n] += 1;
+      });
+    });
+    return counts;
+  }, [deals]);
+
   const filtered = useMemo(
     () => (deals ?? []).filter((d) => matchesFilters(d, filters)),
     [deals, filters],
@@ -174,8 +279,36 @@ export const DealManagement = () => {
       chips.push({ key: "from", label: `From ${filters.from}`, onClear: () => updateFilters({ from: "" }) });
     if (filters.to)
       chips.push({ key: "to", label: `To ${filters.to}`, onClear: () => updateFilters({ to: "" }) });
+    filters.priority.forEach((p) =>
+      chips.push({
+        key: `p:${p}`,
+        label: `Priority: ${p}`,
+        onClear: () => updateFilters({ priority: filters.priority.filter((x) => x !== p) }),
+      }),
+    );
+    filters.merchants.forEach((id) =>
+      chips.push({
+        key: `m:${id}`,
+        label: `Merchant: ${id === NONE_KEY ? "Unassigned" : id.slice(0, 6)}`,
+        onClear: () => updateFilters({ merchants: filters.merchants.filter((x) => x !== id) }),
+      }),
+    );
+    filters.neighborhoods.forEach((id) =>
+      chips.push({
+        key: `n:${id}`,
+        label: `Area: ${id === NONE_KEY ? "Unassigned" : neighborhoodNameById.get(id) ?? id.slice(0, 6)}`,
+        onClear: () => updateFilters({ neighborhoods: filters.neighborhoods.filter((x) => x !== id) }),
+      }),
+    );
+    filters.days.forEach((d) =>
+      chips.push({
+        key: `d:${d}`,
+        label: DAY_LABELS[d],
+        onClear: () => updateFilters({ days: filters.days.filter((x) => x !== d) }),
+      }),
+    );
     return chips;
-  }, [filters, updateFilters]);
+  }, [filters, updateFilters, neighborhoodNameById]);
 
   if (isLoading) {
     return (
@@ -207,6 +340,11 @@ export const DealManagement = () => {
       filters={filters}
       typeCounts={typeCounts}
       statusCounts={statusCounts}
+      priorityCounts={priorityCounts}
+      merchantCounts={merchantCounts}
+      neighborhoodCounts={neighborhoodCounts}
+      neighborhoodNameById={neighborhoodNameById}
+      dayCounts={dayCounts}
       onChange={updateFilters}
       onClearAll={clearAll}
       hasActive={activeChips.length > 0}
@@ -360,16 +498,53 @@ interface FacetSidebarProps {
   filters: Filters;
   typeCounts: [string, number][];
   statusCounts: Record<Filters["status"], number>;
+  priorityCounts: Record<Priority, number>;
+  merchantCounts: [string, number][];
+  neighborhoodCounts: [string, number][];
+  neighborhoodNameById: Map<string, string>;
+  dayCounts: number[];
   onChange: (next: Partial<Filters>) => void;
   onClearAll: () => void;
   hasActive: boolean;
 }
 
-function FacetSidebar({ filters, typeCounts, statusCounts, onChange, onClearAll, hasActive }: FacetSidebarProps) {
+function FacetSidebar({
+  filters,
+  typeCounts,
+  statusCounts,
+  priorityCounts,
+  merchantCounts,
+  neighborhoodCounts,
+  neighborhoodNameById,
+  dayCounts,
+  onChange,
+  onClearAll,
+  hasActive,
+}: FacetSidebarProps) {
   const toggleType = (t: string) => {
     const set = new Set(filters.types);
     if (set.has(t)) set.delete(t); else set.add(t);
     onChange({ types: Array.from(set) });
+  };
+  const togglePriority = (p: Priority) => {
+    const set = new Set(filters.priority);
+    if (set.has(p)) set.delete(p); else set.add(p);
+    onChange({ priority: Array.from(set) });
+  };
+  const toggleMerchant = (id: string) => {
+    const set = new Set(filters.merchants);
+    if (set.has(id)) set.delete(id); else set.add(id);
+    onChange({ merchants: Array.from(set) });
+  };
+  const toggleNeighborhood = (id: string) => {
+    const set = new Set(filters.neighborhoods);
+    if (set.has(id)) set.delete(id); else set.add(id);
+    onChange({ neighborhoods: Array.from(set) });
+  };
+  const toggleDay = (d: number) => {
+    const set = new Set(filters.days);
+    if (set.has(d)) set.delete(d); else set.add(d);
+    onChange({ days: Array.from(set).sort((a, b) => a - b) });
   };
 
   return (
@@ -438,6 +613,107 @@ function FacetSidebar({ filters, typeCounts, statusCounts, onChange, onClearAll,
         )}
       </FacetGroup>
 
+      {/* Priority (derived from expiry urgency; multi) */}
+      <FacetGroup title="Priority" hint="Derived from expiry">
+        <div className="flex flex-col gap-1.5">
+          {PRIORITY_OPTIONS.map((p) => {
+            const checked = filters.priority.includes(p);
+            return (
+              <label
+                key={p}
+                className="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 cursor-pointer text-sm hover:bg-muted/50"
+              >
+                <span className="flex items-center gap-2 capitalize">
+                  <Checkbox checked={checked} onCheckedChange={() => togglePriority(p)} />
+                  {p}
+                </span>
+                <span className="text-xs tabular-nums text-muted-foreground">{priorityCounts[p]}</span>
+              </label>
+            );
+          })}
+        </div>
+      </FacetGroup>
+
+      {/* Merchant (multi) */}
+      <FacetGroup title="Merchant">
+        {merchantCounts.length === 0 ? (
+          <p className="text-xs text-muted-foreground">No merchants yet.</p>
+        ) : (
+          <div className="flex flex-col gap-1.5 max-h-56 overflow-y-auto pr-1">
+            {merchantCounts.map(([id, count]) => {
+              const checked = filters.merchants.includes(id);
+              const label = id === NONE_KEY ? "Unassigned" : id.slice(0, 8);
+              return (
+                <label
+                  key={id}
+                  className="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 cursor-pointer text-sm hover:bg-muted/50"
+                  title={id === NONE_KEY ? undefined : id}
+                >
+                  <span className="flex items-center gap-2 min-w-0">
+                    <Checkbox checked={checked} onCheckedChange={() => toggleMerchant(id)} />
+                    <span className="truncate font-mono text-xs">{label}</span>
+                  </span>
+                  <span className="text-xs tabular-nums text-muted-foreground">{count}</span>
+                </label>
+              );
+            })}
+          </div>
+        )}
+      </FacetGroup>
+
+      {/* Neighborhood (multi) */}
+      <FacetGroup title="Neighborhood">
+        {neighborhoodCounts.length === 0 ? (
+          <p className="text-xs text-muted-foreground">No areas yet.</p>
+        ) : (
+          <div className="flex flex-col gap-1.5 max-h-56 overflow-y-auto pr-1">
+            {neighborhoodCounts.map(([id, count]) => {
+              const checked = filters.neighborhoods.includes(id);
+              const label =
+                id === NONE_KEY ? "Unassigned" : neighborhoodNameById.get(id) ?? id.slice(0, 8);
+              return (
+                <label
+                  key={id}
+                  className="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 cursor-pointer text-sm hover:bg-muted/50"
+                >
+                  <span className="flex items-center gap-2 min-w-0">
+                    <Checkbox checked={checked} onCheckedChange={() => toggleNeighborhood(id)} />
+                    <span className="truncate">{label}</span>
+                  </span>
+                  <span className="text-xs tabular-nums text-muted-foreground">{count}</span>
+                </label>
+              );
+            })}
+          </div>
+        )}
+      </FacetGroup>
+
+      {/* Days active (tag-style multi) */}
+      <FacetGroup title="Days active">
+        <div className="flex flex-wrap gap-1.5">
+          {DAY_LABELS.map((label, d) => {
+            const checked = filters.days.includes(d);
+            const count = dayCounts[d];
+            return (
+              <button
+                key={d}
+                type="button"
+                onClick={() => toggleDay(d)}
+                aria-pressed={checked}
+                className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors ${
+                  checked
+                    ? "border-primary/60 bg-primary/15 text-foreground"
+                    : "border-border/60 bg-muted/30 text-muted-foreground hover:bg-muted/60"
+                }`}
+              >
+                {label}
+                <span className="tabular-nums opacity-70">{count}</span>
+              </button>
+            );
+          })}
+        </div>
+      </FacetGroup>
+
       {/* Date range */}
       <FacetGroup title="Date range">
         <div className="grid grid-cols-2 gap-2">
@@ -465,10 +741,13 @@ function FacetSidebar({ filters, typeCounts, statusCounts, onChange, onClearAll,
   );
 }
 
-function FacetGroup({ title, children }: { title: string; children: React.ReactNode }) {
+function FacetGroup({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
-      <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</h4>
+      <div className="flex items-baseline justify-between gap-2">
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</h4>
+        {hint && <span className="text-[10px] text-muted-foreground/70">{hint}</span>}
+      </div>
       {children}
     </div>
   );
