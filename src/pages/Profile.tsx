@@ -393,15 +393,12 @@ export default function Profile() {
 
         {/* Profile form card */}
         <section className="rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg">
-          <div
-            className="mb-fluid-md"
-            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-          >
-            <span className="dot-gold" style={{ flexShrink: 0 }} />
+          <div className="mb-fluid-md flex items-center gap-2">
+            <span className="dot-gold shrink-0" />
             <span className="heading-luxe-eyebrow">Account Details</span>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)' }}>
+          <div className="flex flex-col" style={{ gap: 'var(--space-sm)' }}>
+              <div className="flex flex-col" style={{ gap: 'var(--space-xs)' }}>
                 <Label htmlFor="display_name" className="heading-luxe-eyebrow text-left">
                   Display Name <span className="text-destructive">*</span>
                 </Label>
@@ -417,8 +414,7 @@ export default function Profile() {
                   disabled={!isEditing}
                   aria-invalid={!!fieldErrors.display_name}
                   aria-describedby={fieldErrors.display_name ? "display_name-error" : undefined}
-                  className="profile-input"
-                  style={{ width: '100%' }}
+                  className="profile-input w-full"
                 />
                 {fieldErrors.display_name && (
                   <p id="display_name-error" role="alert" className="text-xs font-medium text-destructive">
@@ -427,7 +423,7 @@ export default function Profile() {
                 )}
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)' }}>
+              <div className="flex flex-col" style={{ gap: 'var(--space-xs)' }}>
                 <Label htmlFor="bio" className="heading-luxe-eyebrow text-left">
                   Bio <span className="text-muted-foreground/70 normal-case">(optional)</span>
                 </Label>
@@ -442,8 +438,7 @@ export default function Profile() {
                   maxLength={500}
                   rows={4}
                   disabled={!isEditing}
-                  className="resize-none profile-textarea"
-                  style={{ width: '100%' }}
+                  className="resize-none profile-textarea w-full"
                   aria-invalid={!!fieldErrors.bio}
                   aria-describedby={fieldErrors.bio ? "bio-error" : undefined}
                 />
@@ -457,11 +452,8 @@ export default function Profile() {
                   </p>}
               </div>
 
-              <div
-                className="profile-2col-grid"
-                style={{ display: 'grid', gap: 'var(--space-sm)' }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)', minWidth: 0 }}>
+              <div className="profile-2col-grid grid" style={{ gap: 'var(--space-sm)' }}>
+                <div className="flex flex-col min-w-0" style={{ gap: 'var(--space-xs)' }}>
                   <Label className="heading-luxe-eyebrow text-left">
                     Gender <span className="text-destructive">*</span>
                   </Label>
@@ -473,7 +465,7 @@ export default function Profile() {
                     }}
                     disabled={!isEditing}
                   >
-                    <SelectTrigger className="bg-card/60 profile-select-trigger" style={{ width: '100%' }}>
+                    <SelectTrigger className="bg-card/60 profile-select-trigger w-full">
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
                     <SelectContent>
@@ -489,12 +481,12 @@ export default function Profile() {
                   )}
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)', minWidth: 0 }}>
+                <div className="flex flex-col min-w-0" style={{ gap: 'var(--space-xs)' }}>
                   <Label className="heading-luxe-eyebrow text-left">
                     Pronouns <span className="text-muted-foreground/70 normal-case">(optional)</span>
                   </Label>
                   <Select value={pronouns} onValueChange={setPronouns} disabled={!isEditing}>
-                    <SelectTrigger className="bg-card/60 profile-select-trigger" style={{ width: '100%' }}>
+                    <SelectTrigger className="bg-card/60 profile-select-trigger w-full">
                       <SelectValue placeholder="Select pronouns" />
                     </SelectTrigger>
                     <SelectContent>
@@ -509,9 +501,9 @@ export default function Profile() {
               {isEditing && <>
                   <div className="divider-luxe my-fluid-md" />
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span className="dot-gold" style={{ flexShrink: 0 }} />
+                  <div className="flex flex-col" style={{ gap: 'var(--space-sm)' }}>
+                    <div className="flex items-center gap-2">
+                      <span className="dot-gold shrink-0" />
                       <span className="heading-luxe-eyebrow">Social Media Links</span>
                     </div>
                     {[
@@ -522,12 +514,12 @@ export default function Profile() {
                       { icon: Video, value: tiktokUrl, setter: setTiktokUrl, placeholder: "TikTok profile URL" },
                     ].map(({ icon: Icon, value, setter, placeholder }) => (
                       <div key={placeholder} className="profile-social-row">
-                        <Icon className="w-4 h-4 text-muted-foreground" />
+                        <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
                         <Input
                           value={value}
                           onChange={e => setter(e.target.value)}
                           placeholder={placeholder}
-                          className="profile-input"
+                          className="profile-input w-full"
                         />
                       </div>
                     ))}
@@ -572,7 +564,7 @@ export default function Profile() {
                 </>
               )}
 
-              {isEditing && <div style={{ display: 'flex', gap: 'var(--space-sm)', paddingTop: 'var(--space-md)' }}>
+              {isEditing && <div className="flex" style={{ gap: 'var(--space-sm)', paddingTop: 'var(--space-md)' }}>
                   <Button
                     onClick={handleSaveProfile}
                     disabled={isSaving || !displayName.trim()}
@@ -611,44 +603,37 @@ export default function Profile() {
           </div>
         </section>
 
-          {/* Admin entry */}
-          {isAdmin && (
+        {/* Navigation cards — Settings, Admin (if applicable), and Sign Out.
+            Grouped as siblings of the form/hero sections inside PageShell so
+            spacing is driven by PageShell's gap, not nested margins. */}
+        <nav aria-label="Account navigation" className="flex flex-col" style={{ gap: 'var(--space-sm)' }}>
+          {([
+            { to: '/settings', icon: SettingsIcon, label: 'Settings', desc: 'Preferences, privacy, notifications & subscription' },
+            ...(isAdmin ? [{ to: '/admin', icon: Shield, label: 'Admin', desc: 'Dashboard & analytics' }] : []),
+          ] as const).map(({ to, icon: Icon, label, desc }) => (
             <button
+              key={to}
               type="button"
-              onClick={() => navigate('/admin')}
+              onClick={() => navigate(to)}
               className="group flex items-center gap-fluid-sm w-full text-left p-fluid-sm rounded-full border-hairline bg-card/40 backdrop-blur-xl hover:border-primary/50 hover:bg-card/60 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all"
             >
-              <div className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary/20 to-primary-glow/10 text-primary border-hairline">
-                <Shield className="w-5 h-5" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="heading-luxe-card text-fluid-sm">Admin</div>
-                <div className="text-xs text-muted-foreground truncate">Dashboard &amp; analytics</div>
-              </div>
+              <span className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary/20 to-primary-glow/10 text-primary border-hairline">
+                <Icon className="w-5 h-5" />
+              </span>
+              <span className="flex-1 min-w-0">
+                <span className="heading-luxe-card text-fluid-sm block">{label}</span>
+                <span className="text-xs text-muted-foreground truncate block">{desc}</span>
+              </span>
               <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0" />
             </button>
-          )}
+          ))}
+        </nav>
 
-          {/* Settings entry — preferences, privacy, subscription, and account
-              all live on the dedicated /settings page. Profile stays focused
-              on identity to avoid duplicating the same forms in two places. */}
-          <button
-            type="button"
-            onClick={() => navigate('/settings')}
-            className="group flex items-center gap-fluid-sm w-full text-left p-fluid-sm rounded-full border-hairline bg-card/40 backdrop-blur-xl hover:border-primary/50 hover:bg-card/60 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all"
-          >
-            <div className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-primary/20 to-primary-glow/10 text-primary border-hairline">
-              <SettingsIcon className="w-5 h-5" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="heading-luxe-card text-fluid-sm">Settings</div>
-              <div className="text-xs text-muted-foreground truncate">Preferences, privacy, notifications &amp; subscription</div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0" />
-          </button>
-
-          {/* Sign Out */}
-          <section className="rounded-2xl border-hairline border-destructive/20 bg-card/40 backdrop-blur-xl p-fluid-sm sm:p-fluid-md">
+        {/* Sign Out */}
+        <section
+          aria-label="Sign out"
+          className="rounded-2xl border-hairline border-destructive/20 bg-card/40 backdrop-blur-xl p-fluid-sm sm:p-fluid-md"
+        >
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
