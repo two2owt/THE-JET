@@ -14,6 +14,7 @@ import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useConnections } from "@/hooks/useConnections";
 import { useProfile } from "@/hooks/useProfile";
+import { useNotifications } from "@/hooks/useNotifications";
 import { Camera, Edit2, X, Save, Heart, Users, Shield, LogOut, Loader2, Instagram, Twitter, Facebook, Linkedin, Video, Mail, Bell, ChevronRight, Link2, Share2, Activity as ActivityIcon } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/EmptyState";
