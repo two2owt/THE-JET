@@ -1015,6 +1015,7 @@ const Auth = () => {
             </p>
           )}
         </div>
+        </div>
 
         {/* Footer links */}
         <nav aria-label="Legal" className="relative z-10 mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
