@@ -552,20 +552,74 @@ const Auth = () => {
   };
 
   return (
-    <div
-      className="relative flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto bg-background bg-cover bg-center bg-no-repeat px-fluid-sm sm:px-fluid-md pt-[max(env(safe-area-inset-top,0px),var(--space-lg))] pb-[max(env(safe-area-inset-bottom,0px),var(--space-lg))]"
-      style={{ backgroundImage: `url(${authBackground})` }}
-    >
-      {/* Layered backdrop: dark gradient + mesh radials + pattern + animated blobs + vignette */}
-      <div className="absolute inset-0 auth-gradient-overlay" />
-      <div className="auth-mesh-bg" aria-hidden="true" />
-      <div className="auth-pattern" aria-hidden="true" />
-      <div className="auth-blob auth-blob-1" aria-hidden="true" />
-      <div className="auth-blob auth-blob-2" aria-hidden="true" />
-      <div className="auth-blob auth-blob-3" aria-hidden="true" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,hsl(0_0%_0%/0.55)_100%)]" />
+    <div className="relative flex flex-1 min-h-0 w-full overflow-y-auto bg-background flex-col md:grid md:grid-cols-[2fr_3fr] lg:grid-cols-[1fr_1fr]">
+      {/* LEFT / TOP — Brand panel */}
+      <aside
+        className="relative overflow-hidden bg-cover bg-center bg-no-repeat h-[200px] md:h-auto md:min-h-full"
+        style={{ backgroundImage: `url(${authBackground})` }}
+        aria-label="JET brand"
+      >
+        <div className="absolute inset-0 auth-gradient-overlay" />
+        <div className="auth-mesh-bg" aria-hidden="true" />
+        <div className="auth-pattern" aria-hidden="true" />
+        <div className="auth-blob auth-blob-1" aria-hidden="true" />
+        <div className="auth-blob auth-blob-2" aria-hidden="true" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-black/40 via-black/20 to-black/70" />
 
-      <div className="relative z-10 w-full flex flex-col items-center">
+        <div className="relative z-10 flex h-full w-full flex-col justify-between p-6 md:p-10 lg:p-14">
+          <div className="flex items-center gap-3">
+            <img
+              src={jetLogo}
+              alt="JET"
+              width="40"
+              height="40"
+              className="h-10 w-10 drop-shadow-[0_2px_12px_hsl(var(--primary)/0.5)]"
+              fetchPriority="high"
+              decoding="async"
+            />
+            <span className="font-display text-xl font-bold tracking-tight text-white drop-shadow-md">
+              JET
+            </span>
+          </div>
+
+          <div className="hidden md:flex flex-col gap-5 max-w-[440px]">
+            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-white/80 backdrop-blur-sm">
+              <span className="dot-gold" />
+              Charlotte, NC
+            </span>
+            <h2 className="font-display text-[32px] lg:text-[44px] leading-[1.05] font-bold tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.55)]">
+              Discover what's hot. <span className="bg-gradient-to-r from-primary via-primary-glow to-gold bg-clip-text text-transparent">Right now.</span>
+            </h2>
+            <p className="text-base text-white/85 leading-relaxed max-w-[400px] drop-shadow">
+              Live deals, real crowds, and the city's pulse — all in one place. Made for the nights you'll actually remember.
+            </p>
+            <figure className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-md">
+              <blockquote className="text-sm leading-relaxed text-white/90">
+                "JET became my Friday-night ritual. I haven't paid full price for a cocktail in months."
+              </blockquote>
+              <figcaption className="mt-3 text-xs uppercase tracking-wider text-white/60">
+                — Maya R. · JET+ member
+              </figcaption>
+            </figure>
+          </div>
+
+          <div className="hidden md:block text-[11px] uppercase tracking-[0.2em] text-white/50">
+            © {new Date().getFullYear()} JET Around
+          </div>
+        </div>
+
+        {/* Mobile-only brand headline overlay */}
+        <div className="md:hidden absolute inset-0 z-10 flex items-end p-5">
+          <h2 className="font-display text-2xl font-bold leading-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
+            Discover what's hot.<br />
+            <span className="bg-gradient-to-r from-primary-glow to-gold bg-clip-text text-transparent">Right now.</span>
+          </h2>
+        </div>
+      </aside>
+
+      {/* RIGHT / BOTTOM — Form panel */}
+      <div className="relative flex flex-1 flex-col items-center justify-center px-fluid-sm sm:px-12 lg:px-[48px] pt-[max(env(safe-area-inset-top,0px),var(--space-lg))] pb-[max(env(safe-area-inset-bottom,0px),var(--space-lg))]">
+        <div className="w-full max-w-[380px] flex flex-col items-center animate-fade-in">
         {/* Logo above card — 48px */}
         <div className="relative mb-2">
           <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,hsl(var(--primary)/0.35)_0%,transparent_70%)] blur-md" />
@@ -978,6 +1032,7 @@ const Auth = () => {
             Help
           </a>
         </nav>
+        </div>
       </div>
     </div>
   );
