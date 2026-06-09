@@ -808,7 +808,7 @@ const Auth = () => {
                     </IconButton>
                   </div>
                   {validationErrors.password ? (
-                    <p className="inline-flex items-center gap-1.5 text-xs text-destructive mt-0.5">
+                    <p id="auth-password-error" className="inline-flex items-center gap-1.5 text-xs text-destructive mt-0.5">
                       <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
                       {validationErrors.password}
                     </p>
