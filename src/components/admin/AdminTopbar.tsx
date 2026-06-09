@@ -70,6 +70,20 @@ export function AdminTopbar({ items, onSelect }: AdminTopbarProps) {
     return () => window.removeEventListener("keydown", onKey);
   }, [searchOpen]);
 
+  // "/" to open search (ignore when typing in inputs)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "/" || searchOpen) return;
+      const t = e.target as HTMLElement | null;
+      const tag = t?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || t?.isContentEditable) return;
+      e.preventDefault();
+      setSearchOpen(true);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [searchOpen]);
+
   const results = useMemo(() => {
     const term = q.trim().toLowerCase();
     if (!term) return items;
