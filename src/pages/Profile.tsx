@@ -268,9 +268,7 @@ export default function Profile() {
   if (isAuthLoading || (user && isProfileLoading)) {
     return (
       <PageLayout defaultTab="map" headerConfig={headerConfig}>
-        <PageShell>
-          <ProfilePageSkeleton />
-        </PageShell>
+        <ProfilePageSkeleton />
       </PageLayout>
     );
   }
