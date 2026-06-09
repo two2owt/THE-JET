@@ -578,18 +578,18 @@ const Auth = () => {
     <div className="relative flex flex-1 min-h-0 w-full overflow-y-auto bg-background flex-col md:grid md:grid-cols-[2fr_3fr] lg:grid-cols-[1fr_1fr]">
       {/* LEFT / TOP — Brand panel */}
       <aside
-        className="relative overflow-hidden bg-cover bg-center bg-no-repeat h-[200px] md:h-auto md:min-h-full"
+        className="relative overflow-hidden bg-cover bg-center bg-no-repeat h-[260px] md:h-auto md:min-h-full"
         style={{ backgroundImage: `url(${authBackground})` }}
         aria-label="JET brand"
       >
-        <div className="absolute inset-0 auth-gradient-overlay" />
-        <div className="auth-mesh-bg" aria-hidden="true" />
-        <div className="auth-pattern" aria-hidden="true" />
-        <div className="auth-blob auth-blob-1" aria-hidden="true" />
-        <div className="auth-blob auth-blob-2" aria-hidden="true" />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-black/40 via-black/20 to-black/70" />
+        {/* Single cohesive gradient overlay (replaces stacked mesh + pattern + blobs) */}
+        <div className="absolute inset-0 auth-gradient-overlay" aria-hidden="true" />
+        <div
+          className="pointer-events-none absolute inset-0 bg-gradient-to-br from-black/55 via-black/25 to-black/80"
+          aria-hidden="true"
+        />
 
-        <div className="relative z-10 flex h-full w-full flex-col justify-between p-6 md:p-10 lg:p-14">
+        <div className="relative z-10 flex h-full w-full flex-col justify-between p-8 md:p-10 lg:p-14">
           <div className="flex items-center gap-3">
             <img
               src={jetLogo}
@@ -632,16 +632,22 @@ const Auth = () => {
         </div>
 
         {/* Mobile-only brand headline overlay */}
-        <div className="md:hidden absolute inset-0 z-10 flex items-end p-5">
-          <h2 className="font-display text-2xl font-bold leading-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
-            Discover what's hot.<br />
-            <span className="bg-gradient-to-r from-primary-glow to-gold bg-clip-text text-transparent">Right now.</span>
+        <div className="md:hidden absolute inset-x-0 bottom-0 z-10 flex flex-col gap-2 px-6 pb-7">
+          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-white/85 backdrop-blur-sm">
+            <span className="dot-gold" />
+            Charlotte, NC
+          </span>
+          <h2 className="font-display text-[26px] font-bold leading-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
+            Discover what's hot.{" "}
+            <span className="bg-gradient-to-r from-primary-glow to-gold bg-clip-text text-transparent">
+              Right now.
+            </span>
           </h2>
         </div>
       </aside>
 
       {/* RIGHT / BOTTOM — Form panel */}
-      <div className="relative flex flex-1 flex-col items-center justify-center px-fluid-sm sm:px-12 lg:px-[48px] pt-[max(env(safe-area-inset-top,0px),var(--space-lg))] pb-[max(env(safe-area-inset-bottom,0px),var(--space-lg))]">
+      <div className="relative flex flex-1 flex-col items-center justify-center px-6 sm:px-12 lg:px-[48px] pt-[max(env(safe-area-inset-top,0px),32px)] pb-[max(env(safe-area-inset-bottom,0px),32px)]">
         <div className="w-full max-w-[380px] flex flex-col items-center animate-fade-in">
         {/* Logo above card — 48px */}
         <div className="relative mb-2">
