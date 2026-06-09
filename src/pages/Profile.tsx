@@ -15,7 +15,9 @@ import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useConnections } from "@/hooks/useConnections";
 import { useProfile } from "@/hooks/useProfile";
-import { Camera, Edit2, X, Save, Heart, Users, Shield, LogOut, Loader2, Instagram, Twitter, Facebook, Linkedin, Video, Mail, Bell, ChevronRight, Link2 } from "lucide-react";
+import { Camera, Edit2, X, Save, Heart, Users, Shield, LogOut, Loader2, Instagram, Twitter, Facebook, Linkedin, Video, Mail, Bell, ChevronRight, Link2, Share2, Activity as ActivityIcon } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { EmptyState } from "@/components/EmptyState";
 
 import { toast } from "sonner";
 import { z } from "zod";
@@ -113,6 +115,7 @@ export default function Profile() {
   const [gender, setGender] = useState("");
   const [pronouns, setPronouns] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("about");
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [isCropOpen, setIsCropOpen] = useState(false);
   // Inline field-level validation errors for the profile form.
