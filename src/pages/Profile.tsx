@@ -300,10 +300,12 @@ export default function Profile() {
           />
 
           <div className="profile-hero-stack">
-            {/* Avatar — explicit pixel sizing so the image can never escape its container */}
+            {/* Avatar — explicit pixel sizing so the image can never escape its container.
+                overflow:visible keeps the ring/shadow halo + the edit-mode camera
+                upload pill from being clipped by any ancestor. */}
             <div
               className="relative"
-              style={{ width: 104, height: 104, flexShrink: 0 }}
+              style={{ width: 104, height: 104, flexShrink: 0, overflow: 'visible' }}
             >
               <Avatar
                 className="ring-2 ring-primary/40 profile-avatar-shadow"
