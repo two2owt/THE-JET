@@ -12,100 +12,21 @@ import { toast } from "sonner";
 import { DealForm } from "./DealForm";
 import { OnboardingStatusBadge } from "./OnboardingStatusBadge";
 import type { Database } from "@/integrations/supabase/types";
+import {
+  FILTER_KEYS,
+  PRIORITY_OPTIONS,
+  NONE_KEY,
+  DAY_LABELS,
+  defaultFilters,
+  readFilters,
+  writeFilters,
+  matchesFilters,
+  dealPriority,
+  type Filters,
+  type Priority,
+} from "./dealFilters";
 
 type Deal = Database['public']['Tables']['deals']['Row'];
-
-/* ------------ URL <-> filter helpers ------------ */
-const FILTER_KEYS = ["q", "types", "status", "from", "to", "priority", "merchants", "neighborhoods", "days"] as const;
-
-type Priority = "high" | "medium" | "low";
-
-interface Filters {
-  q: string;
-  types: string[];
-  status: "all" | "active" | "inactive" | "expired" | "upcoming";
-  from: string; // YYYY-MM-DD
-  to: string;
-  priority: Priority[];
-  merchants: string[];      // merchant_id values; "__none__" = unassigned
-  neighborhoods: string[];  // neighborhood_id values; "__none__" = unassigned
-  days: number[];           // 0=Sun .. 6=Sat
-}
-
-const PRIORITY_OPTIONS: Priority[] = ["high", "medium", "low"];
-const NONE_KEY = "__none__";
-const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-/** Derive a "priority" bucket from expiry urgency (no schema field exists). */
-function dealPriority(deal: Deal, now = new Date()): Priority | null {
-  if (!deal.expires_at) return "low";
-  const expires = new Date(deal.expires_at);
-  const diffDays = (expires.getTime() - now.getTime()) / 86_400_000;
-  if (diffDays < 0) return null; // expired — exclude from priority counts
-  if (diffDays <= 7) return "high";
-  if (diffDays <= 30) return "medium";
-  return "low";
-}
-
-function readFilters(params: URLSearchParams): Filters {
-  const status = (params.get("status") as Filters["status"]) || "all";
-  const priority = (params.get("priority") || "")
-    .split(",")
-    .filter((p): p is Priority => (PRIORITY_OPTIONS as string[]).includes(p));
-  const days = (params.get("days") || "")
-    .split(",")
-    .map((d) => Number(d))
-    .filter((n) => Number.isInteger(n) && n >= 0 && n <= 6);
-  return {
-    q: params.get("q") || "",
-    types: (params.get("types") || "").split(",").filter(Boolean),
-    status: ["all", "active", "inactive", "expired", "upcoming"].includes(status) ? status : "all",
-    from: params.get("from") || "",
-    to: params.get("to") || "",
-    priority,
-    merchants: (params.get("merchants") || "").split(",").filter(Boolean),
-    neighborhoods: (params.get("neighborhoods") || "").split(",").filter(Boolean),
-    days,
-  };
-}
-
-function matchesFilters(deal: Deal, f: Filters, now = new Date()): boolean {
-  if (f.q) {
-    const q = f.q.toLowerCase();
-    const hay = `${deal.title} ${deal.venue_name} ${deal.description}`.toLowerCase();
-    if (!hay.includes(q)) return false;
-  }
-  if (f.types.length && !f.types.includes(deal.deal_type)) return false;
-  const starts = deal.starts_at ? new Date(deal.starts_at) : null;
-  const expires = deal.expires_at ? new Date(deal.expires_at) : null;
-  if (f.status !== "all") {
-    const isExpired = expires && expires < now;
-    const isUpcoming = starts && starts > now;
-    if (f.status === "active" && !deal.active) return false;
-    if (f.status === "inactive" && deal.active) return false;
-    if (f.status === "expired" && !isExpired) return false;
-    if (f.status === "upcoming" && !isUpcoming) return false;
-  }
-  if (f.from && expires && expires < new Date(f.from)) return false;
-  if (f.to && starts && starts > new Date(f.to + "T23:59:59")) return false;
-  if (f.priority.length) {
-    const p = dealPriority(deal, now);
-    if (!p || !f.priority.includes(p)) return false;
-  }
-  if (f.merchants.length) {
-    const key = deal.merchant_id ?? NONE_KEY;
-    if (!f.merchants.includes(key)) return false;
-  }
-  if (f.neighborhoods.length) {
-    const key = deal.neighborhood_id ?? NONE_KEY;
-    if (!f.neighborhoods.includes(key)) return false;
-  }
-  if (f.days.length) {
-    const days = deal.active_days ?? [];
-    if (!f.days.some((d) => days.includes(d))) return false;
-  }
-  return true;
-}
 
 const STATUS_OPTIONS: { id: Filters["status"]; label: string }[] = [
   { id: "all", label: "All" },
@@ -126,28 +47,14 @@ export const DealManagement = () => {
 
   const updateFilters = useCallback(
     (next: Partial<Filters>) => {
-      const merged = { ...filters, ...next };
-      const params = new URLSearchParams(searchParams);
-      // Preserve unrelated params (e.g. ?section=deals)
-      FILTER_KEYS.forEach((k) => params.delete(k));
-      if (merged.q) params.set("q", merged.q);
-      if (merged.types.length) params.set("types", merged.types.join(","));
-      if (merged.status !== "all") params.set("status", merged.status);
-      if (merged.from) params.set("from", merged.from);
-      if (merged.to) params.set("to", merged.to);
-      if (merged.priority.length) params.set("priority", merged.priority.join(","));
-      if (merged.merchants.length) params.set("merchants", merged.merchants.join(","));
-      if (merged.neighborhoods.length) params.set("neighborhoods", merged.neighborhoods.join(","));
-      if (merged.days.length) params.set("days", merged.days.join(","));
-      setSearchParams(params, { replace: true });
+      const merged: Filters = { ...filters, ...next };
+      setSearchParams(writeFilters(searchParams, merged), { replace: true });
     },
     [filters, searchParams, setSearchParams],
   );
 
   const clearAll = useCallback(() => {
-    const params = new URLSearchParams(searchParams);
-    FILTER_KEYS.forEach((k) => params.delete(k));
-    setSearchParams(params, { replace: true });
+    setSearchParams(writeFilters(searchParams, defaultFilters), { replace: true });
   }, [searchParams, setSearchParams]);
 
   const { data: deals, isLoading } = useQuery({
