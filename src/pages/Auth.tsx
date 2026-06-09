@@ -793,6 +793,8 @@ const Auth = () => {
                       onBlur={() => handleBlur("password")}
                       required
                       disabled={isLoading}
+                      aria-invalid={!!validationErrors.password}
+                      aria-describedby={validationErrors.password ? "auth-password-error" : undefined}
                       className={`auth-input pl-11 pr-12 ${validationErrors.password ? "border-destructive" : ""}`}
                       autoComplete={isSignUp ? "new-password" : "current-password"}
                     />
