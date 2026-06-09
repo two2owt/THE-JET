@@ -291,8 +291,7 @@ export default function Profile() {
       <PageShell>
         <TabPageHeader title="Profile" subtitle="Manage your account, preferences, and connections" />
 
-        {/* Identity card */}
-        {/* Identity hero — centered, gradient glow, edit pencil top-right */}
+        {/* Identity hero — centered, gradient glow */}
         <section className="relative rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg glow-ambient overflow-hidden">
           {/* Ambient radial accent behind avatar */}
           <div
@@ -300,29 +299,18 @@ export default function Profile() {
             className="pointer-events-none absolute inset-x-0 top-0 h-40 profile-hero-accent"
           />
 
-
-          {!isEditing && (
-            <button
-              type="button"
-              onClick={() => setIsEditing(true)}
-              aria-label="Edit profile"
-              className="profile-edit-pill inline-flex items-center gap-1.5 h-9 px-3 rounded-full border border-primary/40 bg-card/60 backdrop-blur-md text-xs font-semibold text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors"
-            >
-              <Edit2 className="w-3.5 h-3.5" />
-              Edit
-            </button>
-          )}
-
           <div className="profile-hero-stack">
-            {/* Avatar with primary glow */}
-            <div className="relative group">
-              <div
-                aria-hidden="true"
-                className="absolute -inset-2 rounded-full profile-avatar-halo blur-xl pointer-events-none"
-              />
-              <Avatar className="relative w-24 h-24 sm:w-28 sm:h-28 ring-2 ring-primary/40 profile-avatar-shadow">
+            {/* Avatar — explicit pixel sizing so the image can never escape its container */}
+            <div
+              className="relative"
+              style={{ width: 104, height: 104, flexShrink: 0 }}
+            >
+              <Avatar
+                className="ring-2 ring-primary/40 profile-avatar-shadow"
+                style={{ width: 104, height: 104 }}
+              >
                 <AvatarImage src={profile?.avatar_url || undefined} alt={displayName || "User avatar"} />
-                <AvatarFallback className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-primary to-primary-glow text-primary-foreground">
+                <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-primary to-primary-glow text-primary-foreground">
                   {displayName.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
@@ -352,6 +340,18 @@ export default function Profile() {
               <Mail className="w-3.5 h-3.5 flex-shrink-0" />
               <span className="truncate">{user.email}</span>
             </p>
+
+            {!isEditing && (
+              <button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                aria-label="Edit profile"
+                className="mt-fluid-sm inline-flex items-center gap-1.5 h-9 px-4 rounded-full border border-primary/40 bg-card/60 backdrop-blur-md text-xs font-semibold text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-colors"
+              >
+                <Edit2 className="w-3.5 h-3.5" />
+                Edit profile
+              </button>
+            )}
           </div>
 
           <div className="divider-luxe my-fluid-md" />
