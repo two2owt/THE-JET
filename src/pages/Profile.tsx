@@ -290,6 +290,7 @@ export default function Profile() {
         isProcessing={isUploading}
       />
       <PageShell>
+        <Breadcrumbs items={[{ label: "Profile", current: true }]} className="mb-fluid-sm" />
         <TabPageHeader title="Profile" subtitle="Your identity, connections, and social links" />
 
         {/* Identity hero — centered, gradient glow */}

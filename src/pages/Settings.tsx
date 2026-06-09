@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Bell, MapPin, Radio, Loader2, Save, Moon, Smartphone, Heart, Shield, CreditCard, ShieldCheck, ChevronLeft } from "lucide-react";
+import { Bell, MapPin, Radio, Loader2, Save, Moon, Smartphone, Heart, Shield, CreditCard, ShieldCheck } from "lucide-react";
 
 import { toast } from "sonner";
 import { z } from "zod";
@@ -25,6 +25,7 @@ import { PageShell } from "@/components/PageShell";
 import { SettingsPageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { PageTitle, SectionTitle } from "@/components/ui/page-title";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { useAuth } from "@/contexts/AuthContext";
 const preferencesSchema = z.object({
   notifications_enabled: z.boolean(),
