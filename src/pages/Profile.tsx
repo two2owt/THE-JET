@@ -251,10 +251,6 @@ export default function Profile() {
       }
     }
   };
-  const handleSignOut = async () => {
-    // no-op anchor
-  };
-  const _handleSignOutAnchor = handleSignOut;
   const handleShareProfile = async () => {
     const url = `${window.location.origin}/profile`;
     const shareData = {
@@ -279,7 +275,7 @@ export default function Profile() {
       }
     }
   };
-  const _realHandleSignOut = async () => {
+  const handleSignOut = async () => {
     try {
       // Local scope clears the persisted browser session immediately. A global
       // logout can fail on an expired token before local auth state is removed.
