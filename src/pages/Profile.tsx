@@ -503,9 +503,9 @@ export default function Profile() {
               {isEditing && <>
                   <div className="divider-luxe my-fluid-md" />
 
-                  <div className="flex flex-col gap-fluid-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="dot-gold" />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="dot-gold" style={{ flexShrink: 0 }} />
                       <span className="heading-luxe-eyebrow">Social Media Links</span>
                     </div>
                     {[
@@ -566,7 +566,7 @@ export default function Profile() {
                 </>
               )}
 
-              {isEditing && <div className="flex gap-fluid-sm pt-fluid-md">
+              {isEditing && <div style={{ display: 'flex', gap: 'var(--space-sm)', paddingTop: 'var(--space-md)' }}>
                   <Button
                     onClick={handleSaveProfile}
                     disabled={isSaving || !displayName.trim()}
