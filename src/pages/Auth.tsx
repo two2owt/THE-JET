@@ -157,6 +157,28 @@ const Auth = () => {
     return undefined;
   };
 
+  const fieldToElementId: Record<string, string> = {
+    email: "auth-email",
+    password: "auth-password",
+    confirmPassword: "auth-confirm-password",
+    consent: "dataConsent",
+    locationConsent: "locationConsent",
+  };
+
+  const focusFirstError = (errors: ValidationErrors) => {
+    const firstKey = (Object.keys(errors) as (keyof typeof errors)[]).find((k) => errors[k]);
+    if (!firstKey) return;
+    const elId = fieldToElementId[firstKey as string];
+    if (!elId) return;
+    window.setTimeout(() => {
+      const el = document.getElementById(elId);
+      if (el) {
+        (el as HTMLElement).focus();
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 0);
+  };
+
   const validateInputs = (): boolean => {
     const errors: ValidationErrors = {};
 
@@ -191,6 +213,7 @@ const Auth = () => {
       setFormError(first ?? "Please fix the highlighted fields.");
       setShake(true);
       window.setTimeout(() => setShake(false), 450);
+      focusFirstError(errors);
     } else {
       setFormError(null);
     }
@@ -722,12 +745,14 @@ const Auth = () => {
                     onBlur={() => handleBlur("email")}
                     required
                     disabled={isLoading}
+                    aria-invalid={!!validationErrors.email}
+                    aria-describedby={validationErrors.email ? "auth-email-error" : undefined}
                     className={`auth-input pl-11 ${validationErrors.email ? "border-destructive" : ""}`}
                     autoComplete="email"
                   />
                 </div>
                 {validationErrors.email && (
-                  <p className="inline-flex items-center gap-1.5 text-xs text-destructive mt-0.5">
+                  <p id="auth-email-error" className="inline-flex items-center gap-1.5 text-xs text-destructive mt-0.5">
                     <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
                     {validationErrors.email}
                   </p>
@@ -768,6 +793,8 @@ const Auth = () => {
                       onBlur={() => handleBlur("password")}
                       required
                       disabled={isLoading}
+                      aria-invalid={!!validationErrors.password}
+                      aria-describedby={validationErrors.password ? "auth-password-error" : undefined}
                       className={`auth-input pl-11 pr-12 ${validationErrors.password ? "border-destructive" : ""}`}
                       autoComplete={isSignUp ? "new-password" : "current-password"}
                     />
@@ -781,7 +808,7 @@ const Auth = () => {
                     </IconButton>
                   </div>
                   {validationErrors.password ? (
-                    <p className="inline-flex items-center gap-1.5 text-xs text-destructive mt-0.5">
+                    <p id="auth-password-error" className="inline-flex items-center gap-1.5 text-xs text-destructive mt-0.5">
                       <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
                       {validationErrors.password}
                     </p>
@@ -811,6 +838,8 @@ const Auth = () => {
                         onBlur={() => handleBlur("confirmPassword")}
                         required
                         disabled={isLoading}
+                        aria-invalid={!!validationErrors.confirmPassword}
+                        aria-describedby={validationErrors.confirmPassword ? "auth-confirm-password-error" : undefined}
                         className={`auth-input pl-11 pr-12 ${validationErrors.confirmPassword ? "border-destructive" : ""}`}
                         autoComplete="new-password"
                       />
@@ -824,7 +853,7 @@ const Auth = () => {
                       </IconButton>
                     </div>
                     {validationErrors.confirmPassword && (
-                      <p className="inline-flex items-center gap-1.5 text-xs text-destructive mt-0.5">
+                      <p id="auth-confirm-password-error" className="inline-flex items-center gap-1.5 text-xs text-destructive mt-0.5">
                         <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
                         {validationErrors.confirmPassword}
                       </p>
@@ -859,7 +888,7 @@ const Auth = () => {
                       </label>
                     </div>
                     {validationErrors.consent && (
-                      <p className="ml-6 inline-flex items-center gap-1.5 text-xs text-destructive">
+                      <p id="auth-consent-error" className="ml-6 inline-flex items-center gap-1.5 text-xs text-destructive">
                         <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
                         {validationErrors.consent}
                       </p>
@@ -882,7 +911,7 @@ const Auth = () => {
                       </label>
                     </div>
                     {validationErrors.locationConsent && (
-                      <p className="ml-6 inline-flex items-center gap-1.5 text-xs text-destructive">
+                      <p id="auth-location-consent-error" className="ml-6 inline-flex items-center gap-1.5 text-xs text-destructive">
                         <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
                         {validationErrors.locationConsent}
                       </p>
