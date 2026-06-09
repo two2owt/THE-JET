@@ -387,12 +387,15 @@ export default function Profile() {
 
         {/* Profile form card */}
         <section className="rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg">
-          <div className="flex items-center gap-2 mb-fluid-md">
-            <span className="dot-gold" />
+          <div
+            className="mb-fluid-md"
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <span className="dot-gold" style={{ flexShrink: 0 }} />
             <span className="heading-luxe-eyebrow">Account Details</span>
           </div>
-          <div className="flex flex-col gap-fluid-sm sm:gap-fluid-md">
-              <div className="flex flex-col gap-fluid-xs">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)' }}>
                 <Label htmlFor="display_name" className="heading-luxe-eyebrow text-left">
                   Display Name <span className="text-destructive">*</span>
                 </Label>
@@ -409,6 +412,7 @@ export default function Profile() {
                   aria-invalid={!!fieldErrors.display_name}
                   aria-describedby={fieldErrors.display_name ? "display_name-error" : undefined}
                   className="profile-input"
+                  style={{ width: '100%' }}
                 />
                 {fieldErrors.display_name && (
                   <p id="display_name-error" role="alert" className="text-xs font-medium text-destructive">
@@ -417,7 +421,7 @@ export default function Profile() {
                 )}
               </div>
 
-              <div className="flex flex-col gap-fluid-xs">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)' }}>
                 <Label htmlFor="bio" className="heading-luxe-eyebrow text-left">
                   Bio <span className="text-muted-foreground/70 normal-case">(optional)</span>
                 </Label>
@@ -433,6 +437,7 @@ export default function Profile() {
                   rows={4}
                   disabled={!isEditing}
                   className="resize-none profile-textarea"
+                  style={{ width: '100%' }}
                   aria-invalid={!!fieldErrors.bio}
                   aria-describedby={fieldErrors.bio ? "bio-error" : undefined}
                 />
@@ -446,8 +451,11 @@ export default function Profile() {
                   </p>}
               </div>
 
-                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-fluid-sm sm:gap-fluid-md">
-                <div className="flex flex-col gap-fluid-xs">
+              <div
+                className="profile-2col-grid"
+                style={{ display: 'grid', gap: 'var(--space-sm)' }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)', minWidth: 0 }}>
                   <Label className="heading-luxe-eyebrow text-left">
                     Gender <span className="text-destructive">*</span>
                   </Label>
@@ -459,7 +467,7 @@ export default function Profile() {
                     }}
                     disabled={!isEditing}
                   >
-                    <SelectTrigger className="bg-card/60 profile-select-trigger">
+                    <SelectTrigger className="bg-card/60 profile-select-trigger" style={{ width: '100%' }}>
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
                     <SelectContent>
@@ -475,12 +483,12 @@ export default function Profile() {
                   )}
                 </div>
 
-                <div className="flex flex-col gap-fluid-xs">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)', minWidth: 0 }}>
                   <Label className="heading-luxe-eyebrow text-left">
                     Pronouns <span className="text-muted-foreground/70 normal-case">(optional)</span>
                   </Label>
                   <Select value={pronouns} onValueChange={setPronouns} disabled={!isEditing}>
-                    <SelectTrigger className="bg-card/60 profile-select-trigger">
+                    <SelectTrigger className="bg-card/60 profile-select-trigger" style={{ width: '100%' }}>
                       <SelectValue placeholder="Select pronouns" />
                     </SelectTrigger>
                     <SelectContent>
