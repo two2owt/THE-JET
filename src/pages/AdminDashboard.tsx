@@ -1,9 +1,12 @@
 import { lazy, Suspense } from "react";
-import { Navigate, useNavigate } from "react-router";
+import { Navigate } from "react-router";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Shield, ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+import { PageLayout } from "@/components/PageLayout";
+import { PageShell } from "@/components/PageShell";
+import { TabPageHeader } from "@/components/TabPageHeader";
+import { AdminPageSkeleton } from "@/components/skeletons/PageSkeletons";
 
 // Lazy load admin components to reduce initial bundle - especially UserAnalytics which pulls in recharts (~200KB)
 const DealManagement = lazy(() => import("@/components/admin/DealManagement").then(m => ({ default: m.DealManagement })));
@@ -15,13 +18,14 @@ const ResendDomainStatus = lazy(() => import("@/components/admin/ResendDomainSta
 
 export default function AdminDashboard() {
   const { isAdmin, loading } = useIsAdmin();
-  const navigate = useNavigate();
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
+      <PageLayout defaultTab="map">
+        <PageShell>
+          <AdminPageSkeleton />
+        </PageShell>
+      </PageLayout>
     );
   }
 
@@ -31,31 +35,18 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background overflow-y-auto">
-      <header className="bg-card border-b border-border sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-4">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/profile')}
-              className="shrink-0"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <Shield className="w-6 h-6 text-primary" />
-            <h1 className="heading-luxe-gradient">Admin Dashboard</h1>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg pb-fluid-2xl">
+    <PageLayout defaultTab="map">
+      <PageShell>
+        <TabPageHeader
+          title="Admin Dashboard"
+          subtitle="Deals, analytics, areas, and system controls"
+        />
         <Tabs defaultValue="deals" className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-6">
             <TabsTrigger value="deals">Deals</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="neighborhoods">Areas</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
+            <TabsTrigger value="system">System</TabsTrigger>
           </TabsList>
 
           <TabsContent value="deals">
@@ -79,7 +70,7 @@ export default function AdminDashboard() {
             </Suspense>
           </TabsContent>
 
-          <TabsContent value="settings">
+          <TabsContent value="system">
             <div className="space-y-6">
               <Suspense fallback={<div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
                 <MonetizationToggle />
@@ -90,7 +81,7 @@ export default function AdminDashboard() {
             </div>
           </TabsContent>
         </Tabs>
-      </main>
-    </div>
+      </PageShell>
+    </PageLayout>
   );
 }

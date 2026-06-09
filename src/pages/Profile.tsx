@@ -603,9 +603,9 @@ export default function Profile() {
           </div>
         </section>
 
-        {/* Navigation cards — Settings, Admin (if applicable), and Sign Out.
-            Grouped as siblings of the form/hero sections inside PageShell so
-            spacing is driven by PageShell's gap, not nested margins. */}
+        {/* Admin shortcut (admins only) — grouped as a sibling of the
+            form/hero sections inside PageShell so spacing is driven by
+            PageShell's gap, not nested margins. */}
         {isAdmin && (
           <nav aria-label="Account navigation" className="flex flex-col" style={{ gap: 'var(--space-sm)' }}>
             {([
@@ -663,11 +663,11 @@ export default function Profile() {
           </nav>
         )}
 
-        {/* Settings — preferences, privacy, consent, notifications, theme,
-            location, subscription, support, and account. Revealed only when
-            the user enters edit mode, mirroring the Edit profile affordance. */}
+        {/* Account & preferences — privacy, consent, notifications, theme,
+            location, subscription, support, and account management. Revealed
+            only when the user enters edit mode, mirroring the Edit affordance. */}
         {isEditing && user?.id && (
-          <section aria-label="Settings" className="flex flex-col" style={{ gap: 'var(--space-md)' }}>
+          <section aria-label="Account and preferences" className="flex flex-col" style={{ gap: 'var(--space-md)' }}>
             <ProfileSettingsPanel userId={user.id} userEmail={user.email} />
           </section>
         )}

@@ -130,22 +130,24 @@ export function MessagesPageSkeleton() {
   );
 }
 
-/* ─── Settings Page ─── */
+/* ─── Admin Dashboard Page ─── */
 
-export function SettingsPageSkeleton() {
+export function AdminPageSkeleton() {
   return (
-    <PageShell variant="relaxed" className="!max-w-3xl">
-      {/* Page title placeholder mirrors real <PageTitle> */}
-      <div className="space-y-2 mb-2">
-        <Skeleton className="h-8 w-40 rounded-lg" />
-        <Skeleton className="h-4 w-64 rounded" />
+    <PageShell>
+      {/* Title + subtitle match TabPageHeader for 0 CLS */}
+      <div className="space-y-2">
+        <Skeleton className="h-8 w-56 rounded-lg" />
+        <Skeleton className="h-4 w-72 rounded" />
       </div>
-      {/* Profile link card */}
-      <Skeleton className="h-20 w-full rounded-2xl" />
-      {/* Section cards mirroring real Settings layout for 0 CLS */}
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Skeleton key={i} className="h-40 w-full rounded-2xl" />
-      ))}
+      {/* Tabs list (4 triggers) */}
+      <Skeleton className="h-10 w-full rounded-xl" />
+      {/* Active tab content */}
+      <div className="space-y-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-40 w-full rounded-2xl" />
+        ))}
+      </div>
     </PageShell>
   );
 }

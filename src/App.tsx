@@ -2,7 +2,7 @@ import { Suspense, lazy, useEffect, useRef, memo } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Routes, Route, useLocation, Navigate } from "react-router";
+import { Routes, Route, useLocation } from "react-router";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { HeaderProvider } from "@/contexts/HeaderContext";
@@ -15,7 +15,7 @@ import {
   SocialPageSkeleton,
   ProfilePageSkeleton,
   MessagesPageSkeleton,
-  GenericPageSkeleton,
+  AdminPageSkeleton,
 } from "@/components/skeletons/PageSkeletons";
 
 // Eager load Index for fastest FCP on main route
@@ -114,8 +114,6 @@ const AppLayout = memo(function AppLayout() {
             </Suspense>
           }
         />
-        {/* /settings is consolidated into /profile — redirect for any old links */}
-        <Route path="/settings" element={<Navigate to="/profile" replace />} />
         <Route
           path="/favorites"
           element={
@@ -143,7 +141,7 @@ const AppLayout = memo(function AppLayout() {
         <Route
           path="/admin"
           element={
-            <Suspense fallback={<RouteFallback defaultTab="map"><GenericPageSkeleton /></RouteFallback>}>
+            <Suspense fallback={<RouteFallback defaultTab="map"><AdminPageSkeleton /></RouteFallback>}>
               <AdminDashboard />
             </Suspense>
           }
