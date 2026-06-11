@@ -228,7 +228,12 @@ const Index = () => {
     const next = new URLSearchParams(searchParams);
     if (nextParam) next.set("venue", nextParam);
     else next.delete("venue");
-    setSearchParams(next, { replace: true });
+    // Push a new history entry on the "open" transition (no venue → venue)
+    // so the browser Back button closes the JetCard while preserving any
+    // active `?q=` search query in the URL. Use replace for venue swaps and
+    // for closing the card, so we don't pollute history.
+    const isOpening = !currentParam && !!nextParam;
+    setSearchParams(next, { replace: !isOpening });
   }, [selectedVenue, searchParams, setSearchParams]);
 
   // Handle deep linked deal - select the venue associated with the deal
