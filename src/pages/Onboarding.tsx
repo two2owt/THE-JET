@@ -54,7 +54,7 @@ const Onboarding = () => {
     birthdate?: string;
     gender?: string;
   }>({});
-  const [shakeStep1, setShakeStep1] = useState(0);
+  
   
   // Step 2: Preferences
   const [savedPreferences, setSavedPreferences] = useState<PreferencesData | null>(null);
