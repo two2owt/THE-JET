@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Sparkles, Loader2, Upload } from "lucide-react";
+import { Sparkles, Loader2, Upload, Check, ArrowLeft } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PreferencesStep, { PreferencesData } from "@/components/onboarding/PreferencesStep";
 import { Json } from "@/integrations/supabase/types";
@@ -37,6 +37,7 @@ const Onboarding = () => {
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [direction, setDirection] = useState<"forward" | "backward">("forward");
   
   // Step 1: Profile
   const [displayName, setDisplayName] = useState("");
@@ -60,15 +61,31 @@ const Onboarding = () => {
 
       setUserId(session.user.id);
       
-      // Check if already completed onboarding
+      // Check if already completed onboarding, and resume in-progress data
       const { data: profile } = await supabase
         .from("profiles")
-        .select("onboarding_completed")
+        .select("onboarding_completed, display_name, bio, avatar_url, birthdate, gender, pronouns, preferences")
         .eq("id", session.user.id)
         .single();
-      
+
       if (profile?.onboarding_completed) {
         navigate(consumePostAuthRedirect("/"), { replace: true });
+        return;
+      }
+
+      // Resume where the user left off
+      if (profile) {
+        if (profile.display_name) setDisplayName(profile.display_name);
+        if (profile.bio) setBio(profile.bio);
+        if (profile.avatar_url) setAvatarPreview(profile.avatar_url);
+        if (profile.birthdate) setBirthdate(profile.birthdate);
+        if (profile.gender) setGender(profile.gender);
+        if (profile.pronouns) setPronouns(profile.pronouns);
+
+        const hasStep1 = !!(profile.display_name && profile.birthdate && profile.gender);
+        const hasStep2 = !!profile.preferences;
+        if (hasStep2) setStep(3);
+        else if (hasStep1) setStep(2);
       }
     };
     
@@ -193,6 +210,7 @@ const Onboarding = () => {
         throw error;
       }
       
+      setDirection("forward");
       setStep(2);
     } catch (error: any) {
       toast.error("Failed to save profile", { description: error.message });
@@ -224,6 +242,7 @@ const Onboarding = () => {
       
       if (error) throw error;
       
+      setDirection("forward");
       setStep(3);
     } catch (error: any) {
       toast.error("Failed to save preferences", { description: error.message });
@@ -256,16 +275,30 @@ const Onboarding = () => {
   };
 
 
-  const eyebrow =
-    step === 1 ? "Create Profile" : step === 2 ? "Personalize" : "All Set";
-  const headline =
-    step === 1 ? "Welcome to JET" : step === 2 ? "Tune Your Taste" : "You're In";
-  const subtitle =
-    step === 1
-      ? "Tell us a little about yourself to get started."
-      : step === 2
-      ? "Pick the categories you love so we can curate Charlotte for you."
-      : "Based on your preferences, we'll surface the best of Charlotte.";
+  const STEPS = [
+    { num: 1, label: "Profile", title: "Create your profile", description: "Tell us a little about yourself to get started." },
+    { num: 2, label: "Preferences", title: "Tune your taste", description: "Pick the categories you love so we can curate Charlotte for you." },
+    { num: 3, label: "Finish", title: "You're all set", description: "Based on your preferences, we'll surface the best of Charlotte." },
+  ] as const;
+  const current = STEPS[step - 1];
+  const progressPct = Math.round((step / STEPS.length) * 100);
+
+  const goBack = () => {
+    if (step <= 1) return;
+    setDirection("backward");
+    setStep((s) => Math.max(1, s - 1));
+  };
+
+  // Enter-to-proceed on Step 1
+  const handleStep1KeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !isLoading) {
+      const target = e.target as HTMLElement;
+      // Don't intercept Enter inside textarea
+      if (target.tagName === "TEXTAREA") return;
+      e.preventDefault();
+      handleStep1Next();
+    }
+  };
 
   return (
     <div
@@ -277,43 +310,88 @@ const Onboarding = () => {
       {/* Editorial vignette — keeps focus on the card */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,hsl(0_0%_0%/0.55)_100%)]" />
 
-      <div className="relative z-10 mx-auto w-full max-w-[420px] sm:max-w-md">
+      <div className="relative z-10 mx-auto w-full max-w-[560px]">
         {/* Glassmorphic Card */}
-        <div className="flex flex-col gap-fluid-sm sm:gap-fluid-md rounded-3xl border-hairline bg-background/30 p-fluid-sm sm:p-fluid-md lg:p-fluid-lg backdrop-blur-2xl glow-ambient">
-          {/* Header */}
-          <div className="flex flex-col items-center gap-fluid-xs sm:gap-fluid-sm text-center">
-            <div className="relative flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center">
-              <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,hsl(var(--primary)/0.25)_0%,transparent_70%)] blur-md" />
+        <div className="flex flex-col gap-6 sm:gap-8 rounded-3xl border-hairline bg-background/30 p-6 sm:p-8 lg:p-10 backdrop-blur-2xl glow-ambient">
+          {/* Progress header */}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between gap-3">
+              {step > 1 && step < 3 ? (
+                <button
+                  type="button"
+                  onClick={goBack}
+                  className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                  aria-label="Go back"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back
+                </button>
+              ) : (
+                <div className="h-7 w-12" aria-hidden />
+              )}
               <img
                 src={jetLogo}
-                alt="JET Logo"
-                className="relative h-full w-full object-contain drop-shadow-[0_4px_20px_hsl(var(--primary)/0.35)]"
-                width="80"
-                height="80"
-                fetchPriority="high"
-                decoding="async"
+                alt="JET"
+                className="h-8 w-8 object-contain drop-shadow-[0_4px_20px_hsl(var(--primary)/0.35)]"
+                width="32"
+                height="32"
               />
+              <span className="text-xs font-medium text-muted-foreground tabular-nums" aria-live="polite">
+                {progressPct}%
+              </span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="dot-gold" />
-              <span className="heading-luxe-eyebrow">{eyebrow}</span>
-              <span className="dot-gold" />
-            </div>
-            <h1 className="heading-luxe-gradient">{headline}</h1>
-            <div className="divider-luxe mx-auto" style={{ maxWidth: "72px" }} />
-            <p className="max-w-xs text-fluid-sm text-muted-foreground">
-              {subtitle}
-            </p>
 
-            {/* Progress dots */}
-            <div className="mt-fluid-xs flex items-center justify-center gap-2" aria-label={`Step ${step} of 3`}>
-              {[1, 2, 3].map((s) => (
+            {/* Stepper: numbered with labels on desktop, dots on mobile */}
+            <div
+              className="hidden sm:flex items-center justify-between gap-2"
+              role="list"
+              aria-label={`Step ${step} of ${STEPS.length}`}
+            >
+              {STEPS.map((s, i) => {
+                const completed = step > s.num;
+                const active = step === s.num;
+                return (
+                  <div key={s.num} className="flex items-center gap-2 flex-1" role="listitem">
+                    <div
+                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-[11px] font-semibold transition-all ${
+                        completed
+                          ? "bg-primary border-primary text-primary-foreground"
+                          : active
+                          ? "bg-gradient-to-r from-primary to-primary-glow border-primary text-primary-foreground shadow-[0_0_12px_hsl(var(--primary)/0.5)]"
+                          : "bg-card/40 border-border text-muted-foreground"
+                      }`}
+                      aria-current={active ? "step" : undefined}
+                    >
+                      {completed ? <Check className="h-3.5 w-3.5" /> : s.num}
+                    </div>
+                    <span
+                      className={`text-xs font-medium transition-colors ${
+                        active ? "text-foreground" : completed ? "text-muted-foreground" : "text-muted-foreground/60"
+                      }`}
+                    >
+                      {s.label}
+                    </span>
+                    {i < STEPS.length - 1 && (
+                      <div
+                        className={`flex-1 h-px transition-colors ${
+                          completed ? "bg-primary/70" : "bg-border"
+                        }`}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Mobile dots */}
+            <div className="flex sm:hidden items-center justify-center gap-2" aria-hidden>
+              {STEPS.map((s) => (
                 <div
-                  key={s}
+                  key={s.num}
                   className={`h-1.5 rounded-full transition-all ${
-                    s === step
+                    s.num === step
                       ? "w-8 bg-gradient-to-r from-primary to-primary-glow shadow-[0_0_8px_hsl(var(--primary)/0.5)]"
-                      : s < step
+                      : s.num < step
                       ? "w-2 bg-primary/60"
                       : "w-2 bg-muted"
                   }`}
@@ -321,11 +399,19 @@ const Onboarding = () => {
               ))}
             </div>
 
+            {/* Title + description */}
+            <div className="flex flex-col gap-1.5">
+              <h1 className="text-[24px] leading-tight font-semibold tracking-tight text-foreground font-display">
+                {current.title}
+              </h1>
+              <p className="text-sm text-muted-foreground">{current.description}</p>
+            </div>
+
             {step === 2 && (
               <button
                 type="button"
-                onClick={() => setStep(3)}
-                className="mt-fluid-xs rounded-full px-3 py-1 text-fluid-xs font-medium text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                onClick={() => { setDirection("forward"); setStep(3); }}
+                className="self-start text-xs font-medium text-muted-foreground underline-offset-4 hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
               >
                 Skip for now
               </button>
@@ -334,8 +420,12 @@ const Onboarding = () => {
 
           {/* Step 1: Profile */}
           {step === 1 && (
-            <div className="flex flex-col gap-fluid-sm sm:gap-fluid-md">
-            <div className="flex flex-col items-center mb-fluid-lg">
+            <div
+              key="step-1"
+              onKeyDown={handleStep1KeyDown}
+              className={`flex flex-col gap-5 ${direction === "forward" ? "animate-fade-in" : "animate-fade-in"}`}
+            >
+            <div className="flex flex-col items-center">
               <div className="relative">
                 <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-card/40 border border-border/60 backdrop-blur-sm flex items-center justify-center overflow-hidden">
                   {avatarPreview ? (
@@ -357,7 +447,7 @@ const Onboarding = () => {
               <p className="text-xs text-muted-foreground mt-2">Upload profile picture</p>
             </div>
 
-            <div className="flex flex-col gap-fluid-xs">
+            <div className="flex flex-col gap-1.5">
               <Label htmlFor="displayName" className="heading-luxe-eyebrow text-left">
                 Display Name <span className="text-destructive">*</span>
               </Label>
@@ -370,7 +460,7 @@ const Onboarding = () => {
               />
             </div>
 
-            <div className="flex flex-col gap-fluid-xs">
+            <div className="flex flex-col gap-1.5">
               <Label htmlFor="bio" className="heading-luxe-eyebrow text-left">
                 Bio <span className="text-muted-foreground/70 normal-case">(optional)</span>
               </Label>
@@ -385,7 +475,7 @@ const Onboarding = () => {
               <p className="text-xs text-muted-foreground text-right">{bio.length}/200</p>
             </div>
 
-            <div className="flex flex-col gap-fluid-xs">
+            <div className="flex flex-col gap-1.5">
               <Label htmlFor="birthdate" className="heading-luxe-eyebrow text-left">
                 Birthdate <span className="text-destructive">*</span>
               </Label>
@@ -399,7 +489,7 @@ const Onboarding = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-fluid-xs">
+              <div className="flex flex-col gap-1.5">
                 <Label className="heading-luxe-eyebrow text-left">
                   Gender <span className="text-destructive">*</span>
                 </Label>
@@ -417,7 +507,7 @@ const Onboarding = () => {
                 </Select>
               </div>
 
-              <div className="flex flex-col gap-fluid-xs">
+              <div className="flex flex-col gap-1.5">
                 <Label className="heading-luxe-eyebrow text-left">
                   Pronouns <span className="text-muted-foreground/70 normal-case">(optional)</span>
                 </Label>
@@ -436,41 +526,50 @@ const Onboarding = () => {
               </div>
             </div>
 
-            <Button
-              onClick={handleStep1Next}
-              disabled={isLoading}
-              variant="jet"
-              size="lg"
-              className="mt-fluid-xs w-full rounded-full text-fluid-base font-semibold tracking-wide shadow-lg shadow-primary/20"
-            >
-              {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Continue"}
-            </Button>
+            <div className="flex justify-end pt-2">
+              <Button
+                onClick={handleStep1Next}
+                disabled={isLoading}
+                variant="jet"
+                size="lg"
+                className="w-full sm:w-auto sm:min-w-[180px] rounded-full text-fluid-base font-semibold tracking-wide shadow-lg shadow-primary/20"
+              >
+                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Continue"}
+              </Button>
+            </div>
             </div>
           )}
 
           {/* Step 2: Preferences */}
           {step === 2 && (
-            <PreferencesStep
-              onBack={() => setStep(1)}
-              onNext={handleStep2Next}
-              isLoading={isLoading}
-            />
+            <div key="step-2" className="animate-fade-in">
+              <PreferencesStep
+                onBack={() => { setDirection("backward"); setStep(1); }}
+                onNext={handleStep2Next}
+                isLoading={isLoading}
+              />
+            </div>
           )}
 
           {/* Step 3: Suggestions */}
           {step === 3 && (
-            <div className="flex flex-col gap-fluid-md">
-            <div className="space-y-fluid-md">
-              <div className="bg-gradient-to-br from-primary/15 to-primary-glow/10 rounded-2xl p-fluid-lg border border-primary/30 backdrop-blur-sm text-center">
-                <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 text-primary mb-fluid-md mx-auto" />
+            <div key="step-3" className="flex flex-col gap-6 animate-fade-in">
+            <div className="flex flex-col gap-5">
+              <div className="relative bg-gradient-to-br from-primary/15 to-primary-glow/10 rounded-2xl p-6 sm:p-8 border border-primary/30 backdrop-blur-sm text-center overflow-hidden">
+                <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_0%,hsl(var(--primary)/0.25),transparent_70%)]" />
+                <div className="relative">
+                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary/20 animate-scale-in">
+                  <Sparkles className="w-7 h-7 text-primary" />
+                </div>
                 <h3 className="heading-luxe-card mb-fluid-xs">All Set!</h3>
                 <p className="text-fluid-sm text-muted-foreground">
                   Based on your preferences, we'll show you the best deals in Charlotte
                 </p>
+                </div>
               </div>
 
               {savedPreferences && (
-                <div className="flex flex-col gap-fluid-sm rounded-xl border-hairline bg-card/30 p-fluid-sm sm:p-fluid-md backdrop-blur-sm">
+                <div className="flex flex-col gap-3 rounded-xl border-hairline bg-card/30 p-4 sm:p-5 backdrop-blur-sm">
                   <p className="heading-luxe-eyebrow">Your Preferences</p>
                   <div className="flex flex-wrap gap-fluid-xs">
                     {savedPreferences.categories.map((type) => (
@@ -503,7 +602,7 @@ const Onboarding = () => {
               size="lg"
               className="w-full rounded-full text-fluid-base font-semibold tracking-wide shadow-lg shadow-primary/20"
             >
-              {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Get Started"}
+              {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Go to Dashboard"}
             </Button>
             </div>
           )}
