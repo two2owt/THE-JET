@@ -1,13 +1,9 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-
-const TOKEN_CACHE_KEY = 'mapbox_token_cache_v2';
-const TOKEN_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
-
-interface CachedToken {
-  token: string;
-  timestamp: number;
-}
+import {
+  readMapboxTokenCache,
+  writeMapboxTokenCache,
+} from "@/lib/mapboxTokenCache";
 
 // Synchronous cache check - called before React render for fastest possible load
 export const getMapboxTokenFromCache = (): string | null => {
@@ -24,52 +20,23 @@ const getPreloadedToken = (): string | null => {
 
 // Use both localStorage and sessionStorage for better mobile persistence
 const getCachedToken = (): string | null => {
+  // Preloaded token from HTML shell wins (set before React hydration).
+  const preloaded = getPreloadedToken();
+  if (preloaded) return preloaded;
+  const cached = readMapboxTokenCache();
+  if (cached) return cached;
+  // Clear legacy pre-v2 key so a rotated token takes effect immediately.
   try {
-    // First check for preloaded token from HTML shell
-    const preloaded = getPreloadedToken();
-    if (preloaded) {
-      return preloaded;
-    }
-    
-    // Try localStorage first (persists across sessions)
-    let cached = localStorage.getItem(TOKEN_CACHE_KEY);
-
-    // Fallback to sessionStorage
-    if (!cached) {
-      cached = sessionStorage.getItem(TOKEN_CACHE_KEY);
-    }
-
-    // Clear legacy cache key so a rotated token takes effect immediately
-    if (!cached) {
-      localStorage.removeItem('mapbox_token_cache');
-      sessionStorage.removeItem('mapbox_token_cache');
-      return null;
-    }
-
-    const { token, timestamp }: CachedToken = JSON.parse(cached);
-    const isExpired = Date.now() - timestamp > TOKEN_CACHE_DURATION;
-
-    if (isExpired || typeof token !== 'string' || !token.startsWith('pk.')) {
-      localStorage.removeItem(TOKEN_CACHE_KEY);
-      sessionStorage.removeItem(TOKEN_CACHE_KEY);
-      return null;
-    }
-
-    return token;
+    localStorage.removeItem("mapbox_token_cache");
+    sessionStorage.removeItem("mapbox_token_cache");
   } catch {
-    return null;
+    /* ignore */
   }
+  return null;
 };
 
 const setCachedToken = (token: string): void => {
-  try {
-    const cache: CachedToken = { token, timestamp: Date.now() };
-    // Store in both for redundancy on mobile
-    localStorage.setItem(TOKEN_CACHE_KEY, JSON.stringify(cache));
-    sessionStorage.setItem(TOKEN_CACHE_KEY, JSON.stringify(cache));
-  } catch {
-    // Ignore storage errors
-  }
+  writeMapboxTokenCache(token);
 };
 
 interface UseMapboxTokenOptions {

@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export const useAutoScrapeVenueImages = (enabled: boolean = true) => {
   const [isScrapingActive, setIsScrapingActive] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
     if (!enabled) return;
@@ -55,9 +54,8 @@ export const useAutoScrapeVenueImages = (enabled: boolean = true) => {
           }
 
           setIsScrapingActive(false);
-          
-          toast({
-            title: "Images Updated",
+
+          toast.success("Images Updated", {
             description: `Scraped images for ${dealsToScrape.length} venues`,
           });
         }
@@ -103,7 +101,7 @@ export const useAutoScrapeVenueImages = (enabled: boolean = true) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [enabled, toast]);
+  }, [enabled]);
 
   const manualScrape = async (dealId: string, websiteUrl: string) => {
     try {
@@ -113,18 +111,15 @@ export const useAutoScrapeVenueImages = (enabled: boolean = true) => {
 
       if (error) throw error;
 
-      toast({
-        title: "Image Scraped",
+      toast.success("Image Scraped", {
         description: "Venue image has been updated",
       });
 
       return data;
     } catch (error) {
       console.error('Manual scrape error:', error);
-      toast({
-        title: "Scrape Failed",
+      toast.error("Scrape Failed", {
         description: "Could not fetch venue image",
-        variant: "destructive",
       });
       throw error;
     }
