@@ -158,7 +158,13 @@ export function AdminTopbar({ items, onSelect }: AdminTopbarProps) {
             <span className="admin-topbar-user-name">{displayName}</span>
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="admin-topbar-menu w-56">
+        <DropdownMenuContent
+          align="end"
+          sideOffset={8}
+          alignOffset={-4}
+          collisionPadding={12}
+          className="admin-topbar-menu w-56"
+        >
           <DropdownMenuLabel className="flex flex-col gap-0.5">
             <span className="text-sm font-semibold text-foreground">{displayName}</span>
             {user?.email && (

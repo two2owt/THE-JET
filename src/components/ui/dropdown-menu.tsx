@@ -62,32 +62,66 @@ const DropdownMenuSubTrigger = React.forwardRef<
 ));
 DropdownMenuSubTrigger.displayName = DropdownMenuPrimitive.SubTrigger.displayName;
 
+/**
+ * Sub-menu content. Defaults: opens to the right with 4px gap; flips to the
+ * left automatically if the viewport edge is near. Override via `sideOffset`
+ * and `alignOffset`.
+ */
 const DropdownMenuSubContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.SubContent>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent>
->(({ className, ...props }, ref) => (
+>(({ className, sideOffset = 4, alignOffset = -4, collisionPadding = 8, ...props }, ref) => (
   <DropdownMenuPrimitive.SubContent
     ref={ref}
+    sideOffset={sideOffset}
+    alignOffset={alignOffset}
+    collisionPadding={collisionPadding}
     className={cn(contentBase, className)}
     {...props}
   />
 ));
 DropdownMenuSubContent.displayName = DropdownMenuPrimitive.SubContent.displayName;
 
+/**
+ * Menu content with smart positioning.
+ *
+ * Positioning props (all forwarded to Radix):
+ * - `side`: "top" | "right" | "bottom" | "left" — default "bottom".
+ * - `align`: "start" | "center" | "end" — default "center".
+ * - `sideOffset`: distance (px) from trigger along `side`. Default 6.
+ * - `alignOffset`: shift (px) along the alignment axis. Default 0.
+ * - `collisionPadding`: viewport padding before auto-flipping. Default 8.
+ *
+ * Auto-flip is handled by Radix when the menu would overflow the viewport.
+ */
 const DropdownMenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
->(({ className, sideOffset = 6, collisionPadding = 8, ...props }, ref) => (
-  <DropdownMenuPrimitive.Portal>
-    <DropdownMenuPrimitive.Content
-      ref={ref}
-      sideOffset={sideOffset}
-      collisionPadding={collisionPadding}
-      className={cn(contentBase, className)}
-      {...props}
-    />
-  </DropdownMenuPrimitive.Portal>
-));
+>(
+  (
+    {
+      className,
+      align = "center",
+      sideOffset = 6,
+      alignOffset = 0,
+      collisionPadding = 8,
+      ...props
+    },
+    ref,
+  ) => (
+    <DropdownMenuPrimitive.Portal>
+      <DropdownMenuPrimitive.Content
+        ref={ref}
+        align={align}
+        sideOffset={sideOffset}
+        alignOffset={alignOffset}
+        collisionPadding={collisionPadding}
+        className={cn(contentBase, className)}
+        {...props}
+      />
+    </DropdownMenuPrimitive.Portal>
+  ),
+);
 DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName;
 
 const DropdownMenuItem = React.forwardRef<
