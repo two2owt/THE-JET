@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export interface Favorite {
   id: string;
@@ -12,7 +12,6 @@ export interface Favorite {
 export const useFavorites = (userId: string | undefined) => {
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
 
   const fetchFavorites = useCallback(async () => {
     if (!userId) {
@@ -32,15 +31,11 @@ export const useFavorites = (userId: string | undefined) => {
       setFavorites(data || []);
     } catch (error) {
       console.error("Error fetching favorites:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load favorites",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: "Failed to load favorites" });
     } finally {
       setLoading(false);
     }
-  }, [userId, toast]);
+  }, [userId]);
 
   useEffect(() => {
     fetchFavorites();
@@ -85,10 +80,8 @@ export const useFavorites = (userId: string | undefined) => {
 
   const toggleFavorite = async (dealId: string) => {
     if (!userId) {
-      toast({
-        title: "Sign in required",
+      toast.error("Sign in required", {
         description: "Please sign in to save favorites",
-        variant: "destructive",
       });
       return;
     }
@@ -106,8 +99,7 @@ export const useFavorites = (userId: string | undefined) => {
         if (error) throw error;
 
         setFavorites(favorites.filter((fav) => fav.id !== favorite.id));
-        toast({
-          title: "Removed from favorites",
+        toast("Removed from favorites", {
           description: "Deal removed from your favorites",
         });
       } else {
@@ -121,18 +113,13 @@ export const useFavorites = (userId: string | undefined) => {
         if (error) throw error;
 
         setFavorites([data, ...favorites]);
-        toast({
-          title: "Added to favorites",
+        toast.success("Added to favorites", {
           description: "Deal saved to your favorites",
         });
       }
     } catch (error) {
       console.error("Error toggling favorite:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update favorites",
-        variant: "destructive",
-      });
+      toast.error("Error", { description: "Failed to update favorites" });
     }
   };
 

@@ -3,12 +3,13 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import {
+  readMapboxTokenCache,
+  writeMapboxTokenCache,
+} from "@/lib/mapboxTokenCache";
 
 let mapboxPrefetched = false;
 let mapboxTokenPrefetched = false;
-
-const TOKEN_CACHE_KEY = 'mapbox_token_cache_v2';
-const TOKEN_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 /**
  * Prefetch the Mapbox token from the edge function
@@ -16,30 +17,22 @@ const TOKEN_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
  */
 export const prefetchMapboxToken = async () => {
   if (mapboxTokenPrefetched) return;
-  
-  // Check if already cached
-  try {
-    const cached = localStorage.getItem(TOKEN_CACHE_KEY) || sessionStorage.getItem(TOKEN_CACHE_KEY);
-    if (cached) {
-      const { timestamp } = JSON.parse(cached);
-      if (Date.now() - timestamp < TOKEN_CACHE_DURATION) {
-        mapboxTokenPrefetched = true;
-        return; // Already have a valid cached token
-      }
-    }
-  } catch {
-    // Continue to fetch
+
+  // Already have a valid cached token? Skip the network call.
+  if (readMapboxTokenCache()) {
+    mapboxTokenPrefetched = true;
+    return;
   }
-  
+
   mapboxTokenPrefetched = true;
-  
+
   try {
     const { data, error } = await supabase.functions.invoke("get-mapbox-token");
     if (!error && data?.token) {
-      const cache = { token: data.token, timestamp: Date.now() };
-      localStorage.setItem(TOKEN_CACHE_KEY, JSON.stringify(cache));
-      sessionStorage.setItem(TOKEN_CACHE_KEY, JSON.stringify(cache));
-      console.log('Prefetch: Mapbox token cached successfully');
+      writeMapboxTokenCache(data.token);
+      if (import.meta.env.DEV) {
+        console.log("Prefetch: Mapbox token cached successfully");
+      }
     }
   } catch {
     mapboxTokenPrefetched = false;
