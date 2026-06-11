@@ -140,30 +140,33 @@ const Onboarding = () => {
   };
 
   const handleStep1Next = async () => {
-    // Validate display name
+    const errors: { displayName?: string; birthdate?: string; gender?: string } = {};
+
     if (!displayName.trim()) {
-      toast.error("Display name required", { description: "Please enter a display name" });
-      return;
+      errors.displayName = "Display name is required";
     }
 
-    // Validate birthdate
     if (!birthdate) {
-      toast.error("Birthdate required", { description: "Please enter your birthdate" });
-      return;
+      errors.birthdate = "Birthdate is required";
+    } else {
+      const age = calculateAge(birthdate);
+      if (age < 18) {
+        errors.birthdate = "You must be 18 or older";
+      }
     }
 
-    // Validate age is 18+
-    const age = calculateAge(birthdate);
-    if (age < 18) {
-      toast.error("Age restriction", { description: "You must be 18 or older to create an account" });
-      return;
-    }
-
-    // Validate gender
     if (!gender) {
-      toast.error("Gender required", { description: "Please select your gender" });
+      errors.gender = "Gender is required";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setStep1Errors(errors);
+      setShakeStep1((k) => k + 1);
       return;
     }
+
+    setStep1Errors({});
+    setShakeStep1(0);
     
     setIsLoading(true);
     try {
