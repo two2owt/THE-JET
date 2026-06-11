@@ -123,8 +123,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
   }, [refreshSession]);
 
+  const isAdminBypass = user?.email === ADMIN_BYPASS_EMAIL;
+
   return (
-    <AuthContext.Provider value={{ user, session, isLoading, refreshSession }}>
+    <AuthContext.Provider value={{ user, session, isLoading, isAdminBypass, refreshSession }}>
       {children}
     </AuthContext.Provider>
   );
