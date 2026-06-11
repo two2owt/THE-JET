@@ -159,7 +159,27 @@ export const SearchResults = ({
       (a, b) => b.score - a.score || b.count - a.count,
     );
 
-    return { venues: rankedVenues, deals: rankedDeals, areas, categories };
+    // --- JetCards (venues + venues derived from matching deals) ---
+    const jetcardsMap = new Map<string, { venue: Venue; score: number }>();
+    for (const r of rankedVenues) {
+      jetcardsMap.set(r.venue.id, { venue: r.venue, score: r.score });
+    }
+    for (const rd of rankedDeals) {
+      const d = rd.deal;
+      const venueMatch = d.venue_id
+        ? venues.find((v) => v.id === d.venue_id)
+        : venues.find(
+            (v) => v.name.toLowerCase() === (d.venue_name ?? "").toLowerCase(),
+          );
+      if (venueMatch && !jetcardsMap.has(venueMatch.id)) {
+        jetcardsMap.set(venueMatch.id, { venue: venueMatch, score: rd.score * 0.8 });
+      }
+    }
+    const jetcards = Array.from(jetcardsMap.values())
+      .sort((a, b) => b.score - a.score || b.venue.activity - a.venue.activity)
+      .slice(0, MAX_PER_SECTION);
+
+    return { venues: rankedVenues, deals: rankedDeals, areas, categories, jetcards };
   }, [q, venues, deals]);
 
   if (!isVisible || !q) return null;
