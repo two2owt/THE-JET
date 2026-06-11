@@ -161,12 +161,10 @@ const Onboarding = () => {
 
     if (Object.keys(errors).length > 0) {
       setStep1Errors(errors);
-      setShakeStep1((k) => k + 1);
       return;
     }
 
     setStep1Errors({});
-    setShakeStep1(0);
     
     setIsLoading(true);
     try {
