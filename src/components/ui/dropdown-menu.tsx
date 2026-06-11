@@ -31,8 +31,20 @@ const dangerItem =
   "data-[highlighted]:bg-destructive/10 data-[highlighted]:text-destructive " +
   "[&_svg]:text-destructive data-[highlighted]:[&_svg]:text-destructive";
 
+/**
+ * Sizing rules:
+ * - `max-w-[calc(100vw-16px)]` keeps the menu off both screen edges on phones.
+ * - `max-h-[var(--radix-dropdown-menu-content-available-height)]` lets Radix
+ *   shrink the menu to fit the available space after auto-flip.
+ * - `overflow-y-auto` so long menus scroll inside the popover instead of
+ *   overflowing the viewport.
+ */
 const contentBase =
-  "z-50 min-w-[10rem] overflow-hidden rounded-lg border border-border/40 bg-popover/95 p-1.5 text-popover-foreground shadow-xl backdrop-blur-xl " +
+  "z-50 min-w-[10rem] max-w-[calc(100vw-16px)] " +
+  "max-h-[var(--radix-dropdown-menu-content-available-height)] " +
+  "overflow-y-auto overflow-x-hidden overscroll-contain " +
+  "rounded-lg border border-border/40 bg-popover/95 p-1.5 text-popover-foreground shadow-xl backdrop-blur-xl " +
+  "origin-[var(--radix-dropdown-menu-content-transform-origin)] " +
   "data-[state=open]:animate-in data-[state=closed]:animate-out " +
   "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 " +
   "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 " +
@@ -70,12 +82,13 @@ DropdownMenuSubTrigger.displayName = DropdownMenuPrimitive.SubTrigger.displayNam
 const DropdownMenuSubContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.SubContent>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent>
->(({ className, sideOffset = 4, alignOffset = -4, collisionPadding = 8, ...props }, ref) => (
+>(({ className, sideOffset = 4, alignOffset = -4, collisionPadding = 12, ...props }, ref) => (
   <DropdownMenuPrimitive.SubContent
     ref={ref}
     sideOffset={sideOffset}
     alignOffset={alignOffset}
     collisionPadding={collisionPadding}
+    avoidCollisions
     className={cn(contentBase, className)}
     {...props}
   />
@@ -104,7 +117,7 @@ const DropdownMenuContent = React.forwardRef<
       align = "center",
       sideOffset = 6,
       alignOffset = 0,
-      collisionPadding = 8,
+      collisionPadding = 12,
       ...props
     },
     ref,
@@ -116,6 +129,7 @@ const DropdownMenuContent = React.forwardRef<
         sideOffset={sideOffset}
         alignOffset={alignOffset}
         collisionPadding={collisionPadding}
+        avoidCollisions
         className={cn(contentBase, className)}
         {...props}
       />
