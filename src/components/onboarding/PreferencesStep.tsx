@@ -455,7 +455,7 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
         </Button>
         <Button
           onClick={handleNext}
-          disabled={isLoading || selectedCategories.length === 0}
+          disabled={isLoading}
           variant="jet"
           size="lg"
           className="flex-1 rounded-full text-fluid-base font-semibold tracking-wide shadow-lg shadow-primary/20"
