@@ -444,6 +444,13 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
         </div>
       </div>
 
+      {categoryError && (
+        <p className="field-error">
+          <AlertCircle className="w-3.5 h-3.5" />
+          {categoryError}
+        </p>
+      )}
+
       <div className="flex gap-3 pt-2">
         <Button
           variant="outline"
