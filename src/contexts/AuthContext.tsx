@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
         // Handle specific auth events
         if (event === "TOKEN_REFRESHED") {
-          console.log("Session token refreshed successfully");
+          if (import.meta.env.DEV) console.log("Session token refreshed successfully");
         }
 
         if (event === "SIGNED_OUT") {

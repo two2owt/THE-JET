@@ -1,69 +1,65 @@
+# GTM Readiness Plan
 
+Scope: the remaining audit sweep + four GTM workstreams, sequenced so each phase is independently testable before moving on. I'll execute Phase 1 first, ask you to smoke-test, then continue.
 
-## Navigation Skeleton Loading States
+## Phase 1 — Safe sweep + light refactors (low risk, ~15 min)
 
-### Problem
-The `NavigationShell` (Suspense fallback) currently renders an empty `<main>` with no visual content. When lazy-loaded pages are loading, users see a blank screen between the header and bottom nav. Individual tab pages also have no loading skeletons while data fetches.
+Delete (zero importers confirmed in audit):
+- `src/hooks/useMovementPaths.ts`
+- `src/hooks/useHeatmapTimelapse.ts`
+- `src/hooks/useLocationDensity.ts`
+- `src/hooks/useOfflineMapCache.ts`
+- `src/hooks/useSearchHistory.ts`
+- `src/hooks/useMultiDirectionSwipe.ts`
+- `src/hooks/useIntersectionObserver.ts`
+- `src/components/ui/optimized-image.tsx`
+- `src/components/ui/sidebar.tsx`
+- `src/components/ui/aspect-ratio.tsx`
+- `src/components/ui/toggle.tsx`
+- `src/utils/geospatialUtils.ts`
 
-### What We'll Build
+Toast consolidation (we're already Sonner-only):
+- Delete `src/components/ui/toast.tsx`, `src/components/ui/toaster.tsx`, `src/components/ui/use-toast.ts`, `src/hooks/use-toast.ts`.
+- Re-verify no residual imports with `rg "from \"@/hooks/use-toast\"|ui/toaster|ui/toast\""`.
 
-**1. Header Skeleton** — A new `HeaderSkeleton` component matching the Header's layout: logo placeholder, search bar placeholder, and avatar circle. Uses the same CSS variables (`--header-total-height`, safe-area insets) and glassmorphic background.
+Log hygiene:
+- Wrap `console.log/warn` in `useMapboxToken.ts`, `lib/prefetch.ts`, `lib/tile-prefetch.ts`, `contexts/AuthContext.tsx` with `if (import.meta.env.DEV)`.
 
-**2. Bottom Nav Skeleton** — A new `BottomNavSkeleton` with 5 icon+label placeholder pills matching the real BottomNav's fixed positioning and CSS variables (`--bottom-nav-total-height`).
+**Test gate:** Build passes, map renders, login still works, no console errors.
 
-**3. Page Content Skeletons** — Tab-specific skeleton layouts:
-- **Map tab**: Already has its own loading spinner (MapPin pulse) — no change needed
-- **Favorites/Saved**: Heading skeleton + grid of card skeletons (1 col mobile, 2 tablet, 3 desktop)
-- **Social/Crew**: Heading skeleton + section skeletons (friend requests row, friends grid, discover grid)
-- **Notifications/Alerts**: Heading skeleton + stacked notification card skeletons
-- **Explore/Hot**: Heading skeleton + search bar skeleton + category pills + deal card skeletons
-- **Messages**: Heading skeleton + conversation list skeletons
-- **Settings**: Heading skeleton + settings card group skeletons
-- **Profile**: Avatar circle skeleton + name/bio skeletons + stats row + card sections
+## Phase 2 — Auth E2E polish
 
-**4. NavigationShell Update** — Replace empty `<main>` with a generic page skeleton (heading + card placeholders) using the header/bottom nav skeletons.
+- Verify managed Google OAuth on `/auth` (button present, redirect_uri = origin, error handling shows Sonner toast).
+- Smooth post-auth redirect via `postAuthRedirect.ts` → if no profile/onboarding complete, send to `/onboarding`; else to intended deep link or `/`.
+- Auth page: add inline error display, password visibility toggle, "Forgot password" link, loading state on submit button.
+- Confirm email/recovery edge functions are deployed and templates render.
 
-### File Changes
+## Phase 3 — Visual pass (landing + JetCard + search)
 
-| File | Action |
-|------|--------|
-| `src/components/skeletons/HeaderSkeleton.tsx` | **Create** — glassmorphic header with logo, search bar, avatar skeleton pills |
-| `src/components/skeletons/BottomNavSkeleton.tsx` | **Create** — 5 icon+label skeleton placeholders with fixed positioning |
-| `src/components/skeletons/PageSkeletons.tsx` | **Create** — exported skeleton components: `FavoritesPageSkeleton`, `SocialPageSkeleton`, `NotificationsTabSkeleton`, `ExploreTabSkeleton`, `MessagesPageSkeleton`, `SettingsPageSkeleton`, `ProfilePageSkeleton` |
-| `src/components/NavigationShell.tsx` | **Update** — import and render `HeaderSkeleton` + generic content skeleton + `BottomNavSkeleton` |
-| `src/pages/Favorites.tsx` | **Update** — show `FavoritesPageSkeleton` during data loading |
-| `src/pages/Social.tsx` | **Update** — show `SocialPageSkeleton` during data loading |
-| `src/pages/Messages.tsx` | **Update** — show `MessagesPageSkeleton` during data loading |
-| `src/pages/Settings.tsx` | **Update** — show `SettingsPageSkeleton` during initial load |
-| `src/pages/Profile.tsx` | **Update** — show `ProfilePageSkeleton` during data loading |
-| `src/pages/Index.tsx` | **Update** — show `NotificationsTabSkeleton` / `ExploreTabSkeleton` in their respective Suspense fallbacks |
+- Landing ("Something's cooking in Charlotte"): tighten Dark Luxe — Syne headline w/ subtle gold underline, gradient glow CTA, ensure paper-plane asset is above the fold and animated (transform/opacity only).
+- `SearchResults.tsx`: confirm JetCard match rows use consistent glassmorphic chip, icons aligned, keyboard nav (↑↓ Enter).
+- `JetCard.tsx`: re-check 480px max-w, gradient save button states (saved = gold ring), share/save tap targets ≥44px.
 
-### Adaptive Spacing Strategy
+## Phase 4 — E2E user flow audit
 
-All skeletons use the same responsive padding as their real counterparts:
-- `px-4 sm:px-6 md:px-8 lg:px-10` for page containers
-- `max-w-7xl mx-auto` for content width
-- Grid skeletons use `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3` matching the `VirtualGrid` column config
-- The Skeleton component's existing `animate-pulse` (from `bg-muted`) provides the shimmer effect
-- CSS variables (`--header-total-height`, `--bottom-nav-total-height`, `--main-height`) ensure skeleton dimensions match the real layout exactly
+Walk: Landing → Sign up (Google) → Onboarding step 1 (18+) → Map → Open JetCard → Save → Share → Open Messages.
+Document friction points; fix top 3 inline (no scope creep).
 
-### Skeleton Component Pattern
+## Phase 5 — Analytics / funnel instrumentation
 
-```text
-┌─────────────────────────────┐
-│  [▪ logo]  [▬▬▬ search ▬▬] [●] │  ← HeaderSkeleton
-├─────────────────────────────┤
-│  [▬▬▬▬▬▬▬▬ heading ▬▬▬▬▬▬] │
-│  [▬▬▬ subtitle ▬▬]         │
-│                             │
-│  [┌──────┐ ┌──────┐ ┌────┐]│  ← Card grid (responsive cols)
-│  [│      │ │      │ │    │]│
-│  [└──────┘ └──────┘ └────┘]│
-│  [┌──────┐ ┌──────┐ ┌────┐]│
-│  [│      │ │      │ │    │]│
-│  [└──────┘ └──────┘ └────┘]│
-├─────────────────────────────┤
-│  [▪] [▪] [▪] [▪] [▪]      │  ← BottomNavSkeleton
-└─────────────────────────────┘
-```
+Confirm `analytics.track(...)` fires (and lands in `analytics_events`) for:
+- `Signup Started`, `Signup Completed`, `Onboarding Completed`
+- `JetCard Viewed`, `JetCard Saved`, `JetCard Shared`
+- `Deal Viewed`, `Deal Clicked`
+- `Search Performed` (already present — verify)
+- `Message Sent`
 
+Add a tiny `funnel.ts` helper that wraps `analytics.track` with a stable event-name enum so GTM dashboards stay clean.
+
+## Out of scope (call out, don't do)
+- New payment flows, new push topics, new edge functions beyond what's already deployed.
+- Schema changes — none required.
+- Mobile/Capacitor native build verification (separate workstream).
+
+## Execution order
+Phase 1 now → I'll report back for your smoke test → Phases 2–5 in subsequent turns, each followed by a checkpoint.
