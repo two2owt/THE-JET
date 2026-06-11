@@ -76,7 +76,7 @@ const Onboarding = () => {
         .eq("id", session.user.id)
         .single();
 
-      if (profile?.onboarding_completed) {
+      if (profile?.onboarding_completed && session.user.email !== "hodgesb02@gmail.com") {
         navigate(consumePostAuthRedirect("/"), { replace: true });
         return;
       }
