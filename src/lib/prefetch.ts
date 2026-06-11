@@ -31,7 +31,7 @@ export const prefetchMapboxToken = async () => {
     if (!error && data?.token) {
       writeMapboxTokenCache(data.token);
       if (import.meta.env.DEV) {
-        console.log("Prefetch: Mapbox token cached successfully");
+        if (import.meta.env.DEV) console.log("Prefetch: Mapbox token cached successfully");
       }
     }
   } catch {
@@ -50,13 +50,13 @@ export const prefetchMapbox = () => {
   // In production, mapbox-gl is loaded from CDN via script tag
   // Check if it's already available globally
   if (typeof window !== 'undefined' && (window as any).mapboxgl) {
-    console.log('Prefetch: Mapbox already loaded from CDN');
+    if (import.meta.env.DEV) console.log('Prefetch: Mapbox already loaded from CDN');
     return;
   }
   
   // Fallback: trigger the chunk download by importing the module (dev mode)
   import('mapbox-gl').then(() => {
-    console.log('Prefetch: Mapbox chunk loaded and cached');
+    if (import.meta.env.DEV) console.log('Prefetch: Mapbox chunk loaded and cached');
   }).catch(() => {
     mapboxPrefetched = false;
   });

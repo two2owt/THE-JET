@@ -41,7 +41,7 @@ export function storeLastKnownLocation(lat: number, lng: number, city?: string):
   try {
     localStorage.setItem(LAST_LOCATION_KEY, JSON.stringify(location));
   } catch (e) {
-    console.warn('Failed to store last location:', e);
+    if (import.meta.env.DEV) console.warn('Failed to store last location:', e);
   }
 }
 
@@ -148,7 +148,7 @@ async function prefetchTilesForLocation(
   token: string,
   locationName?: string
 ): Promise<{ success: number; total: number }> {
-  console.log(`Tile prefetch: Starting for ${locationName || `${lat.toFixed(4)}, ${lng.toFixed(4)}`}`);
+  if (import.meta.env.DEV) console.log(`Tile prefetch: Starting for ${locationName || `${lat.toFixed(4)}, ${lng.toFixed(4)}`}`);
   
   // Generate tile URLs for each zoom level
   const allUrls: string[] = [];
@@ -191,7 +191,7 @@ async function prefetchTilesForLocation(
 export async function prefetchTilesForLastLocation(): Promise<void> {
   const token = getCachedToken();
   if (!token) {
-    console.log('Tile prefetch: No token cached, skipping');
+    if (import.meta.env.DEV) console.log('Tile prefetch: No token cached, skipping');
     return;
   }
   
@@ -201,7 +201,7 @@ export async function prefetchTilesForLastLocation(): Promise<void> {
     const elapsed = Date.now() - parseInt(lastPrefetch, 10);
     // Only prefetch once per 12 hours
     if (elapsed < 12 * 60 * 60 * 1000) {
-      console.log('Tile prefetch: Already prefetched recently');
+      if (import.meta.env.DEV) console.log('Tile prefetch: Already prefetched recently');
       return;
     }
   }
@@ -221,7 +221,7 @@ export async function prefetchTilesForLastLocation(): Promise<void> {
     prefetchLocation.city || 'Last location'
   );
   
-  console.log(`Tile prefetch: Completed ${result.success}/${result.total} tiles`);
+  if (import.meta.env.DEV) console.log(`Tile prefetch: Completed ${result.success}/${result.total} tiles`);
   
   // Record prefetch timestamp
   localStorage.setItem(PREFETCH_TIMESTAMP_KEY, Date.now().toString());
@@ -282,7 +282,7 @@ export function initTilePrefetching(): void {
     
     // Skip prefetching on slow connections or save-data mode
     if (saveData || ['slow-2g', '2g'].includes(effectiveType)) {
-      console.log('Tile prefetch: Skipped due to slow connection');
+      if (import.meta.env.DEV) console.log('Tile prefetch: Skipped due to slow connection');
       return;
     }
   }

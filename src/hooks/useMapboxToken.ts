@@ -58,7 +58,7 @@ export const useMapboxToken = (options: UseMapboxTokenOptions = {}) => {
     // Check cache first (includes preloaded token from HTML shell)
     const cachedToken = getCachedToken();
     if (cachedToken) {
-      console.log('useMapboxToken: Using cached/preloaded token');
+      if (import.meta.env.DEV) console.log('useMapboxToken: Using cached/preloaded token');
       setToken(cachedToken);
       setLoading(false);
       setError(null);
@@ -71,7 +71,7 @@ export const useMapboxToken = (options: UseMapboxTokenOptions = {}) => {
         await (window as any).__mapboxTokenPromise;
         const preloaded = getPreloadedToken();
         if (preloaded) {
-          console.log('useMapboxToken: Using preloaded token from HTML shell');
+          if (import.meta.env.DEV) console.log('useMapboxToken: Using preloaded token from HTML shell');
           setToken(preloaded);
           setLoading(false);
           setError(null);
@@ -82,7 +82,7 @@ export const useMapboxToken = (options: UseMapboxTokenOptions = {}) => {
       }
     }
     
-    console.log('useMapboxToken: No cached token, fetching from edge function...');
+    if (import.meta.env.DEV) console.log('useMapboxToken: No cached token, fetching from edge function...');
     setLoading(true);
     setError(null);
     
@@ -114,7 +114,7 @@ export const useMapboxToken = (options: UseMapboxTokenOptions = {}) => {
           throw new Error('Invalid Mapbox public token');
         }
         
-        console.log('useMapboxToken: Successfully fetched token');
+        if (import.meta.env.DEV) console.log('useMapboxToken: Successfully fetched token');
         setCachedToken(data.token);
         setToken(data.token);
         setError(null);
@@ -158,7 +158,7 @@ export const useMapboxToken = (options: UseMapboxTokenOptions = {}) => {
     // This is a safety net in case the fetch promise never resolves
     timeoutRef.current = setTimeout(() => {
       if (loading && !token) {
-        console.warn('useMapboxToken: Backup timeout triggered after 12 seconds, retrying silently');
+        if (import.meta.env.DEV) console.warn('useMapboxToken: Backup timeout triggered after 12 seconds, retrying silently');
         fetchStartedRef.current = false;
         fetchToken();
       }
