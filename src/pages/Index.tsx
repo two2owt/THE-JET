@@ -306,12 +306,16 @@ const Index = () => {
 
 
 
+  const { isAdminBypass } = useAuth();
+
   // Check onboarding status - only redirect to onboarding if needed, never sign out
   useEffect(() => {
     const checkOnboarding = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session) {
+        if (session.user.email === "hodgesb02@gmail.com") return;
+
         const { data: profile } = await supabase
           .from("profiles")
           .select("onboarding_completed")
