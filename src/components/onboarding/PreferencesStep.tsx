@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { MapPin, Sparkles, ChevronDown, ChevronUp, Check, UtensilsCrossed, Wine, Moon, CalendarDays, LucideIcon } from "lucide-react";
+import { MapPin, Sparkles, ChevronDown, ChevronUp, Check, AlertCircle, UtensilsCrossed, Wine, Moon, CalendarDays, LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PreferencesStepProps {
@@ -72,6 +72,7 @@ const EVENTS_OPTIONS = {
 const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [categoryError, setCategoryError] = useState<string | null>(null);
   
   // Food preferences
   const [foodCuisine, setFoodCuisine] = useState<string[]>([]);
@@ -150,6 +151,12 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
   };
 
   const handleNext = () => {
+    if (selectedCategories.length === 0) {
+      setCategoryError("Please select at least one category");
+      return;
+    }
+    setCategoryError(null);
+
     const preferences: PreferencesData = {
       categories: selectedCategories,
       food: {
@@ -437,6 +444,13 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
         </div>
       </div>
 
+      {categoryError && (
+        <p className="field-error">
+          <AlertCircle className="w-3.5 h-3.5" />
+          {categoryError}
+        </p>
+      )}
+
       <div className="flex gap-3 pt-2">
         <Button
           variant="outline"
@@ -448,7 +462,7 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
         </Button>
         <Button
           onClick={handleNext}
-          disabled={isLoading || selectedCategories.length === 0}
+          disabled={isLoading}
           variant="jet"
           size="lg"
           className="flex-1 rounded-full text-fluid-base font-semibold tracking-wide shadow-lg shadow-primary/20"

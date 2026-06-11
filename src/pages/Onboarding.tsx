@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Sparkles, Loader2, Upload, Check, ArrowLeft } from "lucide-react";
+import { Sparkles, Loader2, Upload, Check, ArrowLeft, AlertCircle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PreferencesStep, { PreferencesData } from "@/components/onboarding/PreferencesStep";
 import { Json } from "@/integrations/supabase/types";
@@ -47,6 +47,14 @@ const Onboarding = () => {
   const [birthdate, setBirthdate] = useState("");
   const [gender, setGender] = useState("");
   const [pronouns, setPronouns] = useState("");
+  
+  // Step 1 validation errors
+  const [step1Errors, setStep1Errors] = useState<{
+    displayName?: string;
+    birthdate?: string;
+    gender?: string;
+  }>({});
+  
   
   // Step 2: Preferences
   const [savedPreferences, setSavedPreferences] = useState<PreferencesData | null>(null);
@@ -132,30 +140,31 @@ const Onboarding = () => {
   };
 
   const handleStep1Next = async () => {
-    // Validate display name
+    const errors: { displayName?: string; birthdate?: string; gender?: string } = {};
+
     if (!displayName.trim()) {
-      toast.error("Display name required", { description: "Please enter a display name" });
-      return;
+      errors.displayName = "Display name is required";
     }
 
-    // Validate birthdate
     if (!birthdate) {
-      toast.error("Birthdate required", { description: "Please enter your birthdate" });
-      return;
+      errors.birthdate = "Birthdate is required";
+    } else {
+      const age = calculateAge(birthdate);
+      if (age < 18) {
+        errors.birthdate = "You must be 18 or older";
+      }
     }
 
-    // Validate age is 18+
-    const age = calculateAge(birthdate);
-    if (age < 18) {
-      toast.error("Age restriction", { description: "You must be 18 or older to create an account" });
-      return;
-    }
-
-    // Validate gender
     if (!gender) {
-      toast.error("Gender required", { description: "Please select your gender" });
+      errors.gender = "Gender is required";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setStep1Errors(errors);
       return;
     }
+
+    setStep1Errors({});
     
     setIsLoading(true);
     try {
@@ -457,7 +466,17 @@ const Onboarding = () => {
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 maxLength={50}
+                className={step1Errors.displayName ? "focus-visible:!ring-destructive/30" : ""}
+                aria-invalid={!!step1Errors.displayName}
+                aria-describedby={step1Errors.displayName ? "displayName-error" : undefined}
+                style={step1Errors.displayName ? { borderColor: "hsl(var(--destructive) / 0.7)" } : undefined}
               />
+              {step1Errors.displayName && (
+                <p id="displayName-error" className="field-error">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {step1Errors.displayName}
+                </p>
+              )}
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -484,8 +503,17 @@ const Onboarding = () => {
                 type="date"
                 value={birthdate}
                 onChange={(e) => setBirthdate(e.target.value)}
-                className="bg-card/60"
+                className={`bg-card/60 ${step1Errors.birthdate ? "focus-visible:!ring-destructive/30" : ""}`}
+                aria-invalid={!!step1Errors.birthdate}
+                aria-describedby={step1Errors.birthdate ? "birthdate-error" : undefined}
+                style={step1Errors.birthdate ? { borderColor: "hsl(var(--destructive) / 0.7)" } : undefined}
               />
+              {step1Errors.birthdate && (
+                <p id="birthdate-error" className="field-error">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {step1Errors.birthdate}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -494,7 +522,11 @@ const Onboarding = () => {
                   Gender <span className="text-destructive">*</span>
                 </Label>
                 <Select value={gender} onValueChange={setGender}>
-                  <SelectTrigger className="bg-card/60">
+                  <SelectTrigger
+                    className={`bg-card/60 ${step1Errors.gender ? "!border-destructive/70 focus:!ring-destructive/30 focus:!border-destructive/60" : ""}`}
+                    aria-invalid={!!step1Errors.gender}
+                    aria-describedby={step1Errors.gender ? "gender-error" : undefined}
+                  >
                     <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
                   <SelectContent>
@@ -505,6 +537,12 @@ const Onboarding = () => {
                     ))}
                   </SelectContent>
                 </Select>
+                {step1Errors.gender && (
+                  <p id="gender-error" className="field-error">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {step1Errors.gender}
+                  </p>
+                )}
               </div>
 
               <div className="flex flex-col gap-1.5">
