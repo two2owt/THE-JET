@@ -522,7 +522,11 @@ const Onboarding = () => {
                   Gender <span className="text-destructive">*</span>
                 </Label>
                 <Select value={gender} onValueChange={setGender}>
-                  <SelectTrigger className="bg-card/60">
+                  <SelectTrigger
+                    className={`bg-card/60 ${step1Errors.gender ? "!border-destructive/70 focus:!ring-destructive/30 focus:!border-destructive/60" : ""}`}
+                    aria-invalid={!!step1Errors.gender}
+                    aria-describedby={step1Errors.gender ? "gender-error" : undefined}
+                  >
                     <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
                   <SelectContent>
@@ -533,6 +537,12 @@ const Onboarding = () => {
                     ))}
                   </SelectContent>
                 </Select>
+                {step1Errors.gender && (
+                  <p id="gender-error" className="field-error">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {step1Errors.gender}
+                  </p>
+                )}
               </div>
 
               <div className="flex flex-col gap-1.5">
