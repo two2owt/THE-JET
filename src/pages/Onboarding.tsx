@@ -503,8 +503,17 @@ const Onboarding = () => {
                 type="date"
                 value={birthdate}
                 onChange={(e) => setBirthdate(e.target.value)}
-                className="bg-card/60"
+                className={`bg-card/60 ${step1Errors.birthdate ? "focus-visible:!ring-destructive/30" : ""}`}
+                aria-invalid={!!step1Errors.birthdate}
+                aria-describedby={step1Errors.birthdate ? "birthdate-error" : undefined}
+                style={step1Errors.birthdate ? { borderColor: "hsl(var(--destructive) / 0.7)" } : undefined}
               />
+              {step1Errors.birthdate && (
+                <p id="birthdate-error" className="field-error">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {step1Errors.birthdate}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
