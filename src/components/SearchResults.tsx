@@ -1,4 +1,4 @@
-import { MapPin, Tag, X, Search as SearchIcon, Store, Sparkles, Compass, LayoutGrid } from "lucide-react";
+import { MapPin, Tag, X, Search as SearchIcon, Store, Sparkles, Compass, LayoutGrid, Star, ImageIcon } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
