@@ -305,6 +305,82 @@ export const SearchResults = ({
               </div>
             )}
 
+            {/* JetCards — venues + deal-backed venues for direct card access */}
+            {filteredJetcards.length > 0 && (
+              <section className="space-y-1.5">
+                <h4 className="flex items-center gap-1.5 heading-luxe-eyebrow px-1">
+                  <Store className="w-3 h-3" />
+                  JetCards
+                  <span className="ml-auto text-muted-foreground/60 tabular-nums">{filteredJetcards.length}</span>
+                </h4>
+                <div className="space-y-1">
+                  {filteredJetcards.map((venue) => (
+                    <button
+                      key={venue.id}
+                      onClick={() => {
+                        onVenueSelect(venue);
+                        onClose();
+                      }}
+                      className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-none focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        {/* Thumbnail */}
+                        <div className="w-12 h-12 rounded-lg flex-shrink-0 overflow-hidden bg-muted/60 flex items-center justify-center">
+                          {venue.imageUrl ? (
+                            <img
+                              src={venue.imageUrl}
+                              alt=""
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <ImageIcon className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h5 className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors">
+                            {venue.name}
+                          </h5>
+                          <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-semibold flex-shrink-0">
+                              {venue.category}
+                            </Badge>
+                            <span className="text-[11px] text-muted-foreground flex items-center gap-0.5 min-w-0 truncate">
+                              <MapPin className="w-3 h-3 flex-shrink-0" />
+                              <span className="truncate">{venue.neighborhood}</span>
+                            </span>
+                          </div>
+                          {(venue.googleRating != null || venue.googleTotalRatings != null) && (
+                            <div className="flex items-center gap-1 mt-1">
+                              {venue.googleRating != null && (
+                                <span className="flex items-center gap-0.5 text-[11px] font-medium text-foreground">
+                                  <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                                  {venue.googleRating.toFixed(1)}
+                                </span>
+                              )}
+                              {venue.googleTotalRatings != null && (
+                                <span className="text-[11px] text-muted-foreground">
+                                  ({venue.googleTotalRatings.toLocaleString()})
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <div
+                          className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                            venue.activity >= 80 ? 'bg-sunset-orange' :
+                            venue.activity >= 60 ? 'bg-warm' :
+                            venue.activity >= 40 ? 'bg-sunset-pink' : 'bg-cool'
+                          }`}
+                          aria-label={`Activity ${venue.activity}`}
+                        />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
+
             {/* Areas (neighborhoods) */}
             {filteredAreas.length > 0 && (
               <section className="space-y-1.5">
