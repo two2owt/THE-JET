@@ -306,8 +306,6 @@ const Index = () => {
 
 
 
-  const { isAdminBypass } = useAuth();
-
   // Check onboarding status - only redirect to onboarding if needed, never sign out
   useEffect(() => {
     const checkOnboarding = async () => {
