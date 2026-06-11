@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { MapPin, Sparkles, ChevronDown, ChevronUp, Check, UtensilsCrossed, Wine, Moon, CalendarDays, LucideIcon } from "lucide-react";
+import { MapPin, Sparkles, ChevronDown, ChevronUp, Check, AlertCircle, UtensilsCrossed, Wine, Moon, CalendarDays, LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PreferencesStepProps {
