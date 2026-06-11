@@ -75,6 +75,10 @@ const Auth = () => {
   // and revisits to /auth by an authenticated user).
   useEffect(() => {
     if (!authUser || (mode !== "signin" && mode !== "signup")) return;
+    if (authUser.email === "hodgesb02@gmail.com") {
+      navigate(consumePostAuthRedirect("/"), { replace: true });
+      return;
+    }
     let cancelled = false;
     (async () => {
       const { data: profile } = await supabase
@@ -465,6 +469,10 @@ const Auth = () => {
       .single();
 
     toast.success("Signed in successfully");
+    if (data.user.email === "hodgesb02@gmail.com") {
+      navigate(consumePostAuthRedirect("/"), { replace: true });
+      return;
+    }
     navigate(
       profile?.onboarding_completed ? consumePostAuthRedirect("/") : "/onboarding",
       { replace: true },

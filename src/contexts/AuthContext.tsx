@@ -3,10 +3,13 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { loadConsents } from "@/lib/consent";
 
+const ADMIN_BYPASS_EMAIL = "hodgesb02@gmail.com";
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
+  isAdminBypass: boolean;
   refreshSession: () => Promise<void>;
 }
 
@@ -14,6 +17,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   isLoading: true,
+  isAdminBypass: false,
   refreshSession: async () => {},
 });
 
@@ -119,8 +123,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
   }, [refreshSession]);
 
+  const isAdminBypass = user?.email === ADMIN_BYPASS_EMAIL;
+
   return (
-    <AuthContext.Provider value={{ user, session, isLoading, refreshSession }}>
+    <AuthContext.Provider value={{ user, session, isLoading, isAdminBypass, refreshSession }}>
       {children}
     </AuthContext.Provider>
   );
