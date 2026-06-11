@@ -338,7 +338,7 @@ export function AdminTopbar({ items, onSelect }: AdminTopbarProps) {
                 ref={inputRef}
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder="Search sections, deals, users…"
+                placeholder="Search sections, deals, venues, neighborhoods…"
                 className="admin-search-input"
                 aria-label="Search admin"
               />
