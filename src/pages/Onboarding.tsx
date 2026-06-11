@@ -466,7 +466,17 @@ const Onboarding = () => {
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 maxLength={50}
+                className={step1Errors.displayName ? "focus-visible:!ring-destructive/30" : ""}
+                aria-invalid={!!step1Errors.displayName}
+                aria-describedby={step1Errors.displayName ? "displayName-error" : undefined}
+                style={step1Errors.displayName ? { borderColor: "hsl(var(--destructive) / 0.7)" } : undefined}
               />
+              {step1Errors.displayName && (
+                <p id="displayName-error" className="field-error">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {step1Errors.displayName}
+                </p>
+              )}
             </div>
 
             <div className="flex flex-col gap-1.5">
