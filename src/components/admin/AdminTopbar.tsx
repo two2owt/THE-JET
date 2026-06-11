@@ -168,15 +168,15 @@ export function AdminTopbar({ items, onSelect }: AdminTopbarProps) {
             )}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={() => navigate("/profile")} className="cursor-pointer">
-            <UserIcon className="h-4 w-4 mr-2" /> Profile
+          <DropdownMenuItem onSelect={() => navigate("/profile")}>
+            <UserIcon aria-hidden="true" /> Profile
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => navigate("/profile?section=settings")} className="cursor-pointer">
-            <Settings className="h-4 w-4 mr-2" /> Settings
+          <DropdownMenuItem onSelect={() => navigate("/profile?section=settings")}>
+            <Settings aria-hidden="true" /> Settings
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={handleSignOut} className="cursor-pointer text-destructive focus:text-destructive">
-            <LogOut className="h-4 w-4 mr-2" /> Sign out
+          <DropdownMenuItem variant="destructive" onSelect={handleSignOut}>
+            <LogOut aria-hidden="true" /> Sign out
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
