@@ -1,4 +1,4 @@
-import { MapPin, Tag, X, Search as SearchIcon, Store, Sparkles, Compass, LayoutGrid } from "lucide-react";
+import { MapPin, Tag, X, Search as SearchIcon, Store, Sparkles, Compass, LayoutGrid, Star, ImageIcon } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
@@ -159,7 +159,27 @@ export const SearchResults = ({
       (a, b) => b.score - a.score || b.count - a.count,
     );
 
-    return { venues: rankedVenues, deals: rankedDeals, areas, categories };
+    // --- JetCards (venues + venues derived from matching deals) ---
+    const jetcardsMap = new Map<string, { venue: Venue; score: number }>();
+    for (const r of rankedVenues) {
+      jetcardsMap.set(r.venue.id, { venue: r.venue, score: r.score });
+    }
+    for (const rd of rankedDeals) {
+      const d = rd.deal;
+      const venueMatch = d.venue_id
+        ? venues.find((v) => v.id === d.venue_id)
+        : venues.find(
+            (v) => v.name.toLowerCase() === (d.venue_name ?? "").toLowerCase(),
+          );
+      if (venueMatch && !jetcardsMap.has(venueMatch.id)) {
+        jetcardsMap.set(venueMatch.id, { venue: venueMatch, score: rd.score * 0.8 });
+      }
+    }
+    const jetcards = Array.from(jetcardsMap.values())
+      .sort((a, b) => b.score - a.score || b.venue.activity - a.venue.activity)
+      .slice(0, MAX_PER_SECTION);
+
+    return { venues: rankedVenues, deals: rankedDeals, areas, categories, jetcards };
   }, [q, venues, deals]);
 
   if (!isVisible || !q) return null;
@@ -168,8 +188,10 @@ export const SearchResults = ({
   const filteredDeals = groups.deals.slice(0, MAX_PER_SECTION).map((r) => r.deal);
   const filteredAreas = groups.areas.slice(0, MAX_PER_SECTION);
   const filteredCategories = groups.categories.slice(0, MAX_PER_SECTION);
+  const filteredJetcards = groups.jetcards.map((r) => r.venue);
 
   const totalCount =
+    filteredJetcards.length +
     filteredVenues.length +
     filteredDeals.length +
     filteredAreas.length +
@@ -281,6 +303,82 @@ export const SearchResults = ({
                   Try a venue, area, category, or deal
                 </p>
               </div>
+            )}
+
+            {/* JetCards — venues + deal-backed venues for direct card access */}
+            {filteredJetcards.length > 0 && (
+              <section className="space-y-1.5">
+                <h4 className="flex items-center gap-1.5 heading-luxe-eyebrow px-1">
+                  <Store className="w-3 h-3" />
+                  JetCards
+                  <span className="ml-auto text-muted-foreground/60 tabular-nums">{filteredJetcards.length}</span>
+                </h4>
+                <div className="space-y-1">
+                  {filteredJetcards.map((venue) => (
+                    <button
+                      key={venue.id}
+                      onClick={() => {
+                        onVenueSelect(venue);
+                        onClose();
+                      }}
+                      className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-none focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        {/* Thumbnail */}
+                        <div className="w-12 h-12 rounded-lg flex-shrink-0 overflow-hidden bg-muted/60 flex items-center justify-center">
+                          {venue.imageUrl ? (
+                            <img
+                              src={venue.imageUrl}
+                              alt=""
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <ImageIcon className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h5 className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors">
+                            {venue.name}
+                          </h5>
+                          <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-semibold flex-shrink-0">
+                              {venue.category}
+                            </Badge>
+                            <span className="text-[11px] text-muted-foreground flex items-center gap-0.5 min-w-0 truncate">
+                              <MapPin className="w-3 h-3 flex-shrink-0" />
+                              <span className="truncate">{venue.neighborhood}</span>
+                            </span>
+                          </div>
+                          {(venue.googleRating != null || venue.googleTotalRatings != null) && (
+                            <div className="flex items-center gap-1 mt-1">
+                              {venue.googleRating != null && (
+                                <span className="flex items-center gap-0.5 text-[11px] font-medium text-foreground">
+                                  <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                                  {venue.googleRating.toFixed(1)}
+                                </span>
+                              )}
+                              {venue.googleTotalRatings != null && (
+                                <span className="text-[11px] text-muted-foreground">
+                                  ({venue.googleTotalRatings.toLocaleString()})
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <div
+                          className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                            venue.activity >= 80 ? 'bg-sunset-orange' :
+                            venue.activity >= 60 ? 'bg-warm' :
+                            venue.activity >= 40 ? 'bg-sunset-pink' : 'bg-cool'
+                          }`}
+                          aria-label={`Activity ${venue.activity}`}
+                        />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </section>
             )}
 
             {/* Areas (neighborhoods) */}
