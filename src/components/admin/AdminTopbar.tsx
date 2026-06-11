@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { Bell, LogOut, Search, Settings, User as UserIcon, X } from "lucide-react";
+import {
+  Bell, LogOut, Search, Settings, User as UserIcon, X,
+  LayoutGrid, Tag, Store, MapPinned, Loader2,
+} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -22,6 +25,26 @@ interface SearchItem {
   label: string;
   description?: string;
 }
+
+/** Live entity search result drawn from the database. */
+type EntityKind = "section" | "deal" | "venue" | "neighborhood";
+interface EntityResult {
+  kind: EntityKind;
+  id: string;
+  label: string;
+  description?: string;
+  /** Optional href; when present, selection navigates there. */
+  href?: string;
+  /** Optional admin section id to activate on select. */
+  sectionId?: string;
+}
+
+const KIND_META: Record<EntityKind, { label: string; icon: typeof Tag }> = {
+  section:      { label: "Admin sections", icon: LayoutGrid },
+  deal:         { label: "Deals",          icon: Tag },
+  venue:        { label: "Venues / JetCards", icon: Store },
+  neighborhood: { label: "Neighborhoods",  icon: MapPinned },
+};
 
 interface AdminTopbarProps {
   /** Searchable items (admin sections). */
@@ -94,9 +117,121 @@ export function AdminTopbar({ items, onSelect }: AdminTopbarProps) {
     );
   }, [q, items]);
 
-  function handlePick(id: string) {
-    onSelect(id);
+  /* ---------------- Live entity search (deals / venues / neighborhoods) ---- */
+  const [entityResults, setEntityResults] = useState<EntityResult[]>([]);
+  const [entitySearching, setEntitySearching] = useState(false);
+
+  useEffect(() => {
+    const term = q.trim();
+    if (term.length < 2) {
+      setEntityResults([]);
+      setEntitySearching(false);
+      return;
+    }
+    let cancelled = false;
+    setEntitySearching(true);
+    const handle = window.setTimeout(async () => {
+      try {
+        const like = `%${term.replace(/[%_]/g, (m) => `\\${m}`)}%`;
+        const [dealsRes, neighRes] = await Promise.all([
+          supabase
+            .from("deals")
+            .select("id, title, venue_id, venue_name, venue_address, active")
+            .or(`title.ilike.${like},venue_name.ilike.${like}`)
+            .limit(8),
+          supabase
+            .from("neighborhoods")
+            .select("id, name, slug, description, active")
+            .ilike("name", like)
+            .limit(5),
+        ]);
+        if (cancelled) return;
+
+        const next: EntityResult[] = [];
+
+        // Venues — derived from distinct deal venue_ids
+        const venuesSeen = new Set<string>();
+        (dealsRes.data ?? []).forEach((d) => {
+          if (d.venue_id && !venuesSeen.has(d.venue_id)) {
+            venuesSeen.add(d.venue_id);
+            next.push({
+              kind: "venue",
+              id: d.venue_id,
+              label: d.venue_name ?? "Untitled venue",
+              description: d.venue_address ?? "Open JetCard on map",
+              href: `/?venue=${encodeURIComponent(d.venue_id)}`,
+            });
+          }
+        });
+
+        // Deals
+        (dealsRes.data ?? []).slice(0, 6).forEach((d) => {
+          next.push({
+            kind: "deal",
+            id: d.id,
+            label: d.title,
+            description: d.venue_name
+              ? `${d.venue_name}${d.active ? "" : " · inactive"}`
+              : (d.active ? "Active deal" : "Inactive deal"),
+            href: `/?deal=${encodeURIComponent(d.id)}`,
+          });
+        });
+
+        // Neighborhoods → jump to admin Areas section
+        (neighRes.data ?? []).forEach((n) => {
+          next.push({
+            kind: "neighborhood",
+            id: n.id,
+            label: n.name,
+            description: n.description ?? (n.active ? "Active geofence" : "Inactive geofence"),
+            sectionId: "areas",
+          });
+        });
+
+        setEntityResults(next);
+      } catch {
+        if (!cancelled) setEntityResults([]);
+      } finally {
+        if (!cancelled) setEntitySearching(false);
+      }
+    }, 180);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(handle);
+    };
+  }, [q]);
+
+  /** Grouped, ordered list of results for rendering. */
+  const grouped = useMemo(() => {
+    const sectionResults: EntityResult[] = results.map((s) => ({
+      kind: "section",
+      id: s.id,
+      label: s.label,
+      description: s.description,
+      sectionId: s.id,
+    }));
+    const byKind: Record<EntityKind, EntityResult[]> = {
+      section: sectionResults,
+      venue: entityResults.filter((r) => r.kind === "venue"),
+      deal: entityResults.filter((r) => r.kind === "deal"),
+      neighborhood: entityResults.filter((r) => r.kind === "neighborhood"),
+    };
+    return (["section", "venue", "deal", "neighborhood"] as EntityKind[])
+      .map((k) => ({ kind: k, items: byKind[k] }))
+      .filter((g) => g.items.length > 0);
+  }, [results, entityResults]);
+
+  const totalCount = grouped.reduce((sum, g) => sum + g.items.length, 0);
+
+  function handlePickResult(r: EntityResult) {
     setSearchOpen(false);
+    if (r.href) {
+      navigate(r.href);
+      return;
+    }
+    if (r.sectionId) {
+      onSelect(r.sectionId);
+    }
   }
 
   async function handleSignOut() {
@@ -216,27 +351,54 @@ export function AdminTopbar({ items, onSelect }: AdminTopbarProps) {
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <ul className="admin-search-results" role="listbox">
-              {results.length === 0 ? (
-                <li className="admin-search-empty">No matches for “{q}”.</li>
+            <div className="admin-search-results" role="listbox" aria-label="Search results">
+              {totalCount === 0 ? (
+                <p className="admin-search-empty">
+                  {entitySearching
+                    ? "Searching…"
+                    : q.trim().length < 2
+                      ? "Type 2+ characters to search deals, venues, neighborhoods."
+                      : `No matches for “${q}”.`}
+                </p>
               ) : (
-                results.map((r) => (
-                  <li key={r.id}>
-                    <button
-                      type="button"
-                      className="admin-search-result"
-                      onClick={() => handlePick(r.id)}
-                      role="option"
-                    >
-                      <span className="admin-search-result-label">{r.label}</span>
-                      {r.description && (
-                        <span className="admin-search-result-desc">{r.description}</span>
-                      )}
-                    </button>
-                  </li>
-                ))
+                grouped.map((group) => {
+                  const meta = KIND_META[group.kind];
+                  const Icon = meta.icon;
+                  return (
+                    <section key={group.kind} className="admin-search-group" role="group" aria-label={meta.label}>
+                      <header className="admin-search-group-label">
+                        <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                        <span>{meta.label}</span>
+                      </header>
+                      <ul className="admin-search-group-list">
+                        {group.items.map((r) => (
+                          <li key={`${r.kind}-${r.id}`}>
+                            <button
+                              type="button"
+                              className="admin-search-result"
+                              onClick={() => handlePickResult(r)}
+                              role="option"
+                              aria-selected="false"
+                            >
+                              <span className="admin-search-result-label">{r.label}</span>
+                              {r.description && (
+                                <span className="admin-search-result-desc">{r.description}</span>
+                              )}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  );
+                })
               )}
-            </ul>
+              {entitySearching && totalCount > 0 && (
+                <div className="admin-search-searching" aria-live="polite">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                  <span>Updating results…</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
