@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   readMapboxTokenCache,
   writeMapboxTokenCache,
-  clearMapboxTokenCache,
 } from "@/lib/mapboxTokenCache";
 
 // Synchronous cache check - called before React render for fastest possible load
