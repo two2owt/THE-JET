@@ -3,6 +3,8 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { loadConsents } from "@/lib/consent";
 
+const ADMIN_BYPASS_EMAIL = "hodgesb02@gmail.com";
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
