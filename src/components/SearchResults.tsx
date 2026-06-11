@@ -188,8 +188,10 @@ export const SearchResults = ({
   const filteredDeals = groups.deals.slice(0, MAX_PER_SECTION).map((r) => r.deal);
   const filteredAreas = groups.areas.slice(0, MAX_PER_SECTION);
   const filteredCategories = groups.categories.slice(0, MAX_PER_SECTION);
+  const filteredJetcards = groups.jetcards.map((r) => r.venue);
 
   const totalCount =
+    filteredJetcards.length +
     filteredVenues.length +
     filteredDeals.length +
     filteredAreas.length +
