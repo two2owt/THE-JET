@@ -72,6 +72,7 @@ const EVENTS_OPTIONS = {
 const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [categoryError, setCategoryError] = useState<string | null>(null);
   
   // Food preferences
   const [foodCuisine, setFoodCuisine] = useState<string[]>([]);
