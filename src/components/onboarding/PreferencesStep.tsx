@@ -151,6 +151,12 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
   };
 
   const handleNext = () => {
+    if (selectedCategories.length === 0) {
+      setCategoryError("Please select at least one category");
+      return;
+    }
+    setCategoryError(null);
+
     const preferences: PreferencesData = {
       categories: selectedCategories,
       food: {
