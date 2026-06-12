@@ -77,15 +77,27 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
 
   const handleGetDirections = async () => {
     await glideHaptic();
+    try {
+      const { analytics } = await import("@/lib/analytics");
+      analytics.dealClicked(venue.id, venue.name, "directions");
+    } catch { /* noop */ }
     onGetDirections();
   };
 
   const handleShare = async () => {
     if (!canAccessSocialFeatures()) {
       setShowUpgradePrompt(true);
+      try {
+        const { analytics } = await import("@/lib/analytics");
+        analytics.track("Upgrade Prompt Shown", { source: "jetcard_share", venue_id: venue.id });
+      } catch { /* noop */ }
       return;
     }
     await glideHaptic();
+    try {
+      const { analytics } = await import("@/lib/analytics");
+      analytics.dealClicked(venue.id, venue.name, "share");
+    } catch { /* noop */ }
     const result = await shareVenue({ id: venue.id, name: venue.name });
     if (result.success) {
       if (result.method === "native") {

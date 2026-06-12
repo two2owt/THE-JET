@@ -53,6 +53,22 @@ export const Header = () => {
 
   const debouncedQuery = useDebounce(searchQuery, 300);
 
+  // Funnel: fire "Search Performed" once per debounced query change.
+  // Skip empty + single-character noise; results count is unknown here, so
+  // we pass 0 and let the SearchResults render count be inferred elsewhere.
+  const lastTrackedQueryRef = useRef<string>("");
+  useEffect(() => {
+    const q = debouncedQuery.trim();
+    if (q.length < 2) return;
+    if (lastTrackedQueryRef.current === q) return;
+    lastTrackedQueryRef.current = q;
+    import("@/lib/analytics")
+      .then(({ analytics }) => {
+        analytics.searchPerformed(q, 0);
+      })
+      .catch(() => {});
+  }, [debouncedQuery]);
+
   useEffect(() => {
     if (!mountedRef.current) {
       mountedRef.current = true;

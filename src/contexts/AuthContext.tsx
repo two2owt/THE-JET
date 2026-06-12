@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, useCallback, ReactNode 
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { loadConsents } from "@/lib/consent";
+import { analytics } from "@/lib/analytics";
 
 const ADMIN_BYPASS_EMAIL = "hodgesb02@gmail.com";
 
@@ -64,6 +65,24 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
         // Refresh runtime consent cache whenever auth identity changes
         loadConsents(currentSession?.user?.id ?? null).catch(() => undefined);
+
+        // Funnel instrumentation — identify on sign-in, reset on sign-out.
+        // Wrapped in try/catch so analytics can never break auth flow.
+        try {
+          if (event === "SIGNED_IN" && currentSession?.user) {
+            analytics.identify(currentSession.user.id);
+            const provider =
+              (currentSession.user.app_metadata as { provider?: string } | null)
+                ?.provider ?? "email";
+            analytics.authEvent("login");
+            analytics.track("Auth Signed In", { provider });
+          } else if (event === "SIGNED_OUT") {
+            analytics.authEvent("logout");
+            analytics.reset();
+          }
+        } catch {
+          // analytics is best-effort
+        }
 
         // Handle specific auth events
         if (event === "TOKEN_REFRESHED") {

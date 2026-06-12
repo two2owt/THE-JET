@@ -58,6 +58,26 @@ const Index = () => {
   const { activeTab, setActiveTab, handleTabChange } = useBottomNavigation({ defaultTab: "map" });
   const [mapUIResetKey, setMapUIResetKey] = useState(0); // Increments when switching to map tab to reset collapsed UI
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
+
+  // Funnel: fire "Deal Viewed" once per JetCard open (transition null→venue).
+  const lastTrackedVenueRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!selectedVenue) {
+      lastTrackedVenueRef.current = null;
+      return;
+    }
+    if (lastTrackedVenueRef.current === selectedVenue.id) return;
+    lastTrackedVenueRef.current = selectedVenue.id;
+    import("@/lib/analytics")
+      .then(({ analytics }) => {
+        analytics.dealViewed(selectedVenue.id, selectedVenue.name, {
+          category: selectedVenue.category,
+          neighborhood: selectedVenue.neighborhood,
+          activity: selectedVenue.activity,
+        });
+      })
+      .catch(() => {});
+  }, [selectedVenue]);
   const [selectedParking, setSelectedParking] = useState<{ lat: number; lng: number; name?: string } | null>(null);
   // Persisted city — initialized synchronously from localStorage so the first
   // paint already shows the user's last city (no flash of Charlotte default).
