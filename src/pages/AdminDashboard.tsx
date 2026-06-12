@@ -7,18 +7,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { AdminTopbar } from "@/components/admin/AdminTopbar";
 import {
-  ChevronsLeft, ChevronsRight, Menu, Tag, BarChart3, MapPinned, Settings2,
+  ChevronsLeft, ChevronsRight, Menu, Tag, BarChart3, MapPinned, Settings2, Filter,
 } from "lucide-react";
 
 // Lazy-loaded admin sections (UserAnalytics pulls in recharts ~200KB)
 const DealManagement = lazy(() => import("@/components/admin/DealManagement").then(m => ({ default: m.DealManagement })));
 const JetBridgeShortcut = lazy(() => import("@/components/admin/JetBridgeShortcut").then(m => ({ default: m.JetBridgeShortcut })));
 const UserAnalytics = lazy(() => import("@/components/admin/UserAnalytics").then(m => ({ default: m.UserAnalytics })));
+const ConversionFunnel = lazy(() => import("@/components/admin/ConversionFunnel").then(m => ({ default: m.ConversionFunnel })));
 const NeighborhoodManagement = lazy(() => import("@/components/admin/NeighborhoodManagement").then(m => ({ default: m.NeighborhoodManagement })));
 const MonetizationToggle = lazy(() => import("@/components/admin/MonetizationToggle").then(m => ({ default: m.MonetizationToggle })));
 const ResendDomainStatus = lazy(() => import("@/components/admin/ResendDomainStatus").then(m => ({ default: m.ResendDomainStatus })));
 
-type SectionId = "deals" | "analytics" | "areas" | "system";
+type SectionId = "deals" | "analytics" | "funnel" | "areas" | "system";
 
 interface SectionDef {
   id: SectionId;
@@ -30,6 +31,7 @@ interface SectionDef {
 const SECTIONS: SectionDef[] = [
   { id: "deals",     label: "Deals",     description: "Manage merchant deals and JET Bridge sync.",   icon: Tag },
   { id: "analytics", label: "Analytics", description: "User signals, retention, and conversion.",     icon: BarChart3 },
+  { id: "funnel",    label: "Funnel",    description: "Search → Deal Viewed → Deal Clicked → Checkout conversion.", icon: Filter },
   { id: "areas",     label: "Areas",     description: "Neighborhood geofences and coverage areas.",   icon: MapPinned },
   { id: "system",    label: "System",    description: "Monetization toggle and infrastructure status.", icon: Settings2 },
 ];
@@ -198,6 +200,11 @@ export default function AdminDashboard() {
               {section === "analytics" && (
                 <Suspense fallback={<AdminTabFallback />}>
                   <UserAnalytics />
+                </Suspense>
+              )}
+              {section === "funnel" && (
+                <Suspense fallback={<AdminTabFallback />}>
+                  <ConversionFunnel />
                 </Suspense>
               )}
               {section === "areas" && (
