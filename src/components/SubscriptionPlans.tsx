@@ -27,9 +27,21 @@ export const SubscriptionPlans = () => {
 
     setCheckoutLoading(tierKey);
     try {
+      const { analytics } = await import("@/lib/analytics");
+      analytics.track("Subscription Checkout Started", {
+        tier: tierKey,
+        price_id: tierInfo.priceId,
+        current_tier: currentTier,
+      });
+    } catch { /* noop */ }
+    try {
       await createCheckout(tierInfo.priceId);
       toast.success("Redirecting to checkout...");
     } catch (error) {
+      try {
+        const { analytics } = await import("@/lib/analytics");
+        analytics.track("Subscription Checkout Failed", { tier: tierKey });
+      } catch { /* noop */ }
       toast.error("Failed to start checkout", {
         description: "Please try again or contact support.",
       });
