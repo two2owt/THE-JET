@@ -258,7 +258,9 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               WebkitBackdropFilter: 'blur(12px)',
               border: 'none',
               borderRadius: '50%',
-              padding: '6px',
+              padding: '0',
+              width: '44px',
+              height: '44px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -266,7 +268,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
             }}
             aria-label="Close"
           >
-            <X style={{ width: '16px', height: '16px', color: 'hsl(var(--foreground))' }} />
+            <X style={{ width: '18px', height: '18px', color: 'hsl(var(--foreground))' }} />
           </button>
         )}
 
