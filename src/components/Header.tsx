@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router";
 import { Search } from "lucide-react";
-import { IconButton } from "./ui/icon-button";
 import { supabase } from "@/integrations/supabase/client";
 import { useSearchHistory } from "@/hooks/useSearchHistory";
 import { useHeaderContext } from "@/contexts/HeaderContext";
@@ -299,20 +298,44 @@ export const Header = () => {
 
         {/* Search icon — mobile collapsed state */}
         {showSearchIcon && (
-          <IconButton
-            variant="ghost"
-            ariaLabel="Open search"
+          <button
+            type="button"
+            aria-label="Open search"
             onClick={() => setSearchExpanded(true)}
-            className="rounded-full transition-colors hover:bg-muted/60"
             style={{
-              flexShrink: 0,
+              flex: '1 1 0%',
+              minWidth: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              height: 'clamp(34px, 5vw, 40px)',
+              padding: '0 16px',
+              borderRadius: '9999px',
+              border: '1.5px solid hsl(var(--border) / 0.5)',
+              background: 'hsl(var(--muted) / 0.35)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              color: 'hsl(var(--muted-foreground))',
+              fontSize: '14px',
+              textAlign: 'left',
+              cursor: 'pointer',
               opacity: mounted ? 1 : 0,
-              transform: mounted ? 'scale(1)' : 'scale(0.8)',
-              transition: 'opacity 0.3s ease-out 0.15s, transform 0.3s ease-out 0.15s',
+              transform: mounted ? 'translateY(0)' : 'translateY(-6px)',
+              transition: 'opacity 0.3s ease-out 0.15s, transform 0.3s ease-out 0.15s, background 0.2s, border-color 0.2s',
             }}
           >
-            <Search style={{ color: 'hsl(var(--muted-foreground))' }} />
-          </IconButton>
+            <Search style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground) / 0.7)', flexShrink: 0 }} />
+            <span
+              style={{
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                color: 'hsl(var(--muted-foreground) / 0.7)',
+              }}
+            >
+              Search venues, deals…
+            </span>
+          </button>
         )}
 
         {/* Search bar — expands to fill remaining space */}
