@@ -794,18 +794,37 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         map.current.scrollZoom.enable();
         map.current.scrollZoom.setWheelZoomRate(1 / 200); // Smoother wheel zoom
 
-        // Add geolocate control with location change handler
-        const geolocateControl = new mapboxgl.GeolocateControl({
-          positionOptions: {
-            enableHighAccuracy: true,
-          },
-          trackUserLocation: true,
-          showUserHeading: true,
-          showUserLocation: false, // Hide default marker, we'll use custom
-        });
-        
+        // Add geolocate control with location change handler.
+        // Guard against environments without the Geolocation API (some
+        // Android WebViews, iframe previews with permissions stripped) — the
+        // Mapbox control logs a noisy warning when navigator.geolocation is
+        // unavailable and the button is non-functional anyway.
+        // navigator.geolocation can exist in iframes that have it disabled by
+        // permissions policy (Lovable preview, sandboxed embeds). In that
+        // case Mapbox still logs a noisy "Geolocation support is not
+        // available" warning from setupUI. Treat any iframe as missing
+        // geolocation so the control is simply skipped in preview while
+        // still rendering in the standalone production app.
+        const isInIframe =
+          typeof window !== "undefined" && window.self !== window.top;
+        const hasGeolocation =
+          !isInIframe &&
+          typeof navigator !== "undefined" &&
+          typeof navigator.geolocation !== "undefined" &&
+          typeof navigator.geolocation.getCurrentPosition === "function";
+        const geolocateControl = hasGeolocation
+          ? new mapboxgl.GeolocateControl({
+              positionOptions: { enableHighAccuracy: true },
+              trackUserLocation: true,
+              showUserHeading: true,
+              showUserLocation: false, // Hide default marker, we'll use custom
+            })
+          : null;
+
         geolocateControlRef.current = geolocateControl;
-        map.current.addControl(geolocateControl, "top-right");
+        if (geolocateControl) {
+          map.current.addControl(geolocateControl, "top-right");
+        }
         
         // Create custom marker element for user location
         const createUserMarker = () => {
@@ -897,8 +916,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           animationFrameId = requestAnimationFrame(animate);
         };
         
-        // Listen for geolocate events to update city and marker
-        geolocateControl.on('geolocate', async (e: any) => {
+        // Listen for geolocate events to update city and marker.
+        // The control may not exist in environments without Geolocation
+        // (handled above), so guard the listener wiring.
+        geolocateControl?.on('geolocate', async (e: any) => {
           const { longitude, latitude } = e.coords;
           
           // Update user location state
@@ -966,7 +987,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         });
         
         // Remove marker when tracking stops
-        geolocateControl.on('trackuserlocationend', () => {
+        geolocateControl?.on('trackuserlocationend', () => {
           if (userMarker.current) {
             userMarker.current.remove();
             userMarker.current = null;
