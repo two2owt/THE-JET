@@ -65,9 +65,9 @@ const subtitleStyle: React.CSSProperties = {
 // Consistent, fluid avatar sizing — keeps the JET mark legible from 320px to desktop
 // while preserving the 44x44 minimum touch target on mobile.
 const avatarClass =
-  "size-11 sm:size-12 lg:size-[52px] shrink-0 ring-1 ring-border/60";
+  "h-11 w-11 sm:h-12 sm:w-12 lg:h-[52px] lg:w-[52px] aspect-square shrink-0 ring-1 ring-border/60";
 const avatarHeaderClass =
-  "size-10 sm:size-11 shrink-0 ring-1 ring-border/60";
+  "h-10 w-10 sm:h-11 sm:w-11 aspect-square shrink-0 ring-1 ring-border/60";
 const avatarImageClass = "object-cover";
 const avatarFallbackClass =
   "bg-gradient-to-br from-primary/20 to-accent/20 text-primary font-medium";

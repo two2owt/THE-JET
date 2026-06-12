@@ -164,9 +164,18 @@ const Index = () => {
         ...match,
         imageUrl: getVenueImage(match.name) || match.imageUrl,
       });
+    } else {
+      // Unknown venue id/name in the URL — surface a toast and strip the
+      // stale param so a reload doesn't keep retrying the miss.
+      toast.error("Venue not found", {
+        description: "That venue link is no longer available.",
+      });
+      const next = new URLSearchParams(searchParams);
+      next.delete("venue");
+      setSearchParams(next, { replace: true });
     }
     venueRestoredRef.current = true;
-  }, [venues, searchParams, getVenueImage]);
+  }, [venues, searchParams, setSearchParams, getVenueImage]);
 
   useEffect(() => {
     // Don't write the URL until the initial restoration pass has run, or we
