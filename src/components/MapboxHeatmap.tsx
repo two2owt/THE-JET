@@ -799,7 +799,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         // Android WebViews, iframe previews with permissions stripped) — the
         // Mapbox control logs a noisy warning when navigator.geolocation is
         // unavailable and the button is non-functional anyway.
+        // navigator.geolocation can exist in iframes that have it disabled by
+        // permissions policy (Lovable preview, sandboxed embeds). In that
+        // case Mapbox still logs a noisy "Geolocation support is not
+        // available" warning from setupUI. Treat any iframe as missing
+        // geolocation so the control is simply skipped in preview while
+        // still rendering in the standalone production app.
+        const isInIframe =
+          typeof window !== "undefined" && window.self !== window.top;
         const hasGeolocation =
+          !isInIframe &&
           typeof navigator !== "undefined" &&
           typeof navigator.geolocation !== "undefined" &&
           typeof navigator.geolocation.getCurrentPosition === "function";
