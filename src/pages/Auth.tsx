@@ -256,8 +256,12 @@ const Auth = () => {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
+      // Route OAuth callback through /auth so the authUser effect above
+      // can route new Google users to /onboarding and returning users to
+      // their remembered deep link via consumePostAuthRedirect.
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: `${window.location.origin}/auth`,
+        extraParams: { prompt: "select_account" },
       });
       if (result.error) {
         throw result.error;
@@ -268,9 +272,10 @@ const Auth = () => {
       toast.success("Signed in with Google");
       // Post-OAuth routing is handled by the authUser effect above, which
       // checks onboarding_completed and the remembered redirect.
-    } catch {
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Please try again or use email sign-in.";
       toast.error("Google sign-in failed", {
-        description: "Please try again or use email sign-in.",
+        description: message,
       });
     } finally {
       setIsLoading(false);
