@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-const SESSION_BROADCAST_KEY = "jet-session-update";
+export const SESSION_BROADCAST_KEY = "jet-session-update";
 
 const isAuthStorageKey = (key: string | null): key is string => {
   if (!key) return false;
