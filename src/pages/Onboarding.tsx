@@ -38,6 +38,10 @@ const Onboarding = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [direction, setDirection] = useState<"forward" | "backward">("forward");
+  // Gate the first paint until we've checked the session + resumed any
+  // in-progress onboarding state. Prevents the Step 1 form from flashing
+  // for users who are already onboarded (they will be redirected away).
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   
   // Step 1: Profile
   const [displayName, setDisplayName] = useState("");
@@ -61,39 +65,43 @@ const Onboarding = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate("/auth");
-        return;
-      }
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          navigate("/auth", { replace: true });
+          return;
+        }
 
-      setUserId(session.user.id);
-      
-      // Check if already completed onboarding, and resume in-progress data
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("onboarding_completed, display_name, bio, avatar_url, birthdate, gender, pronouns, preferences")
-        .eq("id", session.user.id)
-        .single();
+        setUserId(session.user.id);
 
-      if (profile?.onboarding_completed) {
-        navigate(consumePostAuthRedirect("/"), { replace: true });
-        return;
-      }
+        // Check if already completed onboarding, and resume in-progress data
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("onboarding_completed, display_name, bio, avatar_url, birthdate, gender, pronouns, preferences")
+          .eq("id", session.user.id)
+          .single();
 
-      // Resume where the user left off
-      if (profile) {
-        if (profile.display_name) setDisplayName(profile.display_name);
-        if (profile.bio) setBio(profile.bio);
-        if (profile.avatar_url) setAvatarPreview(profile.avatar_url);
-        if (profile.birthdate) setBirthdate(profile.birthdate);
-        if (profile.gender) setGender(profile.gender);
-        if (profile.pronouns) setPronouns(profile.pronouns);
+        if (profile?.onboarding_completed) {
+          navigate(consumePostAuthRedirect("/"), { replace: true });
+          return;
+        }
 
-        const hasStep1 = !!(profile.display_name && profile.birthdate && profile.gender);
-        const hasStep2 = !!profile.preferences;
-        if (hasStep2) setStep(3);
-        else if (hasStep1) setStep(2);
+        // Resume where the user left off
+        if (profile) {
+          if (profile.display_name) setDisplayName(profile.display_name);
+          if (profile.bio) setBio(profile.bio);
+          if (profile.avatar_url) setAvatarPreview(profile.avatar_url);
+          if (profile.birthdate) setBirthdate(profile.birthdate);
+          if (profile.gender) setGender(profile.gender);
+          if (profile.pronouns) setPronouns(profile.pronouns);
+
+          const hasStep1 = !!(profile.display_name && profile.birthdate && profile.gender);
+          const hasStep2 = !!profile.preferences;
+          if (hasStep2) setStep(3);
+          else if (hasStep1) setStep(2);
+        }
+      } finally {
+        setIsCheckingAuth(false);
       }
     };
     
@@ -308,6 +316,22 @@ const Onboarding = () => {
       handleStep1Next();
     }
   };
+
+  // Hold the first paint while we determine session + onboarding state.
+  // Prevents Step 1 from flashing for users who will be redirected away.
+  if (isCheckingAuth) {
+    return (
+      <div
+        className="relative flex flex-1 min-h-0 w-full items-center justify-center bg-background"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden="true" />
+        <span className="sr-only">Loading onboarding…</span>
+      </div>
+    );
+  }
 
   return (
     <div

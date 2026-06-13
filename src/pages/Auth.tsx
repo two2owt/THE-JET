@@ -63,7 +63,10 @@ const Auth = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const [shake, setShake] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const { user: authUser } = useAuth();
+  const { user: authUser, isLoading: authLoading } = useAuth();
+  // True while we're holding the form back because an already-authenticated
+  // user is about to be redirected (prevents the form flashing for a frame).
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const mode: AuthMode = isResettingPassword
     ? "reset"
@@ -78,6 +81,7 @@ const Auth = () => {
   useEffect(() => {
     if (!authUser || (mode !== "signin" && mode !== "signup")) return;
     let cancelled = false;
+    setIsRedirecting(true);
     (async () => {
       const { data: profile } = await supabase
         .from("profiles")
@@ -580,6 +584,29 @@ const Auth = () => {
     setDataProcessingConsent(false);
     setLocationConsent(false);
   };
+
+  // While the auth context is still hydrating, or while we're about to
+  // redirect an already-signed-in user away from /auth, render a centered
+  // loader instead of the form. This eliminates the brief flash where the
+  // sign-in form mounts and then immediately unmounts on redirect.
+  if (authLoading || (isRedirecting && (mode === "signin" || mode === "signup"))) {
+    return (
+      <div
+        className="relative flex flex-1 min-h-0 w-full items-center justify-center bg-background"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        <SEO
+          title="Sign in to JET — Discover Charlotte's Live City Pulse"
+          description="Sign in or create your JET account to unlock real-time deals, events, and trending venues across Charlotte, NC."
+          path="/auth"
+        />
+        <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden="true" />
+        <span className="sr-only">Loading sign-in…</span>
+      </div>
+    );
+  }
 
   return (
     <div className="relative flex flex-1 min-h-0 w-full overflow-y-auto bg-background flex-col md:grid md:grid-cols-[2fr_3fr] lg:grid-cols-[1fr_1fr]">
