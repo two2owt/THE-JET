@@ -336,12 +336,6 @@ export default function Profile() {
             HEADER — Cover image + overlapping avatar + identity
             ===================================================== */}
         <header className="profile-header">
-          {/* Cover banner */}
-          <div className="profile-cover" aria-hidden="true">
-            <div className="profile-cover-gradient" />
-            <div className="profile-cover-accent" />
-          </div>
-
           {/* Identity block overlapping cover */}
           <div className="profile-identity">
             <div className="profile-avatar-wrap">
