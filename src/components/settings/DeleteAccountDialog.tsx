@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { signOutCurrentUser } from "@/lib/authSession";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +22,6 @@ interface DeleteAccountDialogProps {
 }
 
 export const DeleteAccountDialog = ({ userId }: DeleteAccountDialogProps) => {
-  const navigate = useNavigate();
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -105,11 +104,8 @@ export const DeleteAccountDialog = ({ userId }: DeleteAccountDialogProps) => {
         .delete()
         .eq('id', userId);
 
-      // Sign out the user
-      await supabase.auth.signOut();
-
       toast.success("Your account has been deleted");
-      navigate("/auth");
+      signOutCurrentUser("/auth");
     } catch (error) {
       console.error('Error deleting account:', error);
       toast.error("Failed to delete account. Please try again.");
