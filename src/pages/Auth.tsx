@@ -620,9 +620,9 @@ const Auth = () => {
         description="Sign in or create your JET account to unlock real-time deals, events, and trending venues across Charlotte, NC."
         path="/auth"
       />
-      {/* LEFT / TOP — Brand panel */}
+      {/* LEFT / TOP — Brand panel (compact on mobile, full on md+) */}
       <aside
-        className="relative overflow-hidden bg-cover bg-center bg-no-repeat h-[260px] md:h-auto md:min-h-full"
+        className="relative overflow-hidden bg-cover bg-center bg-no-repeat h-[140px] md:h-auto md:min-h-full"
         style={{ backgroundImage: `url(${authBackground})` }}
         aria-label="JET brand"
       >
@@ -633,7 +633,7 @@ const Auth = () => {
           aria-hidden="true"
         />
 
-        <div className="relative z-10 flex h-full w-full flex-col justify-between p-8 md:p-10 lg:p-14">
+        <div className="relative z-10 flex h-full w-full flex-col justify-between p-6 md:p-10 lg:p-14">
           <div className="flex items-center gap-3">
             <img
               src={jetLogo}
@@ -666,53 +666,26 @@ const Auth = () => {
             © {new Date().getFullYear()} JET Around
           </div>
         </div>
-
-        {/* Mobile-only brand headline overlay */}
-        <div className="md:hidden absolute inset-x-0 bottom-0 z-10 flex flex-col gap-2 px-6 pb-7">
-          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-white/85 backdrop-blur-sm">
-            <span className="dot-gold" />
-            Charlotte, NC
-          </span>
-          <h2 className="font-display text-[26px] font-bold leading-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
-            Discover what's hot.{" "}
-            <span className="bg-gradient-to-r from-primary-glow to-gold bg-clip-text text-transparent">
-              Right now.
-            </span>
-          </h2>
-        </div>
       </aside>
 
       {/* RIGHT / BOTTOM — Form panel */}
-      <div className="relative flex flex-1 flex-col items-center justify-center px-6 sm:px-12 lg:px-[48px] pt-[max(env(safe-area-inset-top,0px),32px)] pb-[max(env(safe-area-inset-bottom,0px),32px)]">
+      <div className="relative flex flex-1 flex-col items-center justify-center px-6 sm:px-12 lg:px-[48px] pt-[max(env(safe-area-inset-top,0px),24px)] pb-[max(env(safe-area-inset-bottom,0px),24px)]">
         <div className="w-full max-w-[380px] flex flex-col items-center animate-fade-in">
-        {/* Logo above card — 48px */}
-        <div className="relative mb-2">
-          <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,hsl(var(--primary)/0.35)_0%,transparent_70%)] blur-md" />
-          <img
-            src={jetLogo}
-            alt="JET — Live City Pulse logo"
-            className="auth-card-logo relative"
-            width="48"
-            height="48"
-            fetchPriority="high"
-            decoding="async"
-          />
-        </div>
-
         {/* Centered Card */}
         <div className={`auth-card ${shake ? "auth-shake" : ""}`}>
           <div key={mode} className="auth-crossfade">
-          {/* Eyebrow + title */}
-          <div className="flex flex-col items-center gap-2 text-center mb-5">
-            <div className="flex items-center gap-2">
-              <span className="dot-gold" />
-              <span className="heading-luxe-eyebrow">{eyebrow}</span>
-              <span className="dot-gold" />
-            </div>
+          {/* Title */}
+          <div className="flex flex-col items-center gap-1.5 text-center mb-5">
             <h1 className="heading-luxe-gradient text-[26px] sm:text-[28px] leading-tight m-0">
-              {mode === "signup" ? "Join JET" : mode === "forgot" ? "Reset Password" : mode === "reset" ? "New Password" : "Welcome Back"}
+              {mode === "signup"
+                ? "Create your account"
+                : mode === "forgot"
+                ? "Reset password"
+                : mode === "reset"
+                ? "New password"
+                : "Welcome back"}
             </h1>
-            <p className="text-fluid-sm text-muted-foreground max-w-[320px] mt-1">
+            <p className="text-fluid-sm text-muted-foreground max-w-[320px]">
               {subtitle}
             </p>
           </div>
@@ -1071,20 +1044,6 @@ const Auth = () => {
             </button>
           )}
 
-          {/* "Don't have an account?" footer toggle */}
-          {(mode === "signin" || mode === "signup") && (
-            <p className="mt-6 text-center text-xs text-muted-foreground">
-              {mode === "signin" ? "Don't have an account?" : "Already have an account?"}{" "}
-              <button
-                type="button"
-                onClick={() => switchToMode(mode === "signin" ? "signup" : "signin")}
-                disabled={isLoading}
-                className="font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
-              >
-                {mode === "signin" ? "Sign up" : "Sign in"}
-              </button>
-            </p>
-          )}
         </div>
         </div>
 
