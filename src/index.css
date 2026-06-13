@@ -1612,37 +1612,10 @@ All colors MUST be HSL.
   }
 
   /* Profile hero — soft halo behind the avatar */
-  .profile-avatar-halo {
-    background: radial-gradient(
-      circle,
-      hsl(var(--primary) / 0.35) 0%,
-      transparent 70%
-    );
-  }
-
   /* Profile hero — premium shadow lift for the avatar */
   .profile-avatar-shadow {
     box-shadow: 0 8px 30px hsl(var(--primary) / 0.35);
   }
-
-  /* Profile hero — center-stacked content layout */
-  .profile-hero-stack {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    width: 100%;
-    position: relative;
-  }
-
-  /* Profile hero — Edit pill floats top-right of the section */
-  .profile-edit-pill {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    z-index: 10;
-  }
-
 
   /* Smooth, momentum-friendly scrolling for the Profile page.
      Apply on the PageShell wrapper. Container scroll lives on PageLayout's
@@ -1674,6 +1647,72 @@ All colors MUST be HSL.
     }
   }
 
+  /* Modern stat pills — horizontal pill row replacing boxy stat grid */
+  .profile-stat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 8px 16px 8px 12px;
+    border-radius: 9999px;
+    border: 1px solid hsl(0 0% 100% / 0.06);
+    background:
+      linear-gradient(135deg, hsl(var(--card) / 0.7), hsl(var(--card) / 0.4));
+    backdrop-filter: blur(14px);
+    color: hsl(var(--foreground));
+    transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .profile-stat-pill:hover {
+    transform: translateY(-1px);
+    border-color: hsl(var(--primary) / 0.45);
+    background:
+      linear-gradient(135deg, hsl(var(--primary) / 0.10), hsl(var(--card) / 0.5));
+    box-shadow: 0 8px 22px -10px hsl(var(--primary) / 0.5);
+  }
+  .profile-stat-pill:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.55);
+  }
+  .profile-stat-pill-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.22), hsl(var(--primary-glow) / 0.12));
+    color: hsl(var(--primary));
+    flex-shrink: 0;
+  }
+  .profile-stat-pill-value {
+    font-family: var(--font-display, inherit);
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 1;
+    color: hsl(var(--foreground));
+  }
+  .profile-stat-pill-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+    letter-spacing: 0.01em;
+  }
+  .profile-stat-pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    justify-content: center;
+  }
+  @media (min-width: 640px) {
+    .profile-stat-pill-row { gap: 10px; }
+  }
+  @media (min-width: 768px) {
+    .profile-stat-pill-row { justify-content: flex-start; }
+  }
+
   /* ====================================================================
      Profile header — cover image + overlapping avatar + identity block.
      Mobile-first: 180px cover, 88px avatar centered.
@@ -1684,39 +1723,6 @@ All colors MUST be HSL.
     width: 100%;
     display: flex;
     flex-direction: column;
-  }
-  .profile-cover {
-    position: relative;
-    width: 100%;
-    height: 180px;
-    overflow: hidden;
-    background:
-      linear-gradient(135deg,
-        hsl(var(--primary) / 0.25) 0%,
-        hsl(var(--accent) / 0.18) 50%,
-        hsl(var(--gold) / 0.12) 100%);
-    border-bottom: 1px solid hsl(0 0% 100% / 0.05);
-  }
-  @media (min-width: 640px) {
-    .profile-cover { height: 240px; }
-  }
-  @media (min-width: 1024px) {
-    .profile-cover { height: 280px; }
-  }
-  .profile-cover-gradient {
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(ellipse at 30% 20%, hsl(var(--primary) / 0.35) 0%, transparent 55%),
-      radial-gradient(ellipse at 80% 70%, hsl(var(--accent) / 0.30) 0%, transparent 55%);
-    pointer-events: none;
-  }
-  .profile-cover-accent {
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(180deg, transparent 0%, hsl(var(--background) / 0.55) 100%);
-    pointer-events: none;
   }
   .profile-identity {
     position: relative;
