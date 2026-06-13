@@ -456,8 +456,6 @@ const Index = () => {
         description="Discover trending venues, live events, and exclusive happy-hour deals across Charlotte on a real-time heatmap. Your guide to what's hot right now."
         path="/"
       />
-      {/* Visually-hidden primary heading for SEO/screen readers on the map view */}
-      <h1 className="sr-only">Find Live Deals and Events Near You in Charlotte</h1>
       {/* FULL-SCREEN MAP LAYER - only on map tab */}
       {activeTab === "map" && (
         <>
