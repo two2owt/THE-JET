@@ -652,7 +652,7 @@ const Auth = () => {
           <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,hsl(var(--primary)/0.35)_0%,transparent_70%)] blur-md" />
           <img
             src={jetLogo}
-            alt="JET"
+            alt="JET — Live City Pulse logo"
             className="auth-card-logo relative"
             width="48"
             height="48"
