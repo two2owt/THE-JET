@@ -3,14 +3,12 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { loadConsents } from "@/lib/consent";
 import { analytics } from "@/lib/analytics";
-
-const ADMIN_BYPASS_EMAIL = "hodgesb02@gmail.com";
+import { SESSION_BROADCAST_KEY } from "@/lib/authSession";
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
-  isAdminBypass: boolean;
   refreshSession: () => Promise<void>;
 }
 
@@ -18,7 +16,6 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   isLoading: true,
-  isAdminBypass: false,
   refreshSession: async () => {},
 });
 
@@ -97,7 +94,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         // Broadcast session change to other tabs/windows
         if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "SIGNED_OUT") {
           try {
-            localStorage.setItem("jet-session-update", Date.now().toString());
+            localStorage.setItem(SESSION_BROADCAST_KEY, Date.now().toString());
           } catch (e) {
             // localStorage may not be available
           }
@@ -115,7 +112,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     // Listen for session changes from other tabs/windows
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "jet-session-update") {
+      if (e.key === SESSION_BROADCAST_KEY) {
         refreshSession();
       }
     };
@@ -142,10 +139,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
   }, [refreshSession]);
 
-  const isAdminBypass = user?.email === ADMIN_BYPASS_EMAIL;
-
   return (
-    <AuthContext.Provider value={{ user, session, isLoading, isAdminBypass, refreshSession }}>
+    <AuthContext.Provider value={{ user, session, isLoading, refreshSession }}>
       {children}
     </AuthContext.Provider>
   );
