@@ -287,12 +287,27 @@ export default function Profile() {
       if (error) {
         console.warn('Local sign out returned an error:', error.message);
       }
+    } catch (error) {
+      console.error('Sign out failed:', error);
+    } finally {
+      // Belt-and-suspenders: nuke any persisted Supabase auth keys so a
+      // stale token can never resurrect the session on the next page load.
+      try {
+        const keysToRemove: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (key.startsWith('sb-') || key.includes('supabase.auth'))) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach((k) => localStorage.removeItem(k));
+        sessionStorage.clear();
+      } catch {
+        // storage may be unavailable (private mode); safe to ignore
+      }
       toast.success('Signed out');
       // Hard redirect to ensure all auth-dependent state is reset
       window.location.replace('/auth');
-    } catch (error) {
-      console.error('Sign out failed:', error);
-      toast.error('Failed to sign out');
     }
   };
   if (isAuthLoading || (user && isProfileLoading)) {
