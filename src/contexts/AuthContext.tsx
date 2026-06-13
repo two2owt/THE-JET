@@ -95,7 +95,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "SIGNED_OUT") {
           try {
             localStorage.setItem(SESSION_BROADCAST_KEY, Date.now().toString());
-          } catch (e) {
+          } catch {
             // localStorage may not be available
           }
         }
