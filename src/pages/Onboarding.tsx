@@ -39,7 +39,7 @@ const PRONOUN_OPTIONS = [
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const { user, session, isLoading: authLoading } = useAuth();
+  const { session, isLoading: authLoading } = useAuth();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
