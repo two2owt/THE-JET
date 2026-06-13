@@ -296,8 +296,6 @@ const Index = () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session) {
-        if (session.user.email === "hodgesb02@gmail.com") return;
-
         const { data: profile } = await supabase
           .from("profiles")
           .select("onboarding_completed")

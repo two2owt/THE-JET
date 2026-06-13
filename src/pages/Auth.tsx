@@ -11,6 +11,7 @@ import { z } from "zod";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/contexts/AuthContext";
 import { consumePostAuthRedirect } from "@/lib/postAuthRedirect";
+import { discardCurrentAuthSession } from "@/lib/authSession";
 // Use the new JET logo for auth page
 import jetLogo from "@/assets/jet-auth-logo.png";
 import authBackground from "@/assets/auth-background.webp";
@@ -75,10 +76,6 @@ const Auth = () => {
   // and revisits to /auth by an authenticated user).
   useEffect(() => {
     if (!authUser || (mode !== "signin" && mode !== "signup")) return;
-    if (authUser.email === "hodgesb02@gmail.com") {
-      navigate(consumePostAuthRedirect("/"), { replace: true });
-      return;
-    }
     let cancelled = false;
     (async () => {
       const { data: profile } = await supabase
@@ -459,7 +456,7 @@ const Auth = () => {
     }
 
     if (!data.user.email_confirmed_at) {
-      await supabase.auth.signOut();
+      discardCurrentAuthSession();
       toast.error("Email not verified", {
         description: "Please check your email and click the verification link before signing in.",
       });
@@ -474,10 +471,6 @@ const Auth = () => {
       .single();
 
     toast.success("Signed in successfully");
-    if (data.user.email === "hodgesb02@gmail.com") {
-      navigate(consumePostAuthRedirect("/"), { replace: true });
-      return;
-    }
     navigate(
       profile?.onboarding_completed ? consumePostAuthRedirect("/") : "/onboarding",
       { replace: true },

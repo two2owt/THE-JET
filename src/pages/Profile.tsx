@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
 import { Navigate, useNavigate } from "react-router";
-import { supabase } from "@/integrations/supabase/client";
 import { PageLayout } from "@/components/PageLayout";
 import { ProfilePageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { Button } from "@/components/ui/button";
@@ -26,6 +25,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { AvatarCropDialog } from "@/components/AvatarCropDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { ProfileSettingsPanel } from "@/components/settings/ProfileSettingsPanel";
+import { signOutCurrentUser } from "@/lib/authSession";
 
 const profileSchema = z.object({
   display_name: z.string().trim().min(1, "Display name is required").max(100, "Display name must be less than 100 characters"),
@@ -279,36 +279,9 @@ export default function Profile() {
       }
     }
   };
-  const handleSignOut = async () => {
-    // Wipe persisted auth state FIRST so a hung signOut() request can't
-    // strand the user on a half-authed profile page.
-    try {
-      const keysToRemove: string[] = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && (key.startsWith('sb-') || key.includes('supabase.auth'))) {
-          keysToRemove.push(key);
-        }
-      }
-      keysToRemove.forEach((k) => localStorage.removeItem(k));
-      sessionStorage.clear();
-    } catch {
-      // storage may be unavailable (private mode); safe to ignore
-    }
-
-    // Fire-and-forget the server signOut so a slow/failed network call
-    // never blocks the redirect. We've already cleared local tokens above.
-    try {
-      void supabase.auth.signOut({ scope: 'local' }).catch((err) => {
-        console.warn('Background sign out error:', err?.message ?? err);
-      });
-    } catch (err) {
-      console.warn('signOut threw synchronously:', err);
-    }
-
+  const handleSignOut = () => {
     toast.success('Signed out');
-    // Hard redirect to ensure all auth-dependent state is reset.
-    window.location.replace('/auth');
+    signOutCurrentUser('/auth');
   };
   if (isAuthLoading || (user && isProfileLoading)) {
     return (
@@ -333,7 +306,7 @@ export default function Profile() {
       />
       <PageShell padding="0px" gap="0px" className="profile-scroll">
         {/* =====================================================
-            HEADER — Cover image + overlapping avatar + identity
+            HEADER — Avatar + identity
             ===================================================== */}
         <header className="profile-header">
           {/* Identity block overlapping cover */}

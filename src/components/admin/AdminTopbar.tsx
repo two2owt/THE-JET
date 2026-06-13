@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useNotifications } from "@/hooks/useNotifications";
 import { supabase } from "@/integrations/supabase/client";
+import { signOutCurrentUser } from "@/lib/authSession";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -234,12 +235,8 @@ export function AdminTopbar({ items, onSelect }: AdminTopbarProps) {
     }
   }
 
-  async function handleSignOut() {
-    try {
-      await supabase.auth.signOut();
-    } finally {
-      navigate("/auth", { replace: true });
-    }
+  function handleSignOut() {
+    signOutCurrentUser("/auth");
   }
 
   return (
