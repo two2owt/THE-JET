@@ -317,6 +317,22 @@ const Onboarding = () => {
     }
   };
 
+  // Hold the first paint while we determine session + onboarding state.
+  // Prevents Step 1 from flashing for users who will be redirected away.
+  if (isCheckingAuth) {
+    return (
+      <div
+        className="relative flex flex-1 min-h-0 w-full items-center justify-center bg-background"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden="true" />
+        <span className="sr-only">Loading onboarding…</span>
+      </div>
+    );
+  }
+
   return (
     <div
       className="relative flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto bg-background bg-cover bg-center bg-no-repeat px-fluid-sm sm:px-fluid-md pt-[max(env(safe-area-inset-top,0px),var(--space-lg))] pb-[max(env(safe-area-inset-bottom,0px),var(--space-lg))]"
