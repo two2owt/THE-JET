@@ -2,12 +2,18 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
 import { Footer } from "@/components/Footer";
+import { SEO } from "@/components/SEO";
 
 const PrivacyPolicy = () => {
   const navigate = useNavigate();
 
   return (
     <div className="bg-background flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+      <SEO
+        title="Privacy Policy — JET"
+        description="How JET collects, uses, and safeguards your personal information across our mobile app and website."
+        path="/privacy-policy"
+      />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 pb-16">
         <Button
           onClick={() => navigate(-1)}
