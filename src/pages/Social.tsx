@@ -13,6 +13,7 @@ import { UpgradePrompt, useFeatureAccess } from "@/components/UpgradePrompt";
 import { ChatDialog } from "@/components/ChatDialog";
 import { useUnreadCounts } from "@/hooks/useMessages";
 import { Badge } from "@/components/ui/badge";
+import { SEO } from "@/components/SEO";
 import { PageShell } from "@/components/PageShell";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { SocialPageSkeleton } from "@/components/skeletons/PageSkeletons";
@@ -341,6 +342,11 @@ export default function Social() {
 
   return (
     <PageLayout defaultTab="social" headerConfig={headerConfig}>
+      <SEO
+        title="Your Crew — JET"
+        description="Connect with friends, manage requests, and discover new people exploring Charlotte's hottest spots on JET."
+        path="/social"
+      />
       <PageShell>
         <TabPageHeader
           title="Your Crew"
