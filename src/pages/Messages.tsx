@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { SEO } from "@/components/SEO";
 import {
   MessageCircle,
   ArrowLeft,
@@ -163,6 +164,11 @@ export default function Messages() {
 
   return (
     <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
+      <SEO
+        title="Messages — JET"
+        description="Chat with your JET crew about Charlotte's hottest deals, events, and venues."
+        path="/messages"
+      />
       <div className="max-w-2xl mx-auto w-full h-full flex flex-col overflow-hidden">
         {activeFriendId ? (
           <ChatView

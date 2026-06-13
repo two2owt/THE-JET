@@ -25,6 +25,7 @@ import { useBottomNavigation } from "@/hooks/useBottomNavigation";
 import { NotificationsTabSkeleton, ExploreTabSkeleton } from "@/components/skeletons/PageSkeletons";
 import { TabPageHeader } from "@/components/TabPageHeader";
 import { PageShell } from "@/components/PageShell";
+import { SEO } from "@/components/SEO";
 
 // Lazy load heavy components - deferred until needed
 const MapboxHeatmap = lazy(() => import("@/components/MapboxHeatmap").then(m => ({ default: m.MapboxHeatmap })));
@@ -429,6 +430,13 @@ const Index = () => {
         position: 'relative',
       }}
     >
+      <SEO
+        title="JET — Find Live Deals & Events Near You in Charlotte"
+        description="Discover trending venues, live events, and exclusive happy-hour deals across Charlotte on a real-time heatmap. Your guide to what's hot right now."
+        path="/"
+      />
+      {/* Visually-hidden primary heading for SEO/screen readers on the map view */}
+      <h1 className="sr-only">Find Live Deals and Events Near You in Charlotte</h1>
       {/* FULL-SCREEN MAP LAYER - only on map tab */}
       {activeTab === "map" && (
         <>

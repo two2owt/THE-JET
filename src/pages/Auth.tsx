@@ -12,6 +12,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/contexts/AuthContext";
 import { consumePostAuthRedirect } from "@/lib/postAuthRedirect";
 import { discardCurrentAuthSession } from "@/lib/authSession";
+import { SEO } from "@/components/SEO";
 // Use the new JET logo for auth page
 import jetLogo from "@/assets/jet-auth-logo.png";
 import authBackground from "@/assets/auth-background.webp";
@@ -582,6 +583,11 @@ const Auth = () => {
 
   return (
     <div className="relative flex flex-1 min-h-0 w-full overflow-y-auto bg-background flex-col md:grid md:grid-cols-[2fr_3fr] lg:grid-cols-[1fr_1fr]">
+      <SEO
+        title="Sign in to JET — Discover Charlotte's Live City Pulse"
+        description="Sign in or create your JET account to unlock real-time deals, events, and trending venues across Charlotte, NC."
+        path="/auth"
+      />
       {/* LEFT / TOP — Brand panel */}
       <aside
         className="relative overflow-hidden bg-cover bg-center bg-no-repeat h-[260px] md:h-auto md:min-h-full"
@@ -599,7 +605,7 @@ const Auth = () => {
           <div className="flex items-center gap-3">
             <img
               src={jetLogo}
-              alt="JET"
+              alt="JET — Live City Pulse logo"
               width="40"
               height="40"
               className="h-10 w-10 drop-shadow-[0_2px_12px_hsl(var(--primary)/0.5)]"
@@ -652,7 +658,7 @@ const Auth = () => {
           <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,hsl(var(--primary)/0.35)_0%,transparent_70%)] blur-md" />
           <img
             src={jetLogo}
-            alt="JET"
+            alt="JET — Live City Pulse logo"
             className="auth-card-logo relative"
             width="48"
             height="48"

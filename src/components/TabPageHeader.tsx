@@ -10,9 +10,9 @@ interface TabPageHeaderProps {
 export function TabPageHeader({ title, subtitle }: TabPageHeaderProps) {
   return (
     <div>
-      <h2 className="heading-luxe-gradient" style={{ marginBottom: '6px' }}>
+      <h1 className="heading-luxe-gradient" style={{ marginBottom: '6px' }}>
         {title}
-      </h2>
+      </h1>
       {subtitle && (
         <p style={{ fontSize: '14px', color: 'hsl(var(--muted-foreground))' }}>
           {subtitle}

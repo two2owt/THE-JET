@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import { ThemeProvider } from "next-themes";
 import { BrowserRouter } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
 
 // Plus Jakarta Sans variable font - single import covers all weights
@@ -47,9 +48,11 @@ root.render(
     disableTransitionOnChange
   >
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <HelmetProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </HelmetProvider>
     </QueryClientProvider>
   </ThemeProvider>
 );

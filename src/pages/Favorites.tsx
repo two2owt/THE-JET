@@ -12,6 +12,7 @@ import { PageShell } from "@/components/PageShell";
 import { useAuth } from "@/contexts/AuthContext";
 import { TabPageHeader } from "@/components/TabPageHeader";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
+import { SEO } from "@/components/SEO";
 
 interface Deal {
   id: string;
@@ -95,6 +96,11 @@ export default function Favorites() {
 
   return (
     <PageLayout defaultTab="favorites" headerConfig={headerConfig}>
+      <SEO
+        title="Saved Deals — JET"
+        description="Your saved venues and deals across Charlotte, ready when you are."
+        path="/favorites"
+      />
       <PageShell>
         <TabPageHeader
           title="Your Favorites"
