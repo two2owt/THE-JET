@@ -599,7 +599,7 @@ const Auth = () => {
           <div className="flex items-center gap-3">
             <img
               src={jetLogo}
-              alt="JET"
+              alt="JET — Live City Pulse logo"
               width="40"
               height="40"
               className="h-10 w-10 drop-shadow-[0_2px_12px_hsl(var(--primary)/0.5)]"
