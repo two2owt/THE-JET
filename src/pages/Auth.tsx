@@ -63,7 +63,10 @@ const Auth = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const [shake, setShake] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const { user: authUser } = useAuth();
+  const { user: authUser, isLoading: authLoading } = useAuth();
+  // True while we're holding the form back because an already-authenticated
+  // user is about to be redirected (prevents the form flashing for a frame).
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const mode: AuthMode = isResettingPassword
     ? "reset"
@@ -78,6 +81,7 @@ const Auth = () => {
   useEffect(() => {
     if (!authUser || (mode !== "signin" && mode !== "signup")) return;
     let cancelled = false;
+    setIsRedirecting(true);
     (async () => {
       const { data: profile } = await supabase
         .from("profiles")
