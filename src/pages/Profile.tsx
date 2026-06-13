@@ -19,6 +19,8 @@ import {
   ChevronRight,
   Link2,
   Activity as ActivityIcon,
+  User as UserIcon,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/EmptyState";
@@ -354,9 +356,18 @@ export default function Profile() {
         <section aria-label="Profile content" className="profile-section">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="profile-tabs-list">
-              <TabsTrigger value="about" className="profile-tab-trigger">About</TabsTrigger>
-              <TabsTrigger value="activity" className="profile-tab-trigger">Activity</TabsTrigger>
-              <TabsTrigger value="account" className="profile-tab-trigger">Account</TabsTrigger>
+              <TabsTrigger value="about" className="profile-tab-trigger">
+                <UserIcon className="profile-tab-icon" aria-hidden="true" />
+                <span>About</span>
+              </TabsTrigger>
+              <TabsTrigger value="activity" className="profile-tab-trigger">
+                <ActivityIcon className="profile-tab-icon" aria-hidden="true" />
+                <span>Activity</span>
+              </TabsTrigger>
+              <TabsTrigger value="account" className="profile-tab-trigger">
+                <SettingsIcon className="profile-tab-icon" aria-hidden="true" />
+                <span>Account</span>
+              </TabsTrigger>
             </TabsList>
 
             {/* ABOUT */}
