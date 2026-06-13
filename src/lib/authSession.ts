@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { clearCachedOnboardingStatus } from "@/lib/onboardingStatus";
 
 export const SESSION_BROADCAST_KEY = "jet-session-update";
 
@@ -53,6 +54,7 @@ export const discardCurrentAuthSession = () => {
   }
 
   clearPersistedAuthState();
+  clearCachedOnboardingStatus();
   broadcastAuthStateChange();
 };
 

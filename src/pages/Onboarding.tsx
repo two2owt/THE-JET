@@ -13,6 +13,11 @@ import { Json } from "@/integrations/supabase/types";
 import jetLogo from "@/assets/jet-auth-logo.png";
 import authBackground from "@/assets/auth-background.webp";
 import { consumePostAuthRedirect } from "@/lib/postAuthRedirect";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  readCachedOnboardingStatus,
+  writeCachedOnboardingStatus,
+} from "@/lib/onboardingStatus";
 
 const GENDER_OPTIONS = [
   { value: "woman", label: "Woman" },
@@ -34,6 +39,7 @@ const PRONOUN_OPTIONS = [
 
 const Onboarding = () => {
   const navigate = useNavigate();
+  const { session, isLoading: authLoading } = useAuth();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -41,7 +47,17 @@ const Onboarding = () => {
   // Gate the first paint until we've checked the session + resumed any
   // in-progress onboarding state. Prevents the Step 1 form from flashing
   // for users who are already onboarded (they will be redirected away).
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  // Initial value is derived synchronously from AuthContext + a per-user
+  // sessionStorage cache so already-known users never see the spinner.
+  const initialChecking = (() => {
+    if (authLoading) return true;
+    if (!session) return false; // we'll redirect to /auth synchronously
+    const cached = readCachedOnboardingStatus(session.user.id);
+    // If we know they've already finished, we'll redirect immediately
+    // without ever painting the spinner OR the form.
+    return cached === null;
+  })();
+  const [isCheckingAuth, setIsCheckingAuth] = useState(initialChecking);
   
   // Step 1: Profile
   const [displayName, setDisplayName] = useState("");
@@ -64,29 +80,46 @@ const Onboarding = () => {
   const [savedPreferences, setSavedPreferences] = useState<PreferencesData | null>(null);
 
   useEffect(() => {
-    const checkAuth = async () => {
+    // Wait for AuthContext to finish bootstrapping its session.
+    if (authLoading) return;
+
+    if (!session) {
+      navigate("/auth", { replace: true });
+      return;
+    }
+
+    const uid = session.user.id;
+    setUserId(uid);
+
+    // Fast-path: if cache says they're done, redirect synchronously —
+    // no spinner, no profile fetch.
+    const cached = readCachedOnboardingStatus(uid);
+    if (cached === true) {
+      navigate(consumePostAuthRedirect("/"), { replace: true });
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          navigate("/auth", { replace: true });
-          return;
-        }
-
-        setUserId(session.user.id);
-
-        // Check if already completed onboarding, and resume in-progress data
         const { data: profile } = await supabase
           .from("profiles")
-          .select("onboarding_completed, display_name, bio, avatar_url, birthdate, gender, pronouns, preferences")
-          .eq("id", session.user.id)
+          .select(
+            "onboarding_completed, display_name, bio, avatar_url, birthdate, gender, pronouns, preferences"
+          )
+          .eq("id", uid)
           .single();
 
+        if (cancelled) return;
+
         if (profile?.onboarding_completed) {
+          writeCachedOnboardingStatus(uid, true);
           navigate(consumePostAuthRedirect("/"), { replace: true });
           return;
         }
 
-        // Resume where the user left off
+        writeCachedOnboardingStatus(uid, false);
+
         if (profile) {
           if (profile.display_name) setDisplayName(profile.display_name);
           if (profile.bio) setBio(profile.bio);
@@ -101,12 +134,14 @@ const Onboarding = () => {
           else if (hasStep1) setStep(2);
         }
       } finally {
-        setIsCheckingAuth(false);
+        if (!cancelled) setIsCheckingAuth(false);
       }
+    })();
+
+    return () => {
+      cancelled = true;
     };
-    
-    checkAuth();
-  }, [navigate]);
+  }, [authLoading, session, navigate]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -281,7 +316,8 @@ const Onboarding = () => {
         });
       
       if (error) throw error;
-      
+
+      if (userId) writeCachedOnboardingStatus(userId, true);
       toast.success("Welcome to JET Charlotte!", { description: "Let's discover what's hot" });
       navigate(consumePostAuthRedirect("/"), { replace: true });
     } catch (error: any) {

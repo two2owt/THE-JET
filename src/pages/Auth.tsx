@@ -11,6 +11,7 @@ import { z } from "zod";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/contexts/AuthContext";
 import { consumePostAuthRedirect } from "@/lib/postAuthRedirect";
+import { writeCachedOnboardingStatus } from "@/lib/onboardingStatus";
 import { discardCurrentAuthSession } from "@/lib/authSession";
 import { SEO } from "@/components/SEO";
 // Use the new JET logo for auth page
@@ -89,7 +90,9 @@ const Auth = () => {
         .eq("id", authUser.id)
         .maybeSingle();
       if (cancelled) return;
-      const target = profile?.onboarding_completed
+      const completed = !!profile?.onboarding_completed;
+      writeCachedOnboardingStatus(authUser.id, completed);
+      const target = completed
         ? consumePostAuthRedirect("/")
         : "/onboarding";
       navigate(target, { replace: true });
@@ -476,8 +479,10 @@ const Auth = () => {
       .single();
 
     toast.success("Signed in successfully");
+    const completed = !!profile?.onboarding_completed;
+    writeCachedOnboardingStatus(data.user.id, completed);
     navigate(
-      profile?.onboarding_completed ? consumePostAuthRedirect("/") : "/onboarding",
+      completed ? consumePostAuthRedirect("/") : "/onboarding",
       { replace: true },
     );
   };
