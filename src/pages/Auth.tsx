@@ -552,15 +552,6 @@ const Auth = () => {
     }
   };
 
-  const eyebrow =
-    mode === "reset"
-      ? "New Password"
-      : mode === "forgot"
-      ? "Account Recovery"
-      : mode === "signup"
-      ? "Create Account"
-      : "Welcome Back";
-
   const subtitle =
     mode === "reset"
       ? "Set your new password to secure your account."
