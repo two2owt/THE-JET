@@ -43,7 +43,7 @@ export const broadcastAuthStateChange = () => {
   }
 };
 
-export const signOutCurrentUser = (redirectTo = "/auth") => {
+export const discardCurrentAuthSession = () => {
   try {
     void supabase.auth.signOut({ scope: "local" }).catch((error) => {
       console.warn("Background sign out error:", error?.message ?? error);
@@ -54,5 +54,9 @@ export const signOutCurrentUser = (redirectTo = "/auth") => {
 
   clearPersistedAuthState();
   broadcastAuthStateChange();
+};
+
+export const signOutCurrentUser = (redirectTo = "/auth") => {
+  discardCurrentAuthSession();
   window.location.replace(redirectTo);
 };
