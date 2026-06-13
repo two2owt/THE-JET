@@ -629,14 +629,6 @@ const Auth = () => {
             <p className="text-base text-white/85 leading-relaxed max-w-[400px] drop-shadow">
               Live deals, real crowds, and the city's pulse — all in one place. Made for the nights you'll actually remember.
             </p>
-            <figure className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-md">
-              <blockquote className="text-sm leading-relaxed text-white/90">
-                "JET became my Friday-night ritual. I haven't paid full price for a cocktail in months."
-              </blockquote>
-              <figcaption className="mt-3 text-xs uppercase tracking-wider text-white/60">
-                — Maya R. · JET+ member
-              </figcaption>
-            </figure>
           </div>
 
           <div className="hidden md:block text-[11px] uppercase tracking-[0.2em] text-white/50">
