@@ -11,7 +11,7 @@ import { z } from "zod";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/contexts/AuthContext";
 import { consumePostAuthRedirect } from "@/lib/postAuthRedirect";
-import { signOutCurrentUser } from "@/lib/authSession";
+import { discardCurrentAuthSession } from "@/lib/authSession";
 // Use the new JET logo for auth page
 import jetLogo from "@/assets/jet-auth-logo.png";
 import authBackground from "@/assets/auth-background.webp";
@@ -456,7 +456,7 @@ const Auth = () => {
     }
 
     if (!data.user.email_confirmed_at) {
-      signOutCurrentUser("/auth");
+      discardCurrentAuthSession();
       toast.error("Email not verified", {
         description: "Please check your email and click the verification link before signing in.",
       });
