@@ -13,6 +13,7 @@ import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useConnections } from "@/hooks/useConnections";
 import { useProfile } from "@/hooks/useProfile";
+import { SEO } from "@/components/SEO";
 import { useNotifications } from "@/hooks/useNotifications";
 import { Camera, Edit2, X, Save, Heart, Users, Shield, LogOut, Loader2, Instagram, Twitter, Facebook, Linkedin, Video, Mail, Bell, ChevronRight, Link2, Share2, Activity as ActivityIcon } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -297,6 +298,11 @@ export default function Profile() {
 
   return (
     <PageLayout defaultTab="map" headerConfig={headerConfig} mainClassName="profile-scroll-root">
+      <SEO
+        title="Your Profile — JET"
+        description="Manage your JET profile, preferences, subscription, and account settings."
+        path="/profile"
+      />
       <AvatarCropDialog
         open={isCropOpen}
         imageSrc={cropSrc}
