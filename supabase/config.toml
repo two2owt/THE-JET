@@ -53,3 +53,11 @@ project_id = "flvhduntedvorikonuvy"
     verify_jwt = false
   [functions.handle-email-suppression]
     verify_jwt = false
+  [functions.get-nearby-parking]
+    verify_jwt = false
+  [functions.get-parking-details]
+    verify_jwt = false
+  [functions.merchant-send-notification]
+    verify_jwt = false
+  [functions.verify-webhook-secret]
+    verify_jwt = false
