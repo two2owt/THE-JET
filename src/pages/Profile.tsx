@@ -280,35 +280,35 @@ export default function Profile() {
     }
   };
   const handleSignOut = async () => {
+    // Wipe persisted auth state FIRST so a hung signOut() request can't
+    // strand the user on a half-authed profile page.
     try {
-      // Local scope clears the persisted browser session immediately. A global
-      // logout can fail on an expired token before local auth state is removed.
-      const { error } = await supabase.auth.signOut({ scope: 'local' });
-      if (error) {
-        console.warn('Local sign out returned an error:', error.message);
-      }
-    } catch (error) {
-      console.error('Sign out failed:', error);
-    } finally {
-      // Belt-and-suspenders: nuke any persisted Supabase auth keys so a
-      // stale token can never resurrect the session on the next page load.
-      try {
-        const keysToRemove: string[] = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key && (key.startsWith('sb-') || key.includes('supabase.auth'))) {
-            keysToRemove.push(key);
-          }
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('sb-') || key.includes('supabase.auth'))) {
+          keysToRemove.push(key);
         }
-        keysToRemove.forEach((k) => localStorage.removeItem(k));
-        sessionStorage.clear();
-      } catch {
-        // storage may be unavailable (private mode); safe to ignore
       }
-      toast.success('Signed out');
-      // Hard redirect to ensure all auth-dependent state is reset
-      window.location.replace('/auth');
+      keysToRemove.forEach((k) => localStorage.removeItem(k));
+      sessionStorage.clear();
+    } catch {
+      // storage may be unavailable (private mode); safe to ignore
     }
+
+    // Fire-and-forget the server signOut so a slow/failed network call
+    // never blocks the redirect. We've already cleared local tokens above.
+    try {
+      void supabase.auth.signOut({ scope: 'local' }).catch((err) => {
+        console.warn('Background sign out error:', err?.message ?? err);
+      });
+    } catch (err) {
+      console.warn('signOut threw synchronously:', err);
+    }
+
+    toast.success('Signed out');
+    // Hard redirect to ensure all auth-dependent state is reset.
+    window.location.replace('/auth');
   };
   if (isAuthLoading || (user && isProfileLoading)) {
     return (
