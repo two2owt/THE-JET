@@ -26,6 +26,11 @@ import { NotificationsTabSkeleton, ExploreTabSkeleton } from "@/components/skele
 import { TabPageHeader } from "@/components/TabPageHeader";
 import { PageShell } from "@/components/PageShell";
 import { SEO } from "@/components/SEO";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  readCachedOnboardingStatus,
+  writeCachedOnboardingStatus,
+} from "@/lib/onboardingStatus";
 
 // Lazy load heavy components - deferred until needed
 const MapboxHeatmap = lazy(() => import("@/components/MapboxHeatmap").then(m => ({ default: m.MapboxHeatmap })));
@@ -54,6 +59,7 @@ import { Button } from "@/components/ui/button";
 const Index = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { session, isLoading: authLoading } = useAuth();
   
   // Use shared navigation hook for consistent tab handling
   const { activeTab, setActiveTab, handleTabChange } = useBottomNavigation({ defaultTab: "map" });
@@ -291,26 +297,41 @@ const Index = () => {
 
 
 
-  // Check onboarding status - only redirect to onboarding if needed, never sign out
+  // Check onboarding status — only redirect when we *know* the user
+  // hasn't completed it. Uses AuthContext's already-resolved session
+  // (no extra getSession round-trip) and a per-user sessionStorage
+  // cache so we don't re-query profiles on every mount. This kills
+  // the `/` ⇄ `/onboarding` redirect bounce that caused the flash.
   useEffect(() => {
-    const checkOnboarding = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("onboarding_completed")
-          .eq("id", session.user.id)
-          .single();
-        
-        if (profile && !profile.onboarding_completed) {
-          navigate("/onboarding");
-        }
+    if (authLoading) return;
+    if (!session) return; // unauthenticated visitors can browse `/`
+
+    const uid = session.user.id;
+    const cached = readCachedOnboardingStatus(uid);
+    if (cached === true) return; // already done, no redirect
+    if (cached === false) {
+      navigate("/onboarding", { replace: true });
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("onboarding_completed")
+        .eq("id", uid)
+        .single();
+      if (cancelled || !profile) return;
+      writeCachedOnboardingStatus(uid, !!profile.onboarding_completed);
+      if (!profile.onboarding_completed) {
+        navigate("/onboarding", { replace: true });
       }
+    })();
+
+    return () => {
+      cancelled = true;
     };
-    
-    checkOnboarding();
-  }, [navigate]);
+  }, [authLoading, session, navigate]);
 
   // URL sync is now handled by useBottomNavigation hook
 
