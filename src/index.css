@@ -1883,6 +1883,18 @@ All colors MUST be HSL.
     .profile-action-primary { padding: 0 18px; }
   }
 
+  /* Bottom action bar — always centered, always shows labels */
+  .profile-actions-bottom {
+    justify-content: center;
+    margin: 0 auto;
+    padding-top: 20px;
+    border-top: 1px solid hsl(var(--border) / 0.5);
+  }
+  .profile-section-actions {
+    margin-top: var(--space-md);
+    padding-bottom: var(--space-lg);
+  }
+
   /* Profile sections — consistent horizontal padding */
   .profile-section {
     width: 100%;

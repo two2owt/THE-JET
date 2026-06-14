@@ -33,6 +33,7 @@ import { ProfileSettingsPanel } from "@/components/settings/ProfileSettingsPanel
 import { signOutCurrentUser } from "@/lib/authSession";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { ProfileStatsPills } from "@/components/profile/ProfileStatsPills";
+import { ProfileActions } from "@/components/profile/ProfileActions";
 import {
   ProfileEditForm,
   type ProfileEditFormValues,
@@ -322,10 +323,6 @@ export default function Profile() {
           bio={form.bio}
           isEditing={isEditing}
           isUploading={isUploading}
-          onStartEdit={() => setIsEditing(true)}
-          onCancelEdit={handleCancelEdit}
-          onShare={handleShareProfile}
-          onSignOut={handleSignOut}
           onAvatarSelected={handleAvatarUpload}
         />
 
@@ -488,6 +485,17 @@ export default function Profile() {
           </Tabs>
         </section>
         )}
+
+        {/* Action bar — Edit / Share / Sign out moved to the bottom */}
+        <section aria-label="Profile actions" className="profile-section profile-section-actions">
+          <ProfileActions
+            isEditing={isEditing}
+            onStartEdit={() => setIsEditing(true)}
+            onCancelEdit={handleCancelEdit}
+            onShare={handleShareProfile}
+            onSignOut={handleSignOut}
+          />
+        </section>
       </PageShell>
     </PageLayout>
   );
