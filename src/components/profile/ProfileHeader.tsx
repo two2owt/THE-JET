@@ -1,16 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Camera, Edit2, Loader2, LogOut, Mail, Share2, X } from "lucide-react";
+import { Camera, Loader2, Mail } from "lucide-react";
 
 interface ProfileHeaderProps {
   email: string | null | undefined;
@@ -20,10 +9,6 @@ interface ProfileHeaderProps {
   bio: string;
   isEditing: boolean;
   isUploading: boolean;
-  onStartEdit: () => void;
-  onCancelEdit: () => void;
-  onShare: () => void;
-  onSignOut: () => void;
   onAvatarSelected: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
@@ -39,10 +24,6 @@ export function ProfileHeader({
   bio,
   isEditing,
   isUploading,
-  onStartEdit,
-  onCancelEdit,
-  onShare,
-  onSignOut,
   onAvatarSelected,
 }: ProfileHeaderProps) {
   return (
@@ -90,57 +71,6 @@ export function ProfileHeader({
               <span className="truncate">{email}</span>
             </p>
           )}
-        </div>
-
-        <div className="profile-actions">
-          {!isEditing ? (
-            <button type="button" onClick={onStartEdit} className="profile-action-btn profile-action-primary">
-              <Edit2 className="w-4 h-4" />
-              Edit Profile
-            </button>
-          ) : (
-            <button type="button" onClick={onCancelEdit} className="profile-action-btn profile-action-secondary">
-              <X className="w-4 h-4" />
-              Cancel
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={onShare}
-            className="profile-action-btn profile-action-secondary"
-            aria-label="Share profile"
-          >
-            <Share2 className="w-4 h-4" />
-            <span className="profile-action-label">Share</span>
-          </button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <button type="button" className="profile-action-btn profile-action-danger" aria-label="Sign out">
-                <LogOut className="w-4 h-4" />
-                <span className="profile-action-label">Sign Out</span>
-              </button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Sign out of your account?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  You'll need to sign in again to access your profile and favorites.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel className="rounded-full border-primary/40 bg-transparent text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary">
-                  Cancel
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={onSignOut}
-                  className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg shadow-destructive/20 font-semibold tracking-wide"
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sign Out
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
         </div>
       </div>
     </header>
