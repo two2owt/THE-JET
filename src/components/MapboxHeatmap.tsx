@@ -798,17 +798,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         // Guard against environments without the Geolocation API (some
         // Android WebViews, iframe previews with permissions stripped) — the
         // Mapbox control logs a noisy warning when navigator.geolocation is
-        // unavailable and the button is non-functional anyway.
-        // navigator.geolocation can exist in iframes that have it disabled by
-        // permissions policy (Lovable preview, sandboxed embeds). In that
-        // case Mapbox still logs a noisy "Geolocation support is not
-        // available" warning from setupUI. Treat any iframe as missing
-        // geolocation so the control is simply skipped in preview while
-        // still rendering in the standalone production app.
-        const isInIframe =
-          typeof window !== "undefined" && window.self !== window.top;
+        // unavailable and the button is non-functional anyway. We still attempt
+        // to add the control whenever the API is present so the user location
+        // marker stays active in preview/iframe contexts that grant permission.
         const hasGeolocation =
-          !isInIframe &&
           typeof navigator !== "undefined" &&
           typeof navigator.geolocation !== "undefined" &&
           typeof navigator.geolocation.getCurrentPosition === "function";
@@ -824,7 +817,13 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         geolocateControlRef.current = geolocateControl;
         if (geolocateControl) {
           map.current.addControl(geolocateControl, "top-right");
+          // Swallow the Mapbox "Geolocation support is not available" warning
+          // in iframe/permission-limited environments without breaking the map.
+          geolocateControl.on('error', (e: any) => {
+            console.warn('MapboxHeatmap: Geolocation control error (non-fatal):', e?.message || e);
+          });
         }
+
         
         // Create custom marker element for user location
         const createUserMarker = () => {
