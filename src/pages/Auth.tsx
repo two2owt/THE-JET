@@ -974,24 +974,22 @@ const Auth = () => {
               <div className="text-center text-xs text-muted-foreground">
                 Didn't receive the verification email?
               </div>
-              <Button
-                type="button"
+              <AuthButton
                 onClick={handleResendVerification}
-                disabled={isResending || resendCooldown > 0}
-                variant="outline"
-                size="sm"
-                className="w-full rounded-full border-primary/40 bg-transparent text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary disabled:opacity-60"
+                disabled={resendCooldown > 0}
+                loading={isResending}
+                variant="secondary"
+                size="md"
+                fullWidth
               >
-                {isResending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend Verification Email"}
-              </Button>
+              </AuthButton>
             </div>
           )}
 
           {/* Back link for recovery / reset */}
           {(mode === "forgot" || mode === "reset") && (
-            <button
-              type="button"
+            <AuthButton
               onClick={() => {
                 setIsForgotPassword(false);
                 setIsResettingPassword(false);
@@ -999,26 +997,29 @@ const Auth = () => {
                 setFormError(null);
               }}
               disabled={isLoading}
-              className="mt-5 inline-flex items-center justify-center gap-2 self-center rounded-full border border-border/40 bg-card/30 px-4 py-2 text-xs font-medium text-foreground/90 hover:border-primary/50 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:opacity-50 mx-auto"
+              variant="secondary"
+              size="sm"
+              leftIcon={<ArrowLeft />}
+              className="mt-5 self-center mx-auto text-xs"
             >
-              <ArrowLeft className="h-4 w-4" />
               Back to sign in
-            </button>
+            </AuthButton>
           )}
 
           {/* Switch mode link */}
           {(mode === "signin" || mode === "signup") && (
             <p className="mt-6 text-center text-xs text-muted-foreground">
               {mode === "signin" ? "Don't have an account? " : "Already have an account? "}
-              <button
-                type="button"
+              <AuthButton
+                variant="link"
+                size="sm"
                 onClick={() => switchToMode(mode === "signin" ? "signup" : "signin")}
                 disabled={isLoading}
                 data-testid="auth-mode-switch"
-                className="font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+                className="text-xs font-semibold"
               >
                 {mode === "signin" ? "Sign up" : "Sign in"}
-              </button>
+              </AuthButton>
             </p>
           )}
 
