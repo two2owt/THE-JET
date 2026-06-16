@@ -95,6 +95,22 @@ const AppLayout = memo(function AppLayout() {
           }
         />
         <Route
+          path="/signup"
+          element={
+            <Suspense fallback={<NavigationShell />}>
+              <Auth />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/signin"
+          element={
+            <Suspense fallback={<NavigationShell />}>
+              <Auth />
+            </Suspense>
+          }
+        />
+        <Route
           path="/onboarding"
           element={
             <Suspense fallback={<NavigationShell />}>
