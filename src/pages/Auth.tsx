@@ -661,7 +661,7 @@ const Auth = () => {
       </div>
 
       {/* Centered content — column flex fills the viewport and centers the card both axes */}
-      <div className="relative z-10 flex w-full flex-1 flex-col items-center justify-center px-4 sm:px-6 md:px-8 pt-[max(env(safe-area-inset-top,0px),12px)] sm:pt-[max(env(safe-area-inset-top,0px),20px)] pb-[max(env(safe-area-inset-bottom,0px),12px)] sm:pb-[max(env(safe-area-inset-bottom,0px),20px)]">
+      <div className="auth-content-wrapper relative z-10 flex w-full flex-1 flex-col items-center justify-center px-4 sm:px-6 md:px-8 pt-[max(env(safe-area-inset-top,0px),12px)] sm:pt-[max(env(safe-area-inset-top,0px),20px)] pb-[max(env(safe-area-inset-bottom,0px),12px)] sm:pb-[max(env(safe-area-inset-bottom,0px),20px)]">
         <div className="w-full max-w-[420px] mx-auto flex flex-col items-center animate-fade-in">
           {/* Logo above card */}
           <div className="auth-logo flex flex-col items-center mb-4 sm:mb-5">
@@ -952,18 +952,19 @@ const Auth = () => {
           {/* Social section */}
           {(mode === "signin" || mode === "signup") && (
             <>
-              <div className="auth-social flex items-center gap-3 my-4 sm:my-5">
+                <div className="auth-social flex items-center gap-3 my-4 sm:my-5">
                 <div className="h-px flex-1 bg-border/40" />
                 <span className="text-[11px] uppercase tracking-wider text-muted-foreground">or continue with</span>
                 <div className="h-px flex-1 bg-border/40" />
               </div>
-              <AuthButton
-                onClick={handleGoogleSignIn}
-                loading={isLoading}
-                variant="secondary"
-                size="lg"
-                fullWidth
-                leftIcon={
+                <AuthButton
+                  onClick={handleGoogleSignIn}
+                  loading={isLoading}
+                  variant="secondary"
+                  size="lg"
+                  fullWidth
+                  className="auth-google"
+                  leftIcon={
                   <svg className="h-5 w-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                       <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z" fill="#4285F4" />
                       <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
