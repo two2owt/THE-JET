@@ -665,7 +665,7 @@ All colors MUST be HSL.
     max-width: 420px;
     margin: 0 auto;
     border-radius: 16px;
-    padding: 28px;
+    padding: 24px 20px;
     background: hsl(var(--background) / 0.55);
     border: 1px solid hsl(0 0% 100% / 0.06);
     backdrop-filter: blur(28px) saturate(140%);
@@ -680,7 +680,7 @@ All colors MUST be HSL.
     z-index: 10;
   }
   @media (min-width: 640px) {
-    .auth-card { padding: 40px; }
+    .auth-card { padding: 40px; border-radius: 20px; }
   }
   .auth-card-logo {
     height: 48px;
