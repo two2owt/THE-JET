@@ -4,6 +4,8 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 import cssnano from "cssnano";
+import tailwindcss from "tailwindcss";
+import autoprefixer from "autoprefixer";
 import { visualizer } from "rollup-plugin-visualizer";
 // Critters import removed — plugin disabled (caused nav CSS deferral in prod)
 import fs from "fs";
@@ -290,6 +292,12 @@ export default defineConfig(({ mode }) => ({
     devSourcemap: mode === "development",
     postcss: {
       plugins: [
+        // Tailwind must run FIRST to expand @tailwind directives into utilities,
+        // then autoprefixer, then cssnano for minification. Declaring an inline
+        // `postcss` block here causes Vite to ignore postcss.config.js, so we
+        // re-register Tailwind + autoprefixer explicitly.
+        tailwindcss(),
+        autoprefixer(),
         cssnano({
           preset: ['default', {
             discardComments: { removeAll: true },
