@@ -573,6 +573,25 @@ const Auth = () => {
       ? "Create Account"
       : "Sign In";
 
+  // Dynamic SEO per mode so /signin, /signup, and recovery views have
+  // distinct titles, descriptions, and canonical paths.
+  const seoTitle =
+    mode === "signup"
+      ? "Create your JET account — Charlotte's Live City Pulse"
+      : mode === "forgot"
+      ? "Reset your JET password"
+      : mode === "reset"
+      ? "Set a new JET password"
+      : "Sign in to JET — Charlotte's Live City Pulse";
+  const seoDescription =
+    mode === "signup"
+      ? "Create your JET account to unlock real-time deals, events, and trending venues across Charlotte, NC."
+      : mode === "forgot" || mode === "reset"
+      ? "Reset your JET password to get back to discovering what's hot in Charlotte, NC."
+      : "Sign in to JET to discover real-time deals, events, and trending venues across Charlotte, NC.";
+  const seoPath =
+    mode === "signup" ? "/signup" : mode === "signin" ? "/signin" : "/auth";
+
   const switchToMode = (next: "signin" | "signup") => {
     setIsSignUp(next === "signup");
     setIsForgotPassword(false);
@@ -602,9 +621,9 @@ const Auth = () => {
         aria-busy="true"
       >
         <SEO
-          title="Sign in to JET — Discover Charlotte's Live City Pulse"
-          description="Sign in or create your JET account to unlock real-time deals, events, and trending venues across Charlotte, NC."
-          path="/auth"
+          title={seoTitle}
+          description={seoDescription}
+          path={seoPath}
         />
         <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden="true" />
         <span className="sr-only">Loading sign-in…</span>
@@ -615,9 +634,9 @@ const Auth = () => {
   return (
     <div className="auth-fullscreen relative flex flex-1 min-h-0 w-full overflow-y-auto items-stretch">
       <SEO
-        title="Sign in to JET — Discover Charlotte's Live City Pulse"
-        description="Sign in or create your JET account to unlock real-time deals, events, and trending venues across Charlotte, NC."
-        path="/auth"
+        title={seoTitle}
+        description={seoDescription}
+        path={seoPath}
       />
       {/* Full-bleed background image */}
       <div
