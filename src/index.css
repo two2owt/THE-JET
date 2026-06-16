@@ -679,9 +679,6 @@ All colors MUST be HSL.
     position: relative;
     z-index: 10;
   }
-  @media (min-width: 640px) {
-    .auth-card { padding: 40px; border-radius: 20px; }
-  }
   .auth-card-logo {
     height: 48px;
     width: 48px;
@@ -690,11 +687,12 @@ All colors MUST be HSL.
     filter: drop-shadow(0 6px 22px hsl(var(--primary) / 0.45));
   }
 
-  /* 48px tall input override (auth only) */
+  /* 48px tall input override (auth only) — only force vertical metrics so
+     directional padding utilities (pl-11/pr-12) can reserve icon space. */
   .auth-input {
     height: 48px !important;
     min-height: 48px !important;
-    padding: 12px 14px !important;
+    padding-block: 12px !important;
     border-radius: 10px !important;
     font-size: 15px !important;
   }
@@ -884,6 +882,42 @@ All colors MUST be HSL.
   @media (prefers-reduced-motion: reduce) {
     .auth-mesh-gradient,
     .auth-float-shape { animation: none; }
+  }
+
+  /* Responsive auth card — compact on short/tiny screens, spacious on tall desktops. */
+  @media (max-height: 850px) {
+    .auth-content-wrapper { padding: 4px !important; }
+    .auth-card { padding: 20px; border-radius: 16px; }
+    .auth-logo { margin-bottom: 8px !important; }
+    .auth-logo img { height: 36px; width: 36px; }
+    .auth-logo > span { font-size: 9px; padding: 1px 6px; }
+    .auth-title { margin-bottom: 8px !important; }
+    .auth-title h1 { font-size: 22px; }
+    .auth-title p { font-size: 12px; }
+    .auth-form { gap: 8px !important; }
+    .auth-form .flex.flex-col.gap-1,
+    .auth-form .flex.flex-col.gap-1\.5 { gap: 4px !important; }
+    .auth-input {
+      height: 44px !important;
+      min-height: 44px !important;
+      padding-block: 10px !important;
+      font-size: 14px !important;
+    }
+    .auth-social { margin-top: 4px !important; margin-bottom: 4px !important; }
+    .auth-switch { margin-top: 4px !important; }
+    .auth-footer { margin-top: 0 !important; padding-top: 0; font-size: 10px; }
+    .auth-footer a { font-size: 10px; }
+  }
+  @media (max-width: 375px) {
+    .auth-card { padding: 16px 16px; border-radius: 14px; }
+    .auth-logo { margin-bottom: 4px !important; }
+    .auth-logo > span { display: none; }
+    .auth-title { margin-bottom: 4px !important; }
+    .auth-social, .auth-google { display: none; }
+    .auth-footer { display: none; }
+  }
+  @media (min-width: 640px) and (min-height: 851px) {
+    .auth-card { padding: 40px; border-radius: 20px; }
   }
 
   /* ====================================================================

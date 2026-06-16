@@ -661,10 +661,10 @@ const Auth = () => {
       </div>
 
       {/* Centered content — column flex fills the viewport and centers the card both axes */}
-      <div className="relative z-10 flex w-full flex-1 flex-col items-center justify-center px-4 sm:px-6 md:px-8 pt-[max(env(safe-area-inset-top,0px),20px)] pb-[max(env(safe-area-inset-bottom,0px),20px)]">
+      <div className="auth-content-wrapper relative z-10 flex w-full flex-1 flex-col items-center justify-center px-4 sm:px-6 md:px-8 pt-[max(env(safe-area-inset-top,0px),12px)] sm:pt-[max(env(safe-area-inset-top,0px),20px)] pb-[max(env(safe-area-inset-bottom,0px),12px)] sm:pb-[max(env(safe-area-inset-bottom,0px),20px)]">
         <div className="w-full max-w-[420px] mx-auto flex flex-col items-center animate-fade-in">
           {/* Logo above card */}
-          <div className="flex flex-col items-center mb-5 sm:mb-6">
+          <div className="auth-logo flex flex-col items-center mb-4 sm:mb-5">
             <img
               src={jetLogo}
               alt="JET — Live City Pulse logo"
@@ -684,7 +684,7 @@ const Auth = () => {
           <div className={`auth-card ${shake ? "auth-shake" : ""}`}>
             <div key={mode} className="auth-crossfade">
               {/* Title */}
-              <div className="flex flex-col items-center gap-1.5 text-center mb-5">
+              <div className="auth-title flex flex-col items-center gap-1.5 text-center mb-4 sm:mb-5">
             <h1 className="heading-luxe-gradient text-[26px] sm:text-[28px] leading-tight m-0">
               {mode === "signup"
                 ? "Create your account"
@@ -702,7 +702,7 @@ const Auth = () => {
           {/* Form (relative so the loading overlay positions correctly) */}
           <form
             onSubmit={handleSubmit}
-            className="relative flex flex-col gap-4"
+            className="auth-form relative flex flex-col gap-3 sm:gap-4"
             aria-busy={isLoading}
             aria-label={
               mode === "signup"
@@ -722,7 +722,7 @@ const Auth = () => {
 
             {/* Email field */}
             {!isResettingPassword && (
-              <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-1 sm:gap-1.5">
                 <label className="text-xs font-semibold uppercase tracking-wider text-foreground/80 text-left" htmlFor="auth-email">
                   Email
                 </label>
@@ -742,7 +742,7 @@ const Auth = () => {
                     disabled={isLoading}
                     aria-invalid={!!validationErrors.email}
                     aria-describedby={validationErrors.email ? "auth-email-error" : undefined}
-                    className={`auth-input pl-11 ${validationErrors.email ? "auth-input-error" : ""}`}
+                    className={`auth-input !pl-11 ${validationErrors.email ? "auth-input-error" : ""}`}
                     autoComplete="email"
                   />
                 </div>
@@ -758,7 +758,7 @@ const Auth = () => {
             {/* Password */}
             {!isForgotPassword && (
               <>
-                <div className="flex flex-col gap-1.5">
+                  <div className="flex flex-col gap-1 sm:gap-1.5">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-semibold uppercase tracking-wider text-foreground/80" htmlFor="auth-password">
                       Password
@@ -791,7 +791,7 @@ const Auth = () => {
                       disabled={isLoading}
                       aria-invalid={!!validationErrors.password}
                       aria-describedby={validationErrors.password ? "auth-password-error" : undefined}
-                      className={`auth-input pl-11 pr-12 ${validationErrors.password ? "auth-input-error" : ""}`}
+                      className={`auth-input !pl-11 !pr-12 ${validationErrors.password ? "auth-input-error" : ""}`}
                       autoComplete={isSignUp ? "new-password" : "current-password"}
                     />
                     <IconButton
@@ -816,7 +816,7 @@ const Auth = () => {
                 </div>
 
                 {(isSignUp || isResettingPassword) && (
-                  <div className="flex flex-col gap-1.5">
+                  <div className="flex flex-col gap-1 sm:gap-1.5">
                     <label className="text-xs font-semibold uppercase tracking-wider text-foreground/80 text-left" htmlFor="auth-confirm-password">
                       Confirm Password
                     </label>
@@ -836,7 +836,7 @@ const Auth = () => {
                         disabled={isLoading}
                         aria-invalid={!!validationErrors.confirmPassword}
                         aria-describedby={validationErrors.confirmPassword ? "auth-confirm-password-error" : undefined}
-                        className={`auth-input pl-11 pr-12 ${validationErrors.confirmPassword ? "auth-input-error" : ""}`}
+                        className={`auth-input !pl-11 !pr-12 ${validationErrors.confirmPassword ? "auth-input-error" : ""}`}
                         autoComplete="new-password"
                       />
                       <IconButton
@@ -859,7 +859,7 @@ const Auth = () => {
 
                 {/* Signup consent */}
                 {isSignUp && (
-                  <div className="flex flex-col gap-3 pt-1">
+                  <div className="flex flex-col gap-2 sm:gap-3 pt-1">
                     <div className="flex items-start gap-3">
                       <Checkbox
                         id="dataConsent"
@@ -943,7 +943,7 @@ const Auth = () => {
               size="lg"
               fullWidth
               loading={isLoading}
-              className="mt-1"
+              className="mt-0 sm:mt-1"
             >
               {primaryLabel}
             </AuthButton>
@@ -952,18 +952,19 @@ const Auth = () => {
           {/* Social section */}
           {(mode === "signin" || mode === "signup") && (
             <>
-              <div className="flex items-center gap-3 my-5">
+                <div className="auth-social flex items-center gap-3 my-4 sm:my-5">
                 <div className="h-px flex-1 bg-border/40" />
                 <span className="text-[11px] uppercase tracking-wider text-muted-foreground">or continue with</span>
                 <div className="h-px flex-1 bg-border/40" />
               </div>
-              <AuthButton
-                onClick={handleGoogleSignIn}
-                loading={isLoading}
-                variant="secondary"
-                size="lg"
-                fullWidth
-                leftIcon={
+                <AuthButton
+                  onClick={handleGoogleSignIn}
+                  loading={isLoading}
+                  variant="secondary"
+                  size="lg"
+                  fullWidth
+                  className="auth-google"
+                  leftIcon={
                   <svg className="h-5 w-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                       <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z" fill="#4285F4" />
                       <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
@@ -979,7 +980,7 @@ const Auth = () => {
 
           {/* Resend Verification */}
           {showResendVerification && !isResettingPassword && (
-            <div className="mt-5 flex flex-col gap-2 rounded-xl border border-primary/25 bg-card/40 p-4 backdrop-blur-md">
+            <div className="mt-4 sm:mt-5 flex flex-col gap-2 rounded-xl border border-primary/25 bg-card/40 p-4 backdrop-blur-md">
               <div className="text-center text-xs text-muted-foreground">
                 Didn't receive the verification email?
               </div>
@@ -1009,7 +1010,7 @@ const Auth = () => {
               variant="secondary"
               size="sm"
               leftIcon={<ArrowLeft />}
-              className="mt-5 self-center mx-auto text-xs"
+              className="mt-4 sm:mt-5 self-center mx-auto text-xs"
             >
               Back to sign in
             </AuthButton>
@@ -1017,7 +1018,7 @@ const Auth = () => {
 
           {/* Switch mode link */}
           {(mode === "signin" || mode === "signup") && (
-            <p className="mt-6 text-center text-xs text-muted-foreground">
+            <p className="auth-switch mt-4 sm:mt-6 text-center text-xs text-muted-foreground">
               {mode === "signin" ? "Don't have an account? " : "Already have an account? "}
               <AuthButton
                 variant="link"
@@ -1036,7 +1037,7 @@ const Auth = () => {
         </div>
 
         {/* Footer links */}
-        <nav aria-label="Legal" className="relative z-10 mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
+        <nav aria-label="Legal" className="auth-footer relative z-10 mt-4 sm:mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
           <Link to="/terms-of-service" className="hover:text-foreground hover:underline underline-offset-4 transition-colors">
             Terms
           </Link>
