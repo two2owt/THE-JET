@@ -3,7 +3,7 @@ import { useLocation } from "react-router";
 import { Header } from "@/components/Header";
 
 /** Routes where the global Header should be hidden (full-bleed standalone pages) */
-export const HEADERLESS_ROUTES = ["/auth", "/onboarding"];
+export const HEADERLESS_ROUTES = ["/auth", "/signin", "/signup", "/onboarding"];
 
 interface AppShellProps {
   children: ReactNode;
