@@ -43,7 +43,7 @@ test.describe("auth routes render the correct mode", () => {
 test.describe("mode switching via the footer link", () => {
   test("sign-in → sign-up updates URL and heading", async ({ page }) => {
     await page.goto("/signin");
-    await page.getByRole("button", { name: /^sign up$/i }).click();
+    await page.getByTestId("auth-mode-switch").click();
     await expect(page).toHaveURL(/\/signup$/);
     await expect(
       page.getByRole("heading", { name: /create your account/i }),
@@ -52,7 +52,7 @@ test.describe("mode switching via the footer link", () => {
 
   test("sign-up → sign-in updates URL and heading", async ({ page }) => {
     await page.goto("/signup");
-    await page.getByRole("button", { name: /^sign in$/i }).click();
+    await page.getByTestId("auth-mode-switch").click();
     await expect(page).toHaveURL(/\/signin$/);
     await expect(
       page.getByRole("heading", { name: /welcome back/i }),
@@ -61,15 +61,17 @@ test.describe("mode switching via the footer link", () => {
 });
 
 test.describe("sign-in form", () => {
-  test("submitting empty form surfaces inline validation", async ({ page }) => {
+  test("invalid email surfaces inline validation", async ({ page }) => {
     await page.goto("/signin");
-    await page.getByRole("button", { name: /^sign in$/i, exact: false }).last()
-      .click()
-      .catch(() => {});
-    // Submit via the form submit button (primary CTA inside the form).
+    // HTML5 `required` blocks empty submits, so feed an invalid email to
+    // exercise the zod validation path.
+    await page.locator("#auth-email").fill("not-an-email");
+    await page.locator("#auth-password").fill("anything");
     await page.locator("form button[type=submit]").click();
-    await expect(page.getByText(/valid email address|password is required/i))
-      .toBeVisible();
+    await expect(page.locator("#auth-email-error")).toBeVisible();
+    await expect(page.locator("#auth-email-error")).toContainText(
+      /valid email address/i,
+    );
   });
 
   test("password show/hide toggle flips input type", async ({ page }) => {
@@ -103,7 +105,10 @@ test.describe("sign-up form", () => {
     await page.locator("#auth-confirm-password").fill("StrongPass2");
     await page.locator("#auth-confirm-password").blur();
     await page.locator("form button[type=submit]").click();
-    await expect(page.getByText(/passwords do not match/i)).toBeVisible();
+    await expect(page.locator("#auth-confirm-password-error")).toBeVisible();
+    await expect(page.locator("#auth-confirm-password-error")).toContainText(
+      /passwords do not match/i,
+    );
   });
 
   test("submitting without consent boxes blocks submission", async ({ page }) => {
@@ -112,9 +117,10 @@ test.describe("sign-up form", () => {
     await page.locator("#auth-password").fill("StrongPass1");
     await page.locator("#auth-confirm-password").fill("StrongPass1");
     await page.locator("form button[type=submit]").click();
-    await expect(
-      page.getByText(/privacy policy and terms of service/i),
-    ).toBeVisible();
+    await expect(page.locator("#auth-consent-error")).toBeVisible();
+    await expect(page.locator("#auth-consent-error")).toContainText(
+      /privacy policy and terms of service/i,
+    );
   });
 });
 
