@@ -17,7 +17,7 @@ const UserAnalytics = lazy(() => import("@/components/admin/UserAnalytics").then
 const ConversionFunnel = lazy(() => import("@/components/admin/ConversionFunnel").then(m => ({ default: m.ConversionFunnel })));
 const NeighborhoodManagement = lazy(() => import("@/components/admin/NeighborhoodManagement").then(m => ({ default: m.NeighborhoodManagement })));
 const MonetizationToggle = lazy(() => import("@/components/admin/MonetizationToggle").then(m => ({ default: m.MonetizationToggle })));
-const ResendDomainStatus = lazy(() => import("@/components/admin/ResendDomainStatus").then(m => ({ default: m.ResendDomainStatus })));
+
 
 type SectionId = "deals" | "analytics" | "funnel" | "areas" | "system";
 
@@ -33,7 +33,7 @@ const SECTIONS: SectionDef[] = [
   { id: "analytics", label: "Analytics", description: "User signals, retention, and conversion.",     icon: BarChart3 },
   { id: "funnel",    label: "Funnel",    description: "Search → Deal Viewed → Deal Clicked → Checkout conversion.", icon: Filter },
   { id: "areas",     label: "Areas",     description: "Neighborhood geofences and coverage areas.",   icon: MapPinned },
-  { id: "system",    label: "System",    description: "Monetization toggle and infrastructure status.", icon: Settings2 },
+  { id: "system",    label: "System",    description: "Monetization toggle and email settings.", icon: Settings2 },
 ];
 
 /** Stable card-grid fallback so swapping sections never causes layout shift. */
@@ -216,9 +216,6 @@ export default function AdminDashboard() {
                 <div className="flex flex-col" style={{ gap: 'var(--space-md)' }}>
                   <Suspense fallback={<AdminTabFallback />}>
                     <MonetizationToggle />
-                  </Suspense>
-                  <Suspense fallback={<AdminTabFallback />}>
-                    <ResendDomainStatus />
                   </Suspense>
                 </div>
               )}
