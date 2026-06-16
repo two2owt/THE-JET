@@ -1022,6 +1022,7 @@ const Auth = () => {
                 type="button"
                 onClick={() => switchToMode(mode === "signin" ? "signup" : "signin")}
                 disabled={isLoading}
+                data-testid="auth-mode-switch"
                 className="font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
               >
                 {mode === "signin" ? "Sign up" : "Sign in"}
