@@ -605,63 +605,53 @@ const Auth = () => {
   }
 
   return (
-    <div className="relative flex flex-1 min-h-0 w-full overflow-y-auto bg-background flex-col md:grid md:grid-cols-[2fr_3fr] lg:grid-cols-[1fr_1fr]">
+    <div className="auth-fullscreen relative flex flex-1 min-h-0 w-full overflow-y-auto">
       <SEO
         title="Sign in to JET — Discover Charlotte's Live City Pulse"
         description="Sign in or create your JET account to unlock real-time deals, events, and trending venues across Charlotte, NC."
         path="/auth"
       />
-      {/* LEFT / TOP — Brand panel (compact on mobile, full on md+) */}
-      <aside
-        className="relative overflow-hidden bg-cover bg-center bg-no-repeat h-[140px] md:h-auto md:min-h-full"
+      {/* Full-bleed background image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${authBackground})` }}
-        aria-label="JET brand"
-      >
-        {/* Single cohesive gradient overlay (replaces stacked mesh + pattern + blobs) */}
-        <div className="absolute inset-0 auth-gradient-overlay" aria-hidden="true" />
-        <div
-          className="pointer-events-none absolute inset-0 bg-gradient-to-br from-black/55 via-black/25 to-black/80"
-          aria-hidden="true"
-        />
+        aria-hidden="true"
+      />
+      {/* Dark overlay */}
+      <div
+        className="pointer-events-none absolute inset-0 bg-gradient-to-br from-black/80 via-black/65 to-black/85"
+        aria-hidden="true"
+      />
+      {/* Animated radial mesh gradient */}
+      <div className="pointer-events-none absolute inset-0 auth-mesh-gradient" aria-hidden="true" />
+      {/* Geometric pattern (low opacity) */}
+      <div className="pointer-events-none absolute inset-0 auth-geo-pattern" aria-hidden="true" />
+      {/* Floating shapes */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+        <span className="auth-float-shape auth-float-shape--1" />
+        <span className="auth-float-shape auth-float-shape--2" />
+        <span className="auth-float-shape auth-float-shape--3" />
+      </div>
 
-        <div className="relative z-10 flex h-full w-full flex-col justify-between p-6 md:p-10 lg:p-14">
-          <div className="flex items-center gap-3">
+      {/* Centered content */}
+      <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 sm:px-8 pt-[max(env(safe-area-inset-top,0px),28px)] pb-[max(env(safe-area-inset-bottom,0px),28px)]">
+        <div className="w-full max-w-[420px] flex flex-col items-center animate-fade-in">
+          {/* Logo above card */}
+          <div className="flex flex-col items-center mb-6">
             <img
               src={jetLogo}
               alt="JET — Live City Pulse logo"
-              width="40"
-              height="40"
-              className="h-10 w-10 drop-shadow-[0_2px_12px_hsl(var(--primary)/0.5)]"
+              width="48"
+              height="48"
+              className="h-12 w-12 drop-shadow-[0_6px_22px_hsl(var(--primary)/0.55)]"
               fetchPriority="high"
               decoding="async"
             />
-            <span className="font-display text-xl font-bold tracking-tight text-white drop-shadow-md">
-              JET
-            </span>
-          </div>
-
-          <div className="hidden md:flex flex-col gap-5 max-w-[440px]">
-            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-white/80 backdrop-blur-sm">
+            <span className="mt-2 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white/75 backdrop-blur-sm">
               <span className="dot-gold" />
               Charlotte, NC
             </span>
-            <h2 className="font-display text-[32px] lg:text-[44px] leading-[1.05] font-bold tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.55)]">
-              Discover what's hot. <span className="bg-gradient-to-r from-primary via-primary-glow to-gold bg-clip-text text-transparent">Right now.</span>
-            </h2>
-            <p className="text-base text-white/85 leading-relaxed max-w-[400px] drop-shadow">
-              Live deals, real crowds, and the city's pulse — all in one place. Made for the nights you'll actually remember.
-            </p>
           </div>
-
-          <div className="hidden md:block text-[11px] uppercase tracking-[0.2em] text-white/50">
-            © {new Date().getFullYear()} JET Around
-          </div>
-        </div>
-      </aside>
-
-      {/* RIGHT / BOTTOM — Form panel */}
-      <div className="relative flex flex-1 flex-col items-center justify-center px-6 sm:px-12 lg:px-[48px] pt-[max(env(safe-area-inset-top,0px),24px)] pb-[max(env(safe-area-inset-bottom,0px),24px)]">
-        <div className="w-full max-w-[380px] flex flex-col items-center animate-fade-in">
         {/* Centered Card */}
         <div className={`auth-card ${shake ? "auth-shake" : ""}`}>
           <div key={mode} className="auth-crossfade">
@@ -1033,6 +1023,21 @@ const Auth = () => {
               <ArrowLeft className="h-4 w-4" />
               Back to sign in
             </button>
+          )}
+
+          {/* Switch mode link */}
+          {(mode === "signin" || mode === "signup") && (
+            <p className="mt-6 text-center text-xs text-muted-foreground">
+              {mode === "signin" ? "Don't have an account? " : "Already have an account? "}
+              <button
+                type="button"
+                onClick={() => switchToMode(mode === "signin" ? "signup" : "signin")}
+                disabled={isLoading}
+                className="font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+              >
+                {mode === "signin" ? "Sign up" : "Sign in"}
+              </button>
+            </p>
           )}
 
         </div>
