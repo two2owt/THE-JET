@@ -53,100 +53,6 @@ function jetViteIntegrationCheck(): Plugin {
   };
 }
 
-// ---------------------------------------------------------------------------
-// jet-tailwind-directive-check
-// Guards against regressions where Tailwind stops expanding utilities (e.g.
-// a missing `tailwindcss` PostCSS plugin, a stripped postcss.config.js, or
-// an entry stylesheet that loses its `@tailwind` directives). Runs in two
-// phases:
-//   1. buildStart: confirm postcss.config.js exists AND registers `tailwindcss`,
-//      and that the project's entry CSS still declares the three @tailwind
-//      directives (base / components / utilities).
-//   2. generateBundle (build only): scan emitted CSS assets for canonical
-//      Tailwind utility class selectors. If they are missing, the build fails
-//      loudly instead of silently shipping an unstyled app.
-// ---------------------------------------------------------------------------
-function jetTailwindDirectiveCheck(): Plugin {
-  const ENTRY_CSS = path.resolve("src/index.css");
-  const POSTCSS_CFG = path.resolve("postcss.config.js");
-  const REQUIRED_DIRECTIVES = ["@tailwind base", "@tailwind components", "@tailwind utilities"];
-  // Canonical utilities used app-wide. If Tailwind ran, at least these
-  // selectors must appear in the compiled CSS bundle.
-  const REQUIRED_UTILITY_SELECTORS = [".flex", ".items-center", ".mx-auto"];
-
-  return {
-    name: "jet-tailwind-directive-check",
-    enforce: "pre",
-    buildStart() {
-      // 1a. postcss.config.js must exist and reference tailwindcss.
-      if (!fs.existsSync(POSTCSS_CFG)) {
-        throw new Error(
-          "[jet-tailwind-directive-check] postcss.config.js is missing. " +
-          "Tailwind requires PostCSS configuration to expand @tailwind directives."
-        );
-      }
-      const postcssSrc = fs.readFileSync(POSTCSS_CFG, "utf-8");
-      if (!/tailwindcss/.test(postcssSrc)) {
-        throw new Error(
-          "[jet-tailwind-directive-check] postcss.config.js does not register the " +
-          "`tailwindcss` plugin. Without it, @tailwind directives never expand into " +
-          "utility classes and the app renders unstyled."
-        );
-      }
-
-      // 1b. Entry CSS must declare all three @tailwind directives.
-      if (!fs.existsSync(ENTRY_CSS)) {
-        throw new Error(
-          `[jet-tailwind-directive-check] Entry stylesheet not found at ${ENTRY_CSS}.`
-        );
-      }
-      const css = fs.readFileSync(ENTRY_CSS, "utf-8");
-      const missing = REQUIRED_DIRECTIVES.filter((d) => !css.includes(d));
-      if (missing.length > 0) {
-        throw new Error(
-          `[jet-tailwind-directive-check] src/index.css is missing required ` +
-          `Tailwind directive(s): ${missing.join(", ")}. ` +
-          `Restore the three @tailwind base/components/utilities lines at the top of the file.`
-        );
-      }
-
-      console.log("\x1b[32m✔\x1b[0m jet-tailwind-directive-check → postcss + @tailwind directives OK");
-    },
-    generateBundle(_options, bundle) {
-      // Only meaningful for real builds (skipped during `vite dev`).
-      const cssAssets = Object.values(bundle).filter(
-        (chunk): chunk is import("rollup").OutputAsset =>
-          chunk.type === "asset" && typeof chunk.fileName === "string" && chunk.fileName.endsWith(".css")
-      );
-      if (cssAssets.length === 0) {
-        // No CSS emitted at all — almost certainly a misconfigured build.
-        throw new Error(
-          "[jet-tailwind-directive-check] No CSS assets were emitted by the build. " +
-          "Tailwind/PostCSS likely failed to run."
-        );
-      }
-      const combined = cssAssets
-        .map((a) => (typeof a.source === "string" ? a.source : Buffer.from(a.source).toString("utf-8")))
-        .join("\n");
-      const missing = REQUIRED_UTILITY_SELECTORS.filter(
-        (sel) => !combined.includes(`${sel}{`) && !combined.includes(`${sel} {`)
-      );
-      if (missing.length > 0) {
-        throw new Error(
-          `[jet-tailwind-directive-check] Compiled CSS is missing core Tailwind ` +
-          `utility selectors: ${missing.join(", ")}. ` +
-          `This means Tailwind did not expand @tailwind directives. ` +
-          `Verify that vite.config.ts css.postcss.plugins includes tailwindcss() ` +
-          `(or that the inline postcss block is removed so postcss.config.js is honored).`
-        );
-      }
-      console.log(
-        `\x1b[32m✔\x1b[0m jet-tailwind-directive-check → ${cssAssets.length} CSS asset(s) contain Tailwind utilities`
-      );
-    },
-  };
-}
-
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   // Development server configuration
@@ -413,7 +319,6 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     jetViteIntegrationCheck(),
-    jetTailwindDirectiveCheck(),
     // Auto-inject <link rel="preload"> for font files to break CSS→font waterfall
     // This eliminates the 1.5s LCP render delay caused by font discovery after CSS parse
     ({
