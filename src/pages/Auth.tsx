@@ -704,6 +704,15 @@ const Auth = () => {
             onSubmit={handleSubmit}
             className="relative flex flex-col gap-4"
             aria-busy={isLoading}
+            aria-label={
+              mode === "signup"
+                ? "Create account form"
+                : mode === "forgot"
+                ? "Forgot password form"
+                : mode === "reset"
+                ? "Reset password form"
+                : "Sign in form"
+            }
           >
             {isLoading && (
               <div className="auth-loading-overlay" aria-hidden="true">
@@ -739,7 +748,7 @@ const Auth = () => {
                 </div>
                 {validationErrors.email && (
                   <p id="auth-email-error" className="auth-field-error">
-                    <AlertCircle />
+                    <AlertCircle aria-hidden="true" />
                     {validationErrors.email}
                   </p>
                 )}
@@ -796,7 +805,7 @@ const Auth = () => {
                   </div>
                   {validationErrors.password ? (
                     <p id="auth-password-error" className="auth-field-error">
-                      <AlertCircle />
+                      <AlertCircle aria-hidden="true" />
                       {validationErrors.password}
                     </p>
                   ) : (isSignUp || isResettingPassword) ? (
@@ -841,7 +850,7 @@ const Auth = () => {
                     </div>
                     {validationErrors.confirmPassword && (
                       <p id="auth-confirm-password-error" className="auth-field-error">
-                        <AlertCircle />
+                        <AlertCircle aria-hidden="true" />
                         {validationErrors.confirmPassword}
                       </p>
                     )}
@@ -871,12 +880,12 @@ const Auth = () => {
                         <Link to="/terms-of-service" target="_blank" className="font-medium text-primary underline-offset-4 hover:underline">
                           Terms of Service
                         </Link>
-                        <span className="text-destructive ml-0.5">*</span>
+                        <span aria-hidden="true" className="text-destructive ml-0.5">*</span>
                       </label>
                     </div>
                     {validationErrors.consent && (
                       <p id="auth-consent-error" className="auth-field-error auth-field-error--indented">
-                        <AlertCircle />
+                        <AlertCircle aria-hidden="true" />
                         {validationErrors.consent}
                       </p>
                     )}
@@ -894,12 +903,12 @@ const Auth = () => {
                       />
                       <label htmlFor="locationConsent" className="cursor-pointer text-xs leading-relaxed text-foreground/85">
                         I consent to location tracking for personalized deals and alerts. Manage in Profile anytime.
-                        <span className="text-destructive ml-0.5">*</span>
+                        <span aria-hidden="true" className="text-destructive ml-0.5">*</span>
                       </label>
                     </div>
                     {validationErrors.locationConsent && (
                       <p id="auth-location-consent-error" className="auth-field-error auth-field-error--indented">
-                        <AlertCircle />
+                        <AlertCircle aria-hidden="true" />
                         {validationErrors.locationConsent}
                       </p>
                     )}
@@ -914,7 +923,7 @@ const Auth = () => {
                 role="alert"
                 className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-xs text-destructive"
               >
-                <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                <AlertCircle aria-hidden="true" className="h-4 w-4 flex-shrink-0 mt-0.5" />
                 <span className="leading-snug">{formError}</span>
               </div>
             )}
@@ -923,7 +932,7 @@ const Auth = () => {
                 role="status"
                 className="flex items-start gap-2 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2.5 text-xs text-emerald-400"
               >
-                <CheckCircle2 className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                <CheckCircle2 aria-hidden="true" className="h-4 w-4 flex-shrink-0 mt-0.5" />
                 <span className="leading-snug">{successMessage}</span>
               </div>
             )}
