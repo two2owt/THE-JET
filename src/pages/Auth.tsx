@@ -632,7 +632,7 @@ const Auth = () => {
   }
 
   return (
-    <div className="auth-fullscreen relative flex flex-1 min-h-0 w-full overflow-y-auto items-stretch">
+    <div className="auth-fullscreen relative flex flex-col flex-1 min-h-0 w-full overflow-y-auto">
       <SEO
         title={seoTitle}
         description={seoDescription}
@@ -660,9 +660,9 @@ const Auth = () => {
         <span className="auth-float-shape auth-float-shape--3" />
       </div>
 
-      {/* Centered content — responsive padding for phone → desktop */}
-      <div className="relative z-10 mx-auto flex w-full flex-1 flex-col items-center justify-center px-4 sm:px-6 md:px-8 pt-[max(env(safe-area-inset-top,0px),20px)] pb-[max(env(safe-area-inset-bottom,0px),20px)]">
-        <div className="w-full max-w-[420px] flex flex-col items-center animate-fade-in my-auto">
+      {/* Centered content — column flex fills the viewport and centers the card both axes */}
+      <div className="relative z-10 flex w-full flex-1 flex-col items-center justify-center px-4 sm:px-6 md:px-8 pt-[max(env(safe-area-inset-top,0px),20px)] pb-[max(env(safe-area-inset-bottom,0px),20px)]">
+        <div className="w-full max-w-[420px] mx-auto flex flex-col items-center animate-fade-in">
           {/* Logo above card */}
           <div className="flex flex-col items-center mb-5 sm:mb-6">
             <img
