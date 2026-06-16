@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate, useSearchParams, Link } from "react-router";
+import { useNavigate, useSearchParams, useLocation, Link } from "react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
@@ -45,6 +45,7 @@ const getAppUrl = (): string =>
 const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
@@ -102,15 +103,17 @@ const Auth = () => {
     };
   }, [authUser, mode, navigate]);
 
-  // Handle URL mode parameter (signin/signup)
+  // Sync auth mode with URL: /signup → signup, /signin or /auth → signin.
+  // Also supports legacy ?mode=signup query param on /auth.
   useEffect(() => {
-    const mode = searchParams.get('mode');
-    if (mode === 'signup') {
+    const path = location.pathname;
+    const queryMode = searchParams.get('mode');
+    if (path === '/signup' || queryMode === 'signup') {
       setIsSignUp(true);
-    } else if (mode === 'signin') {
+    } else if (path === '/signin' || path === '/auth' || queryMode === 'signin') {
       setIsSignUp(false);
     }
-  }, [searchParams]);
+  }, [location.pathname, searchParams]);
 
   // Check if user is coming from password reset email
   useEffect(() => {
@@ -579,6 +582,11 @@ const Auth = () => {
     setConfirmPassword("");
     setDataProcessingConsent(false);
     setLocationConsent(false);
+    // Keep the URL in sync so the screen has a shareable, distinct path.
+    const targetPath = next === "signup" ? "/signup" : "/signin";
+    if (location.pathname !== targetPath) {
+      navigate(targetPath, { replace: true });
+    }
   };
 
   // While the auth context is still hydrating, or while we're about to
