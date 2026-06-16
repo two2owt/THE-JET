@@ -644,9 +644,9 @@ const Auth = () => {
         style={{ backgroundImage: `url(${authBackground})` }}
         aria-hidden="true"
       />
-      {/* Dark overlay */}
+      {/* Dark overlay — uses background token so it adapts with theme */}
       <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-br from-black/80 via-black/65 to-black/85"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-br from-background/85 via-background/70 to-background/90"
         aria-hidden="true"
       />
       {/* Animated radial mesh gradient */}
@@ -674,16 +674,17 @@ const Auth = () => {
               fetchPriority="high"
               decoding="async"
             />
-            <span className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white/75 backdrop-blur-sm">
+            <span className="mt-3 inline-flex items-center gap-2 rounded-full border border-border/40 bg-card/30 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-foreground/75 backdrop-blur-sm">
               <span className="dot-gold" />
               Charlotte, NC
             </span>
           </div>
-        {/* Centered Card */}
-        <div className={`auth-card ${shake ? "auth-shake" : ""}`}>
-          <div key={mode} className="auth-crossfade">
-          {/* Title */}
-          <div className="flex flex-col items-center gap-1.5 text-center mb-5">
+
+          {/* Centered Card */}
+          <div className={`auth-card ${shake ? "auth-shake" : ""}`}>
+            <div key={mode} className="auth-crossfade">
+              {/* Title */}
+              <div className="flex flex-col items-center gap-1.5 text-center mb-5">
             <h1 className="heading-luxe-gradient text-[26px] sm:text-[28px] leading-tight m-0">
               {mode === "signup"
                 ? "Create your account"
