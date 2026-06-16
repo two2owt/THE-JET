@@ -755,14 +755,15 @@ const Auth = () => {
                       Password
                     </label>
                     {mode === "signin" && (
-                      <button
-                        type="button"
+                      <AuthButton
+                        variant="link"
+                        size="sm"
                         onClick={() => setIsForgotPassword(true)}
                         disabled={isLoading}
-                        className="text-xs font-medium text-primary hover:text-primary-glow transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+                        className="text-xs"
                       >
                         Forgot?
-                      </button>
+                      </AuthButton>
                     )}
                   </div>
                   <div className="relative">
@@ -927,20 +928,16 @@ const Auth = () => {
               </div>
             )}
 
-            <Button
+            <AuthButton
               type="submit"
-              disabled={isLoading}
-              variant="jet"
+              variant="primary"
               size="lg"
-              className="mt-1 w-full rounded-full text-fluid-base font-semibold tracking-wide shadow-lg shadow-primary/20"
-              style={{ height: 48, minHeight: 48 }}
+              fullWidth
+              loading={isLoading}
+              className="mt-1"
             >
-              {isLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                primaryLabel
-              )}
-            </Button>
+              {primaryLabel}
+            </AuthButton>
           </form>
 
           {/* Social section */}
