@@ -573,6 +573,25 @@ const Auth = () => {
       ? "Create Account"
       : "Sign In";
 
+  // Dynamic SEO per mode so /signin, /signup, and recovery views have
+  // distinct titles, descriptions, and canonical paths.
+  const seoTitle =
+    mode === "signup"
+      ? "Create your JET account — Charlotte's Live City Pulse"
+      : mode === "forgot"
+      ? "Reset your JET password"
+      : mode === "reset"
+      ? "Set a new JET password"
+      : "Sign in to JET — Charlotte's Live City Pulse";
+  const seoDescription =
+    mode === "signup"
+      ? "Create your JET account to unlock real-time deals, events, and trending venues across Charlotte, NC."
+      : mode === "forgot" || mode === "reset"
+      ? "Reset your JET password to get back to discovering what's hot in Charlotte, NC."
+      : "Sign in to JET to discover real-time deals, events, and trending venues across Charlotte, NC.";
+  const seoPath =
+    mode === "signup" ? "/signup" : mode === "signin" ? "/signin" : "/auth";
+
   const switchToMode = (next: "signin" | "signup") => {
     setIsSignUp(next === "signup");
     setIsForgotPassword(false);
