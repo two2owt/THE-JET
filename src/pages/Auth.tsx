@@ -1025,6 +1025,21 @@ const Auth = () => {
             </button>
           )}
 
+          {/* Switch mode link */}
+          {(mode === "signin" || mode === "signup") && (
+            <p className="mt-6 text-center text-xs text-muted-foreground">
+              {mode === "signin" ? "Don't have an account? " : "Already have an account? "}
+              <button
+                type="button"
+                onClick={() => switchToMode(mode === "signin" ? "signup" : "signin")}
+                disabled={isLoading}
+                className="font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+              >
+                {mode === "signin" ? "Sign up" : "Sign in"}
+              </button>
+            </p>
+          )}
+
         </div>
         </div>
 
