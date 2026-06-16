@@ -613,7 +613,7 @@ const Auth = () => {
   }
 
   return (
-    <div className="auth-fullscreen relative flex flex-1 min-h-0 w-full overflow-y-auto">
+    <div className="auth-fullscreen relative flex flex-1 min-h-0 w-full overflow-y-auto items-stretch">
       <SEO
         title="Sign in to JET — Discover Charlotte's Live City Pulse"
         description="Sign in or create your JET account to unlock real-time deals, events, and trending venues across Charlotte, NC."
@@ -641,11 +641,11 @@ const Auth = () => {
         <span className="auth-float-shape auth-float-shape--3" />
       </div>
 
-      {/* Centered content */}
-      <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 sm:px-8 pt-[max(env(safe-area-inset-top,0px),28px)] pb-[max(env(safe-area-inset-bottom,0px),28px)]">
-        <div className="w-full max-w-[420px] flex flex-col items-center animate-fade-in">
+      {/* Centered content — responsive padding for phone → desktop */}
+      <div className="relative z-10 mx-auto flex w-full flex-1 flex-col items-center justify-center px-4 sm:px-6 md:px-8 pt-[max(env(safe-area-inset-top,0px),20px)] pb-[max(env(safe-area-inset-bottom,0px),20px)]">
+        <div className="w-full max-w-[420px] flex flex-col items-center animate-fade-in my-auto">
           {/* Logo above card */}
-          <div className="flex flex-col items-center mb-6">
+          <div className="flex flex-col items-center mb-5 sm:mb-6">
             <img
               src={jetLogo}
               alt="JET — Live City Pulse logo"
@@ -655,7 +655,7 @@ const Auth = () => {
               fetchPriority="high"
               decoding="async"
             />
-            <span className="mt-2 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white/75 backdrop-blur-sm">
+            <span className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white/75 backdrop-blur-sm">
               <span className="dot-gold" />
               Charlotte, NC
             </span>
@@ -678,44 +678,6 @@ const Auth = () => {
               {subtitle}
             </p>
           </div>
-
-          {/* Segmented mode switcher */}
-          {mode !== "reset" && mode !== "forgot" && (
-            <div
-              role="tablist"
-              aria-label="Authentication mode"
-              className="relative grid grid-cols-2 gap-1 rounded-full border-hairline bg-card/40 p-1 backdrop-blur-sm mb-5"
-            >
-              <button
-                type="button"
-                role="tab"
-                aria-selected={mode === "signin"}
-                onClick={() => switchToMode("signin")}
-                disabled={isLoading}
-                className={`min-h-10 rounded-full text-fluid-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
-                  mode === "signin"
-                    ? "bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-md"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Sign In
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={mode === "signup"}
-                onClick={() => switchToMode("signup")}
-                disabled={isLoading}
-                className={`min-h-10 rounded-full text-fluid-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
-                  mode === "signup"
-                    ? "bg-gradient-to-r from-primary to-primary-glow text-primary-foreground shadow-md"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Sign Up
-              </button>
-            </div>
-          )}
 
           {/* Form (relative so the loading overlay positions correctly) */}
           <form
