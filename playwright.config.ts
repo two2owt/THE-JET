@@ -18,6 +18,17 @@ export default defineConfig({
     viewport: { width: 1280, height: 800 },
   },
   projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    {
+      name: "chromium",
+      use: {
+        ...devices["Desktop Chrome"],
+        // Use the system Chromium that ships in the sandbox; the bundled
+        // browser revision Playwright expects isn't pre-installed.
+        launchOptions: {
+          executablePath:
+            process.env.PLAYWRIGHT_CHROMIUM_PATH ?? "/bin/chromium",
+        },
+      },
+    },
   ],
 });
