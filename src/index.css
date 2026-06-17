@@ -1652,6 +1652,45 @@ All colors MUST be HSL.
       opacity: 1;
     }
   }
+
+  /* City transition: paper plane takeoff → cruise → landing.
+     transform + opacity only — keeps CLS at 0. */
+  @keyframes plane-flight {
+    0% {
+      transform: translate(-20vw, 30vh) rotate(-25deg) scale(0.6);
+      opacity: 0;
+    }
+    15% {
+      transform: translate(10vw, 5vh) rotate(-12deg) scale(0.85);
+      opacity: 1;
+    }
+    50% {
+      transform: translate(45vw, -8vh) rotate(-4deg) scale(1);
+      opacity: 1;
+    }
+    85% {
+      transform: translate(85vw, 0vh) rotate(8deg) scale(0.9);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(120vw, 20vh) rotate(18deg) scale(0.7);
+      opacity: 0;
+    }
+  }
+
+  @keyframes city-caption-in {
+    0%   { opacity: 0; transform: translateY(8px) scale(0.96); }
+    20%  { opacity: 1; transform: translateY(0)   scale(1); }
+    75%  { opacity: 1; transform: translateY(0)   scale(1); }
+    100% { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  }
+
+  @keyframes city-overlay-fade {
+    0%   { opacity: 0; }
+    15%  { opacity: 1; }
+    80%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
 }
 
 /* ========================================================================
