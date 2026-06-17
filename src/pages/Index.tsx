@@ -26,6 +26,7 @@ import { NotificationsTabSkeleton, ExploreTabSkeleton } from "@/components/skele
 import { TabPageHeader } from "@/components/TabPageHeader";
 import { PageShell } from "@/components/PageShell";
 import { SEO } from "@/components/SEO";
+import { CityTransitionOverlay } from "@/components/CityTransitionOverlay";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   readCachedOnboardingStatus,
@@ -347,6 +348,7 @@ const Index = () => {
 
   const handleCityChange = useCallback((city: City) => {
     setSelectedCity(city);
+    setCityTransitionNonce((n) => n + 1);
     toast.success(`Switched to ${city.name}, ${city.state}`, {
       description: "Finding deals in your area"
     });
@@ -355,6 +357,7 @@ const Index = () => {
   // Auto-select nearest city when geolocation detects it on initial load
   const handleNearestCityDetected = useCallback((city: City) => {
     setSelectedCity(city);
+    setCityTransitionNonce((n) => n + 1);
   }, []);
 
   // Handle detected location name from reverse geocoding
