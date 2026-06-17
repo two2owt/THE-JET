@@ -23,6 +23,7 @@ import { useVenueActivity } from "@/hooks/useVenueActivity";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useBottomNavigation } from "@/hooks/useBottomNavigation";
 import { NotificationsTabSkeleton, ExploreTabSkeleton } from "@/components/skeletons/PageSkeletons";
+import { HeatmapSkeleton } from "@/components/skeletons/HeatmapSkeleton";
 import { TabPageHeader } from "@/components/TabPageHeader";
 import { PageShell } from "@/components/PageShell";
 import { SEO } from "@/components/SEO";
@@ -54,6 +55,7 @@ const PushNotificationPrompt = lazy(() => import("@/components/PushNotificationP
 
 // Minimal critical imports
 import { Map as MapIcon, Bell } from "lucide-react";
+import { AlertCircle, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
@@ -151,7 +153,7 @@ const Index = () => {
   const { notifications, markAsRead } = useNotifications(dataReady);
   useAutoScrapeVenueImages(dataReady);
   const { deals, refresh: refreshDeals, loading: dealsLoading, lastUpdated: dealsLastUpdated } = useDeals(false, dataReady);
-  const { venues: realVenues, loading: venuesLoading, refresh: refreshVenues, lastUpdated: venuesLastUpdated } = useVenueActivity(dataReady);
+  const { venues: realVenues, loading: venuesLoading, error: venuesError, refresh: refreshVenues, lastUpdated: venuesLastUpdated } = useVenueActivity(dataReady);
   const { justInstalled, clearJustInstalled } = usePWAInstall();
   const [showPushPrompt, setShowPushPrompt] = useState(false);
   const jetCardRef = useRef<HTMLDivElement>(null);
@@ -474,6 +476,16 @@ const Index = () => {
             className="absolute inset-0 w-full h-full"
             style={{ zIndex: 0 }}
           >
+            {/* Auth-gated skeleton: while the session is still resolving we
+                don't even mount the map (its data queries depend on auth).
+                This replaces the partial render that previously caused a
+                blank map after sign-in. */}
+            {authLoading && (
+              <div style={{ position: 'absolute', inset: 0, zIndex: 20 }}>
+                <HeatmapSkeleton />
+              </div>
+            )}
+
             {mapboxError && !mapboxLoading && (
               <div style={{
                 position: 'absolute', inset: 0, zIndex: 10,
@@ -507,7 +519,7 @@ const Index = () => {
             <div 
               className="absolute inset-0 w-full h-full"
             >
-              {mapboxToken && (
+              {!authLoading && mapboxToken && (
                 <Suspense fallback={null}>
                   <MapboxHeatmap
                     onVenueSelect={handleVenueSelect}
@@ -526,6 +538,64 @@ const Index = () => {
                 </Suspense>
               )}
             </div>
+
+            {/* Post-auth data error / empty state. Only shown after auth has
+                resolved AND the venue fetch has actually completed — so we
+                never flash this during normal loading. */}
+            {!authLoading && !mapboxError && !venuesLoading && (venuesError || venues.length === 0) && (
+              <div
+                role="status"
+                style={{
+                  position: 'absolute',
+                  bottom: 'calc(var(--bottom-nav-total-height, 60px) + 16px)',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  zIndex: 30,
+                  width: 'min(420px, calc(100vw - 24px))',
+                  padding: '14px 16px',
+                  borderRadius: '14px',
+                  background: 'hsl(var(--card) / 0.92)',
+                  backdropFilter: 'blur(12px)',
+                  border: '1px solid hsl(var(--border) / 0.6)',
+                  boxShadow: '0 10px 30px hsl(0 0% 0% / 0.35)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                }}
+              >
+                <div style={{
+                  flexShrink: 0,
+                  width: '36px', height: '36px', borderRadius: '50%',
+                  background: venuesError ? 'hsl(var(--destructive) / 0.15)' : 'hsl(var(--primary) / 0.12)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {venuesError ? (
+                    <AlertCircle className="w-5 h-5" style={{ color: 'hsl(var(--destructive))' }} aria-hidden="true" />
+                  ) : (
+                    <MapIcon className="w-5 h-5" style={{ color: 'hsl(var(--primary))' }} aria-hidden="true" />
+                  )}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: '13px', fontWeight: 600, color: 'hsl(var(--foreground))', margin: 0 }}>
+                    {venuesError ? "Couldn't load venues" : "No venues found"}
+                  </p>
+                  <p style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))', margin: '2px 0 0', lineHeight: 1.35 }}>
+                    {venuesError
+                      ? "Check your connection and try again."
+                      : `We couldn't find live venues in ${selectedCity.name} right now.`}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant={venuesError ? "default" : "outline"}
+                  onClick={() => refreshVenues()}
+                  className="gap-1.5 flex-shrink-0"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  Retry
+                </Button>
+              </div>
+            )}
           </div>
 
         </>
