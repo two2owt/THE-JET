@@ -17,6 +17,7 @@ const UserAnalytics = lazy(() => import("@/components/admin/UserAnalytics").then
 const ConversionFunnel = lazy(() => import("@/components/admin/ConversionFunnel").then(m => ({ default: m.ConversionFunnel })));
 const NeighborhoodManagement = lazy(() => import("@/components/admin/NeighborhoodManagement").then(m => ({ default: m.NeighborhoodManagement })));
 const MonetizationToggle = lazy(() => import("@/components/admin/MonetizationToggle").then(m => ({ default: m.MonetizationToggle })));
+const TestPushPanel = lazy(() => import("@/components/admin/TestPushPanel").then(m => ({ default: m.TestPushPanel })));
 
 
 type SectionId = "deals" | "analytics" | "funnel" | "areas" | "system";
@@ -216,6 +217,9 @@ export default function AdminDashboard() {
                 <div className="flex flex-col" style={{ gap: 'var(--space-md)' }}>
                   <Suspense fallback={<AdminTabFallback />}>
                     <MonetizationToggle />
+                  </Suspense>
+                  <Suspense fallback={<AdminTabFallback />}>
+                    <TestPushPanel />
                   </Suspense>
                 </div>
               )}
