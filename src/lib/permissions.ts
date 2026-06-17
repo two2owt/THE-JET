@@ -28,11 +28,12 @@ export async function openAppSettings(): Promise<boolean> {
     return false;
   }
   try {
-    const { App } = await import("@capacitor/app");
     const url = isIOSNative()
       ? "app-settings:"
       : `intent://#Intent;action=android.settings.APPLICATION_DETAILS_SETTINGS;package=${ANDROID_PACKAGE};end`;
-    await App.openUrl({ url });
+    // The native WebView handles `app-settings:` / `intent:` schemes by
+    // forwarding them to the OS — no Capacitor plugin call needed.
+    window.location.href = url;
     return true;
   } catch (err) {
     console.warn("[permissions] openAppSettings failed", err);
