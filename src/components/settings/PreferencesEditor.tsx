@@ -191,6 +191,7 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
         return prev.filter(c => c !== category);
       }
       if (prev.length >= 3) {
+        toast.info("You can select up to 3 categories");
         return prev;
       }
       return [...prev, category];
@@ -206,18 +207,25 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
     option: string,
     _currentSelection: string[],
     setter: React.Dispatch<React.SetStateAction<string[]>>,
-    maxSelections: number = 5
+    categoryTotal: number,
+    categoryName: string
   ) => {
     setter(prev => {
       if (prev.includes(option)) {
         return prev.filter(o => o !== option);
       }
-      if (prev.length >= maxSelections) {
+      if (categoryTotal >= 5) {
+        toast.info(`Up to 5 ${categoryName} preferences`);
         return prev;
       }
       return [...prev, option];
     });
   };
+
+  const foodTotal = foodCuisine.length + foodDietary.length + foodMeal.length;
+  const drinkTotal = drinkCoffee.length + drinkBar.length + drinkAtmosphere.length;
+  const nightlifeTotal = nightlifeVenue.length + nightlifeMusic.length + nightlifeCrowd.length;
+  const eventsTotal = eventsType.length + eventsGroup.length + eventsTime.length;
 
   if (isLoading) {
     return (
@@ -255,14 +263,16 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
     options,
     selected,
     onToggle,
+    remaining,
   }: {
     title: string;
     options: string[];
     selected: string[];
     onToggle: (option: string) => void;
+    remaining: number;
   }) => (
     <div className="space-y-2">
-      <p className="text-xs font-medium text-muted-foreground">{title} <span className="text-muted-foreground/60">(up to 5)</span></p>
+      <p className="text-xs font-medium text-muted-foreground">{title} <span className="text-muted-foreground/60">({remaining} left)</span></p>
       <div className="flex flex-wrap gap-1.5">
         {options.map(option => (
           <OptionChip
@@ -364,19 +374,22 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
               title="Cuisine Type"
               options={FOOD_OPTIONS.cuisineType}
               selected={foodCuisine}
-              onToggle={(o) => toggleOption(o, foodCuisine, setFoodCuisine)}
+              onToggle={(o) => toggleOption(o, foodCuisine, setFoodCuisine, foodTotal, "Food")}
+              remaining={Math.max(0, 5 - foodTotal)}
             />
             <SubcategorySection
               title="Dietary Preference"
               options={FOOD_OPTIONS.dietaryPreference}
               selected={foodDietary}
-              onToggle={(o) => toggleOption(o, foodDietary, setFoodDietary)}
+              onToggle={(o) => toggleOption(o, foodDietary, setFoodDietary, foodTotal, "Food")}
+              remaining={Math.max(0, 5 - foodTotal)}
             />
             <SubcategorySection
               title="Meal Occasion"
               options={FOOD_OPTIONS.mealOccasion}
               selected={foodMeal}
-              onToggle={(o) => toggleOption(o, foodMeal, setFoodMeal)}
+              onToggle={(o) => toggleOption(o, foodMeal, setFoodMeal, foodTotal, "Food")}
+              remaining={Math.max(0, 5 - foodTotal)}
             />
           </CategoryCard>
 
@@ -390,19 +403,22 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
               title="Coffee & Tea"
               options={DRINK_OPTIONS.coffeeTea}
               selected={drinkCoffee}
-              onToggle={(o) => toggleOption(o, drinkCoffee, setDrinkCoffee)}
+              onToggle={(o) => toggleOption(o, drinkCoffee, setDrinkCoffee, drinkTotal, "Drinks")}
+              remaining={Math.max(0, 5 - drinkTotal)}
             />
             <SubcategorySection
               title="Bar & Cocktail Style"
               options={DRINK_OPTIONS.barCocktail}
               selected={drinkBar}
-              onToggle={(o) => toggleOption(o, drinkBar, setDrinkBar)}
+              onToggle={(o) => toggleOption(o, drinkBar, setDrinkBar, drinkTotal, "Drinks")}
+              remaining={Math.max(0, 5 - drinkTotal)}
             />
             <SubcategorySection
               title="Atmosphere"
               options={DRINK_OPTIONS.atmosphere}
               selected={drinkAtmosphere}
-              onToggle={(o) => toggleOption(o, drinkAtmosphere, setDrinkAtmosphere)}
+              onToggle={(o) => toggleOption(o, drinkAtmosphere, setDrinkAtmosphere, drinkTotal, "Drinks")}
+              remaining={Math.max(0, 5 - drinkTotal)}
             />
           </CategoryCard>
 
@@ -416,19 +432,22 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
               title="Venue Type"
               options={NIGHTLIFE_OPTIONS.venueType}
               selected={nightlifeVenue}
-              onToggle={(o) => toggleOption(o, nightlifeVenue, setNightlifeVenue)}
+              onToggle={(o) => toggleOption(o, nightlifeVenue, setNightlifeVenue, nightlifeTotal, "Nightlife")}
+              remaining={Math.max(0, 5 - nightlifeTotal)}
             />
             <SubcategorySection
               title="Music Preference"
               options={NIGHTLIFE_OPTIONS.musicPreference}
               selected={nightlifeMusic}
-              onToggle={(o) => toggleOption(o, nightlifeMusic, setNightlifeMusic)}
+              onToggle={(o) => toggleOption(o, nightlifeMusic, setNightlifeMusic, nightlifeTotal, "Nightlife")}
+              remaining={Math.max(0, 5 - nightlifeTotal)}
             />
             <SubcategorySection
               title="Crowd & Vibe"
               options={NIGHTLIFE_OPTIONS.crowdVibe}
               selected={nightlifeCrowd}
-              onToggle={(o) => toggleOption(o, nightlifeCrowd, setNightlifeCrowd)}
+              onToggle={(o) => toggleOption(o, nightlifeCrowd, setNightlifeCrowd, nightlifeTotal, "Nightlife")}
+              remaining={Math.max(0, 5 - nightlifeTotal)}
             />
           </CategoryCard>
 
@@ -442,19 +461,22 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
               title="Event Type"
               options={EVENTS_OPTIONS.eventType}
               selected={eventsType}
-              onToggle={(o) => toggleOption(o, eventsType, setEventsType)}
+              onToggle={(o) => toggleOption(o, eventsType, setEventsType, eventsTotal, "Events")}
+              remaining={Math.max(0, 5 - eventsTotal)}
             />
             <SubcategorySection
               title="Group Type"
               options={EVENTS_OPTIONS.groupType}
               selected={eventsGroup}
-              onToggle={(o) => toggleOption(o, eventsGroup, setEventsGroup)}
+              onToggle={(o) => toggleOption(o, eventsGroup, setEventsGroup, eventsTotal, "Events")}
+              remaining={Math.max(0, 5 - eventsTotal)}
             />
             <SubcategorySection
               title="Time & Setting"
               options={EVENTS_OPTIONS.timeSetting}
               selected={eventsTime}
-              onToggle={(o) => toggleOption(o, eventsTime, setEventsTime)}
+              onToggle={(o) => toggleOption(o, eventsTime, setEventsTime, eventsTotal, "Events")}
+              remaining={Math.max(0, 5 - eventsTotal)}
             />
           </CategoryCard>
         </div>
