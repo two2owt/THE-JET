@@ -1,5 +1,4 @@
-import { useEffect, useRef } from "react";
-import { useEffect as useEffect2, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -39,13 +38,60 @@ function haversineMeters(
  */
 export function useLocationTracking() {
   const { user } = useAuth();
+  const [enabled, setEnabled] = useState<boolean | null>(null);
   const lastSentRef = useRef<{ lat: number; lng: number; at: number } | null>(
     null,
   );
   const inFlightRef = useRef(false);
 
+  // Load the user's location_tracking_enabled preference. Defaults to ON
+  // (matches the DB default) so first-time users are auto-tracked until they
+  // explicitly disable it in Profile Settings.
+  useEffect(() => {
+    if (!user?.id) {
+      setEnabled(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("user_preferences")
+        .select("location_tracking_enabled")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (cancelled) return;
+      setEnabled(data?.location_tracking_enabled ?? true);
+    })();
+
+    // React to live preference changes (e.g. user toggles off in settings).
+    const channel = supabase
+      .channel(`user_preferences:${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "user_preferences",
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const next =
+            (payload.new as { location_tracking_enabled?: boolean } | null)
+              ?.location_tracking_enabled;
+          if (typeof next === "boolean") setEnabled(next);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
+
   useEffect(() => {
     if (!user?.id) return;
+    if (enabled !== true) return;
     if (typeof navigator === "undefined" || !navigator.geolocation) return;
 
     let watchId: number | null = null;
@@ -123,5 +169,5 @@ export function useLocationTracking() {
       cancelled = true;
       if (watchId !== null) navigator.geolocation.clearWatch(watchId);
     };
-  }, [user?.id]);
+  }, [user?.id, enabled]);
 }
