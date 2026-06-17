@@ -210,7 +210,7 @@ const PrivacyPolicy = () => {
           <section className="mb-8">
             <h2 className="text-2xl font-bold mb-4">12. Children&apos;s Privacy</h2>
             <p className="text-foreground/80">
-              Jet is intended for users 17 years of age and older due to alcohol-related content. We do not knowingly collect personal information from children under 13 (or 16 in the EU). If we learn we have collected data from a child, we will delete it promptly.
+              Jet is intended for users 21 years of age and older due to alcohol-related content. We do not knowingly collect personal information from minors. If we learn we have collected data from anyone under 21, we will delete it promptly.
             </p>
           </section>
 

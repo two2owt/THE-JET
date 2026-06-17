@@ -68,7 +68,7 @@ const TermsOfService = () => {
             
             <h3 className="text-xl font-semibold mb-3">3.1 Age Requirements</h3>
             <p className="text-foreground/80 mb-4">
-              You must be at least 17 years old to use Jet. The app contains references to alcohol and venue specials that may include alcoholic beverages. By using Jet, you confirm that you meet this age requirement.
+              You must be at least 21 years old to use Jet. The app contains references to alcohol and venue specials that may include alcoholic beverages. By using Jet, you confirm that you meet this age requirement.
             </p>
 
             <h3 className="text-xl font-semibold mb-3">3.2 Account Responsibilities</h3>
