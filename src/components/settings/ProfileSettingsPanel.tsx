@@ -307,6 +307,24 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
               className="flex-shrink-0"
             />
           </div>
+          <Separator className="my-2" />
+          <div className="flex items-center justify-between gap-3">
+            <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
+              <label htmlFor="email-notifications" className="text-xs sm:text-sm font-medium text-foreground flex items-center gap-1.5">
+                <Mail className="w-3.5 h-3.5" />
+                Email Notifications
+              </label>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">
+                Email me when I receive a friend request, an accepted request, or a new direct message
+              </p>
+            </div>
+            <Switch
+              id="email-notifications"
+              checked={emailNotificationsEnabled}
+              onCheckedChange={setEmailNotificationsEnabled}
+              className="flex-shrink-0"
+            />
+          </div>
           {isNative && (
             <>
               <Separator className="my-2" />
