@@ -526,6 +526,12 @@ const Index = () => {
         </>
       )}
 
+      {/* Plane takeoff/landing animation triggered by city changes */}
+      {createPortal(
+        <CityTransitionOverlay city={selectedCity} nonce={cityTransitionNonce} />,
+        document.body
+      )}
+
       {/* JetCard - portaled to body to bypass stacking contexts */}
       {selectedVenue && activeTab === "map" && createPortal(
         <div 
