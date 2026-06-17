@@ -1,6 +1,7 @@
 import { ReactNode, memo } from "react";
 import { useLocation } from "react-router";
 import { Header } from "@/components/Header";
+import { useLocationTracking } from "@/hooks/useLocationTracking";
 
 /** Routes where the global Header should be hidden (full-bleed standalone pages) */
 export const HEADERLESS_ROUTES = ["/auth", "/signin", "/signup", "/onboarding"];
@@ -24,6 +25,11 @@ interface AppShellProps {
 export const AppShell = memo(function AppShell({ children }: AppShellProps) {
   const { pathname } = useLocation();
   const showChrome = !HEADERLESS_ROUTES.includes(pathname);
+
+  // Persist authenticated users' GPS fixes to user_locations via
+  // check-geofence, so map density / movement / geofence notifications all
+  // operate on real data.
+  useLocationTracking();
 
   return (
     <div className="app-wrapper">
