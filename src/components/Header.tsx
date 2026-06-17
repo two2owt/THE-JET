@@ -299,6 +299,20 @@ export const Header = () => {
               transition: 'opacity 0.4s ease-out, transform 0.4s ease-out',
             }}
           >
+            <img
+              src={logoSrc}
+              onError={() => setLogoSrc(localPlane)}
+              alt="JET"
+              aria-hidden="true"
+              style={{
+                height: 'clamp(22px, 3.2vw, 30px)',
+                width: 'auto',
+                objectFit: 'contain',
+                flexShrink: 0,
+                marginRight: 'clamp(6px, 1vw, 10px)',
+                filter: 'drop-shadow(0 1px 2px hsl(var(--primary) / 0.35))',
+              }}
+            />
             <span
               style={{
                 fontSize: 'clamp(16px, 2.6vw, 22px)',
