@@ -397,7 +397,7 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
           ) : (
             <>
               <Save className="w-4 h-4 mr-2" />
-              Save Notification &amp; Location Settings
+              Save Notification Settings
             </>
           )}
         </Button>
