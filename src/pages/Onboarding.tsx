@@ -192,8 +192,8 @@ const Onboarding = () => {
       errors.birthdate = "Birthdate is required";
     } else {
       const age = calculateAge(birthdate);
-      if (age < 18) {
-        errors.birthdate = "You must be 18 or older";
+      if (age < 21) {
+        errors.birthdate = "You must be 21 or older";
       }
     }
 
