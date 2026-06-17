@@ -61,8 +61,6 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState(false);
-  const [locationTrackingEnabled, setLocationTrackingEnabled] = useState(false);
-  const [backgroundTrackingEnabled, setBackgroundTrackingEnabled] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
