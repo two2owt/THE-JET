@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import planeAsset from "@/assets/jet-paper-plane.png.asset.json";
+import localPlane from "@/assets/jet-paper-plane.png";
 const planeImg = planeAsset.url;
 import type { City } from "@/types/cities";
 
@@ -17,9 +18,11 @@ interface CityTransitionOverlayProps {
  */
 export function CityTransitionOverlay({ city, nonce }: CityTransitionOverlayProps) {
   const [visible, setVisible] = useState(false);
+  const [planeSrc, setPlaneSrc] = useState(planeImg);
 
   useEffect(() => {
     if (!city || nonce === 0) return;
+    setPlaneSrc(planeImg);
     setVisible(true);
     const t = window.setTimeout(() => setVisible(false), 2400);
     return () => window.clearTimeout(t);
@@ -96,7 +99,8 @@ export function CityTransitionOverlay({ city, nonce }: CityTransitionOverlayProp
 
       {/* Paper plane flying across */}
       <img
-        src={planeImg}
+        src={planeSrc}
+        onError={() => setPlaneSrc(localPlane)}
         alt=""
         aria-hidden="true"
         style={{
