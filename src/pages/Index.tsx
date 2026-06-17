@@ -125,6 +125,11 @@ const Index = () => {
   // fallback), shaving ~800ms off Total Blocking Time on mobile.
   const [dataReady, setDataReady] = useState(false);
   useEffect(() => {
+    // Wait for auth to finish initializing before kicking off authenticated
+    // queries. Without this, the post-sign-in redirect to `/` can fire deal
+    // / venue fetches mid-session-restore — RLS-gated queries return empty
+    // and the map stays blank until the user hard-reloads.
+    if (authLoading) return;
     let cancelled = false;
     const trigger = () => { if (!cancelled) setDataReady(true); };
     const ric = (window as any).requestIdleCallback as
@@ -141,7 +146,7 @@ const Index = () => {
         window.clearTimeout(id);
       }
     };
-  }, []);
+  }, [authLoading]);
 
   const { notifications, markAsRead } = useNotifications(dataReady);
   useAutoScrapeVenueImages(dataReady);

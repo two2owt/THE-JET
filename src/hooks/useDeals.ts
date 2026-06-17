@@ -316,10 +316,22 @@ export const useDeals = (enablePreferenceFilter: boolean = false, enabled: boole
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
+    // Re-run after auth identity changes so the post-sign-in render gets
+    // up-to-date, RLS-evaluated data (instead of whatever pre-auth fetch
+    // returned during the session-restore race).
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event) => {
+        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+          loadUserPreferences().then(() => loadDeals());
+        }
+      }
+    );
+
     return () => {
       cleanup();
       supabase.removeChannel(channel);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      subscription.unsubscribe();
     };
   }, [enabled, preferencesLoaded, loadDeals, loadUserPreferences]);
 
