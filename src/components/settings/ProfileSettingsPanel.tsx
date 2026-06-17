@@ -23,8 +23,6 @@ import { isMonetizationEnabled } from "@/lib/monetization";
 
 const preferencesSchema = z.object({
   notifications_enabled: z.boolean(),
-  location_tracking_enabled: z.boolean(),
-  background_tracking_enabled: z.boolean(),
 });
 
 interface UserPreferencesRow {
