@@ -9,6 +9,40 @@
 import { toast } from "sonner";
 import { isNativeApp, isIOSNative, isAndroidNative, getPlatform } from "@/lib/platform";
 
+/** Capacitor appId — kept in sync with capacitor.config.ts. */
+const ANDROID_PACKAGE = "app.lovable.dafac77279084bdb873c58a805d7581e";
+
+/**
+ * Open the OS-level app settings screen so the user can flip a blocked
+ * permission. iOS uses the documented `app-settings:` URL; Android uses an
+ * intent URI pointed at this app's package. Web falls back to a toast hint.
+ * Returns true if a settings UI was successfully launched.
+ */
+export async function openAppSettings(): Promise<boolean> {
+  if (!isNativeApp()) {
+    toast("Open your browser's site settings", {
+      description:
+        "Click the lock icon in the address bar to manage permissions for this site.",
+      duration: 7000,
+    });
+    return false;
+  }
+  try {
+    const { App } = await import("@capacitor/app");
+    const url = isIOSNative()
+      ? "app-settings:"
+      : `intent://#Intent;action=android.settings.APPLICATION_DETAILS_SETTINGS;package=${ANDROID_PACKAGE};end`;
+    await App.openUrl({ url });
+    return true;
+  } catch (err) {
+    console.warn("[permissions] openAppSettings failed", err);
+    toast.error("Couldn't open Settings", {
+      description: SETTINGS_HINT,
+    });
+    return false;
+  }
+}
+
 export type PermissionStatus =
   | "granted"
   | "denied"          // user said no this time — retry possible
@@ -180,7 +214,13 @@ export function toastPermissionResult(
   if (result.status === "blocked") {
     toast.error(`${kind} blocked`, {
       description: result.message,
-      duration: 8000,
+      duration: 10000,
+      action: {
+        label: "Open Settings",
+        onClick: () => {
+          void openAppSettings();
+        },
+      },
     });
     return;
   }
