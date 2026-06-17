@@ -44,34 +44,55 @@ export const useWebPushNotifications = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>('default');
 
+  const resync = useCallback(async () => {
+    const currentPermission = 'Notification' in window ? Notification.permission : 'denied';
+    setPermission(currentPermission);
+
+    try {
+      const registration = await getPushRegistrationIfExists();
+      if (registration && currentPermission === 'granted') {
+        const existingSubscription = await (registration as any).pushManager.getSubscription();
+        setSubscription(existingSubscription);
+        setIsSubscribed(!!existingSubscription);
+      } else {
+        setSubscription(null);
+        setIsSubscribed(false);
+      }
+    } catch (error) {
+      console.error('Error resyncing push state:', error);
+    }
+  }, []);
+
   useEffect(() => {
-    // Check if push notifications are supported
     const supported = 'serviceWorker' in navigator &&
                       'PushManager' in window &&
                       'Notification' in window;
     setIsSupported(supported);
+    if (!supported) return;
 
-    if (supported) {
-      setPermission(Notification.permission);
-      checkExistingSubscription();
+    resync();
+
+    let permissionStatus: PermissionStatus | null = null;
+    const handlePermissionChange = () => resync();
+    if ('permissions' in navigator) {
+      try {
+        navigator.permissions.query({ name: 'notifications' as any }).then((status) => {
+          permissionStatus = status;
+          permissionStatus.addEventListener('change', handlePermissionChange);
+        }).catch(() => {});
+      } catch {}
     }
-  }, []);
 
-  const checkExistingSubscription = async () => {
-    try {
-      const registration = await getPushRegistrationIfExists();
-      if (!registration) return;
+    const handleVisibility = () => {
+      if (!document.hidden) resync();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
 
-      const existingSubscription = await (registration as any).pushManager.getSubscription();
-
-      if (existingSubscription) {
-        setSubscription(existingSubscription);
-        setIsSubscribed(true);
-      }
-    } catch (error) {
-      console.error('Error checking subscription:', error);
-    }
-  };
+    return () => {
+      permissionStatus?.removeEventListener('change', handlePermissionChange);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [resync]);
 
   const registerServiceWorker = async (): Promise<ServiceWorkerRegistration> => {
     if (!('serviceWorker' in navigator)) {
@@ -237,6 +258,7 @@ export const useWebPushNotifications = () => {
     permission,
     subscribe,
     unsubscribe,
-    checkPermission
+    checkPermission,
+    resync
   };
 };

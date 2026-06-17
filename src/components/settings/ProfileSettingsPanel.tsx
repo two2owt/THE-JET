@@ -54,6 +54,7 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
     unsubscribe: unsubscribeWebPush,
     permission: webPushPermission,
     isLoading: isWebPushLoading,
+    resync: resyncWebPush,
   } = useWebPushNotifications();
   const { isAdmin } = useIsAdmin();
   const showSubscriptionSection = isMonetizationEnabled() || isAdmin;
@@ -116,6 +117,21 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
   useEffect(() => {
     setPushNotificationsEnabled(isPushRegistered);
   }, [isPushRegistered]);
+
+  // Resync web push permission/subscription when the user returns from browser settings
+  useEffect(() => {
+    resyncWebPush();
+    const handleFocus = () => resyncWebPush();
+    const handleVisibility = () => {
+      if (!document.hidden) resyncWebPush();
+    };
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [resyncWebPush]);
 
   const hasUnsavedChanges = useMemo(() => {
     if (!preferences) return false;
