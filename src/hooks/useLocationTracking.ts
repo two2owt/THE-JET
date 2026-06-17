@@ -113,7 +113,6 @@ export function useLocationTracking() {
         // pending request mid-flight instead of letting it land.
         await supabase.functions.invoke("check-geofence", {
           body: { latitude, longitude, accuracy },
-          // @ts-expect-error - signal is forwarded to fetch by supabase-js
           signal: controller.signal,
         });
         if (controller.signal.aborted) return;
