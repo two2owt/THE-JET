@@ -10,12 +10,13 @@ import { useProfile } from "@/hooks/useProfile";
 import { useDebounce } from "@/hooks/useDebounce";
 import { HeaderUserMenu } from "./navigation/HeaderUserMenu";
 import { HeaderSearch } from "./navigation/HeaderSearch";
+import { HeaderSyncIndicator } from "./navigation/HeaderSyncIndicator";
 
 export const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [urlSearchParams, setUrlSearchParams] = useSearchParams();
-  const { venues, deals, onVenueSelect, hideSearch } = useHeaderContext();
+  const { venues, deals, onVenueSelect, hideSearch, lastUpdated, onRefresh, isLoading } = useHeaderContext();
   const isMobile = useIsMobile();
   // Search query is mirrored to the URL as `?q=...` so it's shareable and
   // survives reloads. We also keep a sessionStorage fallback for cases where
@@ -375,6 +376,16 @@ export const Header = () => {
 
         {/* Spacer pushes avatar flush to the right edge of the header */}
         <div style={{ flex: '1 1 0%', minWidth: 0 }} />
+
+        {/* Sync indicator — between search and avatar */}
+        {!(isMobile && searchExpanded) && (
+          <HeaderSyncIndicator
+            lastUpdated={lastUpdated ?? null}
+            onRefresh={onRefresh}
+            isLoading={isLoading}
+            mounted={mounted}
+          />
+        )}
 
         {/* Avatar + dropdown menu (Profile / Settings / Admin / Sign out) */}
         <HeaderUserMenu
