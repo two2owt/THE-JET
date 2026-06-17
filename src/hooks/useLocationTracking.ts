@@ -55,6 +55,9 @@ export function useLocationTracking() {
   useEffect(() => {
     if (!user?.id) {
       setEnabled(null);
+      // Wipe throttle memory so a previously signed-in user's last fix
+      // can't suppress the next user's first post after sign-in.
+      lastSentRef.current = null;
       return;
     }
     let cancelled = false;
