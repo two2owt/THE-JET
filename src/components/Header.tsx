@@ -50,7 +50,9 @@ export const Header = () => {
   });
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const [userEmail, setUserEmail] = useState<string | undefined>(undefined);
+  const [logoSrc, setLogoSrc] = useState(planeAsset.url);
   const { isAdmin } = useIsAdmin();
+
   const { profile } = useProfile(userId);
   const { addToSearchHistory } = useSearchHistory(userId);
   const historyDebounceRef = useRef<number | null>(null);
