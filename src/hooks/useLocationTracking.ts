@@ -1,0 +1,126 @@
+import { useEffect, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+
+/** Minimum meters moved before posting a new fix. */
+const MIN_DISTANCE_METERS = 75;
+/** Minimum time between posts even if user is stationary. */
+const MIN_INTERVAL_MS = 2 * 60 * 1000;
+/** Ignore fixes worse than this (meters). */
+const MAX_ACCURACY_METERS = 250;
+
+function haversineMeters(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number,
+): number {
+  const R = 6_371_000;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+/**
+ * Watches the device's geolocation and persists fresh fixes to the
+ * `check-geofence` edge function (which writes to `user_locations` and
+ * triggers neighborhood entry notifications).
+ *
+ * - Only runs while the user is authenticated.
+ * - Throttled by distance ({@link MIN_DISTANCE_METERS}) and time
+ *   ({@link MIN_INTERVAL_MS}).
+ * - Skips low-accuracy fixes (>{@link MAX_ACCURACY_METERS} m).
+ * - Silent on permission denial — no UI side effects.
+ */
+export function useLocationTracking() {
+  const { user } = useAuth();
+  const lastSentRef = useRef<{ lat: number; lng: number; at: number } | null>(
+    null,
+  );
+  const inFlightRef = useRef(false);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+
+    let watchId: number | null = null;
+    let cancelled = false;
+
+    const postFix = async (
+      latitude: number,
+      longitude: number,
+      accuracy: number | null,
+    ) => {
+      if (inFlightRef.current) return;
+      inFlightRef.current = true;
+      try {
+        await supabase.functions.invoke("check-geofence", {
+          body: { latitude, longitude, accuracy },
+        });
+        lastSentRef.current = {
+          lat: latitude,
+          lng: longitude,
+          at: Date.now(),
+        };
+      } catch (err) {
+        // Network or auth errors are non-fatal — try again on next fix.
+        console.warn("[useLocationTracking] check-geofence failed", err);
+      } finally {
+        inFlightRef.current = false;
+      }
+    };
+
+    const onFix = (pos: GeolocationPosition) => {
+      if (cancelled) return;
+      const { latitude, longitude, accuracy } = pos.coords;
+
+      if (
+        typeof accuracy === "number" &&
+        accuracy > 0 &&
+        accuracy > MAX_ACCURACY_METERS
+      ) {
+        return;
+      }
+
+      const last = lastSentRef.current;
+      if (last) {
+        const moved = haversineMeters(last.lat, last.lng, latitude, longitude);
+        const elapsed = Date.now() - last.at;
+        if (moved < MIN_DISTANCE_METERS && elapsed < MIN_INTERVAL_MS) return;
+      }
+
+      void postFix(latitude, longitude, accuracy ?? null);
+    };
+
+    const onError = (err: GeolocationPositionError) => {
+      // PERMISSION_DENIED (1) — give up silently for this session.
+      if (err.code === err.PERMISSION_DENIED && watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+      }
+    };
+
+    // Immediate one-shot fix on mount so we record presence promptly.
+    navigator.geolocation.getCurrentPosition(onFix, onError, {
+      enableHighAccuracy: false,
+      maximumAge: 60_000,
+      timeout: 15_000,
+    });
+
+    // Continuous watch for movement.
+    watchId = navigator.geolocation.watchPosition(onFix, onError, {
+      enableHighAccuracy: true,
+      maximumAge: 30_000,
+      timeout: 30_000,
+    });
+
+    return () => {
+      cancelled = true;
+      if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+    };
+  }, [user?.id]);
+}
