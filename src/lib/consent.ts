@@ -94,7 +94,7 @@ export function requireConsent(type: ConsentType, opts?: { silent?: boolean }): 
     if (now - last > 4000) {
       recentToasts.set(type, now);
       toast.error(`${LABELS[type]} is disabled`, {
-        description: "Enable it in Settings → Consent Center to use this feature.",
+        description: "Enable it in Settings to use this feature.",
       });
     }
   }
