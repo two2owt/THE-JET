@@ -349,6 +349,17 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [showMovementPaths, setShowMovementPaths] = useState(() => getLayerState("paths", false));
   const [pathTimeFilter, setPathTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.pathTimeFilter, 'all', 'pathTime'));
 
+  // Live insight freshness — re-renders the panel once a second so the
+  // "Updated Xs ago" line stays current without refetching.
+  const [liveTick, setLiveTick] = useState(0);
+  const densityUpdatedAtRef = useRef<number>(0);
+  const pathUpdatedAtRef = useRef<number>(0);
+  useEffect(() => {
+    if (!showLiveStats) return;
+    const id = setInterval(() => setLiveTick((t) => t + 1), 1000);
+    return () => clearInterval(id);
+  }, [showLiveStats]);
+
   // Sync active layer toggles and filter selections to URL query params for shareability
   const syncUrlParams = useCallback(() => {
     const params = new URLSearchParams(window.location.search);
