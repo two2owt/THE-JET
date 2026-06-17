@@ -351,51 +351,6 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         </div>
       </Card>
 
-      {/* Location */}
-      <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
-        <SectionTitle subtitle="Control how the app uses your location" className="mb-0">
-          <span className="inline-flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-primary" />
-            Location
-          </span>
-        </SectionTitle>
-        <Separator />
-        <div className="space-y-3 sm:space-y-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
-              <label htmlFor="location-tracking" className="text-xs sm:text-sm font-medium text-foreground block">
-                Location Tracking
-              </label>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">
-                Allow the app to track your location for nearby deals
-              </p>
-            </div>
-            <Switch
-              id="location-tracking"
-              checked={locationTrackingEnabled}
-              onCheckedChange={setLocationTrackingEnabled}
-              className="flex-shrink-0"
-            />
-          </div>
-          <div className="flex items-center justify-between gap-3">
-            <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
-              <label htmlFor="background-tracking" className="text-xs sm:text-sm font-medium text-foreground block">
-                Background Tracking
-              </label>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">
-                Continue tracking location when app is in background
-              </p>
-            </div>
-            <Switch
-              id="background-tracking"
-              checked={backgroundTrackingEnabled}
-              onCheckedChange={setBackgroundTrackingEnabled}
-              disabled={!locationTrackingEnabled}
-              className="flex-shrink-0"
-            />
-          </div>
-        </div>
-      </Card>
 
       {/* Privacy Notice */}
       <Card className="p-4 sm:p-5 md:p-6 bg-card/90 backdrop-blur-sm border border-border/50 shadow-card">
