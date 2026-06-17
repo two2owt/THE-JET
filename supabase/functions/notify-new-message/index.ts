@@ -99,6 +99,74 @@ Deno.serve(async (req) => {
       message: safePreview,
     });
 
+    // Deep link back to the exact chat thread. The sender's id maps to the
+    // recipient's "friend" in the messages route (`/messages?chat=<friendId>`).
+    const deepLink = `/messages?chat=${callerId}`;
+
+    // Fan-out to native device tokens (iOS + Android, both FCM tokens via
+    // Firebase). Web push is handled separately by sw-push.js, so we filter
+    // to native platforms here to avoid double-sending.
+    try {
+      const FCM_SERVER_KEY = Deno.env.get('FCM_SERVER_KEY');
+      if (FCM_SERVER_KEY) {
+        const { data: subs } = await supabaseAdmin
+          .from('push_subscriptions')
+          .select('endpoint, platform')
+          .eq('user_id', recipientUserId)
+          .eq('active', true)
+          .in('platform', ['ios', 'android']);
+
+        const tokens = (subs ?? [])
+          .map((s) => s.endpoint)
+          .filter((t): t is string => typeof t === 'string' && t.length > 0);
+
+        await Promise.allSettled(
+          tokens.map(async (token) => {
+            const res = await fetch('https://fcm.googleapis.com/fcm/send', {
+              method: 'POST',
+              headers: {
+                Authorization: `key=${FCM_SERVER_KEY}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                to: token,
+                notification: {
+                  title: `New message from ${senderDisplayName}`,
+                  body: safePreview,
+                  sound: 'default',
+                  badge: 1,
+                  click_action: 'FLUTTER_NOTIFICATION_CLICK',
+                },
+                data: {
+                  type: 'new_message',
+                  conversation_id: conversationId,
+                  sender_id: callerId,
+                  deep_link: deepLink,
+                },
+                priority: 'high',
+              }),
+            });
+            if (!res.ok) {
+              const text = await res.text();
+              console.warn('[notify-new-message] FCM error:', res.status, text);
+              // Deactivate clearly-invalid tokens so we stop hitting them.
+              if (
+                text.includes('NotRegistered') ||
+                text.includes('InvalidRegistration')
+              ) {
+                await supabaseAdmin
+                  .from('push_subscriptions')
+                  .update({ active: false })
+                  .eq('endpoint', token);
+              }
+            }
+          }),
+        );
+      }
+    } catch (pushErr) {
+      console.error('[notify-new-message] native push fan-out failed:', pushErr);
+    }
+
     // Email gating
     const { data: pref } = await supabaseAdmin
       .from('user_preferences')
