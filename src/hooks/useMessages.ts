@@ -28,31 +28,6 @@ export const useMessages = (userId?: string, friendId?: string) => {
 
   const conversationId = userId && friendId ? getConversationId(userId, friendId) : null;
 
-  // Fire-and-forget in-app + email notification for the recipient. The edge
-  // function throttles per (recipient, conversation) so rapid chat bursts
-  // don't spam.
-  const notifyRecipient = useCallback(
-    async (preview: string) => {
-      if (!userId || !friendId || !conversationId) return;
-      const { data: senderProfile } = await supabase
-        .from("profiles")
-        .select("display_name")
-        .eq("id", userId)
-        .maybeSingle();
-      supabase.functions
-        .invoke("notify-new-message", {
-          body: {
-            recipientUserId: friendId,
-            conversationId,
-            senderDisplayName: senderProfile?.display_name || "Someone",
-            preview,
-          },
-        })
-        .catch((err) => console.error("notify-new-message failed:", err));
-    },
-    [userId, friendId, conversationId],
-  );
-
   const fetchMessages = useCallback(async () => {
     if (!conversationId) return;
     setLoading(true);
@@ -95,9 +70,8 @@ export const useMessages = (userId?: string, friendId?: string) => {
         content,
       });
       if (error) console.error("Error sending message:", error);
-      else void notifyRecipient(content);
     },
-    [userId, friendId, conversationId, notifyRecipient]
+    [userId, friendId, conversationId]
   );
 
   // Send an image message
@@ -149,9 +123,8 @@ export const useMessages = (userId?: string, friendId?: string) => {
         recipient_id: friendId,
         image_url: path,
       });
-      void notifyRecipient("📷 Sent a photo");
     },
-    [userId, friendId, conversationId, notifyRecipient]
+    [userId, friendId, conversationId]
   );
 
   // Share a deal
@@ -165,9 +138,8 @@ export const useMessages = (userId?: string, friendId?: string) => {
         content: `🔥 Check out this deal: ${dealTitle}`,
         deal_id: dealId,
       });
-      void notifyRecipient(`🔥 Shared a deal: ${dealTitle}`);
     },
-    [userId, friendId, conversationId, notifyRecipient]
+    [userId, friendId, conversationId]
   );
 
   // Realtime subscription

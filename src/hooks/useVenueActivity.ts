@@ -270,24 +270,9 @@ export const useVenueActivity = (enabled: boolean = true) => {
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    // Refresh whenever auth identity changes (e.g. first paint after the
-    // post-sign-in redirect). Without this, queries that fired mid-session-
-    // restore can leave the map blank until the user reloads.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event) => {
-        // Only refetch on actual sign-in. TOKEN_REFRESHED fires periodically
-        // (every ~hour, plus on tab focus) and would cause unnecessary
-        // refetches that flash the empty/error overlay on the map.
-        if (event === "SIGNED_IN") {
-          loadVenueActivity();
-        }
-      }
-    );
-
     return () => {
       supabase.removeChannel(channel);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-      subscription.unsubscribe();
     };
   }, [enabled]);
 

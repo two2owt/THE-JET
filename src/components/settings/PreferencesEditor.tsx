@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Sparkles, ChevronDown, ChevronUp, Check, Loader2, UtensilsCrossed, Wine, Moon, CalendarDays, LucideIcon, AlertCircle } from "lucide-react";
+import { MapPin, Sparkles, ChevronDown, ChevronUp, Check, Loader2, UtensilsCrossed, Wine, Moon, CalendarDays, LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Json } from "@/integrations/supabase/types";
@@ -80,8 +80,6 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
   } = useProfile(userId);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
-  const [categoryNotice, setCategoryNotice] = useState<string | null>(null);
-  const [subcategoryNotice, setSubcategoryNotice] = useState<{ category: string; message: string } | null>(null);
   
   // Food preferences
   const [foodCuisine, setFoodCuisine] = useState<string[]>([]);
@@ -172,7 +170,6 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
   const toggleCategory = (category: string) => {
     setSelectedCategories(prev => {
       if (prev.includes(category)) {
-        setCategoryNotice(null);
         // Clear subcategory selections when deselecting
         if (category === "Food") {
           setFoodCuisine([]);
@@ -194,12 +191,8 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
         return prev.filter(c => c !== category);
       }
       if (prev.length >= 3) {
-        const msg = `You've reached the 3-category limit. Deselect ${prev.join(", ")} or one of them to choose ${category}.`;
-        setCategoryNotice(msg);
-        toast.info(msg);
         return prev;
       }
-      setCategoryNotice(null);
       return [...prev, category];
     });
   };
@@ -213,29 +206,18 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
     option: string,
     _currentSelection: string[],
     setter: React.Dispatch<React.SetStateAction<string[]>>,
-    categoryTotal: number,
-    categoryName: string
+    maxSelections: number = 5
   ) => {
     setter(prev => {
       if (prev.includes(option)) {
-        setSubcategoryNotice(null);
         return prev.filter(o => o !== option);
       }
-      if (categoryTotal >= 5) {
-        const msg = `You can pick up to 5 ${categoryName} preferences across all sections. Deselect one to add "${option}".`;
-        setSubcategoryNotice({ category: categoryName, message: msg });
-        toast.info(msg);
+      if (prev.length >= maxSelections) {
         return prev;
       }
-      setSubcategoryNotice(null);
       return [...prev, option];
     });
   };
-
-  const foodTotal = foodCuisine.length + foodDietary.length + foodMeal.length;
-  const drinkTotal = drinkCoffee.length + drinkBar.length + drinkAtmosphere.length;
-  const nightlifeTotal = nightlifeVenue.length + nightlifeMusic.length + nightlifeCrowd.length;
-  const eventsTotal = eventsType.length + eventsGroup.length + eventsTime.length;
 
   if (isLoading) {
     return (
@@ -248,26 +230,20 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
   const OptionChip = ({ 
     label, 
     selected, 
-    onClick,
-    disabled = false,
+    onClick 
   }: { 
     label: string; 
     selected: boolean; 
     onClick: () => void;
-    disabled?: boolean;
   }) => (
     <button
       type="button"
       onClick={onClick}
-      aria-disabled={disabled}
-      title={disabled ? "Limit reached — deselect another preference first" : undefined}
       className={cn(
         "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
         selected
           ? "bg-primary text-primary-foreground border-primary"
-          : disabled
-            ? "bg-muted/30 text-muted-foreground/50 border-border/50 cursor-not-allowed"
-            : "bg-muted/50 text-muted-foreground border-border hover:border-primary/50 hover:bg-muted"
+          : "bg-muted/50 text-muted-foreground border-border hover:border-primary/50 hover:bg-muted"
       )}
     >
       {label}
@@ -279,28 +255,20 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
     options,
     selected,
     onToggle,
-    remaining,
   }: {
     title: string;
     options: string[];
     selected: string[];
     onToggle: (option: string) => void;
-    remaining: number;
   }) => (
     <div className="space-y-2">
-      <p className="text-xs font-medium text-muted-foreground">
-        {title}{" "}
-        <span className={cn("text-muted-foreground/60", remaining === 0 && "text-destructive/80")}>
-          ({remaining} left)
-        </span>
-      </p>
+      <p className="text-xs font-medium text-muted-foreground">{title} <span className="text-muted-foreground/60">(up to 5)</span></p>
       <div className="flex flex-wrap gap-1.5">
         {options.map(option => (
           <OptionChip
             key={option}
             label={option}
             selected={selected.includes(option)}
-            disabled={remaining === 0 && !selected.includes(option)}
             onClick={() => onToggle(option)}
           />
         ))}
@@ -373,15 +341,6 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
       </div>
       {isSelected && isExpanded && (
         <div className="px-3 pb-3 space-y-3 border-t border-border/50 pt-3">
-          {subcategoryNotice && subcategoryNotice.category === category && (
-            <div
-              role="alert"
-              className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-2.5 py-2 text-[11px] text-destructive"
-            >
-              <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-              <span>{subcategoryNotice.message}</span>
-            </div>
-          )}
           {children}
         </div>
       )}
@@ -391,28 +350,8 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
   return (
     <div className="space-y-4">
       <div>
-        <div className="flex items-baseline justify-between mb-1">
-          <Label className="text-sm">Select up to 3 categories</Label>
-          <span
-            className={cn(
-              "text-[11px] font-medium",
-              selectedCategories.length >= 3 ? "text-primary" : "text-muted-foreground"
-            )}
-            aria-live="polite"
-          >
-            {selectedCategories.length}/3 selected
-          </span>
-        </div>
-        <p className="text-xs text-muted-foreground mb-2">Tap a category to select, then expand to set preferences (up to 5 per category)</p>
-        {categoryNotice && (
-          <div
-            role="alert"
-            className="mb-3 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-2.5 py-2 text-[11px] text-destructive"
-          >
-            <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-            <span>{categoryNotice}</span>
-          </div>
-        )}
+        <Label className="text-sm mb-1 block">Select up to 3 categories</Label>
+        <p className="text-xs text-muted-foreground mb-3">Tap a category to select, then expand to set preferences</p>
         
         <div className="space-y-2">
           <CategoryCard
@@ -425,22 +364,19 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
               title="Cuisine Type"
               options={FOOD_OPTIONS.cuisineType}
               selected={foodCuisine}
-              onToggle={(o) => toggleOption(o, foodCuisine, setFoodCuisine, foodTotal, "Food")}
-              remaining={Math.max(0, 5 - foodTotal)}
+              onToggle={(o) => toggleOption(o, foodCuisine, setFoodCuisine)}
             />
             <SubcategorySection
               title="Dietary Preference"
               options={FOOD_OPTIONS.dietaryPreference}
               selected={foodDietary}
-              onToggle={(o) => toggleOption(o, foodDietary, setFoodDietary, foodTotal, "Food")}
-              remaining={Math.max(0, 5 - foodTotal)}
+              onToggle={(o) => toggleOption(o, foodDietary, setFoodDietary)}
             />
             <SubcategorySection
               title="Meal Occasion"
               options={FOOD_OPTIONS.mealOccasion}
               selected={foodMeal}
-              onToggle={(o) => toggleOption(o, foodMeal, setFoodMeal, foodTotal, "Food")}
-              remaining={Math.max(0, 5 - foodTotal)}
+              onToggle={(o) => toggleOption(o, foodMeal, setFoodMeal)}
             />
           </CategoryCard>
 
@@ -454,22 +390,19 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
               title="Coffee & Tea"
               options={DRINK_OPTIONS.coffeeTea}
               selected={drinkCoffee}
-              onToggle={(o) => toggleOption(o, drinkCoffee, setDrinkCoffee, drinkTotal, "Drinks")}
-              remaining={Math.max(0, 5 - drinkTotal)}
+              onToggle={(o) => toggleOption(o, drinkCoffee, setDrinkCoffee)}
             />
             <SubcategorySection
               title="Bar & Cocktail Style"
               options={DRINK_OPTIONS.barCocktail}
               selected={drinkBar}
-              onToggle={(o) => toggleOption(o, drinkBar, setDrinkBar, drinkTotal, "Drinks")}
-              remaining={Math.max(0, 5 - drinkTotal)}
+              onToggle={(o) => toggleOption(o, drinkBar, setDrinkBar)}
             />
             <SubcategorySection
               title="Atmosphere"
               options={DRINK_OPTIONS.atmosphere}
               selected={drinkAtmosphere}
-              onToggle={(o) => toggleOption(o, drinkAtmosphere, setDrinkAtmosphere, drinkTotal, "Drinks")}
-              remaining={Math.max(0, 5 - drinkTotal)}
+              onToggle={(o) => toggleOption(o, drinkAtmosphere, setDrinkAtmosphere)}
             />
           </CategoryCard>
 
@@ -483,22 +416,19 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
               title="Venue Type"
               options={NIGHTLIFE_OPTIONS.venueType}
               selected={nightlifeVenue}
-              onToggle={(o) => toggleOption(o, nightlifeVenue, setNightlifeVenue, nightlifeTotal, "Nightlife")}
-              remaining={Math.max(0, 5 - nightlifeTotal)}
+              onToggle={(o) => toggleOption(o, nightlifeVenue, setNightlifeVenue)}
             />
             <SubcategorySection
               title="Music Preference"
               options={NIGHTLIFE_OPTIONS.musicPreference}
               selected={nightlifeMusic}
-              onToggle={(o) => toggleOption(o, nightlifeMusic, setNightlifeMusic, nightlifeTotal, "Nightlife")}
-              remaining={Math.max(0, 5 - nightlifeTotal)}
+              onToggle={(o) => toggleOption(o, nightlifeMusic, setNightlifeMusic)}
             />
             <SubcategorySection
               title="Crowd & Vibe"
               options={NIGHTLIFE_OPTIONS.crowdVibe}
               selected={nightlifeCrowd}
-              onToggle={(o) => toggleOption(o, nightlifeCrowd, setNightlifeCrowd, nightlifeTotal, "Nightlife")}
-              remaining={Math.max(0, 5 - nightlifeTotal)}
+              onToggle={(o) => toggleOption(o, nightlifeCrowd, setNightlifeCrowd)}
             />
           </CategoryCard>
 
@@ -512,22 +442,19 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
               title="Event Type"
               options={EVENTS_OPTIONS.eventType}
               selected={eventsType}
-              onToggle={(o) => toggleOption(o, eventsType, setEventsType, eventsTotal, "Events")}
-              remaining={Math.max(0, 5 - eventsTotal)}
+              onToggle={(o) => toggleOption(o, eventsType, setEventsType)}
             />
             <SubcategorySection
               title="Group Type"
               options={EVENTS_OPTIONS.groupType}
               selected={eventsGroup}
-              onToggle={(o) => toggleOption(o, eventsGroup, setEventsGroup, eventsTotal, "Events")}
-              remaining={Math.max(0, 5 - eventsTotal)}
+              onToggle={(o) => toggleOption(o, eventsGroup, setEventsGroup)}
             />
             <SubcategorySection
               title="Time & Setting"
               options={EVENTS_OPTIONS.timeSetting}
               selected={eventsTime}
-              onToggle={(o) => toggleOption(o, eventsTime, setEventsTime, eventsTotal, "Events")}
-              remaining={Math.max(0, 5 - eventsTotal)}
+              onToggle={(o) => toggleOption(o, eventsTime, setEventsTime)}
             />
           </CategoryCard>
         </div>

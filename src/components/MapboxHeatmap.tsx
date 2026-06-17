@@ -349,17 +349,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [showMovementPaths, setShowMovementPaths] = useState(() => getLayerState("paths", false));
   const [pathTimeFilter, setPathTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.pathTimeFilter, 'all', 'pathTime'));
 
-  // Live insight freshness — re-renders the panel once a second so the
-  // "Updated Xs ago" line stays current without refetching.
-  const [liveTick, setLiveTick] = useState(0);
-  const densityUpdatedAtRef = useRef<number>(0);
-  const pathUpdatedAtRef = useRef<number>(0);
-  useEffect(() => {
-    if (!showLiveStats) return;
-    const id = setInterval(() => setLiveTick((t) => t + 1), 1000);
-    return () => clearInterval(id);
-  }, [showLiveStats]);
-
   // Sync active layer toggles and filter selections to URL query params for shareability
   const syncUrlParams = useCallback(() => {
     const params = new URLSearchParams(window.location.search);
@@ -558,15 +547,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   useEffect(() => {
     localStorage.setItem(FILTER_KEYS.timelapseSpeed, String(timelapse.speed));
   }, [timelapse.speed]);
-
-  // Stamp the freshness clock every time a layer's data actually changes,
-  // so the Live Stats panel's "Updated Xs ago" stays accurate.
-  useEffect(() => {
-    if (densityData) densityUpdatedAtRef.current = Date.now();
-  }, [densityData]);
-  useEffect(() => {
-    if (pathData) pathUpdatedAtRef.current = Date.now();
-  }, [pathData]);
 
   // Reset to defaults — clears localStorage and restores factory settings
   const handleResetToDefaults = useCallback(() => {
@@ -2958,9 +2938,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   setTimeFilter('all');
                   setHourFilter(undefined);
                   setDayFilter(undefined);
-                  // Auto-open the Live Stats panel so users get instant insight
-                  // into what the layer they just enabled is actually showing.
-                  setShowLiveStats(true);
                 }
               }}
             />
@@ -3216,9 +3193,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               ariaLabel="Toggle flow paths layer"
               onToggle={() => {
                 triggerHaptic('medium');
-                const newState = !showMovementPaths;
-                setShowMovementPaths(newState);
-                if (newState) setShowLiveStats(true);
+                setShowMovementPaths(!showMovementPaths);
               }}
             />
 
@@ -3478,7 +3453,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       {/* Statistics Panel - Shows active data counts */}
       {/* CRITICAL: Uses only opacity transition to avoid CLS - no translate/scale animations */}
       {/* Hidden by default — only renders when the user explicitly enables the Live Stats layer toggle */}
-      {showLiveStats && (
+      {showLiveStats && (showDensityLayer || showMovementPaths) && (densityData || pathData) && (
         <div 
           style={{
             position: 'absolute',
@@ -3505,30 +3480,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           {(() => {
             // Friendly insight headline based on density tier
             const grid = densityData?.stats.grid_cells ?? 0;
-            // Track last-updated timestamps without forcing re-renders
-            // (the 1s liveTick handles that). Reading liveTick keeps the
-            // closure honest so React treats this IIFE as dependent on it.
-            void liveTick;
-            const nowMs = Date.now();
-            if (densityData && densityUpdatedAtRef.current === 0) {
-              densityUpdatedAtRef.current = nowMs;
-            }
-            if (pathData && pathUpdatedAtRef.current === 0) {
-              pathUpdatedAtRef.current = nowMs;
-            }
-            const lastUpdatedMs = Math.max(
-              densityUpdatedAtRef.current,
-              pathUpdatedAtRef.current,
-            );
-            const ageSec = lastUpdatedMs > 0
-              ? Math.max(0, Math.round((nowMs - lastUpdatedMs) / 1000))
-              : null;
-            const ageLabel =
-              ageSec === null ? "Awaiting live data"
-              : ageSec < 5 ? "Updated just now"
-              : ageSec < 60 ? `Updated ${ageSec}s ago`
-              : ageSec < 3600 ? `Updated ${Math.floor(ageSec / 60)}m ago`
-              : `Updated ${Math.floor(ageSec / 3600)}h ago`;
             const vibe =
               grid >= 40 ? { label: "Buzzing right now", dot: 'hsl(0, 100%, 65%)' } :
               grid >= 15 ? { label: "Picking up nearby", dot: 'hsl(45, 100%, 60%)' } :
@@ -3545,13 +3496,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   </p>
                 </div>
 
-                {!densityData && !pathData && (
-                  <p style={{ ...labelStyle, fontSize: '11px', lineHeight: 1.4 }}>
-                    Streaming live activity from the map…
-                  </p>
-                )}
-
-                {densityData && (
+                {showDensityLayer && densityData && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
                       <span style={labelStyle}>Busy spots nearby</span>
@@ -3570,7 +3515,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   </div>
                 )}
 
-                {pathData && (
+                {showMovementPaths && pathData && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
                       <span style={labelStyle}>Popular routes</span>
@@ -3594,37 +3539,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     )}
                   </div>
                 )}
-
-                {/* Live freshness footer — confirms the panel is streaming. */}
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    marginTop: '2px',
-                    paddingTop: '6px',
-                    borderTop: '1px solid hsl(var(--border) / 0.4)',
-                  }}
-                >
-                  <span
-                    aria-hidden="true"
-                    style={{
-                      width: '6px',
-                      height: '6px',
-                      borderRadius: '9999px',
-                      background: ageSec !== null && ageSec < 120
-                        ? 'hsl(140, 80%, 55%)'
-                        : 'hsl(var(--muted-foreground))',
-                      boxShadow: ageSec !== null && ageSec < 120
-                        ? '0 0 8px hsl(140, 80%, 55%)'
-                        : 'none',
-                      animation: ageSec !== null && ageSec < 120
-                        ? 'pulse 2s ease-in-out infinite'
-                        : undefined,
-                    }}
-                  />
-                  <span style={{ ...labelStyle, fontSize: '10px' }}>{ageLabel}</span>
-                </div>
               </div>
             );
           })()}

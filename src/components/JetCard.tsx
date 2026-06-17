@@ -17,7 +17,6 @@ interface NearbyParking {
   isOpen: boolean | null;
   placeId: string;
   distance?: number | null;
-  blocks?: number | null;
 }
 
 interface JetCardProps {
@@ -719,12 +718,6 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
                   }}>
                     {typeof parking.distance === 'number' && (
                       <span style={{ color: 'hsl(var(--gold))', fontWeight: 600, marginRight: '4px' }}>
-                        {typeof parking.blocks === 'number'
-                          ? `${parking.blocks} block${parking.blocks === 1 ? '' : 's'}`
-                          : parking.distance < 1000
-                            ? `${parking.distance}m`
-                            : `${(parking.distance / 1000).toFixed(1)}km`}
-                        {' · '}
                         {parking.distance < 1000
                           ? `${parking.distance}m`
                           : `${(parking.distance / 1000).toFixed(1)}km`}

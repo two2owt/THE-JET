@@ -1,6 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsHeaders, logVersion, EDGE_FUNCTION_VERSION } from "../_shared/cors.ts";
-import { guardLocationResponse } from "../_shared/anonymization_guard.ts";
 
 const FUNCTION_NAME = "get-location-density";
 logVersion(FUNCTION_NAME);
@@ -252,27 +251,21 @@ Deno.serve(async (req) => {
 
     console.log(`Processed ${features.length} density grid cells, max: ${maxDensity}, avg: ${avgDensity.toFixed(2)}`);
 
-    const payload = {
-      success: true,
-      geojson,
-      stats: {
-        total_points: filteredLocations.length,
-        grid_cells: features.length,
-        max_density: maxDensity,
-        avg_density: avgDensity,
-      },
-    };
-
-    // Runtime anonymization guard — alert if any non-grid coord or PII marker leaks.
-    await guardLocationResponse(
-      payload,
-      { endpoint: 'get-location-density', gridSize: 0.003 },
-      { clientIp, userAgent: req.headers.get('user-agent') },
+    return new Response(
+      JSON.stringify({
+        success: true,
+        geojson,
+        stats: {
+          total_points: filteredLocations.length,
+          grid_cells: features.length,
+          max_density: maxDensity,
+          avg_density: avgDensity,
+        },
+      }),
+      {
+        headers: { ...rateLimitHeaders, 'Content-Type': 'application/json' },
+      }
     );
-
-    return new Response(JSON.stringify(payload), {
-      headers: { ...rateLimitHeaders, 'Content-Type': 'application/json' },
-    });
   } catch (error) {
     console.error('Error in get-location-density:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';

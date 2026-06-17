@@ -4,7 +4,6 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { MapPin, Sparkles, ChevronDown, ChevronUp, Check, AlertCircle, UtensilsCrossed, Wine, Moon, CalendarDays, LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 
 interface PreferencesStepProps {
   onBack: () => void;
@@ -123,7 +122,6 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
         return prev.filter(c => c !== category);
       }
       if (prev.length >= 3) {
-        toast.info("You can select up to 3 categories");
         return prev;
       }
       return [...prev, category];
@@ -139,25 +137,18 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
     option: string,
     _currentSelection: string[],
     setter: React.Dispatch<React.SetStateAction<string[]>>,
-    categoryTotal: number,
-    categoryName: string
+    maxSelections: number = 5
   ) => {
     setter(prev => {
       if (prev.includes(option)) {
         return prev.filter(o => o !== option);
       }
-      if (categoryTotal >= 5) {
-        toast.info(`Up to 5 ${categoryName} preferences`);
+      if (prev.length >= maxSelections) {
         return prev;
       }
       return [...prev, option];
     });
   };
-
-  const foodTotal = foodCuisine.length + foodDietary.length + foodMeal.length;
-  const drinkTotal = drinkCoffee.length + drinkBar.length + drinkAtmosphere.length;
-  const nightlifeTotal = nightlifeVenue.length + nightlifeMusic.length + nightlifeCrowd.length;
-  const eventsTotal = eventsType.length + eventsGroup.length + eventsTime.length;
 
   const handleNext = () => {
     if (selectedCategories.length === 0) {
@@ -222,16 +213,14 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
     options,
     selected,
     onToggle,
-    remaining,
   }: {
     title: string;
     options: string[];
     selected: string[];
     onToggle: (option: string) => void;
-    remaining: number;
   }) => (
     <div className="space-y-2">
-      <p className="text-xs font-medium text-muted-foreground">{title} <span className="text-muted-foreground/60">({remaining} left)</span></p>
+      <p className="text-xs font-medium text-muted-foreground">{title} <span className="text-muted-foreground/60">(up to 5)</span></p>
       <div className="flex flex-wrap gap-1.5">
         {options.map(option => (
           <OptionChip
@@ -326,22 +315,19 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
                 title="Cuisine Type"
                 options={FOOD_OPTIONS.cuisineType}
                 selected={foodCuisine}
-                onToggle={(o) => toggleOption(o, foodCuisine, setFoodCuisine, foodTotal, "Food")}
-                remaining={Math.max(0, 5 - foodTotal)}
+                onToggle={(o) => toggleOption(o, foodCuisine, setFoodCuisine)}
               />
               <SubcategorySection
                 title="Dietary Preference"
                 options={FOOD_OPTIONS.dietaryPreference}
                 selected={foodDietary}
-                onToggle={(o) => toggleOption(o, foodDietary, setFoodDietary, foodTotal, "Food")}
-                remaining={Math.max(0, 5 - foodTotal)}
+                onToggle={(o) => toggleOption(o, foodDietary, setFoodDietary)}
               />
               <SubcategorySection
                 title="Meal Occasion"
                 options={FOOD_OPTIONS.mealOccasion}
                 selected={foodMeal}
-                onToggle={(o) => toggleOption(o, foodMeal, setFoodMeal, foodTotal, "Food")}
-                remaining={Math.max(0, 5 - foodTotal)}
+                onToggle={(o) => toggleOption(o, foodMeal, setFoodMeal)}
               />
             </CategoryCard>
 
@@ -355,22 +341,19 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
                 title="Coffee & Tea"
                 options={DRINK_OPTIONS.coffeeTea}
                 selected={drinkCoffee}
-                onToggle={(o) => toggleOption(o, drinkCoffee, setDrinkCoffee, drinkTotal, "Drinks")}
-                remaining={Math.max(0, 5 - drinkTotal)}
+                onToggle={(o) => toggleOption(o, drinkCoffee, setDrinkCoffee)}
               />
               <SubcategorySection
                 title="Bar & Cocktail Style"
                 options={DRINK_OPTIONS.barCocktail}
                 selected={drinkBar}
-                onToggle={(o) => toggleOption(o, drinkBar, setDrinkBar, drinkTotal, "Drinks")}
-                remaining={Math.max(0, 5 - drinkTotal)}
+                onToggle={(o) => toggleOption(o, drinkBar, setDrinkBar)}
               />
               <SubcategorySection
                 title="Atmosphere"
                 options={DRINK_OPTIONS.atmosphere}
                 selected={drinkAtmosphere}
-                onToggle={(o) => toggleOption(o, drinkAtmosphere, setDrinkAtmosphere, drinkTotal, "Drinks")}
-                remaining={Math.max(0, 5 - drinkTotal)}
+                onToggle={(o) => toggleOption(o, drinkAtmosphere, setDrinkAtmosphere)}
               />
             </CategoryCard>
 
@@ -384,22 +367,19 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
                 title="Venue Type"
                 options={NIGHTLIFE_OPTIONS.venueType}
                 selected={nightlifeVenue}
-                onToggle={(o) => toggleOption(o, nightlifeVenue, setNightlifeVenue, nightlifeTotal, "Nightlife")}
-                remaining={Math.max(0, 5 - nightlifeTotal)}
+                onToggle={(o) => toggleOption(o, nightlifeVenue, setNightlifeVenue)}
               />
               <SubcategorySection
                 title="Music Preference"
                 options={NIGHTLIFE_OPTIONS.musicPreference}
                 selected={nightlifeMusic}
-                onToggle={(o) => toggleOption(o, nightlifeMusic, setNightlifeMusic, nightlifeTotal, "Nightlife")}
-                remaining={Math.max(0, 5 - nightlifeTotal)}
+                onToggle={(o) => toggleOption(o, nightlifeMusic, setNightlifeMusic)}
               />
               <SubcategorySection
                 title="Crowd & Vibe"
                 options={NIGHTLIFE_OPTIONS.crowdVibe}
                 selected={nightlifeCrowd}
-                onToggle={(o) => toggleOption(o, nightlifeCrowd, setNightlifeCrowd, nightlifeTotal, "Nightlife")}
-                remaining={Math.max(0, 5 - nightlifeTotal)}
+                onToggle={(o) => toggleOption(o, nightlifeCrowd, setNightlifeCrowd)}
               />
             </CategoryCard>
 
@@ -413,22 +393,19 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
                 title="Event Type"
                 options={EVENTS_OPTIONS.eventType}
                 selected={eventsType}
-                onToggle={(o) => toggleOption(o, eventsType, setEventsType, eventsTotal, "Events")}
-                remaining={Math.max(0, 5 - eventsTotal)}
+                onToggle={(o) => toggleOption(o, eventsType, setEventsType)}
               />
               <SubcategorySection
                 title="Group Type"
                 options={EVENTS_OPTIONS.groupType}
                 selected={eventsGroup}
-                onToggle={(o) => toggleOption(o, eventsGroup, setEventsGroup, eventsTotal, "Events")}
-                remaining={Math.max(0, 5 - eventsTotal)}
+                onToggle={(o) => toggleOption(o, eventsGroup, setEventsGroup)}
               />
               <SubcategorySection
                 title="Time & Setting"
                 options={EVENTS_OPTIONS.timeSetting}
                 selected={eventsTime}
-                onToggle={(o) => toggleOption(o, eventsTime, setEventsTime, eventsTotal, "Events")}
-                remaining={Math.max(0, 5 - eventsTotal)}
+                onToggle={(o) => toggleOption(o, eventsTime, setEventsTime)}
               />
             </CategoryCard>
           </div>

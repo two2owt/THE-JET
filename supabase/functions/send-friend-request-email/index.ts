@@ -98,28 +98,6 @@ Deno.serve(async (req) => {
     const recipientEmail = userData.user.email;
     console.log('Sending to:', recipientEmail);
 
-    // Always create an in-app notification for the recipient (service role bypasses RLS).
-    await supabaseAdmin.from('notification_logs').insert({
-      user_id: recipientUserId,
-      notification_type: 'friend_request',
-      title: 'New friend request',
-      message: `${senderDisplayName} wants to connect with you on JET.`,
-    });
-
-    // Respect the recipient's email-notifications preference.
-    const { data: pref } = await supabaseAdmin
-      .from('user_preferences')
-      .select('email_notifications_enabled')
-      .eq('user_id', recipientUserId)
-      .maybeSingle();
-    if (pref && pref.email_notifications_enabled === false) {
-      console.log('Recipient opted out of email notifications, skipping email');
-      return new Response(
-        JSON.stringify({ success: true, emailSkipped: true, reason: 'recipient opted out' }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-      );
-    }
-
     // Escape HTML in display name
     const escapedName = senderDisplayName
       .replace(/&/g, '&amp;')
