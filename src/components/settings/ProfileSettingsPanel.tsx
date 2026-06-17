@@ -125,12 +125,8 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
 
   const hasUnsavedChanges = useMemo(() => {
     if (!preferences) return false;
-    return (
-      preferences.notifications_enabled !== notificationsEnabled ||
-      preferences.location_tracking_enabled !== locationTrackingEnabled ||
-      preferences.background_tracking_enabled !== backgroundTrackingEnabled
-    );
-  }, [preferences, notificationsEnabled, locationTrackingEnabled, backgroundTrackingEnabled]);
+    return preferences.notifications_enabled !== notificationsEnabled;
+  }, [preferences, notificationsEnabled]);
 
   const handleSaveSettings = async () => {
     if (!preferences) return;
