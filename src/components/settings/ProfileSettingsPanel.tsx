@@ -29,8 +29,6 @@ interface UserPreferencesRow {
   id: string;
   user_id: string;
   notifications_enabled: boolean;
-  location_tracking_enabled: boolean;
-  background_tracking_enabled: boolean;
 }
 
 interface ProfileSettingsPanelProps {
