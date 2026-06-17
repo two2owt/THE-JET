@@ -18,6 +18,7 @@ const ConversionFunnel = lazy(() => import("@/components/admin/ConversionFunnel"
 const NeighborhoodManagement = lazy(() => import("@/components/admin/NeighborhoodManagement").then(m => ({ default: m.NeighborhoodManagement })));
 const MonetizationToggle = lazy(() => import("@/components/admin/MonetizationToggle").then(m => ({ default: m.MonetizationToggle })));
 const TestPushPanel = lazy(() => import("@/components/admin/TestPushPanel").then(m => ({ default: m.TestPushPanel })));
+const ManualDealSyncPanel = lazy(() => import("@/components/admin/ManualDealSyncPanel").then(m => ({ default: m.ManualDealSyncPanel })));
 
 
 type SectionId = "deals" | "analytics" | "funnel" | "areas" | "system";
@@ -194,6 +195,7 @@ export default function AdminDashboard() {
                 <Suspense fallback={<AdminTabFallback />}>
                   <div className="flex flex-col" style={{ gap: 'var(--space-md)' }}>
                     <JetBridgeShortcut />
+                    <ManualDealSyncPanel />
                     <DealManagement />
                   </div>
                 </Suspense>
