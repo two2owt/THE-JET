@@ -270,9 +270,21 @@ export const useVenueActivity = (enabled: boolean = true) => {
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
+    // Refresh whenever auth identity changes (e.g. first paint after the
+    // post-sign-in redirect). Without this, queries that fired mid-session-
+    // restore can leave the map blank until the user reloads.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event) => {
+        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+          loadVenueActivity();
+        }
+      }
+    );
+
     return () => {
       supabase.removeChannel(channel);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      subscription.unsubscribe();
     };
   }, [enabled]);
 
