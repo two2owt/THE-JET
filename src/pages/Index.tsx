@@ -154,6 +154,10 @@ const Index = () => {
   useAutoScrapeVenueImages(dataReady);
   const { deals, refresh: refreshDeals, loading: dealsLoading, lastUpdated: dealsLastUpdated } = useDeals(false, dataReady);
   const { venues: realVenues, loading: venuesLoading, error: venuesError, refresh: refreshVenues, lastUpdated: venuesLastUpdated } = useVenueActivity(dataReady);
+  // True only once a venue fetch has actually settled. Prevents the
+  // empty/error overlay from flashing during loading transitions
+  // (initial mount, post-sign-in refetch, realtime-triggered refresh).
+  const venuesFetchSettled = !!venuesLastUpdated || !!venuesError;
   const { justInstalled, clearJustInstalled } = usePWAInstall();
   const [showPushPrompt, setShowPushPrompt] = useState(false);
   const jetCardRef = useRef<HTMLDivElement>(null);
@@ -542,7 +546,7 @@ const Index = () => {
             {/* Post-auth data error / empty state. Only shown after auth has
                 resolved AND the venue fetch has actually completed — so we
                 never flash this during normal loading. */}
-            {!authLoading && !mapboxError && !venuesLoading && (venuesError || venues.length === 0) && (
+            {!authLoading && !mapboxError && !venuesLoading && venuesFetchSettled && (venuesError || venues.length === 0) && (
               <div
                 role="status"
                 style={{
@@ -577,12 +581,12 @@ const Index = () => {
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: '13px', fontWeight: 600, color: 'hsl(var(--foreground))', margin: 0 }}>
-                    {venuesError ? "Couldn't load venues" : "No venues found"}
+                    {venuesError ? "Couldn't load venues" : "No live venues right now"}
                   </p>
                   <p style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))', margin: '2px 0 0', lineHeight: 1.35 }}>
                     {venuesError
                       ? "Check your connection and try again."
-                      : `We couldn't find live venues in ${selectedCity.name} right now.`}
+                      : `No active venues in ${selectedCity.name} at the moment. Try refreshing.`}
                   </p>
                 </div>
                 <Button

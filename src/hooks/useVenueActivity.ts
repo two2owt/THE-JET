@@ -275,7 +275,10 @@ export const useVenueActivity = (enabled: boolean = true) => {
     // restore can leave the map blank until the user reloads.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event) => {
-        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        // Only refetch on actual sign-in. TOKEN_REFRESHED fires periodically
+        // (every ~hour, plus on tab focus) and would cause unnecessary
+        // refetches that flash the empty/error overlay on the map.
+        if (event === "SIGNED_IN") {
           loadVenueActivity();
         }
       }

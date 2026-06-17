@@ -321,7 +321,7 @@ export const useDeals = (enablePreferenceFilter: boolean = false, enabled: boole
     // returned during the session-restore race).
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event) => {
-        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        if (event === "SIGNED_IN") {
           loadUserPreferences().then(() => loadDeals());
         }
       }
