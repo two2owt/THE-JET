@@ -700,6 +700,7 @@ export type Database = {
         Row: {
           background_tracking_enabled: boolean
           created_at: string | null
+          email_notifications_enabled: boolean
           id: string
           location_tracking_enabled: boolean
           notifications_enabled: boolean
@@ -709,6 +710,7 @@ export type Database = {
         Insert: {
           background_tracking_enabled?: boolean
           created_at?: string | null
+          email_notifications_enabled?: boolean
           id?: string
           location_tracking_enabled?: boolean
           notifications_enabled?: boolean
@@ -718,6 +720,7 @@ export type Database = {
         Update: {
           background_tracking_enabled?: boolean
           created_at?: string | null
+          email_notifications_enabled?: boolean
           id?: string
           location_tracking_enabled?: boolean
           notifications_enabled?: boolean
