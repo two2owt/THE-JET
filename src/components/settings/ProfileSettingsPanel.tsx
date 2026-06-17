@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SectionTitle } from "@/components/ui/page-title";
-import { Bell, Heart, Shield, ShieldCheck, CreditCard, Moon, Smartphone, Loader2, Save, Radio } from "lucide-react";
+import { Bell, MapPin, Heart, Shield, ShieldCheck, CreditCard, Moon, Smartphone, Loader2, Save, Radio } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -23,12 +23,16 @@ import { isMonetizationEnabled } from "@/lib/monetization";
 
 const preferencesSchema = z.object({
   notifications_enabled: z.boolean(),
+  location_tracking_enabled: z.boolean(),
+  background_tracking_enabled: z.boolean(),
 });
 
 interface UserPreferencesRow {
   id: string;
   user_id: string;
   notifications_enabled: boolean;
+  location_tracking_enabled: boolean;
+  background_tracking_enabled: boolean;
 }
 
 interface ProfileSettingsPanelProps {
@@ -38,8 +42,8 @@ interface ProfileSettingsPanelProps {
 
 /**
  * Full settings surface (preferences, privacy, consent, notifications, theme,
- * subscription, support, account) rendered inline inside /profile when the user
- * enters edit mode. Consolidated into the Profile page.
+ * location, subscription, support, account) rendered inline inside /profile
+ * when the user enters edit mode. Consolidated into the Profile page.
  */
 export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanelProps) {
   const { isRegistered: isPushRegistered, isNative, initializePushNotifications, unregister: unregisterPush } = usePushNotifications();
@@ -61,6 +65,8 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState(false);
+  const [locationTrackingEnabled, setLocationTrackingEnabled] = useState(false);
+  const [backgroundTrackingEnabled, setBackgroundTrackingEnabled] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -81,6 +87,8 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
             .insert({
               user_id: userId,
               notifications_enabled: true,
+              location_tracking_enabled: true,
+              background_tracking_enabled: true,
             })
             .select()
             .single();
@@ -91,6 +99,8 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         if (cancelled || !row) return;
         setPreferences(row);
         setNotificationsEnabled(row.notifications_enabled);
+        setLocationTrackingEnabled(row.location_tracking_enabled);
+        setBackgroundTrackingEnabled(row.background_tracking_enabled);
       } catch (err) {
         console.error("Error loading preferences:", err);
         if (!cancelled) toast.error("Failed to load settings");
@@ -125,14 +135,20 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
 
   const hasUnsavedChanges = useMemo(() => {
     if (!preferences) return false;
-    return preferences.notifications_enabled !== notificationsEnabled;
-  }, [preferences, notificationsEnabled]);
+    return (
+      preferences.notifications_enabled !== notificationsEnabled ||
+      preferences.location_tracking_enabled !== locationTrackingEnabled ||
+      preferences.background_tracking_enabled !== backgroundTrackingEnabled
+    );
+  }, [preferences, notificationsEnabled, locationTrackingEnabled, backgroundTrackingEnabled]);
 
   const handleSaveSettings = async () => {
     if (!preferences) return;
     try {
       preferencesSchema.parse({
         notifications_enabled: notificationsEnabled,
+        location_tracking_enabled: locationTrackingEnabled,
+        background_tracking_enabled: backgroundTrackingEnabled,
       });
     } catch {
       toast.error("Invalid settings");
@@ -145,6 +161,8 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         .from("user_preferences")
         .update({
           notifications_enabled: notificationsEnabled,
+          location_tracking_enabled: locationTrackingEnabled,
+          background_tracking_enabled: backgroundTrackingEnabled,
         })
         .eq("user_id", preferences.user_id);
       if (error) throw error;
@@ -152,6 +170,8 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
       setPreferences({
         ...preferences,
         notifications_enabled: notificationsEnabled,
+        location_tracking_enabled: locationTrackingEnabled,
+        background_tracking_enabled: backgroundTrackingEnabled,
       });
       toast.success("Settings saved");
     } catch (err) {
@@ -351,6 +371,51 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         </div>
       </Card>
 
+      {/* Location */}
+      <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
+        <SectionTitle subtitle="Control how the app uses your location" className="mb-0">
+          <span className="inline-flex items-center gap-2">
+            <MapPin className="w-5 h-5 text-primary" />
+            Location
+          </span>
+        </SectionTitle>
+        <Separator />
+        <div className="space-y-3 sm:space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
+              <label htmlFor="location-tracking" className="text-xs sm:text-sm font-medium text-foreground block">
+                Location Tracking
+              </label>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">
+                Allow the app to track your location for nearby deals
+              </p>
+            </div>
+            <Switch
+              id="location-tracking"
+              checked={locationTrackingEnabled}
+              onCheckedChange={setLocationTrackingEnabled}
+              className="flex-shrink-0"
+            />
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
+              <label htmlFor="background-tracking" className="text-xs sm:text-sm font-medium text-foreground block">
+                Background Tracking
+              </label>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">
+                Continue tracking location when app is in background
+              </p>
+            </div>
+            <Switch
+              id="background-tracking"
+              checked={backgroundTrackingEnabled}
+              onCheckedChange={setBackgroundTrackingEnabled}
+              disabled={!locationTrackingEnabled}
+              className="flex-shrink-0"
+            />
+          </div>
+        </div>
+      </Card>
 
       {/* Privacy Notice */}
       <Card className="p-4 sm:p-5 md:p-6 bg-card/90 backdrop-blur-sm border border-border/50 shadow-card">
@@ -380,7 +445,7 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
       {/* Account */}
       <AccountSection userId={userId} currentEmail={userEmail ?? undefined} />
 
-      {/* Save notification toggle */}
+      {/* Save notification/location toggles */}
       {hasUnsavedChanges && (
         <Button
           onClick={handleSaveSettings}
@@ -397,7 +462,7 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
           ) : (
             <>
               <Save className="w-4 h-4 mr-2" />
-              Save Notification Settings
+              Save Notification &amp; Location Settings
             </>
           )}
         </Button>
