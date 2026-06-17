@@ -725,7 +725,7 @@ const Index = () => {
           would overlap the map's bottom controls and bottom nav while loading,
           making it look like the map is broken. */}
       <Suspense fallback={null}>
-        <AuthPWAInstallPromptWrapper />
+        <AuthPWAInstallPromptWrapper showSignUpCtaForAnonymous />
       </Suspense>
 
       {/* Push Notification Prompt - shows after PWA install */}
