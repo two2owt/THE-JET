@@ -6,12 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Sparkles, Loader2, Upload, Check, ArrowLeft, AlertCircle } from "lucide-react";
+import { Sparkles, Loader2, Upload, ArrowLeft, AlertCircle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PreferencesStep, { PreferencesData } from "@/components/onboarding/PreferencesStep";
 import { Json } from "@/integrations/supabase/types";
 import jetLogo from "@/assets/jet-auth-logo.png";
-import authBackground from "@/assets/auth-background.webp";
 import { consumePostAuthRedirect } from "@/lib/postAuthRedirect";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -329,9 +328,27 @@ const Onboarding = () => {
 
 
   const STEPS = [
-    { num: 1, label: "Profile", title: "Create your profile", description: "Tell us a little about yourself to get started." },
-    { num: 2, label: "Preferences", title: "Tune your taste", description: "Pick the categories you love so we can curate Charlotte for you." },
-    { num: 3, label: "Finish", title: "You're all set", description: "Based on your preferences, we'll surface the best of Charlotte." },
+    {
+      num: 1,
+      label: "Profile",
+      title: "Create your",
+      titleAccent: "JET Profile",
+      description: "Tell us a little about yourself to get started.",
+    },
+    {
+      num: 2,
+      label: "Preferences",
+      title: "Tune your",
+      titleAccent: "Taste",
+      description: "Pick the categories you love so we can curate Charlotte for you.",
+    },
+    {
+      num: 3,
+      label: "Finish",
+      title: "You're",
+      titleAccent: "All Set",
+      description: "Based on your preferences, we'll surface the best of Charlotte.",
+    },
   ] as const;
   const current = STEPS[step - 1];
   const progressPct = Math.round((step / STEPS.length) * 100);
@@ -371,116 +388,77 @@ const Onboarding = () => {
 
   return (
     <div
-      className="relative flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto bg-background bg-cover bg-center bg-no-repeat px-fluid-sm sm:px-fluid-md pt-[max(env(safe-area-inset-top,0px),var(--space-lg))] pb-[max(env(safe-area-inset-bottom,0px),var(--space-lg))]"
-      style={{ backgroundImage: `url(${authBackground})` }}
+      className="relative flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto bg-background px-fluid-sm sm:px-fluid-md pt-[max(env(safe-area-inset-top,0px),var(--space-lg))] pb-[max(env(safe-area-inset-bottom,0px),var(--space-lg))]"
     >
-      {/* Animated matte black/grey gradient overlay */}
-      <div className="absolute inset-0 auth-gradient-overlay" />
-      {/* Editorial vignette — keeps focus on the card */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,hsl(0_0%_0%/0.55)_100%)]" />
+      {/* Ambient corner glow accents */}
+      <div className="pointer-events-none absolute -top-32 -left-32 h-80 w-80 rounded-full bg-primary/10 blur-[140px]" aria-hidden />
+      <div className="pointer-events-none absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-primary-glow/10 blur-[140px]" aria-hidden />
+      {/* Soft vignette */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,hsl(0_0%_0%/0.7)_100%)]" aria-hidden />
 
-      <div className="relative z-10 mx-auto w-full max-w-[560px]">
+      <div className="relative z-10 mx-auto w-full max-w-[420px]">
         {/* Glassmorphic Card */}
-        <div className="flex flex-col gap-6 sm:gap-8 rounded-3xl border-hairline bg-background/30 p-6 sm:p-8 lg:p-10 backdrop-blur-2xl glow-ambient">
-          {/* Progress header */}
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between gap-3">
-              {step > 1 && step < 3 ? (
-                <button
-                  type="button"
-                  onClick={goBack}
-                  className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
-                  aria-label="Go back"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Back
-                </button>
-              ) : (
-                <div className="h-7 w-12" aria-hidden />
-              )}
-              <img
-                src={jetLogo}
-                alt="JET"
-                className="h-8 w-8 object-contain drop-shadow-[0_4px_20px_hsl(var(--primary)/0.35)]"
-                width="32"
-                height="32"
-              />
-              <span className="text-xs font-medium text-muted-foreground tabular-nums" aria-live="polite">
-                {progressPct}%
-              </span>
-            </div>
+        <div className="flex flex-col gap-8 rounded-[40px] border border-white/10 bg-card/60 p-7 sm:p-8 shadow-2xl backdrop-blur-3xl">
+          {/* Top row: back affordance */}
+          <div className="flex h-5 items-center justify-between">
+            {step > 1 && step < 3 ? (
+              <button
+                type="button"
+                onClick={goBack}
+                className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+                aria-label="Go back"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Back
+              </button>
+            ) : (
+              <span aria-hidden />
+            )}
+            <span className="sr-only" aria-live="polite">{progressPct}% complete</span>
+          </div>
 
-            {/* Stepper: numbered with labels on desktop, dots on mobile */}
-            <div
-              className="hidden sm:flex items-center justify-between gap-2"
-              role="list"
-              aria-label={`Step ${step} of ${STEPS.length}`}
-            >
-              {STEPS.map((s, i) => {
-                const completed = step > s.num;
-                const active = step === s.num;
-                return (
-                  <div key={s.num} className="flex items-center gap-2 flex-1" role="listitem">
-                    <div
-                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-[11px] font-semibold transition-all ${
-                        completed
-                          ? "bg-primary border-primary text-primary-foreground"
-                          : active
-                          ? "bg-gradient-to-r from-primary to-primary-glow border-primary text-primary-foreground shadow-[0_0_12px_hsl(var(--primary)/0.5)]"
-                          : "bg-card/40 border-border text-muted-foreground"
-                      }`}
-                      aria-current={active ? "step" : undefined}
-                    >
-                      {completed ? <Check className="h-3.5 w-3.5" /> : s.num}
-                    </div>
-                    <span
-                      className={`text-xs font-medium transition-colors ${
-                        active ? "text-foreground" : completed ? "text-muted-foreground" : "text-muted-foreground/60"
-                      }`}
-                    >
-                      {s.label}
-                    </span>
-                    {i < STEPS.length - 1 && (
-                      <div
-                        className={`flex-1 h-px transition-colors ${
-                          completed ? "bg-primary/70" : "bg-border"
-                        }`}
-                      />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Mobile dots */}
-            <div className="flex sm:hidden items-center justify-center gap-2" aria-hidden>
-              {STEPS.map((s) => (
+          {/* Progress segments */}
+          <div
+            className="flex gap-1.5"
+            role="progressbar"
+            aria-valuemin={1}
+            aria-valuemax={STEPS.length}
+            aria-valuenow={step}
+            aria-label={`Step ${step} of ${STEPS.length}`}
+          >
+            {STEPS.map((s) => {
+              const reached = step >= s.num;
+              return (
                 <div
                   key={s.num}
-                  className={`h-1.5 rounded-full transition-all ${
-                    s.num === step
-                      ? "w-8 bg-gradient-to-r from-primary to-primary-glow shadow-[0_0_8px_hsl(var(--primary)/0.5)]"
-                      : s.num < step
-                      ? "w-2 bg-primary/60"
-                      : "w-2 bg-muted"
+                  className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
+                    reached
+                      ? "bg-gradient-to-r from-primary to-primary-glow shadow-[0_0_12px_hsl(var(--primary)/0.4)]"
+                      : "bg-white/10"
                   }`}
                 />
-              ))}
-            </div>
+              );
+            })}
+          </div>
 
-            {/* Title + description */}
-            <div className="flex flex-col gap-1.5">
-              <h1 className="text-[24px] leading-tight font-semibold tracking-tight text-foreground font-display">
-                {current.title}
-              </h1>
-              <p className="text-sm text-muted-foreground">{current.description}</p>
-            </div>
-
+          {/* Header */}
+          <div className="flex flex-col gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70">
+              Step {String(step).padStart(2, "0")} / {String(STEPS.length).padStart(2, "0")} · {current.label}
+            </span>
+            <h1 className="text-3xl font-extrabold leading-[1.05] text-foreground font-display">
+              {current.title}
+              <br />
+              <span className="bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                {current.titleAccent}
+              </span>
+            </h1>
+            <p className="text-sm text-muted-foreground">{current.description}</p>
             {step === 2 && (
               <button
                 type="button"
                 onClick={() => { setDirection("forward"); setStep(3); }}
-                className="self-start text-xs font-medium text-muted-foreground underline-offset-4 hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+                className="mt-1 self-start text-[11px] font-semibold uppercase tracking-widest text-muted-foreground underline-offset-4 hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
               >
                 Skip for now
               </button>
@@ -704,6 +682,13 @@ const Onboarding = () => {
             </Button>
             </div>
           )}
+        </div>
+        {/* JET wordmark */}
+        <div className="mt-7 flex items-center justify-center gap-3">
+          <img src={jetLogo} alt="" aria-hidden className="h-4 w-4 object-contain opacity-30" />
+          <span className="font-display text-xs font-extrabold uppercase tracking-[0.5em] text-muted-foreground/30">
+            JET
+          </span>
         </div>
       </div>
     </div>
