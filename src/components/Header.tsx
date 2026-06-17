@@ -11,6 +11,9 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { HeaderUserMenu } from "./navigation/HeaderUserMenu";
 import { HeaderSearch } from "./navigation/HeaderSearch";
 import { HeaderSyncIndicator } from "./navigation/HeaderSyncIndicator";
+import planeAsset from "@/assets/jet-paper-plane.png.asset.json";
+import localPlane from "@/assets/jet-paper-plane.png";
+
 
 export const Header = () => {
   const navigate = useNavigate();
