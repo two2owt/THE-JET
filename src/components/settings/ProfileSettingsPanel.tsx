@@ -133,8 +133,6 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
     try {
       preferencesSchema.parse({
         notifications_enabled: notificationsEnabled,
-        location_tracking_enabled: locationTrackingEnabled,
-        background_tracking_enabled: backgroundTrackingEnabled,
       });
     } catch {
       toast.error("Invalid settings");
@@ -147,8 +145,6 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         .from("user_preferences")
         .update({
           notifications_enabled: notificationsEnabled,
-          location_tracking_enabled: locationTrackingEnabled,
-          background_tracking_enabled: backgroundTrackingEnabled,
         })
         .eq("user_id", preferences.user_id);
       if (error) throw error;
@@ -156,8 +152,6 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
       setPreferences({
         ...preferences,
         notifications_enabled: notificationsEnabled,
-        location_tracking_enabled: locationTrackingEnabled,
-        background_tracking_enabled: backgroundTrackingEnabled,
       });
       toast.success("Settings saved");
     } catch (err) {
