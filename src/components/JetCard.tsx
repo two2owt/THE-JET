@@ -17,6 +17,7 @@ interface NearbyParking {
   isOpen: boolean | null;
   placeId: string;
   distance?: number | null;
+  blocks?: number | null;
 }
 
 interface JetCardProps {
