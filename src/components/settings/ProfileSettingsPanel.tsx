@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SectionTitle } from "@/components/ui/page-title";
-import { Bell, MapPin, Heart, Shield, ShieldCheck, CreditCard, Moon, Smartphone, Loader2, Save, Radio } from "lucide-react";
+import { Bell, MapPin, Heart, Shield, ShieldCheck, CreditCard, Moon, Smartphone, Loader2, Save, Radio, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -25,6 +25,7 @@ const preferencesSchema = z.object({
   notifications_enabled: z.boolean(),
   location_tracking_enabled: z.boolean(),
   background_tracking_enabled: z.boolean(),
+  email_notifications_enabled: z.boolean(),
 });
 
 interface UserPreferencesRow {
@@ -33,6 +34,7 @@ interface UserPreferencesRow {
   notifications_enabled: boolean;
   location_tracking_enabled: boolean;
   background_tracking_enabled: boolean;
+  email_notifications_enabled: boolean;
 }
 
 interface ProfileSettingsPanelProps {
@@ -67,6 +69,7 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
   const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState(false);
   const [locationTrackingEnabled, setLocationTrackingEnabled] = useState(false);
   const [backgroundTrackingEnabled, setBackgroundTrackingEnabled] = useState(true);
+  const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -89,6 +92,7 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
               notifications_enabled: true,
               location_tracking_enabled: true,
               background_tracking_enabled: true,
+              email_notifications_enabled: true,
             })
             .select()
             .single();
@@ -101,6 +105,7 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         setNotificationsEnabled(row.notifications_enabled);
         setLocationTrackingEnabled(row.location_tracking_enabled);
         setBackgroundTrackingEnabled(row.background_tracking_enabled);
+        setEmailNotificationsEnabled(row.email_notifications_enabled ?? true);
       } catch (err) {
         console.error("Error loading preferences:", err);
         if (!cancelled) toast.error("Failed to load settings");
@@ -138,9 +143,10 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
     return (
       preferences.notifications_enabled !== notificationsEnabled ||
       preferences.location_tracking_enabled !== locationTrackingEnabled ||
-      preferences.background_tracking_enabled !== backgroundTrackingEnabled
+      preferences.background_tracking_enabled !== backgroundTrackingEnabled ||
+      preferences.email_notifications_enabled !== emailNotificationsEnabled
     );
-  }, [preferences, notificationsEnabled, locationTrackingEnabled, backgroundTrackingEnabled]);
+  }, [preferences, notificationsEnabled, locationTrackingEnabled, backgroundTrackingEnabled, emailNotificationsEnabled]);
 
   const handleSaveSettings = async () => {
     if (!preferences) return;
@@ -149,6 +155,7 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         notifications_enabled: notificationsEnabled,
         location_tracking_enabled: locationTrackingEnabled,
         background_tracking_enabled: backgroundTrackingEnabled,
+        email_notifications_enabled: emailNotificationsEnabled,
       });
     } catch {
       toast.error("Invalid settings");
@@ -163,6 +170,7 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
           notifications_enabled: notificationsEnabled,
           location_tracking_enabled: locationTrackingEnabled,
           background_tracking_enabled: backgroundTrackingEnabled,
+          email_notifications_enabled: emailNotificationsEnabled,
         })
         .eq("user_id", preferences.user_id);
       if (error) throw error;
@@ -172,6 +180,7 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         notifications_enabled: notificationsEnabled,
         location_tracking_enabled: locationTrackingEnabled,
         background_tracking_enabled: backgroundTrackingEnabled,
+        email_notifications_enabled: emailNotificationsEnabled,
       });
       toast.success("Settings saved");
     } catch (err) {
