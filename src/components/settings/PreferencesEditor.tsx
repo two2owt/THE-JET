@@ -373,6 +373,15 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
       </div>
       {isSelected && isExpanded && (
         <div className="px-3 pb-3 space-y-3 border-t border-border/50 pt-3">
+          {subcategoryNotice && subcategoryNotice.category === category && (
+            <div
+              role="alert"
+              className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-2.5 py-2 text-[11px] text-destructive"
+            >
+              <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+              <span>{subcategoryNotice.message}</span>
+            </div>
+          )}
           {children}
         </div>
       )}
@@ -382,8 +391,28 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
   return (
     <div className="space-y-4">
       <div>
-        <Label className="text-sm mb-1 block">Select up to 3 categories</Label>
-        <p className="text-xs text-muted-foreground mb-3">Tap a category to select, then expand to set preferences</p>
+        <div className="flex items-baseline justify-between mb-1">
+          <Label className="text-sm">Select up to 3 categories</Label>
+          <span
+            className={cn(
+              "text-[11px] font-medium",
+              selectedCategories.length >= 3 ? "text-primary" : "text-muted-foreground"
+            )}
+            aria-live="polite"
+          >
+            {selectedCategories.length}/3 selected
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground mb-2">Tap a category to select, then expand to set preferences (up to 5 per category)</p>
+        {categoryNotice && (
+          <div
+            role="alert"
+            className="mb-3 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-2.5 py-2 text-[11px] text-destructive"
+          >
+            <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+            <span>{categoryNotice}</span>
+          </div>
+        )}
         
         <div className="space-y-2">
           <CategoryCard
