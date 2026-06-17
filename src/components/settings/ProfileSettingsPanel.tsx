@@ -118,6 +118,21 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
     setPushNotificationsEnabled(isPushRegistered);
   }, [isPushRegistered]);
 
+  // Resync web push permission/subscription when the user returns from browser settings
+  useEffect(() => {
+    resyncWebPush();
+    const handleFocus = () => resyncWebPush();
+    const handleVisibility = () => {
+      if (!document.hidden) resyncWebPush();
+    };
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [resyncWebPush]);
+
   const hasUnsavedChanges = useMemo(() => {
     if (!preferences) return false;
     return (
