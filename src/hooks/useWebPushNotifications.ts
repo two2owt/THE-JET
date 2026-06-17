@@ -258,6 +258,7 @@ export const useWebPushNotifications = () => {
     permission,
     subscribe,
     unsubscribe,
-    checkPermission
+    checkPermission,
+    resync
   };
 };
