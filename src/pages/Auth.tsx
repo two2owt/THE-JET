@@ -14,6 +14,7 @@ import { consumePostAuthRedirect } from "@/lib/postAuthRedirect";
 import { writeCachedOnboardingStatus } from "@/lib/onboardingStatus";
 import { discardCurrentAuthSession } from "@/lib/authSession";
 import { SEO } from "@/components/SEO";
+import { AuthPWAInstallPromptWrapper } from "@/components/AuthPWAInstallPromptWrapper";
 // Use the new JET logo for auth page
 import jetLogo from "@/assets/jet-auth-logo.png";
 import authBackground from "@/assets/auth-background.webp";
@@ -1055,6 +1056,7 @@ const Auth = () => {
         </nav>
         </div>
       </div>
+      <AuthPWAInstallPromptWrapper ignoreRoute />
     </div>
   );
 };
