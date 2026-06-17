@@ -23,6 +23,7 @@ import { useVenueActivity } from "@/hooks/useVenueActivity";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useBottomNavigation } from "@/hooks/useBottomNavigation";
 import { NotificationsTabSkeleton, ExploreTabSkeleton } from "@/components/skeletons/PageSkeletons";
+import { HeatmapSkeleton } from "@/components/skeletons/HeatmapSkeleton";
 import { TabPageHeader } from "@/components/TabPageHeader";
 import { PageShell } from "@/components/PageShell";
 import { SEO } from "@/components/SEO";
@@ -54,6 +55,7 @@ const PushNotificationPrompt = lazy(() => import("@/components/PushNotificationP
 
 // Minimal critical imports
 import { Map as MapIcon, Bell } from "lucide-react";
+import { AlertCircle, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
@@ -151,7 +153,7 @@ const Index = () => {
   const { notifications, markAsRead } = useNotifications(dataReady);
   useAutoScrapeVenueImages(dataReady);
   const { deals, refresh: refreshDeals, loading: dealsLoading, lastUpdated: dealsLastUpdated } = useDeals(false, dataReady);
-  const { venues: realVenues, loading: venuesLoading, refresh: refreshVenues, lastUpdated: venuesLastUpdated } = useVenueActivity(dataReady);
+  const { venues: realVenues, loading: venuesLoading, error: venuesError, refresh: refreshVenues, lastUpdated: venuesLastUpdated } = useVenueActivity(dataReady);
   const { justInstalled, clearJustInstalled } = usePWAInstall();
   const [showPushPrompt, setShowPushPrompt] = useState(false);
   const jetCardRef = useRef<HTMLDivElement>(null);
