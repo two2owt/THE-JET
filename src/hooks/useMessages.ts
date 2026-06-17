@@ -149,8 +149,9 @@ export const useMessages = (userId?: string, friendId?: string) => {
         recipient_id: friendId,
         image_url: path,
       });
+      void notifyRecipient("📷 Sent a photo");
     },
-    [userId, friendId, conversationId]
+    [userId, friendId, conversationId, notifyRecipient]
   );
 
   // Share a deal
@@ -164,8 +165,9 @@ export const useMessages = (userId?: string, friendId?: string) => {
         content: `🔥 Check out this deal: ${dealTitle}`,
         deal_id: dealId,
       });
+      void notifyRecipient(`🔥 Shared a deal: ${dealTitle}`);
     },
-    [userId, friendId, conversationId]
+    [userId, friendId, conversationId, notifyRecipient]
   );
 
   // Realtime subscription
