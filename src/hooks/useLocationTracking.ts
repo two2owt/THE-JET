@@ -38,7 +38,9 @@ function haversineMeters(
  */
 export function useLocationTracking() {
   const { user } = useAuth();
-  const [enabled, setEnabled] = useState<boolean | null>(null);
+  // Default to ON — geolocation continues normally unless the user has
+  // explicitly opted out via Profile Settings.
+  const [enabled, setEnabled] = useState<boolean>(true);
   const lastSentRef = useRef<{ lat: number; lng: number; at: number } | null>(
     null,
   );
@@ -49,7 +51,7 @@ export function useLocationTracking() {
   // explicitly disable it in Profile Settings.
   useEffect(() => {
     if (!user?.id) {
-      setEnabled(null);
+      setEnabled(true);
       return;
     }
     let cancelled = false;
@@ -91,7 +93,7 @@ export function useLocationTracking() {
 
   useEffect(() => {
     if (!user?.id) return;
-    if (enabled !== true) return;
+    if (enabled === false) return;
     if (typeof navigator === "undefined" || !navigator.geolocation) return;
 
     let watchId: number | null = null;
