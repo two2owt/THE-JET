@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { PWAInstallPrompt } from "./PWAInstallPrompt";
@@ -24,6 +24,8 @@ import { PWAInstallPrompt } from "./PWAInstallPrompt";
  * iOS handling, and "already installed" checks.
  */
 const ARM_KEY = "pwa-prompt-armed-by-auth";
+const ANON_ARM_KEY = "pwa-prompt-anon-armed";
+const ANON_DELAY_MS = 8000;
 
 export const AuthPWAInstallPromptWrapper = ({
   /** When true, arms the prompt immediately on mount (e.g. on the
@@ -33,13 +35,24 @@ export const AuthPWAInstallPromptWrapper = ({
   /** When true, bypasses the route restriction (used by post-verify/
    * onboarding flows that already know the right moment). */
   ignoreRoute = false,
+  /** When true, only show the prompt once the signed-in user has finished
+   * onboarding. Defaults to false so the prompt surfaces on every fresh
+   * sign-in or sign-up. */
+  requireOnboarded = false,
+  /** When true, also show the prompt to anonymous visitors with a sign-up
+   * CTA after a short engagement delay. */
+  showSignUpCtaForAnonymous = false,
 }: {
   armOnMount?: boolean;
   ignoreRoute?: boolean;
+  requireOnboarded?: boolean;
+  showSignUpCtaForAnonymous?: boolean;
 } = {}) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [profileReady, setProfileReady] = useState(false);
+  const [anonArmed, setAnonArmed] = useState(false);
 
   const [armed, setArmed] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
@@ -69,8 +82,10 @@ export const AuthPWAInstallPromptWrapper = ({
     };
   }, [armOnMount]);
 
-  // Verify the signed-in user has completed profile creation/onboarding.
+  // Verify the signed-in user has completed profile creation/onboarding
+  // (only when requireOnboarded is true).
   useEffect(() => {
+    if (!requireOnboarded) return;
     let cancelled = false;
     if (!user) {
       setProfileReady(false);
@@ -92,12 +107,45 @@ export const AuthPWAInstallPromptWrapper = ({
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, requireOnboarded]);
 
-  if (!armed) return null;
-  if (!user) return null;
-  if (!profileReady) return null;
+  // Anonymous arming: after a short delay on the public landing route,
+  // surface the sign-up + install prompt for unauthenticated visitors.
+  useEffect(() => {
+    if (!showSignUpCtaForAnonymous) return;
+    if (user) return;
+    if (sessionStorage.getItem(ANON_ARM_KEY) === "1") {
+      setAnonArmed(true);
+      return;
+    }
+    const t = setTimeout(() => {
+      sessionStorage.setItem(ANON_ARM_KEY, "1");
+      setAnonArmed(true);
+    }, ANON_DELAY_MS);
+    return () => clearTimeout(t);
+  }, [showSignUpCtaForAnonymous, user]);
+
+  // Route gating applies to both modes.
   if (!ignoreRoute && location.pathname !== "/") return null;
+
+  // Anonymous (signed-out) path with sign-up CTA.
+  if (!user) {
+    if (!showSignUpCtaForAnonymous || !anonArmed) return null;
+    return (
+      <PWAInstallPrompt
+        signUpCta={{
+          onSignUp: () => navigate("/auth?mode=signup"),
+          headline: "Create your JET profile",
+          subtext: "Save deals, get nearby alerts, install the app",
+          buttonLabel: "Sign up — it's free",
+        }}
+      />
+    );
+  }
+
+  // Authenticated path — show after sign-in / sign-up.
+  if (!armed) return null;
+  if (requireOnboarded && !profileReady) return null;
   return <PWAInstallPrompt />;
 };
 
