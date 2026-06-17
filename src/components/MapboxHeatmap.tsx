@@ -360,6 +360,14 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     return () => clearInterval(id);
   }, [showLiveStats]);
 
+  // Stamp the freshness clock every time a layer's data actually changes.
+  useEffect(() => {
+    if (densityData) densityUpdatedAtRef.current = Date.now();
+  }, [densityData]);
+  useEffect(() => {
+    if (pathData) pathUpdatedAtRef.current = Date.now();
+  }, [pathData]);
+
   // Sync active layer toggles and filter selections to URL query params for shareability
   const syncUrlParams = useCallback(() => {
     const params = new URLSearchParams(window.location.search);
