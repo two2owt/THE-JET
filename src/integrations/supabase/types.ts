@@ -460,6 +460,7 @@ export type Database = {
           endpoint: string
           id: string
           p256dh_key: string
+          platform: string
           updated_at: string | null
           user_id: string | null
         }
@@ -470,6 +471,7 @@ export type Database = {
           endpoint: string
           id?: string
           p256dh_key: string
+          platform?: string
           updated_at?: string | null
           user_id?: string | null
         }
@@ -480,6 +482,7 @@ export type Database = {
           endpoint?: string
           id?: string
           p256dh_key?: string
+          platform?: string
           updated_at?: string | null
           user_id?: string | null
         }
