@@ -54,6 +54,7 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
     unsubscribe: unsubscribeWebPush,
     permission: webPushPermission,
     isLoading: isWebPushLoading,
+    resync: resyncWebPush,
   } = useWebPushNotifications();
   const { isAdmin } = useIsAdmin();
   const showSubscriptionSection = isMonetizationEnabled() || isAdmin;
