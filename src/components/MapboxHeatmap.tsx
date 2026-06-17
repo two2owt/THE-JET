@@ -2938,6 +2938,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   setTimeFilter('all');
                   setHourFilter(undefined);
                   setDayFilter(undefined);
+                  // Auto-open the Live Stats panel so users get instant insight
+                  // into what the layer they just enabled is actually showing.
+                  setShowLiveStats(true);
                 }
               }}
             />
@@ -3193,7 +3196,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               ariaLabel="Toggle flow paths layer"
               onToggle={() => {
                 triggerHaptic('medium');
-                setShowMovementPaths(!showMovementPaths);
+                const newState = !showMovementPaths;
+                setShowMovementPaths(newState);
+                if (newState) setShowLiveStats(true);
               }}
             />
 
