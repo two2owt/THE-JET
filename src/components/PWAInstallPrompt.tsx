@@ -1,26 +1,49 @@
-import { Download, X, Share, Plus, Zap, WifiOff, BellRing } from "lucide-react";
+import { Download, X, Share, Plus, Zap, WifiOff, BellRing, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useMultiDirectionSwipe } from "@/hooks/useMultiDirectionSwipe";
 import jetLogo from "@/assets/jet-logo-256.webp";
 
-export const PWAInstallPrompt = () => {
+export interface PWAInstallPromptProps {
+  /**
+   * Optional sign-up call-to-action shown above the install controls. When
+   * provided, the prompt re-frames itself as a "join + install" moment for
+   * anonymous visitors: a primary Sign Up button is rendered first, with the
+   * installable-app benefits surfaced as the value prop for creating an
+   * account.
+   */
+  signUpCta?: {
+    onSignUp: () => void;
+    headline?: string;
+    subtext?: string;
+    buttonLabel?: string;
+  };
+}
+
+export const PWAInstallPrompt = ({ signUpCta }: PWAInstallPromptProps = {}) => {
   const { isInstallable, isInstalled, isIOS, showPrompt, installApp, dismissPrompt } = usePWAInstall();
-  
+
   const { handlers, style } = useMultiDirectionSwipe({
     onDismiss: dismissPrompt,
     threshold: 80
   });
 
-  if (!showPrompt || !isInstallable || isInstalled) {
-    return null;
+  // When a sign-up CTA is provided we always render (the join card is useful
+  // even on browsers that won't fire `beforeinstallprompt`). Otherwise keep
+  // the original install-only gating.
+  const isSignUpMode = !!signUpCta;
+  if (!isSignUpMode) {
+    if (!showPrompt || !isInstallable || isInstalled) return null;
+  } else {
+    if (isInstalled) return null;
+    if (!showPrompt) return null;
   }
 
   return (
     <div
       className="fixed inset-x-0 bottom-0 z-50 p-4 pb-[calc(var(--safe-area-inset-bottom,0px)+1rem)] animate-in slide-in-from-bottom-4 duration-500"
       role="dialog"
-      aria-label="Install JET"
+      aria-label={isSignUpMode ? "Join JET and install the app" : "Install JET"}
     >
       <div
         className="max-w-md mx-auto bg-card/95 backdrop-blur-2xl border border-border/60 rounded-3xl shadow-2xl overflow-hidden cursor-grab active:cursor-grabbing ring-1 ring-primary/10"
@@ -50,10 +73,12 @@ export const PWAInstallPrompt = () => {
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="font-display text-xl font-bold tracking-tight text-foreground leading-tight">
-                Install JET
+                {isSignUpMode ? (signUpCta!.headline ?? "Join JET") : "Install JET"}
               </h2>
               <p className="text-sm text-muted-foreground">
-                Get the full app experience
+                {isSignUpMode
+                  ? (signUpCta!.subtext ?? "Create your free profile, then install the app")
+                  : "Get the full app experience"}
               </p>
             </div>
             <button
@@ -64,6 +89,18 @@ export const PWAInstallPrompt = () => {
               <X className="w-5 h-5 text-muted-foreground" />
             </button>
           </div>
+
+          {/* Sign-up primary CTA (anonymous visitors) */}
+          {isSignUpMode && (
+            <Button
+              size="sm"
+              className="w-full gap-2 mb-4"
+              onClick={signUpCta!.onSignUp}
+            >
+              <UserPlus className="w-4 h-4" />
+              {signUpCta!.buttonLabel ?? "Sign up — it's free"}
+            </Button>
+          )}
 
           {/* Benefits */}
           <div className="grid grid-cols-3 gap-2 mb-5">
@@ -87,7 +124,7 @@ export const PWAInstallPrompt = () => {
           {isIOS ? (
             <div className="space-y-3">
               <p className="text-xs text-muted-foreground text-center">
-                To install on iPhone/iPad:
+                {isSignUpMode ? "Then install on iPhone/iPad:" : "To install on iPhone/iPad:"}
               </p>
               <div className="flex items-center justify-center gap-6 py-2">
                 <div className="flex flex-col items-center gap-1">
@@ -123,14 +160,16 @@ export const PWAInstallPrompt = () => {
               >
                 Maybe later
               </Button>
-              <Button
-                size="sm"
-                className="flex-1 gap-2"
-                onClick={installApp}
-              >
-                <Download className="w-4 h-4" />
-                Install
-              </Button>
+              {isInstallable && (
+                <Button
+                  size="sm"
+                  className="flex-1 gap-2"
+                  onClick={installApp}
+                >
+                  <Download className="w-4 h-4" />
+                  Install
+                </Button>
+              )}
             </div>
           )}
         </div>
