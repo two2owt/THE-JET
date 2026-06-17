@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Sparkles, ChevronDown, ChevronUp, Check, Loader2, UtensilsCrossed, Wine, Moon, CalendarDays, LucideIcon } from "lucide-react";
+import { MapPin, Sparkles, ChevronDown, ChevronUp, Check, Loader2, UtensilsCrossed, Wine, Moon, CalendarDays, LucideIcon, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Json } from "@/integrations/supabase/types";
@@ -80,6 +80,8 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
   } = useProfile(userId);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [categoryNotice, setCategoryNotice] = useState<string | null>(null);
+  const [subcategoryNotice, setSubcategoryNotice] = useState<{ category: string; message: string } | null>(null);
   
   // Food preferences
   const [foodCuisine, setFoodCuisine] = useState<string[]>([]);
@@ -170,6 +172,7 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
   const toggleCategory = (category: string) => {
     setSelectedCategories(prev => {
       if (prev.includes(category)) {
+        setCategoryNotice(null);
         // Clear subcategory selections when deselecting
         if (category === "Food") {
           setFoodCuisine([]);
@@ -191,9 +194,12 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
         return prev.filter(c => c !== category);
       }
       if (prev.length >= 3) {
-        toast.info("You can select up to 3 categories");
+        const msg = `You've reached the 3-category limit. Deselect ${prev.join(", ")} or one of them to choose ${category}.`;
+        setCategoryNotice(msg);
+        toast.info(msg);
         return prev;
       }
+      setCategoryNotice(null);
       return [...prev, category];
     });
   };
@@ -212,12 +218,16 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
   ) => {
     setter(prev => {
       if (prev.includes(option)) {
+        setSubcategoryNotice(null);
         return prev.filter(o => o !== option);
       }
       if (categoryTotal >= 5) {
-        toast.info(`Up to 5 ${categoryName} preferences`);
+        const msg = `You can pick up to 5 ${categoryName} preferences across all sections. Deselect one to add "${option}".`;
+        setSubcategoryNotice({ category: categoryName, message: msg });
+        toast.info(msg);
         return prev;
       }
+      setSubcategoryNotice(null);
       return [...prev, option];
     });
   };
@@ -238,20 +248,26 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
   const OptionChip = ({ 
     label, 
     selected, 
-    onClick 
+    onClick,
+    disabled = false,
   }: { 
     label: string; 
     selected: boolean; 
     onClick: () => void;
+    disabled?: boolean;
   }) => (
     <button
       type="button"
       onClick={onClick}
+      aria-disabled={disabled}
+      title={disabled ? "Limit reached — deselect another preference first" : undefined}
       className={cn(
         "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
         selected
           ? "bg-primary text-primary-foreground border-primary"
-          : "bg-muted/50 text-muted-foreground border-border hover:border-primary/50 hover:bg-muted"
+          : disabled
+            ? "bg-muted/30 text-muted-foreground/50 border-border/50 cursor-not-allowed"
+            : "bg-muted/50 text-muted-foreground border-border hover:border-primary/50 hover:bg-muted"
       )}
     >
       {label}
@@ -272,13 +288,19 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
     remaining: number;
   }) => (
     <div className="space-y-2">
-      <p className="text-xs font-medium text-muted-foreground">{title} <span className="text-muted-foreground/60">({remaining} left)</span></p>
+      <p className="text-xs font-medium text-muted-foreground">
+        {title}{" "}
+        <span className={cn("text-muted-foreground/60", remaining === 0 && "text-destructive/80")}>
+          ({remaining} left)
+        </span>
+      </p>
       <div className="flex flex-wrap gap-1.5">
         {options.map(option => (
           <OptionChip
             key={option}
             label={option}
             selected={selected.includes(option)}
+            disabled={remaining === 0 && !selected.includes(option)}
             onClick={() => onToggle(option)}
           />
         ))}
@@ -351,6 +373,15 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
       </div>
       {isSelected && isExpanded && (
         <div className="px-3 pb-3 space-y-3 border-t border-border/50 pt-3">
+          {subcategoryNotice && subcategoryNotice.category === category && (
+            <div
+              role="alert"
+              className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-2.5 py-2 text-[11px] text-destructive"
+            >
+              <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+              <span>{subcategoryNotice.message}</span>
+            </div>
+          )}
           {children}
         </div>
       )}
@@ -360,8 +391,28 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
   return (
     <div className="space-y-4">
       <div>
-        <Label className="text-sm mb-1 block">Select up to 3 categories</Label>
-        <p className="text-xs text-muted-foreground mb-3">Tap a category to select, then expand to set preferences</p>
+        <div className="flex items-baseline justify-between mb-1">
+          <Label className="text-sm">Select up to 3 categories</Label>
+          <span
+            className={cn(
+              "text-[11px] font-medium",
+              selectedCategories.length >= 3 ? "text-primary" : "text-muted-foreground"
+            )}
+            aria-live="polite"
+          >
+            {selectedCategories.length}/3 selected
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground mb-2">Tap a category to select, then expand to set preferences (up to 5 per category)</p>
+        {categoryNotice && (
+          <div
+            role="alert"
+            className="mb-3 flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-2.5 py-2 text-[11px] text-destructive"
+          >
+            <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+            <span>{categoryNotice}</span>
+          </div>
+        )}
         
         <div className="space-y-2">
           <CategoryCard
