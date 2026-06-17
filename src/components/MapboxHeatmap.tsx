@@ -559,6 +559,15 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     localStorage.setItem(FILTER_KEYS.timelapseSpeed, String(timelapse.speed));
   }, [timelapse.speed]);
 
+  // Stamp the freshness clock every time a layer's data actually changes,
+  // so the Live Stats panel's "Updated Xs ago" stays accurate.
+  useEffect(() => {
+    if (densityData) densityUpdatedAtRef.current = Date.now();
+  }, [densityData]);
+  useEffect(() => {
+    if (pathData) pathUpdatedAtRef.current = Date.now();
+  }, [pathData]);
+
   // Reset to defaults — clears localStorage and restores factory settings
   const handleResetToDefaults = useCallback(() => {
     triggerHaptic('medium');
