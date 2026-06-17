@@ -3517,8 +3517,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               pathUpdatedAtRef.current = nowMs;
             }
             const lastUpdatedMs = Math.max(
-              showDensityLayer ? densityUpdatedAtRef.current : 0,
-              showMovementPaths ? pathUpdatedAtRef.current : 0,
+              densityUpdatedAtRef.current,
+              pathUpdatedAtRef.current,
             );
             const ageSec = lastUpdatedMs > 0
               ? Math.max(0, Math.round((nowMs - lastUpdatedMs) / 1000))
@@ -3545,14 +3545,13 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   </p>
                 </div>
 
-                {!showDensityLayer && !showMovementPaths && (
+                {!densityData && !pathData && (
                   <p style={{ ...labelStyle, fontSize: '11px', lineHeight: 1.4 }}>
-                    Turn on <strong style={{ color: 'hsl(var(--foreground))' }}>Heatmap</strong> or{' '}
-                    <strong style={{ color: 'hsl(var(--foreground))' }}>Flow Paths</strong> to see live activity here.
+                    Streaming live activity from the map…
                   </p>
                 )}
 
-                {showDensityLayer && densityData && (
+                {densityData && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
                       <span style={labelStyle}>Busy spots nearby</span>
@@ -3571,7 +3570,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   </div>
                 )}
 
-                {showMovementPaths && pathData && (
+                {pathData && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
                       <span style={labelStyle}>Popular routes</span>
