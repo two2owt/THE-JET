@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { HeaderProvider } from "@/contexts/HeaderContext";
 import { NavigationShell } from "@/components/NavigationShell";
 import { AppShell } from "@/components/AppShell";
+import { PushDeepLinkBridge } from "@/components/PushDeepLinkBridge";
 import { PageLayout } from "@/components/PageLayout";
 import type { NavTab } from "@/hooks/useBottomNavigation";
 import {
@@ -80,6 +81,7 @@ const AppLayout = memo(function AppLayout() {
     <AppShell>
       <Sonner />
       <PageTracker />
+      <PushDeepLinkBridge />
 
       <Routes>
         {/* Main route - eagerly loaded for fastest render */}
