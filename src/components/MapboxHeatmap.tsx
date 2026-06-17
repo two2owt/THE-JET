@@ -1005,13 +1005,14 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           }
         });
         
-        // Remove marker when tracking stops
-        geolocateControl?.on('trackuserlocationend', () => {
-          if (userMarker.current) {
-            userMarker.current.remove();
-            userMarker.current = null;
-          }
-        });
+        // NOTE: We intentionally do NOT remove the marker on
+        // `trackuserlocationend`. Mapbox fires that event whenever active
+        // tracking transitions to background (e.g. the user pans the map),
+        // not only when location is fully disabled. Removing the marker
+        // there caused the puck to disappear on the first pan and never
+        // come back until the user tapped the geolocate button again.
+        // The marker is torn down with the map in the component cleanup
+        // effect (search for `userMarker.current.remove()` below).
 
         // Helper to finalize map loading state - called as early as possible for fast LCP
         const finalizeMapLoad = () => {
