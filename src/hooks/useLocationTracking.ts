@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import {
+  requestLocationPermission,
+  toastPermissionResult,
+} from "@/lib/permissions";
 
 /** Minimum meters moved before posting a new fix. */
 const MIN_DISTANCE_METERS = 75;
@@ -98,6 +102,22 @@ export function useLocationTracking() {
     let watchId: number | null = null;
     let cancelled = false;
 
+    // Ask iOS/Android (or browser) for permission up-front. On denial we
+    // surface an actionable toast pointing the user at Settings instead of
+    // silently failing.
+    void (async () => {
+      const result = await requestLocationPermission();
+      if (cancelled) return;
+      if (result.status !== "granted") {
+        const retry = () => {
+          void requestLocationPermission().then((r) =>
+            toastPermissionResult("Location", r),
+          );
+        };
+        toastPermissionResult("Location", result, retry);
+      }
+    })();
+
     const postFix = async (
       latitude: number,
       longitude: number,
@@ -154,10 +174,18 @@ export function useLocationTracking() {
     };
 
     const onError = (err: GeolocationPositionError) => {
-      // PERMISSION_DENIED (1) — give up silently for this session.
-      if (err.code === err.PERMISSION_DENIED && watchId !== null) {
-        navigator.geolocation.clearWatch(watchId);
-        watchId = null;
+      if (err.code === err.PERMISSION_DENIED) {
+        // Stop watching and surface actionable guidance.
+        if (watchId !== null) {
+          navigator.geolocation.clearWatch(watchId);
+          watchId = null;
+        }
+        toastPermissionResult("Location", {
+          status: "blocked",
+          message:
+            "Location access was revoked. Re-enable it in Settings to keep getting nearby deal alerts.",
+          requiresSettings: true,
+        });
       }
     };
 
