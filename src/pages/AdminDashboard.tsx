@@ -6,6 +6,7 @@ import { AdminPageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { AdminTopbar } from "@/components/admin/AdminTopbar";
+import { SecurityFindingsBanner } from "@/components/admin/SecurityFindingsBanner";
 import {
   ChevronsLeft, ChevronsRight, Menu, Tag, BarChart3, MapPinned, Settings2, Filter,
 } from "lucide-react";
@@ -191,6 +192,9 @@ export default function AdminDashboard() {
 
             {/* Section content */}
             <div className="admin-section">
+              <div className="mb-4">
+                <SecurityFindingsBanner />
+              </div>
               {section === "deals" && (
                 <Suspense fallback={<AdminTabFallback />}>
                   <div className="flex flex-col" style={{ gap: 'var(--space-md)' }}>
