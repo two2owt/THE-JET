@@ -2,6 +2,11 @@ import { useState, useEffect } from "react";
 import { Bell, X, Zap, MapPin, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWebPushNotifications } from "@/hooks/useWebPushNotifications";
+import {
+  requestNotificationPermission,
+  toastPermissionResult,
+} from "@/lib/permissions";
+import { isNativeApp } from "@/lib/platform";
 
 interface PushNotificationPromptProps {
   show: boolean;
@@ -42,15 +47,34 @@ export const PushNotificationPrompt = ({ show, onDismiss }: PushNotificationProm
     setIsLoading(true);
     let success = false;
 
-    if (isWebPushSupported) {
+    if (isNativeApp()) {
+      // iOS/Android — use Capacitor Push Notifications.
+      const result = await requestNotificationPermission();
+      success = result.status === "granted";
+      if (!success) {
+        toastPermissionResult("Notifications", result, () => {
+          void requestNotificationPermission().then((r) =>
+            toastPermissionResult("Notifications", r),
+          );
+        });
+      }
+    } else if (isWebPushSupported) {
       success = await webSubscribe();
+      if (!success) {
+        const result = await requestNotificationPermission();
+        toastPermissionResult("Notifications", result);
+      }
     } else if ("Notification" in window) {
-      const permission = await Notification.requestPermission();
-      success = permission === "granted";
+      const result = await requestNotificationPermission();
+      success = result.status === "granted";
+      if (!success) toastPermissionResult("Notifications", result);
     }
 
     setIsLoading(false);
-    if (success) { setIsVisible(false); onDismiss(); }
+    if (success) {
+      setIsVisible(false);
+      onDismiss();
+    }
   };
 
   const handleDismiss = () => {

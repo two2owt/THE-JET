@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import {
+  requestLocationPermission,
+  toastPermissionResult,
+} from "@/lib/permissions";
 
 /** Minimum meters moved before posting a new fix. */
 const MIN_DISTANCE_METERS = 75;
@@ -38,20 +42,19 @@ function haversineMeters(
  */
 export function useLocationTracking() {
   const { user } = useAuth();
-  // Default to ON — geolocation continues normally unless the user has
-  // explicitly opted out via Profile Settings.
-  const [enabled, setEnabled] = useState<boolean>(true);
+  const [enabled, setEnabled] = useState<boolean | null>(null);
   const lastSentRef = useRef<{ lat: number; lng: number; at: number } | null>(
     null,
   );
   const inFlightRef = useRef(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   // Load the user's location_tracking_enabled preference. Defaults to ON
   // (matches the DB default) so first-time users are auto-tracked until they
   // explicitly disable it in Profile Settings.
   useEffect(() => {
     if (!user?.id) {
-      setEnabled(true);
+      setEnabled(null);
       return;
     }
     let cancelled = false;
@@ -93,11 +96,27 @@ export function useLocationTracking() {
 
   useEffect(() => {
     if (!user?.id) return;
-    if (enabled === false) return;
+    if (enabled !== true) return;
     if (typeof navigator === "undefined" || !navigator.geolocation) return;
 
     let watchId: number | null = null;
     let cancelled = false;
+
+    // Ask iOS/Android (or browser) for permission up-front. On denial we
+    // surface an actionable toast pointing the user at Settings instead of
+    // silently failing.
+    void (async () => {
+      const result = await requestLocationPermission();
+      if (cancelled) return;
+      if (result.status !== "granted") {
+        const retry = () => {
+          void requestLocationPermission().then((r) =>
+            toastPermissionResult("Location", r),
+          );
+        };
+        toastPermissionResult("Location", result, retry);
+      }
+    })();
 
     const postFix = async (
       latitude: number,
@@ -106,19 +125,28 @@ export function useLocationTracking() {
     ) => {
       if (inFlightRef.current) return;
       inFlightRef.current = true;
+      const controller = new AbortController();
+      abortRef.current = controller;
       try {
+        if (controller.signal.aborted) return;
+        // Pass AbortSignal so flipping the toggle / unmount cancels the
+        // pending request mid-flight instead of letting it land.
         await supabase.functions.invoke("check-geofence", {
           body: { latitude, longitude, accuracy },
+          signal: controller.signal,
         });
+        if (controller.signal.aborted) return;
         lastSentRef.current = {
           lat: latitude,
           lng: longitude,
           at: Date.now(),
         };
       } catch (err) {
+        if (controller.signal.aborted) return; // expected on disable/unmount
         // Network or auth errors are non-fatal — try again on next fix.
         console.warn("[useLocationTracking] check-geofence failed", err);
       } finally {
+        if (abortRef.current === controller) abortRef.current = null;
         inFlightRef.current = false;
       }
     };
@@ -146,10 +174,18 @@ export function useLocationTracking() {
     };
 
     const onError = (err: GeolocationPositionError) => {
-      // PERMISSION_DENIED (1) — give up silently for this session.
-      if (err.code === err.PERMISSION_DENIED && watchId !== null) {
-        navigator.geolocation.clearWatch(watchId);
-        watchId = null;
+      if (err.code === err.PERMISSION_DENIED) {
+        // Stop watching and surface actionable guidance.
+        if (watchId !== null) {
+          navigator.geolocation.clearWatch(watchId);
+          watchId = null;
+        }
+        toastPermissionResult("Location", {
+          status: "blocked",
+          message:
+            "Location access was revoked. Re-enable it in Settings to keep getting nearby deal alerts.",
+          requiresSettings: true,
+        });
       }
     };
 
@@ -170,6 +206,11 @@ export function useLocationTracking() {
     return () => {
       cancelled = true;
       if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+      // Cancel any in-flight check-geofence request so a stale fix can't
+      // land in user_locations after the user opted out.
+      abortRef.current?.abort();
+      abortRef.current = null;
+      inFlightRef.current = false;
     };
   }, [user?.id, enabled]);
 }
