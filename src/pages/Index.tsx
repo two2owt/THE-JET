@@ -26,6 +26,7 @@ import { NotificationsTabSkeleton, ExploreTabSkeleton } from "@/components/skele
 import { TabPageHeader } from "@/components/TabPageHeader";
 import { PageShell } from "@/components/PageShell";
 import { SEO } from "@/components/SEO";
+import { CityTransitionOverlay } from "@/components/CityTransitionOverlay";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   readCachedOnboardingStatus,
@@ -109,6 +110,9 @@ const Index = () => {
     }
   }, [selectedCity]);
   const [detectedLocationName, setDetectedLocationName] = useState<string | null>(null); // Actual city from reverse geocoding
+  // Increments every time the user (or geolocation) picks a city, so the
+  // CityTransitionOverlay replays its takeoff/landing animation.
+  const [cityTransitionNonce, setCityTransitionNonce] = useState(0);
   const [showDirectionsDialog, setShowDirectionsDialog] = useState(false);
   const [showSendDialog, setShowSendDialog] = useState(false);
   const [sendDialogUserId, setSendDialogUserId] = useState<string | null>(null);
@@ -347,6 +351,7 @@ const Index = () => {
 
   const handleCityChange = useCallback((city: City) => {
     setSelectedCity(city);
+    setCityTransitionNonce((n) => n + 1);
     toast.success(`Switched to ${city.name}, ${city.state}`, {
       description: "Finding deals in your area"
     });
@@ -355,6 +360,7 @@ const Index = () => {
   // Auto-select nearest city when geolocation detects it on initial load
   const handleNearestCityDetected = useCallback((city: City) => {
     setSelectedCity(city);
+    setCityTransitionNonce((n) => n + 1);
   }, []);
 
   // Handle detected location name from reverse geocoding
@@ -518,6 +524,12 @@ const Index = () => {
           </div>
 
         </>
+      )}
+
+      {/* Plane takeoff/landing animation triggered by city changes */}
+      {createPortal(
+        <CityTransitionOverlay city={selectedCity} nonce={cityTransitionNonce} />,
+        document.body
       )}
 
       {/* JetCard - portaled to body to bypass stacking contexts */}
