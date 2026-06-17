@@ -91,15 +91,66 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
-    // Verify webhook secret
-    const webhookSecret = req.headers.get('x-webhook-secret');
-    const expectedSecret = Deno.env.get('JETBRIDGE_WEBHOOK_SECRET');
+  // Health check: GET request returns 200 so JET Bridge / browsers can
+  // verify the URL is reachable without needing a secret.
+  if (req.method === 'GET') {
+    return new Response(
+      JSON.stringify({
+        ok: true,
+        function: FUNCTION_NAME,
+        version: EDGE_FUNCTION_VERSION,
+        message: 'sync-merchant-deals is reachable. POST a webhook payload with x-webhook-secret or Authorization: Bearer <secret>.',
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
 
-    if (!webhookSecret || webhookSecret !== expectedSecret) {
-      console.error('Invalid or missing webhook secret');
+  // Always log that a request arrived (helps diagnose missing webhook calls)
+  const reqId = crypto.randomUUID().slice(0, 8);
+  const ua = req.headers.get('user-agent') ?? 'unknown';
+  const origin = req.headers.get('origin') ?? req.headers.get('referer') ?? 'none';
+  console.log(`[${reqId}] ${req.method} from ua="${ua}" origin="${origin}"`);
+
+  try {
+    // Verify webhook secret. Accept either:
+    //   - x-webhook-secret: <secret>
+    //   - Authorization: Bearer <secret>
+    // This matches the two most common webhook auth conventions and avoids
+    // a silent mismatch when the sender uses Bearer auth.
+    const expectedSecret = Deno.env.get('JETBRIDGE_WEBHOOK_SECRET');
+    const headerSecret = req.headers.get('x-webhook-secret');
+    const authHeader = req.headers.get('authorization') ?? '';
+    const bearerSecret = authHeader.toLowerCase().startsWith('bearer ')
+      ? authHeader.slice(7).trim()
+      : null;
+    const providedSecret = headerSecret || bearerSecret;
+
+    if (!expectedSecret) {
+      console.error(`[${reqId}] JETBRIDGE_WEBHOOK_SECRET is not configured`);
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'Server misconfigured: webhook secret missing' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!providedSecret) {
+      console.error(`[${reqId}] No secret provided. Headers seen: x-webhook-secret=${!!headerSecret}, authorization=${!!authHeader}`);
+      return new Response(
+        JSON.stringify({
+          error: 'Unauthorized',
+          hint: 'Send the shared secret as "x-webhook-secret: <value>" or "Authorization: Bearer <value>".',
+        }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (providedSecret !== expectedSecret) {
+      console.error(`[${reqId}] Secret mismatch. providedLen=${providedSecret.length} expectedLen=${expectedSecret.length}`);
+      return new Response(
+        JSON.stringify({
+          error: 'Unauthorized',
+          hint: 'Secret value does not match JETBRIDGE_WEBHOOK_SECRET configured on the consumer app.',
+        }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -110,11 +161,12 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const rawPayload = await req.json();
+    console.log(`[${reqId}] payload keys: ${Object.keys(rawPayload ?? {}).join(',')}`);
     
     // Validate webhook payload with zod
     const parseResult = WebhookPayloadSchema.safeParse(rawPayload);
     if (!parseResult.success) {
-      console.error('Invalid webhook payload:', parseResult.error.errors);
+      console.error(`[${reqId}] Invalid webhook payload:`, parseResult.error.errors);
       return new Response(
         JSON.stringify({ 
           error: 'Invalid payload format', 
@@ -125,7 +177,7 @@ Deno.serve(async (req) => {
     }
     
     const payload = parseResult.data;
-    console.log(`Processing ${payload.action} for deal:`, payload.deal.id);
+    console.log(`[${reqId}] Processing ${payload.action} for deal ${payload.deal.id} (active=${payload.deal.active})`);
 
     const { action, deal } = payload;
 
@@ -133,12 +185,13 @@ Deno.serve(async (req) => {
       case 'create': {
         // Map and validate deal_type
         const mappedDealType = mapDealType(deal.deal_type);
-        console.log(`Mapped deal_type "${deal.deal_type}" to "${mappedDealType}"`);
+        console.log(`[${reqId}] Mapped deal_type "${deal.deal_type}" -> "${mappedDealType}"`);
         
-        // Insert new deal from merchant portal
+        // Upsert so a re-sync of the same deal id from JET Bridge updates the
+        // row instead of failing with a duplicate-key error.
         const { data, error } = await supabase
           .from('deals')
-          .insert({
+          .upsert({
             id: deal.id, // Use the same ID from JET Bridge for sync
             merchant_id: deal.merchant_id ?? null,
             venue_id: deal.venue_id,
@@ -156,16 +209,16 @@ Deno.serve(async (req) => {
             neighborhood_id: deal.neighborhood_id,
             onboarding_started_at: deal.onboarding_started_at ?? null,
             onboarding_completed_at: deal.onboarding_completed_at ?? null,
-          })
+          }, { onConflict: 'id' })
           .select()
           .single();
 
         if (error) {
-          console.error('Error creating deal:', error);
+          console.error(`[${reqId}] Error creating deal:`, error);
           throw error;
         }
 
-        console.log('Deal created successfully:', data.id);
+        console.log(`[${reqId}] Deal created/updated successfully: ${data.id}`);
 
         // Fire-and-forget push notification to subscribers
         if (deal.active) {
