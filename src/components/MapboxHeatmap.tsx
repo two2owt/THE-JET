@@ -3496,6 +3496,30 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           {(() => {
             // Friendly insight headline based on density tier
             const grid = densityData?.stats.grid_cells ?? 0;
+            // Track last-updated timestamps without forcing re-renders
+            // (the 1s liveTick handles that). Reading liveTick keeps the
+            // closure honest so React treats this IIFE as dependent on it.
+            void liveTick;
+            const nowMs = Date.now();
+            if (densityData && densityUpdatedAtRef.current === 0) {
+              densityUpdatedAtRef.current = nowMs;
+            }
+            if (pathData && pathUpdatedAtRef.current === 0) {
+              pathUpdatedAtRef.current = nowMs;
+            }
+            const lastUpdatedMs = Math.max(
+              showDensityLayer ? densityUpdatedAtRef.current : 0,
+              showMovementPaths ? pathUpdatedAtRef.current : 0,
+            );
+            const ageSec = lastUpdatedMs > 0
+              ? Math.max(0, Math.round((nowMs - lastUpdatedMs) / 1000))
+              : null;
+            const ageLabel =
+              ageSec === null ? "Awaiting live data"
+              : ageSec < 5 ? "Updated just now"
+              : ageSec < 60 ? `Updated ${ageSec}s ago`
+              : ageSec < 3600 ? `Updated ${Math.floor(ageSec / 60)}m ago`
+              : `Updated ${Math.floor(ageSec / 3600)}h ago`;
             const vibe =
               grid >= 40 ? { label: "Buzzing right now", dot: 'hsl(0, 100%, 65%)' } :
               grid >= 15 ? { label: "Picking up nearby", dot: 'hsl(45, 100%, 60%)' } :
@@ -3555,6 +3579,37 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     )}
                   </div>
                 )}
+
+                {/* Live freshness footer — confirms the panel is streaming. */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    marginTop: '2px',
+                    paddingTop: '6px',
+                    borderTop: '1px solid hsl(var(--border) / 0.4)',
+                  }}
+                >
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      width: '6px',
+                      height: '6px',
+                      borderRadius: '9999px',
+                      background: ageSec !== null && ageSec < 120
+                        ? 'hsl(140, 80%, 55%)'
+                        : 'hsl(var(--muted-foreground))',
+                      boxShadow: ageSec !== null && ageSec < 120
+                        ? '0 0 8px hsl(140, 80%, 55%)'
+                        : 'none',
+                      animation: ageSec !== null && ageSec < 120
+                        ? 'pulse 2s ease-in-out infinite'
+                        : undefined,
+                    }}
+                  />
+                  <span style={{ ...labelStyle, fontSize: '10px' }}>{ageLabel}</span>
+                </div>
               </div>
             );
           })()}
