@@ -9,7 +9,18 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { lat, lng, radius = 500 } = await req.json();
+    const { lat, lng } = await req.json();
+
+    // "1–5 blocks" band. One city block ≈ 80m in Charlotte's grid, so the
+    // walkable band is roughly 80m (1 block) → 400m (5 blocks). We search a
+    // little wider to give Google room to return candidates, then filter
+    // strictly to the band before returning.
+    const METERS_PER_BLOCK = 80;
+    const MIN_BLOCKS = 1;
+    const MAX_BLOCKS = 5;
+    const MIN_DISTANCE_M = METERS_PER_BLOCK * MIN_BLOCKS; // 80m
+    const MAX_DISTANCE_M = METERS_PER_BLOCK * MAX_BLOCKS; // 400m
+    const SEARCH_RADIUS_M = 600; // pad so Google returns enough candidates
 
     if (typeof lat !== 'number' || typeof lng !== 'number') {
       return new Response(
@@ -60,7 +71,7 @@ Deno.serve(async (req) => {
       console.warn(`rankby=distance returned ${searchData.status}; retrying with radius`);
       searchData = await fetchPlaces({
         location: `${lat},${lng}`,
-        radius: String(Math.min(Math.max(radius, 1500), 3000)),
+        radius: String(SEARCH_RADIUS_M),
         keyword: 'parking',
       });
     }
@@ -73,11 +84,15 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Compute distance and return the 5 closest parking spots.
-    const results = searchData.results
+    // Map → measure → keep only the 1–5 block walking band → sort → cap at 5.
+    const mapped = searchData.results
       .map((place: any) => {
         const pLat = place.geometry?.location?.lat;
         const pLng = place.geometry?.location?.lng;
+        const distance =
+          typeof pLat === 'number' && typeof pLng === 'number'
+            ? Math.round(distanceMeters(lat, lng, pLat, pLng))
+            : null;
         return {
           name: place.name || 'Parking',
           address: place.vicinity || '',
@@ -86,16 +101,31 @@ Deno.serve(async (req) => {
           rating: place.rating || null,
           isOpen: place.opening_hours?.open_now ?? null,
           placeId: place.place_id,
-          distance:
-            typeof pLat === 'number' && typeof pLng === 'number'
-              ? Math.round(distanceMeters(lat, lng, pLat, pLng))
+          distance,
+          blocks:
+            distance !== null
+              ? Math.max(MIN_BLOCKS, Math.round(distance / METERS_PER_BLOCK))
               : null,
         };
-      })
+      });
+
+    const inBand = mapped.filter(
+      (p: any) =>
+        typeof p.distance === 'number' &&
+        p.distance >= MIN_DISTANCE_M &&
+        p.distance <= MAX_DISTANCE_M,
+    );
+
+    // If the band is empty (rural venue, sparse coverage), fall back to the
+    // closest few so the card still shows something useful instead of blank.
+    const results = (inBand.length > 0 ? inBand : mapped)
       .sort((a: any, b: any) => (a.distance ?? 9e9) - (b.distance ?? 9e9))
       .slice(0, 5);
 
-    console.log(`Found ${results.length} parking lots near ${lat},${lng} (closest: ${results[0]?.distance}m)`);
+    console.log(
+      `Found ${results.length} parking lots near ${lat},${lng} ` +
+      `(band ${MIN_DISTANCE_M}-${MAX_DISTANCE_M}m, closest: ${results[0]?.distance}m)`,
+    );
 
     return new Response(
       JSON.stringify({ results }),
