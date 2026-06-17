@@ -81,8 +81,6 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
             .insert({
               user_id: userId,
               notifications_enabled: true,
-              location_tracking_enabled: true,
-              background_tracking_enabled: true,
             })
             .select()
             .single();
@@ -93,8 +91,6 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         if (cancelled || !row) return;
         setPreferences(row);
         setNotificationsEnabled(row.notifications_enabled);
-        setLocationTrackingEnabled(row.location_tracking_enabled);
-        setBackgroundTrackingEnabled(row.background_tracking_enabled);
       } catch (err) {
         console.error("Error loading preferences:", err);
         if (!cancelled) toast.error("Failed to load settings");
