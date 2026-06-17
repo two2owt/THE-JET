@@ -1056,6 +1056,7 @@ const Auth = () => {
         </nav>
         </div>
       </div>
+      <AuthPWAInstallPromptWrapper ignoreRoute />
     </div>
   );
 };
