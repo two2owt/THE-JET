@@ -400,10 +400,10 @@ const Auth = () => {
         })
         .eq("id", signUpData.user.id);
 
-      // Seed the consent center based on the boxes the user just ticked.
+      // Seed granular consent records based on the boxes the user just ticked.
       // Location consent at signup unlocks both foreground and background
       // location tracking by default; users can revoke either one at any
-      // time from Settings → Consent Center.
+      // time from Settings → Privacy.
       const now = new Date().toISOString();
       const seedRows = [
         {
