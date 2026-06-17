@@ -110,6 +110,9 @@ const Index = () => {
     }
   }, [selectedCity]);
   const [detectedLocationName, setDetectedLocationName] = useState<string | null>(null); // Actual city from reverse geocoding
+  // Increments every time the user (or geolocation) picks a city, so the
+  // CityTransitionOverlay replays its takeoff/landing animation.
+  const [cityTransitionNonce, setCityTransitionNonce] = useState(0);
   const [showDirectionsDialog, setShowDirectionsDialog] = useState(false);
   const [showSendDialog, setShowSendDialog] = useState(false);
   const [sendDialogUserId, setSendDialogUserId] = useState<string | null>(null);
