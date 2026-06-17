@@ -17,6 +17,7 @@ import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { ReportIssueDialog } from "@/components/ReportIssueDialog";
 
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { useWebPushNotifications } from "@/hooks/useWebPushNotifications";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { isMonetizationEnabled } from "@/lib/monetization";
 
@@ -46,6 +47,14 @@ interface ProfileSettingsPanelProps {
  */
 export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanelProps) {
   const { isRegistered: isPushRegistered, isNative, initializePushNotifications, unregister: unregisterPush } = usePushNotifications();
+  const {
+    isSupported: isWebPushSupported,
+    isSubscribed: isWebPushSubscribed,
+    subscribe: subscribeWebPush,
+    unsubscribe: unsubscribeWebPush,
+    permission: webPushPermission,
+    isLoading: isWebPushLoading,
+  } = useWebPushNotifications();
   const { isAdmin } = useIsAdmin();
   const showSubscriptionSection = isMonetizationEnabled() || isAdmin;
 
@@ -174,6 +183,22 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
     }
   };
 
+  const handleWebPushToggle = async (enabled: boolean) => {
+    try {
+      if (enabled) {
+        const ok = await subscribeWebPush();
+        if (!ok && webPushPermission === "denied") {
+          toast.error("Notifications blocked. Enable them in your browser settings.");
+        }
+      } else {
+        await unsubscribeWebPush();
+      }
+    } catch (err) {
+      console.error("Web push toggle failed:", err);
+      toast.error("Failed to update push notification settings");
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -274,6 +299,31 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
                   id="push-notifications"
                   checked={pushNotificationsEnabled}
                   onCheckedChange={handlePushNotificationToggle}
+                  className="flex-shrink-0"
+                />
+              </div>
+            </>
+          )}
+          {!isNative && isWebPushSupported && (
+            <>
+              <Separator className="my-2" />
+              <div className="flex items-center justify-between gap-3">
+                <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
+                  <label htmlFor="web-push-notifications" className="text-xs sm:text-sm font-medium text-foreground flex items-center gap-1.5">
+                    <Smartphone className="w-3.5 h-3.5" />
+                    Push Notifications
+                  </label>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">
+                    {webPushPermission === "denied"
+                      ? "Blocked by browser. Enable notifications for this site in your browser settings."
+                      : "Get alerts about nearby deals even when JET isn't open"}
+                  </p>
+                </div>
+                <Switch
+                  id="web-push-notifications"
+                  checked={isWebPushSubscribed}
+                  onCheckedChange={handleWebPushToggle}
+                  disabled={isWebPushLoading || webPushPermission === "denied"}
                   className="flex-shrink-0"
                 />
               </div>
