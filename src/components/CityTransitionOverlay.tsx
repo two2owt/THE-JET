@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import planeImg from "@/assets/jet-paper-plane.png";
+import planeAsset from "@/assets/jet-paper-plane.png.asset.json";
+const planeImg = planeAsset.url;
 import type { City } from "@/types/cities";
 
 interface CityTransitionOverlayProps {
