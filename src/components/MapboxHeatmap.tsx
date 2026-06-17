@@ -3545,6 +3545,13 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   </p>
                 </div>
 
+                {!showDensityLayer && !showMovementPaths && (
+                  <p style={{ ...labelStyle, fontSize: '11px', lineHeight: 1.4 }}>
+                    Turn on <strong style={{ color: 'hsl(var(--foreground))' }}>Heatmap</strong> or{' '}
+                    <strong style={{ color: 'hsl(var(--foreground))' }}>Flow Paths</strong> to see live activity here.
+                  </p>
+                )}
+
                 {showDensityLayer && densityData && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
