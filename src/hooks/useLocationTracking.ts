@@ -43,6 +43,7 @@ export function useLocationTracking() {
     null,
   );
   const inFlightRef = useRef(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   // Load the user's location_tracking_enabled preference. Defaults to ON
   // (matches the DB default) so first-time users are auto-tracked until they
@@ -104,19 +105,28 @@ export function useLocationTracking() {
     ) => {
       if (inFlightRef.current) return;
       inFlightRef.current = true;
+      const controller = new AbortController();
+      abortRef.current = controller;
       try {
+        if (controller.signal.aborted) return;
+        // Pass AbortSignal so flipping the toggle / unmount cancels the
+        // pending request mid-flight instead of letting it land.
         await supabase.functions.invoke("check-geofence", {
           body: { latitude, longitude, accuracy },
+          signal: controller.signal,
         });
+        if (controller.signal.aborted) return;
         lastSentRef.current = {
           lat: latitude,
           lng: longitude,
           at: Date.now(),
         };
       } catch (err) {
+        if (controller.signal.aborted) return; // expected on disable/unmount
         // Network or auth errors are non-fatal — try again on next fix.
         console.warn("[useLocationTracking] check-geofence failed", err);
       } finally {
+        if (abortRef.current === controller) abortRef.current = null;
         inFlightRef.current = false;
       }
     };
@@ -168,6 +178,11 @@ export function useLocationTracking() {
     return () => {
       cancelled = true;
       if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+      // Cancel any in-flight check-geofence request so a stale fix can't
+      // land in user_locations after the user opted out.
+      abortRef.current?.abort();
+      abortRef.current = null;
+      inFlightRef.current = false;
     };
   }, [user?.id, enabled]);
 }
