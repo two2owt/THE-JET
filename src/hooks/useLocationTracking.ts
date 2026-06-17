@@ -53,11 +53,13 @@ export function useLocationTracking() {
   // (matches the DB default) so first-time users are auto-tracked until they
   // explicitly disable it in Profile Settings.
   useEffect(() => {
+    // Wipe throttle memory whenever the signed-in user changes so a
+    // previously signed-in user's last fix can't suppress the next user's
+    // first post after sign-in.
+    lastSentRef.current = null;
+
     if (!user?.id) {
       setEnabled(null);
-      // Wipe throttle memory so a previously signed-in user's last fix
-      // can't suppress the next user's first post after sign-in.
-      lastSentRef.current = null;
       return;
     }
     let cancelled = false;
