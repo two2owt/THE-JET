@@ -985,7 +985,7 @@ const Auth = () => {
           {showResendVerification && !isResettingPassword && (
             <div className="mt-4 sm:mt-5 flex flex-col gap-2 rounded-xl border border-primary/25 bg-card/40 p-4 backdrop-blur-md">
               <div className="text-center text-xs text-muted-foreground">
-                Didn't receive the verification email?
+                Didn't receive the verification email, or did your link expire?
               </div>
               <AuthButton
                 onClick={handleResendVerification}
@@ -997,6 +997,9 @@ const Auth = () => {
               >
                 {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend Verification Email"}
               </AuthButton>
+              <div className="text-center text-[10px] text-muted-foreground">
+                Verification links expire 1 hour after they're sent.
+              </div>
             </div>
           )}
 
