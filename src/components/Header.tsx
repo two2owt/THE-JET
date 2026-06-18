@@ -11,9 +11,6 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { HeaderUserMenu } from "./navigation/HeaderUserMenu";
 import { HeaderSearch } from "./navigation/HeaderSearch";
 import { HeaderSyncIndicator } from "./navigation/HeaderSyncIndicator";
-import planeAsset from "@/assets/jet-paper-plane.png.asset.json";
-import localPlane from "@/assets/jet-paper-plane.png";
-
 
 export const Header = () => {
   const navigate = useNavigate();
@@ -50,9 +47,7 @@ export const Header = () => {
   });
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const [userEmail, setUserEmail] = useState<string | undefined>(undefined);
-  const [logoSrc, setLogoSrc] = useState(planeAsset.url);
   const { isAdmin } = useIsAdmin();
-
   const { profile } = useProfile(userId);
   const { addToSearchHistory } = useSearchHistory(userId);
   const historyDebounceRef = useRef<number | null>(null);
@@ -299,20 +294,6 @@ export const Header = () => {
               transition: 'opacity 0.4s ease-out, transform 0.4s ease-out',
             }}
           >
-            <img
-              src={logoSrc}
-              onError={() => setLogoSrc(localPlane)}
-              alt="JET"
-              aria-hidden="true"
-              style={{
-                height: 'clamp(22px, 3.2vw, 30px)',
-                width: 'auto',
-                objectFit: 'contain',
-                flexShrink: 0,
-                marginRight: 'clamp(6px, 1vw, 10px)',
-                filter: 'drop-shadow(0 1px 2px hsl(var(--primary) / 0.35))',
-              }}
-            />
             <span
               style={{
                 fontSize: 'clamp(16px, 2.6vw, 22px)',

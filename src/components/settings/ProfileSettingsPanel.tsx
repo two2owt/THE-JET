@@ -87,7 +87,7 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
             .insert({
               user_id: userId,
               notifications_enabled: true,
-              location_tracking_enabled: true,
+              location_tracking_enabled: false,
               background_tracking_enabled: true,
             })
             .select()

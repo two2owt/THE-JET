@@ -324,24 +324,13 @@ Deno.serve(async (req) => {
 
     console.log('Movement path statistics:', stats);
 
-    const payload = { geojson, stats };
-
-    // Runtime anonymization guard — alert on non-grid coords or PII keys.
-    const { guardLocationResponse } = await import('../_shared/anonymization_guard.ts');
-    await guardLocationResponse(
-      payload,
+    return new Response(
+      JSON.stringify({ geojson, stats }),
       {
-        endpoint: 'get-movement-paths',
-        gridSize: 0.001,
-        allowedKeys: ['unique_users'],
-      },
-      { clientIp, userAgent: req.headers.get('user-agent') },
+        headers: { ...rateLimitHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      }
     );
-
-    return new Response(JSON.stringify(payload), {
-      headers: { ...rateLimitHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    });
   } catch (error) {
     console.error('Error in get-movement-paths function:', error);
     return new Response(

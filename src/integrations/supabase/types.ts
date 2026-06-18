@@ -14,74 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      admin_security_finding_acks: {
-        Row: {
-          acknowledged_at: string
-          admin_id: string
-          finding_id: string
-          id: string
-        }
-        Insert: {
-          acknowledged_at?: string
-          admin_id: string
-          finding_id: string
-          id?: string
-        }
-        Update: {
-          acknowledged_at?: string
-          admin_id?: string
-          finding_id?: string
-          id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "admin_security_finding_acks_finding_id_fkey"
-            columns: ["finding_id"]
-            isOneToOne: false
-            referencedRelation: "admin_security_findings"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      admin_security_findings: {
-        Row: {
-          created_at: string
-          fixed_at: string | null
-          id: string
-          internal_id: string
-          scanner_name: string
-          severity: string
-          status: string
-          summary: string | null
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          fixed_at?: string | null
-          id?: string
-          internal_id: string
-          scanner_name: string
-          severity?: string
-          status?: string
-          summary?: string | null
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          fixed_at?: string | null
-          id?: string
-          internal_id?: string
-          scanner_name?: string
-          severity?: string
-          status?: string
-          summary?: string | null
-          title?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       analytics_events: {
         Row: {
           created_at: string
@@ -528,7 +460,6 @@ export type Database = {
           endpoint: string
           id: string
           p256dh_key: string
-          platform: string
           updated_at: string | null
           user_id: string | null
         }
@@ -539,7 +470,6 @@ export type Database = {
           endpoint: string
           id?: string
           p256dh_key: string
-          platform?: string
           updated_at?: string | null
           user_id?: string | null
         }
@@ -550,7 +480,6 @@ export type Database = {
           endpoint?: string
           id?: string
           p256dh_key?: string
-          platform?: string
           updated_at?: string | null
           user_id?: string | null
         }
@@ -771,7 +700,6 @@ export type Database = {
         Row: {
           background_tracking_enabled: boolean
           created_at: string | null
-          email_notifications_enabled: boolean
           id: string
           location_tracking_enabled: boolean
           notifications_enabled: boolean
@@ -781,7 +709,6 @@ export type Database = {
         Insert: {
           background_tracking_enabled?: boolean
           created_at?: string | null
-          email_notifications_enabled?: boolean
           id?: string
           location_tracking_enabled?: boolean
           notifications_enabled?: boolean
@@ -791,7 +718,6 @@ export type Database = {
         Update: {
           background_tracking_enabled?: boolean
           created_at?: string | null
-          email_notifications_enabled?: boolean
           id?: string
           location_tracking_enabled?: boolean
           notifications_enabled?: boolean
