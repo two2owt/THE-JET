@@ -21,6 +21,9 @@ export default function VerificationSuccess() {
   >("idle");
   const [resendMessage, setResendMessage] = useState<string>("");
   const [isVerified, setIsVerified] = useState(false);
+  // True when Supabase redirected here with an expired/invalid OTP error in
+  // the URL hash (e.g. user clicked a verification link >1h old).
+  const [linkExpired, setLinkExpired] = useState(false);
   // Distinguishes "email change confirmation" from initial signup verification.
   // Email change uses type=email_change in the Supabase callback hash, or can
   // be signaled explicitly via ?context=email_change.
@@ -42,6 +45,17 @@ export default function VerificationSuccess() {
       hash.includes("access_token=") || hash.includes("type=signup");
     if (hasAuthTokens || verifiedFromQuery) {
       setIsVerified(true);
+    }
+
+    // Supabase returns errors via the URL hash, e.g.
+    //   #error=access_denied&error_code=otp_expired&error_description=...
+    if (
+      hash.includes("error_code=otp_expired") ||
+      hash.includes("error=access_denied") ||
+      hash.includes("otp_expired")
+    ) {
+      setLinkExpired(true);
+      setIsVerified(false);
     }
 
     // Detect email-change flow from hash (?type=email_change) or explicit
