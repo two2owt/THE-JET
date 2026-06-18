@@ -1144,6 +1144,59 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               geolocateControlRef.current?.trigger();
             }, 100);
           }
+
+          // Auth-independent fallback: some environments (signed-out users,
+          // iframes with restrictive permissions, browsers that throttle the
+          // Mapbox GeolocateControl auto-trigger) never fire the `geolocate`
+          // event, so the custom user marker would never appear. Directly ask
+          // the Geolocation API for a one-shot fix and create / move the
+          // marker ourselves. This runs regardless of whether the user is
+          // signed in.
+          if (
+            typeof navigator !== "undefined" &&
+            typeof navigator.geolocation !== "undefined" &&
+            typeof navigator.geolocation.getCurrentPosition === "function"
+          ) {
+            setTimeout(() => {
+              if (userMarker.current) return; // GeolocateControl already placed it
+              navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                  const { latitude, longitude } = pos.coords;
+                  if (userMarker.current || !map.current || !mapboxglRef.current) return;
+                  try {
+                    userMarker.current = new mapboxglRef.current.Marker({
+                      element: createUserMarker(),
+                      anchor: "bottom",
+                    })
+                      .setLngLat([longitude, latitude])
+                      .addTo(map.current);
+                    currentMarkerPos = { lng: longitude, lat: latitude };
+                    setUserLocation({ lat: latitude, lng: longitude });
+                    const nearestCity = getNearestCity(latitude, longitude);
+                    storeLastKnownLocation(latitude, longitude, nearestCity.name);
+                    setDetectedCity(nearestCity);
+                    getCachedReverseGeocode(latitude, longitude, mapboxToken).then((geocoded) => {
+                      if (geocoded) {
+                        setDetectedLocationName(geocoded.fullName);
+                      } else {
+                        setDetectedLocationName(`${nearestCity.name}, ${nearestCity.state}`);
+                      }
+                    });
+                    if (isInitialGeolocate && onNearestCityDetected) {
+                      onNearestCityDetected(nearestCity);
+                      isInitialGeolocate = false;
+                    }
+                  } catch (err) {
+                    console.warn("MapboxHeatmap: fallback marker placement failed", err);
+                  }
+                },
+                (err) => {
+                  console.warn("MapboxHeatmap: fallback geolocation denied/failed (non-fatal):", err?.message || err);
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+              );
+            }, 1500);
+          }
         });
         
         // Fallback: style.load fires earlier and more reliably on some browsers
