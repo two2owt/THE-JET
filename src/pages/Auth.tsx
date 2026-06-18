@@ -458,8 +458,9 @@ const Auth = () => {
       }
       if (msg.includes("Email not confirmed")) {
         toast.error("Email not verified", {
-          description: "Please check your email and click the verification link.",
+          description: "Your verification link may have expired. Tap \"Resend Verification Email\" below to get a fresh one.",
         });
+        localStorage.setItem("jet_verification_email", email.trim().toLowerCase());
         setShowResendVerification(true);
         return;
       }
@@ -470,8 +471,9 @@ const Auth = () => {
     if (!data.user.email_confirmed_at) {
       discardCurrentAuthSession();
       toast.error("Email not verified", {
-        description: "Please check your email and click the verification link before signing in.",
+        description: "Verification links expire after a short time. Tap \"Resend Verification Email\" below to get a new one.",
       });
+      localStorage.setItem("jet_verification_email", email.trim().toLowerCase());
       setShowResendVerification(true);
       return;
     }
@@ -983,7 +985,7 @@ const Auth = () => {
           {showResendVerification && !isResettingPassword && (
             <div className="mt-4 sm:mt-5 flex flex-col gap-2 rounded-xl border border-primary/25 bg-card/40 p-4 backdrop-blur-md">
               <div className="text-center text-xs text-muted-foreground">
-                Didn't receive the verification email?
+                Didn't receive the verification email, or did your link expire?
               </div>
               <AuthButton
                 onClick={handleResendVerification}
@@ -995,6 +997,9 @@ const Auth = () => {
               >
                 {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend Verification Email"}
               </AuthButton>
+              <div className="text-center text-[10px] text-muted-foreground">
+                Verification links expire 1 hour after they're sent.
+              </div>
             </div>
           )}
 
