@@ -244,12 +244,16 @@ export default function VerificationSuccess() {
 
         <div className="space-y-2">
           <h1 className="text-3xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-            {flow === "email_change"
+            {linkExpired
+              ? "Link Expired"
+              : flow === "email_change"
               ? "Email Updated!"
               : "Email Verified!"}
           </h1>
           <p className="text-muted-foreground">
-            {flow === "email_change"
+            {linkExpired
+              ? "Your verification link has expired. Request a new one below — links are valid for 1 hour."
+              : flow === "email_change"
               ? "Your account email has been successfully changed. Use your new address the next time you sign in."
               : "Welcome to JET! Your email has been successfully verified."}
           </p>
