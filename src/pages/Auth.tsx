@@ -458,8 +458,9 @@ const Auth = () => {
       }
       if (msg.includes("Email not confirmed")) {
         toast.error("Email not verified", {
-          description: "Please check your email and click the verification link.",
+          description: "Your verification link may have expired. Tap \"Resend Verification Email\" below to get a fresh one.",
         });
+        localStorage.setItem("jet_verification_email", email.trim().toLowerCase());
         setShowResendVerification(true);
         return;
       }
@@ -470,8 +471,9 @@ const Auth = () => {
     if (!data.user.email_confirmed_at) {
       discardCurrentAuthSession();
       toast.error("Email not verified", {
-        description: "Please check your email and click the verification link before signing in.",
+        description: "Verification links expire after a short time. Tap \"Resend Verification Email\" below to get a new one.",
       });
+      localStorage.setItem("jet_verification_email", email.trim().toLowerCase());
       setShowResendVerification(true);
       return;
     }
