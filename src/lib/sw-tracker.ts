@@ -38,6 +38,93 @@ class ServiceWorkerTracker {
   private swVersion: string | null = null;
   private hadController = false;
   private updateToastShown = false;
+  private userTyping = false;
+  private dirtyForms = false;
+  private typingTimeout: number | null = null;
+
+  constructor() {
+    if (typeof document !== "undefined") {
+      this.attachFormTracking();
+    }
+  }
+
+  /**
+   * Determine if an element is an editable form field.
+   */
+  private isEditableElement(el: Element | null): boolean {
+    if (!el) return false;
+    const tag = el.tagName;
+    return (
+      tag === "INPUT" ||
+      tag === "TEXTAREA" ||
+      tag === "SELECT" ||
+      (el instanceof HTMLElement && el.isContentEditable) ||
+      el.getAttribute("contenteditable") === "true"
+    );
+  }
+
+  /**
+   * Determine if an editable element has unsaved changes.
+   */
+  private isElementDirty(el: Element | null): boolean {
+    if (!el) return false;
+    if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
+      return el.value !== el.defaultValue;
+    }
+    if (el instanceof HTMLSelectElement) {
+      return Array.from(el.options).some((opt) => opt.selected !== opt.defaultSelected);
+    }
+    if (el instanceof HTMLElement && el.isContentEditable) {
+      return el.innerHTML !== (el.dataset.defaultContent ?? "");
+    }
+    return false;
+  }
+
+  /**
+   * Check whether the user is currently interacting with an unsaved form field.
+   */
+  private hasActiveUnsavedInput(): boolean {
+    const active = document.activeElement;
+    return this.isEditableElement(active) && this.isElementDirty(active);
+  }
+
+  /**
+   * Check whether it is safe to auto-reload the app right now.
+   */
+  private canAutoReloadNow(): boolean {
+    return !this.userTyping && !this.dirtyForms && !this.hasActiveUnsavedInput();
+  }
+
+  /**
+   * Track typing and form dirty state so auto-reload does not interrupt users
+   * who are editing unsaved form fields.
+   */
+  private attachFormTracking() {
+    const refreshDirtyState = () => {
+      this.dirtyForms = this.hasActiveUnsavedInput();
+    };
+
+    const onTyping = () => {
+      this.userTyping = true;
+      refreshDirtyState();
+      if (this.typingTimeout) {
+        window.clearTimeout(this.typingTimeout);
+      }
+      // Keep the typing guard active briefly after the last keystroke so
+      // rapid edits do not race against the controller change event.
+      this.typingTimeout = window.setTimeout(() => {
+        this.userTyping = false;
+        refreshDirtyState();
+      }, 3000);
+    };
+
+    document.addEventListener("input", onTyping, true);
+    document.addEventListener("change", refreshDirtyState, true);
+    document.addEventListener("focusin", refreshDirtyState, true);
+    document.addEventListener("focusout", refreshDirtyState, true);
+    document.addEventListener("blur", refreshDirtyState, true);
+  }
+
 
   /**
    * Get current SW controlling state
