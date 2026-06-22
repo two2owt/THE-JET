@@ -146,23 +146,26 @@ const Auth = () => {
   }, [resendCooldown]);
 
   // Single-field validation for inline feedback
-  const getFieldError = (field: FieldName): string | undefined => {
+  const getFieldError = (field: FieldName, value?: string, compareValue?: string): string | undefined => {
+    const fieldValue = value ?? (field === "email" ? email : field === "password" ? password : confirmPassword);
+
     if (field === "email") {
-      const result = emailSchema.safeParse(email);
+      const result = emailSchema.safeParse(fieldValue);
       return result.success ? undefined : result.error.errors[0].message;
     }
     if (field === "password") {
       if (mode === "signup" || mode === "reset") {
-        const result = passwordSchema.safeParse(password);
+        const result = passwordSchema.safeParse(fieldValue);
         return result.success ? undefined : result.error.errors[0].message;
       }
-      if (mode === "signin" && !password) {
+      if (mode === "signin" && !fieldValue) {
         return "Password is required";
       }
       return undefined;
     }
     if (field === "confirmPassword") {
-      if ((mode === "signup" || mode === "reset") && password !== confirmPassword) {
+      const pw = compareValue ?? password;
+      if ((mode === "signup" || mode === "reset") && pw !== fieldValue) {
         return "Passwords do not match";
       }
       return undefined;
@@ -192,20 +195,39 @@ const Auth = () => {
     }, 0);
   };
 
+  const getAutofillAwareValue = (field: FieldName): string => {
+    const id = fieldToElementId[field];
+    const el = id ? (document.getElementById(id) as HTMLInputElement | null) : null;
+    return el?.value ?? (field === "email" ? email : field === "password" ? password : confirmPassword);
+  };
+
   const validateInputs = (): boolean => {
     const errors: ValidationErrors = {};
+    const values = {
+      email: getAutofillAwareValue("email"),
+      password: getAutofillAwareValue("password"),
+      confirmPassword: getAutofillAwareValue("confirmPassword"),
+    };
+
+    // Ensure React state matches any browser-autofilled values before validation.
+    (Object.keys(values) as FieldName[]).forEach((field) => {
+      const stateValue = field === "email" ? email : field === "password" ? password : confirmPassword;
+      if (values[field] !== stateValue) {
+        handleFieldChange(field, values[field]);
+      }
+    });
 
     // Email is required in every mode except "reset" (no email field shown).
     if (mode !== "reset") {
-      const emailErr = getFieldError("email");
+      const emailErr = getFieldError("email", values.email);
       if (emailErr) errors.email = emailErr;
     }
 
     if (mode !== "forgot") {
-      const pwErr = getFieldError("password");
+      const pwErr = getFieldError("password", values.password);
       if (pwErr) errors.password = pwErr;
 
-      const confirmErr = getFieldError("confirmPassword");
+      const confirmErr = getFieldError("confirmPassword", values.confirmPassword, values.password);
       if (confirmErr) errors.confirmPassword = confirmErr;
 
       if (mode === "signup") {
@@ -740,6 +762,7 @@ const Auth = () => {
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => handleFieldChange("email", e.target.value)}
+                    onInput={(e) => handleFieldChange("email", e.currentTarget.value)}
                     onBlur={() => handleBlur("email")}
                     required
                     disabled={isLoading}
@@ -789,6 +812,7 @@ const Auth = () => {
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => handleFieldChange("password", e.target.value)}
+                      onInput={(e) => handleFieldChange("password", e.currentTarget.value)}
                       onBlur={() => handleBlur("password")}
                       required
                       disabled={isLoading}
@@ -834,6 +858,7 @@ const Auth = () => {
                         placeholder="••••••••"
                         value={confirmPassword}
                         onChange={(e) => handleFieldChange("confirmPassword", e.target.value)}
+                        onInput={(e) => handleFieldChange("confirmPassword", e.currentTarget.value)}
                         onBlur={() => handleBlur("confirmPassword")}
                         required
                         disabled={isLoading}
