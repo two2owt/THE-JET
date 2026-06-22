@@ -69,6 +69,17 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
   const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState(false);
   const [locationTrackingEnabled, setLocationTrackingEnabled] = useState(false);
   const [backgroundTrackingEnabled, setBackgroundTrackingEnabled] = useState(true);
+  const [autoReloadUpdates, setAutoReloadUpdates] = useState(false);
+
+  // Sync the auto-reload preference to localStorage so the service worker
+  // tracker can read it without waiting for the settings panel to open.
+  const persistAutoReloadPreference = (value: boolean) => {
+    try {
+      localStorage.setItem("jet_auto_reload_updates", JSON.stringify(value));
+    } catch {
+      // localStorage may be unavailable
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -91,6 +102,7 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
               notifications_enabled: true,
               location_tracking_enabled: false,
               background_tracking_enabled: true,
+              auto_reload_updates: false,
             })
             .select()
             .single();
@@ -103,6 +115,8 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         setNotificationsEnabled(row.notifications_enabled);
         setLocationTrackingEnabled(row.location_tracking_enabled);
         setBackgroundTrackingEnabled(row.background_tracking_enabled);
+        setAutoReloadUpdates(row.auto_reload_updates);
+        persistAutoReloadPreference(row.auto_reload_updates);
       } catch (err) {
         console.error("Error loading preferences:", err);
         if (!cancelled) toast.error("Failed to load settings");
