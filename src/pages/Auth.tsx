@@ -762,6 +762,7 @@ const Auth = () => {
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => handleFieldChange("email", e.target.value)}
+                    onInput={(e) => handleFieldChange("email", e.currentTarget.value)}
                     onBlur={() => handleBlur("email")}
                     required
                     disabled={isLoading}
@@ -811,6 +812,7 @@ const Auth = () => {
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => handleFieldChange("password", e.target.value)}
+                      onInput={(e) => handleFieldChange("password", e.currentTarget.value)}
                       onBlur={() => handleBlur("password")}
                       required
                       disabled={isLoading}
@@ -856,6 +858,7 @@ const Auth = () => {
                         placeholder="••••••••"
                         value={confirmPassword}
                         onChange={(e) => handleFieldChange("confirmPassword", e.target.value)}
+                        onInput={(e) => handleFieldChange("confirmPassword", e.currentTarget.value)}
                         onBlur={() => handleBlur("confirmPassword")}
                         required
                         disabled={isLoading}
