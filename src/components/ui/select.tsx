@@ -22,17 +22,39 @@ type AutofillCtx = {
 } | null;
 const SelectAutofillContext = React.createContext<AutofillCtx>(null);
 
+/**
+ * Validation context for Select. Lets the trigger render an invalid state
+ * and lets `SelectFormMessage` render the error in the right slot without
+ * the consumer wiring ids manually.
+ */
+type ValidationCtx = {
+  required: boolean;
+  invalid: boolean;
+  error?: string;
+  errorId: string;
+} | null;
+const SelectValidationContext = React.createContext<ValidationCtx>(null);
+
+let selectErrorIdCounter = 0;
+const nextErrorId = () => `select-error-${++selectErrorIdCounter}`;
+
 type SelectRootProps = React.ComponentProps<typeof SelectPrimitive.Root> & {
   name?: string;
   autoComplete?: string;
   /** Optional id for the hidden native select (for label association). */
   autofillId?: string;
+  /** Mark the field as required. Validated on form submit. */
+  required?: boolean;
+  /** Inline error message — renders via <SelectFormMessage /> and styles the trigger as invalid. */
+  error?: string;
 };
 
 const Select = ({
   name,
   autoComplete,
   autofillId,
+  required = false,
+  error,
   value,
   defaultValue,
   onValueChange,
@@ -44,6 +66,7 @@ const Select = ({
   const currentValue = isControlled ? value : internalValue;
   const hiddenRef = React.useRef<HTMLSelectElement | null>(null);
   const [options, setOptions] = React.useState<AutofillOption[]>([]);
+  const errorIdRef = React.useRef<string>(nextErrorId());
 
   const ctx = React.useMemo<AutofillCtx>(
     () => ({
@@ -89,10 +112,22 @@ const Select = ({
   );
 
   const autofillEnabled = !!(name || autoComplete);
+  const hiddenNeeded = autofillEnabled || required;
+
+  const validation = React.useMemo<ValidationCtx>(
+    () => ({
+      required,
+      invalid: !!error,
+      error,
+      errorId: errorIdRef.current,
+    }),
+    [required, error],
+  );
 
   return (
-    <SelectAutofillContext.Provider value={autofillEnabled ? ctx : null}>
-      <SelectPrimitive.Root
+    <SelectValidationContext.Provider value={validation}>
+      <SelectAutofillContext.Provider value={hiddenNeeded ? ctx : null}>
+        <SelectPrimitive.Root
         {...rootProps}
         value={isControlled ? value : internalValue}
         defaultValue={isControlled ? undefined : defaultValue}
@@ -100,12 +135,13 @@ const Select = ({
       >
         {children}
       </SelectPrimitive.Root>
-      {autofillEnabled && (
+      {hiddenNeeded && (
         <select
           ref={hiddenRef}
           id={autofillId}
           name={name}
           autoComplete={autoComplete}
+          required={required}
           tabIndex={-1}
           aria-hidden="true"
           value={currentValue ?? ""}
@@ -133,7 +169,8 @@ const Select = ({
           ))}
         </select>
       )}
-    </SelectAutofillContext.Provider>
+      </SelectAutofillContext.Provider>
+    </SelectValidationContext.Provider>
   );
 };
 Select.displayName = "Select";
@@ -145,21 +182,34 @@ const SelectValue = SelectPrimitive.Value;
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
-  <SelectPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      "flex h-11 min-h-[44px] w-full items-center justify-between rounded-xl border border-border/40 bg-card backdrop-blur-xl px-3 py-2 text-sm text-foreground ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-0 focus:border-primary/60 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-all duration-300 hover:bg-card/80 hover:border-border/60 shadow-lg touch-manipulation",
-      className,
-    )}
-    {...props}
-  >
-    {children}
-    <SelectPrimitive.Icon asChild>
-      <ChevronDown className="h-4 w-4 opacity-50 transition-transform duration-300 data-[state=open]:rotate-180" />
-    </SelectPrimitive.Icon>
-  </SelectPrimitive.Trigger>
-));
+>(({ className, children, ...props }, ref) => {
+  const validation = React.useContext(SelectValidationContext);
+  const invalid = !!validation?.invalid;
+  const describedBy =
+    [props["aria-describedby"], invalid ? validation?.errorId : undefined]
+      .filter(Boolean)
+      .join(" ") || undefined;
+  return (
+    <SelectPrimitive.Trigger
+      ref={ref}
+      aria-invalid={invalid || props["aria-invalid"]}
+      aria-required={validation?.required || props["aria-required"]}
+      aria-describedby={describedBy}
+      data-invalid={invalid ? "" : undefined}
+      className={cn(
+        "flex h-11 min-h-[44px] w-full items-center justify-between rounded-xl border border-border/40 bg-card backdrop-blur-xl px-3 py-2 text-sm text-foreground ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-0 focus:border-primary/60 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-all duration-300 hover:bg-card/80 hover:border-border/60 shadow-lg touch-manipulation",
+        "data-[invalid]:border-destructive data-[invalid]:focus:ring-destructive/50",
+        className,
+      )}
+      {...props}
+    >
+      {children}
+      <SelectPrimitive.Icon asChild>
+        <ChevronDown className="h-4 w-4 opacity-50 transition-transform duration-300 data-[state=open]:rotate-180" />
+      </SelectPrimitive.Icon>
+    </SelectPrimitive.Trigger>
+  );
+});
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
 
 const SelectScrollUpButton = React.forwardRef<
@@ -297,6 +347,31 @@ const SelectSeparator = React.forwardRef<
 ));
 SelectSeparator.displayName = SelectPrimitive.Separator.displayName;
 
+/**
+ * Inline error message slot for `Select`. Renders only when the parent
+ * `<Select error="...">` is set. Pair it directly below the trigger so
+ * `aria-describedby` from the trigger points at this element.
+ */
+const SelectFormMessage = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(({ className, children, ...props }, ref) => {
+  const validation = React.useContext(SelectValidationContext);
+  if (!validation?.error && !children) return null;
+  return (
+    <p
+      ref={ref}
+      id={validation?.errorId}
+      role="alert"
+      className={cn("mt-1 text-xs font-medium text-destructive", className)}
+      {...props}
+    >
+      {children ?? validation?.error}
+    </p>
+  );
+});
+SelectFormMessage.displayName = "SelectFormMessage";
+
 export {
   Select,
   SelectGroup,
@@ -308,4 +383,5 @@ export {
   SelectSeparator,
   SelectScrollUpButton,
   SelectScrollDownButton,
+  SelectFormMessage,
 };
