@@ -221,7 +221,8 @@ class ServiceWorkerTracker {
       });
 
       // Track controller changes and reload installed users when a new
-      // production build has taken control, unless they prefer manual reloads.
+      // production build has taken control, unless they prefer manual reloads
+      // or are currently editing unsaved form fields.
       navigator.serviceWorker.addEventListener("controllerchange", () => {
         this.logEvent("controller_changed");
 
@@ -235,10 +236,14 @@ class ServiceWorkerTracker {
           }
         })();
 
-        if (autoReload) {
+        if (autoReload && this.canAutoReloadNow()) {
           this.logEvent("auto_reload_triggered");
           window.location.reload();
           return;
+        }
+
+        if (autoReload) {
+          this.logEvent("auto_reload_deferred_due_to_unsaved_input");
         }
 
         this.updateToastShown = true;
