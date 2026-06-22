@@ -160,20 +160,21 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
         background:
           'linear-gradient(180deg, hsl(var(--card) / 0.96), hsl(var(--card) / 0.82))',
         border: '1px solid hsl(0 0% 100% / 0.06)',
-        borderRadius: '16px',
+        borderRadius: 'clamp(12px, 1.6vw, 20px)',
         overflow: 'hidden',
         boxShadow:
           '0 0 60px hsl(var(--gold) / 0.05), 0 24px 50px -20px rgba(0,0,0,0.75), 0 0 0 1px hsl(var(--gold) / 0.18), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
-        maxHeight: '460px',
+        maxHeight: 'min(82vh, 640px)',
         fontFamily: 'var(--font-sans, system-ui, -apple-system, sans-serif)',
         color: 'hsl(var(--foreground))',
+        fontSize: 'clamp(13px, 0.95vw + 11px, 16px)',
       }}
       aria-label={`${venue.name} - ${venue.category} in ${venue.neighborhood}`}
     >
       {/* Image Header */}
       <div style={{
         position: 'relative',
-        height: '80px',
+        height: 'clamp(72px, 14vw, 120px)',
         background: 'linear-gradient(135deg, hsl(var(--primary) / 0.3), hsl(var(--accent) / 0.2))',
         overflow: 'hidden',
       }}>
