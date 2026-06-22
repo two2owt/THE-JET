@@ -769,6 +769,7 @@ export type Database = {
       }
       user_preferences: {
         Row: {
+          auto_reload_updates: boolean
           background_tracking_enabled: boolean
           created_at: string | null
           email_notifications_enabled: boolean
@@ -779,6 +780,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          auto_reload_updates?: boolean
           background_tracking_enabled?: boolean
           created_at?: string | null
           email_notifications_enabled?: boolean
@@ -789,6 +791,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          auto_reload_updates?: boolean
           background_tracking_enabled?: boolean
           created_at?: string | null
           email_notifications_enabled?: boolean
