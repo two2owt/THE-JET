@@ -1,11 +1,15 @@
 import { memo, useState, useEffect, useCallback } from "react";
-import { MapPin, Users, Star, TrendingUp, X, Share2, Send, Car, Navigation, Phone, Globe, RefreshCw, Loader2 } from "lucide-react";
+import { MapPin, Users, Star, TrendingUp, X, Share2, Send, Car, Navigation, Phone, Globe, RefreshCw, Loader2, Heart } from "lucide-react";
 import { glideHaptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Venue } from "./MapboxHeatmap";
 import { UpgradePrompt, useFeatureAccess } from "./UpgradePrompt";
 import { shareVenue } from "@/utils/shareUtils";
+import { useAuth } from "@/contexts/AuthContext";
+import { useFavorites } from "@/hooks/useFavorites";
+import { useNavigate } from "react-router";
+import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 
 
 interface NearbyParking {
@@ -31,6 +35,25 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
   const { canAccessSocialFeatures } = useFeatureAccess();
   const [nearbyParking, setNearbyParking] = useState<NearbyParking[]>([]);
   const [parkingLoading, setParkingLoading] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { isFavorite, toggleFavorite } = useFavorites(user?.id);
+  const favorited = isFavorite(venue.id);
+
+  const handleToggleFavorite = useCallback(async () => {
+    await glideHaptic();
+    if (!user) {
+      rememberPostAuthRedirect();
+      toast("Sign in to save favorites", { description: "Create an account to keep this venue." });
+      navigate("/auth");
+      return;
+    }
+    try {
+      const { analytics } = await import("@/lib/analytics");
+      analytics.dealClicked(venue.id, venue.name, favorited ? "unfavorite" : "favorite");
+    } catch { /* noop */ }
+    await toggleFavorite(venue.id);
+  }, [user, favorited, venue.id, venue.name, toggleFavorite, navigate]);
 
   const loadParking = useCallback(async (showToast = false) => {
     if (!venue.lat || !venue.lng) return;
@@ -284,6 +307,47 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
             <X style={{ width: '18px', height: '18px', color: 'hsl(var(--foreground))' }} />
           </button>
         )}
+
+        {/* Favorite toggle — saves venue to /favorites */}
+        <button
+          onClick={handleToggleFavorite}
+          aria-label={favorited ? `Remove ${venue.name} from favorites` : `Save ${venue.name} to favorites`}
+          aria-pressed={favorited}
+          style={{
+            position: 'absolute',
+            top: '8px',
+            right: onClose ? '60px' : '8px',
+            zIndex: 20,
+            background: favorited
+              ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
+              : 'hsl(var(--background) / 0.8)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            border: '1px solid hsl(var(--gold) / 0.35)',
+            boxShadow: favorited
+              ? '0 0 16px hsl(var(--primary) / 0.55)'
+              : '0 0 10px hsl(var(--gold) / 0.18)',
+            borderRadius: '50%',
+            padding: 0,
+            width: '44px',
+            height: '44px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'transform 200ms ease-out, box-shadow 200ms ease-out, background 200ms ease-out',
+          }}
+        >
+          <Heart
+            style={{
+              width: '18px',
+              height: '18px',
+              color: favorited ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
+              fill: favorited ? 'hsl(var(--primary-foreground))' : 'transparent',
+              transition: 'fill 200ms ease-out, color 200ms ease-out',
+            }}
+          />
+        </button>
 
         {/* Activity Badge */}
         <div style={{
