@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SectionTitle } from "@/components/ui/page-title";
-import { Bell, MapPin, Heart, Shield, ShieldCheck, CreditCard, Moon, Smartphone, Loader2, Save, Radio } from "lucide-react";
+import { Bell, MapPin, Heart, Shield, ShieldCheck, CreditCard, Moon, Smartphone, Loader2, Save, Radio, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -25,6 +25,7 @@ const preferencesSchema = z.object({
   notifications_enabled: z.boolean(),
   location_tracking_enabled: z.boolean(),
   background_tracking_enabled: z.boolean(),
+  auto_reload_updates: z.boolean(),
 });
 
 interface UserPreferencesRow {
@@ -33,6 +34,7 @@ interface UserPreferencesRow {
   notifications_enabled: boolean;
   location_tracking_enabled: boolean;
   background_tracking_enabled: boolean;
+  auto_reload_updates: boolean;
 }
 
 interface ProfileSettingsPanelProps {
@@ -67,6 +69,17 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
   const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState(false);
   const [locationTrackingEnabled, setLocationTrackingEnabled] = useState(false);
   const [backgroundTrackingEnabled, setBackgroundTrackingEnabled] = useState(true);
+  const [autoReloadUpdates, setAutoReloadUpdates] = useState(false);
+
+  // Sync the auto-reload preference to localStorage so the service worker
+  // tracker can read it without waiting for the settings panel to open.
+  const persistAutoReloadPreference = (value: boolean) => {
+    try {
+      localStorage.setItem("jet_auto_reload_updates", JSON.stringify(value));
+    } catch {
+      // localStorage may be unavailable
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -89,6 +102,7 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
               notifications_enabled: true,
               location_tracking_enabled: false,
               background_tracking_enabled: true,
+              auto_reload_updates: false,
             })
             .select()
             .single();
@@ -101,6 +115,8 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         setNotificationsEnabled(row.notifications_enabled);
         setLocationTrackingEnabled(row.location_tracking_enabled);
         setBackgroundTrackingEnabled(row.background_tracking_enabled);
+        setAutoReloadUpdates(row.auto_reload_updates);
+        persistAutoReloadPreference(row.auto_reload_updates);
       } catch (err) {
         console.error("Error loading preferences:", err);
         if (!cancelled) toast.error("Failed to load settings");
@@ -138,9 +154,10 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
     return (
       preferences.notifications_enabled !== notificationsEnabled ||
       preferences.location_tracking_enabled !== locationTrackingEnabled ||
-      preferences.background_tracking_enabled !== backgroundTrackingEnabled
+      preferences.background_tracking_enabled !== backgroundTrackingEnabled ||
+      preferences.auto_reload_updates !== autoReloadUpdates
     );
-  }, [preferences, notificationsEnabled, locationTrackingEnabled, backgroundTrackingEnabled]);
+  }, [preferences, notificationsEnabled, locationTrackingEnabled, backgroundTrackingEnabled, autoReloadUpdates]);
 
   const handleSaveSettings = async () => {
     if (!preferences) return;
@@ -149,6 +166,7 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         notifications_enabled: notificationsEnabled,
         location_tracking_enabled: locationTrackingEnabled,
         background_tracking_enabled: backgroundTrackingEnabled,
+        auto_reload_updates: autoReloadUpdates,
       });
     } catch {
       toast.error("Invalid settings");
@@ -163,6 +181,7 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
           notifications_enabled: notificationsEnabled,
           location_tracking_enabled: locationTrackingEnabled,
           background_tracking_enabled: backgroundTrackingEnabled,
+          auto_reload_updates: autoReloadUpdates,
         })
         .eq("user_id", preferences.user_id);
       if (error) throw error;
@@ -172,7 +191,9 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         notifications_enabled: notificationsEnabled,
         location_tracking_enabled: locationTrackingEnabled,
         background_tracking_enabled: backgroundTrackingEnabled,
+        auto_reload_updates: autoReloadUpdates,
       });
+      persistAutoReloadPreference(autoReloadUpdates);
       toast.success("Settings saved");
     } catch (err) {
       console.error("Error saving settings:", err);
@@ -367,7 +388,36 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
               Near-black surfaces, hairline borders, soft ambient glow.
             </p>
           </div>
-          <span className="dot-gold" aria-hidden="true" />
+        <span className="dot-gold" aria-hidden="true" />
+        </div>
+      </Card>
+
+      {/* App Updates */}
+      <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
+        <SectionTitle subtitle="Control how JET handles production updates when installed." className="mb-0">
+          <span className="inline-flex items-center gap-2">
+            <RefreshCw className="w-5 h-5 text-primary" />
+            App Updates
+          </span>
+        </SectionTitle>
+        <Separator />
+        <div className="space-y-3 sm:space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
+              <label htmlFor="auto-reload-updates" className="text-xs sm:text-sm font-medium text-foreground block">
+                Auto-reload on update
+              </label>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">
+                Automatically reload JET when a new version is available
+              </p>
+            </div>
+            <Switch
+              id="auto-reload-updates"
+              checked={autoReloadUpdates}
+              onCheckedChange={setAutoReloadUpdates}
+              className="flex-shrink-0"
+            />
+          </div>
         </div>
       </Card>
 
