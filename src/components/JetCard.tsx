@@ -358,11 +358,16 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
       </div>
 
       {/* Content */}
-      <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div style={{
+        padding: 'clamp(10px, 1.6vw, 18px)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 'clamp(6px, 1vw, 12px)',
+      }}>
         {/* Title */}
         <div>
           <h3 style={{
-            fontSize: '16px',
+            fontSize: 'clamp(15px, 1.2vw + 11px, 20px)',
             fontWeight: 700,
             color: 'hsl(var(--foreground))',
             lineHeight: 1.25,
@@ -374,7 +379,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
             gap: '6px',
             marginTop: '4px',
             color: 'hsl(var(--muted-foreground))',
-            fontSize: '11px',
+            fontSize: 'clamp(11px, 0.4vw + 10px, 13px)',
           }}>
             <MapPin style={{ width: '12px', height: '12px', flexShrink: 0 }} />
             <span>{venue.neighborhood}</span>
@@ -391,7 +396,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               alignItems: 'center',
               gap: '10px',
               marginTop: '6px',
-              fontSize: '11px',
+              fontSize: 'clamp(11px, 0.4vw + 10px, 13px)',
             }}>
               {venue.phone && (
                 <a
