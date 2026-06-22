@@ -3,7 +3,52 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
-  ({ className, type, style, ...props }, ref) => {
+  ({ className, type, style, onAnimationStart, ...props }, ref) => {
+    const innerRef = React.useRef<HTMLInputElement | null>(null);
+    const setRefs = React.useCallback(
+      (node: HTMLInputElement | null) => {
+        innerRef.current = node;
+        if (typeof ref === "function") ref(node);
+        else if (ref) (ref as React.MutableRefObject<HTMLInputElement | null>).current = node;
+      },
+      [ref],
+    );
+
+    // Sync browser-autofilled values into React state.
+    // Chrome/Safari trigger a CSS animation named `jet-autofill-start` on
+    // `:-webkit-autofill`. We listen for it and dispatch a native `input`
+    // event so controlled components pick up the value.
+    const handleAnimationStart = React.useCallback(
+      (e: React.AnimationEvent<HTMLInputElement>) => {
+        if (e.animationName === "jet-autofill-start") {
+          const el = innerRef.current;
+          if (el && el.value) {
+            const setter = Object.getOwnPropertyDescriptor(
+              window.HTMLInputElement.prototype,
+              "value",
+            )?.set;
+            setter?.call(el, el.value);
+            el.dispatchEvent(new Event("input", { bubbles: true }));
+            el.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+        }
+        onAnimationStart?.(e);
+      },
+      [onAnimationStart],
+    );
+
+    // Firefox fires no autofill event; flush DOM value on blur as a fallback.
+    const handleBlur = React.useCallback(
+      (e: React.FocusEvent<HTMLInputElement>) => {
+        const el = innerRef.current;
+        if (el && el.value && el.value !== (props.value ?? "")) {
+          el.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+        props.onBlur?.(e);
+      },
+      [props],
+    );
+
     return (
       <input
         type={type}
@@ -27,8 +72,10 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           transition: 'border-color 400ms ease-out, box-shadow 400ms ease-out, background-color 400ms ease-out',
           ...style,
         }}
-        ref={ref}
+        ref={setRefs}
         {...props}
+        onAnimationStart={handleAnimationStart}
+        onBlur={handleBlur}
       />
     );
   },
