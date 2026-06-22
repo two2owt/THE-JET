@@ -52,6 +52,33 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, []);
 
   useEffect(() => {
+    // Sync the auto-reload preference to localStorage whenever auth identity
+    // changes so the service worker can read it without waiting for settings.
+    const syncAutoReloadPreference = async (userId: string | null) => {
+      if (!userId) {
+        try {
+          localStorage.removeItem("jet_auto_reload_updates");
+        } catch {
+          // localStorage may be unavailable
+        }
+        return;
+      }
+      try {
+        const { data, error } = await supabase
+          .from("user_preferences")
+          .select("auto_reload_updates")
+          .eq("user_id", userId)
+          .single();
+        if (error) return;
+        localStorage.setItem(
+          "jet_auto_reload_updates",
+          JSON.stringify(data?.auto_reload_updates ?? false)
+        );
+      } catch {
+        // Best-effort sync
+      }
+    };
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
@@ -62,6 +89,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
         // Refresh runtime consent cache whenever auth identity changes
         loadConsents(currentSession?.user?.id ?? null).catch(() => undefined);
+
+        // Sync the auto-reload PWA preference to localStorage for the SW tracker.
+        syncAutoReloadPreference(currentSession?.user?.id ?? null).catch(() => undefined);
 
         // Funnel instrumentation — identify on sign-in, reset on sign-out.
         // Wrapped in try/catch so analytics can never break auth flow.
@@ -108,6 +138,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setUser(existingSession?.user ?? null);
       setIsLoading(false);
       loadConsents(existingSession?.user?.id ?? null).catch(() => undefined);
+      syncAutoReloadPreference(existingSession?.user?.id ?? null);
     });
 
     // Listen for session changes from other tabs/windows
