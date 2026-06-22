@@ -1,11 +1,15 @@
 import { memo, useState, useEffect, useCallback } from "react";
-import { MapPin, Users, Star, TrendingUp, X, Share2, Send, Car, Navigation, Phone, Globe, RefreshCw, Loader2 } from "lucide-react";
+import { MapPin, Users, Star, TrendingUp, X, Share2, Send, Car, Navigation, Phone, Globe, RefreshCw, Loader2, Heart } from "lucide-react";
 import { glideHaptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Venue } from "./MapboxHeatmap";
 import { UpgradePrompt, useFeatureAccess } from "./UpgradePrompt";
 import { shareVenue } from "@/utils/shareUtils";
+import { useAuth } from "@/contexts/AuthContext";
+import { useFavorites } from "@/hooks/useFavorites";
+import { useNavigate } from "react-router";
+import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 
 
 interface NearbyParking {
@@ -31,6 +35,25 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
   const { canAccessSocialFeatures } = useFeatureAccess();
   const [nearbyParking, setNearbyParking] = useState<NearbyParking[]>([]);
   const [parkingLoading, setParkingLoading] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { isFavorite, toggleFavorite } = useFavorites(user?.id);
+  const favorited = isFavorite(venue.id);
+
+  const handleToggleFavorite = useCallback(async () => {
+    await glideHaptic();
+    if (!user) {
+      rememberPostAuthRedirect();
+      toast("Sign in to save favorites", { description: "Create an account to keep this venue." });
+      navigate("/auth");
+      return;
+    }
+    try {
+      const { analytics } = await import("@/lib/analytics");
+      analytics.dealClicked(venue.id, venue.name, favorited ? "unfavorite" : "favorite");
+    } catch { /* noop */ }
+    await toggleFavorite(venue.id);
+  }, [user, favorited, venue.id, venue.name, toggleFavorite, navigate]);
 
   const loadParking = useCallback(async (showToast = false) => {
     if (!venue.lat || !venue.lng) return;
