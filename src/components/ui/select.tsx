@@ -347,6 +347,31 @@ const SelectSeparator = React.forwardRef<
 ));
 SelectSeparator.displayName = SelectPrimitive.Separator.displayName;
 
+/**
+ * Inline error message slot for `Select`. Renders only when the parent
+ * `<Select error="...">` is set. Pair it directly below the trigger so
+ * `aria-describedby` from the trigger points at this element.
+ */
+const SelectFormMessage = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(({ className, children, ...props }, ref) => {
+  const validation = React.useContext(SelectValidationContext);
+  if (!validation?.error && !children) return null;
+  return (
+    <p
+      ref={ref}
+      id={validation?.errorId}
+      role="alert"
+      className={cn("mt-1 text-xs font-medium text-destructive", className)}
+      {...props}
+    >
+      {children ?? validation?.error}
+    </p>
+  );
+});
+SelectFormMessage.displayName = "SelectFormMessage";
+
 export {
   Select,
   SelectGroup,
@@ -358,4 +383,5 @@ export {
   SelectSeparator,
   SelectScrollUpButton,
   SelectScrollDownButton,
+  SelectFormMessage,
 };
