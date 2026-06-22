@@ -160,20 +160,21 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
         background:
           'linear-gradient(180deg, hsl(var(--card) / 0.96), hsl(var(--card) / 0.82))',
         border: '1px solid hsl(0 0% 100% / 0.06)',
-        borderRadius: '16px',
+        borderRadius: 'clamp(12px, 1.6vw, 20px)',
         overflow: 'hidden',
         boxShadow:
           '0 0 60px hsl(var(--gold) / 0.05), 0 24px 50px -20px rgba(0,0,0,0.75), 0 0 0 1px hsl(var(--gold) / 0.18), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
-        maxHeight: '460px',
+        maxHeight: 'min(82vh, 640px)',
         fontFamily: 'var(--font-sans, system-ui, -apple-system, sans-serif)',
         color: 'hsl(var(--foreground))',
+        fontSize: 'clamp(13px, 0.95vw + 11px, 16px)',
       }}
       aria-label={`${venue.name} - ${venue.category} in ${venue.neighborhood}`}
     >
       {/* Image Header */}
       <div style={{
         position: 'relative',
-        height: '80px',
+        height: 'clamp(72px, 14vw, 120px)',
         background: 'linear-gradient(135deg, hsl(var(--primary) / 0.3), hsl(var(--accent) / 0.2))',
         overflow: 'hidden',
       }}>
@@ -357,11 +358,16 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
       </div>
 
       {/* Content */}
-      <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div style={{
+        padding: 'clamp(10px, 1.6vw, 18px)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 'clamp(6px, 1vw, 12px)',
+      }}>
         {/* Title */}
         <div>
           <h3 style={{
-            fontSize: '16px',
+            fontSize: 'clamp(15px, 1.2vw + 11px, 20px)',
             fontWeight: 700,
             color: 'hsl(var(--foreground))',
             lineHeight: 1.25,
@@ -373,7 +379,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
             gap: '6px',
             marginTop: '4px',
             color: 'hsl(var(--muted-foreground))',
-            fontSize: '11px',
+            fontSize: 'clamp(11px, 0.4vw + 10px, 13px)',
           }}>
             <MapPin style={{ width: '12px', height: '12px', flexShrink: 0 }} />
             <span>{venue.neighborhood}</span>
@@ -390,7 +396,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               alignItems: 'center',
               gap: '10px',
               marginTop: '6px',
-              fontSize: '11px',
+              fontSize: 'clamp(11px, 0.4vw + 10px, 13px)',
             }}>
               {venue.phone && (
                 <a
@@ -456,14 +462,14 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: '8px',
-            padding: '8px 10px',
+            padding: 'clamp(6px, 0.9vw, 12px) clamp(8px, 1.1vw, 14px)',
             borderRadius: '10px',
             background:
               'linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.18))',
             border: '1px solid hsl(0 0% 100% / 0.05)',
             boxShadow:
               'inset 0 1px 0 hsl(0 0% 100% / 0.04), 0 0 24px hsl(var(--gold) / 0.04)',
-            fontSize: '12px',
+            fontSize: 'clamp(12px, 0.4vw + 11px, 14px)',
           }}
         >
           {/* Activity — primary metric (kept on JET red/purple via activityLevel.color) */}
@@ -522,7 +528,11 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
         </div>
 
         {/* Buttons */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }} role="group" aria-label="Venue actions">
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr 1fr',
+          gap: 'clamp(6px, 0.8vw, 10px)',
+        }} role="group" aria-label="Venue actions">
           <button
             onClick={handleShare}
             style={{
@@ -530,8 +540,9 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
               color: 'hsl(var(--primary-foreground))',
               fontWeight: 600,
-              height: '44px',
-              fontSize: '12px',
+              minHeight: '44px',
+              height: 'clamp(44px, 6vw, 52px)',
+              fontSize: 'clamp(12px, 0.4vw + 11px, 14px)',
               borderRadius: '8px',
               border: 'none',
               cursor: 'pointer',
@@ -555,8 +566,9 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
               color: 'hsl(var(--primary-foreground))',
               fontWeight: 600,
-              height: '44px',
-              fontSize: '12px',
+              minHeight: '44px',
+              height: 'clamp(44px, 6vw, 52px)',
+              fontSize: 'clamp(12px, 0.4vw + 11px, 14px)',
               borderRadius: '8px',
               border: 'none',
               cursor: 'pointer',
@@ -577,8 +589,9 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
               color: 'hsl(var(--primary-foreground))',
               fontWeight: 600,
-              height: '44px',
-              fontSize: '12px',
+              minHeight: '44px',
+              height: 'clamp(44px, 6vw, 52px)',
+              fontSize: 'clamp(12px, 0.4vw + 11px, 14px)',
               borderRadius: '8px',
               border: 'none',
               cursor: 'pointer',
