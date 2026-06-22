@@ -25,6 +25,7 @@ const preferencesSchema = z.object({
   notifications_enabled: z.boolean(),
   location_tracking_enabled: z.boolean(),
   background_tracking_enabled: z.boolean(),
+  auto_reload_updates: z.boolean(),
 });
 
 interface UserPreferencesRow {
@@ -33,6 +34,7 @@ interface UserPreferencesRow {
   notifications_enabled: boolean;
   location_tracking_enabled: boolean;
   background_tracking_enabled: boolean;
+  auto_reload_updates: boolean;
 }
 
 interface ProfileSettingsPanelProps {
