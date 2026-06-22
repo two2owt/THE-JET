@@ -166,6 +166,7 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         notifications_enabled: notificationsEnabled,
         location_tracking_enabled: locationTrackingEnabled,
         background_tracking_enabled: backgroundTrackingEnabled,
+        auto_reload_updates: autoReloadUpdates,
       });
     } catch {
       toast.error("Invalid settings");
@@ -180,6 +181,7 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
           notifications_enabled: notificationsEnabled,
           location_tracking_enabled: locationTrackingEnabled,
           background_tracking_enabled: backgroundTrackingEnabled,
+          auto_reload_updates: autoReloadUpdates,
         })
         .eq("user_id", preferences.user_id);
       if (error) throw error;
@@ -189,7 +191,9 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         notifications_enabled: notificationsEnabled,
         location_tracking_enabled: locationTrackingEnabled,
         background_tracking_enabled: backgroundTrackingEnabled,
+        auto_reload_updates: autoReloadUpdates,
       });
+      persistAutoReloadPreference(autoReloadUpdates);
       toast.success("Settings saved");
     } catch (err) {
       console.error("Error saving settings:", err);
