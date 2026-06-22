@@ -154,9 +154,10 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
     return (
       preferences.notifications_enabled !== notificationsEnabled ||
       preferences.location_tracking_enabled !== locationTrackingEnabled ||
-      preferences.background_tracking_enabled !== backgroundTrackingEnabled
+      preferences.background_tracking_enabled !== backgroundTrackingEnabled ||
+      preferences.auto_reload_updates !== autoReloadUpdates
     );
-  }, [preferences, notificationsEnabled, locationTrackingEnabled, backgroundTrackingEnabled]);
+  }, [preferences, notificationsEnabled, locationTrackingEnabled, backgroundTrackingEnabled, autoReloadUpdates]);
 
   const handleSaveSettings = async () => {
     if (!preferences) return;
