@@ -133,15 +133,29 @@ class ServiceWorkerTracker {
         });
       });
 
-      // Track controller changes and prompt installed users to reload when a
-      // new production build has taken control.
+      // Track controller changes and reload installed users when a new
+      // production build has taken control, unless they prefer manual reloads.
       navigator.serviceWorker.addEventListener("controllerchange", () => {
         this.logEvent("controller_changed");
 
-        if (this.hadController && !this.updateToastShown) {
-          this.updateToastShown = true;
-          showUpdateToast(() => window.location.reload());
+        if (!this.hadController || this.updateToastShown) return;
+
+        const autoReload = (() => {
+          try {
+            return localStorage.getItem("jet_auto_reload_updates") === "true";
+          } catch {
+            return false;
+          }
+        })();
+
+        if (autoReload) {
+          this.logEvent("auto_reload_triggered");
+          window.location.reload();
+          return;
         }
+
+        this.updateToastShown = true;
+        showUpdateToast(() => window.location.reload());
       });
 
       // Listen for SW messages
