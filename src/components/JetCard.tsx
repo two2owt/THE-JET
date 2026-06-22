@@ -37,7 +37,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
   const [parkingLoading, setParkingLoading] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { favorites, isFavorite, toggleFavorite, refetch } = useFavorites(user?.id);
+  const { favorites, toggleFavorite, refetch } = useFavorites(user?.id);
   const [dealUuids, setDealUuids] = useState<string[]>([]);
 
   // The card receives a venue id (Google Places / slug), but user_favorites
