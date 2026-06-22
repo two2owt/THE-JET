@@ -2489,3 +2489,15 @@ All colors MUST be HSL.
   0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
   30% { transform: translateY(-3px); opacity: 1; }
 }
+
+/* Browser autofill detection hook — fires `jet-autofill-start` animation
+   when WebKit/Blink applies `:-webkit-autofill`, so the Input component
+   can sync the autofilled value into React state. */
+@keyframes jet-autofill-start {
+  from { /* noop */ }
+  to { /* noop */ }
+}
+input:-webkit-autofill {
+  animation-name: jet-autofill-start;
+  animation-duration: 1ms;
+}
