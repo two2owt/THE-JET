@@ -462,14 +462,14 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: '8px',
-            padding: '8px 10px',
+            padding: 'clamp(6px, 0.9vw, 12px) clamp(8px, 1.1vw, 14px)',
             borderRadius: '10px',
             background:
               'linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.18))',
             border: '1px solid hsl(0 0% 100% / 0.05)',
             boxShadow:
               'inset 0 1px 0 hsl(0 0% 100% / 0.04), 0 0 24px hsl(var(--gold) / 0.04)',
-            fontSize: '12px',
+            fontSize: 'clamp(12px, 0.4vw + 11px, 14px)',
           }}
         >
           {/* Activity — primary metric (kept on JET red/purple via activityLevel.color) */}
@@ -528,7 +528,11 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
         </div>
 
         {/* Buttons */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }} role="group" aria-label="Venue actions">
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr 1fr',
+          gap: 'clamp(6px, 0.8vw, 10px)',
+        }} role="group" aria-label="Venue actions">
           <button
             onClick={handleShare}
             style={{
