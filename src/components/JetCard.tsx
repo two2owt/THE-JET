@@ -37,8 +37,21 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
   const [parkingLoading, setParkingLoading] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { isFavorite, toggleFavorite } = useFavorites(user?.id);
-  const favorited = isFavorite(venue.id);
+  const { favorites, isFavorite, toggleFavorite, refetch } = useFavorites(user?.id);
+  const [favorited, setFavorited] = useState(() => isFavorite(venue.id));
+
+  // Keep the heart in sync with the user's favorites list as soon as it loads
+  // (and whenever the selected venue or favorites change).
+  useEffect(() => {
+    setFavorited(favorites.some((fav) => fav.deal_id === venue.id));
+  }, [favorites, venue.id]);
+
+  // Refresh favorites when the card opens so the active state is always correct.
+  useEffect(() => {
+    if (user) {
+      refetch();
+    }
+  }, [user, venue.id, refetch]);
 
   const handleToggleFavorite = useCallback(async () => {
     await glideHaptic();
