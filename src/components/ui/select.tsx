@@ -4,7 +4,139 @@ import { Check, ChevronDown, ChevronUp } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-const Select = SelectPrimitive.Root;
+/**
+ * Browser autofill bridge for Radix Select.
+ *
+ * Radix's `Select` is a custom button widget, so browsers can't autofill it
+ * directly. We mirror the current value into a visually hidden native
+ * `<select>` that registers its options via context from `SelectItem`s. When
+ * the browser autofills (or otherwise sets) the hidden select, we route the
+ * value back through Radix's `onValueChange`.
+ *
+ * Activate by passing `name` and/or `autoComplete` to `<Select>`.
+ */
+type AutofillOption = { value: string; label: string };
+type AutofillCtx = {
+  registerOption: (value: string, label: string) => void;
+  unregisterOption: (value: string) => void;
+} | null;
+const SelectAutofillContext = React.createContext<AutofillCtx>(null);
+
+type SelectRootProps = React.ComponentProps<typeof SelectPrimitive.Root> & {
+  name?: string;
+  autoComplete?: string;
+  /** Optional id for the hidden native select (for label association). */
+  autofillId?: string;
+};
+
+const Select = ({
+  name,
+  autoComplete,
+  autofillId,
+  value,
+  defaultValue,
+  onValueChange,
+  children,
+  ...rootProps
+}: SelectRootProps) => {
+  const isControlled = value !== undefined;
+  const [internalValue, setInternalValue] = React.useState<string | undefined>(defaultValue);
+  const currentValue = isControlled ? value : internalValue;
+  const hiddenRef = React.useRef<HTMLSelectElement | null>(null);
+  const [options, setOptions] = React.useState<AutofillOption[]>([]);
+
+  const ctx = React.useMemo<AutofillCtx>(
+    () => ({
+      registerOption: (val, label) => {
+        setOptions((prev) => {
+          const next = prev.filter((o) => o.value !== val);
+          next.push({ value: val, label });
+          return next;
+        });
+      },
+      unregisterOption: (val) => {
+        setOptions((prev) => prev.filter((o) => o.value !== val));
+      },
+    }),
+    [],
+  );
+
+  const handleValueChange = React.useCallback(
+    (next: string) => {
+      if (!isControlled) setInternalValue(next);
+      onValueChange?.(next);
+    },
+    [isControlled, onValueChange],
+  );
+
+  const handleHiddenChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const next = e.target.value;
+      if (next && next !== currentValue) handleValueChange(next);
+    },
+    [currentValue, handleValueChange],
+  );
+
+  // Autofill on a native select fires `change`, but some browsers only emit
+  // the `:-webkit-autofill` animation hook — react to that too.
+  const handleHiddenAnimationStart = React.useCallback(
+    (e: React.AnimationEvent<HTMLSelectElement>) => {
+      if (e.animationName !== "jet-autofill-start") return;
+      const el = hiddenRef.current;
+      if (el && el.value && el.value !== currentValue) handleValueChange(el.value);
+    },
+    [currentValue, handleValueChange],
+  );
+
+  const autofillEnabled = !!(name || autoComplete);
+
+  return (
+    <SelectAutofillContext.Provider value={autofillEnabled ? ctx : null}>
+      <SelectPrimitive.Root
+        {...rootProps}
+        value={isControlled ? value : internalValue}
+        defaultValue={isControlled ? undefined : defaultValue}
+        onValueChange={handleValueChange}
+      >
+        {children}
+      </SelectPrimitive.Root>
+      {autofillEnabled && (
+        <select
+          ref={hiddenRef}
+          id={autofillId}
+          name={name}
+          autoComplete={autoComplete}
+          tabIndex={-1}
+          aria-hidden="true"
+          value={currentValue ?? ""}
+          onChange={handleHiddenChange}
+          onAnimationStart={handleHiddenAnimationStart}
+          style={{
+            position: "absolute",
+            width: 1,
+            height: 1,
+            padding: 0,
+            margin: -1,
+            overflow: "hidden",
+            clip: "rect(0 0 0 0)",
+            whiteSpace: "nowrap",
+            border: 0,
+            opacity: 0,
+            pointerEvents: "none",
+          }}
+        >
+          <option value="" />
+          {options.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      )}
+    </SelectAutofillContext.Provider>
+  );
+};
+Select.displayName = "Select";
 
 const SelectGroup = SelectPrimitive.Group;
 
@@ -114,9 +246,21 @@ SelectLabel.displayName = SelectPrimitive.Label.displayName;
 const SelectItem = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
->(({ className, children, ...props }, ref) => (
+>(({ className, children, value, ...props }, ref) => {
+  const autofill = React.useContext(SelectAutofillContext);
+  const label = React.useMemo(() => {
+    if (typeof children === "string" || typeof children === "number") return String(children);
+    return value;
+  }, [children, value]);
+  React.useEffect(() => {
+    if (!autofill || !value) return;
+    autofill.registerOption(value, label ?? value);
+    return () => autofill.unregisterOption(value);
+  }, [autofill, value, label]);
+  return (
   <SelectPrimitive.Item
     ref={ref}
+    value={value}
     className={cn(
       "relative flex w-full cursor-pointer select-none items-center rounded-lg py-3 pl-8 pr-2 text-sm outline-none min-h-[44px] text-popover-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-primary/10 focus:text-foreground data-[state=checked]:bg-primary/10 data-[state=checked]:text-foreground transition-all duration-200 hover:bg-primary/10 hover:text-foreground touch-manipulation",
       className,
@@ -141,7 +285,8 @@ const SelectItem = React.forwardRef<
 
     <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
   </SelectPrimitive.Item>
-));
+  );
+});
 SelectItem.displayName = SelectPrimitive.Item.displayName;
 
 const SelectSeparator = React.forwardRef<
