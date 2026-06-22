@@ -388,7 +388,36 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
               Near-black surfaces, hairline borders, soft ambient glow.
             </p>
           </div>
-          <span className="dot-gold" aria-hidden="true" />
+        <span className="dot-gold" aria-hidden="true" />
+        </div>
+      </Card>
+
+      {/* App Updates */}
+      <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
+        <SectionTitle subtitle="Control how JET handles production updates when installed." className="mb-0">
+          <span className="inline-flex items-center gap-2">
+            <RefreshCw className="w-5 h-5 text-primary" />
+            App Updates
+          </span>
+        </SectionTitle>
+        <Separator />
+        <div className="space-y-3 sm:space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
+              <label htmlFor="auto-reload-updates" className="text-xs sm:text-sm font-medium text-foreground block">
+                Auto-reload on update
+              </label>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">
+                Automatically reload JET when a new version is available
+              </p>
+            </div>
+            <Switch
+              id="auto-reload-updates"
+              checked={autoReloadUpdates}
+              onCheckedChange={setAutoReloadUpdates}
+              className="flex-shrink-0"
+            />
+          </div>
         </div>
       </Card>
 
