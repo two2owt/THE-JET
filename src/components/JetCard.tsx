@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useCallback } from "react";
+import { memo, useState, useEffect, useCallback, useMemo } from "react";
 import { MapPin, Users, Star, TrendingUp, X, Share2, Send, Car, Navigation, Phone, Globe, RefreshCw, Loader2, Heart } from "lucide-react";
 import { glideHaptic } from "@/lib/haptics";
 import { toast } from "sonner";
@@ -37,8 +37,45 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
   const [parkingLoading, setParkingLoading] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { isFavorite, toggleFavorite } = useFavorites(user?.id);
-  const favorited = isFavorite(venue.id);
+  const { favorites, toggleFavorite, refetch } = useFavorites(user?.id);
+  const [dealUuids, setDealUuids] = useState<string[]>([]);
+
+  // The card receives a venue id (Google Places / slug), but user_favorites
+  // stores deal ids. Resolve the active deal(s) for this venue so the heart
+  // can read and toggle the correct favorites row.
+  useEffect(() => {
+    let cancelled = false;
+    setDealUuids([]);
+    const resolveDeals = async () => {
+      const { data, error } = await supabase
+        .from("deals")
+        .select("id")
+        .eq("venue_id", venue.id)
+        .eq("active", true);
+      if (cancelled) return;
+      if (!error && data) {
+        setDealUuids(data.map((d) => d.id));
+      }
+    };
+    resolveDeals();
+    return () => { cancelled = true; };
+  }, [venue.id]);
+
+  const favorited = useMemo(
+    () => dealUuids.length > 0 && favorites.some((f) => dealUuids.includes(f.deal_id)),
+    [dealUuids, favorites]
+  );
+  const targetDealId = useMemo(() => {
+    const matched = favorites.find((f) => dealUuids.includes(f.deal_id));
+    return matched?.deal_id ?? dealUuids[0] ?? null;
+  }, [dealUuids, favorites]);
+
+  // Refresh favorites when the card opens so the active state is always correct.
+  useEffect(() => {
+    if (user) {
+      refetch();
+    }
+  }, [user, venue.id, refetch]);
 
   const handleToggleFavorite = useCallback(async () => {
     await glideHaptic();
@@ -48,12 +85,18 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
       navigate("/auth");
       return;
     }
+    if (!targetDealId) {
+      toast.message("No active deal to favorite", {
+        description: "This venue doesn't have a deal to save right now.",
+      });
+      return;
+    }
     try {
       const { analytics } = await import("@/lib/analytics");
       analytics.dealClicked(venue.id, venue.name, favorited ? "unfavorite" : "favorite");
     } catch { /* noop */ }
-    await toggleFavorite(venue.id);
-  }, [user, favorited, venue.id, venue.name, toggleFavorite, navigate]);
+    await toggleFavorite(targetDealId);
+  }, [user, favorited, targetDealId, venue.id, venue.name, toggleFavorite, navigate]);
 
   const loadParking = useCallback(async (showToast = false) => {
     if (!venue.lat || !venue.lng) return;
