@@ -56,12 +56,13 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
       setError(null);
       setUnauthorized(false);
     } catch (err) {
-      console.error('Error loading density data:', err);
       const status = (err as { context?: { status?: number } })?.context?.status;
       if (status === 401 || status === 403) {
+        console.info('Density data unavailable (admin-only endpoint).');
         setUnauthorized(true);
         setError('unauthorized');
       } else {
+        console.error('Error loading density data:', err);
         setUnauthorized(false);
         setError('Failed to load density data');
       }

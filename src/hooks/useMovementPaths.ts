@@ -44,12 +44,13 @@ export const useMovementPaths = (filters: MovementPathFilters = {}) => {
       setError(null);
       setUnauthorized(false);
     } catch (err) {
-      console.error('Error loading movement path data:', err);
       const status = (err as { context?: { status?: number } })?.context?.status;
       if (status === 401 || status === 403) {
+        console.info('Movement paths unavailable (admin-only endpoint).');
         setUnauthorized(true);
         setError('unauthorized');
       } else {
+        console.error('Error loading movement path data:', err);
         setUnauthorized(false);
         setError('Failed to load movement paths');
       }
