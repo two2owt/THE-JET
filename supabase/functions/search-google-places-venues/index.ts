@@ -1,5 +1,4 @@
 import { corsHeaders, logVersion, EDGE_FUNCTION_VERSION } from "../_shared/cors.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const FUNCTION_NAME = "search-google-places-venues";
 logVersion(FUNCTION_NAME);
