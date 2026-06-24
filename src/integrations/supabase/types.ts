@@ -112,6 +112,29 @@ export type Database = {
         }
         Relationships: []
       }
+      deal_ending_soon_notified: {
+        Row: {
+          deal_id: string
+          notified_at: string
+        }
+        Insert: {
+          deal_id: string
+          notified_at?: string
+        }
+        Update: {
+          deal_id?: string
+          notified_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_ending_soon_notified_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: true
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deal_shares: {
         Row: {
           deal_id: string
@@ -1004,6 +1027,7 @@ export type Database = {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
       }
+      dispatch_ending_soon_favorites: { Args: never; Returns: undefined }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
@@ -1014,6 +1038,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      invoke_favorite_update_notify: {
+        Args: { _deal_id: string; _event_type: string; _venue_id: string }
+        Returns: undefined
       }
       move_to_dlq: {
         Args: {
