@@ -2950,16 +2950,20 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               label="Heatmap"
               Icon={Layers}
               active={showDensityLayer}
+              loading={isLoadingHeatmap}
               ariaLabel="Toggle heatmap layer"
               onToggle={() => {
                 triggerHaptic('medium');
                 const newState = !showDensityLayer;
                 setShowDensityLayer(newState);
                 if (newState) {
+                  setIsLoadingHeatmap(true);
                   setTimeFilter('all');
                   setHourFilter(undefined);
                   setDayFilter(undefined);
                   refreshDensity();
+                } else {
+                  setIsLoadingHeatmap(false);
                 }
               }}
             />
