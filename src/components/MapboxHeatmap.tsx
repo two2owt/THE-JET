@@ -3456,88 +3456,15 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       {/* Statistics Panel - Shows active data counts */}
       {/* CRITICAL: Uses only opacity transition to avoid CLS - no translate/scale animations */}
       {/* Hidden by default — only renders when the user explicitly enables the Live Stats layer toggle */}
-      {liveStatsPanelOpen && (
-        <div 
-          style={{
-            position: 'absolute',
-            top: 'calc(var(--map-safe-top-controls-in-map, var(--map-safe-top-controls)) + 1rem)',
-            right: 'var(--map-ui-inset-right)',
-            minWidth: isMobile ? '160px' : '180px',
-            maxWidth: isMobile ? 'calc(100vw - 1.5rem - var(--map-ui-inset-right, 0.75rem))' : '240px',
-            zIndex: 30,
-            background: 'hsl(var(--card))',
-            backdropFilter: 'blur(24px) saturate(1.6)',
-            WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
-            borderRadius: '12px',
-            border: '1px solid hsl(var(--border))',
-            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
-            padding: isMobile ? '10px 12px' : '10px 14px',
-            opacity: showLiveStats && mapLoaded ? 1 : 0,
-            visibility: showLiveStats && mapLoaded ? 'visible' : 'hidden',
-            transition: 'opacity 300ms ease-out, visibility 300ms ease-out',
-            transform: 'translateZ(0)',
-            willChange: 'opacity',
-            pointerEvents: showLiveStats && mapLoaded ? 'auto' : 'none',
-          }}
-        >
-          {(() => {
-            // Unified end-user insights: one vibe headline + a single
-            // consolidated list of the metrics that actually matter to a
-            // person reading the map (no duplicate "max/top" noise).
-            const grid = densityData?.stats.grid_cells ?? 0;
-            const checkins = densityData?.stats.total_points ?? 0;
-            const peakDensity = densityData?.stats.max_density ?? 0;
-            const routes = pathData?.stats.total_paths ?? 0;
-            const people = pathData?.stats.unique_users ?? 0;
-
-            const vibe =
-              grid >= 40 || peakDensity >= 25 ? { label: "Buzzing right now", dot: 'hsl(0, 100%, 65%)' } :
-              grid >= 15 || peakDensity >= 8  ? { label: "Picking up nearby", dot: 'hsl(45, 100%, 60%)' } :
-              grid > 0   || routes > 0        ? { label: "Quiet out there",   dot: 'hsl(200, 100%, 65%)' } :
-                                                { label: "Live activity",     dot: 'hsl(var(--muted-foreground))' };
-
-            const labelStyle: React.CSSProperties = { fontSize: '11px', color: 'hsl(var(--muted-foreground))', lineHeight: 1.2 };
-            const valueStyle: React.CSSProperties = { fontSize: '13px', fontWeight: 700, lineHeight: 1.1, fontVariantNumeric: 'tabular-nums' };
-
-            // Build a single ordered list of rows; only include rows whose
-            // underlying layer is on AND whose value is meaningful (>0).
-            type Row = { key: string; label: string; value: string; tone: string };
-            const rows: Row[] = [];
-            if (showDensityLayer && densityData) {
-              if (grid > 0) rows.push({ key: 'hotspots', label: 'Active hotspots', value: grid.toLocaleString(), tone: 'hsl(var(--primary))' });
-              if (checkins > 0) rows.push({ key: 'checkins', label: 'Recent check-ins', value: checkins.toLocaleString(), tone: 'hsl(var(--foreground))' });
-            }
-            if (showMovementPaths && pathData) {
-              if (people > 0) rows.push({ key: 'people', label: 'People on the move', value: people.toLocaleString(), tone: 'hsl(200, 100%, 65%)' });
-              if (routes > 0) rows.push({ key: 'routes', label: 'Popular routes', value: routes.toLocaleString(), tone: 'hsl(var(--primary))' });
-            }
-
-            return (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span aria-hidden="true" style={{ width: '8px', height: '8px', borderRadius: '9999px', background: vibe.dot, boxShadow: `0 0 8px ${vibe.dot}` }} />
-                  <p className="font-display" style={{ fontSize: '11px', fontWeight: 700, color: 'hsl(var(--foreground))', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                    {vibe.label}
-                  </p>
-                </div>
-
-                {rows.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    {rows.map((row) => (
-                      <div key={row.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                        <span style={labelStyle}>{row.label}</span>
-                        <span style={{ ...valueStyle, color: row.tone }}>{row.value}</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p style={labelStyle}>No live activity in view yet.</p>
-                )}
-              </div>
-            );
-          })()}
-        </div>
-      )}
+      <LiveStatsPanel
+        open={showLiveStats}
+        mapLoaded={mapLoaded}
+        isMobile={isMobile}
+        densityData={densityData}
+        pathData={pathData}
+        showDensityLayer={showDensityLayer}
+        showMovementPaths={showMovementPaths}
+      />
 
       {/* Enhanced Legend - Bottom left, responsive for all devices, collapsible on mobile */}
       {/* CRITICAL: Uses only opacity transition to avoid CLS - no translate animations */}
