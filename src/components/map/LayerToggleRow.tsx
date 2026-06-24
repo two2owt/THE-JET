@@ -114,12 +114,12 @@ export const LayerToggleRow = ({
       {loading ? (
         <Loader2
           aria-hidden="true"
+          className="animate-spin"
           style={{
             width: "14px",
             height: "14px",
             flexShrink: 0,
             color: "hsl(var(--primary))",
-            animation: "spin 1s linear infinite",
           }}
         />
       ) : (
