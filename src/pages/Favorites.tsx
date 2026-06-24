@@ -39,6 +39,8 @@ export default function Favorites() {
 
     if (favorites.length > 0) {
       fetchFavoriteDeals();
+    } else {
+      setDeals([]);
     }
   }, [favorites, favoritesLoading, user]);
 
