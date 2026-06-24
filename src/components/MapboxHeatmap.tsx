@@ -66,7 +66,7 @@ const loadMapboxGL = async (): Promise<MapboxGLModule> => {
   }
   return mapboxLoadPromise;
 };
-import { MapPin, Layers, Palette, X, AlertCircle, Route, Play, Pause, SkipBack, SkipForward, Clock, ChevronDown, ChevronUp, Car, BarChart3, RotateCcw, Calendar, Lock } from "lucide-react";
+import { MapPin, Layers, Palette, X, AlertCircle, Route, Play, Pause, SkipBack, SkipForward, Clock, ChevronDown, ChevronUp, Car, BarChart3, RotateCcw, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { HeatmapSkeleton } from "@/components/skeletons/HeatmapSkeleton";
 import { useLocationDensity } from "@/hooks/useLocationDensity";
@@ -532,41 +532,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
   
-  const { densityData, unauthorized: densityUnauthorized } = useLocationDensity({
+  const { densityData } = useLocationDensity({
     timeFilter,
     hourOfDay: timelapseMode ? undefined : hourFilter,
     dayOfWeek: dayFilter,
   });
 
-  const { pathData, error: pathsError, refresh: refreshPaths, unauthorized: pathsUnauthorized } = useMovementPaths({
+  const { pathData, error: pathsError, refresh: refreshPaths } = useMovementPaths({
     timeFilter: pathTimeFilter,
     minFrequency: minPathFrequency,
   });
-
-  // Non-blocking notice when admin-only analytics layers return 401/403.
-  // Fires once per (layer, session) so the user understands why the layer is empty.
-  const notifiedDensityUnauthRef = useRef(false);
-  const notifiedPathsUnauthRef = useRef(false);
-  useEffect(() => {
-    if (showDensityLayer && densityUnauthorized && !notifiedDensityUnauthRef.current) {
-      notifiedDensityUnauthRef.current = true;
-      toast.info("Heatmap is admin-only", {
-        description: "Sign in with an admin account to see aggregated activity density.",
-        icon: <Lock className="h-4 w-4" />,
-      });
-    }
-    if (!showDensityLayer) notifiedDensityUnauthRef.current = false;
-  }, [showDensityLayer, densityUnauthorized]);
-  useEffect(() => {
-    if (showMovementPaths && pathsUnauthorized && !notifiedPathsUnauthRef.current) {
-      notifiedPathsUnauthRef.current = true;
-      toast.info("Flow Paths is admin-only", {
-        description: "Sign in with an admin account to see movement paths between venues.",
-        icon: <Lock className="h-4 w-4" />,
-      });
-    }
-    if (!showMovementPaths) notifiedPathsUnauthRef.current = false;
-  }, [showMovementPaths, pathsUnauthorized]);
   
   // Time-lapse hook (restore persisted speed)
   const initialTimelapseSpeed = useRef(getPersistedTimelapseSpeed());
@@ -2974,14 +2949,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             {/* Heat filters - shown when heat is on */}
             <div style={{ overflow: 'hidden', transition: 'max-height 0.2s', maxHeight: showDensityLayer ? '240px' : '0px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '10px', paddingTop: '8px', paddingBottom: '2px' }}>
-                {densityUnauthorized && (
-                  <div role="status" style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', padding: '8px', background: 'hsl(var(--muted) / 0.5)', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '11px', lineHeight: 1.35 }}>
-                    <Lock style={{ width: '12px', height: '12px', color: 'hsl(var(--muted-foreground))', flexShrink: 0, marginTop: '1px' }} />
-                    <span style={{ color: 'hsl(var(--muted-foreground))' }}>
-                      Heatmap data is admin-only. Sign in with an admin account to view aggregated activity.
-                    </span>
-                  </div>
-                )}
                 {/* Time-lapse toggle — glassmorphic pill matching LayerToggleRow */}
                 <button
                   type="button"
@@ -3237,14 +3204,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             {/* Path filters */}
             <div style={{ overflow: 'hidden', transition: 'max-height 0.2s', maxHeight: showMovementPaths ? '200px' : '0px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingLeft: '4px' }}>
-                {pathsUnauthorized ? (
-                  <div role="status" style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', padding: '8px', background: 'hsl(var(--muted) / 0.5)', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '11px', lineHeight: 1.35 }}>
-                    <Lock style={{ width: '12px', height: '12px', color: 'hsl(var(--muted-foreground))', flexShrink: 0, marginTop: '1px' }} />
-                    <span style={{ color: 'hsl(var(--muted-foreground))' }}>
-                      Flow Paths data is admin-only. Sign in with an admin account to view movement paths.
-                    </span>
-                  </div>
-                ) : pathsError && (
+                {pathsError && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', background: 'hsl(var(--destructive) / 0.1)', borderRadius: '8px', fontSize: '10px' }}>
                     <AlertCircle style={{ width: '12px', height: '12px', color: 'hsl(var(--destructive))', flexShrink: 0 }} />
                     <span style={{ color: 'hsl(var(--destructive))' }}>Failed</span>
