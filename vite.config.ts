@@ -403,6 +403,20 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true,
         cleanupOutdatedCaches: true,
 runtimeCaching: [
+          // OAuth broker: never cache, always go to network. Pairs with the
+          // navigateFallbackDenylist entry so /~oauth/* requests (including
+          // /~oauth/callback) are always proxied to the live broker and never
+          // intercepted by the SW navigation fallback or any cache.
+          {
+            urlPattern: ({ url }) => url.pathname.startsWith("/~oauth/"),
+            handler: "NetworkOnly",
+            method: "GET",
+          },
+          {
+            urlPattern: ({ url }) => url.pathname.startsWith("/~oauth/"),
+            handler: "NetworkOnly",
+            method: "POST",
+          },
           // Cache all /assets/* files with immutable-like behavior
           // This bypasses the CDN's missing cache headers
           {
