@@ -152,11 +152,11 @@ export const LiveStatsPanel = ({
           {isLoading ? (
             <Loader2
               aria-hidden="true"
+              className="animate-spin"
               style={{
                 width: "8px",
                 height: "8px",
                 color: "hsl(var(--primary))",
-                animation: "spin 1s linear infinite",
               }}
             />
           ) : (
