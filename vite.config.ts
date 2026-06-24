@@ -397,7 +397,7 @@ export default defineConfig(({ mode }) => ({
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff,woff2,jpg,jpeg}"],
         navigateFallback: "index.html",
-        navigateFallbackDenylist: [/^\/api/, /^\/functions/],
+        navigateFallbackDenylist: [/^\/api/, /^\/functions/, /^\/~oauth/],
         // Activate new SW immediately to prevent stale-asset FOUC on deployments
         skipWaiting: true,
         clientsClaim: true,
