@@ -3197,7 +3197,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               ariaLabel="Toggle flow paths layer"
               onToggle={() => {
                 triggerHaptic('medium');
-                setShowMovementPaths(!showMovementPaths);
+                const next = !showMovementPaths;
+                setShowMovementPaths(next);
+                if (next) refreshPaths();
               }}
             />
 
