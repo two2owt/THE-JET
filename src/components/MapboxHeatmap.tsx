@@ -3002,12 +3002,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 const newState = !showDensityLayer;
                 setShowDensityLayer(newState);
                 if (newState) {
-                  setIsLoadingHeatmap(true);
                   setTimeFilter('all');
                   setHourFilter(undefined);
                   setDayFilter(undefined);
-                  refreshDensity();
+                  scheduleDensityRefresh();
                 } else {
+                  clearDensityRefreshTimer();
                   setIsLoadingHeatmap(false);
                 }
               }}
