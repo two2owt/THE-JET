@@ -168,12 +168,44 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Authenticate the caller and require admin role.
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...rateLimitHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const authClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    );
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims?.sub) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...rateLimitHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Use service role client to aggregate ALL users' location data
     // This is safe as the function only returns aggregated path data, not individual locations
     const serviceClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+
+    const { data: isAdmin, error: roleError } = await serviceClient.rpc("has_role", {
+      _user_id: claimsData.claims.sub,
+      _role: "admin",
+    });
+    if (roleError || !isAdmin) {
+      return new Response(
+        JSON.stringify({ error: "Forbidden" }),
+        { status: 403, headers: { ...rateLimitHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     console.log('Fetching user location data for movement analysis (all users)...');
 
