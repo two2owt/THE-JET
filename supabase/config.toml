@@ -61,3 +61,5 @@ project_id = "flvhduntedvorikonuvy"
     verify_jwt = false
   [functions.verify-webhook-secret]
     verify_jwt = false
+  [functions.notify-favorite-update]
+    verify_jwt = false
