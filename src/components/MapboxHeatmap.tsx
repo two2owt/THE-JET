@@ -3205,6 +3205,24 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     </Select>
                   </div>
                 )}
+
+                {/* Density status — loading / error */}
+                {(isLoadingHeatmap || densityError) && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', borderRadius: '8px', fontSize: '10px', background: densityError ? 'hsl(var(--destructive) / 0.1)' : 'hsl(var(--primary) / 0.08)' }}>
+                    {isLoadingHeatmap ? (
+                      <>
+                        <Loader2 style={{ width: '12px', height: '12px', color: 'hsl(var(--primary))', animation: 'spin 1s linear infinite', flexShrink: 0 }} />
+                        <span style={{ color: 'hsl(var(--foreground))' }}>Refreshing heatmap...</span>
+                      </>
+                    ) : (
+                      <>
+                        <AlertCircle style={{ width: '12px', height: '12px', color: 'hsl(var(--destructive))', flexShrink: 0 }} />
+                        <span style={{ color: 'hsl(var(--destructive))' }}>Failed</span>
+                        <Button onClick={refreshDensity} variant="ghost" size="sm" className="h-5 text-[9px] px-1.5 ml-auto">Retry</Button>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
