@@ -541,7 +541,25 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     timeFilter: pathTimeFilter,
     minFrequency: minPathFrequency,
   });
-  
+
+  // Visual loading states for layer toggles so users see a clear refresh
+  // whenever a data-backed layer is switched on or off.
+  const [isLoadingHeatmap, setIsLoadingHeatmap] = useState(false);
+  const [isLoadingPaths, setIsLoadingPaths] = useState(false);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
+
+  // Sync toggle-triggered loading states with hook loading so they stay visible
+  // until the data fetch actually completes (including debounce / realtime).
+  useEffect(() => {
+    if (!densityLoading) setIsLoadingHeatmap(false);
+  }, [densityLoading]);
+  useEffect(() => {
+    if (!pathsLoading) setIsLoadingPaths(false);
+  }, [pathsLoading]);
+  useEffect(() => {
+    if (!densityLoading && !pathsLoading) setIsLoadingStats(false);
+  }, [densityLoading, pathsLoading]);
+
   // Time-lapse hook (restore persisted speed)
   const initialTimelapseSpeed = useRef(getPersistedTimelapseSpeed());
   const timelapse = useHeatmapTimelapse(dayFilter, initialTimelapseSpeed.current);
