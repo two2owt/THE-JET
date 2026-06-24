@@ -706,21 +706,42 @@ export type Database = {
           deal_id: string | null
           id: string
           user_id: string
+          venue_address: string | null
+          venue_category: string | null
           venue_id: string | null
+          venue_image_url: string | null
+          venue_lat: number | null
+          venue_lng: number | null
+          venue_name: string | null
+          venue_neighborhood: string | null
         }
         Insert: {
           created_at?: string
           deal_id?: string | null
           id?: string
           user_id: string
+          venue_address?: string | null
+          venue_category?: string | null
           venue_id?: string | null
+          venue_image_url?: string | null
+          venue_lat?: number | null
+          venue_lng?: number | null
+          venue_name?: string | null
+          venue_neighborhood?: string | null
         }
         Update: {
           created_at?: string
           deal_id?: string | null
           id?: string
           user_id?: string
+          venue_address?: string | null
+          venue_category?: string | null
           venue_id?: string | null
+          venue_image_url?: string | null
+          venue_lat?: number | null
+          venue_lng?: number | null
+          venue_name?: string | null
+          venue_neighborhood?: string | null
         }
         Relationships: [
           {
