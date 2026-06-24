@@ -3478,15 +3478,37 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           }}
         >
           {(() => {
-            // Friendly insight headline based on density tier
+            // Unified end-user insights: one vibe headline + a single
+            // consolidated list of the metrics that actually matter to a
+            // person reading the map (no duplicate "max/top" noise).
             const grid = densityData?.stats.grid_cells ?? 0;
+            const checkins = densityData?.stats.total_points ?? 0;
+            const peakDensity = densityData?.stats.max_density ?? 0;
+            const routes = pathData?.stats.total_paths ?? 0;
+            const people = pathData?.stats.unique_users ?? 0;
+
             const vibe =
-              grid >= 40 ? { label: "Buzzing right now", dot: 'hsl(0, 100%, 65%)' } :
-              grid >= 15 ? { label: "Picking up nearby", dot: 'hsl(45, 100%, 60%)' } :
-              grid > 0   ? { label: "Quiet out there", dot: 'hsl(200, 100%, 65%)' } :
-                           { label: "Live activity", dot: 'hsl(var(--muted-foreground))' };
+              grid >= 40 || peakDensity >= 25 ? { label: "Buzzing right now", dot: 'hsl(0, 100%, 65%)' } :
+              grid >= 15 || peakDensity >= 8  ? { label: "Picking up nearby", dot: 'hsl(45, 100%, 60%)' } :
+              grid > 0   || routes > 0        ? { label: "Quiet out there",   dot: 'hsl(200, 100%, 65%)' } :
+                                                { label: "Live activity",     dot: 'hsl(var(--muted-foreground))' };
+
             const labelStyle: React.CSSProperties = { fontSize: '11px', color: 'hsl(var(--muted-foreground))', lineHeight: 1.2 };
             const valueStyle: React.CSSProperties = { fontSize: '13px', fontWeight: 700, lineHeight: 1.1, fontVariantNumeric: 'tabular-nums' };
+
+            // Build a single ordered list of rows; only include rows whose
+            // underlying layer is on AND whose value is meaningful (>0).
+            type Row = { key: string; label: string; value: string; tone: string };
+            const rows: Row[] = [];
+            if (showDensityLayer && densityData) {
+              if (grid > 0) rows.push({ key: 'hotspots', label: 'Active hotspots', value: grid.toLocaleString(), tone: 'hsl(var(--primary))' });
+              if (checkins > 0) rows.push({ key: 'checkins', label: 'Recent check-ins', value: checkins.toLocaleString(), tone: 'hsl(var(--foreground))' });
+            }
+            if (showMovementPaths && pathData) {
+              if (people > 0) rows.push({ key: 'people', label: 'People on the move', value: people.toLocaleString(), tone: 'hsl(200, 100%, 65%)' });
+              if (routes > 0) rows.push({ key: 'routes', label: 'Popular routes', value: routes.toLocaleString(), tone: 'hsl(var(--primary))' });
+            }
+
             return (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -3496,48 +3518,17 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   </p>
                 </div>
 
-                {showDensityLayer && densityData && (
+                {rows.length > 0 ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                      <span style={labelStyle}>Busy spots nearby</span>
-                      <span style={{ ...valueStyle, color: 'hsl(var(--primary))' }}>{densityData.stats.grid_cells.toLocaleString()}</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                      <span style={labelStyle}>Recent check-ins</span>
-                      <span style={{ ...valueStyle, color: 'hsl(var(--foreground))' }}>{densityData.stats.total_points.toLocaleString()}</span>
-                    </div>
-                    {densityData.stats.max_density > 0 && (
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                        <span style={labelStyle}>Busiest hotspot</span>
-                        <span style={{ ...valueStyle, color: 'hsl(45, 100%, 60%)' }}>{densityData.stats.max_density.toLocaleString()} people</span>
+                    {rows.map((row) => (
+                      <div key={row.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                        <span style={labelStyle}>{row.label}</span>
+                        <span style={{ ...valueStyle, color: row.tone }}>{row.value}</span>
                       </div>
-                    )}
+                    ))}
                   </div>
-                )}
-
-                {showMovementPaths && pathData && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                      <span style={labelStyle}>Popular routes</span>
-                      <span style={{ ...valueStyle, color: 'hsl(var(--primary))' }}>{pathData.stats.total_paths.toLocaleString()}</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                      <span style={labelStyle}>Trips tracked</span>
-                      <span style={{ ...valueStyle, color: 'hsl(var(--foreground))' }}>{pathData.stats.total_movements.toLocaleString()}</span>
-                    </div>
-                    {pathData.stats.unique_users > 0 && (
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                        <span style={labelStyle}>People on the move</span>
-                        <span style={{ ...valueStyle, color: 'hsl(200, 100%, 65%)' }}>{pathData.stats.unique_users.toLocaleString()}</span>
-                      </div>
-                    )}
-                    {pathData.stats.max_frequency > 0 && (
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                        <span style={labelStyle}>Top route traffic</span>
-                        <span style={{ ...valueStyle, color: 'hsl(45, 100%, 60%)' }}>{pathData.stats.max_frequency.toLocaleString()}× trips</span>
-                      </div>
-                    )}
-                  </div>
+                ) : (
+                  <p style={labelStyle}>No live activity in view yet.</p>
                 )}
               </div>
             );
