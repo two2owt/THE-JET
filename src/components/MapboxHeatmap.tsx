@@ -418,15 +418,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   useEffect(() => { localStorage.setItem(LAYER_KEYS.paths, String(showMovementPaths)); }, [showMovementPaths]);
   useEffect(() => { localStorage.setItem(LAYER_KEYS.parking, String(showParking)); }, [showParking]);
   useEffect(() => { localStorage.setItem(LAYER_KEYS.stats, String(showLiveStats)); }, [showLiveStats]);
-  useEffect(() => {
-    if (showLiveStats) {
-      setLiveStatsPanelOpen(true);
-    } else {
-      // Allow the panel to fade out before unmounting
-      const timer = setTimeout(() => setLiveStatsPanelOpen(false), 300);
-      return () => clearTimeout(timer);
-    }
-  }, [showLiveStats]);
 
 
   // Persist filter / time-lapse selections to localStorage
