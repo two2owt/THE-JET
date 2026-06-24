@@ -44,15 +44,56 @@ export default function Favorites() {
 
   const fetchFavoriteDeals = async () => {
     try {
-      const dealIds = favorites.map((fav) => fav.deal_id);
-      const { data, error } = await supabase
-        .from("deals")
-        .select("*")
-        .in("id", dealIds)
-        .eq("active", true);
+      // Favorites can point to either a deal id (uuid) or a map venue id (text).
+      // Resolve both: pull deals by id for deal-linked rows, and pull the most
+      // recent active deal per venue_id for venue-only rows, then dedupe.
+      const dealIds = favorites
+        .map((fav) => fav.deal_id)
+        .filter((id): id is string => !!id);
+      const venueIds = favorites
+        .map((fav) => fav.venue_id)
+        .filter((id): id is string => !!id);
 
-      if (error) throw error;
-      setDeals(data || []);
+      const queries: PromiseLike<Deal[]>[] = [];
+      if (dealIds.length > 0) {
+        queries.push(
+          supabase
+            .from("deals")
+            .select("*")
+            .in("id", dealIds)
+            .eq("active", true)
+            .then(({ data, error }) => {
+              if (error) throw error;
+              return (data || []) as Deal[];
+            })
+        );
+      }
+      if (venueIds.length > 0) {
+        queries.push(
+          supabase
+            .from("deals")
+            .select("*")
+            .in("venue_id", venueIds)
+            .eq("active", true)
+            .then(({ data, error }) => {
+              if (error) throw error;
+              return (data || []) as Deal[];
+            })
+        );
+      }
+
+      const results = await Promise.all(queries);
+      const seen = new Set<string>();
+      const merged: Deal[] = [];
+      for (const list of results) {
+        for (const d of list) {
+          if (!seen.has(d.id)) {
+            seen.add(d.id);
+            merged.push(d);
+          }
+        }
+      }
+      setDeals(merged);
     } catch (error) {
       console.error("Error fetching favorite deals:", error);
     }

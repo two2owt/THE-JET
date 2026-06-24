@@ -37,38 +37,38 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
   const [parkingLoading, setParkingLoading] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { favorites, toggleFavorite, refetch } = useFavorites(user?.id);
-  const [dealUuids, setDealUuids] = useState<string[]>([]);
+  const { favorites, toggleVenueFavorite, refetch } = useFavorites(user?.id);
+  const [activeDealId, setActiveDealId] = useState<string | null>(null);
 
-  // The card receives a venue id (Google Places / slug), but user_favorites
-  // stores deal ids. Resolve the active deal(s) for this venue so the heart
-  // can read and toggle the correct favorites row.
+  // Look up the active deal (if any) for this venue so a favorited venue
+  // can still link to the user's saved deal under /favorites.
   useEffect(() => {
     let cancelled = false;
-    setDealUuids([]);
-    const resolveDeals = async () => {
+    setActiveDealId(null);
+    const resolveDeal = async () => {
       const { data, error } = await supabase
         .from("deals")
         .select("id")
         .eq("venue_id", venue.id)
-        .eq("active", true);
+        .eq("active", true)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
       if (cancelled) return;
-      if (!error && data) {
-        setDealUuids(data.map((d) => d.id));
-      }
+      if (!error && data) setActiveDealId(data.id);
     };
-    resolveDeals();
+    resolveDeal();
     return () => { cancelled = true; };
   }, [venue.id]);
 
+  // Favorited if either the venue_id matches OR the linked active deal_id matches.
   const favorited = useMemo(
-    () => dealUuids.length > 0 && favorites.some((f) => dealUuids.includes(f.deal_id)),
-    [dealUuids, favorites]
+    () =>
+      favorites.some(
+        (f) => f.venue_id === venue.id || (activeDealId !== null && f.deal_id === activeDealId)
+      ),
+    [favorites, venue.id, activeDealId]
   );
-  const targetDealId = useMemo(() => {
-    const matched = favorites.find((f) => dealUuids.includes(f.deal_id));
-    return matched?.deal_id ?? dealUuids[0] ?? null;
-  }, [dealUuids, favorites]);
 
   // Refresh favorites when the card opens so the active state is always correct.
   useEffect(() => {
@@ -85,18 +85,12 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
       navigate("/auth");
       return;
     }
-    if (!targetDealId) {
-      toast.message("No active deal to favorite", {
-        description: "This venue doesn't have a deal to save right now.",
-      });
-      return;
-    }
     try {
       const { analytics } = await import("@/lib/analytics");
       analytics.dealClicked(venue.id, venue.name, favorited ? "unfavorite" : "favorite");
     } catch { /* noop */ }
-    await toggleFavorite(targetDealId);
-  }, [user, favorited, targetDealId, venue.id, venue.name, toggleFavorite, navigate]);
+    await toggleVenueFavorite(venue.id, activeDealId);
+  }, [user, favorited, activeDealId, venue.id, venue.name, toggleVenueFavorite, navigate]);
 
   const loadParking = useCallback(async (showToast = false) => {
     if (!venue.lat || !venue.lng) return;
