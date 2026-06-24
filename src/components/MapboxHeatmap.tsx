@@ -66,7 +66,7 @@ const loadMapboxGL = async (): Promise<MapboxGLModule> => {
   }
   return mapboxLoadPromise;
 };
-import { MapPin, Layers, Palette, X, AlertCircle, Route, Play, Pause, SkipBack, SkipForward, Clock, ChevronDown, ChevronUp, Car, BarChart3, RotateCcw, Calendar } from "lucide-react";
+import { MapPin, Layers, Palette, X, AlertCircle, Route, Play, Pause, SkipBack, SkipForward, Clock, ChevronDown, ChevronUp, Car, BarChart3, RotateCcw, Calendar, Loader2 } from "lucide-react";
 import { HeatmapSkeleton } from "@/components/skeletons/HeatmapSkeleton";
 import { useLocationDensity } from "@/hooks/useLocationDensity";
 import { useMovementPaths } from "@/hooks/useMovementPaths";
@@ -531,17 +531,35 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
   
-  const { densityData, refresh: refreshDensity } = useLocationDensity({
+  const { densityData, loading: densityLoading, error: densityError, refresh: refreshDensity } = useLocationDensity({
     timeFilter,
     hourOfDay: timelapseMode ? undefined : hourFilter,
     dayOfWeek: dayFilter,
   });
 
-  const { pathData, error: pathsError, refresh: refreshPaths } = useMovementPaths({
+  const { pathData, loading: pathsLoading, error: pathsError, refresh: refreshPaths } = useMovementPaths({
     timeFilter: pathTimeFilter,
     minFrequency: minPathFrequency,
   });
-  
+
+  // Visual loading states for layer toggles so users see a clear refresh
+  // whenever a data-backed layer is switched on or off.
+  const [isLoadingHeatmap, setIsLoadingHeatmap] = useState(false);
+  const [isLoadingPaths, setIsLoadingPaths] = useState(false);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
+
+  // Sync toggle-triggered loading states with hook loading so they stay visible
+  // until the data fetch actually completes (including debounce / realtime).
+  useEffect(() => {
+    if (!densityLoading) setIsLoadingHeatmap(false);
+  }, [densityLoading]);
+  useEffect(() => {
+    if (!pathsLoading) setIsLoadingPaths(false);
+  }, [pathsLoading]);
+  useEffect(() => {
+    if (!densityLoading && !pathsLoading) setIsLoadingStats(false);
+  }, [densityLoading, pathsLoading]);
+
   // Time-lapse hook (restore persisted speed)
   const initialTimelapseSpeed = useRef(getPersistedTimelapseSpeed());
   const timelapse = useHeatmapTimelapse(dayFilter, initialTimelapseSpeed.current);
@@ -2932,16 +2950,20 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               label="Heatmap"
               Icon={Layers}
               active={showDensityLayer}
+              loading={isLoadingHeatmap}
               ariaLabel="Toggle heatmap layer"
               onToggle={() => {
                 triggerHaptic('medium');
                 const newState = !showDensityLayer;
                 setShowDensityLayer(newState);
                 if (newState) {
+                  setIsLoadingHeatmap(true);
                   setTimeFilter('all');
                   setHourFilter(undefined);
                   setDayFilter(undefined);
                   refreshDensity();
+                } else {
+                  setIsLoadingHeatmap(false);
                 }
               }}
             />
@@ -3183,6 +3205,24 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     </Select>
                   </div>
                 )}
+
+                {/* Density status — loading / error */}
+                {(isLoadingHeatmap || densityError) && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', borderRadius: '8px', fontSize: '10px', background: densityError ? 'hsl(var(--destructive) / 0.1)' : 'hsl(var(--primary) / 0.08)' }}>
+                    {isLoadingHeatmap ? (
+                      <>
+                        <Loader2 className="animate-spin" style={{ width: '12px', height: '12px', color: 'hsl(var(--primary))', flexShrink: 0 }} />
+                        <span style={{ color: 'hsl(var(--foreground))' }}>Refreshing heatmap...</span>
+                      </>
+                    ) : (
+                      <>
+                        <AlertCircle style={{ width: '12px', height: '12px', color: 'hsl(var(--destructive))', flexShrink: 0 }} />
+                        <span style={{ color: 'hsl(var(--destructive))' }}>Failed</span>
+                        <Button onClick={refreshDensity} variant="ghost" size="sm" className="h-5 text-[9px] px-1.5 ml-auto">Retry</Button>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -3194,23 +3234,38 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               label="Flow Paths"
               Icon={Route}
               active={showMovementPaths}
+              loading={isLoadingPaths}
               ariaLabel="Toggle flow paths layer"
               onToggle={() => {
                 triggerHaptic('medium');
                 const next = !showMovementPaths;
                 setShowMovementPaths(next);
-                if (next) refreshPaths();
+                if (next) {
+                  setIsLoadingPaths(true);
+                  refreshPaths();
+                } else {
+                  setIsLoadingPaths(false);
+                }
               }}
             />
 
             {/* Path filters */}
             <div style={{ overflow: 'hidden', transition: 'max-height 0.2s', maxHeight: showMovementPaths ? '200px' : '0px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingLeft: '4px' }}>
-                {pathsError && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', background: 'hsl(var(--destructive) / 0.1)', borderRadius: '8px', fontSize: '10px' }}>
-                    <AlertCircle style={{ width: '12px', height: '12px', color: 'hsl(var(--destructive))', flexShrink: 0 }} />
-                    <span style={{ color: 'hsl(var(--destructive))' }}>Failed</span>
-                    <Button onClick={refreshPaths} variant="ghost" size="sm" className="h-5 text-[9px] px-1.5 ml-auto">Retry</Button>
+                {(isLoadingPaths || pathsError) && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', background: pathsError ? 'hsl(var(--destructive) / 0.1)' : 'hsl(var(--primary) / 0.08)', borderRadius: '8px', fontSize: '10px' }}>
+                    {isLoadingPaths ? (
+                      <>
+                        <Loader2 className="animate-spin" style={{ width: '12px', height: '12px', color: 'hsl(var(--primary))', flexShrink: 0 }} />
+                        <span style={{ color: 'hsl(var(--foreground))' }}>Refreshing flow paths...</span>
+                      </>
+                    ) : (
+                      <>
+                        <AlertCircle style={{ width: '12px', height: '12px', color: 'hsl(var(--destructive))', flexShrink: 0 }} />
+                        <span style={{ color: 'hsl(var(--destructive))' }}>Failed</span>
+                        <Button onClick={refreshPaths} variant="ghost" size="sm" className="h-5 text-[9px] px-1.5 ml-auto">Retry</Button>
+                      </>
+                    )}
                   </div>
                 )}
                 <Select value={pathTimeFilter} onValueChange={(v: any) => setPathTimeFilter(v)}>
@@ -3314,10 +3369,14 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               label="Live Stats"
               Icon={BarChart3}
               active={showLiveStats}
+              loading={isLoadingStats}
               ariaLabel="Toggle live stats panel"
               onToggle={() => {
                 triggerHaptic('medium');
-                setShowLiveStats(!showLiveStats);
+                const next = !showLiveStats;
+                setShowLiveStats(next);
+                if (next) setIsLoadingStats(true);
+                else setIsLoadingStats(false);
               }}
             />
 
@@ -3467,6 +3526,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         pathData={pathData}
         showDensityLayer={showDensityLayer}
         showMovementPaths={showMovementPaths}
+        densityLoading={densityLoading}
+        pathLoading={pathsLoading}
       />
 
       {/* Enhanced Legend - Bottom left, responsive for all devices, collapsible on mobile */}

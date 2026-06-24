@@ -1,4 +1,4 @@
-import { LucideIcon } from "lucide-react";
+import { LucideIcon, Loader2 } from "lucide-react";
 
 interface LayerToggleRowProps {
   label: string;
@@ -6,6 +6,7 @@ interface LayerToggleRowProps {
   Icon: LucideIcon;
   ariaLabel: string;
   onToggle: () => void;
+  loading?: boolean;
 }
 
 /**
@@ -23,6 +24,7 @@ export const LayerToggleRow = ({
   Icon,
   ariaLabel,
   onToggle,
+  loading,
 }: LayerToggleRowProps) => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -37,6 +39,7 @@ export const LayerToggleRow = ({
       tabIndex={0}
       aria-pressed={active}
       aria-label={ariaLabel}
+      aria-busy={loading}
       onClick={onToggle}
       onKeyDown={handleKeyDown}
       style={{
@@ -51,7 +54,7 @@ export const LayerToggleRow = ({
         letterSpacing: "0.01em",
         transition:
           "background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms ease, box-shadow 220ms ease, color 220ms ease",
-        cursor: "pointer",
+        cursor: loading ? "wait" : "pointer",
         userSelect: "none",
         border: active
           ? "1px solid hsl(var(--primary) / 0.45)"
@@ -65,6 +68,7 @@ export const LayerToggleRow = ({
           ? "0 8px 24px -10px hsl(var(--primary) / 0.55), inset 0 0 0 1px hsl(var(--primary-glow) / 0.18)"
           : "inset 0 0 0 1px hsl(0 0% 100% / 0.03)",
         color: active ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
+        opacity: loading ? 0.85 : 1,
       }}
     >
       <div
@@ -106,23 +110,36 @@ export const LayerToggleRow = ({
       >
         {label}
       </span>
-      {/* Status dot — replaces the nested Switch */}
-      <span
-        aria-hidden="true"
-        style={{
-          width: "8px",
-          height: "8px",
-          borderRadius: "9999px",
-          flexShrink: 0,
-          background: active
-            ? "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))"
-            : "hsl(var(--muted-foreground) / 0.25)",
-          boxShadow: active
-            ? "0 0 10px hsl(var(--primary) / 0.7), 0 0 2px hsl(var(--primary-glow) / 0.6)"
-            : "inset 0 0 0 1px hsl(var(--border))",
-          transition: "background 220ms ease, box-shadow 220ms ease",
-        }}
-      />
+      {/* Status dot / loading spinner */}
+      {loading ? (
+        <Loader2
+          aria-hidden="true"
+          className="animate-spin"
+          style={{
+            width: "14px",
+            height: "14px",
+            flexShrink: 0,
+            color: "hsl(var(--primary))",
+          }}
+        />
+      ) : (
+        <span
+          aria-hidden="true"
+          style={{
+            width: "8px",
+            height: "8px",
+            borderRadius: "9999px",
+            flexShrink: 0,
+            background: active
+              ? "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))"
+              : "hsl(var(--muted-foreground) / 0.25)",
+            boxShadow: active
+              ? "0 0 10px hsl(var(--primary) / 0.7), 0 0 2px hsl(var(--primary-glow) / 0.6)"
+              : "inset 0 0 0 1px hsl(var(--border))",
+            transition: "background 220ms ease, box-shadow 220ms ease",
+          }}
+        />
+      )}
     </div>
   );
 };
