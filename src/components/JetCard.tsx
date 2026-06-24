@@ -39,6 +39,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
   const navigate = useNavigate();
   const { favorites, toggleVenueFavorite, refetch } = useFavorites(user?.id);
   const [activeDealId, setActiveDealId] = useState<string | null>(null);
+  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
 
   // Look up the active deal (if any) for this venue so a favorited venue
   // can still link to the user's saved deal under /favorites.
@@ -78,19 +79,26 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
   }, [user, venue.id, refetch]);
 
   const handleToggleFavorite = useCallback(async () => {
+    if (isTogglingFavorite) return;
+    setIsTogglingFavorite(true);
     await glideHaptic();
     if (!user) {
       rememberPostAuthRedirect();
       toast("Sign in to save favorites", { description: "Create an account to keep this venue." });
       navigate("/auth");
+      setIsTogglingFavorite(false);
       return;
     }
     try {
       const { analytics } = await import("@/lib/analytics");
       analytics.dealClicked(venue.id, venue.name, favorited ? "unfavorite" : "favorite");
     } catch { /* noop */ }
-    await toggleVenueFavorite(venue.id, activeDealId);
-  }, [user, favorited, activeDealId, venue.id, venue.name, toggleVenueFavorite, navigate]);
+    try {
+      await toggleVenueFavorite(venue.id, activeDealId);
+    } finally {
+      setIsTogglingFavorite(false);
+    }
+  }, [user, favorited, activeDealId, venue.id, venue.name, toggleVenueFavorite, navigate, isTogglingFavorite]);
 
   const loadParking = useCallback(async (showToast = false) => {
     if (!venue.lat || !venue.lng) return;
@@ -348,8 +356,10 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
         {/* Favorite toggle — saves venue to /favorites */}
         <button
           onClick={handleToggleFavorite}
+          disabled={isTogglingFavorite}
           aria-label={favorited ? `Remove ${venue.name} from favorites` : `Save ${venue.name} to favorites`}
           aria-pressed={favorited}
+          aria-busy={isTogglingFavorite}
           style={{
             position: 'absolute',
             top: '8px',
@@ -368,22 +378,28 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
             padding: 0,
             width: '44px',
             height: '44px',
-            cursor: 'pointer',
+            cursor: isTogglingFavorite ? 'default' : 'pointer',
+            opacity: isTogglingFavorite ? 0.7 : 1,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            transition: 'transform 200ms ease-out, box-shadow 200ms ease-out, background 200ms ease-out',
+            transition: 'transform 200ms ease-out, box-shadow 200ms ease-out, background 200ms ease-out, opacity 200ms ease-out',
+            transform: isTogglingFavorite ? 'scale(0.92)' : 'scale(1)',
           }}
         >
-          <Heart
-            style={{
-              width: '18px',
-              height: '18px',
-              color: favorited ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
-              fill: favorited ? 'hsl(var(--primary-foreground))' : 'transparent',
-              transition: 'fill 200ms ease-out, color 200ms ease-out',
-            }}
-          />
+          {isTogglingFavorite ? (
+            <Loader2 className="animate-spin" style={{ width: '18px', height: '18px', color: 'hsl(var(--foreground))' }} />
+          ) : (
+            <Heart
+              style={{
+                width: '18px',
+                height: '18px',
+                color: favorited ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
+                fill: favorited ? 'hsl(var(--primary-foreground))' : 'transparent',
+                transition: 'fill 200ms ease-out, color 200ms ease-out',
+              }}
+            />
+          )}
         </button>
 
         {/* Activity Badge */}
