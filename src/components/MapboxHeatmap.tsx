@@ -542,6 +542,31 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     timeFilter: pathTimeFilter,
     minFrequency: minPathFrequency,
   });
+
+  // Non-blocking notice when admin-only analytics layers return 401/403.
+  // Fires once per (layer, session) so the user understands why the layer is empty.
+  const notifiedDensityUnauthRef = useRef(false);
+  const notifiedPathsUnauthRef = useRef(false);
+  useEffect(() => {
+    if (showDensityLayer && densityUnauthorized && !notifiedDensityUnauthRef.current) {
+      notifiedDensityUnauthRef.current = true;
+      toast.info("Heatmap is admin-only", {
+        description: "Sign in with an admin account to see aggregated activity density.",
+        icon: <Lock className="h-4 w-4" />,
+      });
+    }
+    if (!showDensityLayer) notifiedDensityUnauthRef.current = false;
+  }, [showDensityLayer, densityUnauthorized]);
+  useEffect(() => {
+    if (showMovementPaths && pathsUnauthorized && !notifiedPathsUnauthRef.current) {
+      notifiedPathsUnauthRef.current = true;
+      toast.info("Flow Paths is admin-only", {
+        description: "Sign in with an admin account to see movement paths between venues.",
+        icon: <Lock className="h-4 w-4" />,
+      });
+    }
+    if (!showMovementPaths) notifiedPathsUnauthRef.current = false;
+  }, [showMovementPaths, pathsUnauthorized]);
   
   // Time-lapse hook (restore persisted speed)
   const initialTimelapseSpeed = useRef(getPersistedTimelapseSpeed());
