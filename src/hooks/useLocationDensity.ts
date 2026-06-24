@@ -21,6 +21,7 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
   const [densityData, setDensityData] = useState<DensityData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [unauthorized, setUnauthorized] = useState(false);
   const lastDataHashRef = useRef<string>('');
   const isLoadingRef = useRef(false);
   // Per-instance channel name prevents the Supabase client from silently
@@ -53,9 +54,17 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
         setDensityData(data);
       }
       setError(null);
+      setUnauthorized(false);
     } catch (err) {
       console.error('Error loading density data:', err);
-      setError('Failed to load density data');
+      const status = (err as { context?: { status?: number } })?.context?.status;
+      if (status === 401 || status === 403) {
+        setUnauthorized(true);
+        setError('unauthorized');
+      } else {
+        setUnauthorized(false);
+        setError('Failed to load density data');
+      }
     } finally {
       setLoading(false);
       isLoadingRef.current = false;
@@ -92,5 +101,5 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
     };
   }, [loadDensityData, instanceId]);
 
-  return { densityData, loading, error, refresh: loadDensityData };
+  return { densityData, loading, error, unauthorized, refresh: loadDensityData };
 };
