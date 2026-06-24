@@ -703,21 +703,24 @@ export type Database = {
       user_favorites: {
         Row: {
           created_at: string
-          deal_id: string
+          deal_id: string | null
           id: string
           user_id: string
+          venue_id: string | null
         }
         Insert: {
           created_at?: string
-          deal_id: string
+          deal_id?: string | null
           id?: string
           user_id: string
+          venue_id?: string | null
         }
         Update: {
           created_at?: string
-          deal_id?: string
+          deal_id?: string | null
           id?: string
           user_id?: string
+          venue_id?: string | null
         }
         Relationships: [
           {
