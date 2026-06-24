@@ -3286,9 +3286,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 const next = !showMovementPaths;
                 setShowMovementPaths(next);
                 if (next) {
-                  setIsLoadingPaths(true);
-                  refreshPaths();
+                  schedulePathsRefresh();
                 } else {
+                  clearPathsRefreshTimer();
                   setIsLoadingPaths(false);
                 }
               }}
