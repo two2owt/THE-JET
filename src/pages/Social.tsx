@@ -2,14 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useConnections } from "@/hooks/useConnections";
 import { useDebounce } from "@/hooks/useDebounce";
-import { Users, UserPlus, Check, X, UserX, Crown, MessageCircle, Search, Loader2 } from "lucide-react";
+import { Users, UserPlus, Check, X, UserX, MessageCircle, Search, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { PageLayout } from "@/components/PageLayout";
 import { EmptyState } from "@/components/EmptyState";
 import { ConnectionProfileDialog } from "@/components/ConnectionProfileDialog";
-import { UpgradePrompt, useFeatureAccess } from "@/components/UpgradePrompt";
 import { ChatDialog } from "@/components/ChatDialog";
 import { useUnreadCounts } from "@/hooks/useMessages";
 import { Badge } from "@/components/ui/badge";
@@ -78,11 +77,9 @@ export default function Social() {
   const [searchResults, setSearchResults] = useState<Profile[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
-  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [chatFriend, setChatFriend] = useState<{ id: string; name: string; avatar?: string | null } | null>(null);
   const [sentRequestIds, setSentRequestIds] = useState<Set<string>>(new Set());
   const unreadCounts = useUnreadCounts(user?.id);
-  const { canAccessSocialFeatures } = useFeatureAccess();
   const headerConfig = useMemo(() => ({ hideSearch: true }), []);
 
   const {
@@ -226,28 +223,9 @@ export default function Social() {
     );
   }
 
-  // Show upgrade prompt for users without JET+ subscription
-  if (!canAccessSocialFeatures()) {
-    return (
-      <PageLayout defaultTab="social" headerConfig={headerConfig}>
-        <PageShell>
-          <EmptyState
-            icon={Crown}
-            title="Unlock Social Features"
-            description="Connect with friends, share deals, and discover new spots together. Upgrade to JET+ to access all social features."
-            actionLabel="Upgrade to JET+"
-            onAction={() => setShowUpgradePrompt(true)}
-          />
-        </PageShell>
-        <UpgradePrompt
-          requiredTier="jet_plus"
-          featureName="Social features"
-          isOpen={showUpgradePrompt}
-          onClose={() => setShowUpgradePrompt(false)}
-        />
-      </PageLayout>
-    );
-  }
+  // Discoverability of other JET users is available to every authenticated
+  // account. JET+ continues to unlock advanced social features (deal sharing,
+  // group chats, etc.) — gating happens at those individual action sites.
 
   // Section headings now use the canonical luxe scale (`heading-luxe-section`)
   // so they inherit the small-screen line-height refinements in index.css and

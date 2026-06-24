@@ -25,6 +25,121 @@ import {
 } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { MessagesPageSkeleton } from "@/components/skeletons/PageSkeletons";
+import { ConnectionProfileDialog } from "@/components/ConnectionProfileDialog";
+
+interface DiscoverableProfile {
+  id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+}
+
+/**
+ * Horizontal strip of discoverable JET users. Available to every
+ * authenticated account — taps open the shared profile dialog where
+ * the viewer can send a friend request or, once connected, start a
+ * chat. Keeps existing connection-gated messaging rules intact.
+ */
+function DiscoverPeopleStrip({
+  userId,
+  onSelect,
+}: {
+  userId: string;
+  onSelect: (id: string) => void;
+}) {
+  const [people, setPeople] = useState<DiscoverableProfile[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("discoverable_profiles")
+          .select("id, display_name, avatar_url")
+          .neq("id", userId)
+          .order("display_name", { ascending: true })
+          .limit(25);
+        if (cancelled) return;
+        if (error) throw error;
+        setPeople(data || []);
+      } catch (err) {
+        console.error("Error loading discoverable people:", err);
+        if (!cancelled) setPeople([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+  if (!loading && people.length === 0) return null;
+
+  return (
+    <section
+      aria-label="Discover people on JET"
+      className="border-b border-border/60"
+      style={{ padding: 'clamp(10px, 2.8vw, 14px) 0' }}
+    >
+      <h2
+        className="heading-luxe-eyebrow"
+        style={{ padding: '0 clamp(12px, 3.2vw, 16px) 8px' }}
+      >
+        Discover People
+      </h2>
+      <div
+        className="flex gap-3 overflow-x-auto no-scrollbar"
+        style={{ padding: '0 clamp(12px, 3.2vw, 16px) 4px', scrollbarWidth: 'none' }}
+      >
+        {loading
+          ? Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={`sk-${i}`}
+                className="flex flex-col items-center gap-1 shrink-0"
+                style={{ width: 64 }}
+              >
+                <div className="h-14 w-14 rounded-full bg-muted animate-pulse" />
+                <div className="h-3 w-12 rounded bg-muted animate-pulse" />
+              </div>
+            ))
+          : people.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => onSelect(p.id)}
+                className="flex flex-col items-center gap-1 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded-lg p-1"
+                style={{ width: 72 }}
+                aria-label={`View ${p.display_name || 'user'}'s profile`}
+              >
+                <Avatar className="h-14 w-14 ring-1 ring-border/60">
+                  <AvatarImage
+                    src={p.avatar_url || DEFAULT_AVATAR_SRC}
+                    alt={p.display_name || 'User'}
+                    className={avatarImageClass}
+                  />
+                  <AvatarFallback className={avatarFallbackClass} delayMs={400}>
+                    {(p.display_name || 'U').charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <span
+                  className="text-[11px] leading-tight text-foreground/80 text-center w-full"
+                  style={{
+                    display: '-webkit-box',
+                    WebkitLineClamp: 1,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  }}
+                  title={p.display_name || 'User'}
+                >
+                  {p.display_name || 'User'}
+                </span>
+              </button>
+            ))}
+      </div>
+    </section>
+  );
+}
 
 /* ─── Shared adaptive style tokens (mirrors Social page) ─── */
 const DEFAULT_AVATAR_SRC = "/jet-email-logo.png";
@@ -125,6 +240,7 @@ export default function Messages() {
   const activeFriendId = searchParams.get("chat");
 
   const [user, setUser] = useState<any>(null);
+  const [discoverProfileId, setDiscoverProfileId] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -179,12 +295,19 @@ export default function Messages() {
           />
         ) : (
           <ConversationList
+            userId={user.id}
             conversations={conversations}
             loading={convosLoading}
             onSelect={openChat}
+            onDiscoverSelect={setDiscoverProfileId}
           />
         )}
       </div>
+      <ConnectionProfileDialog
+        connectionId={discoverProfileId}
+        isOpen={Boolean(discoverProfileId)}
+        onClose={() => setDiscoverProfileId(null)}
+      />
     </PageLayout>
   );
 }
@@ -192,40 +315,38 @@ export default function Messages() {
 /* ─── Conversation List ─── */
 
 function ConversationList({
+  userId,
   conversations,
   loading,
   onSelect,
+  onDiscoverSelect,
 }: {
+  userId: string;
   conversations: Conversation[];
   loading: boolean;
   onSelect: (friendId: string) => void;
+  onDiscoverSelect: (profileId: string) => void;
 }) {
-  if (loading) {
-    return <MessagesPageSkeleton />;
-  }
-
-  if (conversations.length === 0) {
-    return (
-      <div className="px-4 py-fluid-lg">
-        <EmptyState
-          icon={MessageCircle}
-          title="No conversations yet"
-          description="Connect with friends on the Social page to start chatting"
-          actionLabel="Find Friends"
-          onAction={() => window.location.assign("/social")}
-        />
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full">
       <div className="px-4 py-3 border-b border-border/60">
-        <h1 className="heading-luxe-gradient">
-          Messages
-        </h1>
+        <h1 className="heading-luxe-gradient">Messages</h1>
       </div>
-      <ScrollArea className="flex-1">
+      <DiscoverPeopleStrip userId={userId} onSelect={onDiscoverSelect} />
+      {loading ? (
+        <MessagesPageSkeleton />
+      ) : conversations.length === 0 ? (
+        <div className="px-4 py-fluid-lg">
+          <EmptyState
+            icon={MessageCircle}
+            title="No conversations yet"
+            description="Tap anyone above to view their profile, or head to the Social page to send a friend request and start chatting."
+            actionLabel="Find Friends"
+            onAction={() => window.location.assign("/social")}
+          />
+        </div>
+      ) : (
+        <ScrollArea className="flex-1">
         <div className="divide-y divide-border">
           {conversations.map((c) => (
             <button
@@ -278,7 +399,8 @@ function ConversationList({
             </button>
           ))}
         </div>
-      </ScrollArea>
+        </ScrollArea>
+      )}
     </div>
   );
 }
