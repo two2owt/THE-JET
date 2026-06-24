@@ -351,6 +351,20 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [showMovementPaths, setShowMovementPaths] = useState(() => getLayerState("paths", false));
   const [pathTimeFilter, setPathTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.pathTimeFilter, 'all', 'pathTime'));
 
+  // Visual loading states for layer toggles (clear when hook loading finishes)
+  const [isLoadingHeatmap, setIsLoadingHeatmap] = useState(false);
+  const [isLoadingPaths, setIsLoadingPaths] = useState(false);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
+
+  // Sync toggle-triggered loading states with hook loading so they stay visible
+  // until the data fetch actually completes (including debounce / realtime).
+  useEffect(() => {
+    if (!densityLoading) setIsLoadingHeatmap(false);
+  }, [densityLoading]);
+  useEffect(() => {
+    if (!pathsLoading) setIsLoadingPaths(false);
+  }, [pathsLoading]);
+
   // Sync active layer toggles and filter selections to URL query params for shareability
   const syncUrlParams = useCallback(() => {
     const params = new URLSearchParams(window.location.search);
