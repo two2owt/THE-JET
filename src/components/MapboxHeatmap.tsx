@@ -3465,7 +3465,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       {/* Statistics Panel - Shows active data counts */}
       {/* CRITICAL: Uses only opacity transition to avoid CLS - no translate/scale animations */}
       {/* Hidden by default — only renders when the user explicitly enables the Live Stats layer toggle */}
-      {showLiveStats && (
+      {liveStatsPanelOpen && (
         <div 
           style={{
             position: 'absolute',
@@ -3481,12 +3481,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             border: '1px solid hsl(var(--border))',
             boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
             padding: isMobile ? '10px 12px' : '10px 14px',
-            opacity: mapLoaded ? 1 : 0,
-            visibility: mapLoaded ? 'visible' : 'hidden',
+            opacity: showLiveStats && mapLoaded ? 1 : 0,
+            visibility: showLiveStats && mapLoaded ? 'visible' : 'hidden',
             transition: 'opacity 300ms ease-out, visibility 300ms ease-out',
             transform: 'translateZ(0)',
             willChange: 'opacity',
-            pointerEvents: mapLoaded ? 'auto' : 'none',
+            pointerEvents: showLiveStats && mapLoaded ? 'auto' : 'none',
           }}
         >
           {(() => {
