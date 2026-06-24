@@ -1,3 +1,4 @@
+import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface LiveStatsPanelProps {
@@ -20,6 +21,8 @@ interface LiveStatsPanelProps {
   } | null;
   showDensityLayer: boolean;
   showMovementPaths: boolean;
+  densityLoading?: boolean;
+  pathLoading?: boolean;
 }
 
 /**
@@ -37,6 +40,8 @@ export const LiveStatsPanel = ({
   pathData,
   showDensityLayer,
   showMovementPaths,
+  densityLoading,
+  pathLoading,
 }: LiveStatsPanelProps) => {
   const [mounted, setMounted] = useState(open);
 
@@ -57,8 +62,11 @@ export const LiveStatsPanel = ({
   const routes = pathData?.stats.total_paths ?? 0;
   const people = pathData?.stats.unique_users ?? 0;
 
-  const vibe =
-    grid >= 40 || peakDensity >= 25
+  const isLoading = densityLoading || pathLoading;
+
+  const vibe = isLoading
+    ? { label: "Updating live stats", dot: "hsl(var(--primary))" }
+    : grid >= 40 || peakDensity >= 25
       ? { label: "Buzzing right now", dot: "hsl(0, 100%, 65%)" }
       : grid >= 15 || peakDensity >= 8
         ? { label: "Picking up nearby", dot: "hsl(45, 100%, 60%)" }
@@ -141,16 +149,28 @@ export const LiveStatsPanel = ({
     >
       <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span
-            aria-hidden="true"
-            style={{
-              width: "8px",
-              height: "8px",
-              borderRadius: "9999px",
-              background: vibe.dot,
-              boxShadow: `0 0 8px ${vibe.dot}`,
-            }}
-          />
+          {isLoading ? (
+            <Loader2
+              aria-hidden="true"
+              style={{
+                width: "8px",
+                height: "8px",
+                color: "hsl(var(--primary))",
+                animation: "spin 1s linear infinite",
+              }}
+            />
+          ) : (
+            <span
+              aria-hidden="true"
+              style={{
+                width: "8px",
+                height: "8px",
+                borderRadius: "9999px",
+                background: vibe.dot,
+                boxShadow: `0 0 8px ${vibe.dot}`,
+              }}
+            />
+          )}
           <p
             className="font-display"
             style={{
@@ -165,7 +185,42 @@ export const LiveStatsPanel = ({
           </p>
         </div>
 
-        {rows.length > 0 ? (
+        {isLoading ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+            {[0, 1].map((i) => (
+              <div
+                key={i}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "12px",
+                }}
+              >
+                <span
+                  className="animate-pulse"
+                  style={{
+                    ...labelStyle,
+                    width: "45%",
+                    height: "10px",
+                    borderRadius: "4px",
+                    background: "hsl(var(--muted-foreground) / 0.25)",
+                  }}
+                />
+                <span
+                  className="animate-pulse"
+                  style={{
+                    ...valueStyle,
+                    width: "20%",
+                    height: "10px",
+                    borderRadius: "4px",
+                    background: "hsl(var(--primary) / 0.25)",
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        ) : rows.length > 0 ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
             {rows.map((row) => (
               <div
@@ -189,3 +244,4 @@ export const LiveStatsPanel = ({
     </div>
   );
 };
+
