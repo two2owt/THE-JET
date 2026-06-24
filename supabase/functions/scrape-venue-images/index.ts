@@ -10,6 +10,42 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Require an authenticated admin caller — this function uses the service
+    // role to mutate deals and consumes the paid Firecrawl quota.
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const authClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    );
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims?.sub) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const adminClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+    const { data: isAdmin, error: roleError } = await adminClient.rpc("has_role", {
+      _user_id: claimsData.claims.sub,
+      _role: "admin",
+    });
+    if (roleError || !isAdmin) {
+      return new Response(
+        JSON.stringify({ error: "Forbidden" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { dealId, websiteUrl } = await req.json();
     console.log('Scraping images for deal:', dealId, 'from:', websiteUrl);
 
