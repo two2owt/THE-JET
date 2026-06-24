@@ -3517,6 +3517,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         pathData={pathData}
         showDensityLayer={showDensityLayer}
         showMovementPaths={showMovementPaths}
+        densityLoading={densityLoading}
+        pathLoading={pathsLoading}
       />
 
       {/* Enhanced Legend - Bottom left, responsive for all devices, collapsible on mobile */}
