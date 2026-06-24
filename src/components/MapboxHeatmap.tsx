@@ -531,7 +531,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
   
-  const { densityData } = useLocationDensity({
+  const { densityData, refresh: refreshDensity } = useLocationDensity({
     timeFilter,
     hourOfDay: timelapseMode ? undefined : hourFilter,
     dayOfWeek: dayFilter,
@@ -2941,6 +2941,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   setTimeFilter('all');
                   setHourFilter(undefined);
                   setDayFilter(undefined);
+                  refreshDensity();
                 }
               }}
             />
