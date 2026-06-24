@@ -322,6 +322,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [showParking, setShowParking] = useState(() => getLayerState("parking", false));
   // Live Stats panel — hidden by default, opt-in via layers toggle
   const [showLiveStats, setShowLiveStats] = useState(() => getLayerState("stats", false));
+  const [liveStatsPanelOpen, setLiveStatsPanelOpen] = useState(showLiveStats);
+
   const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.timeFilter, 'all', 'time'));
   const [hourFilter, setHourFilter] = useState<number | undefined>();
   const [dayFilter, setDayFilter] = useState<number | undefined>(() => getPersistedDayFilter());
@@ -416,6 +418,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   useEffect(() => { localStorage.setItem(LAYER_KEYS.paths, String(showMovementPaths)); }, [showMovementPaths]);
   useEffect(() => { localStorage.setItem(LAYER_KEYS.parking, String(showParking)); }, [showParking]);
   useEffect(() => { localStorage.setItem(LAYER_KEYS.stats, String(showLiveStats)); }, [showLiveStats]);
+  useEffect(() => {
+    if (showLiveStats) {
+      setLiveStatsPanelOpen(true);
+    } else {
+      // Allow the panel to fade out before unmounting
+      const timer = setTimeout(() => setLiveStatsPanelOpen(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [showLiveStats]);
+
 
   // Persist filter / time-lapse selections to localStorage
   useEffect(() => { localStorage.setItem(FILTER_KEYS.timeFilter, timeFilter); }, [timeFilter]);
@@ -3453,7 +3465,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       {/* Statistics Panel - Shows active data counts */}
       {/* CRITICAL: Uses only opacity transition to avoid CLS - no translate/scale animations */}
       {/* Hidden by default — only renders when the user explicitly enables the Live Stats layer toggle */}
-      {showLiveStats && (
+      {liveStatsPanelOpen && (
         <div 
           style={{
             position: 'absolute',
@@ -3469,12 +3481,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             border: '1px solid hsl(var(--border))',
             boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
             padding: isMobile ? '10px 12px' : '10px 14px',
-            opacity: mapLoaded ? 1 : 0,
-            visibility: mapLoaded ? 'visible' : 'hidden',
+            opacity: showLiveStats && mapLoaded ? 1 : 0,
+            visibility: showLiveStats && mapLoaded ? 'visible' : 'hidden',
             transition: 'opacity 300ms ease-out, visibility 300ms ease-out',
             transform: 'translateZ(0)',
             willChange: 'opacity',
-            pointerEvents: mapLoaded ? 'auto' : 'none',
+            pointerEvents: showLiveStats && mapLoaded ? 'auto' : 'none',
           }}
         >
           {(() => {
