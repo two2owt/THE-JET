@@ -548,6 +548,51 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [isLoadingPaths, setIsLoadingPaths] = useState(false);
   const [isLoadingStats, setIsLoadingStats] = useState(false);
 
+  // Coalesce rapid toggle-triggered refreshes so consecutive on/off/on taps
+  // don't cause a chain of loader flashes or redundant network requests.
+  const densityRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pathsRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearDensityRefreshTimer = useCallback(() => {
+    if (densityRefreshTimerRef.current) {
+      clearTimeout(densityRefreshTimerRef.current);
+      densityRefreshTimerRef.current = null;
+    }
+  }, []);
+
+  const clearPathsRefreshTimer = useCallback(() => {
+    if (pathsRefreshTimerRef.current) {
+      clearTimeout(pathsRefreshTimerRef.current);
+      pathsRefreshTimerRef.current = null;
+    }
+  }, []);
+
+  const scheduleDensityRefresh = useCallback(() => {
+    clearDensityRefreshTimer();
+    setIsLoadingHeatmap(true);
+    densityRefreshTimerRef.current = setTimeout(() => {
+      densityRefreshTimerRef.current = null;
+      refreshDensity();
+    }, 300);
+  }, [clearDensityRefreshTimer, refreshDensity]);
+
+  const schedulePathsRefresh = useCallback(() => {
+    clearPathsRefreshTimer();
+    setIsLoadingPaths(true);
+    pathsRefreshTimerRef.current = setTimeout(() => {
+      pathsRefreshTimerRef.current = null;
+      refreshPaths();
+    }, 300);
+  }, [clearPathsRefreshTimer, refreshPaths]);
+
+  // Clean up any pending coalesced refresh timers on unmount.
+  useEffect(() => {
+    return () => {
+      clearDensityRefreshTimer();
+      clearPathsRefreshTimer();
+    };
+  }, [clearDensityRefreshTimer, clearPathsRefreshTimer]);
+
   // Sync toggle-triggered loading states with hook loading so they stay visible
   // until the data fetch actually completes (including debounce / realtime).
   useEffect(() => {
@@ -2957,12 +3002,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 const newState = !showDensityLayer;
                 setShowDensityLayer(newState);
                 if (newState) {
-                  setIsLoadingHeatmap(true);
                   setTimeFilter('all');
                   setHourFilter(undefined);
                   setDayFilter(undefined);
-                  refreshDensity();
+                  scheduleDensityRefresh();
                 } else {
+                  clearDensityRefreshTimer();
                   setIsLoadingHeatmap(false);
                 }
               }}
@@ -3241,9 +3286,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 const next = !showMovementPaths;
                 setShowMovementPaths(next);
                 if (next) {
-                  setIsLoadingPaths(true);
-                  refreshPaths();
+                  schedulePathsRefresh();
                 } else {
+                  clearPathsRefreshTimer();
                   setIsLoadingPaths(false);
                 }
               }}
