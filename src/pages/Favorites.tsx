@@ -54,7 +54,7 @@ export default function Favorites() {
         .map((fav) => fav.venue_id)
         .filter((id): id is string => !!id);
 
-      const queries: Promise<Deal[]>[] = [];
+      const queries: PromiseLike<Deal[]>[] = [];
       if (dealIds.length > 0) {
         queries.push(
           supabase
