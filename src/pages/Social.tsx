@@ -226,28 +226,9 @@ export default function Social() {
     );
   }
 
-  // Show upgrade prompt for users without JET+ subscription
-  if (!canAccessSocialFeatures()) {
-    return (
-      <PageLayout defaultTab="social" headerConfig={headerConfig}>
-        <PageShell>
-          <EmptyState
-            icon={Crown}
-            title="Unlock Social Features"
-            description="Connect with friends, share deals, and discover new spots together. Upgrade to JET+ to access all social features."
-            actionLabel="Upgrade to JET+"
-            onAction={() => setShowUpgradePrompt(true)}
-          />
-        </PageShell>
-        <UpgradePrompt
-          requiredTier="jet_plus"
-          featureName="Social features"
-          isOpen={showUpgradePrompt}
-          onClose={() => setShowUpgradePrompt(false)}
-        />
-      </PageLayout>
-    );
-  }
+  // Discoverability of other JET users is available to every authenticated
+  // account. JET+ continues to unlock advanced social features (deal sharing,
+  // group chats, etc.) — gating happens at those individual action sites.
 
   // Section headings now use the canonical luxe scale (`heading-luxe-section`)
   // so they inherit the small-screen line-height refinements in index.css and
