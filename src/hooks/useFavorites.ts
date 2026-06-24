@@ -10,6 +10,25 @@ export interface Favorite {
   deal_id: string | null;
   venue_id: string | null;
   created_at: string;
+  // Snapshot of venue metadata captured at favorite time so venue-only
+  // favorites can render on /favorites without an active deal.
+  venue_name?: string | null;
+  venue_address?: string | null;
+  venue_image_url?: string | null;
+  venue_category?: string | null;
+  venue_neighborhood?: string | null;
+  venue_lat?: number | null;
+  venue_lng?: number | null;
+}
+
+export interface VenueFavoriteSnapshot {
+  name?: string | null;
+  address?: string | null;
+  imageUrl?: string | null;
+  category?: string | null;
+  neighborhood?: string | null;
+  lat?: number | null;
+  lng?: number | null;
 }
 
 export const useFavorites = (userId: string | undefined) => {
@@ -148,7 +167,11 @@ export const useFavorites = (userId: string | undefined) => {
    * `dealId` is also provided we store it alongside venue_id so the favorite
    * still shows on /favorites alongside deal-linked entries.
    */
-  const toggleVenueFavorite = async (venueId: string, dealId?: string | null) => {
+  const toggleVenueFavorite = async (
+    venueId: string,
+    dealId?: string | null,
+    snapshot?: VenueFavoriteSnapshot,
+  ) => {
     if (!userId) {
       toast.error("Sign in required", {
         description: "Please sign in to save favorites",
@@ -177,6 +200,14 @@ export const useFavorites = (userId: string | undefined) => {
           venue_id: venueId,
         };
         if (dealId) payload.deal_id = dealId;
+        const snap: Record<string, unknown> = {};
+        if (snapshot?.name) snap.venue_name = snapshot.name;
+        if (snapshot?.address) snap.venue_address = snapshot.address;
+        if (snapshot?.imageUrl) snap.venue_image_url = snapshot.imageUrl;
+        if (snapshot?.category) snap.venue_category = snapshot.category;
+        if (snapshot?.neighborhood) snap.venue_neighborhood = snapshot.neighborhood;
+        if (typeof snapshot?.lat === "number") snap.venue_lat = snapshot.lat;
+        if (typeof snapshot?.lng === "number") snap.venue_lng = snapshot.lng;
         // Optimistically add with a temp row
         const tempId = `temp-${Date.now()}`;
         const optimistic: Favorite = {
@@ -185,11 +216,18 @@ export const useFavorites = (userId: string | undefined) => {
           deal_id: dealId ?? null,
           venue_id: venueId,
           created_at: new Date().toISOString(),
+          venue_name: snapshot?.name ?? null,
+          venue_address: snapshot?.address ?? null,
+          venue_image_url: snapshot?.imageUrl ?? null,
+          venue_category: snapshot?.category ?? null,
+          venue_neighborhood: snapshot?.neighborhood ?? null,
+          venue_lat: snapshot?.lat ?? null,
+          venue_lng: snapshot?.lng ?? null,
         };
         setFavorites((curr) => [optimistic, ...curr]);
         const { data, error } = await supabase
           .from("user_favorites")
-          .insert(payload)
+          .insert({ ...payload, ...snap })
           .select()
           .single();
         if (error) throw error;
