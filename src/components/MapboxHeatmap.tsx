@@ -3342,10 +3342,14 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               label="Live Stats"
               Icon={BarChart3}
               active={showLiveStats}
+              loading={isLoadingStats}
               ariaLabel="Toggle live stats panel"
               onToggle={() => {
                 triggerHaptic('medium');
-                setShowLiveStats(!showLiveStats);
+                const next = !showLiveStats;
+                setShowLiveStats(next);
+                if (next) setIsLoadingStats(true);
+                else setIsLoadingStats(false);
               }}
             />
 
