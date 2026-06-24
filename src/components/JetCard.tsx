@@ -94,7 +94,26 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
       analytics.dealClicked(venue.id, venue.name, favorited ? "unfavorite" : "favorite");
     } catch { /* noop */ }
     try {
-      await toggleVenueFavorite(venue.id, activeDealId, {
+      // Resolve the active deal on-demand if the background lookup hasn't
+      // completed yet, so the favorite row always links to the deal when
+      // one exists. This keeps the map heart and the /favorites DealCard
+      // heart in sync (DealCard.isFavorite only matches by deal_id).
+      let dealIdForFavorite = activeDealId;
+      if (!dealIdForFavorite) {
+        const { data } = await supabase
+          .from("deals")
+          .select("id")
+          .eq("venue_id", venue.id)
+          .eq("active", true)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (data?.id) {
+          dealIdForFavorite = data.id;
+          setActiveDealId(data.id);
+        }
+      }
+      await toggleVenueFavorite(venue.id, dealIdForFavorite, {
         name: venue.name,
         address: venue.address ?? null,
         imageUrl: venue.imageUrl ?? null,
