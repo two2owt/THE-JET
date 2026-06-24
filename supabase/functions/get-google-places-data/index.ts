@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
     
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
+        error: 'Internal server error',
         rating: null,
         totalRatings: 0,
         reviews: [],

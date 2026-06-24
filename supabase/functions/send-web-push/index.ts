@@ -234,7 +234,7 @@ Deno.serve(async (req) => {
     console.error("Error in send-web-push:", err);
     const errorMessage = err instanceof Error ? err.message : 'Unknown error';
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
