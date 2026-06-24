@@ -95,10 +95,12 @@ export const useFavorites = (userId: string | undefined) => {
     }
 
     const favorite = favorites.find((fav) => fav.deal_id === dealId);
+    const previous = favorites;
 
     try {
       if (favorite) {
-        // Remove favorite
+        // Optimistically remove
+        setFavorites((curr) => curr.filter((fav) => fav.id !== favorite.id));
         const { error } = await supabase
           .from("user_favorites")
           .delete()
@@ -106,12 +108,20 @@ export const useFavorites = (userId: string | undefined) => {
 
         if (error) throw error;
 
-        setFavorites(favorites.filter((fav) => fav.id !== favorite.id));
         toast("Removed from favorites", {
           description: "Deal removed from your favorites",
         });
       } else {
-        // Add favorite
+        // Optimistically add with a temp row
+        const tempId = `temp-${Date.now()}`;
+        const optimistic: Favorite = {
+          id: tempId,
+          user_id: userId,
+          deal_id: dealId,
+          venue_id: null,
+          created_at: new Date().toISOString(),
+        };
+        setFavorites((curr) => [optimistic, ...curr]);
         const { data, error } = await supabase
           .from("user_favorites")
           .insert({ user_id: userId, deal_id: dealId })
@@ -120,13 +130,15 @@ export const useFavorites = (userId: string | undefined) => {
 
         if (error) throw error;
 
-        setFavorites([data, ...favorites]);
+        setFavorites((curr) => [data, ...curr.filter((f) => f.id !== tempId)]);
         toast.success("Added to favorites", {
           description: "Deal saved to your favorites",
         });
       }
     } catch (error) {
       console.error("Error toggling favorite:", error);
+      // Roll back to pre-toggle state
+      setFavorites(previous);
       toast.error("Error", { description: "Failed to update favorites" });
     }
   };
@@ -147,15 +159,17 @@ export const useFavorites = (userId: string | undefined) => {
     const existing = favorites.find(
       (fav) => fav.venue_id === venueId || (dealId && fav.deal_id === dealId)
     );
+    const previous = favorites;
 
     try {
       if (existing) {
+        // Optimistically remove
+        setFavorites((curr) => curr.filter((fav) => fav.id !== existing.id));
         const { error } = await supabase
           .from("user_favorites")
           .delete()
           .eq("id", existing.id);
         if (error) throw error;
-        setFavorites(favorites.filter((fav) => fav.id !== existing.id));
         toast("Removed from favorites", { description: "Venue removed from your favorites" });
       } else {
         const payload: { user_id: string; venue_id: string; deal_id?: string } = {
@@ -163,17 +177,29 @@ export const useFavorites = (userId: string | undefined) => {
           venue_id: venueId,
         };
         if (dealId) payload.deal_id = dealId;
+        // Optimistically add with a temp row
+        const tempId = `temp-${Date.now()}`;
+        const optimistic: Favorite = {
+          id: tempId,
+          user_id: userId,
+          deal_id: dealId ?? null,
+          venue_id: venueId,
+          created_at: new Date().toISOString(),
+        };
+        setFavorites((curr) => [optimistic, ...curr]);
         const { data, error } = await supabase
           .from("user_favorites")
           .insert(payload)
           .select()
           .single();
         if (error) throw error;
-        setFavorites([data, ...favorites]);
+        setFavorites((curr) => [data, ...curr.filter((f) => f.id !== tempId)]);
         toast.success("Added to favorites", { description: "Venue saved to your favorites" });
       }
     } catch (error) {
       console.error("Error toggling venue favorite:", error);
+      // Roll back to pre-toggle state
+      setFavorites(previous);
       toast.error("Error", { description: "Failed to update favorites" });
     }
   };
