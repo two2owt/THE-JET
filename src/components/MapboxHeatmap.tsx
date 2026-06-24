@@ -76,6 +76,7 @@ import { useOpenVenues } from "@/hooks/useOpenVenues";
 import { triggerHaptic } from "@/lib/haptics";
 import { Button } from "./ui/button";
 import { LayerToggleRow } from "./map/LayerToggleRow";
+import { LiveStatsPanel } from "./map/LiveStatsPanel";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Slider } from "./ui/slider";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
