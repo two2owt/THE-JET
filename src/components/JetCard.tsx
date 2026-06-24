@@ -94,7 +94,15 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
       analytics.dealClicked(venue.id, venue.name, favorited ? "unfavorite" : "favorite");
     } catch { /* noop */ }
     try {
-      await toggleVenueFavorite(venue.id, activeDealId);
+      await toggleVenueFavorite(venue.id, activeDealId, {
+        name: venue.name,
+        address: venue.address ?? null,
+        imageUrl: venue.imageUrl ?? null,
+        category: venue.category,
+        neighborhood: venue.neighborhood,
+        lat: venue.lat,
+        lng: venue.lng,
+      });
     } finally {
       setIsTogglingFavorite(false);
     }
