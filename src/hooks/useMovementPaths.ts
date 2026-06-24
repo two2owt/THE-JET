@@ -21,6 +21,7 @@ export const useMovementPaths = (filters: MovementPathFilters = {}) => {
   const [pathData, setPathData] = useState<MovementPathData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [unauthorized, setUnauthorized] = useState(false);
   // Per-instance channel name prevents silent dedupe on remount.
   const instanceId = useId();
 
@@ -41,9 +42,17 @@ export const useMovementPaths = (filters: MovementPathFilters = {}) => {
       
       setPathData(data);
       setError(null);
+      setUnauthorized(false);
     } catch (err) {
       console.error('Error loading movement path data:', err);
-      setError('Failed to load movement paths');
+      const status = (err as { context?: { status?: number } })?.context?.status;
+      if (status === 401 || status === 403) {
+        setUnauthorized(true);
+        setError('unauthorized');
+      } else {
+        setUnauthorized(false);
+        setError('Failed to load movement paths');
+      }
     } finally {
       setLoading(false);
     }
@@ -73,5 +82,5 @@ export const useMovementPaths = (filters: MovementPathFilters = {}) => {
     };
   }, [filters.timeFilter, filters.minFrequency, instanceId]);
 
-  return { pathData, loading, error, refresh: loadPathData };
+  return { pathData, loading, error, unauthorized, refresh: loadPathData };
 };
