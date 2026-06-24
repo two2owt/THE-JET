@@ -39,6 +39,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
   const navigate = useNavigate();
   const { favorites, toggleVenueFavorite, refetch } = useFavorites(user?.id);
   const [activeDealId, setActiveDealId] = useState<string | null>(null);
+  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
 
   // Look up the active deal (if any) for this venue so a favorited venue
   // can still link to the user's saved deal under /favorites.
