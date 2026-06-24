@@ -323,7 +323,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [showParking, setShowParking] = useState(() => getLayerState("parking", false));
   // Live Stats panel — hidden by default, opt-in via layers toggle
   const [showLiveStats, setShowLiveStats] = useState(() => getLayerState("stats", false));
-  const [liveStatsPanelOpen, setLiveStatsPanelOpen] = useState(showLiveStats);
 
   const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.timeFilter, 'all', 'time'));
   const [hourFilter, setHourFilter] = useState<number | undefined>();
