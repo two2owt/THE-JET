@@ -2974,6 +2974,14 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             {/* Heat filters - shown when heat is on */}
             <div style={{ overflow: 'hidden', transition: 'max-height 0.2s', maxHeight: showDensityLayer ? '240px' : '0px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '10px', paddingTop: '8px', paddingBottom: '2px' }}>
+                {densityUnauthorized && (
+                  <div role="status" style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', padding: '8px', background: 'hsl(var(--muted) / 0.5)', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '11px', lineHeight: 1.35 }}>
+                    <Lock style={{ width: '12px', height: '12px', color: 'hsl(var(--muted-foreground))', flexShrink: 0, marginTop: '1px' }} />
+                    <span style={{ color: 'hsl(var(--muted-foreground))' }}>
+                      Heatmap data is admin-only. Sign in with an admin account to view aggregated activity.
+                    </span>
+                  </div>
+                )}
                 {/* Time-lapse toggle — glassmorphic pill matching LayerToggleRow */}
                 <button
                   type="button"
@@ -3229,7 +3237,14 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             {/* Path filters */}
             <div style={{ overflow: 'hidden', transition: 'max-height 0.2s', maxHeight: showMovementPaths ? '200px' : '0px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingLeft: '4px' }}>
-                {pathsError && (
+                {pathsUnauthorized ? (
+                  <div role="status" style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', padding: '8px', background: 'hsl(var(--muted) / 0.5)', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '11px', lineHeight: 1.35 }}>
+                    <Lock style={{ width: '12px', height: '12px', color: 'hsl(var(--muted-foreground))', flexShrink: 0, marginTop: '1px' }} />
+                    <span style={{ color: 'hsl(var(--muted-foreground))' }}>
+                      Flow Paths data is admin-only. Sign in with an admin account to view movement paths.
+                    </span>
+                  </div>
+                ) : pathsError && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', background: 'hsl(var(--destructive) / 0.1)', borderRadius: '8px', fontSize: '10px' }}>
                     <AlertCircle style={{ width: '12px', height: '12px', color: 'hsl(var(--destructive))', flexShrink: 0 }} />
                     <span style={{ color: 'hsl(var(--destructive))' }}>Failed</span>
