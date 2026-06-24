@@ -3252,11 +3252,20 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             {/* Path filters */}
             <div style={{ overflow: 'hidden', transition: 'max-height 0.2s', maxHeight: showMovementPaths ? '200px' : '0px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingLeft: '4px' }}>
-                {pathsError && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', background: 'hsl(var(--destructive) / 0.1)', borderRadius: '8px', fontSize: '10px' }}>
-                    <AlertCircle style={{ width: '12px', height: '12px', color: 'hsl(var(--destructive))', flexShrink: 0 }} />
-                    <span style={{ color: 'hsl(var(--destructive))' }}>Failed</span>
-                    <Button onClick={refreshPaths} variant="ghost" size="sm" className="h-5 text-[9px] px-1.5 ml-auto">Retry</Button>
+                {(isLoadingPaths || pathsError) && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', background: pathsError ? 'hsl(var(--destructive) / 0.1)' : 'hsl(var(--primary) / 0.08)', borderRadius: '8px', fontSize: '10px' }}>
+                    {isLoadingPaths ? (
+                      <>
+                        <Loader2 className="animate-spin" style={{ width: '12px', height: '12px', color: 'hsl(var(--primary))', flexShrink: 0 }} />
+                        <span style={{ color: 'hsl(var(--foreground))' }}>Refreshing flow paths...</span>
+                      </>
+                    ) : (
+                      <>
+                        <AlertCircle style={{ width: '12px', height: '12px', color: 'hsl(var(--destructive))', flexShrink: 0 }} />
+                        <span style={{ color: 'hsl(var(--destructive))' }}>Failed</span>
+                        <Button onClick={refreshPaths} variant="ghost" size="sm" className="h-5 text-[9px] px-1.5 ml-auto">Retry</Button>
+                      </>
+                    )}
                   </div>
                 )}
                 <Select value={pathTimeFilter} onValueChange={(v: any) => setPathTimeFilter(v)}>
