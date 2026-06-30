@@ -3690,6 +3690,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               Icon={Car}
               active={showParking}
               ariaLabel="Toggle parking layer"
+              tooltip="Displays nearby parking options around venues so you can plan your arrival."
               onToggle={() => {
                 triggerHaptic('medium');
                 const newState = !showParking;
