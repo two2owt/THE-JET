@@ -12,6 +12,7 @@
     "audit:css": "node scripts/find-unused-css.mjs",
     "audit:css:strict": "node scripts/find-unused-css.mjs --strict",
     "audit:css:json": "node scripts/find-unused-css.mjs --json",
+    "verify:security": "node scripts/verify-security-hardening.mjs",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui"
   },
