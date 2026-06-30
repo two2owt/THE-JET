@@ -159,11 +159,15 @@ export const LiveStatsPanel = ({
         <p
           className="font-display"
           style={{
-            fontSize: "11px",
+            fontSize: isMobile ? "10px" : "11px",
             fontWeight: 700,
             color: "hsl(var(--foreground))",
             letterSpacing: "0.04em",
             textTransform: "uppercase",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            minWidth: 0,
           }}
         >
           {vibe.label}
