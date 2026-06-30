@@ -76,6 +76,7 @@ import { useOpenVenues } from "@/hooks/useOpenVenues";
 import { supabase } from "@/integrations/supabase/client";
 import { triggerHaptic } from "@/lib/haptics";
 import { buildVenueOpenStatus } from "@/lib/venue-open-cache";
+import { useOpenNowTick } from "@/hooks/useOpenNowTick";
 import { Button } from "./ui/button";
 import { LayerToggleRow } from "./map/LayerToggleRow";
 import { LiveStatsPanel } from "./map/LiveStatsPanel";
@@ -433,13 +434,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   useEffect(() => { localStorage.setItem(LAYER_KEYS.stats, String(showLiveStats)); }, [showLiveStats]);
   useEffect(() => { localStorage.setItem(LAYER_KEYS.openNow, String(openNowOnly)); }, [openNowOnly]);
 
-  // Tick once a minute so cached open/closed evaluations stay fresh without
-  // re-running `isVenueOpenNow` on every render.
-  const [openNowTick, setOpenNowTick] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setOpenNowTick((n) => (n + 1) % 1_000_000), 60_000);
-    return () => clearInterval(id);
-  }, []);
+  // Tick once a minute (aligned to the wall-clock boundary, and refreshed on
+  // tab visibility / window focus) so the open/closed cache below stays fresh
+  // even after backgrounded tabs, system sleep, or clock jumps.
+  const openNowTick = useOpenNowTick();
 
   // Memoized venueId → open status map. Recomputed only when the venue list
   // identity changes or the minute tick fires — not on unrelated re-renders.
