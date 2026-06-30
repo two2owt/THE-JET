@@ -51,12 +51,16 @@ export const useMessages = (userId?: string, friendId?: string) => {
   // Mark unread messages as read
   const markAsRead = useCallback(async () => {
     if (!userId || !conversationId) return;
-    await supabase
+    const { error, count } = await supabase
       .from("messages")
-      .update({ read_at: new Date().toISOString() })
+      .update({ read_at: new Date().toISOString() }, { count: "exact" })
       .eq("conversation_id", conversationId)
       .eq("recipient_id", userId)
       .is("read_at", null);
+    if (!error && (count ?? 0) > 0 && typeof window !== "undefined") {
+      // Notify the global unread-message badge to refresh immediately.
+      window.dispatchEvent(new Event("messages:read"));
+    }
   }, [userId, conversationId]);
 
   // Send a text message
