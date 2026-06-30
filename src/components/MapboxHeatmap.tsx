@@ -2543,7 +2543,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Call updateMarkers on initial load and when venues change
   useEffect(() => {
     updateMarkers();
-  }, [venues, mapLoaded, isLoadingVenues, selectedCity, selectedVenue, venueDealCounts, openNowOnly]);
+  }, [venues, mapLoaded, isLoadingVenues, selectedCity, selectedVenue, venueDealCounts, openNowOnly, venueOpenStatus]);
 
   // Fetch active-deal counts for currently displayed venues
   useEffect(() => {
