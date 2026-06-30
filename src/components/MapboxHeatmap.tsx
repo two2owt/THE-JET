@@ -180,6 +180,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const userMarker = useRef<MapboxGL.Marker | null>(null);
   const markersRef = useRef<MapboxGL.Marker[]>([]);
   const dealMarkersRef = useRef<MapboxGL.Marker[]>([]);
+  // Tracks the currently-open marker chip so we can close prior chips cleanly
+  // when selection changes or the user taps elsewhere on the map.
+  const activeChipRef = useRef<{ el: HTMLElement; venueId: string; hide: () => void } | null>(null);
   const [venueDealCounts, setVenueDealCounts] = useState<Record<string, number>>({});
   const geolocateControlRef = useRef<MapboxGL.GeolocateControl | null>(null);
   const onVenueSelectRef = useRef(onVenueSelect);
@@ -1081,6 +1084,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           
           // Finalize immediately for fastest LCP
           finalizeMapLoad();
+
+          // Close any open venue chip on off-map taps (background click).
+          // Marker clicks call stopPropagation, so this only fires for empty map taps.
+          map.current?.on('click', () => {
+            activeChipRef.current?.hide();
+          });
           
           // Add parking lot icons from Mapbox vector tiles
           if (map.current) {
@@ -2361,14 +2370,32 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       chipEl.appendChild(caretEl);
       el.appendChild(chipEl);
 
-      const showChip = () => {
-        chipEl.style.opacity = '1';
-        chipEl.style.transform = 'translateX(-50%) translateY(0)';
+      let touchPeekTimer: number | null = null;
+      const clearTouchPeek = () => {
+        if (touchPeekTimer !== null) {
+          window.clearTimeout(touchPeekTimer);
+          touchPeekTimer = null;
+        }
       };
       const hideChip = () => {
-        if (isSelected) return;
+        clearTouchPeek();
         chipEl.style.opacity = '0';
         chipEl.style.transform = 'translateX(-50%) translateY(6px)';
+        if (activeChipRef.current?.el === chipEl) {
+          activeChipRef.current = null;
+        }
+      };
+      const hideChipUnlessSelected = () => {
+        if (isSelected) return;
+        hideChip();
+      };
+      const showChip = () => {
+        // Close any previously-open chip on a different marker
+        const prev = activeChipRef.current;
+        if (prev && prev.el !== chipEl) prev.hide();
+        chipEl.style.opacity = '1';
+        chipEl.style.transform = 'translateX(-50%) translateY(0)';
+        activeChipRef.current = { el: chipEl, venueId: venue.id, hide: hideChip };
       };
       if (isSelected) showChip();
 
@@ -2396,12 +2423,13 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         `;
         ringEl.style.opacity = isSelected ? '1' : pulseOpacity;
         haloEl.style.opacity = isSelected ? '0.95' : isHighActivity ? '0.7' : '0.45';
-        hideChip();
+        hideChipUnlessSelected();
       });
-      // Touch: brief peek on tap
+      // Touch: brief peek on tap; cancelled if the tap promotes this marker to selected
       el.addEventListener("touchstart", () => {
         showChip();
-        window.setTimeout(hideChip, 1600);
+        clearTouchPeek();
+        touchPeekTimer = window.setTimeout(hideChipUnlessSelected, 1600);
       });
 
       // Create marker with bottom anchor for teardrop (pin point at GPS location)
@@ -2416,7 +2444,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       // Handle click on the marker element — only trigger JetCard, no Mapbox popup
       el.addEventListener("click", (e) => {
         e.stopPropagation();
-        
+
+        // A click promotes this marker to selected — cancel any pending peek-hide.
+        clearTouchPeek();
+
         // Haptic feedback for venue selection
         triggerHaptic('medium');
         
