@@ -1084,6 +1084,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           
           // Finalize immediately for fastest LCP
           finalizeMapLoad();
+
+          // Close any open venue chip on off-map taps (background click).
+          // Marker clicks call stopPropagation, so this only fires for empty map taps.
+          map.current?.on('click', () => {
+            activeChipRef.current?.hide();
+          });
           
           // Add parking lot icons from Mapbox vector tiles
           if (map.current) {
