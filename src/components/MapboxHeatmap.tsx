@@ -73,6 +73,7 @@ import { useMovementPaths } from "@/hooks/useMovementPaths";
 import { useHeatmapTimelapse } from "@/hooks/useHeatmapTimelapse";
 import { useBreakpointUp } from "@/hooks/useBreakpoint";
 import { useOpenVenues } from "@/hooks/useOpenVenues";
+import { supabase } from "@/integrations/supabase/client";
 import { triggerHaptic } from "@/lib/haptics";
 import { Button } from "./ui/button";
 import { LayerToggleRow } from "./map/LayerToggleRow";
