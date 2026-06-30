@@ -3210,20 +3210,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             {/* Compact live activity summary — always shows live status of
                 Density and Movement Paths regardless of toggle state */}
             <div
+              className="chip-summary"
               role="status"
               aria-live="polite"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 8px',
-                borderRadius: '8px',
-                background: 'hsl(var(--card) / 0.5)',
-                border: '1px solid hsl(var(--border) / 0.5)',
-                fontSize: '10px',
-                fontWeight: 600,
-                color: 'hsl(var(--muted-foreground))',
-              }}
             >
               {[
                 {
@@ -3240,18 +3229,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   count: pathData?.stats.total_paths ?? 0,
                   active: showMovementPaths,
                 },
-              ].map((chip, idx) => (
+              ].map((chip) => (
                 <div
                   key={chip.key}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    paddingRight: idx === 0 ? '6px' : 0,
-                    borderRight: idx === 0 ? '1px solid hsl(var(--border) / 0.5)' : 'none',
-                    flex: 1,
-                    minWidth: 0,
-                  }}
+                  className="chip-summary-item"
                   title={`${chip.label}: ${chip.loading ? 'updating' : chip.count.toLocaleString()}${chip.active ? ' (layer on)' : ''}`}
                 >
                   {chip.loading ? (
@@ -3269,16 +3250,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                       }}
                     />
                   )}
-                  <span style={{ color: chip.active ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <span className="chip-summary-label" style={{ color: chip.active ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))' }}>
                     {chip.label}
                   </span>
                   <span
-                    style={{
-                      marginLeft: 'auto',
-                      fontVariantNumeric: 'tabular-nums',
-                      color: 'hsl(var(--foreground))',
-                      opacity: chip.loading ? 0.5 : 1,
-                    }}
+                    className="chip-summary-value"
+                    style={{ opacity: chip.loading ? 0.5 : 1 }}
                   >
                     {chip.loading ? '…' : chip.count.toLocaleString()}
                   </span>
@@ -3730,7 +3707,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               <div
                 style={{
                   marginTop: '6px',
-                  padding: isMobile ? '10px' : '10px 12px',
+                  padding: 'var(--live-stats-pad)',
                   borderRadius: '10px',
                   border: '1px solid hsl(var(--primary) / 0.25)',
                   background: 'linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--primary-glow) / 0.04))',

@@ -83,7 +83,7 @@ export const LiveStatsPanel = ({
           : { label: "Live activity", dot: "hsl(var(--muted-foreground))" };
 
   const labelStyle: React.CSSProperties = {
-    fontSize: isMobile ? "10px" : "11px",
+    fontSize: "var(--live-stats-label-size)",
     color: "hsl(var(--muted-foreground))",
     lineHeight: 1.2,
     minWidth: 0,
@@ -92,13 +92,12 @@ export const LiveStatsPanel = ({
     whiteSpace: "nowrap",
   };
   const valueStyle: React.CSSProperties = {
-    fontSize: isMobile ? "11px" : "13px",
+    fontSize: "var(--live-stats-value-size)",
     fontWeight: 700,
     lineHeight: 1.1,
     fontVariantNumeric: "tabular-nums",
     flexShrink: 0,
   };
-  const rowGap = isMobile ? "8px" : "12px";
 
   type Row = { key: string; label: string; value: string; tone: string };
   const rows: Row[] = [];
@@ -136,7 +135,7 @@ export const LiveStatsPanel = ({
   }
 
   const content = (
-    <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? "6px" : "8px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--live-stats-gap)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
         {isLoading ? (
           <Loader2
@@ -157,17 +156,13 @@ export const LiveStatsPanel = ({
           />
         )}
         <p
-          className="font-display"
+          className="font-display live-stats-vibe"
           style={{
-            fontSize: isMobile ? "10px" : "11px",
+            fontSize: "var(--live-stats-vibe-size)",
             fontWeight: 700,
             color: "hsl(var(--foreground))",
             letterSpacing: "0.04em",
             textTransform: "uppercase",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            minWidth: 0,
           }}
         >
           {vibe.label}
@@ -183,11 +178,11 @@ export const LiveStatsPanel = ({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                gap: rowGap,
+                gap: "var(--live-stats-row-gap)",
               }}
             >
               <span
-                className="animate-pulse"
+                className="animate-pulse live-stats-label"
                 style={{
                   ...labelStyle,
                   width: "45%",
@@ -218,16 +213,16 @@ export const LiveStatsPanel = ({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                gap: rowGap,
+                gap: "var(--live-stats-row-gap)",
               }}
             >
-              <span style={labelStyle}>{row.label}</span>
+              <span className="live-stats-label" style={labelStyle}>{row.label}</span>
               <span style={{ ...valueStyle, color: row.tone }}>{row.value}</span>
             </div>
           ))}
         </div>
       ) : (
-        <p style={labelStyle}>
+        <p className="live-stats-label" style={labelStyle}>
           No live activity in view yet.
         </p>
       )}
