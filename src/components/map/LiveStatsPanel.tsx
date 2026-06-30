@@ -135,7 +135,7 @@ export const LiveStatsPanel = ({
   }
 
   const content = (
-    <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? "6px" : "8px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--live-stats-gap)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
         {isLoading ? (
           <Loader2
@@ -156,17 +156,13 @@ export const LiveStatsPanel = ({
           />
         )}
         <p
-          className="font-display"
+          className="font-display live-stats-vibe"
           style={{
-            fontSize: isMobile ? "10px" : "11px",
+            fontSize: "var(--live-stats-vibe-size)",
             fontWeight: 700,
             color: "hsl(var(--foreground))",
             letterSpacing: "0.04em",
             textTransform: "uppercase",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            minWidth: 0,
           }}
         >
           {vibe.label}
