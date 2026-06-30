@@ -92,7 +92,7 @@ export const LiveStatsPanel = ({
 
   type Row = { key: string; label: string; value: string; tone: string };
   const rows: Row[] = [];
-  if (showDensityLayer && densityData) {
+  if (densityData) {
     if (grid > 0)
       rows.push({
         key: "hotspots",
@@ -108,7 +108,7 @@ export const LiveStatsPanel = ({
         tone: "hsl(var(--foreground))",
       });
   }
-  if (showMovementPaths && pathData) {
+  if (pathData) {
     if (people > 0)
       rows.push({
         key: "people",
@@ -214,9 +214,7 @@ export const LiveStatsPanel = ({
         </div>
       ) : (
         <p style={labelStyle}>
-          {showDensityLayer || showMovementPaths
-            ? "No live activity in view yet."
-            : "Enable Heatmap or Flow Paths to see live activity."}
+          No live activity in view yet.
         </p>
       )}
     </div>
