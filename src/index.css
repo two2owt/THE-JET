@@ -1623,7 +1623,7 @@ All colors MUST be HSL.
       opacity: 0;
     }
     100% {
-      opacity: 1;
+      opacity: var(--target-opacity, 1);
     }
   }
   
