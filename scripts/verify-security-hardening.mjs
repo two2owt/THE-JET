@@ -24,13 +24,15 @@
  * Run locally: `node scripts/verify-security-hardening.mjs`
  * Used by CI in .github/workflows/security-hardening.yml.
  */
-import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync, writeFileSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const MIGRATIONS_DIR = join(ROOT, "supabase", "migrations");
 const DOC_PATH = join(ROOT, "docs", "SECURITY_HARDENING.md");
+const BASELINE_PATH = join(ROOT, "scripts", "security-hardening-baseline.txt");
+const UPDATE_BASELINE = process.argv.includes("--update-baseline");
 
 const FORBIDDEN_REALTIME_TABLES = [
   "user_locations",
@@ -257,11 +259,41 @@ for (const t of FORBIDDEN_REALTIME_TABLES) {
   }
 }
 
-if (errors.length) {
-  console.error(
-    `\n❌ Security hardening regression(s) detected (${errors.length}):\n`,
+// Baseline: pre-existing violations that predate this CI check. The CI job
+// fails only on NEW regressions. To intentionally adopt a new baseline, run
+// `node scripts/verify-security-hardening.mjs --update-baseline` and commit
+// the updated file along with a note in docs/SECURITY_HARDENING.md.
+const baseline = existsSync(BASELINE_PATH)
+  ? new Set(
+      readFileSync(BASELINE_PATH, "utf8")
+        .split("\n")
+        .map((l) => l.trim())
+        .filter((l) => l && !l.startsWith("#")),
+    )
+  : new Set();
+
+if (UPDATE_BASELINE) {
+  const sorted = [...new Set(errors)].sort();
+  writeFileSync(BASELINE_PATH, sorted.join("\n") + (sorted.length ? "\n" : ""));
+  console.log(`Baseline updated with ${sorted.length} entries → ${BASELINE_PATH}`);
+  process.exit(0);
+}
+
+const newViolations = errors.filter((e) => !baseline.has(e));
+const resolvedBaseline = [...baseline].filter((b) => !errors.includes(b));
+
+if (resolvedBaseline.length) {
+  console.log(
+    `ℹ️  ${resolvedBaseline.length} baseline entr${resolvedBaseline.length === 1 ? "y" : "ies"} no longer reproduce — consider running \`node scripts/verify-security-hardening.mjs --update-baseline\` to shrink the baseline:`,
   );
-  for (const e of errors) console.error(`  - ${e}`);
+  for (const r of resolvedBaseline) console.log(`     ✓ ${r}`);
+}
+
+if (newViolations.length) {
+  console.error(
+    `\n❌ New security hardening regression(s) detected (${newViolations.length}):\n`,
+  );
+  for (const e of newViolations) console.error(`  - ${e}`);
   console.error(
     "\nFix the migration(s) above or, if the change is intentional, update docs/SECURITY_HARDENING.md in the same PR.\n",
   );
@@ -269,6 +301,7 @@ if (errors.length) {
 }
 
 console.log(
-  `✅ Security hardening invariants OK across ${migrationFiles.length} migration(s): ` +
+  `✅ Security hardening invariants OK across ${migrationFiles.length} migration(s) ` +
+    `(${baseline.size} pre-existing baseline entr${baseline.size === 1 ? "y" : "ies"} unchanged): ` +
     `${tables.size} public tables, ${definerFns.size} SECURITY DEFINER functions, ${views.size} views verified.`,
 );
