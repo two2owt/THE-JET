@@ -62,7 +62,7 @@ This project is built with:
 
 ## Responsive design
 
-Use `useBreakpoint` / `useBreakpointUp` from `@/hooks/useBreakpoint` for all component-level responsive logic. They are aligned with the Tailwind breakpoints and replace the older `useIsMobile` hook. `useIsMobile` is kept as a compatibility shim but should not be used in new code.
+Use `useBreakpoint` / `useBreakpointUp` from `@/hooks/useBreakpoint` for all component-level responsive logic. They are aligned with the Tailwind breakpoints and replace the removed `useIsMobile` hook.
 
 ```tsx
 import { useBreakpoint, useBreakpointUp } from "@/hooks/useBreakpoint";
