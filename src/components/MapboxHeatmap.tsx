@@ -2155,8 +2155,17 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       return Math.sqrt(Math.pow(lat2 - lat1, 2) + Math.pow(lng2 - lng1, 2));
     };
 
+    // Apply Open-Now filter: hide venues whose hours indicate they're closed.
+    // Venues with unknown hours stay visible so the user never loses places.
+    const visibleVenues = openNowOnly
+      ? venues.filter((v) => {
+          const open = (v.isOpen ?? null) !== null ? v.isOpen! : isVenueOpenNow(v.openingHours);
+          return open !== false; // keep `true` and `null`
+        })
+      : venues;
+
     // Add venue markers
-    venues.forEach((venue, index) => {
+    visibleVenues.forEach((venue, index) => {
       // Guard against map becoming null during iteration
       if (!mapInstance) return;
       
@@ -2168,7 +2177,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
       // Check proximity to other venues
       let nearbyCount = 0;
-      venues.forEach((otherVenue, otherIndex) => {
+      visibleVenues.forEach((otherVenue, otherIndex) => {
         if (index !== otherIndex) {
           const distance = getDistance(venue.lat, venue.lng, otherVenue.lat, otherVenue.lng);
           if (distance < 0.001) nearbyCount++; // Very close proximity
