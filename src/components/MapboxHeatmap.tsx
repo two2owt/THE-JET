@@ -2457,8 +2457,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       el.addEventListener("click", (e) => {
         e.stopPropagation();
 
-        // A click promotes this marker to selected — cancel any pending peek-hide.
-        clearTouchPeek();
+        // A click promotes this marker to selected — cancel any pending hide
+        // so the chip stays open through the re-render.
+        clearHideTimer();
 
         // Haptic feedback for venue selection
         triggerHaptic('medium');
