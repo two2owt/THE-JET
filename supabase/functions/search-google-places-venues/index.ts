@@ -22,6 +22,8 @@ const HOURS = {
   rooftop:       ["Monday: 4:00 PM – 11:00 PM","Tuesday: 4:00 PM – 11:00 PM","Wednesday: 4:00 PM – 11:00 PM","Thursday: 4:00 PM – 12:00 AM","Friday: 4:00 PM – 1:00 AM","Saturday: 2:00 PM – 1:00 AM","Sunday: 2:00 PM – 10:00 PM"],
   nightclub:     ["Monday: Closed","Tuesday: Closed","Wednesday: 10:00 PM – 2:00 AM","Thursday: 10:00 PM – 2:00 AM","Friday: 10:00 PM – 2:30 AM","Saturday: 10:00 PM – 2:30 AM","Sunday: 10:00 PM – 2:00 AM"],
   lounge:        ["Monday: Closed","Tuesday: 5:00 PM – 12:00 AM","Wednesday: 5:00 PM – 12:00 AM","Thursday: 5:00 PM – 1:00 AM","Friday: 5:00 PM – 2:00 AM","Saturday: 5:00 PM – 2:00 AM","Sunday: 5:00 PM – 12:00 AM"],
+  nightclub_daily:["Monday: 9:00 PM – 2:00 AM","Tuesday: 9:00 PM – 2:00 AM","Wednesday: 9:00 PM – 2:00 AM","Thursday: 9:00 PM – 2:00 AM","Friday: 9:00 PM – 2:30 AM","Saturday: 9:00 PM – 2:30 AM","Sunday: 9:00 PM – 2:00 AM"],
+  bar_daily:     ["Monday: 11:00 AM – 2:00 AM","Tuesday: 11:00 AM – 2:00 AM","Wednesday: 11:00 AM – 2:00 AM","Thursday: 11:00 AM – 2:00 AM","Friday: 11:00 AM – 2:00 AM","Saturday: 11:00 AM – 2:00 AM","Sunday: 11:00 AM – 2:00 AM"],
 } as const;
 
 const CHARLOTTE_TOP_VENUES = [
