@@ -83,15 +83,20 @@ export const LiveStatsPanel = ({
           : { label: "Live activity", dot: "hsl(var(--muted-foreground))" };
 
   const labelStyle: React.CSSProperties = {
-    fontSize: "11px",
+    fontSize: isMobile ? "10px" : "11px",
     color: "hsl(var(--muted-foreground))",
     lineHeight: 1.2,
+    minWidth: 0,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   };
   const valueStyle: React.CSSProperties = {
-    fontSize: "13px",
+    fontSize: isMobile ? "12px" : "13px",
     fontWeight: 700,
     lineHeight: 1.1,
     fontVariantNumeric: "tabular-nums",
+    flexShrink: 0,
   };
 
   type Row = { key: string; label: string; value: string; tone: string };
