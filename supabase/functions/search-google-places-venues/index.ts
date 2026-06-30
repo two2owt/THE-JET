@@ -3,13 +3,13 @@ import { corsHeaders, logVersion, EDGE_FUNCTION_VERSION } from "../_shared/cors.
 const FUNCTION_NAME = "search-google-places-venues";
 logVersion(FUNCTION_NAME);
 
-// Popular venues in and around Charlotte, NC with verified Google Places addresses.
-// Business hours (openingHours / isOpen) are enriched live from Google Places below
-// when the API key is reachable, and otherwise we fall back to the curated hours
-// embedded with each venue so the JetCard Open/Closed pill still works.
-// The client uses `useOpenVenues` + `isVenueOpenNow` to hide markers when closed.
+// Venues are sourced live from Google Places (Nearby Search + Place Details).
+// The curated list below is ONLY used as a last-resort fallback when the
+// GOOGLE_PLACES_API_KEY secret is missing or Google returns an error — it is
+// intentionally small and only contains long-running, well-known Charlotte
+// places we can verify by address. No fabricated venues.
 //
-// Schedule format intentionally matches Google's `opening_hours.weekday_text`:
+// `openingHours` matches Google's `opening_hours.weekday_text` format:
 //   "Monday: 11:00 AM – 10:00 PM"  (en-dash, AM/PM, "Closed" when shut)
 const HOURS = {
   daily_11_10:   ["Monday: 11:00 AM – 10:00 PM","Tuesday: 11:00 AM – 10:00 PM","Wednesday: 11:00 AM – 10:00 PM","Thursday: 11:00 AM – 10:00 PM","Friday: 11:00 AM – 11:00 PM","Saturday: 11:00 AM – 11:00 PM","Sunday: 11:00 AM – 9:00 PM"],
