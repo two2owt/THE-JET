@@ -1,4 +1,5 @@
-import { LucideIcon, Loader2 } from "lucide-react";
+import { LucideIcon, Loader2, HelpCircle } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 interface LayerToggleRowProps {
   label: string;
@@ -7,6 +8,8 @@ interface LayerToggleRowProps {
   ariaLabel: string;
   onToggle: () => void;
   loading?: boolean;
+  /** Optional helper text explaining what the layer shows. */
+  tooltip?: string;
 }
 
 /**
@@ -16,7 +19,8 @@ interface LayerToggleRowProps {
  * Switch control. Active state uses the JET primary→primary-glow gradient
  * with a soft outer glow; inactive state is a subtle hairline-bordered
  * glass row. A small status dot replaces the previous Switch so the row
- * never reads as two stacked toggles.
+ * never reads as two stacked toggles. A help icon next to each row shows a
+ * tooltip explaining what the layer displays and how live stats are computed.
  */
 export const LayerToggleRow = ({
   label,
@@ -25,6 +29,7 @@ export const LayerToggleRow = ({
   ariaLabel,
   onToggle,
   loading,
+  tooltip,
 }: LayerToggleRowProps) => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -35,7 +40,6 @@ export const LayerToggleRow = ({
 
   return (
     <div
-      role="button"
       tabIndex={0}
       aria-pressed={active}
       aria-label={ariaLabel}
@@ -110,6 +114,60 @@ export const LayerToggleRow = ({
       >
         {label}
       </span>
+
+      {/* Help tooltip — isolated from the row toggle so tapping it doesn't switch the layer. */}
+      {tooltip && (
+        <Tooltip delayDuration={0}>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              aria-label={`${label} help`}
+              onClick={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "24px",
+                height: "24px",
+                borderRadius: "6px",
+                flexShrink: 0,
+                background: "transparent",
+                border: "1px solid transparent",
+                color: "hsl(var(--muted-foreground) / 0.7)",
+                cursor: "pointer",
+                transition: "color 150ms ease, background 150ms ease, border-color 150ms ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "hsl(var(--foreground))";
+                e.currentTarget.style.background = "hsl(var(--primary) / 0.1)";
+                e.currentTarget.style.borderColor = "hsl(var(--border) / 0.6)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "hsl(var(--muted-foreground) / 0.7)";
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.borderColor = "transparent";
+              }}
+            >
+              <HelpCircle style={{ width: "13px", height: "13px" }} strokeWidth={2.25} />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent
+            side="left"
+            align="center"
+            sideOffset={8}
+            style={{
+              maxWidth: "220px",
+              fontSize: "11px",
+              lineHeight: 1.45,
+              padding: "8px 10px",
+            }}
+          >
+            {tooltip}
+          </TooltipContent>
+        </Tooltip>
+      )}
+
       {/* Status dot / loading spinner */}
       {loading ? (
         <Loader2

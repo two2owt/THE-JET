@@ -3293,6 +3293,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               active={showDensityLayer}
               loading={isLoadingHeatmap}
               ariaLabel="Toggle heatmap layer"
+              tooltip="Shows live crowd density across Charlotte. Red zones are the busiest right now; blue zones are calmer."
               onToggle={() => {
                 triggerHaptic('medium');
                 const newState = !showDensityLayer;
@@ -3577,6 +3578,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               active={showMovementPaths}
               loading={isLoadingPaths}
               ariaLabel="Toggle flow paths layer"
+              tooltip="Visualizes popular routes people are taking between venues. Thicker lines mean more traffic."
               onToggle={() => {
                 triggerHaptic('medium');
                 const next = !showMovementPaths;
@@ -3688,6 +3690,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               Icon={Car}
               active={showParking}
               ariaLabel="Toggle parking layer"
+              tooltip="Displays nearby parking options around venues so you can plan your arrival."
               onToggle={() => {
                 triggerHaptic('medium');
                 const newState = !showParking;
@@ -3712,6 +3715,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               active={showLiveStats}
               loading={isLoadingStats}
               ariaLabel="Toggle live stats panel"
+              tooltip="Real-time summary computed from recent user activity: active hotspots, recent check-ins, people on the move, and popular routes."
               onToggle={() => {
                 triggerHaptic('medium');
                 const next = !showLiveStats;
