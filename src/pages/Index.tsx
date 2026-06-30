@@ -65,6 +65,7 @@ const Index = () => {
   
   // Use shared navigation hook for consistent tab handling
   const { activeTab, setActiveTab, handleTabChange } = useBottomNavigation({ defaultTab: "map" });
+  const { unreadCount: unreadMessages } = useUnreadMessages();
   const [mapUIResetKey, setMapUIResetKey] = useState(0); // Increments when switching to map tab to reset collapsed UI
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
 
