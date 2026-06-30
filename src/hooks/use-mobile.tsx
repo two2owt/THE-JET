@@ -1,38 +1,11 @@
-import * as React from "react";
+import { useBreakpoint } from "./useBreakpoint";
 
-const MOBILE_BREAKPOINT = 768;
-
+/**
+ * Backwards-compatible binary mobile check. New code should prefer
+ * `useBreakpoint()` for finer-grained responsive logic (foldables,
+ * iPad mini portrait, landscape phones).
+ */
 export function useIsMobile() {
-  // Initialize with a check that works on both server and client
-  const [isMobile, setIsMobile] = React.useState<boolean>(() => {
-    // Check if window is defined (client-side)
-    if (typeof window !== "undefined") {
-      return window.innerWidth < MOBILE_BREAKPOINT;
-    }
-    // Default to false on server
-    return false;
-  });
-
-  React.useEffect(() => {
-    // Ensure we have the correct value after hydration
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    };
-
-    // Check immediately
-    checkMobile();
-
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
-    const onChange = () => checkMobile();
-    
-    mql.addEventListener("change", onChange);
-    window.addEventListener("resize", onChange);
-    
-    return () => {
-      mql.removeEventListener("change", onChange);
-      window.removeEventListener("resize", onChange);
-    };
-  }, []);
-
-  return isMobile;
+  const bp = useBreakpoint();
+  return bp === "xs" || bp === "sm";
 }
