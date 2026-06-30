@@ -1,5 +1,5 @@
 import { memo, useState, useEffect, useCallback, useMemo } from "react";
-import { MapPin, Users, Star, TrendingUp, X, Share2, Send, Car, Navigation, Phone, Globe, RefreshCw, Loader2, Heart } from "lucide-react";
+import { MapPin, Users, Star, TrendingUp, X, Share2, Send, Car, Navigation, Phone, Globe, RefreshCw, Loader2, Heart, Clock } from "lucide-react";
 import { glideHaptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -517,6 +517,69 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
             lineHeight: 1.25,
             margin: 0,
           }}>{venue.name}</h3>
+          {/* Open / Closed status + today's hours from Google Places */}
+          {(venue.isOpen !== null && venue.isOpen !== undefined) || (venue.openingHours && venue.openingHours.length > 0) ? (
+            (() => {
+              const todayIdx = new Date().getDay(); // 0 = Sun
+              // Google weekday_text is Mon-first; map Sun(0)->6, Mon(1)->0, etc.
+              const gIdx = todayIdx === 0 ? 6 : todayIdx - 1;
+              const todayLine = venue.openingHours?.[gIdx];
+              const todayHours = todayLine?.includes(":") ? todayLine.split(":").slice(1).join(":").trim() : null;
+              const isOpen = venue.isOpen;
+              const showPill = isOpen !== null && isOpen !== undefined;
+              return (
+                <div style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  gap: '6px',
+                  marginTop: '6px',
+                  fontSize: 'clamp(10.5px, 0.35vw + 9.5px, 12.5px)',
+                  color: 'hsl(var(--muted-foreground))',
+                }}>
+                  {showPill && (
+                    <span
+                      role="status"
+                      aria-label={isOpen ? `${venue.name} is open now` : `${venue.name} is closed`}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '2px 8px',
+                        borderRadius: '999px',
+                        fontWeight: 700,
+                        letterSpacing: '0.02em',
+                        textTransform: 'uppercase',
+                        fontSize: '10px',
+                        background: isOpen
+                          ? 'color-mix(in oklab, hsl(var(--cool)) 16%, transparent)'
+                          : 'color-mix(in oklab, hsl(var(--hot)) 16%, transparent)',
+                        color: isOpen ? 'hsl(var(--cool))' : 'hsl(var(--hot))',
+                        border: `1px solid ${isOpen
+                          ? 'color-mix(in oklab, hsl(var(--cool)) 35%, transparent)'
+                          : 'color-mix(in oklab, hsl(var(--hot)) 35%, transparent)'}`,
+                      }}
+                    >
+                      <span style={{
+                        width: '6px',
+                        height: '6px',
+                        borderRadius: '50%',
+                        background: 'currentColor',
+                        boxShadow: isOpen ? '0 0 6px currentColor' : 'none',
+                      }} />
+                      {isOpen ? 'Open' : 'Closed'}
+                    </span>
+                  )}
+                  {todayHours && (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <Clock style={{ width: '11px', height: '11px' }} aria-hidden />
+                      {todayHours}
+                    </span>
+                  )}
+                </div>
+              );
+            })()
+          ) : null}
           <div style={{
             display: 'flex',
             alignItems: 'center',
