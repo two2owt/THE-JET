@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
-import { Bell, X, Zap, MapPin, Gift } from "lucide-react";
+import { Bell, Zap, MapPin, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { useWebPushNotifications } from "@/hooks/useWebPushNotifications";
 
 interface PushNotificationPromptProps {
@@ -43,6 +51,8 @@ export const PushNotificationPrompt = ({ show, onDismiss }: PushNotificationProm
     let success = false;
 
     if (isWebPushSupported) {
+      // subscribe() internally calls Notification.requestPermission()
+      // only triggered here after the user taps Enable.
       success = await webSubscribe();
     } else if ("Notification" in window) {
       const permission = await Notification.requestPermission();
@@ -59,46 +69,65 @@ export const PushNotificationPrompt = ({ show, onDismiss }: PushNotificationProm
     onDismiss();
   };
 
-  if (!isVisible) return null;
-
   return (
-    <div 
-      className="fixed inset-x-4 bottom-24 z-[60] animate-in slide-in-from-bottom-4 fade-in duration-300"
-      style={{ 
-        paddingBottom: 'calc(var(--safe-area-inset-bottom, 0px) + 0.5rem)',
-        marginBottom: 'env(safe-area-inset-bottom, 0px)'
+    <Dialog
+      open={isVisible}
+      onOpenChange={(open) => {
+        if (!open && !isLoading) handleDismiss();
       }}
     >
-      <div className="relative bg-background/95 backdrop-blur-xl border border-border/50 rounded-2xl p-5 shadow-2xl max-w-md mx-auto">
-        <button onClick={handleDismiss} className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-muted/80 transition-colors" aria-label="Dismiss">
-          <X className="h-4 w-4 text-muted-foreground" />
-        </button>
-        <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 mb-4">
-          <Bell className="h-7 w-7 text-primary" />
-        </div>
-        <h3 className="text-lg font-semibold text-foreground mb-2">Stay in the Loop</h3>
-        <p className="text-sm text-muted-foreground mb-4">Get instant alerts for deals near you and never miss out on exclusive offers.</p>
-        <div className="space-y-2 mb-5">
-          <div className="flex items-center gap-2.5 text-sm">
-            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10"><MapPin className="h-3.5 w-3.5 text-primary" /></div>
-            <span className="text-foreground/80">Location-based deal alerts</span>
+      <DialogContent className="max-w-md p-0 overflow-hidden border-border/50 bg-background/95 backdrop-blur-xl">
+        <div className="p-6">
+          <DialogHeader className="space-y-3 text-left">
+            <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
+              <Bell className="h-7 w-7 text-primary" />
+            </div>
+            <DialogTitle className="text-lg font-semibold">Stay in the Loop</DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Get instant alerts for deals near you and never miss out on exclusive offers. Your browser will ask for permission after you tap Enable.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2 my-5">
+            <div className="flex items-center gap-2.5 text-sm">
+              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
+                <MapPin className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <span className="text-foreground/80">Location-based deal alerts</span>
+            </div>
+            <div className="flex items-center gap-2.5 text-sm">
+              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
+                <Zap className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <span className="text-foreground/80">Real-time notifications</span>
+            </div>
+            <div className="flex items-center gap-2.5 text-sm">
+              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
+                <Gift className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <span className="text-foreground/80">Exclusive member offers</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2.5 text-sm">
-            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10"><Zap className="h-3.5 w-3.5 text-primary" /></div>
-            <span className="text-foreground/80">Real-time notifications</span>
-          </div>
-          <div className="flex items-center gap-2.5 text-sm">
-            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10"><Gift className="h-3.5 w-3.5 text-primary" /></div>
-            <span className="text-foreground/80">Exclusive member offers</span>
-          </div>
+
+          <DialogFooter className="flex-row gap-3 sm:gap-3">
+            <Button
+              variant="ghost"
+              className="flex-1 text-muted-foreground hover:text-foreground"
+              onClick={handleDismiss}
+              disabled={isLoading}
+            >
+              Maybe Later
+            </Button>
+            <Button
+              className="flex-1 bg-primary hover:bg-primary/90"
+              onClick={handleEnable}
+              disabled={isLoading}
+            >
+              {isLoading ? "Enabling..." : "Enable Alerts"}
+            </Button>
+          </DialogFooter>
         </div>
-        <div className="flex gap-3">
-          <Button variant="ghost" className="flex-1 text-muted-foreground hover:text-foreground" onClick={handleDismiss}>Maybe Later</Button>
-          <Button className="flex-1 bg-primary hover:bg-primary/90" onClick={handleEnable} disabled={isLoading}>
-            {isLoading ? "Enabling..." : "Enable Alerts"}
-          </Button>
-        </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
