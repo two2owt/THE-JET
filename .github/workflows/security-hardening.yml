@@ -1,0 +1,24 @@
+name: Security hardening
+
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/**"
+      - "docs/SECURITY_HARDENING.md"
+      - "scripts/verify-security-hardening.mjs"
+      - "scripts/security-hardening-baseline.txt"
+      - ".github/workflows/security-hardening.yml"
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    name: Verify Supabase grants, RLS, and SECURITY DEFINER REVOKEs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Verify migrations match docs/SECURITY_HARDENING.md
+        run: node scripts/verify-security-hardening.mjs

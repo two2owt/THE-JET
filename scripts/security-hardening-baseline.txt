@@ -1,0 +1,24 @@
+public.analytics_events: missing GRANT statement (first defined in 20251218174920_c9ac4ce5-5b18-4c60-9bc2-850ceb17cd33.sql). See SECURITY_HARDENING.md §2.
+public.deal_shares: missing GRANT statement (first defined in 20251124024042_954375b9-5576-474e-a8bf-e1e769cbcc1d.sql). See SECURITY_HARDENING.md §2.
+public.deals: missing GRANT statement (first defined in 20251115132440_3934bfd3-34c9-4b6a-9db1-9860d9dccd27.sql). See SECURITY_HARDENING.md §2.
+public.email_send_log: missing GRANT statement (first defined in 20260503080138_email_infra.sql). See SECURITY_HARDENING.md §2.
+public.email_send_log: no RLS policy created (defined in 20260503080138_email_infra.sql). See SECURITY_HARDENING.md §4.
+public.email_send_state: missing GRANT statement (first defined in 20260503080138_email_infra.sql). See SECURITY_HARDENING.md §2.
+public.email_send_state: no RLS policy created (defined in 20260503080138_email_infra.sql). See SECURITY_HARDENING.md §4.
+public.email_unsubscribe_tokens: missing GRANT statement (first defined in 20260503080138_email_infra.sql). See SECURITY_HARDENING.md §2.
+public.email_unsubscribe_tokens: no RLS policy created (defined in 20260503080138_email_infra.sql). See SECURITY_HARDENING.md §4.
+public.messages is published to supabase_realtime but is on the deny list. See SECURITY_HARDENING.md §6.
+public.messages: missing GRANT statement (first defined in 20260222223905_e34631c5-1005-466f-a168-3c4519a9557a.sql). See SECURITY_HARDENING.md §2.
+public.neighborhoods: missing GRANT statement (first defined in 20251115132440_3934bfd3-34c9-4b6a-9db1-9860d9dccd27.sql). See SECURITY_HARDENING.md §2.
+public.notification_logs: missing GRANT statement (first defined in 20251115132440_3934bfd3-34c9-4b6a-9db1-9860d9dccd27.sql). See SECURITY_HARDENING.md §2.
+public.profiles: missing GRANT statement (first defined in 20251116025834_36c6d351-30be-492c-bd99-2ce9a1af1273.sql). See SECURITY_HARDENING.md §2.
+public.push_subscriptions: missing GRANT statement (first defined in 20251115132440_3934bfd3-34c9-4b6a-9db1-9860d9dccd27.sql). See SECURITY_HARDENING.md §2.
+public.search_history: missing GRANT statement (first defined in 20251124024042_954375b9-5576-474e-a8bf-e1e769cbcc1d.sql). See SECURITY_HARDENING.md §2.
+public.security_audit_logs: missing GRANT statement (first defined in 20251210232557_6e2d7147-3575-4246-9b38-8093e04100bd.sql). See SECURITY_HARDENING.md §2.
+public.suppressed_emails: missing GRANT statement (first defined in 20260503080138_email_infra.sql). See SECURITY_HARDENING.md §2.
+public.suppressed_emails: no RLS policy created (defined in 20260503080138_email_infra.sql). See SECURITY_HARDENING.md §4.
+public.user_connections: missing GRANT statement (first defined in 20251124025406_804d6e81-c120-4e9d-bb20-073ed80aea9e.sql). See SECURITY_HARDENING.md §2.
+public.user_locations is published to supabase_realtime but is on the deny list. See SECURITY_HARDENING.md §6.
+public.user_locations: missing GRANT statement (first defined in 20251115132440_3934bfd3-34c9-4b6a-9db1-9860d9dccd27.sql). See SECURITY_HARDENING.md §2.
+public.user_roles: missing GRANT statement (first defined in 20251119205017_6f5b83b6-5404-4eda-8fb7-99068aab8e56.sql). See SECURITY_HARDENING.md §2.
+public.venue_reviews: missing GRANT statement (first defined in 20251124025406_804d6e81-c120-4e9d-bb20-073ed80aea9e.sql). See SECURITY_HARDENING.md §2.
