@@ -13,8 +13,9 @@ import * as React from "react";
  *   lg:  1024–1279px(tablets landscape / small laptops)
  *   xl:  ≥ 1280px   (desktops)
  *
- * Use this anywhere finer-grained logic is needed than the binary
- * `useIsMobile` (foldables, iPad mini portrait edge case, landscape phones).
+ * Use this anywhere finer-grained logic is needed than a binary
+ * mobile/desktop check (foldables, iPad mini portrait edge case, landscape
+ * phones).
  */
 export type Breakpoint = "xs" | "sm" | "md" | "lg" | "xl";
 
