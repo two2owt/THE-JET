@@ -73,6 +73,7 @@ import { useMovementPaths } from "@/hooks/useMovementPaths";
 import { useHeatmapTimelapse } from "@/hooks/useHeatmapTimelapse";
 import { useBreakpointUp } from "@/hooks/useBreakpoint";
 import { useOpenVenues } from "@/hooks/useOpenVenues";
+import { supabase } from "@/integrations/supabase/client";
 import { triggerHaptic } from "@/lib/haptics";
 import { Button } from "./ui/button";
 import { LayerToggleRow } from "./map/LayerToggleRow";
@@ -179,6 +180,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const userMarker = useRef<MapboxGL.Marker | null>(null);
   const markersRef = useRef<MapboxGL.Marker[]>([]);
   const dealMarkersRef = useRef<MapboxGL.Marker[]>([]);
+  const [venueDealCounts, setVenueDealCounts] = useState<Record<string, number>>({});
   const geolocateControlRef = useRef<MapboxGL.GeolocateControl | null>(null);
   const onVenueSelectRef = useRef(onVenueSelect);
   onVenueSelectRef.current = onVenueSelect;
@@ -2294,6 +2296,82 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       pinEl.appendChild(teardropEl);
       el.appendChild(pinEl);
 
+      // Glassmorphic label chip (slides up on hover/selection)
+      const dealCount = venueDealCounts[venue.id] || 0;
+      const chipEl = document.createElement('div');
+      chipEl.className = 'venue-marker-chip';
+      chipEl.style.cssText = `
+        position: absolute;
+        bottom: ${markerHeight + 8}px;
+        left: 50%;
+        transform: translateX(-50%) translateY(6px);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: ${isDarkTheme ? 'rgba(20, 20, 24, 0.78)' : 'rgba(255, 255, 255, 0.85)'};
+        backdrop-filter: blur(14px) saturate(180%);
+        -webkit-backdrop-filter: blur(14px) saturate(180%);
+        border: 1px solid ${isDarkTheme ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.08)'};
+        box-shadow: 0 6px 20px rgba(0,0,0,${isDarkTheme ? '0.5' : '0.18'}), 0 0 0 1px ${(isSelected ? GOLD : color)}40;
+        color: ${isDarkTheme ? '#fff' : '#0a0a0a'};
+        font-size: 11.5px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        white-space: nowrap;
+        max-width: 180px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.18s ease, transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+        z-index: 2;
+      `;
+      const nameSpan = document.createElement('span');
+      nameSpan.textContent = venue.name;
+      nameSpan.style.cssText = 'overflow:hidden;text-overflow:ellipsis;max-width:130px;';
+      chipEl.appendChild(nameSpan);
+      if (dealCount > 0) {
+        const dealPill = document.createElement('span');
+        dealPill.textContent = `${dealCount} deal${dealCount > 1 ? 's' : ''}`;
+        dealPill.style.cssText = `
+          display:inline-flex;align-items:center;
+          padding: 2px 7px;
+          border-radius: 999px;
+          background: linear-gradient(135deg, ${GOLD}, #b8924a);
+          color: #0a0a0a;
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.02em;
+        `;
+        chipEl.appendChild(dealPill);
+      }
+      // Little caret/arrow under the chip
+      const caretEl = document.createElement('div');
+      caretEl.style.cssText = `
+        position: absolute;
+        bottom: -4px;
+        left: 50%;
+        transform: translateX(-50%) rotate(45deg);
+        width: 8px;
+        height: 8px;
+        background: inherit;
+        border-right: 1px solid ${isDarkTheme ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.08)'};
+        border-bottom: 1px solid ${isDarkTheme ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.08)'};
+      `;
+      chipEl.appendChild(caretEl);
+      el.appendChild(chipEl);
+
+      const showChip = () => {
+        chipEl.style.opacity = '1';
+        chipEl.style.transform = 'translateX(-50%) translateY(0)';
+      };
+      const hideChip = () => {
+        if (isSelected) return;
+        chipEl.style.opacity = '0';
+        chipEl.style.transform = 'translateX(-50%) translateY(6px)';
+      };
+      if (isSelected) showChip();
+
       // Hover effects - scale and enhanced glassmorphic shadow
       el.addEventListener("mouseenter", () => {
         el.style.zIndex = "300";
@@ -2305,6 +2383,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         `;
         ringEl.style.opacity = '1';
         haloEl.style.opacity = '1';
+        showChip();
       });
 
       el.addEventListener("mouseleave", () => {
@@ -2317,6 +2396,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         `;
         ringEl.style.opacity = isSelected ? '1' : pulseOpacity;
         haloEl.style.opacity = isSelected ? '0.95' : isHighActivity ? '0.7' : '0.45';
+        hideChip();
+      });
+      // Touch: brief peek on tap
+      el.addEventListener("touchstart", () => {
+        showChip();
+        window.setTimeout(hideChip, 1600);
       });
 
       // Create marker with bottom anchor for teardrop (pin point at GPS location)
@@ -2348,7 +2433,31 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Call updateMarkers on initial load and when venues change
   useEffect(() => {
     updateMarkers();
-  }, [venues, mapLoaded, isLoadingVenues, selectedCity, selectedVenue]);
+  }, [venues, mapLoaded, isLoadingVenues, selectedCity, selectedVenue, venueDealCounts]);
+
+  // Fetch active-deal counts for currently displayed venues
+  useEffect(() => {
+    if (!venues.length) {
+      setVenueDealCounts({});
+      return;
+    }
+    let cancelled = false;
+    const ids = Array.from(new Set(venues.map((v) => v.id))).filter(Boolean);
+    (async () => {
+      const { data, error } = await supabase
+        .from("deals")
+        .select("venue_id")
+        .eq("active", true)
+        .in("venue_id", ids);
+      if (cancelled || error || !data) return;
+      const counts: Record<string, number> = {};
+      for (const row of data as Array<{ venue_id: string | null }>) {
+        if (row.venue_id) counts[row.venue_id] = (counts[row.venue_id] || 0) + 1;
+      }
+      setVenueDealCounts(counts);
+    })();
+    return () => { cancelled = true; };
+  }, [venues]);
 
   // Add heatmap blend layer for clustering visualization at low zoom levels
   useEffect(() => {
