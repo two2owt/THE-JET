@@ -3293,6 +3293,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               active={showDensityLayer}
               loading={isLoadingHeatmap}
               ariaLabel="Toggle heatmap layer"
+              tooltip="Shows live crowd density across Charlotte. Red zones are the busiest right now; blue zones are calmer."
               onToggle={() => {
                 triggerHaptic('medium');
                 const newState = !showDensityLayer;
