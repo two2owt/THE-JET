@@ -2179,10 +2179,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     // Apply Open-Now filter: hide venues whose hours indicate they're closed.
     // Venues with unknown hours stay visible so the user never loses places.
     const visibleVenues = openNowOnly
-      ? venues.filter((v) => {
-          const open = (v.isOpen ?? null) !== null ? v.isOpen! : isVenueOpenNow(v.openingHours);
-          return open !== false; // keep `true` and `null`
-        })
+      ? venues.filter((v) => venueOpenStatus.get(v.id) !== false) // keep `true` and `null`
       : venues;
 
     // Add venue markers
@@ -2377,8 +2374,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       chipEl.appendChild(nameSpan);
       // Open / Closed status pill — mirrors JetCard logic so the marker chip
       // reflects the same business-hours signal as the detail card.
-      const venueIsOpen: boolean | null =
-        (venue.isOpen ?? null) !== null ? venue.isOpen! : isVenueOpenNow(venue.openingHours);
+      const venueIsOpen: boolean | null = venueOpenStatus.get(venue.id) ?? null;
       if (venueIsOpen !== null) {
         const statusPill = document.createElement('span');
         statusPill.textContent = venueIsOpen ? 'Open' : 'Closed';
