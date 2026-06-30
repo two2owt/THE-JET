@@ -180,6 +180,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const userMarker = useRef<MapboxGL.Marker | null>(null);
   const markersRef = useRef<MapboxGL.Marker[]>([]);
   const dealMarkersRef = useRef<MapboxGL.Marker[]>([]);
+  // Tracks the currently-open marker chip so we can close prior chips cleanly
+  // when selection changes or the user taps elsewhere on the map.
+  const activeChipRef = useRef<{ el: HTMLElement; venueId: string; hide: () => void } | null>(null);
   const [venueDealCounts, setVenueDealCounts] = useState<Record<string, number>>({});
   const geolocateControlRef = useRef<MapboxGL.GeolocateControl | null>(null);
   const onVenueSelectRef = useRef(onVenueSelect);
