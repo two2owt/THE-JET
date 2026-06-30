@@ -3707,7 +3707,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               <div
                 style={{
                   marginTop: '6px',
-                  padding: isMobile ? '10px' : '10px 12px',
+                  padding: 'var(--live-stats-pad)',
                   borderRadius: '10px',
                   border: '1px solid hsl(var(--primary) / 0.25)',
                   background: 'linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--primary-glow) / 0.04))',
