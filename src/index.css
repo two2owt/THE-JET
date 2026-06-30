@@ -2525,3 +2525,126 @@ select:-webkit-autofill:active {
   caret-color: hsl(var(--foreground));
   transition: background-color 5000s ease-in-out 0s;
 }
+
+/* ============================================================
+   Responsive map live stats & chip summary
+   ============================================================ */
+
+:root {
+  /* Inline live stats typography & spacing */
+  --live-stats-gap: 8px;
+  --live-stats-vibe-size: 11px;
+  --live-stats-label-size: 11px;
+  --live-stats-value-size: 13px;
+  --live-stats-row-gap: 12px;
+  --live-stats-pad: 10px 12px;
+
+  /* Chip summary typography & spacing */
+  --chip-summary-gap: 6px;
+  --chip-summary-pad: 6px 8px;
+  --chip-summary-font-size: 10px;
+  --chip-summary-item-gap: 5px;
+}
+
+/* Ultra-small phones (iPhone SE / compact Android) */
+@media (max-width: 375px) {
+  :root {
+    --live-stats-gap: 6px;
+    --live-stats-vibe-size: 9px;
+    --live-stats-label-size: 9px;
+    --live-stats-value-size: 10px;
+    --live-stats-row-gap: 6px;
+    --live-stats-pad: 8px;
+
+    --chip-summary-gap: 4px;
+    --chip-summary-pad: 5px 6px;
+    --chip-summary-font-size: 9px;
+    --chip-summary-item-gap: 4px;
+  }
+}
+
+/* Standard phones */
+@media (min-width: 376px) and (max-width: 639px) {
+  :root {
+    --live-stats-gap: 6px;
+    --live-stats-vibe-size: 10px;
+    --live-stats-label-size: 10px;
+    --live-stats-value-size: 11px;
+    --live-stats-row-gap: 8px;
+    --live-stats-pad: 10px;
+  }
+}
+
+/* Tablet and above */
+@media (min-width: 640px) {
+  :root {
+    --live-stats-gap: 8px;
+    --live-stats-vibe-size: 11px;
+    --live-stats-label-size: 11px;
+    --live-stats-value-size: 13px;
+    --live-stats-row-gap: 12px;
+    --live-stats-pad: 10px 12px;
+
+    --chip-summary-gap: 6px;
+    --chip-summary-pad: 6px 8px;
+    --chip-summary-font-size: 10px;
+    --chip-summary-item-gap: 5px;
+  }
+}
+
+/* Chip summary layout */
+.chip-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--chip-summary-gap);
+  padding: var(--chip-summary-pad);
+  border-radius: 8px;
+  background: hsl(var(--card) / 0.5);
+  border: 1px solid hsl(var(--border) / 0.5);
+  font-size: var(--chip-summary-font-size);
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+}
+
+.chip-summary-item {
+  display: flex;
+  align-items: center;
+  gap: var(--chip-summary-item-gap);
+  flex: 1;
+  min-width: 0;
+}
+
+.chip-summary-item:not(:last-child) {
+  padding-right: 6px;
+  border-right: 1px solid hsl(var(--border) / 0.5);
+}
+
+.chip-summary-label,
+.chip-summary-value {
+  line-height: 1.2;
+}
+
+.chip-summary-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip-summary-value {
+  flex-shrink: 0;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  color: hsl(var(--foreground));
+}
+
+/* Inline live stats truncation helpers */
+.live-stats-label,
+.live-stats-vibe {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
