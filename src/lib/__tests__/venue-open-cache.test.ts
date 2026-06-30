@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { renderHook } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { useMemo, useState, useEffect } from "react";
 import { buildVenueOpenStatus, type VenueOpenInput } from "../venue-open-cache";
 
@@ -114,7 +114,9 @@ describe("venueOpenStatus memo behavior (mirrors MapboxHeatmap)", () => {
     const first = result.current;
 
     // Advance one full minute — the interval should fire and bump the tick.
-    vi.advanceTimersByTime(60_000);
+    act(() => {
+      vi.advanceTimersByTime(60_000);
+    });
     rerender();
     expect(result.current).not.toBe(first);
   });
@@ -124,7 +126,9 @@ describe("venueOpenStatus memo behavior (mirrors MapboxHeatmap)", () => {
     const { result, rerender } = renderHook(() => useVenueOpenStatus(stable));
     const first = result.current;
 
-    vi.advanceTimersByTime(59_000);
+    act(() => {
+      vi.advanceTimersByTime(59_000);
+    });
     rerender();
     expect(result.current).toBe(first);
   });
