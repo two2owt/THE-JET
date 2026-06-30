@@ -14,7 +14,7 @@ import { useHeaderConfig } from "@/contexts/HeaderContext";
 import { useMapboxToken } from "@/hooks/useMapboxToken";
 import { useDeepLinking } from "@/hooks/useDeepLinking";
 import { useSwipeToDismiss } from "@/hooks/useSwipeToDismiss";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useBreakpointUp } from "@/hooks/useBreakpoint";
 import { useVenueImages } from "@/hooks/useVenueImages";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useAutoScrapeVenueImages } from "@/hooks/useAutoScrapeVenueImages";
@@ -150,7 +150,8 @@ const Index = () => {
   const { justInstalled, clearJustInstalled } = usePWAInstall();
   const [showPushPrompt, setShowPushPrompt] = useState(false);
   const jetCardRef = useRef<HTMLDivElement>(null);
-  const isMobile = useIsMobile();
+  // Swipe-to-dismiss JetCard only on touch-first viewports (< md).
+  const isMobile = !useBreakpointUp("md");
   
   // Swipe to dismiss for JetCard on mobile
   const { handlers: swipeHandlers, style: swipeStyle } = useSwipeToDismiss({

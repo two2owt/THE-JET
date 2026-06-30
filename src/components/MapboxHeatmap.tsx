@@ -71,7 +71,7 @@ import { HeatmapSkeleton } from "@/components/skeletons/HeatmapSkeleton";
 import { useLocationDensity } from "@/hooks/useLocationDensity";
 import { useMovementPaths } from "@/hooks/useMovementPaths";
 import { useHeatmapTimelapse } from "@/hooks/useHeatmapTimelapse";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useBreakpointUp } from "@/hooks/useBreakpoint";
 import { useOpenVenues } from "@/hooks/useOpenVenues";
 import { triggerHaptic } from "@/lib/haptics";
 import { Button } from "./ui/button";
@@ -185,7 +185,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const onParkingSelectRef = useRef(onParkingSelect);
   onParkingSelectRef.current = onParkingSelect;
   const flowAnimationRef = useRef<number | null>(null);
-  const isMobile = useIsMobile();
+  // Treat anything below the `md` breakpoint as a phone-class device for
+  // Mapbox tuning: lower tile cache, disabled rotate/pitch, faster fades.
+  // Tablets (md+) get the desktop-grade settings.
+  const isMobile = !useBreakpointUp("md");
   const initStartTime = useRef<number>(0);
   const platformSettings = useRef(getPlatformSettings(isMobile));
   
