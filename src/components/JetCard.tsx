@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useNavigate } from "react-router";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
+import { isVenueOpenNow } from "@/lib/venue-hours";
 
 
 interface NearbyParking {
