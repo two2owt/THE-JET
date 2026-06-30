@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bell, X, Zap, MapPin, Gift } from "lucide-react";
+import { Bell, Zap, MapPin, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
