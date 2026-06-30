@@ -333,6 +333,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [showParking, setShowParking] = useState(() => getLayerState("parking", false));
   // Live Stats panel — hidden by default, opt-in via layers toggle
   const [showLiveStats, setShowLiveStats] = useState(() => getLayerState("stats", false));
+  // Open-now filter — when on, hides venues whose `isOpen` is explicitly false.
+  // Venues with unknown hours (isOpen === null/undefined) remain visible.
+  const [openNowOnly, setOpenNowOnly] = useState(() => getLayerState("openNow", false));
 
   const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.timeFilter, 'all', 'time'));
   const [hourFilter, setHourFilter] = useState<number | undefined>();
@@ -428,6 +431,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   useEffect(() => { localStorage.setItem(LAYER_KEYS.paths, String(showMovementPaths)); }, [showMovementPaths]);
   useEffect(() => { localStorage.setItem(LAYER_KEYS.parking, String(showParking)); }, [showParking]);
   useEffect(() => { localStorage.setItem(LAYER_KEYS.stats, String(showLiveStats)); }, [showLiveStats]);
+  useEffect(() => { localStorage.setItem(LAYER_KEYS.openNow, String(openNowOnly)); }, [openNowOnly]);
 
 
   // Persist filter / time-lapse selections to localStorage
