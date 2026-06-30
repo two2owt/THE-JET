@@ -46,6 +46,10 @@ export const LiveStatsPanel = ({
   pathLoading,
   variant = "floating",
 }: LiveStatsPanelProps) => {
+  // Props kept for backwards compatibility — live activity now renders
+  // regardless of which layers are toggled on.
+  void showDensityLayer;
+  void showMovementPaths;
   const [mounted, setMounted] = useState(open);
 
   useEffect(() => {
