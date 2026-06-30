@@ -60,6 +60,17 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## Responsive design
+
+Use `useBreakpoint` / `useBreakpointUp` from `@/hooks/useBreakpoint` for all component-level responsive logic. They are aligned with the Tailwind breakpoints and replace the older `useIsMobile` hook. `useIsMobile` is kept as a compatibility shim but should not be used in new code.
+
+```tsx
+import { useBreakpoint, useBreakpointUp } from "@/hooks/useBreakpoint";
+
+const bp = useBreakpoint();            // "xs" | "sm" | "md" | "lg" | "xl"
+const isDesktop = useBreakpointUp("lg"); // true at >=1024px
+```
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/dafac772-7908-4bdb-873c-58a805d7581e) and click on Share -> Publish.
