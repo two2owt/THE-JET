@@ -4,7 +4,7 @@ import { Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSearchHistory } from "@/hooks/useSearchHistory";
 import { useHeaderContext } from "@/contexts/HeaderContext";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useBreakpointUp } from "@/hooks/useBreakpoint";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useProfile } from "@/hooks/useProfile";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -17,7 +17,10 @@ export const Header = () => {
   const location = useLocation();
   const [urlSearchParams, setUrlSearchParams] = useSearchParams();
   const { venues, deals, onVenueSelect, hideSearch, lastUpdated, onRefresh, isLoading } = useHeaderContext();
-  const isMobile = useIsMobile();
+  // "Mobile" header chrome = anything narrower than the `md` breakpoint
+  // (phones + small foldables). Tablets in portrait already get the full
+  // search pill.
+  const isMobile = !useBreakpointUp("md");
   // Search query is mirrored to the URL as `?q=...` so it's shareable and
   // survives reloads. We also keep a sessionStorage fallback for cases where
   // the URL is rewritten externally without preserving the param.
