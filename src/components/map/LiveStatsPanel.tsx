@@ -178,11 +178,11 @@ export const LiveStatsPanel = ({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                gap: rowGap,
+                gap: "var(--live-stats-row-gap)",
               }}
             >
               <span
-                className="animate-pulse"
+                className="animate-pulse live-stats-label"
                 style={{
                   ...labelStyle,
                   width: "45%",
@@ -213,16 +213,16 @@ export const LiveStatsPanel = ({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                gap: rowGap,
+                gap: "var(--live-stats-row-gap)",
               }}
             >
-              <span style={labelStyle}>{row.label}</span>
+              <span className="live-stats-label" style={labelStyle}>{row.label}</span>
               <span style={{ ...valueStyle, color: row.tone }}>{row.value}</span>
             </div>
           ))}
         </div>
       ) : (
-        <p style={labelStyle}>
+        <p className="live-stats-label" style={labelStyle}>
           No live activity in view yet.
         </p>
       )}
