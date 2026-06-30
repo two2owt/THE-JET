@@ -433,6 +433,27 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   useEffect(() => { localStorage.setItem(LAYER_KEYS.stats, String(showLiveStats)); }, [showLiveStats]);
   useEffect(() => { localStorage.setItem(LAYER_KEYS.openNow, String(openNowOnly)); }, [openNowOnly]);
 
+  // Tick once a minute so cached open/closed evaluations stay fresh without
+  // re-running `isVenueOpenNow` on every render.
+  const [openNowTick, setOpenNowTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setOpenNowTick((n) => (n + 1) % 1_000_000), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Memoized venueId → open status map. Recomputed only when the venue list
+  // identity changes or the minute tick fires — not on unrelated re-renders.
+  const venueOpenStatus = useMemo(() => {
+    const m = new Map<string, boolean | null>();
+    for (const v of venues) {
+      const status =
+        (v.isOpen ?? null) !== null ? (v.isOpen as boolean) : isVenueOpenNow(v.openingHours);
+      m.set(v.id, status);
+    }
+    return m;
+    // openNowTick intentionally invalidates the cache each minute.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [venues, openNowTick]);
 
   // Persist filter / time-lapse selections to localStorage
   useEffect(() => { localStorage.setItem(FILTER_KEYS.timeFilter, timeFilter); }, [timeFilter]);
