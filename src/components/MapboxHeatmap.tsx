@@ -180,6 +180,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const userMarker = useRef<MapboxGL.Marker | null>(null);
   const markersRef = useRef<MapboxGL.Marker[]>([]);
   const dealMarkersRef = useRef<MapboxGL.Marker[]>([]);
+  const [venueDealCounts, setVenueDealCounts] = useState<Record<string, number>>({});
   const geolocateControlRef = useRef<MapboxGL.GeolocateControl | null>(null);
   const onVenueSelectRef = useRef(onVenueSelect);
   onVenueSelectRef.current = onVenueSelect;
