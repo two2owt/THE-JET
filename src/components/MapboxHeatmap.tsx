@@ -3207,6 +3207,85 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               </button>
             </div>
 
+            {/* Compact live activity summary — always shows live status of
+                Density and Movement Paths regardless of toggle state */}
+            <div
+              role="status"
+              aria-live="polite"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 8px',
+                borderRadius: '8px',
+                background: 'hsl(var(--card) / 0.5)',
+                border: '1px solid hsl(var(--border) / 0.5)',
+                fontSize: '10px',
+                fontWeight: 600,
+                color: 'hsl(var(--muted-foreground))',
+              }}
+            >
+              {[
+                {
+                  key: 'density',
+                  label: 'Density',
+                  loading: densityLoading,
+                  count: densityData?.stats.grid_cells ?? 0,
+                  active: showDensityLayer,
+                },
+                {
+                  key: 'paths',
+                  label: 'Paths',
+                  loading: pathsLoading,
+                  count: pathData?.stats.total_paths ?? 0,
+                  active: showMovementPaths,
+                },
+              ].map((chip, idx) => (
+                <div
+                  key={chip.key}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    paddingRight: idx === 0 ? '6px' : 0,
+                    borderRight: idx === 0 ? '1px solid hsl(var(--border) / 0.5)' : 'none',
+                    flex: 1,
+                    minWidth: 0,
+                  }}
+                  title={`${chip.label}: ${chip.loading ? 'updating' : chip.count.toLocaleString()}${chip.active ? ' (layer on)' : ''}`}
+                >
+                  {chip.loading ? (
+                    <Loader2 aria-hidden className="animate-spin" style={{ width: '10px', height: '10px', color: 'hsl(var(--primary))', flexShrink: 0 }} />
+                  ) : (
+                    <span
+                      aria-hidden
+                      style={{
+                        width: '6px',
+                        height: '6px',
+                        borderRadius: '9999px',
+                        flexShrink: 0,
+                        background: chip.count > 0 ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground) / 0.4)',
+                        boxShadow: chip.count > 0 ? '0 0 6px hsl(var(--primary) / 0.7)' : 'none',
+                      }}
+                    />
+                  )}
+                  <span style={{ color: chip.active ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {chip.label}
+                  </span>
+                  <span
+                    style={{
+                      marginLeft: 'auto',
+                      fontVariantNumeric: 'tabular-nums',
+                      color: 'hsl(var(--foreground))',
+                      opacity: chip.loading ? 0.5 : 1,
+                    }}
+                  >
+                    {chip.loading ? '…' : chip.count.toLocaleString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+
             {/* Heat toggle row */}
             <LayerToggleRow
               label="Heatmap"
