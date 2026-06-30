@@ -404,6 +404,19 @@ const CHARLOTTE_TOP_VENUES = [
     phone: "(704) 927-2583",
     website: "https://www.bluecharlotte.com",
   },
+  {
+    id: "brewers-at-4001-yancey",
+    name: "Brewers At 4001 Yancey",
+    lat: 35.1859,
+    lng: -80.8810,
+    address: "4001 Yancey Rd, Charlotte, NC 28217, USA",
+    category: "Brewery",
+    googleRating: 4.6,
+    googleTotalRatings: 1800,
+    activity: 86,
+    phone: "(704) 525-5644",
+    website: "https://www.brewersat4001yancey.com",
+  },
 ];
 
 Deno.serve(async (req) => {
