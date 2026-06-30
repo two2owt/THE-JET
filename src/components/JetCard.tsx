@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useNavigate } from "react-router";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
+import { isVenueOpenNow } from "@/lib/venue-hours";
 
 
 interface NearbyParking {
@@ -525,7 +526,12 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               const gIdx = todayIdx === 0 ? 6 : todayIdx - 1;
               const todayLine = venue.openingHours?.[gIdx];
               const todayHours = todayLine?.includes(":") ? todayLine.split(":").slice(1).join(":").trim() : null;
-              const isOpen = venue.isOpen;
+              // Prefer Google's live `open_now`; fall back to computing from
+              // `weekday_text` against the device's local clock so the pill
+              // still shows when the Places API didn't return `open_now`.
+              const isOpen = (venue.isOpen ?? null) !== null
+                ? venue.isOpen!
+                : isVenueOpenNow(venue.openingHours);
               const showPill = isOpen !== null && isOpen !== undefined;
               return (
                 <div style={{
