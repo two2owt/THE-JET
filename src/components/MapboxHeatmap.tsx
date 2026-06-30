@@ -75,6 +75,7 @@ import { useBreakpointUp } from "@/hooks/useBreakpoint";
 import { useOpenVenues } from "@/hooks/useOpenVenues";
 import { supabase } from "@/integrations/supabase/client";
 import { triggerHaptic } from "@/lib/haptics";
+import { isVenueOpenNow } from "@/lib/venue-hours";
 import { Button } from "./ui/button";
 import { LayerToggleRow } from "./map/LayerToggleRow";
 import { LiveStatsPanel } from "./map/LiveStatsPanel";
@@ -2339,6 +2340,40 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       nameSpan.textContent = venue.name;
       nameSpan.style.cssText = 'overflow:hidden;text-overflow:ellipsis;max-width:130px;';
       chipEl.appendChild(nameSpan);
+      // Open / Closed status pill — mirrors JetCard logic so the marker chip
+      // reflects the same business-hours signal as the detail card.
+      const venueIsOpen: boolean | null =
+        (venue.isOpen ?? null) !== null ? venue.isOpen! : isVenueOpenNow(venue.openingHours);
+      if (venueIsOpen !== null) {
+        const statusPill = document.createElement('span');
+        statusPill.textContent = venueIsOpen ? 'Open' : 'Closed';
+        statusPill.setAttribute(
+          'aria-label',
+          venueIsOpen ? `${venue.name} is open now` : `${venue.name} is closed`,
+        );
+        const openBg = isDarkTheme ? 'rgba(34, 197, 94, 0.18)' : 'rgba(34, 197, 94, 0.16)';
+        const closedBg = isDarkTheme ? 'rgba(239, 68, 68, 0.18)' : 'rgba(239, 68, 68, 0.14)';
+        statusPill.style.cssText = `
+          display:inline-flex;align-items:center;gap:4px;
+          padding: 2px 7px;
+          border-radius: 999px;
+          background: ${venueIsOpen ? openBg : closedBg};
+          color: ${venueIsOpen ? 'hsl(var(--cool))' : 'hsl(var(--hot))'};
+          border: 1px solid currentColor;
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+        `;
+        const dot = document.createElement('span');
+        dot.style.cssText = `
+          width:6px;height:6px;border-radius:999px;
+          background: currentColor;
+          box-shadow: 0 0 6px currentColor;
+        `;
+        statusPill.prepend(dot);
+        chipEl.appendChild(statusPill);
+      }
       if (dealCount > 0) {
         const dealPill = document.createElement('span');
         dealPill.textContent = `${dealCount} deal${dealCount > 1 ? 's' : ''}`;
