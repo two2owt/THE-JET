@@ -3578,6 +3578,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               active={showMovementPaths}
               loading={isLoadingPaths}
               ariaLabel="Toggle flow paths layer"
+              tooltip="Visualizes popular routes people are taking between venues. Thicker lines mean more traffic."
               onToggle={() => {
                 triggerHaptic('medium');
                 const next = !showMovementPaths;
