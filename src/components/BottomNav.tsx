@@ -7,10 +7,11 @@ interface BottomNavProps {
   activeTab: NavItem;
   onTabChange: (tab: NavItem) => void;
   notificationCount?: number;
+  messageCount?: number;
   onPrefetch?: (tab: NavItem) => void;
 }
 
-export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPrefetch }: BottomNavProps) => {
+export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, messageCount = 0, onPrefetch }: BottomNavProps) => {
   // Delegated prefetch: a single handler on the container reads `data-tab`
   // off the hovered/touched button instead of attaching one listener per
   // button. Cuts listener count from ~2*N to 2 total.
@@ -105,7 +106,13 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
         {navItems.map((item, index) => {
           const isActive = activeTab === item.id;
           const Icon = item.icon;
-          const hasNotification = item.id === 'notifications' && notificationCount > 0;
+          const badgeCount =
+            item.id === 'notifications'
+              ? notificationCount
+              : item.id === 'social'
+              ? messageCount
+              : 0;
+          const hasNotification = badgeCount > 0;
           const staggerDelay = `${0.05 + index * 0.06}s`;
 
           return (
@@ -113,7 +120,7 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
               key={item.id}
               data-tab={item.id}
               onClick={() => onTabChange(item.id)}
-              aria-label={`${item.label}${hasNotification ? `, ${notificationCount} unread` : ''}`}
+              aria-label={`${item.label}${hasNotification ? `, ${badgeCount} unread` : ''}`}
               aria-current={isActive ? "page" : undefined}
               className="touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
               style={{
@@ -177,7 +184,7 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, onPre
                   }}
                   aria-hidden="true"
                 >
-                  {notificationCount > 9 ? '9+' : notificationCount}
+                  {badgeCount > 9 ? '9+' : badgeCount}
                 </span>
               )}
 

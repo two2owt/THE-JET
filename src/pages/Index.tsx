@@ -17,6 +17,7 @@ import { useSwipeToDismiss } from "@/hooks/useSwipeToDismiss";
 import { useBreakpointUp } from "@/hooks/useBreakpoint";
 import { useVenueImages } from "@/hooks/useVenueImages";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { useAutoScrapeVenueImages } from "@/hooks/useAutoScrapeVenueImages";
 import { useDeals } from "@/hooks/useDeals";
 import { useVenueActivity } from "@/hooks/useVenueActivity";
@@ -64,6 +65,7 @@ const Index = () => {
   
   // Use shared navigation hook for consistent tab handling
   const { activeTab, setActiveTab, handleTabChange } = useBottomNavigation({ defaultTab: "map" });
+  const { unreadCount: unreadMessages } = useUnreadMessages();
   const [mapUIResetKey, setMapUIResetKey] = useState(0); // Increments when switching to map tab to reset collapsed UI
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
 
@@ -704,6 +706,7 @@ const Index = () => {
           }
         }}
         notificationCount={notifications.filter(n => !n.read).length}
+        messageCount={unreadMessages}
       />
 
       {/* Directions Dialog - Lazy loaded */}

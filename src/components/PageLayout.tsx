@@ -2,6 +2,7 @@ import { ReactNode, useEffect } from "react";
 import { BottomNav } from "./BottomNav";
 import { useBottomNavigation, type NavTab } from "@/hooks/useBottomNavigation";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { useHeaderConfig } from "@/contexts/HeaderContext";
 import type { Venue } from "@/types/venue";
 import type { Database } from "@/integrations/supabase/types";
@@ -41,6 +42,8 @@ interface PageLayoutProps {
   onPrefetch?: (tab: NavTab) => void;
   /** Override notification count (otherwise uses unread from useNotifications) */
   notificationCount?: number;
+  /** Override unread message count (otherwise uses useUnreadMessages) */
+  messageCount?: number;
 }
 
 /**
@@ -64,13 +67,16 @@ export function PageLayout({
   mainClassName = "",
   onPrefetch,
   notificationCount,
+  messageCount,
 }: PageLayoutProps) {
   const { activeTab, handleTabChange } = useBottomNavigation({ defaultTab });
   const { notifications } = useNotifications();
+  const { unreadCount: unreadMessages } = useUnreadMessages();
   const setHeaderConfig = useHeaderConfig();
 
   // Use provided notification count or calculate from notifications
   const unreadCount = notificationCount ?? notifications.filter(n => !n.read).length;
+  const msgBadge = messageCount ?? unreadMessages;
 
   // Sync header config to context whenever it changes
   // Use stable default references to avoid re-render loops from new function/array refs
@@ -132,6 +138,7 @@ export function PageLayout({
         activeTab={activeTab}
         onTabChange={handleTabChange}
         notificationCount={unreadCount}
+        messageCount={msgBadge}
         onPrefetch={onPrefetch}
       />
     </div>
