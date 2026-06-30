@@ -216,3 +216,33 @@ finding-level review.
 - [ ] Realtime publication still excludes the tables in §6.
 - [ ] HIBP password protection still enabled.
 - [ ] Edge functions added in the PR enforce auth as described in §7.
+
+---
+
+## 11. CI enforcement
+
+`scripts/verify-security-hardening.mjs` statically replays every file in
+`supabase/migrations/` and enforces the invariants in §2, §3, §5, and §6
+against this document. It runs automatically on every PR that touches
+migrations or this doc via `.github/workflows/security-hardening.yml`, and
+can be run locally with:
+
+```bash
+npm run verify:security
+```
+
+The script fails the build when a new migration:
+
+- creates a `public` table without `GRANT`s, RLS, or any policy,
+- defines a `SECURITY DEFINER` function in `public` without REVOKEing
+  `EXECUTE` from `PUBLIC`/`anon`,
+- creates or alters a view in `public` without `security_invoker = on`,
+- re-introduces the `"Anyone can view chat images"` policy, or
+- adds any table from §6 back to the `supabase_realtime` publication.
+
+Pre-existing violations are pinned in
+`scripts/security-hardening-baseline.txt` so the check fails only on new
+regressions. If you intentionally accept a new baseline entry (rare —
+prefer fixing the migration), run
+`node scripts/verify-security-hardening.mjs --update-baseline` and commit
+the updated file along with the justification in this document.
