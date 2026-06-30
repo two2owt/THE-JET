@@ -2370,37 +2370,47 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       chipEl.appendChild(caretEl);
       el.appendChild(chipEl);
 
-      let touchPeekTimer: number | null = null;
-      const clearTouchPeek = () => {
-        if (touchPeekTimer !== null) {
-          window.clearTimeout(touchPeekTimer);
-          touchPeekTimer = null;
+      // Debounce hide so a brief pointerleave→pointerenter (or quick tap)
+      // doesn't cause the chip to flicker closed.
+      let hideTimer: number | null = null;
+      const clearHideTimer = () => {
+        if (hideTimer !== null) {
+          window.clearTimeout(hideTimer);
+          hideTimer = null;
         }
       };
-      const hideChip = () => {
-        clearTouchPeek();
+      const hideChipNow = () => {
+        clearHideTimer();
         chipEl.style.opacity = '0';
         chipEl.style.transform = 'translateX(-50%) translateY(6px)';
         if (activeChipRef.current?.el === chipEl) {
           activeChipRef.current = null;
         }
       };
+      const hideChip = () => {
+        clearHideTimer();
+        hideTimer = window.setTimeout(hideChipNow, 120);
+      };
       const hideChipUnlessSelected = () => {
         if (isSelected) return;
         hideChip();
       };
       const showChip = () => {
+        clearHideTimer();
         // Close any previously-open chip on a different marker
         const prev = activeChipRef.current;
         if (prev && prev.el !== chipEl) prev.hide();
         chipEl.style.opacity = '1';
         chipEl.style.transform = 'translateX(-50%) translateY(0)';
-        activeChipRef.current = { el: chipEl, venueId: venue.id, hide: hideChip };
+        activeChipRef.current = { el: chipEl, venueId: venue.id, hide: hideChipNow };
       };
       if (isSelected) showChip();
 
-      // Hover effects - scale and enhanced glassmorphic shadow
-      el.addEventListener("mouseenter", () => {
+      // Hover effects - scale and enhanced glassmorphic shadow.
+      // Use pointer events + gate on pointerType so touch devices don't fire
+      // synthetic mouseenter/mouseleave that would compete with touchstart.
+      el.addEventListener("pointerenter", (e) => {
+        if ((e as PointerEvent).pointerType !== "mouse") return;
         el.style.zIndex = "300";
         pinEl.style.transform = isSelected ? "scale(1.2)" : "scale(1.15)";
         teardropEl.style.boxShadow = `
@@ -2413,7 +2423,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         showChip();
       });
 
-      el.addEventListener("mouseleave", () => {
+      el.addEventListener("pointerleave", (e) => {
+        if ((e as PointerEvent).pointerType !== "mouse") return;
         el.style.zIndex = isSelected ? "200" : isHighActivity ? "50" : "10";
         pinEl.style.transform = isSelected ? "scale(1.05)" : "scale(1)";
         teardropEl.style.boxShadow = `
@@ -2425,12 +2436,13 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         haloEl.style.opacity = isSelected ? '0.95' : isHighActivity ? '0.7' : '0.45';
         hideChipUnlessSelected();
       });
-      // Touch: brief peek on tap; cancelled if the tap promotes this marker to selected
+      // Touch: open immediately on tap. The subsequent click promotes the
+      // marker to selected, so the chip stays open via React re-render.
+      // No auto-hide timer — avoids flicker on quick taps. Off-map taps and
+      // selecting a different marker close it cleanly.
       el.addEventListener("touchstart", () => {
         showChip();
-        clearTouchPeek();
-        touchPeekTimer = window.setTimeout(hideChipUnlessSelected, 1600);
-      });
+      }, { passive: true });
 
       // Create marker with bottom anchor for teardrop (pin point at GPS location)
       if (!mapboxglRef.current) return;
