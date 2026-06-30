@@ -92,12 +92,13 @@ export const LiveStatsPanel = ({
     whiteSpace: "nowrap",
   };
   const valueStyle: React.CSSProperties = {
-    fontSize: isMobile ? "12px" : "13px",
+    fontSize: isMobile ? "11px" : "13px",
     fontWeight: 700,
     lineHeight: 1.1,
     fontVariantNumeric: "tabular-nums",
     flexShrink: 0,
   };
+  const rowGap = isMobile ? "8px" : "12px";
 
   type Row = { key: string; label: string; value: string; tone: string };
   const rows: Row[] = [];
@@ -135,7 +136,7 @@ export const LiveStatsPanel = ({
   }
 
   const content = (
-    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? "6px" : "8px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
         {isLoading ? (
           <Loader2
@@ -158,11 +159,15 @@ export const LiveStatsPanel = ({
         <p
           className="font-display"
           style={{
-            fontSize: "11px",
+            fontSize: isMobile ? "10px" : "11px",
             fontWeight: 700,
             color: "hsl(var(--foreground))",
             letterSpacing: "0.04em",
             textTransform: "uppercase",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            minWidth: 0,
           }}
         >
           {vibe.label}
@@ -178,7 +183,7 @@ export const LiveStatsPanel = ({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                gap: "12px",
+                gap: rowGap,
               }}
             >
               <span
@@ -213,7 +218,7 @@ export const LiveStatsPanel = ({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                gap: "12px",
+                gap: rowGap,
               }}
             >
               <span style={labelStyle}>{row.label}</span>

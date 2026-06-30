@@ -3172,7 +3172,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         {/* Expanded panel - slides up from FAB */}
         <div 
           style={{
-            width: isMobile ? '200px' : '180px',
+            width: isMobile ? 'min(240px, 60vw)' : '180px',
             contain: 'layout style',
             overflow: 'hidden',
             transition: 'max-height 300ms ease-out, opacity 300ms ease-out, margin-bottom 300ms ease-out',
@@ -3192,7 +3192,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             display: 'flex',
             flexDirection: 'column',
             gap: '8px',
-            maxHeight: 'calc(100dvh - var(--map-fixed-bottom, 72px) - 96px)',
+            maxHeight: 'calc(100dvh - var(--map-fixed-bottom, 72px) - 252px)',
             overflowY: 'auto',
             overscrollBehavior: 'contain',
           }}>
@@ -3729,15 +3729,13 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             {showLiveStats && (
               <div
                 style={{
-                  marginTop: '2px',
-                  padding: isMobile ? '8px 9px' : '10px 12px',
+                  marginTop: '6px',
+                  padding: isMobile ? '10px' : '10px 12px',
                   borderRadius: '10px',
                   border: '1px solid hsl(var(--primary) / 0.25)',
                   background: 'linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--primary-glow) / 0.04))',
                   animation: 'fadeIn 220ms ease-out',
-                  maxHeight: isMobile ? '40dvh' : 'none',
-                  overflowY: 'auto',
-                  overscrollBehavior: 'contain',
+                  overflow: 'hidden',
                 }}
               >
                 <LiveStatsPanel
