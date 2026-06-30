@@ -3715,6 +3715,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               active={showLiveStats}
               loading={isLoadingStats}
               ariaLabel="Toggle live stats panel"
+              tooltip="Real-time summary computed from recent user activity: active hotspots, recent check-ins, people on the move, and popular routes."
               onToggle={() => {
                 triggerHaptic('medium');
                 const next = !showLiveStats;
