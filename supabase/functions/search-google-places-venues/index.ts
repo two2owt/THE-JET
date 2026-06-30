@@ -3,13 +3,13 @@ import { corsHeaders, logVersion, EDGE_FUNCTION_VERSION } from "../_shared/cors.
 const FUNCTION_NAME = "search-google-places-venues";
 logVersion(FUNCTION_NAME);
 
-// Popular venues in and around Charlotte, NC with verified Google Places addresses.
-// Business hours (openingHours / isOpen) are enriched live from Google Places below
-// when the API key is reachable, and otherwise we fall back to the curated hours
-// embedded with each venue so the JetCard Open/Closed pill still works.
-// The client uses `useOpenVenues` + `isVenueOpenNow` to hide markers when closed.
+// Venues are sourced live from Google Places (Nearby Search + Place Details).
+// The curated list below is ONLY used as a last-resort fallback when the
+// GOOGLE_PLACES_API_KEY secret is missing or Google returns an error — it is
+// intentionally small and only contains long-running, well-known Charlotte
+// places we can verify by address. No fabricated venues.
 //
-// Schedule format intentionally matches Google's `opening_hours.weekday_text`:
+// `openingHours` matches Google's `opening_hours.weekday_text` format:
 //   "Monday: 11:00 AM – 10:00 PM"  (en-dash, AM/PM, "Closed" when shut)
 const HOURS = {
   daily_11_10:   ["Monday: 11:00 AM – 10:00 PM","Tuesday: 11:00 AM – 10:00 PM","Wednesday: 11:00 AM – 10:00 PM","Thursday: 11:00 AM – 10:00 PM","Friday: 11:00 AM – 11:00 PM","Saturday: 11:00 AM – 11:00 PM","Sunday: 11:00 AM – 9:00 PM"],
@@ -64,7 +64,7 @@ const CHARLOTTE_TOP_VENUES = [
   { id: "blue-restaurant-bar", name: "BLUE Restaurant & Bar", lat: 35.2270, lng: -80.8425, address: "206 N College St, Charlotte, NC 28202, USA", category: "Seafood", googleRating: 4.5, googleTotalRatings: 1300, activity: 82, priceLevel: 3, phone: "(704) 927-2583", website: "https://www.bluecharlotte.com", description: "Mediterranean-inflected seafood and live jazz in the Hearst Tower — extensive wine cellar.", openingHours: HOURS.dinner_only },
   { id: "brewers-at-4001-yancey", name: "Brewers At 4001 Yancey", lat: 35.1859, lng: -80.8810, address: "4001 Yancey Rd, Charlotte, NC 28217, USA", category: "Brewery", googleRating: 4.6, googleTotalRatings: 1800, activity: 86, priceLevel: 2, phone: "(704) 525-5644", website: "https://www.brewersat4001yancey.com", description: "Collaborative LoSo taproom hosting four breweries under one roof, plus food trucks and live music.", openingHours: HOURS.brewery },
 
-  // ===== Top 10 Most Visited Bars, Lounges & Clubs in Charlotte =====
+  // ===== Well-known Charlotte bars, lounges & clubs (fallback only) =====
   { id: "label-charlotte", name: "Label Charlotte", lat: 35.2230, lng: -80.8474, address: "900 N Carolina Music Factory Blvd, Charlotte, NC 28206, USA", category: "Nightclub", googleRating: 4.2, googleTotalRatings: 2100, activity: 94, priceLevel: 3, phone: "(704) 749-1097", website: "https://www.labelclt.com", description: "Two-story mega club at the AvidXchange Music Factory with international DJs, LED walls, and VIP bottle service.", openingHours: HOURS.nightclub },
   { id: "whiskey-warehouse", name: "Whiskey Warehouse", lat: 35.2225, lng: -80.8470, address: "820 Hamilton St, Charlotte, NC 28206, USA", category: "Nightclub", googleRating: 4.3, googleTotalRatings: 1650, activity: 91, priceLevel: 2, phone: "(704) 837-1110", website: "https://www.whiskeywarehouseclt.com", description: "Country-leaning nightclub with mechanical bull, line dancing, and live bands at the Music Factory.", openingHours: HOURS.nightclub },
   { id: "vbgb-music-factory", name: "VBGB Beer Hall & Garden — Music Factory", lat: 35.2247, lng: -80.8466, address: "920 Hamilton St #100, Charlotte, NC 28206, USA", category: "Beer Garden", googleRating: 4.4, googleTotalRatings: 2200, activity: 90, priceLevel: 2, phone: "(704) 333-4111", website: "https://vbgbcharlotte.com", description: "Sprawling indoor-outdoor beer hall with 50+ taps, giant lawn games, and weekend DJs.", openingHours: HOURS.bar_late },
@@ -75,29 +75,38 @@ const CHARLOTTE_TOP_VENUES = [
   { id: "the-roxbury", name: "The Roxbury", lat: 35.2231, lng: -80.8475, address: "820 Hamilton St Suite B11, Charlotte, NC 28206, USA", category: "Nightclub", googleRating: 4.3, googleTotalRatings: 1500, activity: 88, priceLevel: 2, phone: "(704) 749-1097", website: "https://www.roxburyclt.com", description: "80s/90s throwback nightclub with themed nights, retro music videos, and costume parties.", openingHours: HOURS.nightclub },
   { id: "dot-dot-dot", name: "Dot Dot Dot", lat: 35.1907, lng: -80.8214, address: "4237 Park Rd, Charlotte, NC 28209, USA", category: "Cocktail Bar", googleRating: 4.6, googleTotalRatings: 1100, activity: 86, priceLevel: 3, phone: "(980) 209-0070", website: "https://www.dotdotdotclt.com", description: "Members-style speakeasy behind an unmarked door in Park Road — classic cocktails and a vinyl listening room.", openingHours: HOURS.bar_late },
   { id: "dilworth-tasting-room", name: "Dilworth Tasting Room", lat: 35.2031, lng: -80.8484, address: "300 Tremont Ave, Charlotte, NC 28203, USA", category: "Wine Bar", googleRating: 4.6, googleTotalRatings: 950, activity: 84, priceLevel: 3, phone: "(704) 875-1990", website: "https://www.dilworthtastingroom.com", description: "Cozy Dilworth wine bar with 80+ wines by the glass, charcuterie, and a candlelit back patio.", openingHours: HOURS.lounge },
-
-  // ===== Top 10 Most Recently Opened Bars, Lounges & Clubs in Charlotte =====
-  { id: "supper-club-clt", name: "The Supper Club", lat: 35.2255, lng: -80.8442, address: "210 E Trade St, Charlotte, NC 28202, USA", category: "Lounge", googleRating: 4.5, googleTotalRatings: 320, activity: 82, priceLevel: 3, phone: "(704) 800-7110", website: "https://www.thesupperclubclt.com", description: "New Uptown supper-club lounge pairing live jazz, craft cocktails, and globally-inspired small plates.", openingHours: HOURS.lounge },
-  { id: "bar-cocoa", name: "Bar Cocoa", lat: 35.2192, lng: -80.8442, address: "2120 South Blvd, Charlotte, NC 28203, USA", category: "Cocktail Bar", googleRating: 4.6, googleTotalRatings: 280, activity: 80, priceLevel: 3, phone: "(704) 800-2622", website: "https://www.barcocoaclt.com", description: "Newly opened South End cocktail bar leaning into cacao-forward drinks and dessert pairings.", openingHours: HOURS.bar_late },
-  { id: "the-cellar-uptown", name: "The Cellar Uptown", lat: 35.2274, lng: -80.8412, address: "401 N Tryon St, Charlotte, NC 28202, USA", category: "Cocktail Bar", googleRating: 4.5, googleTotalRatings: 210, activity: 78, priceLevel: 3, phone: "(704) 295-4117", website: "https://www.thecellaruptown.com", description: "Subterranean Uptown speakeasy serving rare amari, dealer's-choice cocktails, and Iberian small plates.", openingHours: HOURS.bar_late },
-  { id: "neon-magnolia", name: "Neon Magnolia", lat: 35.2480, lng: -80.8070, address: "3206 N Davidson St, Charlotte, NC 28205, USA", category: "Lounge", googleRating: 4.6, googleTotalRatings: 240, activity: 81, priceLevel: 2, phone: "(704) 837-5188", website: "https://www.neonmagnoliaclt.com", description: "Neon-soaked NoDa lounge with disco brunch, glittery cocktails, and a covered backyard patio.", openingHours: HOURS.lounge },
-  { id: "high-tide-charlotte", name: "High Tide", lat: 35.2107, lng: -80.8540, address: "1531 South Blvd, Charlotte, NC 28203, USA", category: "Cocktail Bar", googleRating: 4.5, googleTotalRatings: 190, activity: 77, priceLevel: 3, phone: "(704) 802-2884", website: "https://www.hightideclt.com", description: "Coastal-themed South End cocktail bar with frozen tiki drinks, oysters, and a rooftop deck.", openingHours: HOURS.bar_late },
-  { id: "club-aura", name: "Aura Nightclub", lat: 35.2233, lng: -80.8478, address: "915 N Caldwell St, Charlotte, NC 28206, USA", category: "Nightclub", googleRating: 4.3, googleTotalRatings: 160, activity: 83, priceLevel: 3, phone: "(704) 800-2872", website: "https://www.auraclubclt.com", description: "Newly opened high-energy nightclub with EDM residencies, LED ceiling, and bottle-service booths.", openingHours: HOURS.nightclub },
-  { id: "velvet-room-clt", name: "The Velvet Room", lat: 35.2188, lng: -80.8420, address: "1235 East Blvd, Charlotte, NC 28203, USA", category: "Lounge", googleRating: 4.5, googleTotalRatings: 175, activity: 79, priceLevel: 3, phone: "(704) 800-8358", website: "https://www.velvetroomclt.com", description: "New Dilworth lounge with velvet booths, live R&B, and a champagne-led cocktail program.", openingHours: HOURS.lounge },
-  { id: "south-block-bar", name: "South Block Bar", lat: 35.2161, lng: -80.8482, address: "1816 Camden Rd, Charlotte, NC 28203, USA", category: "Bar", googleRating: 4.4, googleTotalRatings: 210, activity: 80, priceLevel: 2, phone: "(704) 800-7625", website: "https://www.southblockbar.com", description: "Newly opened South End rooftop bar with skyline views, frozen cocktails, and weekend DJs.", openingHours: HOURS.rooftop },
-  { id: "the-gilded-fox", name: "The Gilded Fox", lat: 35.2270, lng: -80.8420, address: "127 N Tryon St, Charlotte, NC 28202, USA", category: "Cocktail Bar", googleRating: 4.7, googleTotalRatings: 150, activity: 78, priceLevel: 4, phone: "(704) 800-3693", website: "https://www.thegildedfoxclt.com", description: "Gilded-Age Uptown cocktail parlor with reservations-only seatings and rare-spirit flights.", openingHours: HOURS.bar_late },
-  { id: "midnight-orchid", name: "Midnight Orchid", lat: 35.2200, lng: -80.8455, address: "2030 South Blvd, Charlotte, NC 28203, USA", category: "Nightclub", googleRating: 4.4, googleTotalRatings: 140, activity: 82, priceLevel: 3, phone: "(704) 800-6647", website: "https://www.midnightorchidclt.com", description: "Botanical-themed nightclub with house DJs, an orchid-wall photo op, and craft cocktails on tap.", openingHours: HOURS.nightclub },
-
-  // ===== Open Now: late-night bars, lounges & clubs that operate nightly =====
-  { id: "tavern-square", name: "Tavern on the Square", lat: 35.2274, lng: -80.8435, address: "201 S Tryon St, Charlotte, NC 28202, USA", category: "Bar", googleRating: 4.4, googleTotalRatings: 1320, activity: 86, priceLevel: 2, phone: "(704) 343-6464", website: "https://www.tavernonthesquareclt.com", description: "Uptown tavern with floor-to-ceiling windows, 40+ taps, and late-night bar bites every night.", openingHours: HOURS.bar_daily },
-  { id: "moonshine-uptown", name: "Moonshine Lounge", lat: 35.2261, lng: -80.8440, address: "215 N Tryon St, Charlotte, NC 28202, USA", category: "Lounge", googleRating: 4.5, googleTotalRatings: 640, activity: 84, priceLevel: 3, phone: "(704) 343-2522", website: "https://www.moonshineloungeclt.com", description: "Appalachian-inspired Uptown lounge pouring small-batch whiskey flights and signature mules nightly.", openingHours: HOURS.lounge },
-  { id: "ember-rooftop", name: "Ember Rooftop", lat: 35.2266, lng: -80.8418, address: "210 E 7th St 14th Floor, Charlotte, NC 28202, USA", category: "Rooftop Bar", googleRating: 4.6, googleTotalRatings: 410, activity: 88, priceLevel: 3, phone: "(704) 343-3623", website: "https://www.emberrooftopclt.com", description: "14th-floor rooftop lounge with fire pits, skyline views, and frozen craft cocktails — open every evening.", openingHours: HOURS.rooftop },
-  { id: "midnight-bazaar", name: "Midnight Bazaar", lat: 35.2235, lng: -80.8472, address: "905 N Carolina Music Factory Blvd, Charlotte, NC 28206, USA", category: "Nightclub", googleRating: 4.3, googleTotalRatings: 520, activity: 90, priceLevel: 3, phone: "(704) 749-1212", website: "https://www.midnightbazaarclt.com", description: "Moroccan-themed nightclub at the Music Factory with nightly DJs, hookah lounge, and bottle service.", openingHours: HOURS.nightclub_daily },
-  { id: "voltage-uptown", name: "Voltage Nightclub", lat: 35.2255, lng: -80.8421, address: "300 S Brevard St, Charlotte, NC 28202, USA", category: "Nightclub", googleRating: 4.2, googleTotalRatings: 480, activity: 89, priceLevel: 3, phone: "(704) 800-8658", website: "https://www.voltagenightclubclt.com", description: "High-voltage Uptown club with daily resident DJs, LED dance floor, and VIP booths.", openingHours: HOURS.nightclub_daily },
-  { id: "lantern-room", name: "The Lantern Room", lat: 35.2188, lng: -80.8442, address: "1235 East Blvd, Charlotte, NC 28203, USA", category: "Cocktail Bar", googleRating: 4.6, googleTotalRatings: 290, activity: 81, priceLevel: 3, phone: "(704) 800-5268", website: "https://www.lanternroomclt.com", description: "Dilworth cocktail bar lit entirely by paper lanterns — open late every night with a small-plates menu.", openingHours: HOURS.bar_late },
-  { id: "after-hours-southend", name: "After Hours South End", lat: 35.2113, lng: -80.8552, address: "1610 South Blvd, Charlotte, NC 28203, USA", category: "Lounge", googleRating: 4.4, googleTotalRatings: 360, activity: 83, priceLevel: 2, phone: "(704) 800-2437", website: "https://www.afterhoursclt.com", description: "South End late-night lounge with weeknight DJs, espresso-martini specials, and a covered patio.", openingHours: HOURS.lounge },
-  { id: "blacklight-club", name: "Blacklight Social Club", lat: 35.2247, lng: -80.8460, address: "820 Hamilton St Suite D, Charlotte, NC 28206, USA", category: "Nightclub", googleRating: 4.3, googleTotalRatings: 310, activity: 87, priceLevel: 2, phone: "(704) 800-2552", website: "https://www.blacklightclubclt.com", description: "Glow-paint, blacklight murals, and nightly EDM at the AvidXchange Music Factory.", openingHours: HOURS.nightclub_daily },
 ];
+
+// Nearby Search "type" values we search across to populate the map.
+// Each yields up to 20 results per page; we take page 1 only to stay
+// within latency budgets.
+const NEARBY_TYPES = [
+  "restaurant",
+  "bar",
+  "night_club",
+  "cafe",
+] as const;
+
+// Friendly category labels derived from Google Place `types`.
+function categoryFromTypes(types: readonly string[] = []): string {
+  if (types.includes("night_club")) return "Nightclub";
+  if (types.includes("bar")) return "Bar";
+  if (types.includes("cafe")) return "Cafe";
+  if (types.includes("bakery")) return "Bakery";
+  if (types.includes("meal_takeaway")) return "Takeout";
+  if (types.includes("restaurant")) return "Restaurant";
+  return "Venue";
+}
+
+// Derive an activity score (0-100) from rating + total ratings so the
+// existing JetCard activity UI keeps working.
+function deriveActivity(rating?: number, total?: number): number {
+  const r = rating ?? 0;
+  const t = total ?? 0;
+  const ratingScore = (r / 5) * 60;          // up to 60 pts for star rating
+  const volumeScore = Math.min(40, Math.log10(t + 1) * 12); // up to 40 pts for review volume
+  return Math.round(Math.max(40, Math.min(100, ratingScore + volumeScore)));
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -116,96 +125,110 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { location } = await req.json();
+    let body: any = {};
+    try { body = await req.json(); } catch { /* GET-like call */ }
+    const location = body?.location;
     
     const apiKey = Deno.env.get('GOOGLE_PLACES_API_KEY');
     
     // Charlotte coordinates
     const charlotteLocation = location || { lat: 35.2271, lng: -80.8431 };
 
-    console.log(`Fetching top 10 Charlotte venues...`);
-
-    // Try Google Places API first if key is available
+    // === Primary path: live Google Places Nearby Search ===
     if (apiKey) {
       try {
-        const venues = [];
-        
-        for (const venue of CHARLOTTE_TOP_VENUES) {
-          // Use Text Search to find the specific venue for live data
-          const searchUrl = new URL('https://maps.googleapis.com/maps/api/place/textsearch/json');
-          searchUrl.searchParams.append('query', `${venue.name} Charlotte NC`);
-          searchUrl.searchParams.append('location', `${charlotteLocation.lat},${charlotteLocation.lng}`);
-          searchUrl.searchParams.append('radius', '10000');
-          searchUrl.searchParams.append('key', apiKey);
+        const seen = new Map<string, any>();
 
-          const searchResponse = await fetch(searchUrl.toString());
-          const searchData = await searchResponse.json();
+        // Run all category searches in parallel.
+        const nearbyResults = await Promise.all(
+          NEARBY_TYPES.map(async (type) => {
+            const url = new URL('https://maps.googleapis.com/maps/api/place/nearbysearch/json');
+            url.searchParams.set('location', `${charlotteLocation.lat},${charlotteLocation.lng}`);
+            url.searchParams.set('radius', '8000'); // ~5mi around Charlotte center
+            url.searchParams.set('type', type);
+            url.searchParams.set('key', apiKey);
+            const r = await fetch(url.toString());
+            const j = await r.json();
+            return (j.status === 'OK' || j.status === 'ZERO_RESULTS')
+              ? (j.results ?? [])
+              : [];
+          })
+        );
 
-          if (searchData.status === 'OK' && searchData.results?.length > 0) {
-            const place = searchData.results[0];
-            
-            // Get full place details
-            const detailsUrl = new URL('https://maps.googleapis.com/maps/api/place/details/json');
-            detailsUrl.searchParams.append('place_id', place.place_id);
-            detailsUrl.searchParams.append('fields', 'formatted_address,formatted_phone_number,website,opening_hours,geometry,rating,user_ratings_total');
-            detailsUrl.searchParams.append('key', apiKey);
-
-            const detailsResponse = await fetch(detailsUrl.toString());
-            const detailsData = await detailsResponse.json();
-            const details = detailsData.result || {};
-
-            venues.push({
-              id: place.place_id,
-              name: place.name,
-              lat: details.geometry?.location?.lat || venue.lat,
-              lng: details.geometry?.location?.lng || venue.lng,
-              address: details.formatted_address || venue.address,
-              category: venue.category,
-              googleRating: details.rating || place.rating || venue.googleRating,
-              googleTotalRatings: details.user_ratings_total || place.user_ratings_total || venue.googleTotalRatings,
-              isOpen: place.opening_hours?.open_now ?? null,
-              openingHours: details.opening_hours?.weekday_text?.length
-                ? details.opening_hours.weekday_text
-                : venue.openingHours ?? [],
-              website: details.website ?? venue.website ?? null,
-              phone: details.formatted_phone_number ?? venue.phone ?? null,
-              priceLevel: details.price_level ?? venue.priceLevel ?? null,
-              description: venue.description ?? null,
-              activity: venue.activity,
-            });
-
-            console.log(`Found via API: ${place.name}`);
-            console.log(`  Coordinates: lat=${details.geometry?.location?.lat || venue.lat}, lng=${details.geometry?.location?.lng || venue.lng}`);
-            console.log(`  Address: ${details.formatted_address || venue.address}`);
-          } else {
-            // Use fallback data
-            venues.push({
-              ...venue,
-              isOpen: null,
-              openingHours: venue.openingHours ?? [],
-              phone: venue.phone ?? null,
-              website: venue.website ?? null,
-              priceLevel: venue.priceLevel ?? null,
-              description: venue.description ?? null,
-            });
-            console.log(`Using fallback for: ${venue.name}`);
+        for (const list of nearbyResults) {
+          for (const place of list) {
+            if (!place.place_id || !place.geometry?.location) continue;
+            if (place.business_status && place.business_status !== 'OPERATIONAL') continue;
+            // Dedupe across category overlap (e.g. bar + night_club).
+            if (seen.has(place.place_id)) continue;
+            seen.set(place.place_id, place);
           }
         }
 
+        // Sort by quality (rating × log(reviews)) and cap to keep details
+        // enrichment within latency / quota budget.
+        const ranked = Array.from(seen.values())
+          .sort((a, b) => {
+            const sa = (a.rating ?? 0) * Math.log10((a.user_ratings_total ?? 0) + 10);
+            const sb = (b.rating ?? 0) * Math.log10((b.user_ratings_total ?? 0) + 10);
+            return sb - sa;
+          })
+          .slice(0, 40);
+
+        // Enrich each with Place Details (in parallel) for hours + phone + site.
+        const enriched = await Promise.all(
+          ranked.map(async (place) => {
+            try {
+              const d = new URL('https://maps.googleapis.com/maps/api/place/details/json');
+              d.searchParams.set('place_id', place.place_id);
+              d.searchParams.set(
+                'fields',
+                'formatted_address,formatted_phone_number,website,opening_hours,price_level,editorial_summary'
+              );
+              d.searchParams.set('key', apiKey);
+              const r = await fetch(d.toString());
+              const j = await r.json();
+              return { place, details: j.result ?? {} };
+            } catch {
+              return { place, details: {} };
+            }
+          })
+        );
+
+        const venues = enriched.map(({ place, details }) => ({
+          id: place.place_id,
+          name: place.name,
+          lat: place.geometry.location.lat,
+          lng: place.geometry.location.lng,
+          address: details.formatted_address ?? place.vicinity ?? '',
+          category: categoryFromTypes(place.types),
+          googleRating: place.rating ?? null,
+          googleTotalRatings: place.user_ratings_total ?? 0,
+          isOpen: place.opening_hours?.open_now ?? details.opening_hours?.open_now ?? null,
+          openingHours: details.opening_hours?.weekday_text ?? [],
+          website: details.website ?? null,
+          phone: details.formatted_phone_number ?? null,
+          priceLevel: details.price_level ?? place.price_level ?? null,
+          description: details.editorial_summary?.overview ?? null,
+          activity: deriveActivity(place.rating, place.user_ratings_total),
+        }));
+
         if (venues.length > 0) {
-          console.log(`Returning ${venues.length} venues (API + fallback)`);
+          console.log(`Returning ${venues.length} live Google Places venues`);
           return new Response(
-            JSON.stringify({ venues: venues.slice(0, 100), total: venues.length }),
+            JSON.stringify({ venues, total: venues.length, source: 'google_places' }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
+        console.warn('Nearby Search returned no usable results, falling back');
       } catch (apiError) {
         console.error('Google Places API error:', apiError);
       }
+    } else {
+      console.warn('GOOGLE_PLACES_API_KEY missing — using curated fallback list');
     }
 
-    // Fallback: Return hardcoded Charlotte venues
-    console.log('Using fallback Charlotte venue data');
+    // === Fallback: curated, verified venues (only when API unavailable) ===
     const fallbackVenues = CHARLOTTE_TOP_VENUES.map(venue => ({
       ...venue,
       isOpen: null,
@@ -217,7 +240,7 @@ Deno.serve(async (req) => {
     }));
 
     return new Response(
-      JSON.stringify({ venues: fallbackVenues, total: fallbackVenues.length }),
+      JSON.stringify({ venues: fallbackVenues, total: fallbackVenues.length, source: 'fallback' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
@@ -236,7 +259,7 @@ Deno.serve(async (req) => {
     }));
 
     return new Response(
-      JSON.stringify({ venues: fallbackVenues, total: fallbackVenues.length }),
+      JSON.stringify({ venues: fallbackVenues, total: fallbackVenues.length, source: 'fallback_error' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
