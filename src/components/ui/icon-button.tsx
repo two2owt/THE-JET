@@ -16,7 +16,10 @@ const iconButtonVariants = cva(
         default: "h-11 w-11 min-h-[44px] min-w-[44px] [&_svg]:h-4 [&_svg]:w-4",
         sm: "h-9 w-9 min-h-[36px] min-w-[36px] sm:min-h-[44px] sm:min-w-[44px] [&_svg]:h-3.5 [&_svg]:w-3.5",
         lg: "h-12 w-12 min-h-[48px] min-w-[48px] [&_svg]:h-5 [&_svg]:w-5",
-        bare: "[&_svg]:h-3 [&_svg]:w-3",
+        // Visual stays small (e.g. inline 28×28 close/clear chips), but a
+        // transparent ::before extends the touch target to ≥44×44 to satisfy
+        // WCAG 2.5.5 and Apple HIG without disturbing layout.
+        bare: "relative [&_svg]:h-3 [&_svg]:w-3 before:absolute before:content-[''] before:-inset-2 before:min-h-[44px] before:min-w-[44px] before:left-1/2 before:top-1/2 before:-translate-x-1/2 before:-translate-y-1/2",
       },
     },
     defaultVariants: {
