@@ -66,7 +66,7 @@ const loadMapboxGL = async (): Promise<MapboxGLModule> => {
   }
   return mapboxLoadPromise;
 };
-import { MapPin, Layers, Palette, X, AlertCircle, Route, Play, Pause, SkipBack, SkipForward, Clock, ChevronDown, ChevronUp, Car, BarChart3, RotateCcw, Calendar, Loader2 } from "lucide-react";
+import { MapPin, Layers, Palette, X, AlertCircle, Route, Play, Pause, SkipBack, SkipForward, Clock, ChevronDown, ChevronUp, Car, BarChart3, RotateCcw, Calendar, Loader2, CircleDot } from "lucide-react";
 import { HeatmapSkeleton } from "@/components/skeletons/HeatmapSkeleton";
 import { useLocationDensity } from "@/hooks/useLocationDensity";
 import { useMovementPaths } from "@/hooks/useMovementPaths";
@@ -232,6 +232,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     paths: "jet-map-layer-paths",
     parking: "jet-map-layer-parking",
     stats: "jet-map-layer-stats",
+    openNow: "jet-map-layer-open-now",
   } as const;
   type LayerName = keyof typeof LAYER_KEYS;
   const KNOWN_LAYERS = new Set<LayerName>(Object.keys(LAYER_KEYS) as LayerName[]);
@@ -332,6 +333,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [showParking, setShowParking] = useState(() => getLayerState("parking", false));
   // Live Stats panel — hidden by default, opt-in via layers toggle
   const [showLiveStats, setShowLiveStats] = useState(() => getLayerState("stats", false));
+  // Open-now filter — when on, hides venues whose `isOpen` is explicitly false.
+  // Venues with unknown hours (isOpen === null/undefined) remain visible.
+  const [openNowOnly, setOpenNowOnly] = useState(() => getLayerState("openNow", false));
 
   const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.timeFilter, 'all', 'time'));
   const [hourFilter, setHourFilter] = useState<number | undefined>();
@@ -427,6 +431,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   useEffect(() => { localStorage.setItem(LAYER_KEYS.paths, String(showMovementPaths)); }, [showMovementPaths]);
   useEffect(() => { localStorage.setItem(LAYER_KEYS.parking, String(showParking)); }, [showParking]);
   useEffect(() => { localStorage.setItem(LAYER_KEYS.stats, String(showLiveStats)); }, [showLiveStats]);
+  useEffect(() => { localStorage.setItem(LAYER_KEYS.openNow, String(openNowOnly)); }, [openNowOnly]);
 
 
   // Persist filter / time-lapse selections to localStorage
@@ -2150,8 +2155,17 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       return Math.sqrt(Math.pow(lat2 - lat1, 2) + Math.pow(lng2 - lng1, 2));
     };
 
+    // Apply Open-Now filter: hide venues whose hours indicate they're closed.
+    // Venues with unknown hours stay visible so the user never loses places.
+    const visibleVenues = openNowOnly
+      ? venues.filter((v) => {
+          const open = (v.isOpen ?? null) !== null ? v.isOpen! : isVenueOpenNow(v.openingHours);
+          return open !== false; // keep `true` and `null`
+        })
+      : venues;
+
     // Add venue markers
-    venues.forEach((venue, index) => {
+    visibleVenues.forEach((venue, index) => {
       // Guard against map becoming null during iteration
       if (!mapInstance) return;
       
@@ -2163,7 +2177,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
       // Check proximity to other venues
       let nearbyCount = 0;
-      venues.forEach((otherVenue, otherIndex) => {
+      visibleVenues.forEach((otherVenue, otherIndex) => {
         if (index !== otherIndex) {
           const distance = getDistance(venue.lat, venue.lng, otherVenue.lat, otherVenue.lng);
           if (distance < 0.001) nearbyCount++; // Very close proximity
@@ -2512,7 +2526,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Call updateMarkers on initial load and when venues change
   useEffect(() => {
     updateMarkers();
-  }, [venues, mapLoaded, isLoadingVenues, selectedCity, selectedVenue, venueDealCounts]);
+  }, [venues, mapLoaded, isLoadingVenues, selectedCity, selectedVenue, venueDealCounts, openNowOnly]);
 
   // Fetch active-deal counts for currently displayed venues
   useEffect(() => {
@@ -3734,6 +3748,19 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 setShowLiveStats(next);
                 if (next) setIsLoadingStats(true);
                 else setIsLoadingStats(false);
+              }}
+            />
+
+            {/* Open Now filter — hides venues currently marked Closed */}
+            <LayerToggleRow
+              label="Open Now"
+              Icon={CircleDot}
+              active={openNowOnly}
+              ariaLabel="Show only venues that are open now"
+              tooltip="Hides venues currently marked Closed based on their business hours. Venues with unknown hours stay visible."
+              onToggle={() => {
+                triggerHaptic('medium');
+                setOpenNowOnly((v) => !v);
               }}
             />
 
