@@ -2082,6 +2082,29 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     if (!map.current || !mapLoaded) return;
 
     const mapInstance = map.current;
+
+    // Category → Lucide SVG path map (24x24 viewBox)
+    const getCategoryIcon = (category: string): string => {
+      const c = (category || '').toLowerCase();
+      // Lucide path d-strings
+      if (/(bar|cocktail|lounge|pub|brew|beer|wine|spirits)/.test(c))
+        // wine / martini-ish (martini glass)
+        return '<path d="M8 22h8"/><path d="M12 11v11"/><path d="M19 3H5l7 8z"/>';
+      if (/(coffee|cafe|tea|bakery|dessert)/.test(c))
+        return '<path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/>';
+      if (/(music|concert|live|venue|night|club|dj)/.test(c))
+        return '<circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/><path d="M9 18V5l12-2v13"/>';
+      if (/(event|festival|theater|theatre|show|comedy)/.test(c))
+        return '<path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/>';
+      if (/(gym|fitness|yoga|sport|run|spa)/.test(c))
+        return '<path d="M6.5 6.5 17.5 17.5"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/>';
+      if (/(shop|retail|store|market|boutique)/.test(c))
+        return '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>';
+      if (/(hotel|stay|lodging|resort)/.test(c))
+        return '<path d="M2 22V8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v14"/><path d="M2 18h20"/><circle cx="8" cy="12" r="2"/>';
+      // default: utensils (food / restaurant)
+      return '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>';
+    };
     
     // Use requestAnimationFrame for smoother updates
     requestAnimationFrame(() => {
@@ -2121,6 +2144,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       if (!mapInstance) return;
       
       const color = getActivityColor(venue.activity);
+      const isSelected = !!selectedVenue && selectedVenue.id === venue.id;
+      const hasSelection = !!selectedVenue;
+      const isHighActivity = venue.activity >= 80;
+      const GOLD = '#C9A961';
 
       // Check proximity to other venues
       let nearbyCount = 0;
@@ -2133,23 +2160,29 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
       // Adjust size based on proximity - slightly smaller for clustered areas
       const proximityFactor = nearbyCount > 0 ? Math.max(0.85, 1 - (nearbyCount * 0.04)) : 1;
-      const activitySizeFactor = venue.activity >= 80 ? 1.15 : venue.activity >= 60 ? 1.08 : 1;
+      const activitySizeFactor = isHighActivity ? 1.15 : venue.activity >= 60 ? 1.08 : 1;
+      const selectionFactor = isSelected ? 1.25 : 1;
       // Increased minimum size for better visibility
-      const markerSize = Math.max(32, Math.min(38, baseSize * 0.8)) * proximityFactor * activitySizeFactor;
+      const markerSize = Math.max(32, Math.min(38, baseSize * 0.8)) * proximityFactor * activitySizeFactor * selectionFactor;
       const markerHeight = markerSize * 1.35;
       // Create teardrop marker element with entrance animation
       const staggerDelay = (index % 30) * 30;
       const el = document.createElement("div");
       el.className = "venue-marker";
+      // Dim non-selected markers when a venue is selected
+      const dimOpacity = hasSelection && !isSelected ? '0.45' : '1';
       el.style.cssText = `
         display: flex;
         flex-direction: column;
         align-items: center;
         cursor: pointer;
-        will-change: opacity;
+        will-change: opacity, transform;
         opacity: 0;
         animation: markerFadeIn 0.4s ease-out ${staggerDelay}ms forwards;
         background: transparent;
+        --target-opacity: ${dimOpacity};
+        transition: opacity 0.25s ease;
+        z-index: ${isSelected ? '200' : isHighActivity ? '50' : '10'};
       `;
 
       // Determine pulse animation speed based on activity level
@@ -2166,12 +2199,32 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         position: relative;
         transition: transform 0.2s ease;
         background: transparent;
+        transform: ${isSelected ? 'scale(1.05)' : 'scale(1)'};
+      `;
+
+      // Layered depth: soft outer halo (blurred glow)
+      const haloEl = document.createElement('div');
+      const haloSize = markerSize + 22;
+      const haloColor = isSelected ? GOLD : color;
+      haloEl.style.cssText = `
+        position: absolute;
+        top: ${(markerSize - haloSize) / 2}px;
+        left: ${(markerSize - haloSize) / 2}px;
+        width: ${haloSize}px;
+        height: ${haloSize}px;
+        border-radius: 50%;
+        background: radial-gradient(circle, ${haloColor}55 0%, ${haloColor}22 45%, transparent 70%);
+        filter: blur(6px);
+        pointer-events: none;
+        opacity: ${isSelected ? '0.95' : isHighActivity ? '0.7' : '0.45'};
       `;
 
       // Create animated gradient ring (behind teardrop) - with activity-based color
       // Only animate if not in low power/reduced motion mode
       const ringEl = document.createElement('div');
       const ringSize = markerSize + 10;
+      const ringColor = isSelected || isHighActivity ? GOLD : color;
+      const ringWidth = isSelected ? 2.5 : 2;
       ringEl.style.cssText = `
         position: absolute;
         top: ${(markerSize - ringSize) / 2}px;
@@ -2182,8 +2235,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         transform: rotate(-45deg);
         transform-origin: center center;
         background: transparent;
-        border: 2px solid ${color};
-        opacity: ${pulseOpacity};
+        border: ${ringWidth}px solid ${ringColor};
+        opacity: ${isSelected ? '1' : pulseOpacity};
+        box-shadow: ${isSelected || isHighActivity ? `0 0 12px ${GOLD}80` : 'none'};
         ${shouldAnimate ? `animation: markerRingPulse ${pulseSpeed} ease-in-out infinite;` : ''}
       `;
 
@@ -2207,55 +2261,62 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 1.5px solid ${isDarkTheme 
+        border: 1.5px solid ${isSelected ? GOLD : (isDarkTheme 
           ? `rgba(255, 255, 255, 0.15)` 
-          : `rgba(0, 0, 0, 0.08)`};
+          : `rgba(0, 0, 0, 0.08)`)};
         box-shadow: 
           0 4px 16px rgba(0, 0, 0, ${isDarkTheme ? '0.4' : '0.15'}),
           inset 0 1px 0 rgba(255, 255, 255, ${isDarkTheme ? '0.1' : '0.5'}),
-          0 0 0 1px ${color}40;
+          0 0 0 1px ${isSelected ? GOLD : color}${isSelected ? '99' : '40'};
       `;
       
-      // Add inner icon/dot to indicate activity level
-      const innerDot = document.createElement('div');
-      const dotSize = markerSize * 0.35;
-      innerDot.style.cssText = `
+      // Category-aware iconography (counter-rotated to stay upright)
+      const iconWrap = document.createElement('div');
+      const iconSize = Math.round(markerSize * 0.5);
+      iconWrap.style.cssText = `
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%) rotate(45deg);
-        width: ${dotSize}px;
-        height: ${dotSize}px;
-        border-radius: 50%;
-        background: ${color};
+        width: ${iconSize}px;
+        height: ${iconSize}px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: ${color};
+        filter: drop-shadow(0 1px 2px rgba(0,0,0,0.35));
       `;
-      teardropEl.appendChild(innerDot);
+      iconWrap.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">${getCategoryIcon(venue.category)}</svg>`;
+      teardropEl.appendChild(iconWrap);
 
+      pinEl.appendChild(haloEl);
       pinEl.appendChild(ringEl);
       pinEl.appendChild(teardropEl);
       el.appendChild(pinEl);
 
       // Hover effects - scale and enhanced glassmorphic shadow
       el.addEventListener("mouseenter", () => {
-        el.style.zIndex = "100";
-        pinEl.style.transform = "scale(1.15)";
+        el.style.zIndex = "300";
+        pinEl.style.transform = isSelected ? "scale(1.2)" : "scale(1.15)";
         teardropEl.style.boxShadow = `
           0 8px 24px rgba(0, 0, 0, ${isDarkTheme ? '0.5' : '0.2'}),
           inset 0 1px 0 rgba(255, 255, 255, ${isDarkTheme ? '0.15' : '0.6'}),
-          0 0 0 2px ${color}60
+          0 0 0 2px ${isSelected ? GOLD : color}90
         `;
         ringEl.style.opacity = '1';
+        haloEl.style.opacity = '1';
       });
 
       el.addEventListener("mouseleave", () => {
-        el.style.zIndex = "";
-        pinEl.style.transform = "scale(1)";
+        el.style.zIndex = isSelected ? "200" : isHighActivity ? "50" : "10";
+        pinEl.style.transform = isSelected ? "scale(1.05)" : "scale(1)";
         teardropEl.style.boxShadow = `
           0 4px 16px rgba(0, 0, 0, ${isDarkTheme ? '0.4' : '0.15'}),
           inset 0 1px 0 rgba(255, 255, 255, ${isDarkTheme ? '0.1' : '0.5'}),
-          0 0 0 1px ${color}40
+          0 0 0 1px ${isSelected ? GOLD : color}${isSelected ? '99' : '40'}
         `;
-        ringEl.style.opacity = pulseOpacity;
+        ringEl.style.opacity = isSelected ? '1' : pulseOpacity;
+        haloEl.style.opacity = isSelected ? '0.95' : isHighActivity ? '0.7' : '0.45';
       });
 
       // Create marker with bottom anchor for teardrop (pin point at GPS location)
@@ -2287,7 +2348,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Call updateMarkers on initial load and when venues change
   useEffect(() => {
     updateMarkers();
-  }, [venues, mapLoaded, isLoadingVenues, selectedCity]);
+  }, [venues, mapLoaded, isLoadingVenues, selectedCity, selectedVenue]);
 
   // Add heatmap blend layer for clustering visualization at low zoom levels
   useEffect(() => {
