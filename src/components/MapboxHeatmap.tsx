@@ -3172,7 +3172,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         {/* Expanded panel - slides up from FAB */}
         <div 
           style={{
-            width: isMobile ? '200px' : '180px',
+            width: isMobile ? 'min(240px, 60vw)' : '180px',
             contain: 'layout style',
             overflow: 'hidden',
             transition: 'max-height 300ms ease-out, opacity 300ms ease-out, margin-bottom 300ms ease-out',
