@@ -77,6 +77,37 @@ const CHARLOTTE_TOP_VENUES = [
   { id: "dilworth-tasting-room", name: "Dilworth Tasting Room", lat: 35.2031, lng: -80.8484, address: "300 Tremont Ave, Charlotte, NC 28203, USA", category: "Wine Bar", googleRating: 4.6, googleTotalRatings: 950, activity: 84, priceLevel: 3, phone: "(704) 875-1990", website: "https://www.dilworthtastingroom.com", description: "Cozy Dilworth wine bar with 80+ wines by the glass, charcuterie, and a candlelit back patio.", openingHours: HOURS.lounge },
 ];
 
+// Nearby Search "type" values we search across to populate the map.
+// Each yields up to 20 results per page; we take page 1 only to stay
+// within latency budgets.
+const NEARBY_TYPES = [
+  "restaurant",
+  "bar",
+  "night_club",
+  "cafe",
+] as const;
+
+// Friendly category labels derived from Google Place `types`.
+function categoryFromTypes(types: readonly string[] = []): string {
+  if (types.includes("night_club")) return "Nightclub";
+  if (types.includes("bar")) return "Bar";
+  if (types.includes("cafe")) return "Cafe";
+  if (types.includes("bakery")) return "Bakery";
+  if (types.includes("meal_takeaway")) return "Takeout";
+  if (types.includes("restaurant")) return "Restaurant";
+  return "Venue";
+}
+
+// Derive an activity score (0-100) from rating + total ratings so the
+// existing JetCard activity UI keeps working.
+function deriveActivity(rating?: number, total?: number): number {
+  const r = rating ?? 0;
+  const t = total ?? 0;
+  const ratingScore = (r / 5) * 60;          // up to 60 pts for star rating
+  const volumeScore = Math.min(40, Math.log10(t + 1) * 12); // up to 40 pts for review volume
+  return Math.round(Math.max(40, Math.min(100, ratingScore + volumeScore)));
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -94,96 +125,110 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { location } = await req.json();
+    let body: any = {};
+    try { body = await req.json(); } catch { /* GET-like call */ }
+    const location = body?.location;
     
     const apiKey = Deno.env.get('GOOGLE_PLACES_API_KEY');
     
     // Charlotte coordinates
     const charlotteLocation = location || { lat: 35.2271, lng: -80.8431 };
 
-    console.log(`Fetching top 10 Charlotte venues...`);
-
-    // Try Google Places API first if key is available
+    // === Primary path: live Google Places Nearby Search ===
     if (apiKey) {
       try {
-        const venues = [];
-        
-        for (const venue of CHARLOTTE_TOP_VENUES) {
-          // Use Text Search to find the specific venue for live data
-          const searchUrl = new URL('https://maps.googleapis.com/maps/api/place/textsearch/json');
-          searchUrl.searchParams.append('query', `${venue.name} Charlotte NC`);
-          searchUrl.searchParams.append('location', `${charlotteLocation.lat},${charlotteLocation.lng}`);
-          searchUrl.searchParams.append('radius', '10000');
-          searchUrl.searchParams.append('key', apiKey);
+        const seen = new Map<string, any>();
 
-          const searchResponse = await fetch(searchUrl.toString());
-          const searchData = await searchResponse.json();
+        // Run all category searches in parallel.
+        const nearbyResults = await Promise.all(
+          NEARBY_TYPES.map(async (type) => {
+            const url = new URL('https://maps.googleapis.com/maps/api/place/nearbysearch/json');
+            url.searchParams.set('location', `${charlotteLocation.lat},${charlotteLocation.lng}`);
+            url.searchParams.set('radius', '8000'); // ~5mi around Charlotte center
+            url.searchParams.set('type', type);
+            url.searchParams.set('key', apiKey);
+            const r = await fetch(url.toString());
+            const j = await r.json();
+            return (j.status === 'OK' || j.status === 'ZERO_RESULTS')
+              ? (j.results ?? [])
+              : [];
+          })
+        );
 
-          if (searchData.status === 'OK' && searchData.results?.length > 0) {
-            const place = searchData.results[0];
-            
-            // Get full place details
-            const detailsUrl = new URL('https://maps.googleapis.com/maps/api/place/details/json');
-            detailsUrl.searchParams.append('place_id', place.place_id);
-            detailsUrl.searchParams.append('fields', 'formatted_address,formatted_phone_number,website,opening_hours,geometry,rating,user_ratings_total');
-            detailsUrl.searchParams.append('key', apiKey);
-
-            const detailsResponse = await fetch(detailsUrl.toString());
-            const detailsData = await detailsResponse.json();
-            const details = detailsData.result || {};
-
-            venues.push({
-              id: place.place_id,
-              name: place.name,
-              lat: details.geometry?.location?.lat || venue.lat,
-              lng: details.geometry?.location?.lng || venue.lng,
-              address: details.formatted_address || venue.address,
-              category: venue.category,
-              googleRating: details.rating || place.rating || venue.googleRating,
-              googleTotalRatings: details.user_ratings_total || place.user_ratings_total || venue.googleTotalRatings,
-              isOpen: place.opening_hours?.open_now ?? null,
-              openingHours: details.opening_hours?.weekday_text?.length
-                ? details.opening_hours.weekday_text
-                : venue.openingHours ?? [],
-              website: details.website ?? venue.website ?? null,
-              phone: details.formatted_phone_number ?? venue.phone ?? null,
-              priceLevel: details.price_level ?? venue.priceLevel ?? null,
-              description: venue.description ?? null,
-              activity: venue.activity,
-            });
-
-            console.log(`Found via API: ${place.name}`);
-            console.log(`  Coordinates: lat=${details.geometry?.location?.lat || venue.lat}, lng=${details.geometry?.location?.lng || venue.lng}`);
-            console.log(`  Address: ${details.formatted_address || venue.address}`);
-          } else {
-            // Use fallback data
-            venues.push({
-              ...venue,
-              isOpen: null,
-              openingHours: venue.openingHours ?? [],
-              phone: venue.phone ?? null,
-              website: venue.website ?? null,
-              priceLevel: venue.priceLevel ?? null,
-              description: venue.description ?? null,
-            });
-            console.log(`Using fallback for: ${venue.name}`);
+        for (const list of nearbyResults) {
+          for (const place of list) {
+            if (!place.place_id || !place.geometry?.location) continue;
+            if (place.business_status && place.business_status !== 'OPERATIONAL') continue;
+            // Dedupe across category overlap (e.g. bar + night_club).
+            if (seen.has(place.place_id)) continue;
+            seen.set(place.place_id, place);
           }
         }
 
+        // Sort by quality (rating × log(reviews)) and cap to keep details
+        // enrichment within latency / quota budget.
+        const ranked = Array.from(seen.values())
+          .sort((a, b) => {
+            const sa = (a.rating ?? 0) * Math.log10((a.user_ratings_total ?? 0) + 10);
+            const sb = (b.rating ?? 0) * Math.log10((b.user_ratings_total ?? 0) + 10);
+            return sb - sa;
+          })
+          .slice(0, 40);
+
+        // Enrich each with Place Details (in parallel) for hours + phone + site.
+        const enriched = await Promise.all(
+          ranked.map(async (place) => {
+            try {
+              const d = new URL('https://maps.googleapis.com/maps/api/place/details/json');
+              d.searchParams.set('place_id', place.place_id);
+              d.searchParams.set(
+                'fields',
+                'formatted_address,formatted_phone_number,website,opening_hours,price_level,editorial_summary'
+              );
+              d.searchParams.set('key', apiKey);
+              const r = await fetch(d.toString());
+              const j = await r.json();
+              return { place, details: j.result ?? {} };
+            } catch {
+              return { place, details: {} };
+            }
+          })
+        );
+
+        const venues = enriched.map(({ place, details }) => ({
+          id: place.place_id,
+          name: place.name,
+          lat: place.geometry.location.lat,
+          lng: place.geometry.location.lng,
+          address: details.formatted_address ?? place.vicinity ?? '',
+          category: categoryFromTypes(place.types),
+          googleRating: place.rating ?? null,
+          googleTotalRatings: place.user_ratings_total ?? 0,
+          isOpen: place.opening_hours?.open_now ?? details.opening_hours?.open_now ?? null,
+          openingHours: details.opening_hours?.weekday_text ?? [],
+          website: details.website ?? null,
+          phone: details.formatted_phone_number ?? null,
+          priceLevel: details.price_level ?? place.price_level ?? null,
+          description: details.editorial_summary?.overview ?? null,
+          activity: deriveActivity(place.rating, place.user_ratings_total),
+        }));
+
         if (venues.length > 0) {
-          console.log(`Returning ${venues.length} venues (API + fallback)`);
+          console.log(`Returning ${venues.length} live Google Places venues`);
           return new Response(
-            JSON.stringify({ venues: venues.slice(0, 100), total: venues.length }),
+            JSON.stringify({ venues, total: venues.length, source: 'google_places' }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
+        console.warn('Nearby Search returned no usable results, falling back');
       } catch (apiError) {
         console.error('Google Places API error:', apiError);
       }
+    } else {
+      console.warn('GOOGLE_PLACES_API_KEY missing — using curated fallback list');
     }
 
-    // Fallback: Return hardcoded Charlotte venues
-    console.log('Using fallback Charlotte venue data');
+    // === Fallback: curated, verified venues (only when API unavailable) ===
     const fallbackVenues = CHARLOTTE_TOP_VENUES.map(venue => ({
       ...venue,
       isOpen: null,
@@ -195,7 +240,7 @@ Deno.serve(async (req) => {
     }));
 
     return new Response(
-      JSON.stringify({ venues: fallbackVenues, total: fallbackVenues.length }),
+      JSON.stringify({ venues: fallbackVenues, total: fallbackVenues.length, source: 'fallback' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
@@ -214,7 +259,7 @@ Deno.serve(async (req) => {
     }));
 
     return new Response(
-      JSON.stringify({ venues: fallbackVenues, total: fallbackVenues.length }),
+      JSON.stringify({ venues: fallbackVenues, total: fallbackVenues.length, source: 'fallback_error' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
