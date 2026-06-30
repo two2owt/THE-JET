@@ -3726,11 +3726,14 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               <div
                 style={{
                   marginTop: '2px',
-                  padding: '10px 12px',
+                  padding: isMobile ? '8px 9px' : '10px 12px',
                   borderRadius: '10px',
                   border: '1px solid hsl(var(--primary) / 0.25)',
                   background: 'linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--primary-glow) / 0.04))',
                   animation: 'fadeIn 220ms ease-out',
+                  maxHeight: isMobile ? '40dvh' : 'none',
+                  overflowY: 'auto',
+                  overscrollBehavior: 'contain',
                 }}
               >
                 <LiveStatsPanel
