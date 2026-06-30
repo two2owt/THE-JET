@@ -66,7 +66,7 @@ const loadMapboxGL = async (): Promise<MapboxGLModule> => {
   }
   return mapboxLoadPromise;
 };
-import { MapPin, Layers, Palette, X, AlertCircle, Route, Play, Pause, SkipBack, SkipForward, Clock, ChevronDown, ChevronUp, Car, BarChart3, RotateCcw, Calendar, Loader2 } from "lucide-react";
+import { MapPin, Layers, Palette, X, AlertCircle, Route, Play, Pause, SkipBack, SkipForward, Clock, ChevronDown, ChevronUp, Car, BarChart3, RotateCcw, Calendar, Loader2, CircleDot } from "lucide-react";
 import { HeatmapSkeleton } from "@/components/skeletons/HeatmapSkeleton";
 import { useLocationDensity } from "@/hooks/useLocationDensity";
 import { useMovementPaths } from "@/hooks/useMovementPaths";
@@ -232,6 +232,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     paths: "jet-map-layer-paths",
     parking: "jet-map-layer-parking",
     stats: "jet-map-layer-stats",
+    openNow: "jet-map-layer-open-now",
   } as const;
   type LayerName = keyof typeof LAYER_KEYS;
   const KNOWN_LAYERS = new Set<LayerName>(Object.keys(LAYER_KEYS) as LayerName[]);
