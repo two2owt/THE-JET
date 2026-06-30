@@ -3642,6 +3642,33 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               }}
             />
 
+            {/* Inline Live Stats — consolidated within the Layers panel for friendlier usability */}
+            {showLiveStats && (
+              <div
+                style={{
+                  marginTop: '2px',
+                  padding: '10px 12px',
+                  borderRadius: '10px',
+                  border: '1px solid hsl(var(--primary) / 0.25)',
+                  background: 'linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--primary-glow) / 0.04))',
+                  animation: 'fadeIn 220ms ease-out',
+                }}
+              >
+                <LiveStatsPanel
+                  open={showLiveStats}
+                  mapLoaded={mapLoaded}
+                  isMobile={isMobile}
+                  densityData={densityData}
+                  pathData={pathData}
+                  showDensityLayer={showDensityLayer}
+                  showMovementPaths={showMovementPaths}
+                  densityLoading={densityLoading}
+                  pathLoading={pathsLoading}
+                  variant="inline"
+                />
+              </div>
+            )}
+
             {/* Reset to defaults */}
             <button
               type="button"
@@ -3777,20 +3804,21 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
 
 
-      {/* Statistics Panel - Shows active data counts */}
-      {/* CRITICAL: Uses only opacity transition to avoid CLS - no translate/scale animations */}
-      {/* Hidden by default — only renders when the user explicitly enables the Live Stats layer toggle */}
-      <LiveStatsPanel
-        open={showLiveStats}
-        mapLoaded={mapLoaded}
-        isMobile={isMobile}
-        densityData={densityData}
-        pathData={pathData}
-        showDensityLayer={showDensityLayer}
-        showMovementPaths={showMovementPaths}
-        densityLoading={densityLoading}
-        pathLoading={pathsLoading}
-      />
+      {/* Floating Live Stats summary — only when the Layers panel is collapsed,
+          so users still see live activity without re-opening the panel. */}
+      {controlsCollapsed && (
+        <LiveStatsPanel
+          open={showLiveStats}
+          mapLoaded={mapLoaded}
+          isMobile={isMobile}
+          densityData={densityData}
+          pathData={pathData}
+          showDensityLayer={showDensityLayer}
+          showMovementPaths={showMovementPaths}
+          densityLoading={densityLoading}
+          pathLoading={pathsLoading}
+        />
+      )}
 
       {/* Enhanced Legend - Bottom left, responsive for all devices, collapsible on mobile */}
       {/* CRITICAL: Uses only opacity transition to avoid CLS - no translate animations */}

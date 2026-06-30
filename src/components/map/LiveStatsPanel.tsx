@@ -23,6 +23,8 @@ interface LiveStatsPanelProps {
   showMovementPaths: boolean;
   densityLoading?: boolean;
   pathLoading?: boolean;
+  /** "floating" (default) renders the standalone panel; "inline" renders just the content for embedding. */
+  variant?: "floating" | "inline";
 }
 
 /**
@@ -42,6 +44,7 @@ export const LiveStatsPanel = ({
   showMovementPaths,
   densityLoading,
   pathLoading,
+  variant = "floating",
 }: LiveStatsPanelProps) => {
   const [mounted, setMounted] = useState(open);
 
@@ -54,7 +57,8 @@ export const LiveStatsPanel = ({
     }
   }, [open]);
 
-  if (!mounted) return null;
+  if (!mounted && variant === "floating") return null;
+  if (variant === "inline" && !open) return null;
 
   const grid = densityData?.stats.grid_cells ?? 0;
   const checkins = densityData?.stats.total_points ?? 0;
@@ -121,6 +125,107 @@ export const LiveStatsPanel = ({
       });
   }
 
+  const content = (
+    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        {isLoading ? (
+          <Loader2
+            aria-hidden="true"
+            className="animate-spin"
+            style={{ width: "8px", height: "8px", color: "hsl(var(--primary))" }}
+          />
+        ) : (
+          <span
+            aria-hidden="true"
+            style={{
+              width: "8px",
+              height: "8px",
+              borderRadius: "9999px",
+              background: vibe.dot,
+              boxShadow: `0 0 8px ${vibe.dot}`,
+            }}
+          />
+        )}
+        <p
+          className="font-display"
+          style={{
+            fontSize: "11px",
+            fontWeight: 700,
+            color: "hsl(var(--foreground))",
+            letterSpacing: "0.04em",
+            textTransform: "uppercase",
+          }}
+        >
+          {vibe.label}
+        </p>
+      </div>
+
+      {isLoading ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+          {[0, 1].map((i) => (
+            <div
+              key={i}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "12px",
+              }}
+            >
+              <span
+                className="animate-pulse"
+                style={{
+                  ...labelStyle,
+                  width: "45%",
+                  height: "10px",
+                  borderRadius: "4px",
+                  background: "hsl(var(--muted-foreground) / 0.25)",
+                }}
+              />
+              <span
+                className="animate-pulse"
+                style={{
+                  ...valueStyle,
+                  width: "20%",
+                  height: "10px",
+                  borderRadius: "4px",
+                  background: "hsl(var(--primary) / 0.25)",
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      ) : rows.length > 0 ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+          {rows.map((row) => (
+            <div
+              key={row.key}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "12px",
+              }}
+            >
+              <span style={labelStyle}>{row.label}</span>
+              <span style={{ ...valueStyle, color: row.tone }}>{row.value}</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p style={labelStyle}>
+          {showDensityLayer || showMovementPaths
+            ? "No live activity in view yet."
+            : "Enable Heatmap or Flow Paths to see live activity."}
+        </p>
+      )}
+    </div>
+  );
+
+  if (variant === "inline") {
+    return content;
+  }
+
   return (
     <div
       style={{
@@ -147,100 +252,7 @@ export const LiveStatsPanel = ({
         pointerEvents: open && mapLoaded ? "auto" : "none",
       }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          {isLoading ? (
-            <Loader2
-              aria-hidden="true"
-              className="animate-spin"
-              style={{
-                width: "8px",
-                height: "8px",
-                color: "hsl(var(--primary))",
-              }}
-            />
-          ) : (
-            <span
-              aria-hidden="true"
-              style={{
-                width: "8px",
-                height: "8px",
-                borderRadius: "9999px",
-                background: vibe.dot,
-                boxShadow: `0 0 8px ${vibe.dot}`,
-              }}
-            />
-          )}
-          <p
-            className="font-display"
-            style={{
-              fontSize: "11px",
-              fontWeight: 700,
-              color: "hsl(var(--foreground))",
-              letterSpacing: "0.04em",
-              textTransform: "uppercase",
-            }}
-          >
-            {vibe.label}
-          </p>
-        </div>
-
-        {isLoading ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-            {[0, 1].map((i) => (
-              <div
-                key={i}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: "12px",
-                }}
-              >
-                <span
-                  className="animate-pulse"
-                  style={{
-                    ...labelStyle,
-                    width: "45%",
-                    height: "10px",
-                    borderRadius: "4px",
-                    background: "hsl(var(--muted-foreground) / 0.25)",
-                  }}
-                />
-                <span
-                  className="animate-pulse"
-                  style={{
-                    ...valueStyle,
-                    width: "20%",
-                    height: "10px",
-                    borderRadius: "4px",
-                    background: "hsl(var(--primary) / 0.25)",
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-        ) : rows.length > 0 ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-            {rows.map((row) => (
-              <div
-                key={row.key}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: "12px",
-                }}
-              >
-                <span style={labelStyle}>{row.label}</span>
-                <span style={{ ...valueStyle, color: row.tone }}>{row.value}</span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p style={labelStyle}>No live activity in view yet.</p>
-        )}
-      </div>
+      {content}
     </div>
   );
 };
