@@ -92,12 +92,13 @@ export const LiveStatsPanel = ({
     whiteSpace: "nowrap",
   };
   const valueStyle: React.CSSProperties = {
-    fontSize: isMobile ? "12px" : "13px",
+    fontSize: isMobile ? "11px" : "13px",
     fontWeight: 700,
     lineHeight: 1.1,
     fontVariantNumeric: "tabular-nums",
     flexShrink: 0,
   };
+  const rowGap = isMobile ? "8px" : "12px";
 
   type Row = { key: string; label: string; value: string; tone: string };
   const rows: Row[] = [];
