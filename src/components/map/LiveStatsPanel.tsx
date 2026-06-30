@@ -83,7 +83,7 @@ export const LiveStatsPanel = ({
           : { label: "Live activity", dot: "hsl(var(--muted-foreground))" };
 
   const labelStyle: React.CSSProperties = {
-    fontSize: isMobile ? "10px" : "11px",
+    fontSize: "var(--live-stats-label-size)",
     color: "hsl(var(--muted-foreground))",
     lineHeight: 1.2,
     minWidth: 0,
@@ -92,13 +92,12 @@ export const LiveStatsPanel = ({
     whiteSpace: "nowrap",
   };
   const valueStyle: React.CSSProperties = {
-    fontSize: isMobile ? "11px" : "13px",
+    fontSize: "var(--live-stats-value-size)",
     fontWeight: 700,
     lineHeight: 1.1,
     fontVariantNumeric: "tabular-nums",
     flexShrink: 0,
   };
-  const rowGap = isMobile ? "8px" : "12px";
 
   type Row = { key: string; label: string; value: string; tone: string };
   const rows: Row[] = [];
