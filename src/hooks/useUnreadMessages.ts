@@ -61,7 +61,7 @@ export function useUnreadMessages() {
 
           // Don't toast if user is actively in /messages with this friend open.
           const onMessagesPage = locationRef.current.pathname.startsWith("/messages");
-          const openFriend = new URLSearchParams(locationRef.current.search).get("friend");
+          const openFriend = new URLSearchParams(locationRef.current.search).get("chat");
           const isViewingThisChat = onMessagesPage && openFriend === msg.sender_id;
 
           if (!isViewingThisChat) {
@@ -82,7 +82,7 @@ export function useUnreadMessages() {
               action: {
                 label: "Open",
                 onClick: () =>
-                  navigate(`/messages?friend=${msg.sender_id}`),
+                  navigate(`/messages?chat=${msg.sender_id}`),
               },
             });
           }
@@ -102,8 +102,15 @@ export function useUnreadMessages() {
       )
       .subscribe();
 
+    // Local fast-path: any tab in this app can dispatch `messages:read`
+    // to refresh the badge immediately, without waiting for the realtime
+    // UPDATE round-trip.
+    const onLocalRead = () => refresh();
+    window.addEventListener("messages:read", onLocalRead);
+
     return () => {
       channel.unsubscribe();
+      window.removeEventListener("messages:read", onLocalRead);
     };
   }, [userId, refresh, navigate]);
 
