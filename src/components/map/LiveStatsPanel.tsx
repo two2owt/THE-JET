@@ -136,7 +136,7 @@ export const LiveStatsPanel = ({
   }
 
   const content = (
-    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? "6px" : "8px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
         {isLoading ? (
           <Loader2
@@ -179,7 +179,7 @@ export const LiveStatsPanel = ({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                gap: "12px",
+                gap: rowGap,
               }}
             >
               <span
@@ -214,7 +214,7 @@ export const LiveStatsPanel = ({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                gap: "12px",
+                gap: rowGap,
               }}
             >
               <span style={labelStyle}>{row.label}</span>
