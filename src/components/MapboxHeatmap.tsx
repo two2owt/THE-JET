@@ -444,13 +444,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Memoized venueId → open status map. Recomputed only when the venue list
   // identity changes or the minute tick fires — not on unrelated re-renders.
   const venueOpenStatus = useMemo(() => {
-    const m = new Map<string, boolean | null>();
-    for (const v of venues) {
-      const status =
-        (v.isOpen ?? null) !== null ? (v.isOpen as boolean) : isVenueOpenNow(v.openingHours);
-      m.set(v.id, status);
-    }
-    return m;
+    return buildVenueOpenStatus(venues);
     // openNowTick intentionally invalidates the cache each minute.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [venues, openNowTick]);
