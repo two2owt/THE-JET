@@ -126,9 +126,13 @@ Deno.serve(async (req) => {
               googleRating: details.rating || place.rating || venue.googleRating,
               googleTotalRatings: details.user_ratings_total || place.user_ratings_total || venue.googleTotalRatings,
               isOpen: place.opening_hours?.open_now ?? null,
-              openingHours: details.opening_hours?.weekday_text || [],
-              website: details.website,
-              phone: details.formatted_phone_number,
+              openingHours: details.opening_hours?.weekday_text?.length
+                ? details.opening_hours.weekday_text
+                : venue.openingHours ?? [],
+              website: details.website ?? venue.website ?? null,
+              phone: details.formatted_phone_number ?? venue.phone ?? null,
+              priceLevel: details.price_level ?? venue.priceLevel ?? null,
+              description: venue.description ?? null,
               activity: venue.activity,
             });
 
@@ -140,7 +144,11 @@ Deno.serve(async (req) => {
             venues.push({
               ...venue,
               isOpen: null,
-              openingHours: [],
+              openingHours: venue.openingHours ?? [],
+              phone: venue.phone ?? null,
+              website: venue.website ?? null,
+              priceLevel: venue.priceLevel ?? null,
+              description: venue.description ?? null,
             });
             console.log(`Using fallback for: ${venue.name}`);
           }
@@ -163,7 +171,11 @@ Deno.serve(async (req) => {
     const fallbackVenues = CHARLOTTE_TOP_VENUES.map(venue => ({
       ...venue,
       isOpen: null,
-      openingHours: [],
+      openingHours: venue.openingHours ?? [],
+      phone: venue.phone ?? null,
+      website: venue.website ?? null,
+      priceLevel: venue.priceLevel ?? null,
+      description: venue.description ?? null,
     }));
 
     return new Response(
@@ -178,7 +190,11 @@ Deno.serve(async (req) => {
     const fallbackVenues = CHARLOTTE_TOP_VENUES.map(venue => ({
       ...venue,
       isOpen: null,
-      openingHours: [],
+      openingHours: venue.openingHours ?? [],
+      phone: venue.phone ?? null,
+      website: venue.website ?? null,
+      priceLevel: venue.priceLevel ?? null,
+      description: venue.description ?? null,
     }));
 
     return new Response(
