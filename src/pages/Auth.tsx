@@ -1044,16 +1044,16 @@ const Auth = () => {
           )}
 
           {/* Resend Verification */}
-          {showResendVerification && !isVerified && !isResettingPassword && (
+          {showResendVerification && !isResettingPassword && (
             <div className="mt-4 sm:mt-5 flex flex-col gap-2 rounded-xl border border-primary/25 bg-card/40 p-4 backdrop-blur-md">
               <div className="text-center text-xs text-muted-foreground">
                 {isVerified
-                  ? "Your email is verified."
+                  ? "Your email is verified. Sign in to get started."
                   : "Didn't receive the verification email, or did your link expire?"}
               </div>
               <AuthButton
                 onClick={handleResendVerification}
-                disabled={resendCooldown > 0 || isVerified}
+                disabled={!isVerified && resendCooldown > 0}
                 loading={isResending}
                 variant={isVerified ? "primary" : "secondary"}
                 size="md"
@@ -1065,9 +1065,11 @@ const Auth = () => {
                     ? `Resend in ${resendCooldown}s`
                     : "Resend Verification Email"}
               </AuthButton>
-              <div className="text-center text-[10px] text-muted-foreground">
-                Verification links expire 1 hour after they're sent.
-              </div>
+              {!isVerified && (
+                <div className="text-center text-[10px] text-muted-foreground">
+                  Verification links expire 1 hour after they're sent.
+                </div>
+              )}
             </div>
           )}
 
