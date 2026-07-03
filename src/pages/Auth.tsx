@@ -400,7 +400,21 @@ const Auth = () => {
         description: "Please check your inbox and spam folder.",
       });
       setResendCooldown(60); // 60 second cooldown
-    } catch {
+    } catch (err) {
+      const message = err instanceof Error ? err.message.toLowerCase() : "";
+      if (
+        message.includes("already verified") ||
+        message.includes("email already confirmed") ||
+        message.includes("user already confirmed") ||
+        message.includes("over_email_send_rate_limit")
+      ) {
+        toast.success("Already verified", {
+          description: "Your email is verified. Sign in to continue.",
+        });
+        setIsVerified(true);
+        navigate("/auth?mode=signin", { replace: true });
+        return;
+      }
       toast.error("Failed to resend email", {
         description: "Please try again or contact support if the issue persists.",
       });
