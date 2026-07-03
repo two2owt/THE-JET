@@ -405,8 +405,7 @@ const Auth = () => {
       if (
         message.includes("already verified") ||
         message.includes("email already confirmed") ||
-        message.includes("user already confirmed") ||
-        message.includes("over_email_send_rate_limit")
+        message.includes("user already confirmed")
       ) {
         toast.success("Already verified", {
           description: "Your email is verified. Sign in to continue.",
