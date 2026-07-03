@@ -354,6 +354,15 @@ const Auth = () => {
   };
 
   const handleResendVerification = async () => {
+    // Short-circuit if the user already verified to avoid Supabase 422 errors.
+    if (isVerified) {
+      toast.success("Already verified", {
+        description: "Your email is verified. Sign in to continue.",
+      });
+      navigate("/auth?mode=signin", { replace: true });
+      return;
+    }
+
     // Validate email first
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) {
