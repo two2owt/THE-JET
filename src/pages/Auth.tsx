@@ -15,6 +15,7 @@ import { writeCachedOnboardingStatus } from "@/lib/onboardingStatus";
 import { discardCurrentAuthSession } from "@/lib/authSession";
 import { SEO } from "@/components/SEO";
 import { AuthPWAInstallPromptWrapper } from "@/components/AuthPWAInstallPromptWrapper";
+import { getAppUrl } from "@/lib/utils";
 // Use the new JET logo for auth page
 import jetLogo from "@/assets/jet-auth-logo.png";
 import authBackground from "@/assets/auth-background.webp";
@@ -37,11 +38,6 @@ type AuthMode = "signin" | "signup" | "forgot" | "reset";
 type FieldName = "email" | "password" | "confirmPassword";
 type ValidationErrors = Partial<Record<FieldName | "consent" | "locationConsent", string>>;
 
-/** Always send Supabase email links to the production origin when running locally. */
-const getAppUrl = (): string =>
-  window.location.origin.includes("localhost")
-    ? "https://jet-around.com"
-    : window.location.origin;
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -319,7 +315,7 @@ const Auth = () => {
       // can route new Google users to /onboarding and returning users to
       // their remembered deep link via consumePostAuthRedirect.
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: `${window.location.origin}/auth`,
+        redirect_uri: `${getAppUrl()}/auth`,
         extraParams: { prompt: "select_account" },
       });
       if (result.error) {
