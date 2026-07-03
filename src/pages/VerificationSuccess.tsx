@@ -181,6 +181,15 @@ export default function VerificationSuccess() {
   }, [isVerified, flow, resendEmail]);
 
   const handleResend = async () => {
+    // Prevent resend requests after verification to avoid Supabase 422 errors.
+    if (isVerified) {
+      toast.success("Already verified", {
+        description: "Your email is verified. Continuing to the app…",
+      });
+      navigate("/", { replace: true });
+      return;
+    }
+
     const email = resendEmail.trim().toLowerCase();
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setResendStatus("error");
