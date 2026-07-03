@@ -15,6 +15,7 @@ import { writeCachedOnboardingStatus } from "@/lib/onboardingStatus";
 import { discardCurrentAuthSession } from "@/lib/authSession";
 import { SEO } from "@/components/SEO";
 import { AuthPWAInstallPromptWrapper } from "@/components/AuthPWAInstallPromptWrapper";
+import { getAppUrl } from "@/lib/utils";
 // Use the new JET logo for auth page
 import jetLogo from "@/assets/jet-auth-logo.png";
 import authBackground from "@/assets/auth-background.webp";
@@ -37,11 +38,6 @@ type AuthMode = "signin" | "signup" | "forgot" | "reset";
 type FieldName = "email" | "password" | "confirmPassword";
 type ValidationErrors = Partial<Record<FieldName | "consent" | "locationConsent", string>>;
 
-/** Always send Supabase email links to the production origin when running locally. */
-const getAppUrl = (): string =>
-  window.location.origin.includes("localhost")
-    ? "https://jet-around.com"
-    : window.location.origin;
 
 const Auth = () => {
   const navigate = useNavigate();
