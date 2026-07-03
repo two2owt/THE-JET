@@ -146,6 +146,33 @@ const Auth = () => {
     }
   }, [resendCooldown]);
 
+  // Detect when the user has already verified their email so we can
+  // short-circuit the resend button and avoid 422 errors from Supabase.
+  useEffect(() => {
+    if (!showResendVerification) return;
+    let cancelled = false;
+    const checkVerified = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (cancelled) return;
+      const verified = !!user?.email_confirmed_at || !!(user as any)?.confirmed_at;
+      setIsVerified(verified);
+      if (verified) {
+        setSuccessMessage("Your email is verified. You can sign in now.");
+      }
+    };
+    checkVerified();
+    const interval = setInterval(checkVerified, 10000);
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") checkVerified();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [showResendVerification]);
+
   // Single-field validation for inline feedback
   const getFieldError = (field: FieldName, value?: string, compareValue?: string): string | undefined => {
     const fieldValue = value ?? (field === "email" ? email : field === "password" ? password : confirmPassword);
