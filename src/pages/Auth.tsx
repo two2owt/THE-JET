@@ -319,7 +319,7 @@ const Auth = () => {
       // can route new Google users to /onboarding and returning users to
       // their remembered deep link via consumePostAuthRedirect.
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: `${window.location.origin}/auth`,
+        redirect_uri: `${getAppUrl()}/auth`,
         extraParams: { prompt: "select_account" },
       });
       if (result.error) {

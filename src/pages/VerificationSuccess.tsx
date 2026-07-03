@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AuthPWAInstallPromptWrapper } from "@/components/AuthPWAInstallPromptWrapper";
 import { useHeaderConfig } from "@/contexts/HeaderContext";
+import { getAppUrl } from "@/lib/utils";
 
 const RESEND_EMAIL_KEY = "jet_verification_email";
 const WELCOME_SENT_PREFIX = "jet_welcome_sent:";
@@ -205,7 +206,7 @@ export default function VerificationSuccess() {
         type: "signup",
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/verification-success`,
+          emailRedirectTo: `${getAppUrl()}/verification-success`,
         },
       });
 
