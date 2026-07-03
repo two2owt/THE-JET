@@ -61,6 +61,7 @@ const Auth = () => {
   const [showResendVerification, setShowResendVerification] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [isResending, setIsResending] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
   const [dataProcessingConsent, setDataProcessingConsent] = useState(false);
   const [locationConsent, setLocationConsent] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
