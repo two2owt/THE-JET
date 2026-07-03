@@ -61,6 +61,7 @@ const Auth = () => {
   const [showResendVerification, setShowResendVerification] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [isResending, setIsResending] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
   const [dataProcessingConsent, setDataProcessingConsent] = useState(false);
   const [locationConsent, setLocationConsent] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -144,6 +145,33 @@ const Auth = () => {
       return () => clearTimeout(timer);
     }
   }, [resendCooldown]);
+
+  // Detect when the user has already verified their email so we can
+  // short-circuit the resend button and avoid 422 errors from Supabase.
+  useEffect(() => {
+    if (!showResendVerification) return;
+    let cancelled = false;
+    const checkVerified = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (cancelled) return;
+      const verified = !!user?.email_confirmed_at || !!(user as any)?.confirmed_at;
+      setIsVerified(verified);
+      if (verified) {
+        setSuccessMessage("Your email is verified. You can sign in now.");
+      }
+    };
+    checkVerified();
+    const interval = setInterval(checkVerified, 10000);
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") checkVerified();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [showResendVerification]);
 
   // Single-field validation for inline feedback
   const getFieldError = (field: FieldName, value?: string, compareValue?: string): string | undefined => {
@@ -326,6 +354,15 @@ const Auth = () => {
   };
 
   const handleResendVerification = async () => {
+    // Short-circuit if the user already verified to avoid Supabase 422 errors.
+    if (isVerified) {
+      toast.success("Already verified", {
+        description: "Your email is verified. Sign in to continue.",
+      });
+      navigate("/auth?mode=signin", { replace: true });
+      return;
+    }
+
     // Validate email first
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) {
@@ -363,7 +400,20 @@ const Auth = () => {
         description: "Please check your inbox and spam folder.",
       });
       setResendCooldown(60); // 60 second cooldown
-    } catch {
+    } catch (err) {
+      const message = err instanceof Error ? err.message.toLowerCase() : "";
+      if (
+        message.includes("already verified") ||
+        message.includes("email already confirmed") ||
+        message.includes("user already confirmed")
+      ) {
+        toast.success("Already verified", {
+          description: "Your email is verified. Sign in to continue.",
+        });
+        setIsVerified(true);
+        navigate("/auth?mode=signin", { replace: true });
+        return;
+      }
       toast.error("Failed to resend email", {
         description: "Please try again or contact support if the issue persists.",
       });
@@ -1010,21 +1060,29 @@ const Auth = () => {
           {showResendVerification && !isResettingPassword && (
             <div className="mt-4 sm:mt-5 flex flex-col gap-2 rounded-xl border border-primary/25 bg-card/40 p-4 backdrop-blur-md">
               <div className="text-center text-xs text-muted-foreground">
-                Didn't receive the verification email, or did your link expire?
+                {isVerified
+                  ? "Your email is verified. Sign in to get started."
+                  : "Didn't receive the verification email, or did your link expire?"}
               </div>
               <AuthButton
                 onClick={handleResendVerification}
-                disabled={resendCooldown > 0}
+                disabled={!isVerified && resendCooldown > 0}
                 loading={isResending}
-                variant="secondary"
+                variant={isVerified ? "primary" : "secondary"}
                 size="md"
                 fullWidth
               >
-                {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend Verification Email"}
+                {isVerified
+                  ? "Sign In"
+                  : resendCooldown > 0
+                    ? `Resend in ${resendCooldown}s`
+                    : "Resend Verification Email"}
               </AuthButton>
-              <div className="text-center text-[10px] text-muted-foreground">
-                Verification links expire 1 hour after they're sent.
-              </div>
+              {!isVerified && (
+                <div className="text-center text-[10px] text-muted-foreground">
+                  Verification links expire 1 hour after they're sent.
+                </div>
+              )}
             </div>
           )}
 
