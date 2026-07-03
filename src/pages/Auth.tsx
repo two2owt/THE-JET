@@ -1044,20 +1044,26 @@ const Auth = () => {
           )}
 
           {/* Resend Verification */}
-          {showResendVerification && !isResettingPassword && (
+          {showResendVerification && !isVerified && !isResettingPassword && (
             <div className="mt-4 sm:mt-5 flex flex-col gap-2 rounded-xl border border-primary/25 bg-card/40 p-4 backdrop-blur-md">
               <div className="text-center text-xs text-muted-foreground">
-                Didn't receive the verification email, or did your link expire?
+                {isVerified
+                  ? "Your email is verified."
+                  : "Didn't receive the verification email, or did your link expire?"}
               </div>
               <AuthButton
                 onClick={handleResendVerification}
-                disabled={resendCooldown > 0}
+                disabled={resendCooldown > 0 || isVerified}
                 loading={isResending}
-                variant="secondary"
+                variant={isVerified ? "primary" : "secondary"}
                 size="md"
                 fullWidth
               >
-                {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend Verification Email"}
+                {isVerified
+                  ? "Sign In"
+                  : resendCooldown > 0
+                    ? `Resend in ${resendCooldown}s`
+                    : "Resend Verification Email"}
               </AuthButton>
               <div className="text-center text-[10px] text-muted-foreground">
                 Verification links expire 1 hour after they're sent.
