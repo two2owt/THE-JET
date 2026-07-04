@@ -3465,8 +3465,78 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             />
 
             {/* Heat filters - shown when heat is on */}
-            <div style={{ overflow: 'hidden', transition: 'max-height 0.2s', maxHeight: showDensityLayer ? '240px' : '0px' }}>
+            <div style={{ overflow: 'hidden', transition: 'max-height 0.3s', maxHeight: showDensityLayer ? '900px' : '0px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '10px', paddingTop: '8px', paddingBottom: '2px' }}>
+                {/* Heatmap paint sliders — real-time, no round-trip. */}
+                <LayerSliderRow
+                  label="Intensity"
+                  Icon={Palette}
+                  ariaLabel="Heatmap intensity multiplier"
+                  min={0.5}
+                  max={2}
+                  step={0.1}
+                  value={heatIntensity}
+                  onChange={setHeatIntensity}
+                  defaultValue={1}
+                  format={(v) => `${v.toFixed(1)}x`}
+                />
+                <LayerSliderRow
+                  label="Radius"
+                  Icon={CircleDot}
+                  ariaLabel="Heatmap radius multiplier"
+                  min={0.5}
+                  max={2}
+                  step={0.1}
+                  value={heatRadius}
+                  onChange={setHeatRadius}
+                  defaultValue={1}
+                  format={(v) => `${v.toFixed(1)}x`}
+                />
+                <LayerSliderRow
+                  label="Opacity"
+                  Icon={Layers}
+                  ariaLabel="Heatmap opacity"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={heatOpacity}
+                  onChange={setHeatOpacity}
+                  defaultValue={1}
+                  format={(v) => `${Math.round(v * 100)}%`}
+                />
+                {/* Time-window slider — server round-trip, only fires on
+                    commit so drags don't spam the edge function. */}
+                {!timelapseMode && (
+                  <LayerSliderRow
+                    label="Time window"
+                    Icon={Clock}
+                    ariaLabel="Density data time window"
+                    min={0}
+                    max={4}
+                    step={1}
+                    value={
+                      densityWindowMinutes === null ? 0 :
+                      densityWindowMinutes === 15 ? 1 :
+                      densityWindowMinutes === 60 ? 2 :
+                      densityWindowMinutes === 360 ? 3 :
+                      densityWindowMinutes === 1440 ? 4 : 0
+                    }
+                    onChange={(step) => {
+                      const mapping = [null, 15, 60, 360, 1440];
+                      setDensityWindowMinutes(mapping[step] ?? null);
+                    }}
+                    onCommit={() => refreshDensity()}
+                    format={(step) => (['Preset','15m','1h','6h','24h'][step] ?? 'Preset')}
+                    ticks={[
+                      { value: 0, label: 'Preset' },
+                      { value: 1, label: '15m' },
+                      { value: 2, label: '1h' },
+                      { value: 3, label: '6h' },
+                      { value: 4, label: '24h' },
+                    ]}
+                    defaultValue={0}
+                  />
+                )}
                 {/* Time-lapse toggle — glassmorphic pill matching LayerToggleRow */}
                 <button
                   type="button"
