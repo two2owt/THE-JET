@@ -4035,9 +4035,82 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               <RotateCcw style={{ width: '12px', height: '12px' }} />
               Reset to defaults
             </button>
-
-          </div>
-        </div>
+            </>
+          );
+          if (isMobile) {
+            return (
+              <Sheet
+                open={!controlsCollapsed}
+                onOpenChange={(o) => setControlsCollapsed(!o)}
+              >
+                <SheetContent
+                  side="bottom"
+                  className="p-0 rounded-t-2xl border-t bg-card/95 backdrop-blur-xl"
+                  style={{
+                    maxHeight: '85dvh',
+                    paddingBottom: 'env(safe-area-inset-bottom)',
+                  }}
+                >
+                  <SheetHeader className="px-4 pt-3 pb-2">
+                    <SheetTitle className="font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground text-left">
+                      Map Layers
+                    </SheetTitle>
+                  </SheetHeader>
+                  <div
+                    style={{
+                      padding: '4px 14px 18px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '10px',
+                      overflowY: 'auto',
+                      maxHeight:
+                        'calc(85dvh - 56px - env(safe-area-inset-bottom))',
+                      overscrollBehavior: 'contain',
+                    }}
+                  >
+                    {panelBody}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            );
+          }
+          return (
+            <div
+              style={{
+                width: '200px',
+                contain: 'layout style',
+                overflow: 'hidden',
+                transition:
+                  'max-height 300ms ease-out, opacity 300ms ease-out, margin-bottom 300ms ease-out',
+                maxHeight: !controlsCollapsed ? '600px' : '0px',
+                opacity: !controlsCollapsed ? 1 : 0,
+                marginBottom: !controlsCollapsed ? '8px' : '0px',
+              }}
+            >
+              <div
+                style={{
+                  background: 'hsl(var(--card) / 0.95)',
+                  backdropFilter: 'blur(24px) saturate(1.6)',
+                  WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
+                  borderRadius: '12px',
+                  border: '1px solid hsl(var(--border))',
+                  boxShadow:
+                    '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
+                  padding: '10px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                  maxHeight:
+                    'calc(100dvh - var(--map-fixed-bottom, 72px) - 252px)',
+                  overflowY: 'auto',
+                  overscrollBehavior: 'contain',
+                }}
+              >
+                {panelBody}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Active layer icon chips — visible when panel is collapsed */}
         {controlsCollapsed && (
