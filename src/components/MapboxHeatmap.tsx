@@ -85,6 +85,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Slider } from "./ui/slider";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "./ui/sheet";
+import { Input } from "./ui/input";
 import { Search } from "lucide-react";
 
 import { CITIES, type City, getNearestCity, getCitiesSortedByDistance, kmToMiles } from "@/types/cities";
