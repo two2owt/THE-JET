@@ -1685,15 +1685,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           10, 1,
         ],
         // Dynamic intensity based on zoom with higher peak. Each stop is
-        // scaled by the `heatIntensity` slider (0.5x-2x) so users can dim
-        // or boost the heat without a re-fetch.
+        // scaled by the `heatIntensity` slider (0.5x-2x). The initial build
+        // reads from a ref so slider changes update via setPaintProperty
+        // (paint-only effect below) instead of triggering a full rebuild.
         'heatmap-intensity': [
           'interpolate',
           ['exponential', 2],
           ['zoom'],
-          0, (isMobile ? 2.2 : 2) * heatIntensity,
-          9, (isMobile ? 2.6 : 3) * heatIntensity,
-          15, (isMobile ? 4 : 5) * heatIntensity,
+          0, (isMobile ? 2.2 : 2) * heatIntensityRef.current,
+          9, (isMobile ? 2.6 : 3) * heatIntensityRef.current,
+          15, (isMobile ? 4 : 5) * heatIntensityRef.current,
         ],
         // Enhanced vibrant color ramp with smooth gradients
         'heatmap-color': [
@@ -1720,14 +1721,14 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           'interpolate',
           ['cubic-bezier', 0.4, 0, 0.2, 1],
           ['zoom'],
-          0,  (isMobile ? 26 : 20) * heatRadius,
-          5,  (isMobile ? 38 : 30) * heatRadius,
-          9,  (isMobile ? 60 : 50) * heatRadius,
-          11, (isMobile ? 72 : 60) * heatRadius,
-          12, (isMobile ? 82 : 70) * heatRadius,
-          13, (isMobile ? 94 : 80) * heatRadius,
-          15, (isMobile ? 115 : 100) * heatRadius,
-          17, (isMobile ? 130 : 115) * heatRadius,
+          0,  (isMobile ? 26 : 20) * heatRadiusRef.current,
+          5,  (isMobile ? 38 : 30) * heatRadiusRef.current,
+          9,  (isMobile ? 60 : 50) * heatRadiusRef.current,
+          11, (isMobile ? 72 : 60) * heatRadiusRef.current,
+          12, (isMobile ? 82 : 70) * heatRadiusRef.current,
+          13, (isMobile ? 94 : 80) * heatRadiusRef.current,
+          15, (isMobile ? 115 : 100) * heatRadiusRef.current,
+          17, (isMobile ? 130 : 115) * heatRadiusRef.current,
         ],
         // Opacity eased with cubic-bezier and extra anchor stops so the
         // layer never abruptly washes out as the user zooms in or out.
@@ -1736,13 +1737,13 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           'interpolate',
           ['cubic-bezier', 0.4, 0, 0.2, 1],
           ['zoom'],
-          5,  (isMobile ? 0.85 : 1)    * heatOpacity,
-          7,  (isMobile ? 0.82 : 0.95) * heatOpacity,
-          10, (isMobile ? 0.8  : 0.92) * heatOpacity,
-          12, (isMobile ? 0.78 : 0.9)  * heatOpacity,
-          14, (isMobile ? 0.74 : 0.87) * heatOpacity,
-          15, (isMobile ? 0.7  : 0.85) * heatOpacity,
-          17, (isMobile ? 0.6  : 0.75) * heatOpacity,
+          5,  (isMobile ? 0.85 : 1)    * heatOpacityRef.current,
+          7,  (isMobile ? 0.82 : 0.95) * heatOpacityRef.current,
+          10, (isMobile ? 0.8  : 0.92) * heatOpacityRef.current,
+          12, (isMobile ? 0.78 : 0.9)  * heatOpacityRef.current,
+          14, (isMobile ? 0.74 : 0.87) * heatOpacityRef.current,
+          15, (isMobile ? 0.7  : 0.85) * heatOpacityRef.current,
+          17, (isMobile ? 0.6  : 0.75) * heatOpacityRef.current,
         ],
         // Paint-property transitions: smoothly tween between values when the
         // layer is re-evaluated (city switch, time-lapse hour change, mobile
