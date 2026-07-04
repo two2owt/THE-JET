@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DeleteAccountDialog } from "@/components/settings/DeleteAccountDialog";
 import { Mail, Loader2, ShieldAlert, Save, AtSign, AlertTriangle, KeyRound } from "lucide-react";
+import { getAppUrl } from "@/lib/utils";
 
 /**
  * Account management section: email change, password change, delete account.
@@ -85,7 +86,7 @@ export function AccountSection({ userId, currentEmail }: AccountSectionProps) {
     try {
       const { error } = await supabase.auth.updateUser(
         { email: parsed.data.email },
-        { emailRedirectTo: `${window.location.origin}/verification-success` }
+        { emailRedirectTo: `${getAppUrl()}/verification-success` }
       );
       if (error) throw error;
 
