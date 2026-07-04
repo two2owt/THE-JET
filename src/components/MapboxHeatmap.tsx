@@ -533,6 +533,13 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
   // Controls visibility state - collapsed by default for maximum map visibility
   const [controlsCollapsed, setControlsCollapsed] = useState(true);
+  // On mobile, auto-close the layers bottom sheet whenever a venue is
+  // selected so the JetCard has clear space and never sits behind the sheet.
+  useEffect(() => {
+    if (isMobile && selectedVenue && !controlsCollapsed) {
+      setControlsCollapsed(true);
+    }
+  }, [isMobile, selectedVenue, controlsCollapsed]);
   const [legendCollapsed, setLegendCollapsed] = useState(true);
   
   // User location state
