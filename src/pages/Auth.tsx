@@ -15,7 +15,7 @@ import { writeCachedOnboardingStatus } from "@/lib/onboardingStatus";
 import { discardCurrentAuthSession } from "@/lib/authSession";
 import { SEO } from "@/components/SEO";
 import { AuthPWAInstallPromptWrapper } from "@/components/AuthPWAInstallPromptWrapper";
-import { getAppUrl } from "@/lib/utils";
+import { getAppUrl, buildAuthRedirectUrl } from "@/lib/utils";
 // Use the new JET logo for auth page
 import jetLogo from "@/assets/jet-auth-logo.png";
 import authBackground from "@/assets/auth-background.webp";
@@ -315,7 +315,7 @@ const Auth = () => {
       // can route new Google users to /onboarding and returning users to
       // their remembered deep link via consumePostAuthRedirect.
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: `${getAppUrl()}/auth`,
+        redirect_uri: buildAuthRedirectUrl("/auth"),
         extraParams: { prompt: "select_account" },
       });
       if (result.error) {
@@ -381,7 +381,7 @@ const Auth = () => {
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: email.trim(),
-        options: { emailRedirectTo: `${getAppUrl()}/verification-success` },
+        options: { emailRedirectTo: buildAuthRedirectUrl("/verification-success") },
       });
 
       if (error) {
@@ -425,7 +425,7 @@ const Auth = () => {
     const { data: signUpData, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
-      options: { emailRedirectTo: `${getAppUrl()}/verification-success` },
+      options: { emailRedirectTo: buildAuthRedirectUrl("/verification-success") },
     });
 
     const accountExistsToast = () =>
@@ -563,7 +563,7 @@ const Auth = () => {
 
   const doForgotPassword = async () => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${getAppUrl()}/auth?reset=true`,
+      redirectTo: buildAuthRedirectUrl("/auth", { reset: "true" }),
     });
     if (error) {
       if (handleCommonAuthError(error)) return;
