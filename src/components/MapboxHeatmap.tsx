@@ -398,6 +398,15 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [showMovementPaths, setShowMovementPaths] = useState(() => getLayerState("paths", false));
   const [pathTimeFilter, setPathTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.pathTimeFilter, 'all', 'pathTime'));
 
+  // Heatmap paint multipliers — real-time knobs, no network round-trip.
+  const [heatIntensity, setHeatIntensity] = useState<number>(() => getPersistedNumber(FILTER_KEYS.heatIntensity, 1, 0.5, 2));
+  const [heatRadius, setHeatRadius] = useState<number>(() => getPersistedNumber(FILTER_KEYS.heatRadius, 1, 0.5, 2));
+  const [heatOpacity, setHeatOpacity] = useState<number>(() => getPersistedNumber(FILTER_KEYS.heatOpacity, 1, 0, 1));
+
+  // Time-window overrides (last N minutes). null → use coarse time_filter.
+  const [densityWindowMinutes, setDensityWindowMinutes] = useState<number | null>(() => getPersistedWindowMinutes(FILTER_KEYS.densityWindow));
+  const [pathsWindowMinutes, setPathsWindowMinutes] = useState<number | null>(() => getPersistedWindowMinutes(FILTER_KEYS.pathsWindow));
+
   // Sync active layer toggles and filter selections to URL query params for shareability
   const syncUrlParams = useCallback(() => {
     const params = new URLSearchParams(window.location.search);
