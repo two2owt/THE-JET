@@ -3887,6 +3887,37 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     <SelectItem value="this_hour">This Hour</SelectItem>
                   </SelectContent>
                 </Select>
+                {/* Time-window slider — same semantics as the density one.
+                    Only re-queries on release so drags don't spam the edge fn. */}
+                <LayerSliderRow
+                  label="Time window"
+                  Icon={Clock}
+                  ariaLabel="Movement paths time window"
+                  min={0}
+                  max={4}
+                  step={1}
+                  value={
+                    pathsWindowMinutes === null ? 0 :
+                    pathsWindowMinutes === 15 ? 1 :
+                    pathsWindowMinutes === 60 ? 2 :
+                    pathsWindowMinutes === 360 ? 3 :
+                    pathsWindowMinutes === 1440 ? 4 : 0
+                  }
+                  onChange={(step) => {
+                    const mapping = [null, 15, 60, 360, 1440];
+                    setPathsWindowMinutes(mapping[step] ?? null);
+                  }}
+                  onCommit={() => refreshPaths()}
+                  format={(step) => (['Preset','15m','1h','6h','24h'][step] ?? 'Preset')}
+                  ticks={[
+                    { value: 0, label: 'Preset' },
+                    { value: 1, label: '15m' },
+                    { value: 2, label: '1h' },
+                    { value: 3, label: '6h' },
+                    { value: 4, label: '24h' },
+                  ]}
+                  defaultValue={0}
+                />
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '9px' }}>
                     <span style={{ color: 'hsl(var(--muted-foreground))' }}>Min. Frequency</span>
