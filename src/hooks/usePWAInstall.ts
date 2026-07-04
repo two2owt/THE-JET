@@ -108,6 +108,19 @@ export const usePWAInstall = () => {
     localStorage.setItem(DISMISS_KEY, Date.now().toString());
   }, []);
 
+  // Sync dismissal state across tabs via the storage event so the prompt hides
+  // in other open windows as soon as a user dismisses it anywhere.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === DISMISS_KEY && e.newValue) {
+        setShowPrompt(false);
+        setIsInstallable(false);
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
   const clearJustInstalled = useCallback(() => {
     setJustInstalled(false);
   }, []);
