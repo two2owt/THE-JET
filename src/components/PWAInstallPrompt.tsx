@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Download, X, Share, Plus, Zap, WifiOff, BellRing, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
@@ -26,12 +27,34 @@ const DISMISS_DURATION = 7 * 24 * 60 * 60 * 1000;
 export const PWAInstallPrompt = ({ signUpCta }: PWAInstallPromptProps = {}) => {
   const { isInstallable, isInstalled, isIOS, showPrompt, installApp, dismissPrompt } = usePWAInstall();
 
+  // Local dismissed flag guarantees the prompt hides immediately regardless
+  // of which path opened it (installable event, iOS timer, or sign-up mode
+  // that only reads localStorage on mount).
+  const [locallyDismissed, setLocallyDismissed] = useState(false);
+
+  const handleDismiss = () => {
+    setLocallyDismissed(true);
+    dismissPrompt();
+  };
+
   const { handlers, style } = useMultiDirectionSwipe({
-    onDismiss: dismissPrompt,
+    onDismiss: handleDismiss,
     threshold: 80
   });
 
   const isSignUpMode = !!signUpCta;
+
+  // Allow Escape to close the prompt like any modal dialog.
+  useEffect(() => {
+    if (locallyDismissed || isInstalled) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") handleDismiss();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [locallyDismissed, isInstalled]);
+
+  if (locallyDismissed) return null;
   if (isInstalled) return null;
   if (!isSignUpMode) {
     if (!showPrompt || !isInstallable) return null;
@@ -89,7 +112,7 @@ export const PWAInstallPrompt = ({ signUpCta }: PWAInstallPromptProps = {}) => {
               </p>
             </div>
             <button
-              onClick={dismissPrompt}
+              onClick={handleDismiss}
               className="flex-shrink-0 p-2 rounded-full hover:bg-muted/60 transition-colors"
               aria-label="Dismiss"
             >
@@ -152,7 +175,7 @@ export const PWAInstallPrompt = ({ signUpCta }: PWAInstallPromptProps = {}) => {
                 variant="outline"
                 size="sm"
                 className="w-full"
-                onClick={dismissPrompt}
+                onClick={handleDismiss}
               >
                 Got it
               </Button>
@@ -163,7 +186,7 @@ export const PWAInstallPrompt = ({ signUpCta }: PWAInstallPromptProps = {}) => {
                 variant="outline"
                 size="sm"
                 className="flex-1"
-                onClick={dismissPrompt}
+                onClick={handleDismiss}
               >
                 Maybe later
               </Button>
