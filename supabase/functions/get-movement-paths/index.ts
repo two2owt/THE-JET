@@ -181,6 +181,14 @@ Deno.serve(async (req) => {
     const url = new URL(req.url);
     const timeFilter = url.searchParams.get('time_filter') || 'all';
     const minFrequency = parseInt(url.searchParams.get('min_frequency') || '2');
+    const timeWindowMinutesRaw = url.searchParams.get('time_window_minutes');
+    let timeWindowMinutes: number | null = null;
+    if (timeWindowMinutesRaw !== null) {
+      const parsed = Number(timeWindowMinutesRaw);
+      if (Number.isFinite(parsed) && parsed >= 1 && parsed <= 10080) {
+        timeWindowMinutes = Math.floor(parsed);
+      }
+    }
 
     // Build query with time filter using service client
     let query = serviceClient
@@ -189,9 +197,13 @@ Deno.serve(async (req) => {
       .order('user_id')
       .order('created_at');
 
-    // Apply time filtering
+    // Apply time filtering. `time_window_minutes` takes precedence over the
+    // coarse `time_filter` bucket when the client supplies a slider value.
     const now = new Date();
-    if (timeFilter === 'today') {
+    if (timeWindowMinutes !== null) {
+      const cutoff = new Date(now.getTime() - timeWindowMinutes * 60_000);
+      query = query.gte('created_at', cutoff.toISOString());
+    } else if (timeFilter === 'today') {
       const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       query = query.gte('created_at', startOfDay.toISOString());
     } else if (timeFilter === 'this_week') {
