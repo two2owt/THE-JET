@@ -142,6 +142,8 @@ Deno.serve(async (req) => {
     let timeFilter = url.searchParams.get('time_filter') || 'all';
     let hourOfDay = url.searchParams.get('hour_of_day');
     let dayOfWeek = url.searchParams.get('day_of_week');
+    let timeWindowMinutesRaw: string | number | null =
+      url.searchParams.get('time_window_minutes');
     
     // Also support POST body for filters (supabase.functions.invoke sends body)
     if (req.method === 'POST') {
@@ -150,20 +152,37 @@ Deno.serve(async (req) => {
         if (body.time_filter) timeFilter = body.time_filter;
         if (body.hour_of_day !== undefined) hourOfDay = String(body.hour_of_day);
         if (body.day_of_week !== undefined) dayOfWeek = String(body.day_of_week);
+        if (body.time_window_minutes !== undefined) timeWindowMinutesRaw = body.time_window_minutes;
       } catch (_) {
         // No body or invalid JSON, use URL params
       }
     }
 
-    console.log('Fetching location density with filters:', { timeFilter, hourOfDay, dayOfWeek });
+    // Parse and validate the time-window override. Accept 1 minute to 7 days
+    // (10080 min) — anything outside that range is silently dropped so a
+    // malicious caller can't bypass the coarse `time_filter` and pull the
+    // entire location history in one call.
+    let timeWindowMinutes: number | null = null;
+    if (timeWindowMinutesRaw !== null && timeWindowMinutesRaw !== undefined) {
+      const parsed = Number(timeWindowMinutesRaw);
+      if (Number.isFinite(parsed) && parsed >= 1 && parsed <= 10080) {
+        timeWindowMinutes = Math.floor(parsed);
+      }
+    }
+
+    console.log('Fetching location density with filters:', { timeFilter, hourOfDay, dayOfWeek, timeWindowMinutes });
 
     let query = serviceClient
       .from('user_locations')
       .select('latitude, longitude, created_at');
 
-    // Apply time filters
+    // Apply time filters. `time_window_minutes` takes precedence over the
+    // coarse `time_filter` bucket when the client supplies a slider value.
     const now = new Date();
-    switch (timeFilter) {
+    if (timeWindowMinutes !== null) {
+      const cutoff = new Date(now.getTime() - timeWindowMinutes * 60_000);
+      query = query.gte('created_at', cutoff.toISOString());
+    } else switch (timeFilter) {
       case 'today':
         const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         query = query.gte('created_at', startOfDay.toISOString());
