@@ -3635,28 +3635,27 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     </div>
                     <div className="font-display" style={{ textAlign: 'center', fontSize: '11px', fontWeight: 700, letterSpacing: '0.02em', background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{timelapse.formatHour(timelapse.currentHour)}</div>
                     <Slider value={[timelapse.currentHour]} onValueChange={([v]) => timelapse.setHour(v)} min={0} max={23} step={1} className="w-full" disabled={timelapse.isPlaying} />
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                      {[2, 1, 0.5].map((speed) => {
-                        const isActive = timelapse.speed === speed;
-                        return (
-                          <button key={speed} type="button" onClick={() => timelapse.setSpeed(speed)}
-                            style={{
-                              flex: 1, height: '22px', borderRadius: '7px',
-                              fontSize: '9px', fontWeight: 700, letterSpacing: '0.02em',
-                              border: isActive ? '1px solid transparent' : '1px solid hsl(var(--border) / 0.6)',
-                              background: isActive
-                                ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
-                                : 'hsl(var(--background) / 0.6)',
-                              color: isActive ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground) / 0.75)',
-                              boxShadow: isActive ? '0 4px 12px -4px hsl(var(--primary) / 0.6)' : 'none',
-                              cursor: 'pointer',
-                              transition: 'background 200ms ease, color 200ms ease, box-shadow 200ms ease',
-                            }}>
-                            {speed === 2 ? '0.5x' : speed === 1 ? '1x' : '2x'}
-                          </button>
-                        );
-                      })}
-                    </div>
+                    {/* Speed slider — internal `speed` is seconds-per-hour
+                        (higher = slower). We expose it as a playback multiplier
+                        (higher = faster) via `1 / speed`. */}
+                    <LayerSliderRow
+                      label="Speed"
+                      Icon={Play}
+                      ariaLabel="Time-lapse playback speed"
+                      min={0.25}
+                      max={4}
+                      step={0.25}
+                      value={Number((1 / timelapse.speed).toFixed(2))}
+                      onChange={(mult) => timelapse.setSpeed(1 / mult)}
+                      defaultValue={1}
+                      format={(mult) => `${mult}x`}
+                      ticks={[
+                        { value: 0.5, label: '0.5x' },
+                        { value: 1, label: '1x' },
+                        { value: 2, label: '2x' },
+                        { value: 4, label: '4x' },
+                      ]}
+                    />
                   </div>
                 )}
 
