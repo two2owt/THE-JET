@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Download, X, Share, Plus, Zap, WifiOff, BellRing, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
@@ -31,10 +31,10 @@ export const PWAInstallPrompt = ({ signUpCta }: PWAInstallPromptProps = {}) => {
   // that only reads localStorage on mount).
   const [locallyDismissed, setLocallyDismissed] = useState(false);
 
-  const handleDismiss = () => {
+  const handleDismiss = useCallback(() => {
     setLocallyDismissed(true);
     dismissPrompt();
-  };
+  }, [dismissPrompt]);
 
   const { handlers, style } = useMultiDirectionSwipe({
     onDismiss: handleDismiss,
@@ -42,6 +42,19 @@ export const PWAInstallPrompt = ({ signUpCta }: PWAInstallPromptProps = {}) => {
   });
 
   const isSignUpMode = !!signUpCta;
+
+  // Sync dismissal across tabs via the storage event so the prompt hides in
+  // any other open window as soon as the user dismisses it elsewhere.
+  useEffect(() => {
+    if (locallyDismissed || isInstalled) return;
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === DISMISS_KEY && e.newValue) {
+        handleDismiss();
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [locallyDismissed, isInstalled, handleDismiss]);
 
   // Allow Escape to close the prompt like any modal dialog.
   useEffect(() => {
@@ -51,7 +64,7 @@ export const PWAInstallPrompt = ({ signUpCta }: PWAInstallPromptProps = {}) => {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [locallyDismissed, isInstalled]);
+  }, [locallyDismissed, isInstalled, handleDismiss]);
 
   if (locallyDismissed) return null;
   if (isInstalled) return null;
