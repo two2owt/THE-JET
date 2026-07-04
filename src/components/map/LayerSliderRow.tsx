@@ -1,4 +1,4 @@
-import { LucideIcon, RotateCcw } from "lucide-react";
+import { LucideIcon, RotateCcw, Loader2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 
 interface LayerSliderRowProps {
@@ -20,6 +20,9 @@ interface LayerSliderRowProps {
   /** Optional snap tick labels rendered under the slider track. */
   ticks?: { value: number; label: string }[];
   disabled?: boolean;
+  /** When true, show a spinner in the value pill to indicate a pending
+   *  refetch triggered by the slider (e.g. edge-function round-trip). */
+  loading?: boolean;
 }
 
 /**
@@ -43,6 +46,7 @@ export const LayerSliderRow = ({
   defaultValue,
   ticks,
   disabled,
+  loading,
 }: LayerSliderRowProps) => {
   const isCustom =
     defaultValue !== undefined && Math.abs(value - defaultValue) > 1e-6;
@@ -125,8 +129,20 @@ export const LayerSliderRow = ({
             border: isCustom
               ? "1px solid transparent"
               : "1px solid hsl(var(--border) / 0.5)",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "4px",
           }}
+          aria-live="polite"
         >
+          {loading && (
+            <Loader2
+              aria-label="Refreshing"
+              style={{ width: "9px", height: "9px" }}
+              className="animate-spin"
+              strokeWidth={2.5}
+            />
+          )}
           {format(value)}
         </span>
         {defaultValue !== undefined && isCustom && (

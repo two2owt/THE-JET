@@ -3535,6 +3535,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                       { value: 4, label: '24h' },
                     ]}
                     defaultValue={0}
+                    loading={densityLoading}
                   />
                 )}
                 {/* Time-lapse toggle — glassmorphic pill matching LayerToggleRow */}
@@ -3917,6 +3918,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     { value: 4, label: '24h' },
                   ]}
                   defaultValue={0}
+                  loading={pathsLoading}
                 />
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '9px' }}>
