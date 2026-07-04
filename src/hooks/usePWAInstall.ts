@@ -35,14 +35,10 @@ export const usePWAInstall = () => {
       return;
     }
 
-    // Check if previously dismissed within duration
+    // Check if user has permanently dismissed the install prompt.
     const dismissedAt = localStorage.getItem(DISMISS_KEY);
     if (dismissedAt) {
-      const dismissTime = parseInt(dismissedAt, 10);
-      if (Date.now() - dismissTime < DISMISS_DURATION) {
-        return; // Still within dismiss period
-      }
-      localStorage.removeItem(DISMISS_KEY);
+      return;
     }
 
     // For iOS, we can't detect beforeinstallprompt, so show manual instructions
