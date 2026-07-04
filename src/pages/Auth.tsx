@@ -15,7 +15,7 @@ import { writeCachedOnboardingStatus } from "@/lib/onboardingStatus";
 import { discardCurrentAuthSession } from "@/lib/authSession";
 import { SEO } from "@/components/SEO";
 import { AuthPWAInstallPromptWrapper } from "@/components/AuthPWAInstallPromptWrapper";
-import { getAppUrl, buildAuthRedirectUrl } from "@/lib/utils";
+import { buildAuthRedirectUrl } from "@/lib/utils";
 // Use the new JET logo for auth page
 import jetLogo from "@/assets/jet-auth-logo.png";
 import authBackground from "@/assets/auth-background.webp";
