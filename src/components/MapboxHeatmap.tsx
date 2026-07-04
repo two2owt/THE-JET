@@ -407,6 +407,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [densityWindowMinutes, setDensityWindowMinutes] = useState<number | null>(() => getPersistedWindowMinutes(FILTER_KEYS.densityWindow));
   const [pathsWindowMinutes, setPathsWindowMinutes] = useState<number | null>(() => getPersistedWindowMinutes(FILTER_KEYS.pathsWindow));
 
+  // Ref mirrors so the (expensive) layer-rebuild effect can read the latest
+  // multipliers without listing them in its dep array — a dedicated paint
+  // effect below handles subsequent slider changes via setPaintProperty.
+  const heatIntensityRef = useRef(heatIntensity);
+  const heatRadiusRef = useRef(heatRadius);
+  const heatOpacityRef = useRef(heatOpacity);
+  useEffect(() => { heatIntensityRef.current = heatIntensity; }, [heatIntensity]);
+  useEffect(() => { heatRadiusRef.current = heatRadius; }, [heatRadius]);
+  useEffect(() => { heatOpacityRef.current = heatOpacity; }, [heatOpacity]);
+
   // Sync active layer toggles and filter selections to URL query params for shareability
   const syncUrlParams = useCallback(() => {
     const params = new URLSearchParams(window.location.search);
