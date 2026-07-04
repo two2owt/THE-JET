@@ -79,6 +79,7 @@ import { buildVenueOpenStatus } from "@/lib/venue-open-cache";
 import { useOpenNowTick } from "@/hooks/useOpenNowTick";
 import { Button } from "./ui/button";
 import { LayerToggleRow } from "./map/LayerToggleRow";
+import { LayerSliderRow } from "./map/LayerSliderRow";
 import { LiveStatsPanel } from "./map/LiveStatsPanel";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Slider } from "./ui/slider";
