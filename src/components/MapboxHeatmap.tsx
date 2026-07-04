@@ -494,6 +494,17 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   useEffect(() => { localStorage.setItem(FILTER_KEYS.pathTimeFilter, pathTimeFilter); }, [pathTimeFilter]);
   useEffect(() => { localStorage.setItem(FILTER_KEYS.dayFilter, dayFilter === undefined ? "all" : String(dayFilter)); }, [dayFilter]);
   useEffect(() => { localStorage.setItem(FILTER_KEYS.timelapseMode, String(timelapseMode)); }, [timelapseMode]);
+
+  // Persist heatmap paint multipliers + time-window overrides
+  useEffect(() => { localStorage.setItem(FILTER_KEYS.heatIntensity, String(heatIntensity)); }, [heatIntensity]);
+  useEffect(() => { localStorage.setItem(FILTER_KEYS.heatRadius, String(heatRadius)); }, [heatRadius]);
+  useEffect(() => { localStorage.setItem(FILTER_KEYS.heatOpacity, String(heatOpacity)); }, [heatOpacity]);
+  useEffect(() => {
+    localStorage.setItem(FILTER_KEYS.densityWindow, densityWindowMinutes === null ? "off" : String(densityWindowMinutes));
+  }, [densityWindowMinutes]);
+  useEffect(() => {
+    localStorage.setItem(FILTER_KEYS.pathsWindow, pathsWindowMinutes === null ? "off" : String(pathsWindowMinutes));
+  }, [pathsWindowMinutes]);
   
   // CLS fix: Defer layer controls render until map is loaded
   // This ensures controls appear immediately after map is ready, not a fixed delay
