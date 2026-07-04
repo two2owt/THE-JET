@@ -79,6 +79,7 @@ import { buildVenueOpenStatus } from "@/lib/venue-open-cache";
 import { useOpenNowTick } from "@/hooks/useOpenNowTick";
 import { Button } from "./ui/button";
 import { LayerToggleRow } from "./map/LayerToggleRow";
+import { LayerSliderRow } from "./map/LayerSliderRow";
 import { LiveStatsPanel } from "./map/LiveStatsPanel";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Slider } from "./ui/slider";
@@ -245,9 +246,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     dayFilter: "jet-map-day-filter",
     timelapseMode: "jet-map-timelapse-mode",
     timelapseSpeed: "jet-map-timelapse-speed",
+    heatIntensity: "jet-map-heat-intensity",
+    heatRadius: "jet-map-heat-radius",
+    heatOpacity: "jet-map-heat-opacity",
+    densityWindow: "jet-map-density-window",
+    pathsWindow: "jet-map-paths-window",
   } as const;
   const VALID_TIME_FILTERS = new Set<'all' | 'today' | 'this_week' | 'this_hour'>(['all', 'today', 'this_week', 'this_hour']);
-  const VALID_SPEEDS = new Set<number>([0.5, 1, 2]);
+  // Kept for backwards-compat with legacy persisted values.
+  const LEGACY_SPEEDS = new Set<number>([0.5, 1, 2]);
+  const clampNumber = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 
   const getLayerState = (layer: LayerName, fallback: boolean): boolean => {
     try {
@@ -323,10 +331,35 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       const raw = localStorage.getItem(FILTER_KEYS.timelapseSpeed);
       if (raw) {
         const n = parseFloat(raw);
-        if (VALID_SPEEDS.has(n)) return n;
+        // Accept any positive number in [0.25, 4]. Legacy 0.5/1/2 values pass
+        // through this check too, and older 3-button presets keep working.
+        if (Number.isFinite(n) && n >= 0.25 && n <= 4) return n;
+        if (LEGACY_SPEEDS.has(n)) return n;
       }
     } catch { /* ignore */ }
     return 1;
+  };
+
+  // Heatmap paint multipliers + shared time-window sliders. Persisted so a
+  // user's tuned map view survives a reload.
+  const getPersistedNumber = (key: string, fallback: number, lo: number, hi: number): number => {
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const n = parseFloat(raw);
+        if (Number.isFinite(n)) return clampNumber(n, lo, hi);
+      }
+    } catch { /* ignore */ }
+    return fallback;
+  };
+  const getPersistedWindowMinutes = (key: string): number | null => {
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw === null || raw === "" || raw === "off") return null;
+      const n = parseInt(raw, 10);
+      if (Number.isFinite(n) && n >= 1 && n <= 10080) return n;
+    } catch { /* ignore */ }
+    return null;
   };
 
   // Density heatmap state
@@ -364,6 +397,25 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Movement paths state
   const [showMovementPaths, setShowMovementPaths] = useState(() => getLayerState("paths", false));
   const [pathTimeFilter, setPathTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.pathTimeFilter, 'all', 'pathTime'));
+
+  // Heatmap paint multipliers — real-time knobs, no network round-trip.
+  const [heatIntensity, setHeatIntensity] = useState<number>(() => getPersistedNumber(FILTER_KEYS.heatIntensity, 1, 0.5, 2));
+  const [heatRadius, setHeatRadius] = useState<number>(() => getPersistedNumber(FILTER_KEYS.heatRadius, 1, 0.5, 2));
+  const [heatOpacity, setHeatOpacity] = useState<number>(() => getPersistedNumber(FILTER_KEYS.heatOpacity, 1, 0, 1));
+
+  // Time-window overrides (last N minutes). null → use coarse time_filter.
+  const [densityWindowMinutes, setDensityWindowMinutes] = useState<number | null>(() => getPersistedWindowMinutes(FILTER_KEYS.densityWindow));
+  const [pathsWindowMinutes, setPathsWindowMinutes] = useState<number | null>(() => getPersistedWindowMinutes(FILTER_KEYS.pathsWindow));
+
+  // Ref mirrors so the (expensive) layer-rebuild effect can read the latest
+  // multipliers without listing them in its dep array — a dedicated paint
+  // effect below handles subsequent slider changes via setPaintProperty.
+  const heatIntensityRef = useRef(heatIntensity);
+  const heatRadiusRef = useRef(heatRadius);
+  const heatOpacityRef = useRef(heatOpacity);
+  useEffect(() => { heatIntensityRef.current = heatIntensity; }, [heatIntensity]);
+  useEffect(() => { heatRadiusRef.current = heatRadius; }, [heatRadius]);
+  useEffect(() => { heatOpacityRef.current = heatOpacity; }, [heatOpacity]);
 
   // Sync active layer toggles and filter selections to URL query params for shareability
   const syncUrlParams = useCallback(() => {
@@ -452,6 +504,17 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   useEffect(() => { localStorage.setItem(FILTER_KEYS.pathTimeFilter, pathTimeFilter); }, [pathTimeFilter]);
   useEffect(() => { localStorage.setItem(FILTER_KEYS.dayFilter, dayFilter === undefined ? "all" : String(dayFilter)); }, [dayFilter]);
   useEffect(() => { localStorage.setItem(FILTER_KEYS.timelapseMode, String(timelapseMode)); }, [timelapseMode]);
+
+  // Persist heatmap paint multipliers + time-window overrides
+  useEffect(() => { localStorage.setItem(FILTER_KEYS.heatIntensity, String(heatIntensity)); }, [heatIntensity]);
+  useEffect(() => { localStorage.setItem(FILTER_KEYS.heatRadius, String(heatRadius)); }, [heatRadius]);
+  useEffect(() => { localStorage.setItem(FILTER_KEYS.heatOpacity, String(heatOpacity)); }, [heatOpacity]);
+  useEffect(() => {
+    localStorage.setItem(FILTER_KEYS.densityWindow, densityWindowMinutes === null ? "off" : String(densityWindowMinutes));
+  }, [densityWindowMinutes]);
+  useEffect(() => {
+    localStorage.setItem(FILTER_KEYS.pathsWindow, pathsWindowMinutes === null ? "off" : String(pathsWindowMinutes));
+  }, [pathsWindowMinutes]);
   
   // CLS fix: Defer layer controls render until map is loaded
   // This ensures controls appear immediately after map is ready, not a fixed delay
@@ -562,11 +625,15 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     timeFilter,
     hourOfDay: timelapseMode ? undefined : hourFilter,
     dayOfWeek: dayFilter,
+    // Time-window slider only applies when NOT in time-lapse mode (which
+    // paints per-hour buckets across 24 hours).
+    windowMinutes: timelapseMode ? undefined : (densityWindowMinutes ?? undefined),
   });
 
   const { pathData, loading: pathsLoading, error: pathsError, refresh: refreshPaths } = useMovementPaths({
     timeFilter: pathTimeFilter,
     minFrequency: minPathFrequency,
+    windowMinutes: pathsWindowMinutes ?? undefined,
   });
 
   // Visual loading states for layer toggles so users see a clear refresh
@@ -1617,14 +1684,17 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           5, 0.5,
           10, 1,
         ],
-        // Dynamic intensity based on zoom with higher peak
+        // Dynamic intensity based on zoom with higher peak. Each stop is
+        // scaled by the `heatIntensity` slider (0.5x-2x). The initial build
+        // reads from a ref so slider changes update via setPaintProperty
+        // (paint-only effect below) instead of triggering a full rebuild.
         'heatmap-intensity': [
           'interpolate',
           ['exponential', 2],
           ['zoom'],
-          0, isMobile ? 2.2 : 2,
-          9, isMobile ? 2.6 : 3,
-          15, isMobile ? 4 : 5,
+          0, (isMobile ? 2.2 : 2) * heatIntensityRef.current,
+          9, (isMobile ? 2.6 : 3) * heatIntensityRef.current,
+          15, (isMobile ? 4 : 5) * heatIntensityRef.current,
         ],
         // Enhanced vibrant color ramp with smooth gradients
         'heatmap-color': [
@@ -1646,32 +1716,34 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         // Adaptive radius — smooth cubic-bezier easing across the full zoom
         // range with intermediate stops so blobs grow/shrink fluidly during
         // pinch-zoom instead of stepping between sparse interpolation points.
+        // Each stop is scaled by the `heatRadius` slider (0.5x-2x).
         'heatmap-radius': [
           'interpolate',
           ['cubic-bezier', 0.4, 0, 0.2, 1],
           ['zoom'],
-          0,  isMobile ? 26 : 20,
-          5,  isMobile ? 38 : 30,
-          9,  isMobile ? 60 : 50,
-          11, isMobile ? 72 : 60,
-          12, isMobile ? 82 : 70,
-          13, isMobile ? 94 : 80,
-          15, isMobile ? 115 : 100,
-          17, isMobile ? 130 : 115,
+          0,  (isMobile ? 26 : 20) * heatRadiusRef.current,
+          5,  (isMobile ? 38 : 30) * heatRadiusRef.current,
+          9,  (isMobile ? 60 : 50) * heatRadiusRef.current,
+          11, (isMobile ? 72 : 60) * heatRadiusRef.current,
+          12, (isMobile ? 82 : 70) * heatRadiusRef.current,
+          13, (isMobile ? 94 : 80) * heatRadiusRef.current,
+          15, (isMobile ? 115 : 100) * heatRadiusRef.current,
+          17, (isMobile ? 130 : 115) * heatRadiusRef.current,
         ],
-        // Opacity eased with cubic-bezier and extra anchor stops so the layer
-        // never abruptly washes out as the user zooms in or out.
+        // Opacity eased with cubic-bezier and extra anchor stops so the
+        // layer never abruptly washes out as the user zooms in or out.
+        // Each stop is scaled by the `heatOpacity` slider (0-1).
         'heatmap-opacity': [
           'interpolate',
           ['cubic-bezier', 0.4, 0, 0.2, 1],
           ['zoom'],
-          5,  isMobile ? 0.85 : 1,
-          7,  isMobile ? 0.82 : 0.95,
-          10, isMobile ? 0.8  : 0.92,
-          12, isMobile ? 0.78 : 0.9,
-          14, isMobile ? 0.74 : 0.87,
-          15, isMobile ? 0.7  : 0.85,
-          17, isMobile ? 0.6  : 0.75,
+          5,  (isMobile ? 0.85 : 1)    * heatOpacityRef.current,
+          7,  (isMobile ? 0.82 : 0.95) * heatOpacityRef.current,
+          10, (isMobile ? 0.8  : 0.92) * heatOpacityRef.current,
+          12, (isMobile ? 0.78 : 0.9)  * heatOpacityRef.current,
+          14, (isMobile ? 0.74 : 0.87) * heatOpacityRef.current,
+          15, (isMobile ? 0.7  : 0.85) * heatOpacityRef.current,
+          17, (isMobile ? 0.6  : 0.75) * heatOpacityRef.current,
         ],
         // Paint-property transitions: smoothly tween between values when the
         // layer is re-evaluated (city switch, time-lapse hour change, mobile
@@ -1760,6 +1832,53 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
     console.log('Density heatmap layer added with', activeData.stats.grid_cells, 'points', timelapseMode ? `(hour ${timelapse.currentHour})` : '');
   }, [mapLoaded, densityData, showDensityLayer, timelapseMode, timelapse.currentData, timelapse.currentHour, isMobile]);
+
+  // Paint-only updates for the heatmap sliders. Uses setPaintProperty so
+  // drag interactions never trigger a full source / layer rebuild.
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !mapLoaded) return;
+    const layerId = 'location-density-heat';
+    try {
+      if (!m.getLayer(layerId)) return;
+      m.setPaintProperty(layerId, 'heatmap-intensity', [
+        'interpolate',
+        ['exponential', 2],
+        ['zoom'],
+        0, (isMobile ? 2.2 : 2) * heatIntensity,
+        9, (isMobile ? 2.6 : 3) * heatIntensity,
+        15, (isMobile ? 4 : 5) * heatIntensity,
+      ]);
+      m.setPaintProperty(layerId, 'heatmap-radius', [
+        'interpolate',
+        ['cubic-bezier', 0.4, 0, 0.2, 1],
+        ['zoom'],
+        0,  (isMobile ? 26 : 20) * heatRadius,
+        5,  (isMobile ? 38 : 30) * heatRadius,
+        9,  (isMobile ? 60 : 50) * heatRadius,
+        11, (isMobile ? 72 : 60) * heatRadius,
+        12, (isMobile ? 82 : 70) * heatRadius,
+        13, (isMobile ? 94 : 80) * heatRadius,
+        15, (isMobile ? 115 : 100) * heatRadius,
+        17, (isMobile ? 130 : 115) * heatRadius,
+      ]);
+      m.setPaintProperty(layerId, 'heatmap-opacity', [
+        'interpolate',
+        ['cubic-bezier', 0.4, 0, 0.2, 1],
+        ['zoom'],
+        5,  (isMobile ? 0.85 : 1)    * heatOpacity,
+        7,  (isMobile ? 0.82 : 0.95) * heatOpacity,
+        10, (isMobile ? 0.8  : 0.92) * heatOpacity,
+        12, (isMobile ? 0.78 : 0.9)  * heatOpacity,
+        14, (isMobile ? 0.74 : 0.87) * heatOpacity,
+        15, (isMobile ? 0.7  : 0.85) * heatOpacity,
+        17, (isMobile ? 0.6  : 0.75) * heatOpacity,
+      ]);
+    } catch {
+      // Layer may be mid-rebuild; the layer-add effect above will pick up
+      // the current ref values on its next run.
+    }
+  }, [heatIntensity, heatRadius, heatOpacity, mapLoaded, isMobile, showDensityLayer, densityData, timelapseMode, timelapse.currentData]);
 
   // Add/update movement paths layer with animated flow
   useEffect(() => {
@@ -3346,8 +3465,78 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             />
 
             {/* Heat filters - shown when heat is on */}
-            <div style={{ overflow: 'hidden', transition: 'max-height 0.2s', maxHeight: showDensityLayer ? '240px' : '0px' }}>
+            <div style={{ overflow: 'hidden', transition: 'max-height 0.3s', maxHeight: showDensityLayer ? '900px' : '0px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '10px', paddingTop: '8px', paddingBottom: '2px' }}>
+                {/* Heatmap paint sliders — real-time, no round-trip. */}
+                <LayerSliderRow
+                  label="Intensity"
+                  Icon={Palette}
+                  ariaLabel="Heatmap intensity multiplier"
+                  min={0.5}
+                  max={2}
+                  step={0.1}
+                  value={heatIntensity}
+                  onChange={setHeatIntensity}
+                  defaultValue={1}
+                  format={(v) => `${v.toFixed(1)}x`}
+                />
+                <LayerSliderRow
+                  label="Radius"
+                  Icon={CircleDot}
+                  ariaLabel="Heatmap radius multiplier"
+                  min={0.5}
+                  max={2}
+                  step={0.1}
+                  value={heatRadius}
+                  onChange={setHeatRadius}
+                  defaultValue={1}
+                  format={(v) => `${v.toFixed(1)}x`}
+                />
+                <LayerSliderRow
+                  label="Opacity"
+                  Icon={Layers}
+                  ariaLabel="Heatmap opacity"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={heatOpacity}
+                  onChange={setHeatOpacity}
+                  defaultValue={1}
+                  format={(v) => `${Math.round(v * 100)}%`}
+                />
+                {/* Time-window slider — server round-trip, only fires on
+                    commit so drags don't spam the edge function. */}
+                {!timelapseMode && (
+                  <LayerSliderRow
+                    label="Time window"
+                    Icon={Clock}
+                    ariaLabel="Density data time window"
+                    min={0}
+                    max={4}
+                    step={1}
+                    value={
+                      densityWindowMinutes === null ? 0 :
+                      densityWindowMinutes === 15 ? 1 :
+                      densityWindowMinutes === 60 ? 2 :
+                      densityWindowMinutes === 360 ? 3 :
+                      densityWindowMinutes === 1440 ? 4 : 0
+                    }
+                    onChange={(step) => {
+                      const mapping = [null, 15, 60, 360, 1440];
+                      setDensityWindowMinutes(mapping[step] ?? null);
+                    }}
+                    onCommit={() => refreshDensity()}
+                    format={(step) => (['Preset','15m','1h','6h','24h'][step] ?? 'Preset')}
+                    ticks={[
+                      { value: 0, label: 'Preset' },
+                      { value: 1, label: '15m' },
+                      { value: 2, label: '1h' },
+                      { value: 3, label: '6h' },
+                      { value: 4, label: '24h' },
+                    ]}
+                    defaultValue={0}
+                  />
+                )}
                 {/* Time-lapse toggle — glassmorphic pill matching LayerToggleRow */}
                 <button
                   type="button"
@@ -3446,28 +3635,27 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     </div>
                     <div className="font-display" style={{ textAlign: 'center', fontSize: '11px', fontWeight: 700, letterSpacing: '0.02em', background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{timelapse.formatHour(timelapse.currentHour)}</div>
                     <Slider value={[timelapse.currentHour]} onValueChange={([v]) => timelapse.setHour(v)} min={0} max={23} step={1} className="w-full" disabled={timelapse.isPlaying} />
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                      {[2, 1, 0.5].map((speed) => {
-                        const isActive = timelapse.speed === speed;
-                        return (
-                          <button key={speed} type="button" onClick={() => timelapse.setSpeed(speed)}
-                            style={{
-                              flex: 1, height: '22px', borderRadius: '7px',
-                              fontSize: '9px', fontWeight: 700, letterSpacing: '0.02em',
-                              border: isActive ? '1px solid transparent' : '1px solid hsl(var(--border) / 0.6)',
-                              background: isActive
-                                ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
-                                : 'hsl(var(--background) / 0.6)',
-                              color: isActive ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground) / 0.75)',
-                              boxShadow: isActive ? '0 4px 12px -4px hsl(var(--primary) / 0.6)' : 'none',
-                              cursor: 'pointer',
-                              transition: 'background 200ms ease, color 200ms ease, box-shadow 200ms ease',
-                            }}>
-                            {speed === 2 ? '0.5x' : speed === 1 ? '1x' : '2x'}
-                          </button>
-                        );
-                      })}
-                    </div>
+                    {/* Speed slider — internal `speed` is seconds-per-hour
+                        (higher = slower). We expose it as a playback multiplier
+                        (higher = faster) via `1 / speed`. */}
+                    <LayerSliderRow
+                      label="Speed"
+                      Icon={Play}
+                      ariaLabel="Time-lapse playback speed"
+                      min={0.25}
+                      max={4}
+                      step={0.25}
+                      value={Number((1 / timelapse.speed).toFixed(2))}
+                      onChange={(mult) => timelapse.setSpeed(1 / mult)}
+                      defaultValue={1}
+                      format={(mult) => `${mult}x`}
+                      ticks={[
+                        { value: 0.5, label: '0.5x' },
+                        { value: 1, label: '1x' },
+                        { value: 2, label: '2x' },
+                        { value: 4, label: '4x' },
+                      ]}
+                    />
                   </div>
                 )}
 
@@ -3628,7 +3816,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             />
 
             {/* Path filters */}
-            <div style={{ overflow: 'hidden', transition: 'max-height 0.2s', maxHeight: showMovementPaths ? '200px' : '0px' }}>
+            <div style={{ overflow: 'hidden', transition: 'max-height 0.3s', maxHeight: showMovementPaths ? '360px' : '0px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingLeft: '4px' }}>
                 {(isLoadingPaths || pathsError) && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', background: pathsError ? 'hsl(var(--destructive) / 0.1)' : 'hsl(var(--primary) / 0.08)', borderRadius: '8px', fontSize: '10px' }}>
@@ -3699,6 +3887,37 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     <SelectItem value="this_hour">This Hour</SelectItem>
                   </SelectContent>
                 </Select>
+                {/* Time-window slider — same semantics as the density one.
+                    Only re-queries on release so drags don't spam the edge fn. */}
+                <LayerSliderRow
+                  label="Time window"
+                  Icon={Clock}
+                  ariaLabel="Movement paths time window"
+                  min={0}
+                  max={4}
+                  step={1}
+                  value={
+                    pathsWindowMinutes === null ? 0 :
+                    pathsWindowMinutes === 15 ? 1 :
+                    pathsWindowMinutes === 60 ? 2 :
+                    pathsWindowMinutes === 360 ? 3 :
+                    pathsWindowMinutes === 1440 ? 4 : 0
+                  }
+                  onChange={(step) => {
+                    const mapping = [null, 15, 60, 360, 1440];
+                    setPathsWindowMinutes(mapping[step] ?? null);
+                  }}
+                  onCommit={() => refreshPaths()}
+                  format={(step) => (['Preset','15m','1h','6h','24h'][step] ?? 'Preset')}
+                  ticks={[
+                    { value: 0, label: 'Preset' },
+                    { value: 1, label: '15m' },
+                    { value: 2, label: '1h' },
+                    { value: 3, label: '6h' },
+                    { value: 4, label: '24h' },
+                  ]}
+                  defaultValue={0}
+                />
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '9px' }}>
                     <span style={{ color: 'hsl(var(--muted-foreground))' }}>Min. Frequency</span>
