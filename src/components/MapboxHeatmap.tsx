@@ -615,11 +615,15 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     timeFilter,
     hourOfDay: timelapseMode ? undefined : hourFilter,
     dayOfWeek: dayFilter,
+    // Time-window slider only applies when NOT in time-lapse mode (which
+    // paints per-hour buckets across 24 hours).
+    windowMinutes: timelapseMode ? undefined : (densityWindowMinutes ?? undefined),
   });
 
   const { pathData, loading: pathsLoading, error: pathsError, refresh: refreshPaths } = useMovementPaths({
     timeFilter: pathTimeFilter,
     minFrequency: minPathFrequency,
+    windowMinutes: pathsWindowMinutes ?? undefined,
   });
 
   // Visual loading states for layer toggles so users see a clear refresh
