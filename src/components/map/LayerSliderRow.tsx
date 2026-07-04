@@ -58,9 +58,9 @@ export const LayerSliderRow = ({
         width: "100%",
         display: "flex",
         flexDirection: "column",
-        gap: "6px",
-        padding: "8px 10px",
-        borderRadius: "10px",
+        gap: "clamp(8px, 1.6vw, 10px)",
+        padding: "clamp(10px, 2.2vw, 12px) clamp(10px, 2.6vw, 14px)",
+        borderRadius: "12px",
         border: isCustom
           ? "1px solid hsl(var(--primary) / 0.45)"
           : "1px solid hsl(var(--border) / 0.5)",
@@ -80,9 +80,9 @@ export const LayerSliderRow = ({
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
         <div
           style={{
-            width: "22px",
-            height: "22px",
-            borderRadius: "7px",
+            width: "clamp(22px, 5.4vw, 26px)",
+            height: "clamp(22px, 5.4vw, 26px)",
+            borderRadius: "8px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -98,13 +98,16 @@ export const LayerSliderRow = ({
               : "1px solid hsl(var(--border) / 0.6)",
           }}
         >
-          <Icon style={{ width: "12px", height: "12px" }} strokeWidth={2.25} />
+          <Icon
+            style={{ width: "clamp(12px, 3vw, 14px)", height: "clamp(12px, 3vw, 14px)" }}
+            strokeWidth={2.25}
+          />
         </div>
         <span
           className="font-display"
           style={{
             flex: 1,
-            fontSize: "11px",
+            fontSize: "clamp(11px, 2.6vw, 13px)",
             fontWeight: 700,
             letterSpacing: "-0.005em",
             color: "hsl(var(--foreground) / 0.9)",
@@ -115,10 +118,10 @@ export const LayerSliderRow = ({
         <span
           className="font-display"
           style={{
-            fontSize: "10px",
+            fontSize: "clamp(10px, 2.4vw, 12px)",
             fontWeight: 700,
             letterSpacing: "0.02em",
-            padding: "2px 8px",
+            padding: "3px 10px",
             borderRadius: "9999px",
             background: isCustom
               ? "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))"
