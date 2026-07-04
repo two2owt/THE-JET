@@ -1,4 +1,4 @@
-import { useEffect, useState, useId } from "react";
+import { useEffect, useState, useId, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface MovementPathData {
@@ -15,6 +15,9 @@ interface MovementPathData {
 interface MovementPathFilters {
   timeFilter?: 'all' | 'today' | 'this_week' | 'this_hour';
   minFrequency?: number;
+  /** When set, takes precedence over `timeFilter`. Filters user_locations to
+   *  rows whose `created_at` is within the last N minutes on the server. */
+  windowMinutes?: number;
 }
 
 export const useMovementPaths = (filters: MovementPathFilters = {}) => {
@@ -24,13 +27,20 @@ export const useMovementPaths = (filters: MovementPathFilters = {}) => {
   const [unauthorized, setUnauthorized] = useState(false);
   // Per-instance channel name prevents silent dedupe on remount.
   const instanceId = useId();
+  const isLoadingRef = useRef(false);
 
-  const loadPathData = async () => {
+  const loadPathData = useCallback(async () => {
+    if (isLoadingRef.current) return;
+    isLoadingRef.current = true;
     try {
       setLoading(true);
       
       const params = new URLSearchParams();
-      if (filters.timeFilter) params.append('time_filter', filters.timeFilter);
+      if (filters.windowMinutes && filters.windowMinutes > 0) {
+        params.append('time_window_minutes', String(Math.floor(filters.windowMinutes)));
+      } else if (filters.timeFilter) {
+        params.append('time_filter', filters.timeFilter);
+      }
       if (filters.minFrequency !== undefined) params.append('min_frequency', filters.minFrequency.toString());
 
       const queryString = params.toString();
@@ -56,32 +66,39 @@ export const useMovementPaths = (filters: MovementPathFilters = {}) => {
       }
     } finally {
       setLoading(false);
+      isLoadingRef.current = false;
     }
-  };
+  }, [filters.timeFilter, filters.minFrequency, filters.windowMinutes]);
 
   useEffect(() => {
     loadPathData();
 
-    // Set up realtime subscription to user_locations
+    // Realtime subscription — debounce so a burst of location writes doesn't
+    // trigger a chain of edge-function invocations.
+    let debounceTimer: ReturnType<typeof setTimeout>;
     const channel = supabase
       .channel(`movement-path-updates:${instanceId}`)
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*',
           schema: 'public',
           table: 'user_locations',
         },
         () => {
-          loadPathData();
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(() => {
+            loadPathData();
+          }, 700);
         }
       )
       .subscribe();
 
     return () => {
+      clearTimeout(debounceTimer);
       supabase.removeChannel(channel);
     };
-  }, [filters.timeFilter, filters.minFrequency, instanceId]);
+  }, [loadPathData, instanceId]);
 
   return { pathData, loading, error, unauthorized, refresh: loadPathData };
 };
