@@ -50,10 +50,11 @@ export const LayerToggleRow = ({
         width: "100%",
         display: "flex",
         alignItems: "center",
-        gap: "10px",
-        padding: "8px 10px",
-        borderRadius: "10px",
-        fontSize: "11px",
+        gap: "clamp(10px, 2.2vw, 12px)",
+        padding: "clamp(10px, 2.4vw, 12px) clamp(10px, 2.6vw, 14px)",
+        minHeight: "44px",
+        borderRadius: "12px",
+        fontSize: "clamp(11px, 2.6vw, 13px)",
         fontWeight: 600,
         letterSpacing: "0.01em",
         transition:
@@ -77,9 +78,9 @@ export const LayerToggleRow = ({
     >
       <div
         style={{
-          width: "26px",
-          height: "26px",
-          borderRadius: "8px",
+          width: "clamp(26px, 6vw, 30px)",
+          height: "clamp(26px, 6vw, 30px)",
+          borderRadius: "9px",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -99,14 +100,17 @@ export const LayerToggleRow = ({
           transition: "background 220ms ease, color 220ms ease, box-shadow 220ms ease",
         }}
       >
-        <Icon style={{ width: "14px", height: "14px" }} strokeWidth={2.25} />
+        <Icon
+          style={{ width: "clamp(14px, 3.4vw, 16px)", height: "clamp(14px, 3.4vw, 16px)" }}
+          strokeWidth={2.25}
+        />
       </div>
       <span
         className="font-display"
         style={{
           flex: 1,
           textAlign: "left",
-          fontSize: "12px",
+          fontSize: "clamp(12px, 2.8vw, 14px)",
           fontWeight: 700,
           letterSpacing: "-0.005em",
           color: active ? "hsl(var(--foreground))" : "hsl(var(--foreground) / 0.75)",
