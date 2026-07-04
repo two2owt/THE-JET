@@ -246,9 +246,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     dayFilter: "jet-map-day-filter",
     timelapseMode: "jet-map-timelapse-mode",
     timelapseSpeed: "jet-map-timelapse-speed",
+    heatIntensity: "jet-map-heat-intensity",
+    heatRadius: "jet-map-heat-radius",
+    heatOpacity: "jet-map-heat-opacity",
+    densityWindow: "jet-map-density-window",
+    pathsWindow: "jet-map-paths-window",
   } as const;
   const VALID_TIME_FILTERS = new Set<'all' | 'today' | 'this_week' | 'this_hour'>(['all', 'today', 'this_week', 'this_hour']);
-  const VALID_SPEEDS = new Set<number>([0.5, 1, 2]);
+  // Kept for backwards-compat with legacy persisted values.
+  const LEGACY_SPEEDS = new Set<number>([0.5, 1, 2]);
+  const clampNumber = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 
   const getLayerState = (layer: LayerName, fallback: boolean): boolean => {
     try {
