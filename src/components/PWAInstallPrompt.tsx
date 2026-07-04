@@ -22,7 +22,6 @@ export interface PWAInstallPromptProps {
 }
 
 const DISMISS_KEY = "pwa-install-dismissed";
-const DISMISS_DURATION = 7 * 24 * 60 * 60 * 1000;
 
 export const PWAInstallPrompt = ({ signUpCta }: PWAInstallPromptProps = {}) => {
   const { isInstallable, isInstalled, isIOS, showPrompt, installApp, dismissPrompt } = usePWAInstall();
@@ -60,10 +59,10 @@ export const PWAInstallPrompt = ({ signUpCta }: PWAInstallPromptProps = {}) => {
     if (!showPrompt || !isInstallable) return null;
   } else {
     // Sign-up mode renders on any device — the value is the account, the
-    // install is the upsell. Still respect the 7-day dismissal cooldown.
+    // install is the upsell. Still respect a permanent dismissal.
     if (typeof window !== "undefined") {
       const dismissedAt = localStorage.getItem(DISMISS_KEY);
-      if (dismissedAt && Date.now() - parseInt(dismissedAt, 10) < DISMISS_DURATION) {
+      if (dismissedAt) {
         return null;
       }
     }
