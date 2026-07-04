@@ -22,7 +22,6 @@ export interface PWAInstallPromptProps {
 }
 
 const DISMISS_KEY = "pwa-install-dismissed";
-const DISMISS_DURATION = 7 * 24 * 60 * 60 * 1000;
 
 export const PWAInstallPrompt = ({ signUpCta }: PWAInstallPromptProps = {}) => {
   const { isInstallable, isInstalled, isIOS, showPrompt, installApp, dismissPrompt } = usePWAInstall();
