@@ -15,6 +15,9 @@ interface DensityFilters {
   timeFilter?: 'all' | 'today' | 'this_week' | 'this_hour';
   hourOfDay?: number;
   dayOfWeek?: number;
+  /** When set, takes precedence over `timeFilter`. Filters user_locations to
+   *  rows whose `created_at` is within the last N minutes on the server. */
+  windowMinutes?: number;
 }
 
 export const useLocationDensity = (filters: DensityFilters = {}) => {
@@ -37,7 +40,11 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
       setLoading(true);
       
       const body: Record<string, string | number> = {};
-      if (filters.timeFilter) body.time_filter = filters.timeFilter;
+      if (filters.windowMinutes && filters.windowMinutes > 0) {
+        body.time_window_minutes = Math.floor(filters.windowMinutes);
+      } else if (filters.timeFilter) {
+        body.time_filter = filters.timeFilter;
+      }
       if (filters.hourOfDay !== undefined) body.hour_of_day = filters.hourOfDay;
       if (filters.dayOfWeek !== undefined) body.day_of_week = filters.dayOfWeek;
 
@@ -70,7 +77,7 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
       setLoading(false);
       isLoadingRef.current = false;
     }
-  }, [filters.timeFilter, filters.hourOfDay, filters.dayOfWeek]);
+  }, [filters.timeFilter, filters.hourOfDay, filters.dayOfWeek, filters.windowMinutes]);
 
   useEffect(() => {
     loadDensityData();
@@ -82,7 +89,7 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*',
           schema: 'public',
           table: 'user_locations',
         },
