@@ -3816,7 +3816,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             />
 
             {/* Path filters */}
-            <div style={{ overflow: 'hidden', transition: 'max-height 0.2s', maxHeight: showMovementPaths ? '200px' : '0px' }}>
+            <div style={{ overflow: 'hidden', transition: 'max-height 0.3s', maxHeight: showMovementPaths ? '360px' : '0px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingLeft: '4px' }}>
                 {(isLoadingPaths || pathsError) && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', background: pathsError ? 'hsl(var(--destructive) / 0.1)' : 'hsl(var(--primary) / 0.08)', borderRadius: '8px', fontSize: '10px' }}>
