@@ -1674,14 +1674,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           5, 0.5,
           10, 1,
         ],
-        // Dynamic intensity based on zoom with higher peak
+        // Dynamic intensity based on zoom with higher peak. Each stop is
+        // scaled by the `heatIntensity` slider (0.5x-2x) so users can dim
+        // or boost the heat without a re-fetch.
         'heatmap-intensity': [
           'interpolate',
           ['exponential', 2],
           ['zoom'],
-          0, isMobile ? 2.2 : 2,
-          9, isMobile ? 2.6 : 3,
-          15, isMobile ? 4 : 5,
+          0, (isMobile ? 2.2 : 2) * heatIntensity,
+          9, (isMobile ? 2.6 : 3) * heatIntensity,
+          15, (isMobile ? 4 : 5) * heatIntensity,
         ],
         // Enhanced vibrant color ramp with smooth gradients
         'heatmap-color': [
@@ -1703,32 +1705,34 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         // Adaptive radius — smooth cubic-bezier easing across the full zoom
         // range with intermediate stops so blobs grow/shrink fluidly during
         // pinch-zoom instead of stepping between sparse interpolation points.
+        // Each stop is scaled by the `heatRadius` slider (0.5x-2x).
         'heatmap-radius': [
           'interpolate',
           ['cubic-bezier', 0.4, 0, 0.2, 1],
           ['zoom'],
-          0,  isMobile ? 26 : 20,
-          5,  isMobile ? 38 : 30,
-          9,  isMobile ? 60 : 50,
-          11, isMobile ? 72 : 60,
-          12, isMobile ? 82 : 70,
-          13, isMobile ? 94 : 80,
-          15, isMobile ? 115 : 100,
-          17, isMobile ? 130 : 115,
+          0,  (isMobile ? 26 : 20) * heatRadius,
+          5,  (isMobile ? 38 : 30) * heatRadius,
+          9,  (isMobile ? 60 : 50) * heatRadius,
+          11, (isMobile ? 72 : 60) * heatRadius,
+          12, (isMobile ? 82 : 70) * heatRadius,
+          13, (isMobile ? 94 : 80) * heatRadius,
+          15, (isMobile ? 115 : 100) * heatRadius,
+          17, (isMobile ? 130 : 115) * heatRadius,
         ],
-        // Opacity eased with cubic-bezier and extra anchor stops so the layer
-        // never abruptly washes out as the user zooms in or out.
+        // Opacity eased with cubic-bezier and extra anchor stops so the
+        // layer never abruptly washes out as the user zooms in or out.
+        // Each stop is scaled by the `heatOpacity` slider (0-1).
         'heatmap-opacity': [
           'interpolate',
           ['cubic-bezier', 0.4, 0, 0.2, 1],
           ['zoom'],
-          5,  isMobile ? 0.85 : 1,
-          7,  isMobile ? 0.82 : 0.95,
-          10, isMobile ? 0.8  : 0.92,
-          12, isMobile ? 0.78 : 0.9,
-          14, isMobile ? 0.74 : 0.87,
-          15, isMobile ? 0.7  : 0.85,
-          17, isMobile ? 0.6  : 0.75,
+          5,  (isMobile ? 0.85 : 1)    * heatOpacity,
+          7,  (isMobile ? 0.82 : 0.95) * heatOpacity,
+          10, (isMobile ? 0.8  : 0.92) * heatOpacity,
+          12, (isMobile ? 0.78 : 0.9)  * heatOpacity,
+          14, (isMobile ? 0.74 : 0.87) * heatOpacity,
+          15, (isMobile ? 0.7  : 0.85) * heatOpacity,
+          17, (isMobile ? 0.6  : 0.75) * heatOpacity,
         ],
         // Paint-property transitions: smoothly tween between values when the
         // layer is re-evaluated (city switch, time-lapse hour change, mobile
