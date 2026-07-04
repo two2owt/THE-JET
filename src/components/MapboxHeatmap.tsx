@@ -3348,32 +3348,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         }}
       >
         {/* Expanded panel - slides up from FAB */}
-        <div 
-          style={{
-            width: isMobile ? 'min(240px, 60vw)' : '180px',
-            contain: 'layout style',
-            overflow: 'hidden',
-            transition: 'max-height 300ms ease-out, opacity 300ms ease-out, margin-bottom 300ms ease-out',
-            maxHeight: !controlsCollapsed ? '600px' : '0px',
-            opacity: !controlsCollapsed ? 1 : 0,
-            marginBottom: !controlsCollapsed ? '8px' : '0px',
-          }}
-        >
-          <div style={{
-            background: 'hsl(var(--card) / 0.95)',
-            backdropFilter: 'blur(24px) saturate(1.6)',
-            WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
-            borderRadius: '12px',
-            border: '1px solid hsl(var(--border))',
-            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
-            padding: '10px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-            maxHeight: 'calc(100dvh - var(--map-fixed-bottom, 72px) - 252px)',
-            overflowY: 'auto',
-            overscrollBehavior: 'contain',
-          }}>
+        {(() => {
+          const panelBody = (
+            <>
             {/* Panel header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, background: 'hsl(var(--card) / 0.95)', backdropFilter: 'blur(24px) saturate(1.6)', WebkitBackdropFilter: 'blur(24px) saturate(1.6)', zIndex: 1, paddingBottom: '4px', marginTop: '-2px' }}>
               <span style={{ fontSize: '10px', fontWeight: 600, color: 'hsl(var(--muted-foreground))', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Layers</span>
