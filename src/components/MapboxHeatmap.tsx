@@ -331,10 +331,35 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       const raw = localStorage.getItem(FILTER_KEYS.timelapseSpeed);
       if (raw) {
         const n = parseFloat(raw);
-        if (VALID_SPEEDS.has(n)) return n;
+        // Accept any positive number in [0.25, 4]. Legacy 0.5/1/2 values pass
+        // through this check too, and older 3-button presets keep working.
+        if (Number.isFinite(n) && n >= 0.25 && n <= 4) return n;
+        if (LEGACY_SPEEDS.has(n)) return n;
       }
     } catch { /* ignore */ }
     return 1;
+  };
+
+  // Heatmap paint multipliers + shared time-window sliders. Persisted so a
+  // user's tuned map view survives a reload.
+  const getPersistedNumber = (key: string, fallback: number, lo: number, hi: number): number => {
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const n = parseFloat(raw);
+        if (Number.isFinite(n)) return clampNumber(n, lo, hi);
+      }
+    } catch { /* ignore */ }
+    return fallback;
+  };
+  const getPersistedWindowMinutes = (key: string): number | null => {
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw === null || raw === "" || raw === "off") return null;
+      const n = parseInt(raw, 10);
+      if (Number.isFinite(n) && n >= 1 && n <= 10080) return n;
+    } catch { /* ignore */ }
+    return null;
   };
 
   // Density heatmap state
