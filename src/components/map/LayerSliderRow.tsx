@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { LucideIcon, RotateCcw, Loader2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 
@@ -32,7 +33,7 @@ interface LayerSliderRowProps {
  * right. `onCommit` fires once per drag end so paint-only sliders update in
  * real time while data-window sliders only refetch on release.
  */
-export const LayerSliderRow = ({
+const LayerSliderRowImpl = ({
   label,
   Icon,
   ariaLabel,
