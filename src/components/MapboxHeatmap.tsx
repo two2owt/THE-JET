@@ -484,13 +484,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Persist layer toggles to localStorage as fallback
-  useEffect(() => { localStorage.setItem(LAYER_KEYS.density, String(showDensityLayer)); }, [showDensityLayer]);
-  useEffect(() => { localStorage.setItem(LAYER_KEYS.paths, String(showMovementPaths)); }, [showMovementPaths]);
-  useEffect(() => { localStorage.setItem(LAYER_KEYS.parking, String(showParking)); }, [showParking]);
-  useEffect(() => { localStorage.setItem(LAYER_KEYS.stats, String(showLiveStats)); }, [showLiveStats]);
-  useEffect(() => { localStorage.setItem(LAYER_KEYS.openNow, String(openNowOnly)); }, [openNowOnly]);
-
   // Tick once a minute (aligned to the wall-clock boundary, and refreshed on
   // tab visibility / window focus) so the open/closed cache below stays fresh
   // even after backgrounded tabs, system sleep, or clock jumps.
@@ -504,22 +497,26 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [venues, openNowTick]);
 
-  // Persist filter / time-lapse selections to localStorage
-  useEffect(() => { localStorage.setItem(FILTER_KEYS.timeFilter, timeFilter); }, [timeFilter]);
-  useEffect(() => { localStorage.setItem(FILTER_KEYS.pathTimeFilter, pathTimeFilter); }, [pathTimeFilter]);
-  useEffect(() => { localStorage.setItem(FILTER_KEYS.dayFilter, dayFilter === undefined ? "all" : String(dayFilter)); }, [dayFilter]);
-  useEffect(() => { localStorage.setItem(FILTER_KEYS.timelapseMode, String(timelapseMode)); }, [timelapseMode]);
-
-  // Persist heatmap paint multipliers + time-window overrides
-  useEffect(() => { localStorage.setItem(FILTER_KEYS.heatIntensity, String(heatIntensity)); }, [heatIntensity]);
-  useEffect(() => { localStorage.setItem(FILTER_KEYS.heatRadius, String(heatRadius)); }, [heatRadius]);
-  useEffect(() => { localStorage.setItem(FILTER_KEYS.heatOpacity, String(heatOpacity)); }, [heatOpacity]);
-  useEffect(() => {
-    localStorage.setItem(FILTER_KEYS.densityWindow, densityWindowMinutes === null ? "off" : String(densityWindowMinutes));
-  }, [densityWindowMinutes]);
-  useEffect(() => {
-    localStorage.setItem(FILTER_KEYS.pathsWindow, pathsWindowMinutes === null ? "off" : String(pathsWindowMinutes));
-  }, [pathsWindowMinutes]);
+  // All layer toggle / filter / paint slider persistence is centralized in
+  // this hook so the container isn't littered with 15 tiny effects.
+  useLayerPersistence({
+    layerKeys: LAYER_KEYS,
+    filterKeys: FILTER_KEYS,
+    showDensityLayer,
+    showMovementPaths,
+    showParking,
+    showLiveStats,
+    openNowOnly,
+    timeFilter,
+    pathTimeFilter,
+    dayFilter,
+    timelapseMode,
+    heatIntensity,
+    heatRadius,
+    heatOpacity,
+    densityWindowMinutes,
+    pathsWindowMinutes,
+  });
   
   // CLS fix: Defer layer controls render until map is loaded
   // This ensures controls appear immediately after map is ready, not a fixed delay
