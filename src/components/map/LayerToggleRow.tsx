@@ -206,3 +206,9 @@ const LayerToggleRowImpl = ({
     </div>
   );
 };
+
+/**
+ * Memoized to prevent re-renders when unrelated map state (marker updates,
+ * viewport changes) flows through the Layers panel parent.
+ */
+export const LayerToggleRow = memo(LayerToggleRowImpl);
