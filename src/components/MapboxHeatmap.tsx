@@ -735,12 +735,20 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     setShowParking(false);
     setShowLiveStats(false);
     setShowMovementPaths(false);
+    setOpenNowOnly(false);
     setTimeFilter('all');
     setPathTimeFilter('all');
     setDayFilter(undefined);
     setHourFilter(undefined);
     setTimelapseMode(false);
     setMinPathFrequency(2);
+
+    // Reset heatmap paint sliders + data-window sliders to their defaults
+    setHeatIntensity(1);
+    setHeatRadius(1);
+    setHeatOpacity(1);
+    setDensityWindowMinutes(null);
+    setPathsWindowMinutes(null);
 
     // Reset time-lapse playback
     if (timelapse.isPlaying) timelapse.pause();
