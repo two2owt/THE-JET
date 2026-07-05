@@ -1,8 +1,7 @@
 import { useEffect, MutableRefObject } from "react";
-import type mapboxgl from "mapbox-gl";
 
 interface Params {
-  mapRef: MutableRefObject<mapboxgl.Map | null>;
+  mapRef: MutableRefObject<any>;
   mapLoaded: boolean;
   isMobile: boolean;
   showDensityLayer: boolean;
