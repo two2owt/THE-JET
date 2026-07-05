@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { LucideIcon, Loader2, HelpCircle } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
@@ -22,7 +23,7 @@ interface LayerToggleRowProps {
  * never reads as two stacked toggles. A help icon next to each row shows a
  * tooltip explaining what the layer displays and how live stats are computed.
  */
-export const LayerToggleRow = ({
+const LayerToggleRowImpl = ({
   label,
   active,
   Icon,
@@ -205,3 +206,9 @@ export const LayerToggleRow = ({
     </div>
   );
 };
+
+/**
+ * Memoized to prevent re-renders when unrelated map state (marker updates,
+ * viewport changes) flows through the Layers panel parent.
+ */
+export const LayerToggleRow = memo(LayerToggleRowImpl);
