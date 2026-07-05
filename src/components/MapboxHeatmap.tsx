@@ -81,6 +81,10 @@ import { Button } from "./ui/button";
 import { LayerToggleRow } from "./map/LayerToggleRow";
 import { LayerSliderRow } from "./map/LayerSliderRow";
 import { LiveStatsPanel } from "./map/LiveStatsPanel";
+import { useDensityLayer } from "./map/hooks/useDensityLayer";
+import { useDensityPaint } from "./map/hooks/useDensityPaint";
+import { useMovementPathsLayer } from "./map/hooks/useMovementPathsLayer";
+import { useLayerPersistence } from "./map/hooks/useLayerPersistence";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Slider } from "./ui/slider";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
@@ -480,13 +484,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Persist layer toggles to localStorage as fallback
-  useEffect(() => { localStorage.setItem(LAYER_KEYS.density, String(showDensityLayer)); }, [showDensityLayer]);
-  useEffect(() => { localStorage.setItem(LAYER_KEYS.paths, String(showMovementPaths)); }, [showMovementPaths]);
-  useEffect(() => { localStorage.setItem(LAYER_KEYS.parking, String(showParking)); }, [showParking]);
-  useEffect(() => { localStorage.setItem(LAYER_KEYS.stats, String(showLiveStats)); }, [showLiveStats]);
-  useEffect(() => { localStorage.setItem(LAYER_KEYS.openNow, String(openNowOnly)); }, [openNowOnly]);
-
   // Tick once a minute (aligned to the wall-clock boundary, and refreshed on
   // tab visibility / window focus) so the open/closed cache below stays fresh
   // even after backgrounded tabs, system sleep, or clock jumps.
@@ -500,22 +497,26 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [venues, openNowTick]);
 
-  // Persist filter / time-lapse selections to localStorage
-  useEffect(() => { localStorage.setItem(FILTER_KEYS.timeFilter, timeFilter); }, [timeFilter]);
-  useEffect(() => { localStorage.setItem(FILTER_KEYS.pathTimeFilter, pathTimeFilter); }, [pathTimeFilter]);
-  useEffect(() => { localStorage.setItem(FILTER_KEYS.dayFilter, dayFilter === undefined ? "all" : String(dayFilter)); }, [dayFilter]);
-  useEffect(() => { localStorage.setItem(FILTER_KEYS.timelapseMode, String(timelapseMode)); }, [timelapseMode]);
-
-  // Persist heatmap paint multipliers + time-window overrides
-  useEffect(() => { localStorage.setItem(FILTER_KEYS.heatIntensity, String(heatIntensity)); }, [heatIntensity]);
-  useEffect(() => { localStorage.setItem(FILTER_KEYS.heatRadius, String(heatRadius)); }, [heatRadius]);
-  useEffect(() => { localStorage.setItem(FILTER_KEYS.heatOpacity, String(heatOpacity)); }, [heatOpacity]);
-  useEffect(() => {
-    localStorage.setItem(FILTER_KEYS.densityWindow, densityWindowMinutes === null ? "off" : String(densityWindowMinutes));
-  }, [densityWindowMinutes]);
-  useEffect(() => {
-    localStorage.setItem(FILTER_KEYS.pathsWindow, pathsWindowMinutes === null ? "off" : String(pathsWindowMinutes));
-  }, [pathsWindowMinutes]);
+  // All layer toggle / filter / paint slider persistence is centralized in
+  // this hook so the container isn't littered with 15 tiny effects.
+  useLayerPersistence({
+    layerKeys: LAYER_KEYS,
+    filterKeys: FILTER_KEYS,
+    showDensityLayer,
+    showMovementPaths,
+    showParking,
+    showLiveStats,
+    openNowOnly,
+    timeFilter,
+    pathTimeFilter,
+    dayFilter,
+    timelapseMode,
+    heatIntensity,
+    heatRadius,
+    heatOpacity,
+    densityWindowMinutes,
+    pathsWindowMinutes,
+  });
   
   // CLS fix: Defer layer controls render until map is loaded
   // This ensures controls appear immediately after map is ready, not a fixed delay
@@ -1643,600 +1644,44 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     }
   }, [show3DTerrain, mapLoaded, isMobile]);
 
-  // Add/update density heatmap layer with lazy loading (supports timelapse mode)
-  useEffect(() => {
-    // Use timelapse data when in timelapse mode, otherwise use regular density data
-    const activeData = timelapseMode && timelapse.currentData 
-      ? timelapse.currentData 
-      : densityData;
-      
-    if (!map.current || !mapLoaded || !activeData) return;
+  // Density heatmap layer (add / rebuild / tear-down) — extracted hook.
+  useDensityLayer({
+    mapRef: map,
+    mapLoaded,
+    isMobile,
+    showDensityLayer,
+    densityData,
+    timelapseMode,
+    timelapse: { currentData: timelapse.currentData, currentHour: timelapse.currentHour },
+    heatIntensityRef,
+    heatRadiusRef,
+    heatOpacityRef,
+  });
 
-    const sourceId = 'location-density';
-    const layerId = 'location-density-heat';
-    const pointLayerId = `${layerId}-point`;
-    const glowLayerId = `${layerId}-glow`;
+  // Paint-only slider updates for the density heatmap — extracted hook.
+  useDensityPaint({
+    mapRef: map,
+    mapLoaded,
+    isMobile,
+    showDensityLayer,
+    densityData,
+    timelapseMode,
+    timelapseCurrentData: timelapse.currentData,
+    heatIntensity,
+    heatRadius,
+    heatOpacity,
+  });
 
-    try {
-      // Remove existing layers and source if they exist - check style is loaded first
-      if (map.current?.style?.loaded()) {
-        [glowLayerId, pointLayerId, layerId].forEach(id => {
-          if (map.current?.getLayer(id)) {
-            map.current.removeLayer(id);
-          }
-        });
-        if (map.current?.getSource(sourceId)) {
-          map.current.removeSource(sourceId);
-        }
-      }
-    } catch (error) {
-      console.error('Error removing existing layers:', error);
-      return;
-    }
+  // Movement paths + animated flow — extracted hook.
+  useMovementPathsLayer({
+    mapRef: map,
+    mapLoaded,
+    showMovementPaths,
+    pathData,
+    flowAnimationRef,
+    platformSettingsRef: platformSettings,
+  });
 
-    if (!showDensityLayer) return;
-
-    // Add density data source
-    map.current.addSource(sourceId, {
-      type: 'geojson',
-      data: activeData.geojson,
-    });
-
-    // Add enhanced heatmap layer with glow effect.
-    // Mobile viewports get larger radii, slightly lower peak opacity, and a
-    // gentler intensity curve so the heat stays readable on small screens
-    // (and doesn't blow out into solid red when users pinch-zoom).
-    map.current.addLayer({
-      id: layerId,
-      type: 'heatmap',
-      source: sourceId,
-      paint: {
-        // Enhanced weight calculation with exponential curve
-        'heatmap-weight': [
-          'interpolate',
-          ['exponential', 1.5],
-          ['get', 'density'],
-          0, 0,
-          5, 0.5,
-          10, 1,
-        ],
-        // Dynamic intensity based on zoom with higher peak. Each stop is
-        // scaled by the `heatIntensity` slider (0.5x-2x). The initial build
-        // reads from a ref so slider changes update via setPaintProperty
-        // (paint-only effect below) instead of triggering a full rebuild.
-        'heatmap-intensity': [
-          'interpolate',
-          ['exponential', 2],
-          ['zoom'],
-          0, (isMobile ? 2.2 : 2) * heatIntensityRef.current,
-          9, (isMobile ? 2.6 : 3) * heatIntensityRef.current,
-          15, (isMobile ? 4 : 5) * heatIntensityRef.current,
-        ],
-        // Enhanced vibrant color ramp with smooth gradients
-        'heatmap-color': [
-          'interpolate',
-          ['linear'],
-          ['heatmap-density'],
-          0, 'rgba(0, 0, 0, 0)',              // transparent
-          0.1, 'rgba(65, 105, 225, 0.6)',     // royal blue with glow
-          0.2, 'rgba(0, 191, 255, 0.8)',      // deep sky blue
-          0.3, 'rgba(0, 255, 127, 0.85)',     // spring green
-          0.4, 'rgba(50, 205, 50, 0.9)',      // lime green
-          0.5, 'rgba(255, 255, 0, 0.95)',     // yellow
-          0.6, 'rgba(255, 215, 0, 0.95)',     // gold
-          0.7, 'rgba(255, 165, 0, 1)',        // orange
-          0.8, 'rgba(255, 69, 0, 1)',         // orange-red
-          0.9, 'rgba(255, 0, 0, 1)',          // red
-          1, 'rgba(139, 0, 0, 1)',            // dark red
-        ],
-        // Adaptive radius — smooth cubic-bezier easing across the full zoom
-        // range with intermediate stops so blobs grow/shrink fluidly during
-        // pinch-zoom instead of stepping between sparse interpolation points.
-        // Each stop is scaled by the `heatRadius` slider (0.5x-2x).
-        'heatmap-radius': [
-          'interpolate',
-          ['cubic-bezier', 0.4, 0, 0.2, 1],
-          ['zoom'],
-          0,  (isMobile ? 26 : 20) * heatRadiusRef.current,
-          5,  (isMobile ? 38 : 30) * heatRadiusRef.current,
-          9,  (isMobile ? 60 : 50) * heatRadiusRef.current,
-          11, (isMobile ? 72 : 60) * heatRadiusRef.current,
-          12, (isMobile ? 82 : 70) * heatRadiusRef.current,
-          13, (isMobile ? 94 : 80) * heatRadiusRef.current,
-          15, (isMobile ? 115 : 100) * heatRadiusRef.current,
-          17, (isMobile ? 130 : 115) * heatRadiusRef.current,
-        ],
-        // Opacity eased with cubic-bezier and extra anchor stops so the
-        // layer never abruptly washes out as the user zooms in or out.
-        // Each stop is scaled by the `heatOpacity` slider (0-1).
-        'heatmap-opacity': [
-          'interpolate',
-          ['cubic-bezier', 0.4, 0, 0.2, 1],
-          ['zoom'],
-          5,  (isMobile ? 0.85 : 1)    * heatOpacityRef.current,
-          7,  (isMobile ? 0.82 : 0.95) * heatOpacityRef.current,
-          10, (isMobile ? 0.8  : 0.92) * heatOpacityRef.current,
-          12, (isMobile ? 0.78 : 0.9)  * heatOpacityRef.current,
-          14, (isMobile ? 0.74 : 0.87) * heatOpacityRef.current,
-          15, (isMobile ? 0.7  : 0.85) * heatOpacityRef.current,
-          17, (isMobile ? 0.6  : 0.75) * heatOpacityRef.current,
-        ],
-        // Paint-property transitions: smoothly tween between values when the
-        // layer is re-evaluated (city switch, time-lapse hour change, mobile
-        // class flip). Pair with a matching radius transition for parity.
-        'heatmap-radius-transition': { duration: 450, delay: 0 },
-        'heatmap-opacity-transition': { duration: 600, delay: 0 },
-      },
-    });
-
-    // Add enhanced circle layer for detailed view with pulsing animation
-    map.current.addLayer({
-      id: `${layerId}-point`,
-      type: 'circle',
-      source: sourceId,
-      minzoom: 13,
-      paint: {
-        // Dynamic radius based on density with exponential scaling
-        'circle-radius': [
-          'interpolate',
-          ['exponential', 1.5],
-          ['get', 'density'],
-          0, 5,
-          5, 12,
-          10, 25,
-        ],
-        // Vibrant color gradient matching heatmap
-        'circle-color': [
-          'interpolate',
-          ['linear'],
-          ['get', 'density'],
-          0, 'rgb(65, 105, 225)',
-          3, 'rgb(0, 255, 127)',
-          6, 'rgb(255, 215, 0)',
-          8, 'rgb(255, 69, 0)',
-          10, 'rgb(139, 0, 0)',
-        ],
-        'circle-opacity': 0.7,
-        'circle-blur': 0.3,
-        'circle-stroke-width': 2,
-        'circle-stroke-color': [
-          'interpolate',
-          ['linear'],
-          ['get', 'density'],
-          0, 'rgba(255, 255, 255, 0.6)',
-          10, 'rgba(255, 255, 255, 0.9)',
-        ],
-        'circle-stroke-opacity': 0.8,
-        'circle-opacity-transition': {
-          duration: 1000,
-          delay: 100
-        }
-      },
-    });
-
-    // Add outer glow layer for enhanced visual effect
-    map.current.addLayer({
-      id: `${layerId}-glow`,
-      type: 'circle',
-      source: sourceId,
-      minzoom: 13,
-      paint: {
-        'circle-radius': [
-          'interpolate',
-          ['exponential', 1.5],
-          ['get', 'density'],
-          0, 10,
-          5, 20,
-          10, 40,
-        ],
-        'circle-color': [
-          'interpolate',
-          ['linear'],
-          ['get', 'density'],
-          0, 'rgba(65, 105, 225, 0.3)',
-          5, 'rgba(255, 215, 0, 0.4)',
-          10, 'rgba(255, 0, 0, 0.5)',
-        ],
-        'circle-opacity': 0.3,
-        'circle-blur': 1,
-        'circle-opacity-transition': {
-          duration: 1000,
-          delay: 200
-        }
-      },
-    });
-
-    console.log('Density heatmap layer added with', activeData.stats.grid_cells, 'points', timelapseMode ? `(hour ${timelapse.currentHour})` : '');
-  }, [mapLoaded, densityData, showDensityLayer, timelapseMode, timelapse.currentData, timelapse.currentHour, isMobile]);
-
-  // Paint-only updates for the heatmap sliders. Uses setPaintProperty so
-  // drag interactions never trigger a full source / layer rebuild.
-  useEffect(() => {
-    const m = map.current;
-    if (!m || !mapLoaded) return;
-    const layerId = 'location-density-heat';
-    try {
-      if (!m.getLayer(layerId)) return;
-      m.setPaintProperty(layerId, 'heatmap-intensity', [
-        'interpolate',
-        ['exponential', 2],
-        ['zoom'],
-        0, (isMobile ? 2.2 : 2) * heatIntensity,
-        9, (isMobile ? 2.6 : 3) * heatIntensity,
-        15, (isMobile ? 4 : 5) * heatIntensity,
-      ]);
-      m.setPaintProperty(layerId, 'heatmap-radius', [
-        'interpolate',
-        ['cubic-bezier', 0.4, 0, 0.2, 1],
-        ['zoom'],
-        0,  (isMobile ? 26 : 20) * heatRadius,
-        5,  (isMobile ? 38 : 30) * heatRadius,
-        9,  (isMobile ? 60 : 50) * heatRadius,
-        11, (isMobile ? 72 : 60) * heatRadius,
-        12, (isMobile ? 82 : 70) * heatRadius,
-        13, (isMobile ? 94 : 80) * heatRadius,
-        15, (isMobile ? 115 : 100) * heatRadius,
-        17, (isMobile ? 130 : 115) * heatRadius,
-      ]);
-      m.setPaintProperty(layerId, 'heatmap-opacity', [
-        'interpolate',
-        ['cubic-bezier', 0.4, 0, 0.2, 1],
-        ['zoom'],
-        5,  (isMobile ? 0.85 : 1)    * heatOpacity,
-        7,  (isMobile ? 0.82 : 0.95) * heatOpacity,
-        10, (isMobile ? 0.8  : 0.92) * heatOpacity,
-        12, (isMobile ? 0.78 : 0.9)  * heatOpacity,
-        14, (isMobile ? 0.74 : 0.87) * heatOpacity,
-        15, (isMobile ? 0.7  : 0.85) * heatOpacity,
-        17, (isMobile ? 0.6  : 0.75) * heatOpacity,
-      ]);
-    } catch {
-      // Layer may be mid-rebuild; the layer-add effect above will pick up
-      // the current ref values on its next run.
-    }
-  }, [heatIntensity, heatRadius, heatOpacity, mapLoaded, isMobile, showDensityLayer, densityData, timelapseMode, timelapse.currentData]);
-
-  // Add/update movement paths layer with animated flow
-  useEffect(() => {
-    // Cancel any existing animation
-    if (flowAnimationRef.current) {
-      cancelAnimationFrame(flowAnimationRef.current);
-      flowAnimationRef.current = null;
-    }
-
-    if (!map.current || !mapLoaded || !pathData) return;
-
-    const sourceId = 'movement-paths';
-    const lineLayerId = 'movement-paths-line';
-    const glowLayerId = 'movement-paths-glow';
-    const arrowLayerId = 'movement-paths-arrows';
-    const particleLayerId = 'movement-paths-particles';
-
-    try {
-      // Always attempt to remove existing layers/sources before re-adding to
-      // avoid "There is already a source with ID" errors when the style
-      // reports not-yet-loaded but the source was previously registered.
-      [particleLayerId, arrowLayerId, glowLayerId, lineLayerId].forEach(id => {
-        try {
-          if (map.current?.getLayer(id)) {
-            map.current.removeLayer(id);
-          }
-        } catch (_) { /* no-op */ }
-      });
-      try {
-        if (map.current?.getSource(sourceId)) {
-          map.current.removeSource(sourceId);
-        }
-      } catch (_) { /* no-op */ }
-      try {
-        if (map.current?.getSource(`${sourceId}-particles`)) {
-          map.current.removeSource(`${sourceId}-particles`);
-        }
-      } catch (_) { /* no-op */ }
-    } catch (error) {
-      console.error('Error removing existing movement path layers:', error);
-      return;
-    }
-
-    if (!showMovementPaths) return;
-
-    // Defensive: if source still somehow exists, update its data instead of re-adding
-    const existing = map.current.getSource(sourceId) as any;
-    if (existing) {
-      try { existing.setData(pathData.geojson); } catch (_) { /* no-op */ }
-    } else {
-      map.current.addSource(sourceId, {
-        type: 'geojson',
-        data: pathData.geojson,
-        lineMetrics: true,
-      });
-    }
-
-    // Add glow effect layer (behind main line)
-    map.current.addLayer({
-      id: glowLayerId,
-      type: 'line',
-      source: sourceId,
-      layout: {
-        'line-join': 'round',
-        'line-cap': 'round',
-      },
-      paint: {
-        'line-width': [
-          'interpolate',
-          ['exponential', 1.5],
-          ['get', 'frequency'],
-          1, 8,
-          5, 14,
-          10, 22,
-          20, 30,
-        ],
-        'line-color': [
-          'interpolate',
-          ['linear'],
-          ['get', 'frequency'],
-          1, 'rgba(100, 200, 255, 0.3)',
-          5, 'rgba(0, 255, 255, 0.35)',
-          10, 'rgba(255, 200, 0, 0.4)',
-          15, 'rgba(255, 100, 0, 0.45)',
-          20, 'rgba(255, 0, 100, 0.5)',
-        ],
-        'line-blur': 4,
-        'line-opacity': 0.6,
-      },
-    });
-
-    // Add main animated flow line layer
-    map.current.addLayer({
-      id: lineLayerId,
-      type: 'line',
-      source: sourceId,
-      layout: {
-        'line-join': 'round',
-        'line-cap': 'round',
-      },
-      paint: {
-        'line-width': [
-          'interpolate',
-          ['exponential', 1.5],
-          ['get', 'frequency'],
-          1, 3,
-          5, 6,
-          10, 10,
-          20, 14,
-        ],
-        'line-color': [
-          'interpolate',
-          ['linear'],
-          ['get', 'frequency'],
-          1, 'rgb(100, 200, 255)',
-          5, 'rgb(0, 255, 255)',
-          10, 'rgb(255, 200, 0)',
-          15, 'rgb(255, 100, 0)',
-          20, 'rgb(255, 0, 100)',
-        ],
-        'line-opacity': 0.9,
-        'line-dasharray': [0, 4, 3],
-      },
-    });
-
-    // Add arrow icon if not exists
-    if (!map.current.hasImage('flow-arrow')) {
-      const size = 48;
-      const arrowCanvas = document.createElement('canvas');
-      arrowCanvas.width = size;
-      arrowCanvas.height = size;
-      const ctx = arrowCanvas.getContext('2d')!;
-
-      // Create gradient for arrow
-      const gradient = ctx.createLinearGradient(0, 0, size, 0);
-      gradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
-      gradient.addColorStop(0.5, 'rgba(255, 255, 255, 1)');
-      gradient.addColorStop(1, 'rgba(255, 255, 255, 0.4)');
-
-      // Draw arrow/chevron shape
-      ctx.fillStyle = gradient;
-      ctx.beginPath();
-      ctx.moveTo(size * 0.2, size * 0.3);
-      ctx.lineTo(size * 0.6, size * 0.5);
-      ctx.lineTo(size * 0.2, size * 0.7);
-      ctx.lineTo(size * 0.35, size * 0.5);
-      ctx.closePath();
-      ctx.fill();
-
-      // Add outer glow
-      ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
-      ctx.shadowBlur = 8;
-      ctx.fill();
-
-      map.current.addImage('flow-arrow', {
-        width: size,
-        height: size,
-        data: ctx.getImageData(0, 0, size, size).data as any,
-      });
-    }
-
-    // Add animated arrow symbols for direction
-    map.current.addLayer({
-      id: arrowLayerId,
-      type: 'symbol',
-      source: sourceId,
-      layout: {
-        'symbol-placement': 'line',
-        'symbol-spacing': 40,
-        'icon-image': 'flow-arrow',
-        'icon-size': [
-          'interpolate',
-          ['linear'],
-          ['get', 'frequency'],
-          1, 0.6,
-          10, 0.9,
-          20, 1.2,
-        ],
-        'icon-rotate': 90,
-        'icon-rotation-alignment': 'map',
-        'icon-allow-overlap': true,
-        'icon-ignore-placement': true,
-      },
-      paint: {
-        'icon-opacity': 0.85,
-      },
-    });
-
-    // Create animated particle points along paths
-    const createParticleData = (offset: number) => {
-      const particles: GeoJSON.Feature<GeoJSON.Point>[] = [];
-      
-      pathData.geojson.features.forEach((feature: any) => {
-        if (feature.geometry.type === 'LineString') {
-          const coords = feature.geometry.coordinates;
-          const frequency = feature.properties?.frequency || 1;
-          
-          // Create multiple particles per path based on frequency
-          const numParticles = Math.min(Math.ceil(frequency / 3), 5);
-          
-          for (let p = 0; p < numParticles; p++) {
-            // Calculate position along the line with offset
-            const t = ((offset / 100) + (p / numParticles)) % 1;
-            
-            if (coords.length >= 2) {
-              const segmentCount = coords.length - 1;
-              const segmentIndex = Math.floor(t * segmentCount);
-              const segmentT = (t * segmentCount) - segmentIndex;
-              
-              const start = coords[Math.min(segmentIndex, coords.length - 2)];
-              const end = coords[Math.min(segmentIndex + 1, coords.length - 1)];
-              
-              const lng = start[0] + (end[0] - start[0]) * segmentT;
-              const lat = start[1] + (end[1] - start[1]) * segmentT;
-              
-              particles.push({
-                type: 'Feature',
-                geometry: {
-                  type: 'Point',
-                  coordinates: [lng, lat],
-                },
-                properties: {
-                  frequency,
-                  particleIndex: p,
-                },
-              });
-            }
-          }
-        }
-      });
-      
-      return {
-        type: 'FeatureCollection' as const,
-        features: particles,
-      };
-    };
-
-    // Add particle source
-    map.current.addSource(`${sourceId}-particles`, {
-      type: 'geojson',
-      data: createParticleData(0),
-    });
-
-    // Add particle layer
-    map.current.addLayer({
-      id: particleLayerId,
-      type: 'circle',
-      source: `${sourceId}-particles`,
-      paint: {
-        'circle-radius': [
-          'interpolate',
-          ['linear'],
-          ['get', 'frequency'],
-          1, 4,
-          10, 7,
-          20, 10,
-        ],
-        'circle-color': [
-          'interpolate',
-          ['linear'],
-          ['get', 'frequency'],
-          1, 'rgb(150, 220, 255)',
-          5, 'rgb(100, 255, 255)',
-          10, 'rgb(255, 230, 100)',
-          15, 'rgb(255, 150, 50)',
-          20, 'rgb(255, 80, 150)',
-        ],
-        'circle-opacity': 0.9,
-        'circle-blur': 0.3,
-        'circle-stroke-width': 2,
-        'circle-stroke-color': 'rgba(255, 255, 255, 0.8)',
-      },
-    });
-
-    // Animate the dash array and particles for continuous flow effect
-    const dashArraySequence = [
-      [0, 4, 3],
-      [0.5, 4, 2.5],
-      [1, 4, 2],
-      [1.5, 4, 1.5],
-      [2, 4, 1],
-      [2.5, 4, 0.5],
-      [3, 4, 0],
-      [0, 0.5, 3, 3.5],
-      [0, 1, 3, 3],
-      [0, 1.5, 3, 2.5],
-      [0, 2, 3, 2],
-      [0, 2.5, 3, 1.5],
-      [0, 3, 3, 1],
-      [0, 3.5, 3, 0.5],
-    ];
-
-    let step = 0;
-    let particleOffset = 0;
-    let lastTime = performance.now();
-
-    const animateFlow = (currentTime: number) => {
-      // Stop animation if not visible, low power mode, or paths disabled
-      if (!map.current || !showMovementPaths || document.hidden || platformSettings.current.hasReducedMotion || platformSettings.current.isLowPowerMode) {
-        flowAnimationRef.current = null;
-        return;
-      }
-
-      const deltaTime = currentTime - lastTime;
-      
-      // Update dash animation every ~80ms
-      if (deltaTime > 80) {
-        step = (step + 1) % dashArraySequence.length;
-        
-        if (map.current.getLayer(lineLayerId)) {
-          map.current.setPaintProperty(
-            lineLayerId,
-            'line-dasharray',
-            dashArraySequence[step]
-          );
-        }
-
-        // Update particle positions
-        particleOffset = (particleOffset + 2) % 100;
-        const particleSource = map.current.getSource(`${sourceId}-particles`) as mapboxgl.GeoJSONSource;
-        if (particleSource) {
-          particleSource.setData(createParticleData(particleOffset));
-        }
-
-        lastTime = currentTime;
-      }
-
-      flowAnimationRef.current = requestAnimationFrame(animateFlow);
-    };
-
-    flowAnimationRef.current = requestAnimationFrame(animateFlow);
-
-    console.log('Movement paths layer added with', pathData.stats.total_paths, 'paths and animated particles');
-
-    // Cleanup animation on unmount
-    return () => {
-      if (flowAnimationRef.current) {
-        cancelAnimationFrame(flowAnimationRef.current);
-        flowAnimationRef.current = null;
-      }
-    };
-  }, [mapLoaded, pathData, showMovementPaths]);
 
 
   // Skeleton markers removed - direct rendering architecture
