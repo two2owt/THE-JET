@@ -232,3 +232,10 @@ const LayerSliderRowImpl = ({
     </div>
   );
 };
+
+/**
+ * Memoized to avoid re-renders when unrelated map state changes while the
+ * user is dragging a slider — only value/loading/disabled updates should
+ * cause a paint of this row.
+ */
+export const LayerSliderRow = memo(LayerSliderRowImpl);
