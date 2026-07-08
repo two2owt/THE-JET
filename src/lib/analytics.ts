@@ -45,6 +45,106 @@ const getSessionId = (): string => {
   return sessionId;
 };
 
+// ---------------------------------------------------------------------------
+// UTM attribution
+//
+// - First-touch attribution is persisted in localStorage forever (until reset)
+//   so we can attribute conversions to the original acquisition channel.
+// - Last-touch attribution is persisted in sessionStorage so we can attribute
+//   in-session behavior to the most recent campaign that brought the user in.
+// - Both are merged into every analytics event under `utm_*` and `first_utm_*`
+//   keys so GTM/GA4 and Supabase reporting see the same attribution.
+// ---------------------------------------------------------------------------
+const UTM_KEYS = [
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_term",
+  "utm_content",
+  "gclid",
+  "fbclid",
+] as const;
+type UtmKey = (typeof UTM_KEYS)[number];
+type UtmData = Partial<Record<UtmKey, string>> & { referrer?: string; landing_page?: string; captured_at?: string };
+
+const FIRST_TOUCH_KEY = "jet_utm_first_touch";
+const LAST_TOUCH_KEY = "jet_utm_last_touch";
+
+const readUtmFromUrl = (): UtmData | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const found: UtmData = {};
+    let hasAny = false;
+    for (const key of UTM_KEYS) {
+      const value = params.get(key);
+      if (value) {
+        found[key] = value;
+        hasAny = true;
+      }
+    }
+    if (!hasAny) return null;
+    found.referrer = document.referrer || undefined;
+    found.landing_page = window.location.pathname + window.location.search;
+    found.captured_at = new Date().toISOString();
+    return found;
+  } catch {
+    return null;
+  }
+};
+
+const readStoredUtm = (storage: Storage | undefined, key: string): UtmData | null => {
+  if (!storage) return null;
+  try {
+    const raw = storage.getItem(key);
+    return raw ? (JSON.parse(raw) as UtmData) : null;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Capture UTM parameters from the URL exactly once per visit.
+ * - First-touch is written only if no prior first-touch exists.
+ * - Last-touch is overwritten on every campaign visit.
+ * Idempotent and safe to call multiple times.
+ */
+export const captureUtmParams = (): void => {
+  if (typeof window === "undefined") return;
+  const incoming = readUtmFromUrl();
+  if (!incoming) return;
+  try {
+    if (!localStorage.getItem(FIRST_TOUCH_KEY)) {
+      localStorage.setItem(FIRST_TOUCH_KEY, JSON.stringify(incoming));
+    }
+    sessionStorage.setItem(LAST_TOUCH_KEY, JSON.stringify(incoming));
+  } catch {
+    // storage may be unavailable (private mode / quota) — best-effort
+  }
+};
+
+/**
+ * Returns the attribution payload merged into every tracked event.
+ * Last-touch fields are top-level (utm_*), first-touch is namespaced
+ * (first_utm_*) so GTM tags can pick whichever attribution model they need.
+ */
+const getAttributionPayload = (): Record<string, unknown> => {
+  const last = readStoredUtm(typeof sessionStorage !== "undefined" ? sessionStorage : undefined, LAST_TOUCH_KEY);
+  const first = readStoredUtm(typeof localStorage !== "undefined" ? localStorage : undefined, FIRST_TOUCH_KEY);
+  const out: Record<string, unknown> = {};
+  if (last) {
+    for (const key of UTM_KEYS) if (last[key]) out[key] = last[key];
+    if (last.referrer) out.referrer = last.referrer;
+    if (last.landing_page) out.landing_page = last.landing_page;
+  }
+  if (first) {
+    for (const key of UTM_KEYS) if (first[key]) out[`first_${key}`] = first[key];
+    if (first.landing_page) out.first_landing_page = first.landing_page;
+    if (first.captured_at) out.first_touch_at = first.captured_at;
+  }
+  return out;
+};
+
 class Analytics {
   private initialized = false;
   private queue: Array<{ event_name: string; event_data: Record<string, unknown>; page_path: string }> = [];
