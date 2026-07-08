@@ -506,6 +506,10 @@ All colors MUST be HSL.
   /* Layers panel scroller — thin, themed, gutter-stable to prevent content shift
      when the scrollbar appears/disappears at different breakpoints. */
   .layers-scroll {
+    /* Always reserve the gutter so the panel never reflows when content
+       grows/shrinks. `overflow-y: scroll` guarantees the reserved space on
+       every engine (including older iOS Safari that ignores scrollbar-gutter). */
+    overflow-y: scroll;
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--border)) transparent;
     scrollbar-gutter: stable;

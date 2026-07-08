@@ -3527,7 +3527,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '6px',
-                      overflowY: 'auto',
                       maxHeight:
                         'calc(92dvh - 48px - env(safe-area-inset-bottom))',
                     }}
@@ -3567,7 +3566,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   gap: '6px',
                   maxHeight:
                     'calc(100dvh - var(--map-fixed-bottom, 72px) - 24px)',
-                  overflowY: 'auto',
                 }}
               >
                 {panelBody}
