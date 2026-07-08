@@ -3511,6 +3511,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                  style={{
                    maxHeight: '92dvh',
                     paddingBottom: 'env(safe-area-inset-bottom)',
+                    paddingLeft: 'env(safe-area-inset-left)',
+                    paddingRight: 'env(safe-area-inset-right)',
                   }}
                 >
                   <SheetHeader className="px-4 pt-3 pb-2">
@@ -3519,15 +3521,15 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     </SheetTitle>
                   </SheetHeader>
                   <div
+                    className="layers-scroll"
                     style={{
-                      padding: '2px 12px 14px',
+                      padding: '2px var(--map-ui-inset-right, 0.75rem) 14px var(--map-ui-inset-left, 0.75rem)',
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '6px',
                       overflowY: 'auto',
                       maxHeight:
                         'calc(92dvh - 48px - env(safe-area-inset-bottom))',
-                      overscrollBehavior: 'contain',
                     }}
                   >
                     {panelBody}
@@ -3550,6 +3552,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               }}
             >
               <div
+                className="layers-scroll"
                 style={{
                   background: 'hsl(var(--card) / 0.95)',
                   backdropFilter: 'blur(24px) saturate(1.6)',
@@ -3558,14 +3561,13 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   border: '1px solid hsl(var(--border))',
                   boxShadow:
                     '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
-                  padding: '8px 10px',
+                  padding: 'var(--map-ui-inset-top, 0.75rem) var(--map-ui-inset-right, 0.75rem)',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '6px',
                   maxHeight:
                     'calc(100dvh - var(--map-fixed-bottom, 72px) - 24px)',
                   overflowY: 'auto',
-                  overscrollBehavior: 'contain',
                 }}
               >
                 {panelBody}
