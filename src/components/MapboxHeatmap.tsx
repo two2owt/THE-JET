@@ -3508,8 +3508,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 <SheetContent
                   side="bottom"
                   className="p-0 rounded-t-2xl border-t bg-card/95 backdrop-blur-xl"
-                  style={{
-                    maxHeight: '85dvh',
+                 style={{
+                   maxHeight: '92dvh',
                     paddingBottom: 'env(safe-area-inset-bottom)',
                   }}
                 >
@@ -3520,13 +3520,13 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   </SheetHeader>
                   <div
                     style={{
-                      padding: '4px 14px 18px',
+                      padding: '2px 12px 14px',
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '10px',
+                      gap: '6px',
                       overflowY: 'auto',
                       maxHeight:
-                        'calc(85dvh - 56px - env(safe-area-inset-bottom))',
+                        'calc(92dvh - 48px - env(safe-area-inset-bottom))',
                       overscrollBehavior: 'contain',
                     }}
                   >
@@ -3536,15 +3536,15 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               </Sheet>
             );
           }
-          return (
+           return (
             <div
               style={{
-                width: '200px',
+                width: '224px',
                 contain: 'layout style',
                 overflow: 'hidden',
                 transition:
                   'max-height 300ms ease-out, opacity 300ms ease-out, margin-bottom 300ms ease-out',
-                maxHeight: !controlsCollapsed ? '600px' : '0px',
+                maxHeight: !controlsCollapsed ? 'calc(100dvh - var(--map-fixed-bottom, 72px) - 24px)' : '0px',
                 opacity: !controlsCollapsed ? 1 : 0,
                 marginBottom: !controlsCollapsed ? '8px' : '0px',
               }}
@@ -3558,12 +3558,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   border: '1px solid hsl(var(--border))',
                   boxShadow:
                     '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
-                  padding: '10px',
+                  padding: '8px 10px',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '8px',
+                  gap: '6px',
                   maxHeight:
-                    'calc(100dvh - var(--map-fixed-bottom, 72px) - 252px)',
+                    'calc(100dvh - var(--map-fixed-bottom, 72px) - 24px)',
                   overflowY: 'auto',
                   overscrollBehavior: 'contain',
                 }}
