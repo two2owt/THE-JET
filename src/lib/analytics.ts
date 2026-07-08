@@ -153,6 +153,9 @@ class Analytics {
   init() {
     if (!this.initialized) {
       this.initialized = true;
+      // Capture UTM parameters from the landing URL on first init so every
+      // subsequent event carries first-touch and last-touch attribution.
+      captureUtmParams();
       // Process any queued events
       this.processQueue();
     }
@@ -216,21 +219,28 @@ class Analytics {
       return;
     }
 
+    // Merge attribution (utm_* + first_utm_*) into every event so GTM,
+    // GA4, and Supabase reporting share the same source-of-truth channel data.
+    const enriched: Record<string, unknown> = {
+      ...getAttributionPayload(),
+      ...(properties || {}),
+    };
+
     // Mirror to GTM dataLayer regardless of Supabase init state so
     // pre-init events are still visible to GTM tags.
     pushToDataLayer(
       eventName,
-      properties || {},
+      enriched,
       this.userId,
       getSessionId(),
       window.location.pathname,
     );
 
     if (!this.initialized) {
-      this.queue.push({ event_name: eventName, event_data: properties || {}, page_path: window.location.pathname });
+      this.queue.push({ event_name: eventName, event_data: enriched, page_path: window.location.pathname });
       return;
     }
-    this.sendEvent(eventName, properties);
+    this.sendEvent(eventName, enriched);
   }
 
   pageView(pageName: string, properties?: Record<string, unknown>) {
