@@ -1,6 +1,40 @@
 import { supabase } from "@/integrations/supabase/client";
 import { hasConsent } from "@/lib/consent";
 
+// GTM dataLayer bridge — every tracked event is mirrored into window.dataLayer
+// so GTM tags/triggers see the same stream as Supabase analytics_events.
+// Safe to call before GTM loads: the array is initialized on first push and
+// GTM will replay historical entries when its container script mounts.
+type DataLayerEvent = Record<string, unknown> & { event: string };
+declare global {
+  interface Window {
+    dataLayer?: DataLayerEvent[];
+  }
+}
+
+const pushToDataLayer = (
+  eventName: string,
+  properties: Record<string, unknown>,
+  userId: string | null,
+  sessionId: string,
+  pagePath: string,
+) => {
+  if (typeof window === "undefined") return;
+  try {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: eventName,
+      event_name: eventName,
+      user_id: userId,
+      session_id: sessionId,
+      page_path: pagePath,
+      ...properties,
+    });
+  } catch {
+    // dataLayer push must never break the app
+  }
+};
+
 // Generate a simple session ID for grouping events
 const getSessionId = (): string => {
   let sessionId = sessionStorage.getItem('analytics_session_id');
@@ -58,6 +92,13 @@ class Analytics {
 
   identify(userId: string, traits?: Record<string, unknown>) {
     this.userId = userId;
+    pushToDataLayer(
+      "analytics_identify",
+      { ...(traits || {}) },
+      userId,
+      getSessionId(),
+      typeof window !== "undefined" ? window.location.pathname : "/",
+    );
     if (traits) {
       this.track("User Identified", traits);
     }
@@ -74,6 +115,16 @@ class Analytics {
     if (isMessaging && !hasConsent("messaging_analytics")) {
       return;
     }
+
+    // Mirror to GTM dataLayer regardless of Supabase init state so
+    // pre-init events are still visible to GTM tags.
+    pushToDataLayer(
+      eventName,
+      properties || {},
+      this.userId,
+      getSessionId(),
+      window.location.pathname,
+    );
 
     if (!this.initialized) {
       this.queue.push({ event_name: eventName, event_data: properties || {}, page_path: window.location.pathname });
@@ -126,6 +177,9 @@ class Analytics {
   }
 
   reset() {
+    // Signal identity reset to GTM so downstream tags (GA4, Ads) can clear
+    // user-scoped state.
+    pushToDataLayer("analytics_reset", {}, null, getSessionId(), window.location.pathname);
     this.userId = null;
     sessionStorage.removeItem('analytics_session_id');
   }
