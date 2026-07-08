@@ -92,6 +92,13 @@ class Analytics {
 
   identify(userId: string, traits?: Record<string, unknown>) {
     this.userId = userId;
+    pushToDataLayer(
+      "analytics_identify",
+      { ...(traits || {}) },
+      userId,
+      getSessionId(),
+      typeof window !== "undefined" ? window.location.pathname : "/",
+    );
     if (traits) {
       this.track("User Identified", traits);
     }
