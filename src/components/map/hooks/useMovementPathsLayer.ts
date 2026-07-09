@@ -1,4 +1,7 @@
 import { useEffect, MutableRefObject } from "react";
+import type * as MapboxGL from "mapbox-gl";
+
+type MapboxGLModule = typeof import("mapbox-gl").default;
 
 interface PlatformSettings {
   hasReducedMotion: boolean;
@@ -7,6 +10,7 @@ interface PlatformSettings {
 
 interface Params {
   mapRef: MutableRefObject<any>;
+  mapboxglRef: MutableRefObject<MapboxGLModule | null>;
   mapLoaded: boolean;
   showMovementPaths: boolean;
   pathData: { geojson: any; stats: { total_paths: number } } | null | undefined;
@@ -20,6 +24,7 @@ interface Params {
  */
 export const useMovementPathsLayer = ({
   mapRef,
+  mapboxglRef,
   mapLoaded,
   showMovementPaths,
   pathData,
@@ -265,11 +270,67 @@ export const useMovementPathsLayer = ({
 
     console.log('Movement paths layer added with', pathData.stats.total_paths, 'paths and animated particles');
 
+    // Click-to-inspect popup: show trip count + unique users for the
+    // clicked flow segment. Hover swaps the cursor to a pointer so users
+    // discover the interaction. Interactive layers include the wide glow
+    // line so thin high-traffic paths remain easy to hit on touch.
+    const map = mapRef.current;
+    const mapboxgl = mapboxglRef.current;
+    let activePopup: MapboxGL.Popup | null = null;
+    const interactiveLayers = [glowLayerId, lineLayerId];
+
+    const onEnter = () => { if (map) map.getCanvas().style.cursor = 'pointer'; };
+    const onLeave = () => { if (map) map.getCanvas().style.cursor = ''; };
+    const onClick = (e: any) => {
+      if (!map || !mapboxgl) return;
+      const feature = e.features?.[0];
+      if (!feature) return;
+      const frequency = Number(feature.properties?.frequency ?? 0);
+      const uniqueUsers = Number(feature.properties?.unique_users ?? 0);
+      const tripsPerUser = uniqueUsers > 0 ? (frequency / uniqueUsers).toFixed(1) : '—';
+      const html = `
+        <div style="font-family: inherit; padding: 4px 2px; min-width: 140px;">
+          <div style="font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: hsl(var(--muted-foreground)); margin-bottom: 6px;">Flow segment</div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 3px;">
+            <span style="font-size: 11px; color: hsl(var(--muted-foreground));">Trips</span>
+            <span style="font-size: 14px; font-weight: 700; color: hsl(var(--foreground));">${frequency.toLocaleString()}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 3px;">
+            <span style="font-size: 11px; color: hsl(var(--muted-foreground));">Unique users</span>
+            <span style="font-size: 14px; font-weight: 700; color: hsl(var(--foreground));">${uniqueUsers.toLocaleString()}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px;">
+            <span style="font-size: 11px; color: hsl(var(--muted-foreground));">Trips / user</span>
+            <span style="font-size: 14px; font-weight: 700; color: hsl(var(--primary));">${tripsPerUser}</span>
+          </div>
+        </div>
+      `;
+      if (activePopup) activePopup.remove();
+      activePopup = new mapboxgl.Popup({ closeButton: true, offset: 12, className: 'flow-path-popup' })
+        .setLngLat(e.lngLat)
+        .setHTML(html)
+        .addTo(map);
+    };
+
+    interactiveLayers.forEach((id) => {
+      map.on('mouseenter', id, onEnter);
+      map.on('mouseleave', id, onLeave);
+      map.on('click', id, onClick);
+    });
+
     return () => {
       if (flowAnimationRef.current) {
         cancelAnimationFrame(flowAnimationRef.current);
         flowAnimationRef.current = null;
       }
+      try {
+        interactiveLayers.forEach((id) => {
+          map?.off('mouseenter', id, onEnter);
+          map?.off('mouseleave', id, onLeave);
+          map?.off('click', id, onClick);
+        });
+      } catch { /* map may be torn down */ }
+      if (activePopup) { try { activePopup.remove(); } catch { /* no-op */ } activePopup = null; }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapLoaded, pathData, showMovementPaths]);
