@@ -3412,19 +3412,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               }}
             />
 
-            {/* Open Now filter — hides venues currently marked Closed */}
-            <LayerToggleRow
-              label="Open Now"
-              Icon={CircleDot}
-              active={openNowOnly}
-              ariaLabel="Show only venues that are open now"
-              tooltip="Hides venues currently marked Closed based on their business hours. Venues with unknown hours stay visible."
-              onToggle={() => {
-                triggerHaptic('medium');
-                setOpenNowOnly((v) => !v);
-              }}
-            />
-
             {/* Inline Live Stats — consolidated within the Layers panel for friendlier usability */}
             {showLiveStats && (
               <div
