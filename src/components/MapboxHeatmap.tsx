@@ -202,8 +202,17 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Mapbox tuning: lower tile cache, disabled rotate/pitch, faster fades.
   // Tablets (md+) get the desktop-grade settings.
   const isMobile = !useBreakpointUp("md");
+  const isTablet = useBreakpointUp("md") && !useBreakpointUp("lg");
   const isDesktopWide = useBreakpointUp("lg");
   const isDesktopXL = useBreakpointUp("xl");
+
+  // Adaptive panel metrics — one source of truth for the desktop Layers
+  // container so width, padding, and inner gap scale together across
+  // breakpoints instead of being hardcoded per-property.
+  const panelWidth = isDesktopXL ? 320 : isDesktopWide ? 272 : isTablet ? 244 : 224;
+  const panelPad = isDesktopXL ? 14 : isDesktopWide ? 12 : 10;
+  const panelGap = isDesktopXL ? 10 : isDesktopWide ? 9 : 8;
+  const panelMaxH = isDesktopXL ? 760 : isDesktopWide ? 700 : 620;
   const initStartTime = useRef<number>(0);
   const platformSettings = useRef(getPlatformSettings(isMobile));
   
@@ -3627,12 +3636,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                       Map Layers
                     </SheetTitle>
                   </SheetHeader>
-                  <div
+                   <div
                     style={{
-                      padding: '4px 14px 18px',
+                      padding: 'clamp(4px, 1.2vw, 6px) clamp(12px, 3.6vw, 16px) clamp(14px, 3.6vw, 20px)',
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '10px',
+                      gap: 'clamp(8px, 2.2vw, 12px)',
                       overflowY: 'auto',
                       maxHeight:
                         'calc(85dvh - 56px - env(safe-area-inset-bottom))',
@@ -3648,12 +3657,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           return (
             <div
               style={{
-                width: isDesktopXL ? '300px' : isDesktopWide ? '260px' : '220px',
+                width: `${panelWidth}px`,
                 contain: 'layout style',
                 overflow: 'hidden',
                 transition:
                   'max-height 300ms ease-out, opacity 300ms ease-out, margin-bottom 300ms ease-out',
-                maxHeight: !controlsCollapsed ? (isDesktopWide ? '720px' : '620px') : '0px',
+                maxHeight: !controlsCollapsed ? `${panelMaxH}px` : '0px',
                 opacity: !controlsCollapsed ? 1 : 0,
                 marginBottom: !controlsCollapsed ? '8px' : '0px',
               }}
@@ -3667,10 +3676,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   border: '1px solid hsl(var(--border))',
                   boxShadow:
                     '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
-                  padding: '10px',
+                  padding: `${panelPad}px`,
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '8px',
+                  gap: `${panelGap}px`,
                   maxHeight:
                     'calc(100dvh - var(--map-fixed-bottom, 72px) - 252px)',
                   overflowY: 'auto',
@@ -3683,7 +3692,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           );
         })()}
 
-        {/* Active layer icon chips — visible when panel is collapsed */}
+        {/* Quick-toggle chips — visible when panel is collapsed. Heatmap &
+            Flow Paths are interactive so users can flip the two primary
+            layers without opening the full panel. Parking / Live Stats stay
+            as read-only status pills to avoid crowding the FAB row. */}
         {controlsCollapsed && (
           <div style={{
             display: 'flex',
@@ -3692,30 +3704,83 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             marginBottom: '8px',
             justifyContent: 'flex-end',
           }}>
-            {showDensityLayer && (
-              <div style={{
-                width: '28px', height: '28px',
-                borderRadius: '8px',
+            <button
+              type="button"
+              aria-label={`${showDensityLayer ? 'Hide' : 'Show'} heatmap layer`}
+              aria-pressed={showDensityLayer}
+              onClick={(e) => {
+                e.stopPropagation();
+                triggerHaptic('medium');
+                const newState = !showDensityLayer;
+                setShowDensityLayer(newState);
+                if (newState) {
+                  setTimeFilter('all');
+                  setHourFilter(undefined);
+                  setDayFilter(undefined);
+                  scheduleDensityRefresh();
+                } else {
+                  clearDensityRefreshTimer();
+                  setIsLoadingHeatmap(false);
+                }
+              }}
+              style={{
+                width: '32px', height: '32px',
+                borderRadius: '9px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'hsl(var(--primary))',
-                color: 'hsl(var(--primary-foreground))',
-                boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
-              }}>
-                <Layers style={{ width: '14px', height: '14px' }} />
-              </div>
-            )}
-            {showMovementPaths && (
-              <div style={{
-                width: '28px', height: '28px',
-                borderRadius: '8px',
+                cursor: 'pointer',
+                border: showDensityLayer ? '1px solid transparent' : '1px solid hsl(var(--border))',
+                background: showDensityLayer
+                  ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
+                  : 'hsl(var(--card) / 0.85)',
+                color: showDensityLayer ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
+                boxShadow: showDensityLayer
+                  ? '0 4px 12px -2px hsl(var(--primary) / 0.5)'
+                  : 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
+                backdropFilter: 'blur(12px) saturate(1.4)',
+                WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
+                transition: 'background 200ms ease, color 200ms ease, box-shadow 200ms ease, transform 200ms ease',
+                padding: 0,
+              }}
+            >
+              <Layers style={{ width: '15px', height: '15px' }} strokeWidth={2.25} />
+            </button>
+            <button
+              type="button"
+              aria-label={`${showMovementPaths ? 'Hide' : 'Show'} flow paths layer`}
+              aria-pressed={showMovementPaths}
+              onClick={(e) => {
+                e.stopPropagation();
+                triggerHaptic('medium');
+                const next = !showMovementPaths;
+                setShowMovementPaths(next);
+                if (next) {
+                  schedulePathsRefresh();
+                } else {
+                  clearPathsRefreshTimer();
+                  setIsLoadingPaths(false);
+                }
+              }}
+              style={{
+                width: '32px', height: '32px',
+                borderRadius: '9px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'hsl(var(--primary))',
-                color: 'hsl(var(--primary-foreground))',
-                boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
-              }}>
-                <Route style={{ width: '14px', height: '14px' }} />
-              </div>
-            )}
+                cursor: 'pointer',
+                border: showMovementPaths ? '1px solid transparent' : '1px solid hsl(var(--border))',
+                background: showMovementPaths
+                  ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
+                  : 'hsl(var(--card) / 0.85)',
+                color: showMovementPaths ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
+                boxShadow: showMovementPaths
+                  ? '0 4px 12px -2px hsl(var(--primary) / 0.5)'
+                  : 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
+                backdropFilter: 'blur(12px) saturate(1.4)',
+                WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
+                transition: 'background 200ms ease, color 200ms ease, box-shadow 200ms ease, transform 200ms ease',
+                padding: 0,
+              }}
+            >
+              <Route style={{ width: '15px', height: '15px' }} strokeWidth={2.25} />
+            </button>
             {showParking && (
               <div style={{
                 width: '28px', height: '28px',
