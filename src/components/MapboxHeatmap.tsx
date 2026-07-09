@@ -3636,12 +3636,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                       Map Layers
                     </SheetTitle>
                   </SheetHeader>
-                  <div
+                   <div
                     style={{
-                      padding: '4px 14px 18px',
+                      padding: 'clamp(4px, 1.2vw, 6px) clamp(12px, 3.6vw, 16px) clamp(14px, 3.6vw, 20px)',
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '10px',
+                      gap: 'clamp(8px, 2.2vw, 12px)',
                       overflowY: 'auto',
                       maxHeight:
                         'calc(85dvh - 56px - env(safe-area-inset-bottom))',
