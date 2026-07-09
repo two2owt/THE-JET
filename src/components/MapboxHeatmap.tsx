@@ -3657,12 +3657,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           return (
             <div
               style={{
-                width: isDesktopXL ? '300px' : isDesktopWide ? '260px' : '220px',
+                width: `${panelWidth}px`,
                 contain: 'layout style',
                 overflow: 'hidden',
                 transition:
                   'max-height 300ms ease-out, opacity 300ms ease-out, margin-bottom 300ms ease-out',
-                maxHeight: !controlsCollapsed ? (isDesktopWide ? '720px' : '620px') : '0px',
+                maxHeight: !controlsCollapsed ? `${panelMaxH}px` : '0px',
                 opacity: !controlsCollapsed ? 1 : 0,
                 marginBottom: !controlsCollapsed ? '8px' : '0px',
               }}
@@ -3676,10 +3676,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   border: '1px solid hsl(var(--border))',
                   boxShadow:
                     '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
-                  padding: '10px',
+                  padding: `${panelPad}px`,
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '8px',
+                  gap: `${panelGap}px`,
                   maxHeight:
                     'calc(100dvh - var(--map-fixed-bottom, 72px) - 252px)',
                   overflowY: 'auto',
