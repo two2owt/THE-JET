@@ -3692,7 +3692,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           );
         })()}
 
-        {/* Active layer icon chips — visible when panel is collapsed */}
+        {/* Quick-toggle chips — visible when panel is collapsed. Heatmap &
+            Flow Paths are interactive so users can flip the two primary
+            layers without opening the full panel. Parking / Live Stats stay
+            as read-only status pills to avoid crowding the FAB row. */}
         {controlsCollapsed && (
           <div style={{
             display: 'flex',
@@ -3701,30 +3704,83 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             marginBottom: '8px',
             justifyContent: 'flex-end',
           }}>
-            {showDensityLayer && (
-              <div style={{
-                width: '28px', height: '28px',
-                borderRadius: '8px',
+            <button
+              type="button"
+              aria-label={`${showDensityLayer ? 'Hide' : 'Show'} heatmap layer`}
+              aria-pressed={showDensityLayer}
+              onClick={(e) => {
+                e.stopPropagation();
+                triggerHaptic('medium');
+                const newState = !showDensityLayer;
+                setShowDensityLayer(newState);
+                if (newState) {
+                  setTimeFilter('all');
+                  setHourFilter(undefined);
+                  setDayFilter(undefined);
+                  scheduleDensityRefresh();
+                } else {
+                  clearDensityRefreshTimer();
+                  setIsLoadingHeatmap(false);
+                }
+              }}
+              style={{
+                width: '32px', height: '32px',
+                borderRadius: '9px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'hsl(var(--primary))',
-                color: 'hsl(var(--primary-foreground))',
-                boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
-              }}>
-                <Layers style={{ width: '14px', height: '14px' }} />
-              </div>
-            )}
-            {showMovementPaths && (
-              <div style={{
-                width: '28px', height: '28px',
-                borderRadius: '8px',
+                cursor: 'pointer',
+                border: showDensityLayer ? '1px solid transparent' : '1px solid hsl(var(--border))',
+                background: showDensityLayer
+                  ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
+                  : 'hsl(var(--card) / 0.85)',
+                color: showDensityLayer ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
+                boxShadow: showDensityLayer
+                  ? '0 4px 12px -2px hsl(var(--primary) / 0.5)'
+                  : 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
+                backdropFilter: 'blur(12px) saturate(1.4)',
+                WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
+                transition: 'background 200ms ease, color 200ms ease, box-shadow 200ms ease, transform 200ms ease',
+                padding: 0,
+              }}
+            >
+              <Layers style={{ width: '15px', height: '15px' }} strokeWidth={2.25} />
+            </button>
+            <button
+              type="button"
+              aria-label={`${showMovementPaths ? 'Hide' : 'Show'} flow paths layer`}
+              aria-pressed={showMovementPaths}
+              onClick={(e) => {
+                e.stopPropagation();
+                triggerHaptic('medium');
+                const next = !showMovementPaths;
+                setShowMovementPaths(next);
+                if (next) {
+                  schedulePathsRefresh();
+                } else {
+                  clearPathsRefreshTimer();
+                  setIsLoadingPaths(false);
+                }
+              }}
+              style={{
+                width: '32px', height: '32px',
+                borderRadius: '9px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'hsl(var(--primary))',
-                color: 'hsl(var(--primary-foreground))',
-                boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
-              }}>
-                <Route style={{ width: '14px', height: '14px' }} />
-              </div>
-            )}
+                cursor: 'pointer',
+                border: showMovementPaths ? '1px solid transparent' : '1px solid hsl(var(--border))',
+                background: showMovementPaths
+                  ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
+                  : 'hsl(var(--card) / 0.85)',
+                color: showMovementPaths ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
+                boxShadow: showMovementPaths
+                  ? '0 4px 12px -2px hsl(var(--primary) / 0.5)'
+                  : 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
+                backdropFilter: 'blur(12px) saturate(1.4)',
+                WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
+                transition: 'background 200ms ease, color 200ms ease, box-shadow 200ms ease, transform 200ms ease',
+                padding: 0,
+              }}
+            >
+              <Route style={{ width: '15px', height: '15px' }} strokeWidth={2.25} />
+            </button>
             {showParking && (
               <div style={{
                 width: '28px', height: '28px',
