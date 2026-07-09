@@ -1,4 +1,4 @@
-import { Loader2 } from "lucide-react";
+import { Loader2, MapPin, Route as RouteIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface LiveStatsPanelProps {
@@ -25,6 +25,14 @@ interface LiveStatsPanelProps {
   pathLoading?: boolean;
   /** "floating" (default) renders the standalone panel; "inline" renders just the content for embedding. */
   variant?: "floating" | "inline";
+  /** Coordinates of the busiest grid cell in the current view. */
+  topHotspot?: { lng: number; lat: number; density: number } | null;
+  /** Highest-frequency movement path in the current view. */
+  topRoute?: { frequency: number } | null;
+  /** Fly the map to `topHotspot`. */
+  onJumpToHotspot?: () => void;
+  /** Temporarily highlight `topRoute` on the map. */
+  onHighlightTopRoute?: () => void;
 }
 
 /**
@@ -45,6 +53,10 @@ export const LiveStatsPanel = ({
   densityLoading,
   pathLoading,
   variant = "floating",
+  topHotspot,
+  topRoute,
+  onJumpToHotspot,
+  onHighlightTopRoute,
 }: LiveStatsPanelProps) => {
   // Props kept for backwards compatibility — live activity now renders
   // regardless of which layers are toggled on.
@@ -226,6 +238,38 @@ export const LiveStatsPanel = ({
           No live activity in view yet.
         </p>
       )}
+
+      {/* Quick actions — jump to hotspot / highlight top route. */}
+      {!isLoading && (topHotspot || topRoute) && (onJumpToHotspot || onHighlightTopRoute) && (
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "6px",
+            paddingTop: "6px",
+            borderTop: "1px solid hsl(var(--border) / 0.4)",
+          }}
+        >
+          {topHotspot && onJumpToHotspot && (
+            <QuickAction
+              icon={<MapPin style={{ width: 11, height: 11 }} strokeWidth={2.5} />}
+              label="Top hotspot"
+              hint={`${topHotspot.density}`}
+              onClick={onJumpToHotspot}
+              ariaLabel={`Jump to the busiest hotspot with ${topHotspot.density} check-ins`}
+            />
+          )}
+          {topRoute && onHighlightTopRoute && (
+            <QuickAction
+              icon={<RouteIcon style={{ width: 11, height: 11 }} strokeWidth={2.5} />}
+              label="Top route"
+              hint={`${topRoute.frequency}`}
+              onClick={onHighlightTopRoute}
+              ariaLabel={`Highlight the busiest route with frequency ${topRoute.frequency}`}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 
@@ -263,4 +307,68 @@ export const LiveStatsPanel = ({
     </div>
   );
 };
+
+const QuickAction = ({
+  icon,
+  label,
+  hint,
+  onClick,
+  ariaLabel,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  hint: string;
+  onClick: () => void;
+  ariaLabel: string;
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    aria-label={ariaLabel}
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "5px",
+      padding: "5px 8px",
+      borderRadius: "8px",
+      border: "1px solid hsl(var(--primary) / 0.35)",
+      background:
+        "linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary-glow) / 0.1))",
+      color: "hsl(var(--foreground))",
+      fontSize: "10px",
+      fontWeight: 700,
+      letterSpacing: "0.02em",
+      cursor: "pointer",
+      transition: "background 180ms ease, border-color 180ms ease, transform 120ms ease",
+      lineHeight: 1,
+      minHeight: "26px",
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.background =
+        "linear-gradient(135deg, hsl(var(--primary) / 0.28), hsl(var(--primary-glow) / 0.2))";
+      e.currentTarget.style.borderColor = "hsl(var(--primary) / 0.6)";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.background =
+        "linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary-glow) / 0.1))";
+      e.currentTarget.style.borderColor = "hsl(var(--primary) / 0.35)";
+    }}
+  >
+    <span style={{ color: "hsl(var(--primary))" }}>{icon}</span>
+    {label}
+    <span
+      style={{
+        marginLeft: 2,
+        padding: "1px 5px",
+        borderRadius: "9999px",
+        background: "hsl(var(--primary) / 0.25)",
+        color: "hsl(var(--primary))",
+        fontSize: "9px",
+        fontVariantNumeric: "tabular-nums",
+      }}
+    >
+      {hint}
+    </span>
+  </button>
+);
 
