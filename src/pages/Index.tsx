@@ -52,6 +52,7 @@ const ShareToFriendDialog = lazy(() => import("@/components/ShareToFriendDialog"
 const OfflineBanner = lazy(() => import("@/components/OfflineBanner").then(m => ({ default: m.OfflineBanner })));
 const AuthPWAInstallPromptWrapper = lazy(() => import("@/components/AuthPWAInstallPromptWrapper").then(m => ({ default: m.AuthPWAInstallPromptWrapper })));
 const PushNotificationPrompt = lazy(() => import("@/components/PushNotificationPrompt").then(m => ({ default: m.PushNotificationPrompt })));
+const LocationPermissionPrompt = lazy(() => import("@/components/LocationPermissionPrompt").then(m => ({ default: m.LocationPermissionPrompt })));
 
 // Minimal critical imports
 import { Map as MapIcon, Bell } from "lucide-react";
