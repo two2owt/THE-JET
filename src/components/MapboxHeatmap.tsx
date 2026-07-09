@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { storeLastKnownLocation } from "@/lib/tile-prefetch";
 import type * as MapboxGL from "mapbox-gl";
+import { useUserLocation } from "@/hooks/useUserLocation";
 
 // Type alias for the mapbox-gl default export
 type MapboxGLModule = typeof import("mapbox-gl").default;
