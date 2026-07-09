@@ -201,10 +201,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Treat anything below the `md` breakpoint as a phone-class device for
   // Mapbox tuning: lower tile cache, disabled rotate/pitch, faster fades.
   // Tablets (md+) get the desktop-grade settings.
-  const isMobile = !useBreakpointUp("md");
-  const isTablet = useBreakpointUp("md") && !useBreakpointUp("lg");
-  const isDesktopWide = useBreakpointUp("lg");
-  const isDesktopXL = useBreakpointUp("xl");
+  // Call every breakpoint hook unconditionally at the top so hook order is
+  // stable across renders (react-hooks/rules-of-hooks), then derive the
+  // named tiers from those booleans.
+  const isMdUp = useBreakpointUp("md");
+  const isLgUp = useBreakpointUp("lg");
+  const isXlUp = useBreakpointUp("xl");
+  const isMobile = !isMdUp;
+  const isTablet = isMdUp && !isLgUp;
+  const isDesktopWide = isLgUp;
+  const isDesktopXL = isXlUp;
 
   // Adaptive panel metrics — one source of truth for the desktop Layers
   // container so width, padding, and inner gap scale together across
