@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { storeLastKnownLocation } from "@/lib/tile-prefetch";
 import type * as MapboxGL from "mapbox-gl";
+import { useUserLocation } from "@/hooks/useUserLocation";
 
 // Type alias for the mapbox-gl default export
 type MapboxGLModule = typeof import("mapbox-gl").default;
@@ -545,6 +546,37 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   
   // User location state
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+
+  // Consume the app-wide tracker so the map can identify the visitor's
+  // location on first render instead of waiting for the built-in GeolocateControl
+  // to round-trip through its own permission prompt.
+  const { location: trackedLocation, status: trackedStatus } = useUserLocation();
+
+  // Seed the map's userLocation from the global tracker so features that read
+  // it (nearest-city list, "Current Location" pill, city syncing) light up
+  // immediately on visit — even before Mapbox's own geolocate event fires.
+  useEffect(() => {
+    if (!trackedLocation) return;
+    setUserLocation((prev) =>
+      prev &&
+      Math.abs(prev.lat - trackedLocation.lat) < 1e-6 &&
+      Math.abs(prev.lng - trackedLocation.lng) < 1e-6
+        ? prev
+        : { lat: trackedLocation.lat, lng: trackedLocation.lng }
+    );
+  }, [trackedLocation]);
+
+  // Once the map is ready and we already have permission (via the global
+  // tracker), fire GeolocateControl.trigger() so its marker + reverse-geocode
+  // side effects run without an additional browser prompt.
+  useEffect(() => {
+    if (trackedStatus !== "granted") return;
+    const control = geolocateControlRef.current;
+    if (!control) return;
+    try {
+      control.trigger();
+    } catch { /* ignore — mapbox throws if called before load */ }
+  }, [trackedStatus]);
   const [detectedCity, setDetectedCity] = useState<City | null>(null); // Nearest predefined city for filtering
   const [detectedLocationName, setDetectedLocationName] = useState<string | null>(null); // Actual city name from reverse geocoding
   // Persisted across sessions so a returning user lands in the same mode
