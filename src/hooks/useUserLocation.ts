@@ -155,6 +155,11 @@ export function stopLocationTracking() {
     navigator.geolocation.clearWatch(watchId);
   }
   watchId = null;
+  if (pendingTimer) {
+    clearTimeout(pendingTimer);
+    pendingTimer = null;
+  }
+  pendingCoords = null;
 }
 
 /**
