@@ -67,7 +67,7 @@ const loadMapboxGL = async (): Promise<MapboxGLModule> => {
   }
   return mapboxLoadPromise;
 };
-import { MapPin, Layers, Palette, X, AlertCircle, Route, Play, Pause, SkipBack, SkipForward, Clock, ChevronDown, ChevronUp, Car, BarChart3, RotateCcw, Calendar, Loader2, CircleDot } from "lucide-react";
+import { MapPin, Layers, Palette, X, AlertCircle, Route, Play, Pause, SkipBack, SkipForward, Clock, ChevronDown, ChevronUp, Car, BarChart3, RotateCcw, Calendar, Loader2, CircleDot, LocateFixed } from "lucide-react";
 import { HeatmapSkeleton } from "@/components/skeletons/HeatmapSkeleton";
 import { useLocationDensity } from "@/hooks/useLocationDensity";
 import { useMovementPaths } from "@/hooks/useMovementPaths";
@@ -546,6 +546,30 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   
   // User location state
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+
+  // User preference: auto-recenter on the visitor's location when the map
+  // first receives a fix. Persisted so a returning user keeps their choice.
+  const [autoRecenterOnVisit, setAutoRecenterOnVisit] = useState<boolean>(() => {
+    try {
+      const raw = typeof window !== "undefined"
+        ? window.localStorage.getItem("jet-map-auto-recenter-on-visit")
+        : null;
+      if (raw === "false") return false;
+    } catch { /* ignore */ }
+    return true;
+  });
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        "jet-map-auto-recenter-on-visit",
+        String(autoRecenterOnVisit),
+      );
+    } catch { /* ignore */ }
+  }, [autoRecenterOnVisit]);
+  // Ref mirror so the (one-time-bound) geolocate handler always sees the
+  // latest value without re-subscribing.
+  const autoRecenterOnVisitRef = useRef(autoRecenterOnVisit);
+  useEffect(() => { autoRecenterOnVisitRef.current = autoRecenterOnVisit; }, [autoRecenterOnVisit]);
 
   // Consume the app-wide tracker so the map can identify the visitor's
   // location on first render instead of waiting for the built-in GeolocateControl
@@ -1282,14 +1306,17 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           }
           
           // Only fly to user location on initial load (default behavior)
-          // After that, users can pan/zoom freely without being pulled back
-          if (isInitialGeolocate && map.current) {
+          // After that, users can pan/zoom freely without being pulled back.
+          // The user can disable this via the "Auto-recenter on visit" toggle.
+          if (isInitialGeolocate && autoRecenterOnVisitRef.current && map.current) {
             map.current.flyTo({
               center: [longitude, latitude],
               zoom: Math.max(map.current.getZoom(), 13),
               duration: 1500,
               essential: true
             });
+          }
+          if (isInitialGeolocate) {
             isInitialGeolocate = false;
           }
           
@@ -3579,6 +3606,20 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               onToggle={() => {
                 triggerHaptic('medium');
                 setOpenNowOnly((v) => !v);
+              }}
+            />
+
+            {/* Auto-recenter on visit — controls whether the map flies to the
+                user's location on initial load. Disable to keep the last view. */}
+            <LayerToggleRow
+              label="Auto-recenter on visit"
+              Icon={LocateFixed}
+              active={autoRecenterOnVisit}
+              ariaLabel="Toggle auto-recenter to my location on map visit"
+              tooltip="When on, the map centers on your location the first time it detects you. Turn off to keep the map where you last left it."
+              onToggle={() => {
+                triggerHaptic('medium');
+                setAutoRecenterOnVisit((v) => !v);
               }}
             />
 
