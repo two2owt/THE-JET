@@ -2621,13 +2621,13 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         >
           <span
             aria-hidden="true"
+            className={timelapse.isPlaying ? 'animate-pulse' : undefined}
             style={{
               width: '6px', height: '6px', borderRadius: '9999px',
               background: timelapse.isPlaying
                 ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
                 : 'hsl(var(--muted-foreground) / 0.6)',
               boxShadow: timelapse.isPlaying ? '0 0 10px hsl(var(--primary) / 0.8)' : 'none',
-              animation: timelapse.isPlaying ? 'jet-pulse 1.2s ease-in-out infinite' : 'none',
               flexShrink: 0,
             }}
           />
