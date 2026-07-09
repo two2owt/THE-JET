@@ -100,8 +100,11 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [locationError, setLocationError] = useState<string | null>(null);
+  // Location is tracked globally (see hooks/useUserLocation + App LocationTracker)
+  // so it's available whether or not the user is authenticated.
+  const { location: trackedLocation, error: trackedError, status: locationStatus } = useUserLocation();
+  const userLocation = trackedLocation ? { lat: trackedLocation.lat, lng: trackedLocation.lng } : null;
+  const locationError = trackedError;
   const [user, setUser] = useState<User | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [userPreferences, setUserPreferences] = useState<UserPreferences | null>(null);
@@ -127,8 +130,9 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
   }, []);
 
   useEffect(() => {
-    getUserLocation();
-    
+    // Ensure tracking is running (no-op if already started at app root).
+    requestUserLocation();
+
     // Get current user
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
@@ -159,41 +163,15 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
     filterDeals();
   }, [debouncedSearchQuery, deals, selectedCategories, userPreferences, preferenceFilterEnabled]);
 
-  const getUserLocation = () => {
-    if (!navigator.geolocation) {
-      setLocationError("Geolocation is not supported by your browser");
-      return;
+  // Surface a single toast if the browser explicitly denies location so the
+  // user understands why distance-based filtering isn't personalized.
+  useEffect(() => {
+    if (locationStatus === "denied") {
+      toast.error("Location access denied", {
+        description: "Showing all deals. Enable location for personalized results.",
+      });
     }
-
-    // Runtime guard: foreground location requires explicit consent
-    if (!requireConsent("foreground_location")) {
-      setLocationError("Foreground location consent is disabled");
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setUserLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        });
-        setLocationError(null);
-      },
-      (error) => {
-        console.error("Error getting location:", error);
-        setLocationError("Unable to access your location");
-        // Show warning but don't block - show all deals if location unavailable
-        toast.error("Location access denied", {
-          description: "Showing all deals. Enable location for personalized results.",
-        });
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 300000, // Cache for 5 minutes
-      }
-    );
-  };
+  }, [locationStatus]);
 
   const loadDeals = async () => {
     try {
