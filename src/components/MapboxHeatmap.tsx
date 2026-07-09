@@ -717,6 +717,120 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     localStorage.setItem(FILTER_KEYS.timelapseSpeed, String(timelapse.speed));
   }, [timelapse.speed]);
 
+  // Keyboard shortcuts for the time-lapse panel. Active only while
+  // `timelapseMode` is on so the map keeps its normal keybindings
+  // (arrow-pan, +/- zoom) the rest of the time. Ignores keystrokes that
+  // originate inside form controls or contenteditable regions so users
+  // typing in the header search aren't hijacked.
+  //
+  // Shortcuts:
+  //   Space / K              — play / pause
+  //   ← / J                  — step backward one hour
+  //   → / L                  — step forward one hour
+  //   Home / 0               — jump to 12 AM
+  //   End                    — jump to 11 PM
+  //   Shift+←  Shift+→       — decrease / increase playback speed
+  //                            (walks the same 0.25 → 4x preset scale)
+  useEffect(() => {
+    if (!timelapseMode) return;
+
+    const SPEED_STEPS = [0.25, 0.5, 1, 2, 4];
+    // `timelapse.speed` is seconds-per-hour; the user-facing multiplier
+    // is `1 / speed`. Snap to nearest preset so repeated presses walk
+    // the scale predictably even after custom-slider tweaks.
+    const nearestSpeedIndex = (secondsPerHour: number) => {
+      const mult = 1 / secondsPerHour;
+      let best = 0;
+      let bestDelta = Infinity;
+      SPEED_STEPS.forEach((m, i) => {
+        const d = Math.abs(m - mult);
+        if (d < bestDelta) { bestDelta = d; best = i; }
+      });
+      return best;
+    };
+
+    const isTypingTarget = (el: EventTarget | null): boolean => {
+      if (!(el instanceof HTMLElement)) return false;
+      const tag = el.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+      if (el.isContentEditable) return true;
+      // Radix Select / combobox triggers use role=combobox and swallow
+      // arrow keys themselves — don't hijack while focused.
+      const role = el.getAttribute('role');
+      if (role === 'combobox' || role === 'listbox' || role === 'textbox') return true;
+      return false;
+    };
+
+    const handler = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (isTypingTarget(e.target)) return;
+
+      switch (e.key) {
+        case ' ':
+        case 'Spacebar':
+        case 'k':
+        case 'K': {
+          e.preventDefault();
+          triggerHaptic('medium');
+          timelapse.isPlaying ? timelapse.pause() : timelapse.play();
+          return;
+        }
+        case 'ArrowLeft':
+        case 'j':
+        case 'J': {
+          if (e.shiftKey) {
+            e.preventDefault();
+            const idx = nearestSpeedIndex(timelapse.speed);
+            const next = SPEED_STEPS[Math.max(0, idx - 1)];
+            triggerHaptic('light');
+            timelapse.setSpeed(1 / next);
+            return;
+          }
+          e.preventDefault();
+          triggerHaptic('light');
+          if (timelapse.isPlaying) timelapse.pause();
+          timelapse.stepBackward();
+          return;
+        }
+        case 'ArrowRight':
+        case 'l':
+        case 'L': {
+          if (e.shiftKey) {
+            e.preventDefault();
+            const idx = nearestSpeedIndex(timelapse.speed);
+            const next = SPEED_STEPS[Math.min(SPEED_STEPS.length - 1, idx + 1)];
+            triggerHaptic('light');
+            timelapse.setSpeed(1 / next);
+            return;
+          }
+          e.preventDefault();
+          triggerHaptic('light');
+          if (timelapse.isPlaying) timelapse.pause();
+          timelapse.stepForward();
+          return;
+        }
+        case 'Home':
+        case '0': {
+          e.preventDefault();
+          triggerHaptic('light');
+          timelapse.setHour(0);
+          return;
+        }
+        case 'End': {
+          e.preventDefault();
+          triggerHaptic('light');
+          timelapse.setHour(23);
+          return;
+        }
+        default:
+          return;
+      }
+    };
+
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [timelapseMode, timelapse]);
+
   // Reset to defaults — clears localStorage and restores factory settings
   const handleResetToDefaults = useCallback(() => {
     triggerHaptic('medium');
