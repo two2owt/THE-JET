@@ -49,8 +49,9 @@ export const LocationPermissionPrompt = () => {
 
       // Only prompt if browser is in `prompt` state — never re-ask.
       try {
-        // @ts-expect-error - Permissions API name is a string literal
-        const status = await navigator.permissions?.query?.({ name: "geolocation" });
+        const status = await navigator.permissions?.query?.({
+          name: "geolocation" as PermissionName,
+        });
         if (status && status.state !== "prompt") return;
       } catch {
         // Permissions API unsupported — fall through and show once.
