@@ -755,6 +755,12 @@ const Index = () => {
           }}
         />
       </Suspense>
+
+      {/* First-visit location permission prompt. Self-gates on browser
+          permission state and localStorage; safe to always mount. */}
+      <Suspense fallback={null}>
+        <LocationPermissionPrompt />
+      </Suspense>
     </div>
   );
 };
