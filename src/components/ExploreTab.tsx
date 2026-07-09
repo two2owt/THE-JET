@@ -14,6 +14,7 @@ import { TabPageHeader } from "./TabPageHeader";
 import { calculateDistance, getDynamicRadius, formatDistance } from "@/utils/geospatialUtils";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useUserLocation, requestUserLocation } from "@/hooks/useUserLocation";
+import { LocationPermissionBanner } from "./LocationPermissionBanner";
 
 import type { User } from "@supabase/supabase-js";
 
@@ -105,6 +106,7 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
   const { location: trackedLocation, error: trackedError, status: locationStatus } = useUserLocation();
   const userLocation = trackedLocation ? { lat: trackedLocation.lat, lng: trackedLocation.lng } : null;
   const locationError = trackedError;
+  const locationDenied = locationStatus === "denied" || locationStatus === "unsupported";
   const [user, setUser] = useState<User | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [userPreferences, setUserPreferences] = useState<UserPreferences | null>(null);
@@ -163,15 +165,8 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
     filterDeals();
   }, [debouncedSearchQuery, deals, selectedCategories, userPreferences, preferenceFilterEnabled]);
 
-  // Surface a single toast if the browser explicitly denies location so the
-  // user understands why distance-based filtering isn't personalized.
-  useEffect(() => {
-    if (locationStatus === "denied") {
-      toast.error("Location access denied", {
-        description: "Showing all deals. Enable location for personalized results.",
-      });
-    }
-  }, [locationStatus]);
+  // Denial surfaces via <LocationPermissionBanner /> (persistent) instead of a
+  // transient toast so users always see how to restore location.
 
   const loadDeals = async () => {
     try {
@@ -377,6 +372,9 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
           )}
         </div>
       </div>
+
+      {/* Graceful fallback UI — visible only when permission is denied/unsupported. */}
+      {locationDenied && <LocationPermissionBanner />}
 
       {/* Search Bar */}
       <div style={{ position: 'relative' }}>
