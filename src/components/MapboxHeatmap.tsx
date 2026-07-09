@@ -67,7 +67,7 @@ const loadMapboxGL = async (): Promise<MapboxGLModule> => {
   }
   return mapboxLoadPromise;
 };
-import { MapPin, Layers, Palette, X, AlertCircle, Route, Play, Pause, SkipBack, SkipForward, Clock, ChevronDown, ChevronUp, Car, BarChart3, RotateCcw, Calendar, Loader2, CircleDot } from "lucide-react";
+import { MapPin, Layers, Palette, X, AlertCircle, Route, Play, Pause, SkipBack, SkipForward, Clock, ChevronDown, ChevronUp, Car, BarChart3, RotateCcw, Calendar, Loader2, CircleDot, LocateFixed } from "lucide-react";
 import { HeatmapSkeleton } from "@/components/skeletons/HeatmapSkeleton";
 import { useLocationDensity } from "@/hooks/useLocationDensity";
 import { useMovementPaths } from "@/hooks/useMovementPaths";
