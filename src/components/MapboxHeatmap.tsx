@@ -239,7 +239,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     paths: "jet-map-layer-paths",
     parking: "jet-map-layer-parking",
     stats: "jet-map-layer-stats",
-    openNow: "jet-map-layer-open-now",
   } as const;
   type LayerName = keyof typeof LAYER_KEYS;
   const KNOWN_LAYERS = new Set<LayerName>(Object.keys(LAYER_KEYS) as LayerName[]);
@@ -372,10 +371,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [showParking, setShowParking] = useState(() => getLayerState("parking", false));
   // Live Stats panel — hidden by default, opt-in via layers toggle
   const [showLiveStats, setShowLiveStats] = useState(() => getLayerState("stats", false));
-  // Open-now filter — when on, hides venues whose `isOpen` is explicitly false.
-  // Venues with unknown hours (isOpen === null/undefined) remain visible.
-  const [openNowOnly, setOpenNowOnly] = useState(() => getLayerState("openNow", false));
-
   const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.timeFilter, 'all', 'time'));
   const [hourFilter, setHourFilter] = useState<number | undefined>();
   const [dayFilter, setDayFilter] = useState<number | undefined>(() => getPersistedDayFilter());
@@ -506,7 +501,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     showMovementPaths,
     showParking,
     showLiveStats,
-    openNowOnly,
     timeFilter,
     pathTimeFilter,
     dayFilter,
@@ -736,7 +730,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     setShowParking(false);
     setShowLiveStats(false);
     setShowMovementPaths(false);
-    setOpenNowOnly(false);
     setTimeFilter('all');
     setPathTimeFilter('all');
     setDayFilter(undefined);
@@ -1748,11 +1741,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       return Math.sqrt(Math.pow(lat2 - lat1, 2) + Math.pow(lng2 - lng1, 2));
     };
 
-    // Apply Open-Now filter: hide venues whose hours indicate they're closed.
-    // Venues with unknown hours stay visible so the user never loses places.
-    const visibleVenues = openNowOnly
-      ? venues.filter((v) => venueOpenStatus.get(v.id) !== false) // keep `true` and `null`
-      : venues;
+    // All venues are visible; the previous Open-Now filter was removed from
+    // the Layers panel — users can still see venue hours via the JetCard.
+    const visibleVenues = venues;
 
     // Add venue markers
     visibleVenues.forEach((venue, index) => {
@@ -2115,7 +2106,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Call updateMarkers on initial load and when venues change
   useEffect(() => {
     updateMarkers();
-  }, [venues, mapLoaded, isLoadingVenues, selectedCity, selectedVenue, venueDealCounts, openNowOnly, venueOpenStatus]);
+  }, [venues, mapLoaded, isLoadingVenues, selectedCity, selectedVenue, venueDealCounts, venueOpenStatus]);
 
   // Fetch active-deal counts for currently displayed venues
   useEffect(() => {
