@@ -202,6 +202,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Mapbox tuning: lower tile cache, disabled rotate/pitch, faster fades.
   // Tablets (md+) get the desktop-grade settings.
   const isMobile = !useBreakpointUp("md");
+  const isDesktopWide = useBreakpointUp("lg");
+  const isDesktopXL = useBreakpointUp("xl");
   const initStartTime = useRef<number>(0);
   const platformSettings = useRef(getPlatformSettings(isMobile));
   
@@ -239,7 +241,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     paths: "jet-map-layer-paths",
     parking: "jet-map-layer-parking",
     stats: "jet-map-layer-stats",
-    openNow: "jet-map-layer-open-now",
   } as const;
   type LayerName = keyof typeof LAYER_KEYS;
   const KNOWN_LAYERS = new Set<LayerName>(Object.keys(LAYER_KEYS) as LayerName[]);
@@ -372,10 +373,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [showParking, setShowParking] = useState(() => getLayerState("parking", false));
   // Live Stats panel — hidden by default, opt-in via layers toggle
   const [showLiveStats, setShowLiveStats] = useState(() => getLayerState("stats", false));
-  // Open-now filter — when on, hides venues whose `isOpen` is explicitly false.
-  // Venues with unknown hours (isOpen === null/undefined) remain visible.
-  const [openNowOnly, setOpenNowOnly] = useState(() => getLayerState("openNow", false));
-
   const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.timeFilter, 'all', 'time'));
   const [hourFilter, setHourFilter] = useState<number | undefined>();
   const [dayFilter, setDayFilter] = useState<number | undefined>(() => getPersistedDayFilter());
@@ -506,7 +503,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     showMovementPaths,
     showParking,
     showLiveStats,
-    openNowOnly,
     timeFilter,
     pathTimeFilter,
     dayFilter,
@@ -736,7 +732,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     setShowParking(false);
     setShowLiveStats(false);
     setShowMovementPaths(false);
-    setOpenNowOnly(false);
     setTimeFilter('all');
     setPathTimeFilter('all');
     setDayFilter(undefined);
@@ -1748,11 +1743,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       return Math.sqrt(Math.pow(lat2 - lat1, 2) + Math.pow(lng2 - lng1, 2));
     };
 
-    // Apply Open-Now filter: hide venues whose hours indicate they're closed.
-    // Venues with unknown hours stay visible so the user never loses places.
-    const visibleVenues = openNowOnly
-      ? venues.filter((v) => venueOpenStatus.get(v.id) !== false) // keep `true` and `null`
-      : venues;
+    // All venues are visible; the previous Open-Now filter was removed from
+    // the Layers panel — users can still see venue hours via the JetCard.
+    const visibleVenues = venues;
 
     // Add venue markers
     visibleVenues.forEach((venue, index) => {
@@ -2115,7 +2108,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Call updateMarkers on initial load and when venues change
   useEffect(() => {
     updateMarkers();
-  }, [venues, mapLoaded, isLoadingVenues, selectedCity, selectedVenue, venueDealCounts, openNowOnly, venueOpenStatus]);
+  }, [venues, mapLoaded, isLoadingVenues, selectedCity, selectedVenue, venueDealCounts, venueOpenStatus]);
 
   // Fetch active-deal counts for currently displayed venues
   useEffect(() => {
@@ -3242,7 +3235,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               active={showMovementPaths}
               loading={isLoadingPaths}
               ariaLabel="Toggle flow paths layer"
-              tooltip="Visualizes popular routes people are taking between venues. Thicker lines mean more traffic."
+              tooltip="Real user movement between venues. Line thickness and glow scale with motion frequency — brighter, thicker paths mean more people actively moving that route right now."
               onToggle={() => {
                 triggerHaptic('medium');
                 const next = !showMovementPaths;
@@ -3411,26 +3404,13 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               active={showLiveStats}
               loading={isLoadingStats}
               ariaLabel="Toggle live stats panel"
-              tooltip="Real-time summary computed from recent user activity: active hotspots, recent check-ins, people on the move, and popular routes."
+              tooltip="Actionable insights from live activity: busiest hotspots right now, momentum trend vs. the last hour, top movement routes, and recent check-ins to help you decide where to go next."
               onToggle={() => {
                 triggerHaptic('medium');
                 const next = !showLiveStats;
                 setShowLiveStats(next);
                 if (next) setIsLoadingStats(true);
                 else setIsLoadingStats(false);
-              }}
-            />
-
-            {/* Open Now filter — hides venues currently marked Closed */}
-            <LayerToggleRow
-              label="Open Now"
-              Icon={CircleDot}
-              active={openNowOnly}
-              ariaLabel="Show only venues that are open now"
-              tooltip="Hides venues currently marked Closed based on their business hours. Venues with unknown hours stay visible."
-              onToggle={() => {
-                triggerHaptic('medium');
-                setOpenNowOnly((v) => !v);
               }}
             />
 
@@ -3539,12 +3519,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           return (
             <div
               style={{
-                width: '200px',
+                width: isDesktopXL ? '300px' : isDesktopWide ? '260px' : '220px',
                 contain: 'layout style',
                 overflow: 'hidden',
                 transition:
                   'max-height 300ms ease-out, opacity 300ms ease-out, margin-bottom 300ms ease-out',
-                maxHeight: !controlsCollapsed ? '600px' : '0px',
+                maxHeight: !controlsCollapsed ? (isDesktopWide ? '720px' : '620px') : '0px',
                 opacity: !controlsCollapsed ? 1 : 0,
                 marginBottom: !controlsCollapsed ? '8px' : '0px',
               }}
