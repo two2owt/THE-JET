@@ -13,7 +13,7 @@ import { EmptyState } from "./EmptyState";
 import { TabPageHeader } from "./TabPageHeader";
 import { calculateDistance, getDynamicRadius, formatDistance } from "@/utils/geospatialUtils";
 import { useFavorites } from "@/hooks/useFavorites";
-import { requireConsent } from "@/lib/consent";
+import { useUserLocation, requestUserLocation } from "@/hooks/useUserLocation";
 
 import type { User } from "@supabase/supabase-js";
 
