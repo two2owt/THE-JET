@@ -21,6 +21,41 @@ const listeners = new Set<() => void>();
 let watchId: number | null = null;
 let started = false;
 
+// Throttle configuration — collapses noisy GPS updates so map layers,
+// distance calcs, and re-renders only fire on meaningful movement.
+const MIN_UPDATE_INTERVAL_MS = 5_000; // hard floor between emitted updates
+const MIN_MOVEMENT_METERS = 15;        // ignore jitter smaller than this
+const MAX_STALE_INTERVAL_MS = 60_000;  // always emit at least this often
+let lastEmitAt = 0;
+let pendingTimer: ReturnType<typeof setTimeout> | null = null;
+let pendingCoords: { lat: number; lng: number; accuracy?: number } | null = null;
+
+function haversineMeters(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
+  const R = 6_371_000;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const s =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+
+function commit(next: { lat: number; lng: number; accuracy?: number }) {
+  lastEmitAt = Date.now();
+  pendingCoords = null;
+  if (pendingTimer) {
+    clearTimeout(pendingTimer);
+    pendingTimer = null;
+  }
+  setState({
+    location: next,
+    error: null,
+    status: "granted",
+    updatedAt: lastEmitAt,
+  });
+}
+
 function setState(patch: Partial<State>) {
   state = { ...state, ...patch };
   for (const l of listeners) l();
@@ -38,16 +73,40 @@ function getSnapshot() {
 }
 
 function onSuccess(pos: GeolocationPosition) {
-  setState({
-    location: {
-      lat: pos.coords.latitude,
-      lng: pos.coords.longitude,
-      accuracy: pos.coords.accuracy,
-    },
-    error: null,
-    status: "granted",
-    updatedAt: Date.now(),
-  });
+  const next = {
+    lat: pos.coords.latitude,
+    lng: pos.coords.longitude,
+    accuracy: pos.coords.accuracy,
+  };
+  const now = Date.now();
+  const prev = state.location;
+
+  // First fix — commit immediately so consumers can render right away.
+  if (!prev) {
+    commit(next);
+    return;
+  }
+
+  const movedMeters = haversineMeters(prev, next);
+  const sinceLast = now - lastEmitAt;
+
+  // Ignore sub-jitter updates unless we've gone too long without emitting.
+  if (movedMeters < MIN_MOVEMENT_METERS && sinceLast < MAX_STALE_INTERVAL_MS) {
+    return;
+  }
+
+  // Enforce a minimum interval; defer to a trailing-edge emit if too soon.
+  if (sinceLast >= MIN_UPDATE_INTERVAL_MS) {
+    commit(next);
+    return;
+  }
+
+  pendingCoords = next;
+  if (pendingTimer) return;
+  pendingTimer = setTimeout(() => {
+    pendingTimer = null;
+    if (pendingCoords) commit(pendingCoords);
+  }, MIN_UPDATE_INTERVAL_MS - sinceLast);
 }
 
 function onError(err: GeolocationPositionError) {
@@ -96,6 +155,11 @@ export function stopLocationTracking() {
     navigator.geolocation.clearWatch(watchId);
   }
   watchId = null;
+  if (pendingTimer) {
+    clearTimeout(pendingTimer);
+    pendingTimer = null;
+  }
+  pendingCoords = null;
 }
 
 /**
