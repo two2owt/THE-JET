@@ -1306,14 +1306,17 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           }
           
           // Only fly to user location on initial load (default behavior)
-          // After that, users can pan/zoom freely without being pulled back
-          if (isInitialGeolocate && map.current) {
+          // After that, users can pan/zoom freely without being pulled back.
+          // The user can disable this via the "Auto-recenter on visit" toggle.
+          if (isInitialGeolocate && autoRecenterOnVisitRef.current && map.current) {
             map.current.flyTo({
               center: [longitude, latitude],
               zoom: Math.max(map.current.getZoom(), 13),
               duration: 1500,
               essential: true
             });
+          }
+          if (isInitialGeolocate) {
             isInitialGeolocate = false;
           }
           
