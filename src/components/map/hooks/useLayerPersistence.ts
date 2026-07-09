@@ -12,7 +12,6 @@ interface Params {
   showMovementPaths: boolean;
   showParking: boolean;
   showLiveStats: boolean;
-  openNowOnly: boolean;
   timeFilter: string;
   pathTimeFilter: string;
   dayFilter: number | undefined;
@@ -31,7 +30,6 @@ export const useLayerPersistence = ({
   showMovementPaths,
   showParking,
   showLiveStats,
-  openNowOnly,
   timeFilter,
   pathTimeFilter,
   dayFilter,
@@ -46,7 +44,6 @@ export const useLayerPersistence = ({
   useEffect(() => { localStorage.setItem(layerKeys.paths, String(showMovementPaths)); }, [layerKeys.paths, showMovementPaths]);
   useEffect(() => { localStorage.setItem(layerKeys.parking, String(showParking)); }, [layerKeys.parking, showParking]);
   useEffect(() => { localStorage.setItem(layerKeys.stats, String(showLiveStats)); }, [layerKeys.stats, showLiveStats]);
-  useEffect(() => { localStorage.setItem(layerKeys.openNow, String(openNowOnly)); }, [layerKeys.openNow, openNowOnly]);
 
   useEffect(() => { localStorage.setItem(filterKeys.timeFilter, timeFilter); }, [filterKeys.timeFilter, timeFilter]);
   useEffect(() => { localStorage.setItem(filterKeys.pathTimeFilter, pathTimeFilter); }, [filterKeys.pathTimeFilter, pathTimeFilter]);
