@@ -764,6 +764,131 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     } catch { /* ignore */ }
   }, [timelapse]);
 
+  // ── Live Stats quick actions ──────────────────────────────────────────
+  // Derived "top hotspot" (max density grid cell) and "top route"
+  // (max frequency movement path) for the current data window.
+  const topHotspot = useMemo(() => {
+    const feats = densityData?.geojson?.features as any[] | undefined;
+    if (!feats?.length) return null;
+    let best: any = null;
+    let bestDensity = -1;
+    for (const f of feats) {
+      const d = Number(f?.properties?.density ?? 0);
+      if (d > bestDensity && f?.geometry?.type === 'Point' && Array.isArray(f.geometry.coordinates)) {
+        best = f;
+        bestDensity = d;
+      }
+    }
+    if (!best) return null;
+    const [lng, lat] = best.geometry.coordinates as [number, number];
+    return { lng, lat, density: bestDensity };
+  }, [densityData]);
+
+  const topRoute = useMemo(() => {
+    const feats = pathData?.geojson?.features as any[] | undefined;
+    if (!feats?.length) return null;
+    let best: any = null;
+    let bestFreq = -1;
+    for (const f of feats) {
+      const freq = Number(f?.properties?.frequency ?? 0);
+      if (freq > bestFreq && f?.geometry?.type === 'LineString' && Array.isArray(f.geometry.coordinates)) {
+        best = f;
+        bestFreq = freq;
+      }
+    }
+    if (!best) return null;
+    return {
+      frequency: bestFreq,
+      coordinates: best.geometry.coordinates as [number, number][],
+    };
+  }, [pathData]);
+
+  const handleJumpToHotspot = useCallback(() => {
+    if (!topHotspot || !map.current) return;
+    triggerHaptic('medium');
+    try {
+      map.current.flyTo({
+        center: [topHotspot.lng, topHotspot.lat],
+        zoom: Math.max(map.current.getZoom(), 15.25),
+        duration: 1200,
+        essential: true,
+      });
+    } catch { /* ignore */ }
+  }, [topHotspot]);
+
+  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleHighlightTopRoute = useCallback(() => {
+    if (!topRoute || !map.current) return;
+    triggerHaptic('medium');
+    const mapInstance = map.current;
+    const srcId = 'top-route-highlight-src';
+    const layerId = 'top-route-highlight-line';
+    const glowId = 'top-route-highlight-glow';
+
+    const cleanup = () => {
+      try { if (mapInstance.getLayer(layerId)) mapInstance.removeLayer(layerId); } catch {/*noop*/}
+      try { if (mapInstance.getLayer(glowId)) mapInstance.removeLayer(glowId); } catch {/*noop*/}
+      try { if (mapInstance.getSource(srcId)) mapInstance.removeSource(srcId); } catch {/*noop*/}
+    };
+    cleanup();
+
+    try {
+      mapInstance.addSource(srcId, {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          properties: { frequency: topRoute.frequency },
+          geometry: { type: 'LineString', coordinates: topRoute.coordinates },
+        } as any,
+      });
+      mapInstance.addLayer({
+        id: glowId,
+        type: 'line',
+        source: srcId,
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: {
+          'line-color': 'hsl(45, 100%, 60%)',
+          'line-width': 22,
+          'line-blur': 8,
+          'line-opacity': 0.55,
+        } as any,
+      });
+      mapInstance.addLayer({
+        id: layerId,
+        type: 'line',
+        source: srcId,
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: {
+          'line-color': '#FFD666',
+          'line-width': 6,
+          'line-opacity': 0.95,
+        } as any,
+      });
+
+      // Fit the map to the route bounds.
+      const coords = topRoute.coordinates;
+      let minLng = coords[0][0], maxLng = coords[0][0];
+      let minLat = coords[0][1], maxLat = coords[0][1];
+      for (const [lng, lat] of coords) {
+        if (lng < minLng) minLng = lng; if (lng > maxLng) maxLng = lng;
+        if (lat < minLat) minLat = lat; if (lat > maxLat) maxLat = lat;
+      }
+      try {
+        mapInstance.fitBounds(
+          [[minLng, minLat], [maxLng, maxLat]],
+          { padding: 80, duration: 1000, maxZoom: 15.5 },
+        );
+      } catch { /* ignore */ }
+    } catch { /* ignore */ }
+
+    if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
+    highlightTimerRef.current = setTimeout(cleanup, 6000);
+  }, [topRoute]);
+
+  useEffect(() => () => {
+    if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
+  }, []);
+
   // Handle map resize on viewport changes - optimized for all mobile devices
   useEffect(() => {
     let resizeTimeout: ReturnType<typeof setTimeout>;
