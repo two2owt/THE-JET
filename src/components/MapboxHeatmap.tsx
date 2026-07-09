@@ -3563,6 +3563,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   densityLoading={densityLoading}
                   pathLoading={pathsLoading}
                   variant="inline"
+                  topHotspot={topHotspot}
+                  topRoute={topRoute ? { frequency: topRoute.frequency } : null}
+                  onJumpToHotspot={handleJumpToHotspot}
+                  onHighlightTopRoute={handleHighlightTopRoute}
                 />
               </div>
             )}
