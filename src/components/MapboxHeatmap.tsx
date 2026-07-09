@@ -2590,6 +2590,69 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         }}
       />
 
+      {/* Time-lapse timestamp overlay — visible whenever time-lapse mode is
+          active. Shows the current day + hour so users have a clear label
+          during playback and while scrubbing. */}
+      {timelapseMode && (
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          aria-label={`Time-lapse timestamp: ${(['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Any day'])[dayFilter === undefined ? 7 : dayFilter]}, ${timelapse.formatHour(timelapse.currentHour)}`}
+          style={{
+            position: 'absolute',
+            top: 'var(--map-ui-inset-top, 0.75rem)',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 31,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '7px 12px',
+            borderRadius: '9999px',
+            border: '1px solid hsl(var(--primary) / 0.35)',
+            background: 'hsl(var(--background) / 0.72)',
+            backdropFilter: 'blur(14px) saturate(1.4)',
+            WebkitBackdropFilter: 'blur(14px) saturate(1.4)',
+            boxShadow: '0 8px 24px -12px hsl(var(--primary) / 0.55), inset 0 0 0 1px hsl(0 0% 100% / 0.04)',
+            pointerEvents: 'none',
+            maxWidth: 'calc(100vw - 2rem)',
+          }}
+        >
+          <span
+            aria-hidden="true"
+            style={{
+              width: '6px', height: '6px', borderRadius: '9999px',
+              background: timelapse.isPlaying
+                ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
+                : 'hsl(var(--muted-foreground) / 0.6)',
+              boxShadow: timelapse.isPlaying ? '0 0 10px hsl(var(--primary) / 0.8)' : 'none',
+              animation: timelapse.isPlaying ? 'jet-pulse 1.2s ease-in-out infinite' : 'none',
+              flexShrink: 0,
+            }}
+          />
+          <span
+            className="font-display"
+            style={{
+              fontSize: '11px',
+              fontWeight: 700,
+              letterSpacing: '0.02em',
+              color: 'hsl(var(--foreground))',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {(['Sun','Mon','Tue','Wed','Thu','Fri','Sat','Any day'])[dayFilter === undefined ? 7 : dayFilter]}
+            <span style={{ opacity: 0.4, margin: '0 6px' }}>·</span>
+            <span style={{
+              background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+            }}>
+              {timelapse.formatHour(timelapse.currentHour)}
+            </span>
+          </span>
+        </div>
+      )}
+
       {/* Unified Top-Left Controls: Location + Map Style in one compact row */}
       {controlsReady && (
       <div 
