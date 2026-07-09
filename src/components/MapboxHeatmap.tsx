@@ -3609,6 +3609,20 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               }}
             />
 
+            {/* Auto-recenter on visit — controls whether the map flies to the
+                user's location on initial load. Disable to keep the last view. */}
+            <LayerToggleRow
+              label="Auto-recenter on visit"
+              Icon={LocateFixed}
+              active={autoRecenterOnVisit}
+              ariaLabel="Toggle auto-recenter to my location on map visit"
+              tooltip="When on, the map centers on your location the first time it detects you. Turn off to keep the map where you last left it."
+              onToggle={() => {
+                triggerHaptic('medium');
+                setAutoRecenterOnVisit((v) => !v);
+              }}
+            />
+
             {/* Inline Live Stats — consolidated within the Layers panel for friendlier usability */}
             {showLiveStats && (
               <div
