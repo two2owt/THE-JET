@@ -202,6 +202,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Mapbox tuning: lower tile cache, disabled rotate/pitch, faster fades.
   // Tablets (md+) get the desktop-grade settings.
   const isMobile = !useBreakpointUp("md");
+  const isDesktopWide = useBreakpointUp("lg");
+  const isDesktopXL = useBreakpointUp("xl");
   const initStartTime = useRef<number>(0);
   const platformSettings = useRef(getPlatformSettings(isMobile));
   
