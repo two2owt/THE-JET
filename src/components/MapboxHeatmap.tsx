@@ -717,6 +717,120 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     localStorage.setItem(FILTER_KEYS.timelapseSpeed, String(timelapse.speed));
   }, [timelapse.speed]);
 
+  // Keyboard shortcuts for the time-lapse panel. Active only while
+  // `timelapseMode` is on so the map keeps its normal keybindings
+  // (arrow-pan, +/- zoom) the rest of the time. Ignores keystrokes that
+  // originate inside form controls or contenteditable regions so users
+  // typing in the header search aren't hijacked.
+  //
+  // Shortcuts:
+  //   Space / K              — play / pause
+  //   ← / J                  — step backward one hour
+  //   → / L                  — step forward one hour
+  //   Home / 0               — jump to 12 AM
+  //   End                    — jump to 11 PM
+  //   Shift+←  Shift+→       — decrease / increase playback speed
+  //                            (walks the same 0.25 → 4x preset scale)
+  useEffect(() => {
+    if (!timelapseMode) return;
+
+    const SPEED_STEPS = [0.25, 0.5, 1, 2, 4];
+    // `timelapse.speed` is seconds-per-hour; the user-facing multiplier
+    // is `1 / speed`. Snap to nearest preset so repeated presses walk
+    // the scale predictably even after custom-slider tweaks.
+    const nearestSpeedIndex = (secondsPerHour: number) => {
+      const mult = 1 / secondsPerHour;
+      let best = 0;
+      let bestDelta = Infinity;
+      SPEED_STEPS.forEach((m, i) => {
+        const d = Math.abs(m - mult);
+        if (d < bestDelta) { bestDelta = d; best = i; }
+      });
+      return best;
+    };
+
+    const isTypingTarget = (el: EventTarget | null): boolean => {
+      if (!(el instanceof HTMLElement)) return false;
+      const tag = el.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+      if (el.isContentEditable) return true;
+      // Radix Select / combobox triggers use role=combobox and swallow
+      // arrow keys themselves — don't hijack while focused.
+      const role = el.getAttribute('role');
+      if (role === 'combobox' || role === 'listbox' || role === 'textbox') return true;
+      return false;
+    };
+
+    const handler = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (isTypingTarget(e.target)) return;
+
+      switch (e.key) {
+        case ' ':
+        case 'Spacebar':
+        case 'k':
+        case 'K': {
+          e.preventDefault();
+          triggerHaptic('medium');
+          timelapse.isPlaying ? timelapse.pause() : timelapse.play();
+          return;
+        }
+        case 'ArrowLeft':
+        case 'j':
+        case 'J': {
+          if (e.shiftKey) {
+            e.preventDefault();
+            const idx = nearestSpeedIndex(timelapse.speed);
+            const next = SPEED_STEPS[Math.max(0, idx - 1)];
+            triggerHaptic('light');
+            timelapse.setSpeed(1 / next);
+            return;
+          }
+          e.preventDefault();
+          triggerHaptic('light');
+          if (timelapse.isPlaying) timelapse.pause();
+          timelapse.stepBackward();
+          return;
+        }
+        case 'ArrowRight':
+        case 'l':
+        case 'L': {
+          if (e.shiftKey) {
+            e.preventDefault();
+            const idx = nearestSpeedIndex(timelapse.speed);
+            const next = SPEED_STEPS[Math.min(SPEED_STEPS.length - 1, idx + 1)];
+            triggerHaptic('light');
+            timelapse.setSpeed(1 / next);
+            return;
+          }
+          e.preventDefault();
+          triggerHaptic('light');
+          if (timelapse.isPlaying) timelapse.pause();
+          timelapse.stepForward();
+          return;
+        }
+        case 'Home':
+        case '0': {
+          e.preventDefault();
+          triggerHaptic('light');
+          timelapse.setHour(0);
+          return;
+        }
+        case 'End': {
+          e.preventDefault();
+          triggerHaptic('light');
+          timelapse.setHour(23);
+          return;
+        }
+        default:
+          return;
+      }
+    };
+
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [timelapseMode, timelapse]);
+
   // Reset to defaults — clears localStorage and restores factory settings
   const handleResetToDefaults = useCallback(() => {
     triggerHaptic('medium');
@@ -3057,10 +3171,15 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '10px', borderRadius: '10px', background: 'hsl(var(--background) / 0.4)', border: '1px solid hsl(var(--border) / 0.5)' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                               <button type="button" onClick={() => { triggerHaptic('light'); timelapse.stepBackward(); }} disabled={timelapse.isPlaying}
+                                aria-label="Step back one hour" title="Step back (←)" aria-keyshortcuts="ArrowLeft"
                                 style={{ width: '26px', height: '26px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', border: '1px solid hsl(var(--border) / 0.6)', background: 'hsl(var(--background) / 0.6)', color: 'hsl(var(--foreground) / 0.8)', cursor: timelapse.isPlaying ? 'not-allowed' : 'pointer', opacity: timelapse.isPlaying ? 0.5 : 1 }}>
                                 <SkipBack style={{ width: '12px', height: '12px' }} />
                               </button>
                               <button type="button" onClick={() => { triggerHaptic('medium'); timelapse.isPlaying ? timelapse.pause() : timelapse.play(); }}
+                                aria-label={timelapse.isPlaying ? 'Pause time-lapse' : 'Play time-lapse'}
+                                aria-pressed={timelapse.isPlaying}
+                                title={timelapse.isPlaying ? 'Pause (Space)' : 'Play (Space)'}
+                                aria-keyshortcuts="Space"
                                 style={{
                                   flex: 1, height: '26px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
                                   borderRadius: '8px',
@@ -3075,6 +3194,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                                 {timelapse.isPlaying ? <Pause style={{ width: '12px', height: '12px' }} /> : <Play style={{ width: '12px', height: '12px' }} />}
                               </button>
                               <button type="button" onClick={() => { triggerHaptic('light'); timelapse.stepForward(); }} disabled={timelapse.isPlaying}
+                                aria-label="Step forward one hour" title="Step forward (→)" aria-keyshortcuts="ArrowRight"
                                 style={{ width: '26px', height: '26px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', border: '1px solid hsl(var(--border) / 0.6)', background: 'hsl(var(--background) / 0.6)', color: 'hsl(var(--foreground) / 0.8)', cursor: timelapse.isPlaying ? 'not-allowed' : 'pointer', opacity: timelapse.isPlaying ? 0.5 : 1 }}>
                                 <SkipForward style={{ width: '12px', height: '12px' }} />
                               </button>
@@ -3086,7 +3206,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                             <LayerSliderRow
                               label="Speed"
                               Icon={Play}
-                              ariaLabel="Time-lapse playback speed"
+                              ariaLabel="Time-lapse playback speed (Shift + arrow keys)"
                               min={0.25}
                               max={4}
                               step={0.25}
@@ -3101,6 +3221,23 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                                 { value: 4, label: '4x' },
                               ]}
                             />
+                            {/* Keyboard hint — visible on hover-capable
+                                pointer devices only so it doesn't crowd
+                                touch UIs. */}
+                            <div
+                              className="hidden md:block"
+                              style={{
+                                fontSize: '9px',
+                                lineHeight: 1.4,
+                                color: 'hsl(var(--muted-foreground) / 0.85)',
+                                paddingTop: '2px',
+                              }}
+                            >
+                              <span style={{ fontWeight: 700, color: 'hsl(var(--muted-foreground))' }}>Keys:</span>{' '}
+                              <kbd style={{ fontFamily: 'inherit', padding: '0 4px', borderRadius: '4px', background: 'hsl(var(--muted) / 0.5)', border: '1px solid hsl(var(--border) / 0.5)' }}>Space</kbd> play/pause ·{' '}
+                              <kbd style={{ fontFamily: 'inherit', padding: '0 4px', borderRadius: '4px', background: 'hsl(var(--muted) / 0.5)', border: '1px solid hsl(var(--border) / 0.5)' }}>←</kbd>/<kbd style={{ fontFamily: 'inherit', padding: '0 4px', borderRadius: '4px', background: 'hsl(var(--muted) / 0.5)', border: '1px solid hsl(var(--border) / 0.5)' }}>→</kbd> step ·{' '}
+                              <kbd style={{ fontFamily: 'inherit', padding: '0 4px', borderRadius: '4px', background: 'hsl(var(--muted) / 0.5)', border: '1px solid hsl(var(--border) / 0.5)' }}>Shift</kbd>+arrows speed
+                            </div>
                           </div>
                         </>
                       )}
