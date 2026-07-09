@@ -2944,273 +2944,168 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   defaultValue={1}
                   format={(v) => `${Math.round(v * 100)}%`}
                 />
-                {/* Time-window slider — server round-trip, only fires on
-                    commit so drags don't spam the edge function. */}
-                {!timelapseMode && (
-                  <LayerSliderRow
-                    label="Time window"
-                    Icon={Clock}
-                    ariaLabel="Density data time window"
-                    min={0}
-                    max={4}
-                    step={1}
-                    value={
-                      densityWindowMinutes === null ? 0 :
-                      densityWindowMinutes === 15 ? 1 :
-                      densityWindowMinutes === 60 ? 2 :
-                      densityWindowMinutes === 360 ? 3 :
-                      densityWindowMinutes === 1440 ? 4 : 0
-                    }
-                    onChange={(step) => {
-                      const mapping = [null, 15, 60, 360, 1440];
-                      setDensityWindowMinutes(mapping[step] ?? null);
-                    }}
-                    onCommit={() => refreshDensity()}
-                    format={(step) => (['Preset','15m','1h','6h','24h'][step] ?? 'Preset')}
-                    ticks={[
-                      { value: 0, label: 'Preset' },
-                      { value: 1, label: '15m' },
-                      { value: 2, label: '1h' },
-                      { value: 3, label: '6h' },
-                      { value: 4, label: '24h' },
-                    ]}
-                    defaultValue={0}
-                    loading={densityLoading}
-                  />
-                )}
-                {/* Time-lapse toggle — glassmorphic pill matching LayerToggleRow */}
-                <button
-                  type="button"
-                  aria-pressed={timelapseMode}
-                  onClick={() => {
+                {/* Unified Time-lapse panel: All Time toggle + Day-of-Week
+                    slider + Hour scrub with playback + Speed. Replaces the
+                    old Time/Day selects and Time-window slider. */}
+                {(() => {
+                  const allTime =
+                    !timelapseMode &&
+                    dayFilter === undefined &&
+                    timeFilter === 'all' &&
+                    densityWindowMinutes === null;
+                  const DAY_LABELS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat','Any'];
+                  const daySliderValue = dayFilter === undefined ? 7 : dayFilter;
+                  const setAllTime = (on: boolean) => {
                     triggerHaptic('medium');
-                    const newMode = !timelapseMode;
-                    setTimelapseMode(newMode);
-                    if (newMode) timelapse.loadHourlyData();
-                  }}
-                  style={{
-                    width: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '7px 10px',
-                    borderRadius: '10px',
-                    cursor: 'pointer',
-                    border: timelapseMode
-                      ? '1px solid hsl(var(--primary) / 0.45)'
-                      : '1px solid hsl(var(--border) / 0.5)',
-                    background: timelapseMode
-                      ? 'linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--primary-glow) / 0.14))'
-                      : 'hsl(var(--card) / 0.5)',
-                    backdropFilter: 'blur(12px) saturate(1.4)',
-                    WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
-                    boxShadow: timelapseMode
-                      ? '0 8px 24px -10px hsl(var(--primary) / 0.55), inset 0 0 0 1px hsl(var(--primary-glow) / 0.18)'
-                      : 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
-                    transition: 'background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms ease, box-shadow 220ms ease',
-                  }}
-                >
-                  <span
-                    style={{
-                      width: '22px', height: '22px', borderRadius: '7px',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                      background: timelapseMode
-                        ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
-                        : 'hsl(var(--background) / 0.6)',
-                      color: timelapseMode ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
-                      border: timelapseMode ? '1px solid transparent' : '1px solid hsl(var(--border) / 0.6)',
-                      boxShadow: timelapseMode ? '0 4px 12px -4px hsl(var(--primary) / 0.6)' : 'none',
-                    }}
-                  >
-                    <Clock style={{ width: '12px', height: '12px' }} strokeWidth={2.25} />
-                  </span>
-                  <span className="font-display" style={{ flex: 1, textAlign: 'left', fontSize: '11px', fontWeight: 700, letterSpacing: '-0.005em', color: timelapseMode ? 'hsl(var(--foreground))' : 'hsl(var(--foreground) / 0.75)' }}>
-                    {timelapseMode ? 'Time-lapse On' : 'Time-lapse'}
-                  </span>
-                  <span aria-hidden="true" style={{
-                    width: '7px', height: '7px', borderRadius: '9999px', flexShrink: 0,
-                    background: timelapseMode
-                      ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
-                      : 'hsl(var(--muted-foreground) / 0.25)',
-                    boxShadow: timelapseMode
-                      ? '0 0 10px hsl(var(--primary) / 0.7), 0 0 2px hsl(var(--primary-glow) / 0.6)'
-                      : 'inset 0 0 0 1px hsl(var(--border))',
-                  }} />
-                </button>
-
-                {/* Time-lapse controls — glassmorphic card */}
-                {timelapseMode && (
-                  <div style={{
-                    display: 'flex', flexDirection: 'column', gap: '8px',
-                    padding: '10px',
-                    borderRadius: '10px',
-                    background: 'hsl(var(--card) / 0.5)',
-                    border: '1px solid hsl(var(--border) / 0.5)',
-                    backdropFilter: 'blur(12px) saturate(1.4)',
-                    WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
-                    boxShadow: 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <button type="button" onClick={() => { triggerHaptic('light'); timelapse.stepBackward(); }} disabled={timelapse.isPlaying}
-                        style={{ width: '26px', height: '26px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', border: '1px solid hsl(var(--border) / 0.6)', background: 'hsl(var(--background) / 0.6)', color: 'hsl(var(--foreground) / 0.8)', cursor: timelapse.isPlaying ? 'not-allowed' : 'pointer', opacity: timelapse.isPlaying ? 0.5 : 1 }}>
-                        <SkipBack style={{ width: '12px', height: '12px' }} />
-                      </button>
-                      <button type="button" onClick={() => { triggerHaptic('medium'); timelapse.isPlaying ? timelapse.pause() : timelapse.play(); }}
+                    if (on) {
+                      if (timelapse.isPlaying) timelapse.pause();
+                      setTimelapseMode(false);
+                      setDayFilter(undefined);
+                      setTimeFilter('all');
+                      setHourFilter(undefined);
+                      setDensityWindowMinutes(null);
+                    } else {
+                      setTimelapseMode(true);
+                      setTimeFilter('all');
+                      setDensityWindowMinutes(null);
+                      timelapse.loadHourlyData();
+                    }
+                  };
+                  return (
+                    <div style={{
+                      display: 'flex', flexDirection: 'column', gap: '8px',
+                      padding: '10px',
+                      borderRadius: '10px',
+                      background: 'hsl(var(--card) / 0.5)',
+                      border: '1px solid hsl(var(--border) / 0.5)',
+                      backdropFilter: 'blur(12px) saturate(1.4)',
+                      WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
+                      boxShadow: 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
+                    }}>
+                      {/* All Time toggle */}
+                      <button
+                        type="button"
+                        aria-pressed={allTime}
+                        onClick={() => setAllTime(!allTime)}
                         style={{
-                          flex: 1, height: '26px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
-                          borderRadius: '8px',
-                          border: timelapse.isPlaying ? '1px solid transparent' : '1px solid hsl(var(--border) / 0.6)',
-                          background: timelapse.isPlaying
+                          width: '100%', display: 'flex', alignItems: 'center', gap: '8px',
+                          padding: '7px 10px', borderRadius: '10px', cursor: 'pointer',
+                          border: allTime
+                            ? '1px solid hsl(var(--primary) / 0.45)'
+                            : '1px solid hsl(var(--border) / 0.5)',
+                          background: allTime
+                            ? 'linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--primary-glow) / 0.14))'
+                            : 'hsl(var(--background) / 0.4)',
+                          boxShadow: allTime
+                            ? '0 8px 24px -10px hsl(var(--primary) / 0.55), inset 0 0 0 1px hsl(var(--primary-glow) / 0.18)'
+                            : 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
+                          transition: 'background 220ms ease, border-color 220ms ease, box-shadow 220ms ease',
+                        }}
+                      >
+                        <span style={{
+                          width: '22px', height: '22px', borderRadius: '7px',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                          background: allTime
                             ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
                             : 'hsl(var(--background) / 0.6)',
-                          color: timelapse.isPlaying ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
-                          fontSize: '10px', fontWeight: 700, cursor: 'pointer',
-                          boxShadow: timelapse.isPlaying ? '0 4px 12px -4px hsl(var(--primary) / 0.6)' : 'none',
+                          color: allTime ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
+                          border: allTime ? '1px solid transparent' : '1px solid hsl(var(--border) / 0.6)',
+                          boxShadow: allTime ? '0 4px 12px -4px hsl(var(--primary) / 0.6)' : 'none',
                         }}>
-                        {timelapse.isPlaying ? <Pause style={{ width: '12px', height: '12px' }} /> : <Play style={{ width: '12px', height: '12px' }} />}
+                          <Clock style={{ width: '12px', height: '12px' }} strokeWidth={2.25} />
+                        </span>
+                        <span className="font-display" style={{ flex: 1, textAlign: 'left', fontSize: '11px', fontWeight: 700, letterSpacing: '-0.005em', color: allTime ? 'hsl(var(--foreground))' : 'hsl(var(--foreground) / 0.75)' }}>
+                          All Time
+                        </span>
+                        <span aria-hidden="true" style={{
+                          width: '7px', height: '7px', borderRadius: '9999px', flexShrink: 0,
+                          background: allTime
+                            ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
+                            : 'hsl(var(--muted-foreground) / 0.25)',
+                          boxShadow: allTime
+                            ? '0 0 10px hsl(var(--primary) / 0.7), 0 0 2px hsl(var(--primary-glow) / 0.6)'
+                            : 'inset 0 0 0 1px hsl(var(--border))',
+                        }} />
                       </button>
-                      <button type="button" onClick={() => { triggerHaptic('light'); timelapse.stepForward(); }} disabled={timelapse.isPlaying}
-                        style={{ width: '26px', height: '26px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', border: '1px solid hsl(var(--border) / 0.6)', background: 'hsl(var(--background) / 0.6)', color: 'hsl(var(--foreground) / 0.8)', cursor: timelapse.isPlaying ? 'not-allowed' : 'pointer', opacity: timelapse.isPlaying ? 0.5 : 1 }}>
-                        <SkipForward style={{ width: '12px', height: '12px' }} />
-                      </button>
-                    </div>
-                    <div className="font-display" style={{ textAlign: 'center', fontSize: '11px', fontWeight: 700, letterSpacing: '0.02em', background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{timelapse.formatHour(timelapse.currentHour)}</div>
-                    <Slider value={[timelapse.currentHour]} onValueChange={([v]) => timelapse.setHour(v)} min={0} max={23} step={1} className="w-full" disabled={timelapse.isPlaying} />
-                    {/* Speed slider — internal `speed` is seconds-per-hour
-                        (higher = slower). We expose it as a playback multiplier
-                        (higher = faster) via `1 / speed`. */}
-                    <LayerSliderRow
-                      label="Speed"
-                      Icon={Play}
-                      ariaLabel="Time-lapse playback speed"
-                      min={0.25}
-                      max={4}
-                      step={0.25}
-                      value={Number((1 / timelapse.speed).toFixed(2))}
-                      onChange={(mult) => timelapse.setSpeed(1 / mult)}
-                      defaultValue={1}
-                      format={(mult) => `${mult}x`}
-                      ticks={[
-                        { value: 0.5, label: '0.5x' },
-                        { value: 1, label: '1x' },
-                        { value: 2, label: '2x' },
-                        { value: 4, label: '4x' },
-                      ]}
-                    />
-                  </div>
-                )}
 
-                {/* Regular filters — glassmorphic selects */}
-                {!timelapseMode && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <Select value={timeFilter} onValueChange={(v: any) => setTimeFilter(v)}>
-                      <SelectTrigger
-                        className="w-full font-display font-semibold rounded-[10px] min-h-0 h-auto map-filter-pill"
-                        style={{
-                          padding: 'clamp(6px, 1.6vw, 8px) clamp(8px, 2.2vw, 12px)',
-                          fontSize: 'clamp(10px, 2.6vw, 12px)',
-                          flexDirection: 'row',
-                          flexWrap: 'nowrap',
-                          border: timeFilter !== 'all'
-                            ? '1px solid hsl(var(--primary) / 0.45)'
-                            : '1px solid hsl(var(--border) / 0.5)',
-                          background: timeFilter !== 'all'
-                            ? 'linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--primary-glow) / 0.14))'
-                            : 'hsl(var(--card) / 0.5)',
-                          backdropFilter: 'blur(12px) saturate(1.4)',
-                          WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
-                          boxShadow: timeFilter !== 'all'
-                            ? '0 8px 24px -10px hsl(var(--primary) / 0.55), inset 0 0 0 1px hsl(var(--primary-glow) / 0.18)'
-                            : 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
-                          letterSpacing: '-0.005em',
-                          color: timeFilter !== 'all' ? 'hsl(var(--foreground))' : undefined,
-                          transition: 'background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms ease, box-shadow 220ms ease, color 220ms ease',
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(6px, 1.6vw, 10px)', flex: 1, minWidth: 0 }}>
-                          <span style={{
-                            width: 'clamp(20px, 5.2vw, 24px)', height: 'clamp(20px, 5.2vw, 24px)', borderRadius: '7px',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                            background: timeFilter !== 'all'
-                              ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
-                              : 'hsl(var(--background) / 0.6)',
-                            border: timeFilter !== 'all'
-                              ? '1px solid transparent'
-                              : '1px solid hsl(var(--border) / 0.6)',
-                            boxShadow: timeFilter !== 'all'
-                              ? '0 4px 12px -4px hsl(var(--primary) / 0.6)'
-                              : 'none',
-                            transition: 'background 220ms ease, border-color 220ms ease, box-shadow 220ms ease',
-                          }}>
-                            <Clock style={{ width: '12px', height: '12px', color: timeFilter !== 'all' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))' }} strokeWidth={2.25} />
-                          </span>
-                          <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left' }}>
-                            <SelectValue placeholder="Time" />
-                          </span>
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Time</SelectItem>
-                        <SelectItem value="today">Today</SelectItem>
-                        <SelectItem value="this_week">This Week</SelectItem>
-                        <SelectItem value="this_hour">This Hour</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Select value={dayFilter?.toString() || "all"} onValueChange={(v) => setDayFilter(v === "all" ? undefined : parseInt(v))}>
-                      <SelectTrigger
-                        className="w-full font-display font-semibold rounded-[10px] min-h-0 h-auto map-filter-pill"
-                        style={{
-                          padding: 'clamp(6px, 1.6vw, 8px) clamp(8px, 2.2vw, 12px)',
-                          fontSize: 'clamp(10px, 2.6vw, 12px)',
-                          flexDirection: 'row',
-                          flexWrap: 'nowrap',
-                          border: dayFilter !== undefined
-                            ? '1px solid hsl(var(--primary) / 0.45)'
-                            : '1px solid hsl(var(--border) / 0.5)',
-                          background: dayFilter !== undefined
-                            ? 'linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--primary-glow) / 0.14))'
-                            : 'hsl(var(--card) / 0.5)',
-                          backdropFilter: 'blur(12px) saturate(1.4)',
-                          WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
-                          boxShadow: dayFilter !== undefined
-                            ? '0 8px 24px -10px hsl(var(--primary) / 0.55), inset 0 0 0 1px hsl(var(--primary-glow) / 0.18)'
-                            : 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
-                          letterSpacing: '-0.005em',
-                          color: dayFilter !== undefined ? 'hsl(var(--foreground))' : undefined,
-                          transition: 'background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms ease, box-shadow 220ms ease, color 220ms ease',
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(6px, 1.6vw, 10px)', flex: 1, minWidth: 0 }}>
-                          <span style={{
-                            width: 'clamp(20px, 5.2vw, 24px)', height: 'clamp(20px, 5.2vw, 24px)', borderRadius: '7px',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                            background: dayFilter !== undefined
-                              ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
-                              : 'hsl(var(--background) / 0.6)',
-                            border: dayFilter !== undefined
-                              ? '1px solid transparent'
-                              : '1px solid hsl(var(--border) / 0.6)',
-                            boxShadow: dayFilter !== undefined
-                              ? '0 4px 12px -4px hsl(var(--primary) / 0.6)'
-                              : 'none',
-                            transition: 'background 220ms ease, border-color 220ms ease, box-shadow 220ms ease',
-                          }}>
-                            <Calendar style={{ width: '12px', height: '12px', color: dayFilter !== undefined ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))' }} strokeWidth={2.25} />
-                          </span>
-                          <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left' }}>
-                            <SelectValue placeholder="Day" />
-                          </span>
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Days</SelectItem>
-                        {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((d, i) => (
-                          <SelectItem key={i} value={i.toString()}>{d}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
+                      {/* Day + Hour + Speed (hidden when All Time is on) */}
+                      {!allTime && (
+                        <>
+                          <LayerSliderRow
+                            label="Day of Week"
+                            Icon={Calendar}
+                            ariaLabel="Filter heatmap by day of week"
+                            min={0}
+                            max={7}
+                            step={1}
+                            value={daySliderValue}
+                            onChange={(v) => {
+                              const next = v === 7 ? undefined : v;
+                              setDayFilter(next);
+                            }}
+                            onCommit={() => {
+                              if (timelapseMode) timelapse.loadHourlyData();
+                              else refreshDensity();
+                            }}
+                            defaultValue={7}
+                            format={(v) => DAY_LABELS[v] ?? 'Any'}
+                            ticks={DAY_LABELS.map((label, value) => ({ value, label }))}
+                          />
+
+                          {/* Hour scrub with playback controls */}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '10px', borderRadius: '10px', background: 'hsl(var(--background) / 0.4)', border: '1px solid hsl(var(--border) / 0.5)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <button type="button" onClick={() => { triggerHaptic('light'); timelapse.stepBackward(); }} disabled={timelapse.isPlaying}
+                                style={{ width: '26px', height: '26px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', border: '1px solid hsl(var(--border) / 0.6)', background: 'hsl(var(--background) / 0.6)', color: 'hsl(var(--foreground) / 0.8)', cursor: timelapse.isPlaying ? 'not-allowed' : 'pointer', opacity: timelapse.isPlaying ? 0.5 : 1 }}>
+                                <SkipBack style={{ width: '12px', height: '12px' }} />
+                              </button>
+                              <button type="button" onClick={() => { triggerHaptic('medium'); timelapse.isPlaying ? timelapse.pause() : timelapse.play(); }}
+                                style={{
+                                  flex: 1, height: '26px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
+                                  borderRadius: '8px',
+                                  border: timelapse.isPlaying ? '1px solid transparent' : '1px solid hsl(var(--border) / 0.6)',
+                                  background: timelapse.isPlaying
+                                    ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
+                                    : 'hsl(var(--background) / 0.6)',
+                                  color: timelapse.isPlaying ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
+                                  fontSize: '10px', fontWeight: 700, cursor: 'pointer',
+                                  boxShadow: timelapse.isPlaying ? '0 4px 12px -4px hsl(var(--primary) / 0.6)' : 'none',
+                                }}>
+                                {timelapse.isPlaying ? <Pause style={{ width: '12px', height: '12px' }} /> : <Play style={{ width: '12px', height: '12px' }} />}
+                              </button>
+                              <button type="button" onClick={() => { triggerHaptic('light'); timelapse.stepForward(); }} disabled={timelapse.isPlaying}
+                                style={{ width: '26px', height: '26px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', border: '1px solid hsl(var(--border) / 0.6)', background: 'hsl(var(--background) / 0.6)', color: 'hsl(var(--foreground) / 0.8)', cursor: timelapse.isPlaying ? 'not-allowed' : 'pointer', opacity: timelapse.isPlaying ? 0.5 : 1 }}>
+                                <SkipForward style={{ width: '12px', height: '12px' }} />
+                              </button>
+                            </div>
+                            <div className="font-display" style={{ textAlign: 'center', fontSize: '11px', fontWeight: 700, letterSpacing: '0.02em', background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                              {timelapse.formatHour(timelapse.currentHour)}
+                            </div>
+                            <Slider value={[timelapse.currentHour]} onValueChange={([v]) => timelapse.setHour(v)} min={0} max={23} step={1} className="w-full" disabled={timelapse.isPlaying} aria-label="Time-lapse hour" />
+                            <LayerSliderRow
+                              label="Speed"
+                              Icon={Play}
+                              ariaLabel="Time-lapse playback speed"
+                              min={0.25}
+                              max={4}
+                              step={0.25}
+                              value={Number((1 / timelapse.speed).toFixed(2))}
+                              onChange={(mult) => timelapse.setSpeed(1 / mult)}
+                              defaultValue={1}
+                              format={(mult) => `${mult}x`}
+                              ticks={[
+                                { value: 0.5, label: '0.5x' },
+                                { value: 1, label: '1x' },
+                                { value: 2, label: '2x' },
+                                { value: 4, label: '4x' },
+                              ]}
+                            />
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* Density status — loading / error */}
                 {(isLoadingHeatmap || densityError) && (
