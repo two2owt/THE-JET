@@ -1675,6 +1675,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Movement paths + animated flow — extracted hook.
   useMovementPathsLayer({
     mapRef: map,
+    mapboxglRef,
     mapLoaded,
     showMovementPaths,
     pathData,
