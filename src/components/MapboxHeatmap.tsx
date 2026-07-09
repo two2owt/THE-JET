@@ -1675,6 +1675,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Movement paths + animated flow — extracted hook.
   useMovementPathsLayer({
     mapRef: map,
+    mapboxglRef,
     mapLoaded,
     showMovementPaths,
     pathData,
@@ -3269,6 +3270,26 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     <span>{pathData.stats.unique_users} users</span>
                   </div>
                 )}
+                {/* Frequency legend — communicates the visual scale so
+                    users understand thicker/warmer lines = more trips. */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', paddingTop: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '9px', color: 'hsl(var(--muted-foreground))' }}>
+                    <span>Fewer trips</span>
+                    <span>More trips</span>
+                  </div>
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      height: '6px',
+                      borderRadius: '9999px',
+                      background: 'linear-gradient(90deg, rgb(100,200,255) 0%, rgb(0,255,255) 25%, rgb(255,200,0) 55%, rgb(255,100,0) 80%, rgb(255,0,100) 100%)',
+                      boxShadow: 'inset 0 0 0 1px hsl(0 0% 100% / 0.08)',
+                    }}
+                  />
+                  <div style={{ fontSize: '9px', color: 'hsl(var(--muted-foreground) / 0.85)', lineHeight: 1.3 }}>
+                    Line thickness scales with trip frequency. Tap a path for trip and user counts.
+                  </div>
+                </div>
               </div>
             </div>
 
