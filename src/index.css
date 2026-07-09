@@ -503,33 +503,6 @@ All colors MUST be HSL.
     display: none;  /* Chrome, Safari, Opera */
   }
 
-  /* Layers panel scroller — thin, themed, gutter-stable to prevent content shift
-     when the scrollbar appears/disappears at different breakpoints. */
-  .layers-scroll {
-    /* Always reserve the gutter so the panel never reflows when content
-       grows/shrinks. `overflow-y: scroll` guarantees the reserved space on
-       every engine (including older iOS Safari that ignores scrollbar-gutter). */
-    overflow-y: scroll;
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--border)) transparent;
-    scrollbar-gutter: stable;
-    overscroll-behavior: contain;
-  }
-  .layers-scroll::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  .layers-scroll::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .layers-scroll::-webkit-scrollbar-thumb {
-    background: hsl(var(--border));
-    border-radius: 9999px;
-  }
-  .layers-scroll::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground) / 0.5);
-  }
-
 }
 
 @layer utilities {

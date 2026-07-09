@@ -9,7 +9,6 @@ import { NavigationShell } from "@/components/NavigationShell";
 import { AppShell } from "@/components/AppShell";
 import { PageLayout } from "@/components/PageLayout";
 import type { NavTab } from "@/hooks/useBottomNavigation";
-import { useAutoStartLocationTracking } from "@/hooks/useUserLocation";
 import {
   FavoritesPageSkeleton,
   SocialPageSkeleton,
@@ -75,19 +74,12 @@ const PageTracker = memo(function PageTracker() {
   return null;
 });
 
-/** Kicks off global geolocation tracking on first mount. */
-const LocationTracker = memo(function LocationTracker() {
-  useAutoStartLocationTracking();
-  return null;
-});
-
 /** Route-aware layout shell that conditionally renders Header + spacer */
 const AppLayout = memo(function AppLayout() {
   return (
     <AppShell>
       <Sonner />
       <PageTracker />
-      <LocationTracker />
 
       <Routes>
         {/* Main route - eagerly loaded for fastest render */}

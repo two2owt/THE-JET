@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Input } from "./ui/input";
@@ -13,8 +13,7 @@ import { EmptyState } from "./EmptyState";
 import { TabPageHeader } from "./TabPageHeader";
 import { calculateDistance, getDynamicRadius, formatDistance } from "@/utils/geospatialUtils";
 import { useFavorites } from "@/hooks/useFavorites";
-import { useUserLocation, requestUserLocation } from "@/hooks/useUserLocation";
-import { LocationPermissionBanner } from "./LocationPermissionBanner";
+import { requireConsent } from "@/lib/consent";
 
 import type { User } from "@supabase/supabase-js";
 
@@ -101,17 +100,8 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
-  // Location is tracked globally (see hooks/useUserLocation + App LocationTracker)
-  // so it's available whether or not the user is authenticated.
-  const { location: trackedLocation, error: trackedError, status: locationStatus } = useUserLocation();
-  // Memoize so the object identity only changes when coordinates actually change,
-  // preventing effects downstream from firing on every render.
-  const userLocation = useMemo(
-    () => (trackedLocation ? { lat: trackedLocation.lat, lng: trackedLocation.lng } : null),
-    [trackedLocation?.lat, trackedLocation?.lng]
-  );
-  const locationError = trackedError;
-  const locationDenied = locationStatus === "denied" || locationStatus === "unsupported";
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [userPreferences, setUserPreferences] = useState<UserPreferences | null>(null);
@@ -137,9 +127,8 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
   }, []);
 
   useEffect(() => {
-    // Ensure tracking is running (no-op if already started at app root).
-    requestUserLocation();
-
+    getUserLocation();
+    
     // Get current user
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
@@ -170,8 +159,41 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
     filterDeals();
   }, [debouncedSearchQuery, deals, selectedCategories, userPreferences, preferenceFilterEnabled]);
 
-  // Denial surfaces via <LocationPermissionBanner /> (persistent) instead of a
-  // transient toast so users always see how to restore location.
+  const getUserLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError("Geolocation is not supported by your browser");
+      return;
+    }
+
+    // Runtime guard: foreground location requires explicit consent
+    if (!requireConsent("foreground_location")) {
+      setLocationError("Foreground location consent is disabled");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+        setLocationError(null);
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        setLocationError("Unable to access your location");
+        // Show warning but don't block - show all deals if location unavailable
+        toast.error("Location access denied", {
+          description: "Showing all deals. Enable location for personalized results.",
+        });
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000, // Cache for 5 minutes
+      }
+    );
+  };
 
   const loadDeals = async () => {
     try {
@@ -377,9 +399,6 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
           )}
         </div>
       </div>
-
-      {/* Graceful fallback UI — visible only when permission is denied/unsupported. */}
-      {locationDenied && <LocationPermissionBanner />}
 
       {/* Search Bar */}
       <div style={{ position: 'relative' }}>
