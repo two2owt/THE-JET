@@ -72,6 +72,12 @@ export function refreshConsents(): Promise<void> {
 }
 
 export function hasConsent(type: ConsentType): boolean {
+  // For OS/browser-permission-gated features, unauthenticated users have no
+  // stored consent record — defer to the native permission prompt instead of
+  // blocking. Once signed in, the persisted user_consents row takes over.
+  if (!currentUserId && (type === "foreground_location" || type === "push_notifications")) {
+    return true;
+  }
   return state[type] === true;
 }
 
