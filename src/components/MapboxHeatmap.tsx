@@ -202,8 +202,17 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Mapbox tuning: lower tile cache, disabled rotate/pitch, faster fades.
   // Tablets (md+) get the desktop-grade settings.
   const isMobile = !useBreakpointUp("md");
+  const isTablet = useBreakpointUp("md") && !useBreakpointUp("lg");
   const isDesktopWide = useBreakpointUp("lg");
   const isDesktopXL = useBreakpointUp("xl");
+
+  // Adaptive panel metrics — one source of truth for the desktop Layers
+  // container so width, padding, and inner gap scale together across
+  // breakpoints instead of being hardcoded per-property.
+  const panelWidth = isDesktopXL ? 320 : isDesktopWide ? 272 : isTablet ? 244 : 224;
+  const panelPad = isDesktopXL ? 14 : isDesktopWide ? 12 : 10;
+  const panelGap = isDesktopXL ? 10 : isDesktopWide ? 9 : 8;
+  const panelMaxH = isDesktopXL ? 760 : isDesktopWide ? 700 : 620;
   const initStartTime = useRef<number>(0);
   const platformSettings = useRef(getPlatformSettings(isMobile));
   
