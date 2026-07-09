@@ -3171,10 +3171,15 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '10px', borderRadius: '10px', background: 'hsl(var(--background) / 0.4)', border: '1px solid hsl(var(--border) / 0.5)' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                               <button type="button" onClick={() => { triggerHaptic('light'); timelapse.stepBackward(); }} disabled={timelapse.isPlaying}
+                                aria-label="Step back one hour" title="Step back (←)" aria-keyshortcuts="ArrowLeft"
                                 style={{ width: '26px', height: '26px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', border: '1px solid hsl(var(--border) / 0.6)', background: 'hsl(var(--background) / 0.6)', color: 'hsl(var(--foreground) / 0.8)', cursor: timelapse.isPlaying ? 'not-allowed' : 'pointer', opacity: timelapse.isPlaying ? 0.5 : 1 }}>
                                 <SkipBack style={{ width: '12px', height: '12px' }} />
                               </button>
                               <button type="button" onClick={() => { triggerHaptic('medium'); timelapse.isPlaying ? timelapse.pause() : timelapse.play(); }}
+                                aria-label={timelapse.isPlaying ? 'Pause time-lapse' : 'Play time-lapse'}
+                                aria-pressed={timelapse.isPlaying}
+                                title={timelapse.isPlaying ? 'Pause (Space)' : 'Play (Space)'}
+                                aria-keyshortcuts="Space"
                                 style={{
                                   flex: 1, height: '26px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
                                   borderRadius: '8px',
@@ -3189,6 +3194,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                                 {timelapse.isPlaying ? <Pause style={{ width: '12px', height: '12px' }} /> : <Play style={{ width: '12px', height: '12px' }} />}
                               </button>
                               <button type="button" onClick={() => { triggerHaptic('light'); timelapse.stepForward(); }} disabled={timelapse.isPlaying}
+                                aria-label="Step forward one hour" title="Step forward (→)" aria-keyshortcuts="ArrowRight"
                                 style={{ width: '26px', height: '26px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', border: '1px solid hsl(var(--border) / 0.6)', background: 'hsl(var(--background) / 0.6)', color: 'hsl(var(--foreground) / 0.8)', cursor: timelapse.isPlaying ? 'not-allowed' : 'pointer', opacity: timelapse.isPlaying ? 0.5 : 1 }}>
                                 <SkipForward style={{ width: '12px', height: '12px' }} />
                               </button>
@@ -3200,7 +3206,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                             <LayerSliderRow
                               label="Speed"
                               Icon={Play}
-                              ariaLabel="Time-lapse playback speed"
+                              ariaLabel="Time-lapse playback speed (Shift + arrow keys)"
                               min={0.25}
                               max={4}
                               step={0.25}
@@ -3215,6 +3221,23 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                                 { value: 4, label: '4x' },
                               ]}
                             />
+                            {/* Keyboard hint — visible on hover-capable
+                                pointer devices only so it doesn't crowd
+                                touch UIs. */}
+                            <div
+                              className="hidden md:block"
+                              style={{
+                                fontSize: '9px',
+                                lineHeight: 1.4,
+                                color: 'hsl(var(--muted-foreground) / 0.85)',
+                                paddingTop: '2px',
+                              }}
+                            >
+                              <span style={{ fontWeight: 700, color: 'hsl(var(--muted-foreground))' }}>Keys:</span>{' '}
+                              <kbd style={{ fontFamily: 'inherit', padding: '0 4px', borderRadius: '4px', background: 'hsl(var(--muted) / 0.5)', border: '1px solid hsl(var(--border) / 0.5)' }}>Space</kbd> play/pause ·{' '}
+                              <kbd style={{ fontFamily: 'inherit', padding: '0 4px', borderRadius: '4px', background: 'hsl(var(--muted) / 0.5)', border: '1px solid hsl(var(--border) / 0.5)' }}>←</kbd>/<kbd style={{ fontFamily: 'inherit', padding: '0 4px', borderRadius: '4px', background: 'hsl(var(--muted) / 0.5)', border: '1px solid hsl(var(--border) / 0.5)' }}>→</kbd> step ·{' '}
+                              <kbd style={{ fontFamily: 'inherit', padding: '0 4px', borderRadius: '4px', background: 'hsl(var(--muted) / 0.5)', border: '1px solid hsl(var(--border) / 0.5)' }}>Shift</kbd>+arrows speed
+                            </div>
                           </div>
                         </>
                       )}
