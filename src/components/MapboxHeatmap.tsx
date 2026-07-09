@@ -3233,7 +3233,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               active={showMovementPaths}
               loading={isLoadingPaths}
               ariaLabel="Toggle flow paths layer"
-              tooltip="Visualizes popular routes people are taking between venues. Thicker lines mean more traffic."
+              tooltip="Real user movement between venues. Line thickness and glow scale with motion frequency — brighter, thicker paths mean more people actively moving that route right now."
               onToggle={() => {
                 triggerHaptic('medium');
                 const next = !showMovementPaths;
@@ -3402,7 +3402,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               active={showLiveStats}
               loading={isLoadingStats}
               ariaLabel="Toggle live stats panel"
-              tooltip="Real-time summary computed from recent user activity: active hotspots, recent check-ins, people on the move, and popular routes."
+              tooltip="Actionable insights from live activity: busiest hotspots right now, momentum trend vs. the last hour, top movement routes, and recent check-ins to help you decide where to go next."
               onToggle={() => {
                 triggerHaptic('medium');
                 const next = !showLiveStats;
