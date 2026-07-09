@@ -44,17 +44,25 @@ export const useDensityLayer = ({
     const pointLayerId = `${layerId}-point`;
     const glowLayerId = `${layerId}-glow`;
 
+    // Always try to tear down existing layers + source before rebuilding.
+    // Previously this was gated on `style.loaded()`, which meant a race
+    // during rapid rebuilds (e.g. time-lapse data updating 24× while the
+    // user scrubs the day-of-week slider) could skip the teardown while
+    // still running `addSource` below, crashing the map with
+    // "There is already a source with ID 'location-density'".
     try {
-      if (mapRef.current?.style?.loaded()) {
-        [glowLayerId, pointLayerId, layerId].forEach((id) => {
+      [glowLayerId, pointLayerId, layerId].forEach((id) => {
+        try {
           if (mapRef.current?.getLayer(id)) {
             mapRef.current.removeLayer(id);
           }
-        });
+        } catch { /* layer might not be in a removable state */ }
+      });
+      try {
         if (mapRef.current?.getSource(sourceId)) {
           mapRef.current.removeSource(sourceId);
         }
-      }
+      } catch { /* source might be locked mid-load */ }
     } catch (error) {
       console.error('Error removing existing layers:', error);
       return;
@@ -62,12 +70,38 @@ export const useDensityLayer = ({
 
     if (!showDensityLayer) return;
 
-    mapRef.current.addSource(sourceId, {
-      type: 'geojson',
-      data: activeData.geojson,
-    });
+    // Defensive: if a prior teardown didn't complete (e.g. removeSource
+    // threw because the source was still referenced), reuse the existing
+    // source by patching its data instead of blowing up on addSource.
+    const existingSource = (() => {
+      try { return mapRef.current?.getSource(sourceId); } catch { return null; }
+    })();
+    if (existingSource && typeof (existingSource as any).setData === 'function') {
+      try { (existingSource as any).setData(activeData.geojson); } catch { /* no-op */ }
+    } else {
+      try {
+        mapRef.current.addSource(sourceId, {
+          type: 'geojson',
+          data: activeData.geojson,
+        });
+      } catch (err) {
+        console.warn('Density source add skipped (already present):', err);
+      }
+    }
 
-    mapRef.current.addLayer({
+    // Wrap addLayer in a helper so a "layer already exists" race between
+    // rebuilds (again, common while the time-lapse hourly data stream
+    // updates 24× in quick succession) can't tear the map down.
+    const safeAddLayer = (spec: any) => {
+      try {
+        if (mapRef.current?.getLayer(spec.id)) return;
+        mapRef.current.addLayer(spec);
+      } catch (err) {
+        console.warn(`Density layer add skipped (${spec.id}):`, err);
+      }
+    };
+
+    safeAddLayer({
       id: layerId,
       type: 'heatmap',
       source: sourceId,
@@ -134,7 +168,7 @@ export const useDensityLayer = ({
       } as any,
     });
 
-    mapRef.current.addLayer({
+    safeAddLayer({
       id: `${layerId}-point`,
       type: 'circle',
       source: sourceId,
@@ -173,7 +207,7 @@ export const useDensityLayer = ({
       } as any,
     });
 
-    mapRef.current.addLayer({
+    safeAddLayer({
       id: `${layerId}-glow`,
       type: 'circle',
       source: sourceId,
