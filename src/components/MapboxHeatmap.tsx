@@ -547,6 +547,30 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // User location state
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
 
+  // User preference: auto-recenter on the visitor's location when the map
+  // first receives a fix. Persisted so a returning user keeps their choice.
+  const [autoRecenterOnVisit, setAutoRecenterOnVisit] = useState<boolean>(() => {
+    try {
+      const raw = typeof window !== "undefined"
+        ? window.localStorage.getItem("jet-map-auto-recenter-on-visit")
+        : null;
+      if (raw === "false") return false;
+    } catch { /* ignore */ }
+    return true;
+  });
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        "jet-map-auto-recenter-on-visit",
+        String(autoRecenterOnVisit),
+      );
+    } catch { /* ignore */ }
+  }, [autoRecenterOnVisit]);
+  // Ref mirror so the (one-time-bound) geolocate handler always sees the
+  // latest value without re-subscribing.
+  const autoRecenterOnVisitRef = useRef(autoRecenterOnVisit);
+  useEffect(() => { autoRecenterOnVisitRef.current = autoRecenterOnVisit; }, [autoRecenterOnVisit]);
+
   // Consume the app-wide tracker so the map can identify the visitor's
   // location on first render instead of waiting for the built-in GeolocateControl
   // to round-trip through its own permission prompt.
