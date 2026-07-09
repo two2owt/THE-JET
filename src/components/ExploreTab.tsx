@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Input } from "./ui/input";
@@ -104,7 +104,12 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
   // Location is tracked globally (see hooks/useUserLocation + App LocationTracker)
   // so it's available whether or not the user is authenticated.
   const { location: trackedLocation, error: trackedError, status: locationStatus } = useUserLocation();
-  const userLocation = trackedLocation ? { lat: trackedLocation.lat, lng: trackedLocation.lng } : null;
+  // Memoize so the object identity only changes when coordinates actually change,
+  // preventing effects downstream from firing on every render.
+  const userLocation = useMemo(
+    () => (trackedLocation ? { lat: trackedLocation.lat, lng: trackedLocation.lng } : null),
+    [trackedLocation?.lat, trackedLocation?.lng]
+  );
   const locationError = trackedError;
   const locationDenied = locationStatus === "denied" || locationStatus === "unsupported";
   const [user, setUser] = useState<User | null>(null);
