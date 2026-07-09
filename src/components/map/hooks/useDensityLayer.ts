@@ -89,7 +89,19 @@ export const useDensityLayer = ({
       }
     }
 
-    mapRef.current.addLayer({
+    // Wrap addLayer in a helper so a "layer already exists" race between
+    // rebuilds (again, common while the time-lapse hourly data stream
+    // updates 24× in quick succession) can't tear the map down.
+    const safeAddLayer = (spec: any) => {
+      try {
+        if (mapRef.current?.getLayer(spec.id)) return;
+        mapRef.current.addLayer(spec);
+      } catch (err) {
+        console.warn(`Density layer add skipped (${spec.id}):`, err);
+      }
+    };
+
+    safeAddLayer({
       id: layerId,
       type: 'heatmap',
       source: sourceId,
@@ -156,7 +168,7 @@ export const useDensityLayer = ({
       } as any,
     });
 
-    mapRef.current.addLayer({
+    safeAddLayer({
       id: `${layerId}-point`,
       type: 'circle',
       source: sourceId,
@@ -195,7 +207,7 @@ export const useDensityLayer = ({
       } as any,
     });
 
-    mapRef.current.addLayer({
+    safeAddLayer({
       id: `${layerId}-glow`,
       type: 'circle',
       source: sourceId,
