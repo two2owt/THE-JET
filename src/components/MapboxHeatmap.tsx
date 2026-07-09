@@ -3519,12 +3519,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           return (
             <div
               style={{
-                width: '200px',
+                width: isDesktopXL ? '300px' : isDesktopWide ? '260px' : '220px',
                 contain: 'layout style',
                 overflow: 'hidden',
                 transition:
                   'max-height 300ms ease-out, opacity 300ms ease-out, margin-bottom 300ms ease-out',
-                maxHeight: !controlsCollapsed ? '600px' : '0px',
+                maxHeight: !controlsCollapsed ? (isDesktopWide ? '720px' : '620px') : '0px',
                 opacity: !controlsCollapsed ? 1 : 0,
                 marginBottom: !controlsCollapsed ? '8px' : '0px',
               }}
