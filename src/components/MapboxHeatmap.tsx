@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { storeLastKnownLocation } from "@/lib/tile-prefetch";
 import type * as MapboxGL from "mapbox-gl";
+import {
+  LAYER_KEYS as SHARED_LAYER_KEYS,
+  readLayerState,
+  clearPersistedLayerState,
+} from "@/components/map/layerPersistence";
 
 // Type alias for the mapbox-gl default export
 type MapboxGLModule = typeof import("mapbox-gl").default;
