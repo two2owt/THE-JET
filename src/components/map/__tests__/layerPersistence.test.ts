@@ -4,6 +4,8 @@ import {
   clearPersistedLayerState,
   clearPersistedLayerUrl,
   LAYER_URL_PARAMS,
+  parseLayersParam,
+  serializeLayersParam,
   readLayerState,
 } from "../layerPersistence";
 
@@ -194,6 +196,109 @@ describe("layer persistence contract", () => {
       });
 
       expect(readLayerState("density", "?layers=density", false)).toBe(true);
+    });
+  });
+
+  describe("parseLayersParam — malformed / adversarial `?layers=` inputs", () => {
+    it("returns null when the param is entirely absent", () => {
+      expect(parseLayersParam("")).toBeNull();
+      expect(parseLayersParam("?other=1")).toBeNull();
+    });
+
+    it("returns an empty set when the param is present but empty", () => {
+      const s = parseLayersParam("?layers=");
+      expect(s).not.toBeNull();
+      expect(s!.size).toBe(0);
+    });
+
+    it("normalizes case", () => {
+      const s = parseLayersParam("?layers=DENSITY,Paths");
+      expect(s!.has("density")).toBe(true);
+      expect(s!.has("paths")).toBe(true);
+    });
+
+    it("strips whitespace and empty tokens", () => {
+      const s = parseLayersParam("?layers=,density, ,paths,");
+      expect(Array.from(s!).sort()).toEqual(["density", "paths"]);
+    });
+
+    it("ignores unknown tokens without polluting the set", () => {
+      const s = parseLayersParam("?layers=density,foo,heat,paths");
+      expect(Array.from(s!).sort()).toEqual(["density", "paths"]);
+    });
+
+    it("dedupes repeated tokens", () => {
+      const s = parseLayersParam("?layers=density,density,paths,density");
+      expect(s!.size).toBe(2);
+    });
+
+    it("merges repeated `?layers=` occurrences", () => {
+      // Some deep-link generators emit each layer as its own param.
+      const s = parseLayersParam("?layers=density&layers=paths");
+      expect(Array.from(s!).sort()).toEqual(["density", "paths"]);
+    });
+
+    it("survives obviously malformed input without throwing", () => {
+      expect(() => parseLayersParam("?layers=%E0%A4%A")).not.toThrow();
+    });
+  });
+
+  describe("serializeLayersParam — canonical output", () => {
+    it("returns null when nothing is active", () => {
+      expect(serializeLayersParam([])).toBeNull();
+    });
+
+    it("emits layers in a fixed order regardless of input order", () => {
+      expect(serializeLayersParam(["paths", "density"])).toBe("density,paths");
+      expect(serializeLayersParam(["stats", "parking", "density", "paths"]))
+        .toBe("density,paths,parking,stats");
+    });
+
+    it("dedupes repeated layers", () => {
+      expect(serializeLayersParam(["density", "density", "paths"]))
+        .toBe("density,paths");
+    });
+
+    it("is idempotent: parse ∘ serialize is a no-op on canonical form", () => {
+      const cases: Array<["density"[] | "paths"[] | ("density" | "paths")[]]> = [
+        [["density"]],
+        [["paths"]],
+        [["density", "paths"]],
+      ];
+      for (const [input] of cases) {
+        const serialized = serializeLayersParam(input)!;
+        const parsed = parseLayersParam(`?layers=${serialized}`)!;
+        expect(serializeLayersParam(parsed)).toBe(serialized);
+      }
+    });
+  });
+
+  describe("UI-vs-URL desync scenarios (readLayerState against messy URLs)", () => {
+    beforeEach(() => localStorage.clear());
+
+    it("enables the correct toggles when URL is uppercase / reordered", () => {
+      expect(readLayerState("density", "?layers=PATHS,DENSITY", false)).toBe(true);
+      expect(readLayerState("paths", "?layers=PATHS,DENSITY", false)).toBe(true);
+    });
+
+    it("never enables a toggle that isn't in KNOWN_LAYERS", () => {
+      // If some future / typo'd token slips into the URL, the UI must not
+      // flip on an unrelated toggle or crash.
+      expect(readLayerState("density", "?layers=heat,foo,bar", false)).toBe(false);
+      expect(readLayerState("paths", "?layers=heat,foo,bar", false)).toBe(false);
+    });
+
+    it("empty `?layers=` doesn't override persisted storage", () => {
+      // `layers=` present-but-empty means "URL has no opinion" — the reader
+      // should still respect persisted storage instead of forcing off.
+      // (Storage says paths=true; URL is empty; result must be true.)
+      localStorage.setItem(LAYER_KEYS.paths, "true");
+      expect(readLayerState("paths", "?layers=", false)).toBe(true);
+    });
+
+    it("repeated `?layers=` occurrences enable every listed layer", () => {
+      expect(readLayerState("density", "?layers=density&layers=paths", false)).toBe(true);
+      expect(readLayerState("paths", "?layers=density&layers=paths", false)).toBe(true);
     });
   });
 });
