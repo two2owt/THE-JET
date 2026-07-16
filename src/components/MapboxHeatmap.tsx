@@ -711,9 +711,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     triggerHaptic('medium');
 
     // Clear persisted layer toggles
-    Object.values(LAYER_KEYS).forEach((key) => {
-      try { localStorage.removeItem(key); } catch { /* ignore */ }
-    });
+    clearPersistedLayerState();
 
     // Clear persisted filter / time-lapse settings
     Object.values(FILTER_KEYS).forEach((key) => {
