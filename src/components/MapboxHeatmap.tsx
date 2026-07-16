@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { storeLastKnownLocation } from "@/lib/tile-prefetch";
 import type * as MapboxGL from "mapbox-gl";
+import {
+  LAYER_KEYS as SHARED_LAYER_KEYS,
+  readLayerState,
+  clearPersistedLayerState,
+} from "@/components/map/layerPersistence";
 
 // Type alias for the mapbox-gl default export
 type MapboxGLModule = typeof import("mapbox-gl").default;
@@ -251,14 +256,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Layer persistence helpers (URL params take priority, localStorage fallback).
   // Unknown keys in the URL are ignored; any layer missing from the URL falls
   // back to localStorage, then to the hard-coded default below.
-  const LAYER_KEYS = {
-    density: "jet-map-layer-density",
-    paths: "jet-map-layer-paths",
-    parking: "jet-map-layer-parking",
-    stats: "jet-map-layer-stats",
-  } as const;
+  const LAYER_KEYS = SHARED_LAYER_KEYS;
   type LayerName = keyof typeof LAYER_KEYS;
-  const KNOWN_LAYERS = new Set<LayerName>(Object.keys(LAYER_KEYS) as LayerName[]);
 
   // Filter / time-lapse localStorage keys
   const FILTER_KEYS = {
@@ -278,29 +277,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const LEGACY_SPEEDS = new Set<number>([0.5, 1, 2]);
   const clampNumber = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 
-  const getLayerState = (layer: LayerName, fallback: boolean): boolean => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const layers = params.get("layers");
-      if (layers !== null) {
-        const tokens = layers
-          .split(",")
-          .map((s) => s.trim().toLowerCase())
-          .filter((s) => KNOWN_LAYERS.has(s as LayerName)) as LayerName[];
-        // URL is authoritative only for layers it mentions; for layers it
-        // omits we still fall back to localStorage / defaults below.
-        if (tokens.includes(layer)) return true;
-      }
-    } catch {
-      // ignore
-    }
-    try {
-      const raw = localStorage.getItem(LAYER_KEYS[layer]);
-      return raw !== null ? raw === "true" : fallback;
-    } catch {
-      return fallback;
-    }
-  };
+  const getLayerState = (layer: LayerName, fallback: boolean): boolean =>
+    readLayerState(layer, window.location.search, fallback);
 
   const getPersistedTimeFilter = (
     key: string,
@@ -733,9 +711,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     triggerHaptic('medium');
 
     // Clear persisted layer toggles
-    Object.values(LAYER_KEYS).forEach((key) => {
-      try { localStorage.removeItem(key); } catch { /* ignore */ }
-    });
+    clearPersistedLayerState();
 
     // Clear persisted filter / time-lapse settings
     Object.values(FILTER_KEYS).forEach((key) => {
