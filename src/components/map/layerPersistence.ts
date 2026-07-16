@@ -20,6 +20,73 @@ export const KNOWN_LAYERS = new Set<LayerName>(
 );
 
 /**
+ * Canonical order for serializing `?layers=`. Fixed so that toggling the
+ * same set on/off in any sequence always produces the same URL string —
+ * the writer's "did URL change?" check relies on this to avoid ping-ponging
+ * `replaceState` calls and to keep browser history stable.
+ */
+export const LAYER_SERIALIZE_ORDER: readonly LayerName[] = [
+  "density",
+  "paths",
+  "parking",
+  "stats",
+];
+
+/**
+ * Parse `?layers=` into a normalized set of known layers.
+ *
+ * Hardened against every real-world way this param can arrive malformed:
+ *   - Missing / empty param → empty set (caller falls back to storage).
+ *   - Repeated occurrences (`?layers=density&layers=paths`) → merged.
+ *   - Case variance (`DENSITY`, `Paths`) → lowercased.
+ *   - Whitespace & empty tokens (`,density, ,paths,`) → trimmed / dropped.
+ *   - Unknown tokens (`foo`, `heat`) → ignored, never surfaced to the UI.
+ *   - Duplicate tokens → deduped by Set membership.
+ *   - Malformed query strings → caught, empty set returned.
+ *
+ * Returns `null` when the `layers` param is absent entirely, which the
+ * reader uses to distinguish "URL says nothing, defer to storage" from
+ * "URL explicitly says no layers".
+ */
+export function parseLayersParam(
+  urlSearch: string,
+): Set<LayerName> | null {
+  try {
+    const params = new URLSearchParams(urlSearch);
+    if (!params.has("layers")) return null;
+    const raw = params.getAll("layers").join(",");
+    const active = new Set<LayerName>();
+    for (const token of raw.split(",")) {
+      const t = token.trim().toLowerCase();
+      if (t && KNOWN_LAYERS.has(t as LayerName)) {
+        active.add(t as LayerName);
+      }
+    }
+    return active;
+  } catch {
+    return new Set<LayerName>();
+  }
+}
+
+/**
+ * Serialize an active-layer set into the canonical `?layers=` value, or
+ * `null` if nothing is active (caller should `delete("layers")`).
+ *
+ * Order is fixed (`LAYER_SERIALIZE_ORDER`) and duplicates are dropped, so
+ * writing then re-parsing is idempotent — no infinite `replaceState` loops.
+ */
+export function serializeLayersParam(
+  active: Iterable<LayerName>,
+): string | null {
+  const set = new Set<LayerName>();
+  for (const layer of active) {
+    if (KNOWN_LAYERS.has(layer)) set.add(layer);
+  }
+  if (set.size === 0) return null;
+  return LAYER_SERIALIZE_ORDER.filter((l) => set.has(l)).join(",");
+}
+
+/**
  * Resolve whether a given layer should be initially active.
  *
  * Priority:
@@ -34,19 +101,8 @@ export function readLayerState(
   urlSearch: string,
   fallback: boolean,
 ): boolean {
-  try {
-    const params = new URLSearchParams(urlSearch);
-    const layers = params.get("layers");
-    if (layers !== null) {
-      const tokens = layers
-        .split(",")
-        .map((s) => s.trim().toLowerCase())
-        .filter((s) => KNOWN_LAYERS.has(s as LayerName)) as LayerName[];
-      if (tokens.includes(layer)) return true;
-    }
-  } catch {
-    // ignore malformed URL params
-  }
+  const parsed = parseLayersParam(urlSearch);
+  if (parsed && parsed.has(layer)) return true;
   try {
     const raw = localStorage.getItem(LAYER_KEYS[layer]);
     return raw !== null ? raw === "true" : fallback;
