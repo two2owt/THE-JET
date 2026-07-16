@@ -5,6 +5,7 @@ import {
   LAYER_KEYS as SHARED_LAYER_KEYS,
   readLayerState,
   clearPersistedLayerState,
+  clearPersistedLayerUrl,
 } from "@/components/map/layerPersistence";
 
 // Type alias for the mapbox-gl default export
