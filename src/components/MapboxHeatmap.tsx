@@ -711,10 +711,19 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const handleResetToDefaults = useCallback(() => {
     triggerHaptic('medium');
 
-    // Clear persisted layer toggles
+    // Order matters: wipe every source of persisted state BEFORE resetting
+    // React state. If we reset state first, the persistence effects fire
+    // with the new defaults and race with the localStorage clear — and any
+    // early return / thrown error would leave stale entries behind that
+    // would resurrect on the next refresh.
+    //
+    // 1. URL first — it has read-priority over localStorage on next boot.
+    clearPersistedLayerUrl();
+
+    // 2. Persisted layer toggles.
     clearPersistedLayerState();
 
-    // Clear persisted filter / time-lapse settings
+    // 3. Persisted filter / time-lapse settings.
     Object.values(FILTER_KEYS).forEach((key) => {
       try { localStorage.removeItem(key); } catch { /* ignore */ }
     });
@@ -742,18 +751,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     if (timelapse.isPlaying) timelapse.pause();
     timelapse.setSpeed(1);
     timelapse.setHour(new Date().getHours());
-
-    // Strip layers and filters from URL
-    try {
-      const params = new URLSearchParams(window.location.search);
-      params.delete('layers');
-      params.delete('time');
-      params.delete('day');
-      params.delete('pathTime');
-      const search = params.toString();
-      const newUrl = search ? `${window.location.pathname}?${search}` : window.location.pathname;
-      window.history.replaceState(null, '', newUrl);
-    } catch { /* ignore */ }
   }, [timelapse]);
 
   // ── Live Stats quick actions ──────────────────────────────────────────
