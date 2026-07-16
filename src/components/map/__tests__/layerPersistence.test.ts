@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   LAYER_KEYS,
   clearPersistedLayerState,
+  clearPersistedLayerUrl,
+  LAYER_URL_PARAMS,
   readLayerState,
 } from "../layerPersistence";
 
@@ -128,6 +130,45 @@ describe("layer persistence contract", () => {
 
       expect(readLayerState("density", "", false)).toBe(false);
       expect(readLayerState("paths", "", false)).toBe(false);
+    });
+
+    it("clearPersistedLayerUrl strips every layer/filter query param", () => {
+      window.history.replaceState(
+        null,
+        "",
+        "/?layers=density,paths&time=today&day=3&pathTime=this_week&keep=me",
+      );
+
+      const ok = clearPersistedLayerUrl();
+      expect(ok).toBe(true);
+
+      const params = new URLSearchParams(window.location.search);
+      LAYER_URL_PARAMS.forEach((key) => {
+        expect(params.has(key)).toBe(false);
+      });
+      // Unrelated params are preserved.
+      expect(params.get("keep")).toBe("me");
+    });
+
+    it("clearPersistedLayerUrl leaves a bare path when it was the only source", () => {
+      window.history.replaceState(null, "", "/?layers=density,paths");
+      clearPersistedLayerUrl();
+      expect(window.location.search).toBe("");
+    });
+
+    it("Reset (URL + storage) leaves the reader returning defaults on next boot", () => {
+      // Simulate the exact starting state before a Reset click.
+      window.history.replaceState(null, "", "/?layers=density,paths");
+      localStorage.setItem(LAYER_KEYS.density, "true");
+      localStorage.setItem(LAYER_KEYS.paths, "true");
+
+      // Same order the component now uses: URL first, then storage.
+      clearPersistedLayerUrl();
+      clearPersistedLayerState();
+
+      // Simulate a page refresh — reader consults fresh URL + storage.
+      expect(readLayerState("density", window.location.search, false)).toBe(false);
+      expect(readLayerState("paths", window.location.search, false)).toBe(false);
     });
   });
 
