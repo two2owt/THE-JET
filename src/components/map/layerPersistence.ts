@@ -61,3 +61,44 @@ export function clearPersistedLayerState(): void {
     try { localStorage.removeItem(key); } catch { /* ignore */ }
   });
 }
+
+/**
+ * URL query params that seed layer/filter state on load. Reset must strip
+ * every one of them, otherwise a refresh restores the toggles the user
+ * just cleared.
+ */
+export const LAYER_URL_PARAMS = [
+  "layers",
+  "time",
+  "day",
+  "pathTime",
+] as const;
+
+/**
+ * Strip every persisted layer/filter query param from the current URL via
+ * `history.replaceState` (no navigation). Returns `true` on success so the
+ * caller can verify the URL is clean before touching component state.
+ */
+export function clearPersistedLayerUrl(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const params = new URLSearchParams(window.location.search);
+    let mutated = false;
+    LAYER_URL_PARAMS.forEach((key) => {
+      if (params.has(key)) {
+        params.delete(key);
+        mutated = true;
+      }
+    });
+    // Always replaceState — even when nothing was removed — so callers get
+    // a consistent "URL is now canonical" postcondition.
+    const search = params.toString();
+    const newUrl = search
+      ? `${window.location.pathname}?${search}`
+      : window.location.pathname;
+    window.history.replaceState(null, "", newUrl);
+    return mutated || true;
+  } catch {
+    return false;
+  }
+}
