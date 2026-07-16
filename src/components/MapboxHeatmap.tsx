@@ -6,6 +6,7 @@ import {
   readLayerState,
   clearPersistedLayerState,
   clearPersistedLayerUrl,
+  serializeLayersParam,
 } from "@/components/map/layerPersistence";
 
 // Type alias for the mapbox-gl default export
@@ -417,21 +418,20 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const syncUrlParams = useCallback(() => {
     const params = new URLSearchParams(window.location.search);
 
-    // Layers
+    // Layers — build the active set from component state and serialize via
+    // the shared canonical order so writing then re-parsing is idempotent.
+    // Also collapses any repeated `?layers=` entries (browsers or old deep
+    // links can produce them) into a single canonical param.
     const active: LayerName[] = [];
     if (showDensityLayer) active.push("density");
     if (showMovementPaths) active.push("paths");
     if (showParking) active.push("parking");
     if (showLiveStats) active.push("stats");
-    const currentLayers = params.get("layers");
-    const nextLayers = active.length > 0 ? active.join(",") : null;
-    if (nextLayers !== currentLayers) {
-      if (nextLayers) {
-        params.set("layers", nextLayers);
-      } else {
-        params.delete("layers");
-      }
-    }
+    const nextLayers = serializeLayersParam(active);
+    // `URLSearchParams.delete` removes every occurrence, so this is safe
+    // even when the URL has multiple `layers` params.
+    params.delete("layers");
+    if (nextLayers) params.set("layers", nextLayers);
 
     // Filters
     if (timeFilter !== 'all') params.set("time", timeFilter);
