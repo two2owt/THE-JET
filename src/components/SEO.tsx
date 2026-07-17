@@ -5,6 +5,10 @@ interface SEOProps {
   description: string;
   path: string;
   ogImage?: string;
+  /** Set true on non-public routes (admin, onboarding, verification, 404) so crawlers skip them. */
+  noindex?: boolean;
+  /** Optional JSON-LD structured data (Article, LocalBusiness, Event, Offer, etc.). */
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
 const SITE_URL = "https://www.jet-around.com";
@@ -15,8 +19,9 @@ const DEFAULT_OG = "https://www.jet-around.com/pwa-512x512.png";
  * for the route. Falls back to sitewide defaults in index.html for crawlers
  * that don't execute JS.
  */
-export function SEO({ title, description, path, ogImage = DEFAULT_OG }: SEOProps) {
+export function SEO({ title, description, path, ogImage = DEFAULT_OG, noindex, jsonLd }: SEOProps) {
   const url = `${SITE_URL}${path}`;
+  const jsonLdArray = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
   return (
     <Helmet>
       <title>{title}</title>
@@ -29,6 +34,10 @@ export function SEO({ title, description, path, ogImage = DEFAULT_OG }: SEOProps
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={ogImage} />
+      {noindex && <meta name="robots" content="noindex, nofollow" />}
+      {jsonLdArray.map((data, i) => (
+        <script key={i} type="application/ld+json">{JSON.stringify(data)}</script>
+      ))}
     </Helmet>
   );
 }

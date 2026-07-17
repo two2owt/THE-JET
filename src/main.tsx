@@ -143,6 +143,8 @@ function setupSentryListeners() {
     window.addEventListener(event, loadSentry, { once: true, passive: true });
   });
   
-  // Extended fallback - 30 seconds (was 15s)
-  setTimeout(loadSentry, 30000);
+  // Fallback so Sentry initializes even on sessions with zero interaction.
+  // Shortened from 30s → 8s to narrow the "crashed before Sentry loaded"
+  // blind window while still landing after LCP + hydration on slow devices.
+  setTimeout(loadSentry, 8000);
 }

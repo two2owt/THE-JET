@@ -2,6 +2,7 @@ import { useLocation } from "react-router";
 import { useEffect } from "react";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SEO } from "@/components/SEO";
 
 const NotFound = () => {
   const location = useLocation();
@@ -12,6 +13,12 @@ const NotFound = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 sm:px-6 md:px-8 lg:px-10">
+      <SEO
+        title="Page not found — JET"
+        description="This page doesn't exist on JET. Head back to the map to discover trending Charlotte venues and deals."
+        path={location.pathname}
+        noindex
+      />
       <div className="text-center space-y-6">
         <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-primary/15 to-accent/15 flex items-center justify-center ring-1 ring-primary/20">
           <Sparkles className="w-10 h-10 text-primary" />

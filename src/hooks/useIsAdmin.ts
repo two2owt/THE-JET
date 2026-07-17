@@ -16,12 +16,13 @@ export const useIsAdmin = () => {
         }
 
         // Check admin role from database
+        // maybeSingle avoids PostgREST throwing "no rows" for every non-admin.
         const { data: roles } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', user.id)
           .eq('role', 'admin')
-          .single();
+          .maybeSingle();
 
         setIsAdmin(!!roles);
       } catch (error) {
