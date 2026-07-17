@@ -33,17 +33,27 @@ export const usePushNotifications = () => {
   const persistToken = useCallback(async (deviceToken: string, platform: "ios" | "android") => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    await supabase.from("push_subscriptions").upsert(
-      {
+    // No unique constraint on `endpoint` — do a manual find-or-update.
+    const { data: existing } = await supabase
+      .from("push_subscriptions")
+      .select("id")
+      .eq("endpoint", deviceToken)
+      .maybeSingle();
+    if (existing?.id) {
+      await supabase
+        .from("push_subscriptions")
+        .update({ user_id: user.id, platform, active: true })
+        .eq("id", existing.id);
+    } else {
+      await supabase.from("push_subscriptions").insert({
         user_id: user.id,
         endpoint: deviceToken,
         p256dh_key: "native",
         auth_key: "native",
         platform,
         active: true,
-      },
-      { onConflict: "endpoint" },
-    );
+      });
+    }
   }, []);
 
   const initializePushNotifications = useCallback(async () => {
