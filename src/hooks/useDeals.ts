@@ -288,10 +288,25 @@ export const useDeals = (enablePreferenceFilter: boolean = false, enabled: boole
     const timer = setTimeout(() => {
       loadDeals();
     }, 100);
-    
-    const cleanup = () => clearTimeout(timer);
 
-    // Set up real-time subscription
+    // Coalesce bursts of realtime deal changes into a single trailing refetch
+    // so a wave of writes doesn't cause N full-table reloads per client.
+    let debounceHandle: ReturnType<typeof setTimeout> | null = null;
+    const REALTIME_DEBOUNCE_MS = 1500;
+    const scheduleRefetch = () => {
+      if (debounceHandle) clearTimeout(debounceHandle);
+      debounceHandle = setTimeout(() => {
+        debounceHandle = null;
+        loadDeals();
+      }, REALTIME_DEBOUNCE_MS);
+    };
+
+    const cleanup = () => {
+      clearTimeout(timer);
+      if (debounceHandle) clearTimeout(debounceHandle);
+    };
+
+    // Set up real-time subscription, scoped to active rows to reduce fan-out.
     const channel = supabase
       .channel('deals-changes')
       .on(
@@ -299,11 +314,10 @@ export const useDeals = (enablePreferenceFilter: boolean = false, enabled: boole
         {
           event: '*',
           schema: 'public',
-          table: 'deals'
+          table: 'deals',
+          filter: 'active=eq.true',
         },
-        () => {
-          loadDeals();
-        }
+        scheduleRefetch
       )
       .subscribe();
 

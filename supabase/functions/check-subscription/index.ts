@@ -93,6 +93,34 @@ Deno.serve(async (req) => {
       logStep("No active subscription found");
     }
 
+    // Mirror the truth into public.subscribers so the app can read it
+    // without going back to Stripe on every mount. The Stripe webhook is
+    // the primary writer; this keeps things consistent when the webhook
+    // hasn't fired yet (e.g. right after a fresh checkout).
+    try {
+      await supabaseClient.from("subscribers").upsert(
+        {
+          user_id: user.id,
+          email: user.email,
+          stripe_customer_id: customerId,
+          stripe_subscription_id: hasActiveSub ? subscriptions.data[0].id : null,
+          product_id: productId,
+          tier,
+          subscribed: hasActiveSub,
+          subscription_end: subscriptionEnd,
+          cancel_at_period_end: hasActiveSub
+            ? subscriptions.data[0].cancel_at_period_end
+            : false,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id" },
+      );
+    } catch (mirrorError) {
+      logStep("subscribers_mirror_failed", {
+        message: mirrorError instanceof Error ? mirrorError.message : String(mirrorError),
+      });
+    }
+
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
       tier,
