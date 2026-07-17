@@ -65,11 +65,9 @@ self.addEventListener('notificationclick', function(event) {
   // deal sheet with parking, share and directions wired up.
   if (notificationData.dealId) {
     urlToOpen = `/?deal=${encodeURIComponent(notificationData.dealId)}`;
-    if (notificationData.venueName) {
-      urlToOpen += `&venue=${encodeURIComponent(notificationData.venueName)}`;
+    if (notificationData.venueId) {
+      urlToOpen += `&venue=${encodeURIComponent(notificationData.venueId)}`;
     }
-  } else if (notificationData.venueName) {
-    urlToOpen = `/?venue=${encodeURIComponent(notificationData.venueName)}`;
   } else if (notificationData.venueId) {
     urlToOpen = `/?venue=${encodeURIComponent(notificationData.venueId)}`;
   }
