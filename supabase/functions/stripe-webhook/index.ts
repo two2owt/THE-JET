@@ -69,12 +69,12 @@ async function resolveUserIdForCustomer(
   }
   if (!email) return { userId: null, email: null };
 
-  const { data: userRow } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("email", email)
-    .maybeSingle();
-  return { userId: userRow?.id ?? null, email };
+  const { data: userId, error: rpcError } = await supabase.rpc(
+    "get_user_id_by_email",
+    { _email: email },
+  );
+  if (rpcError) log("get_user_id_by_email_failed", { err: rpcError.message });
+  return { userId: (userId as string | null) ?? null, email };
 }
 
 async function upsertFromSubscription(sub: Stripe.Subscription) {
