@@ -17,6 +17,7 @@ interface MerchantNotificationPayload {
   title: string;
   body: string;
   venue_name?: string;
+  venue_id?: string;
   deal_id?: string;
   merchant_id?: string;
   neighborhood_id?: string;
@@ -109,12 +110,15 @@ Deno.serve(async (req) => {
       tag: payload.deal_id ? `deal-${payload.deal_id}` : `jet-${Date.now()}`,
       data: {
         dealId: payload.deal_id ?? "",
+        venueId: payload.venue_id ?? "",
         venueName: payload.venue_name ?? "",
         url:
           payload.url ??
           (payload.deal_id
             ? `https://jet-around.com/?deal=${payload.deal_id}`
-            : "https://jet-around.com"),
+            : payload.venue_id
+              ? `https://jet-around.com/?venue=${encodeURIComponent(payload.venue_id)}`
+              : "https://jet-around.com"),
       },
     });
 
