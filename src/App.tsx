@@ -10,6 +10,7 @@ import { AppShell } from "@/components/AppShell";
 import { PageLayout } from "@/components/PageLayout";
 import type { NavTab } from "@/hooks/useBottomNavigation";
 import { useNativeDeepLinking } from "@/hooks/useNativeDeepLinking";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import {
   FavoritesPageSkeleton,
   SocialPageSkeleton,
@@ -81,6 +82,8 @@ const AppLayout = memo(function AppLayout() {
   // (Universal Links, App Links, custom scheme) share the same
   // ?venue / ?deal / ?layers routing used on the web.
   useNativeDeepLinking();
+  // Native (iOS/Android) push registration + tap routing. No-op on web.
+  usePushNotifications();
   return (
     <AppShell>
       <Sonner />

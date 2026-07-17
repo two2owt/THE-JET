@@ -22,6 +22,8 @@ interface MerchantNotificationPayload {
   merchant_id?: string;
   neighborhood_id?: string;
   url?: string;
+  /** Canonical layer string (e.g. "density,paths") to restore heatmap state on tap. */
+  layers?: string;
 }
 
 Deno.serve(async (req) => {
@@ -69,7 +71,7 @@ Deno.serve(async (req) => {
 
     let query = supabase
       .from("push_subscriptions")
-      .select("id, user_id, endpoint, p256dh_key, auth_key")
+      .select("id, user_id, endpoint, p256dh_key, auth_key, platform")
       .eq("active", true);
 
     if (payload.neighborhood_id) {
@@ -102,25 +104,55 @@ Deno.serve(async (req) => {
       vapidPrivateKey
     );
 
+    // Shared data payload — mirrors src/lib/pushDeepLink.ts so web SW and
+    // native tap handler both route to the same in-app state.
+    const dataPayload: Record<string, string> = {
+      dealId: payload.deal_id ?? "",
+      venueId: payload.venue_id ?? "",
+      venueName: payload.venue_name ?? "",
+      layers: payload.layers ?? "",
+      url:
+        payload.url ??
+        (payload.deal_id
+          ? `https://jet-around.com/?deal=${payload.deal_id}`
+          : payload.venue_id
+            ? `https://jet-around.com/?venue=${encodeURIComponent(payload.venue_id)}`
+            : "https://jet-around.com"),
+    };
     const notifBody = JSON.stringify({
       title: payload.title,
       body: payload.body,
       icon: "/pwa-192x192.png",
       badge: "/pwa-192x192.png",
       tag: payload.deal_id ? `deal-${payload.deal_id}` : `jet-${Date.now()}`,
-      data: {
-        dealId: payload.deal_id ?? "",
-        venueId: payload.venue_id ?? "",
-        venueName: payload.venue_name ?? "",
-        url:
-          payload.url ??
-          (payload.deal_id
-            ? `https://jet-around.com/?deal=${payload.deal_id}`
-            : payload.venue_id
-              ? `https://jet-around.com/?venue=${encodeURIComponent(payload.venue_id)}`
-              : "https://jet-around.com"),
-      },
+      data: dataPayload,
     });
+
+    const fcmServerKey = Deno.env.get("FCM_SERVER_KEY");
+    async function sendFcm(deviceToken: string) {
+      if (!fcmServerKey) throw new Error("FCM_SERVER_KEY missing");
+      const res = await fetch("https://fcm.googleapis.com/fcm/send", {
+        method: "POST",
+        headers: {
+          Authorization: `key=${fcmServerKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          to: deviceToken,
+          notification: { title: payload.title, body: payload.body },
+          data: dataPayload,
+          priority: "high",
+        }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || json.failure > 0) {
+        const reason = json?.results?.[0]?.error;
+        const err = new Error(`fcm ${res.status} ${reason ?? ""}`);
+        // @ts-expect-error tag error for cleanup
+        err.fcmReason = reason;
+        throw err;
+      }
+    }
 
     let sent = 0;
     const invalid: string[] = [];
@@ -128,24 +160,34 @@ Deno.serve(async (req) => {
     await Promise.allSettled(
       subs.map(async (sub) => {
         try {
-          await webpush.sendNotification(
-            {
-              endpoint: sub.endpoint,
-              keys: { p256dh: sub.p256dh_key, auth: sub.auth_key },
-            },
-            notifBody
-          );
+          if (sub.platform === "ios" || sub.platform === "android") {
+            await sendFcm(sub.endpoint);
+          } else {
+            await webpush.sendNotification(
+              {
+                endpoint: sub.endpoint,
+                keys: { p256dh: sub.p256dh_key, auth: sub.auth_key },
+              },
+              notifBody
+            );
+          }
           sent++;
           await supabase.from("notification_logs").insert({
             user_id: sub.user_id,
             title: payload.title,
             message: payload.body,
-            notification_type: "web_push",
+            notification_type: sub.platform === "ios" || sub.platform === "android" ? "native_push" : "web_push",
             deal_id: payload.deal_id ?? null,
             neighborhood_id: payload.neighborhood_id ?? null,
           });
         } catch (err: any) {
-          if (err?.statusCode === 404 || err?.statusCode === 410) {
+          const reason = err?.fcmReason ?? "";
+          if (
+            err?.statusCode === 404 ||
+            err?.statusCode === 410 ||
+            reason === "NotRegistered" ||
+            reason === "InvalidRegistration"
+          ) {
             invalid.push(sub.id);
           } else {
             console.error("push error:", err?.message ?? err);
