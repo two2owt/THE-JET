@@ -1,6 +1,7 @@
 import { Component, ErrorInfo, ReactNode } from "react";
 import { Button } from "./ui/button";
 import { AlertTriangle, RefreshCw } from "lucide-react";
+import { getSentry } from "@/lib/sentry";
 
 interface Props {
   children: ReactNode;
@@ -23,6 +24,23 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Uncaught error:", error, errorInfo);
+    // Forward to Sentry so boundary-caught crashes are visible in prod monitoring.
+    // getSentry() returns null in dev — guard both sync and async paths.
+    try {
+      const maybe = getSentry();
+      Promise.resolve(maybe)
+        .then((Sentry) => {
+          if (!Sentry) return;
+          Sentry.captureException(error, {
+            contexts: { react: { componentStack: errorInfo.componentStack } },
+          });
+        })
+        .catch(() => {
+          /* observability best-effort */
+        });
+    } catch {
+      /* observability best-effort */
+    }
   }
 
   private handleReset = () => {

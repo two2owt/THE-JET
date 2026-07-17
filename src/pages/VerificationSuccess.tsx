@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { AuthPWAInstallPromptWrapper } from "@/components/AuthPWAInstallPromptWrapper";
 import { useHeaderConfig } from "@/contexts/HeaderContext";
 import { buildAuthRedirectUrl } from "@/lib/utils";
+import { SEO } from "@/components/SEO";
 
 const RESEND_EMAIL_KEY = "jet_verification_email";
 const WELCOME_SENT_PREFIX = "jet_welcome_sent:";
@@ -258,6 +259,12 @@ export default function VerificationSuccess() {
 
   return (
     <div className="flex-1 flex items-center justify-center bg-background overflow-y-auto px-4 sm:px-6 md:px-8 lg:px-10" style={{ WebkitOverflowScrolling: 'touch' }}>
+      <SEO
+        title="Email verified — JET"
+        description="Your JET email is verified. Sign in to start discovering trending venues and deals."
+        path="/verification-success"
+        noindex
+      />
       <div className="max-w-md w-full text-center space-y-6">
         <div className="flex justify-center">
           <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center ring-2 ring-primary/30 shadow-glow">

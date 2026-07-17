@@ -13,6 +13,7 @@ import { Json } from "@/integrations/supabase/types";
 import jetLogo from "@/assets/jet-auth-logo.png";
 import { consumePostAuthRedirect } from "@/lib/postAuthRedirect";
 import { useAuth } from "@/contexts/AuthContext";
+import { SEO } from "@/components/SEO";
 import {
   readCachedOnboardingStatus,
   writeCachedOnboardingStatus,
@@ -390,6 +391,12 @@ const Onboarding = () => {
     <div
       className="relative flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto bg-background px-fluid-sm sm:px-fluid-md pt-[max(env(safe-area-inset-top,0px),var(--space-lg))] pb-[max(env(safe-area-inset-bottom,0px),var(--space-lg))]"
     >
+      <SEO
+        title="Set up your JET account"
+        description="Finish setting up your JET profile to see personalized deals and venues in Charlotte."
+        path="/onboarding"
+        noindex
+      />
       {/* Ambient corner glow accents */}
       <div className="pointer-events-none absolute -top-32 -left-32 h-80 w-80 rounded-full bg-primary/10 blur-[140px]" aria-hidden />
       <div className="pointer-events-none absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-primary-glow/10 blur-[140px]" aria-hidden />

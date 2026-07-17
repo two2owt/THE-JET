@@ -8,8 +8,18 @@ interface Deal {
   description: string;
 }
 
+/**
+ * Build a share URL with an optional referral attribution param so growth
+ * analytics can credit the sharer for downstream sign-ups / opens.
+ */
+const withRef = (url: string, referrerId?: string | null) => {
+  if (!referrerId) return url;
+  const sep = url.includes("?") ? "&" : "?";
+  return `${url}${sep}ref=${encodeURIComponent(referrerId)}`;
+};
+
 export const shareDeal = async (deal: Deal, userId: string | undefined) => {
-  const shareUrl = `${window.location.origin}/?deal=${deal.id}`;
+  const shareUrl = withRef(`${window.location.origin}/?deal=${deal.id}`, userId);
   const shareText = `Check out this deal: ${deal.title} at ${deal.venue_name}`;
 
   // Track the share
@@ -52,8 +62,14 @@ export const shareDeal = async (deal: Deal, userId: string | undefined) => {
   }
 };
 
-export const shareVenue = async (venue: Pick<Venue, 'id' | 'name'>) => {
-  const shareUrl = `${window.location.origin}/?venue=${encodeURIComponent(venue.id)}`;
+export const shareVenue = async (
+  venue: Pick<Venue, 'id' | 'name'>,
+  referrerId?: string | null,
+) => {
+  const shareUrl = withRef(
+    `${window.location.origin}/?venue=${encodeURIComponent(venue.id)}`,
+    referrerId,
+  );
   const shareText = `Check out ${venue.name} on JET!`;
 
   // Use Web Share API if available
@@ -82,13 +98,20 @@ export const shareVenue = async (venue: Pick<Venue, 'id' | 'name'>) => {
   }
 };
 
-// Generate a deep link URL for a deal
-export const getDealDeepLink = (dealId: string) => {
-  return `${window.location.origin}/?deal=${dealId}`;
+// Generate a deep link URL for a deal. Optional referrerId attributes the
+// share to a specific user so ?ref= can be tracked in analytics.
+export const getDealDeepLink = (dealId: string, referrerId?: string | null) => {
+  return withRef(`${window.location.origin}/?deal=${dealId}`, referrerId);
 };
 
 // Generate a deep link URL for a venue. Uses the stable venue id so links
 // keep resolving even if the venue's display name changes.
-export const getVenueDeepLink = (venueId: string) => {
-  return `${window.location.origin}/?venue=${encodeURIComponent(venueId)}`;
+export const getVenueDeepLink = (
+  venueId: string,
+  referrerId?: string | null,
+) => {
+  return withRef(
+    `${window.location.origin}/?venue=${encodeURIComponent(venueId)}`,
+    referrerId,
+  );
 };
