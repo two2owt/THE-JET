@@ -9,6 +9,7 @@ import { NavigationShell } from "@/components/NavigationShell";
 import { AppShell } from "@/components/AppShell";
 import { PageLayout } from "@/components/PageLayout";
 import type { NavTab } from "@/hooks/useBottomNavigation";
+import { useNativeDeepLinking } from "@/hooks/useNativeDeepLinking";
 import {
   FavoritesPageSkeleton,
   SocialPageSkeleton,
@@ -76,6 +77,10 @@ const PageTracker = memo(function PageTracker() {
 
 /** Route-aware layout shell that conditionally renders Header + spacer */
 const AppLayout = memo(function AppLayout() {
+  // Wire Capacitor appUrlOpen → react-router so native deep links
+  // (Universal Links, App Links, custom scheme) share the same
+  // ?venue / ?deal / ?layers routing used on the web.
+  useNativeDeepLinking();
   return (
     <AppShell>
       <Sonner />

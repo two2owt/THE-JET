@@ -38,6 +38,11 @@ const config: CapacitorConfig = {
     contentInset: 'always',
     limitsNavigationsToAppBoundDomains: false,
     backgroundColor: '#0A0A0A',
+    // Universal Links are configured via the associated-domains entitlement
+    // in Xcode (applinks:jet-around.com). The `appUrlOpen` listener in
+    // src/hooks/useNativeDeepLinking.ts forwards the incoming URL into
+    // react-router so ?venue / ?deal / ?layers behave identically to web.
+    scheme: 'JET',
   },
   android: {
     backgroundColor: '#0A0A0A',
