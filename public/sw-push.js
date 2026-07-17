@@ -27,7 +27,8 @@ self.addEventListener('push', function(event) {
       url: data.url || data.click_action || '/',
       dealId: data.dealId || null,
       venueId: data.venueId || null,
-      venueName: data.venueName || null
+      venueName: data.venueName || null,
+      layers: data.layers || null
     },
     actions: [
       {
@@ -70,6 +71,12 @@ self.addEventListener('notificationclick', function(event) {
     }
   } else if (notificationData.venueId) {
     urlToOpen = `/?venue=${encodeURIComponent(notificationData.venueId)}`;
+  }
+
+  // Preserve heatmap layer state if the sender specified it.
+  if (notificationData.layers) {
+    const sep = urlToOpen.includes('?') ? '&' : '?';
+    urlToOpen += `${sep}layers=${encodeURIComponent(notificationData.layers)}`;
   }
 
   event.waitUntil(
