@@ -1,5 +1,11 @@
 import { test, expect, type Page } from "@playwright/test";
 
+// Mapbox + WebGL is expensive; running six map tests concurrently under
+// software WebGL (sandbox / CI) reliably starves them past the 20s UI
+// wait. Serialize this file and give each test a bit more runway.
+test.describe.configure({ mode: "serial" });
+test.setTimeout(60_000);
+
 /**
  * End-to-end coverage for `?layers=` URL parsing and toggle-UI sync.
  *
@@ -34,11 +40,20 @@ async function waitForLayersUi(page: Page) {
 }
 
 function heatmapChip(page: Page) {
-  return page.getByRole("button", { name: /(show|hide) heatmap layer/i });
+  // NOTE: use raw CSS selectors instead of getByRole. A Radix overlay
+  // (dialog/sheet) mounted elsewhere on the page can flip an ancestor
+  // to aria-hidden="true", which drops these buttons out of the AX
+  // tree and makes getByRole return zero matches even though the
+  // buttons are visible and interactive.
+  return page.locator(
+    'button[aria-label="Show heatmap layer"], button[aria-label="Hide heatmap layer"]',
+  );
 }
 
 function pathsChip(page: Page) {
-  return page.getByRole("button", { name: /(show|hide) flow paths layer/i });
+  return page.locator(
+    'button[aria-label="Show flow paths layer"], button[aria-label="Hide flow paths layer"]',
+  );
 }
 
 async function readStorage(page: Page, key: string): Promise<string | null> {
