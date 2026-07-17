@@ -1,5 +1,11 @@
 import { test, expect, type Page } from "@playwright/test";
 
+// Mapbox + WebGL is expensive; running six map tests concurrently under
+// software WebGL (sandbox / CI) reliably starves them past the 20s UI
+// wait. Serialize this file and give each test a bit more runway.
+test.describe.configure({ mode: "serial" });
+test.setTimeout(60_000);
+
 /**
  * End-to-end coverage for `?layers=` URL parsing and toggle-UI sync.
  *
