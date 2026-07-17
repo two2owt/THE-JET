@@ -40,11 +40,20 @@ async function waitForLayersUi(page: Page) {
 }
 
 function heatmapChip(page: Page) {
-  return page.getByRole("button", { name: /(show|hide) heatmap layer/i });
+  // NOTE: use raw CSS selectors instead of getByRole. A Radix overlay
+  // (dialog/sheet) mounted elsewhere on the page can flip an ancestor
+  // to aria-hidden="true", which drops these buttons out of the AX
+  // tree and makes getByRole return zero matches even though the
+  // buttons are visible and interactive.
+  return page.locator(
+    'button[aria-label="Show heatmap layer"], button[aria-label="Hide heatmap layer"]',
+  );
 }
 
 function pathsChip(page: Page) {
-  return page.getByRole("button", { name: /(show|hide) flow paths layer/i });
+  return page.locator(
+    'button[aria-label="Show flow paths layer"], button[aria-label="Hide flow paths layer"]',
+  );
 }
 
 async function readStorage(page: Page, key: string): Promise<string | null> {
