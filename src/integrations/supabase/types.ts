@@ -636,6 +636,39 @@ export type Database = {
         }
         Relationships: []
       }
+      security_finding_alerts: {
+        Row: {
+          alert_type: string
+          finding_id: string
+          id: string
+          internal_id: string
+          notified_at: string
+          scanner_name: string
+          severity: string
+          status: string
+        }
+        Insert: {
+          alert_type: string
+          finding_id: string
+          id?: string
+          internal_id: string
+          notified_at?: string
+          scanner_name: string
+          severity: string
+          status: string
+        }
+        Update: {
+          alert_type?: string
+          finding_id?: string
+          id?: string
+          internal_id?: string
+          notified_at?: string
+          scanner_name?: string
+          severity?: string
+          status?: string
+        }
+        Relationships: []
+      }
       subscribers: {
         Row: {
           cancel_at_period_end: boolean
