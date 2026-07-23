@@ -3526,8 +3526,25 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 triggerHaptic('medium');
                 const next = !showLiveStats;
                 setShowLiveStats(next);
-                if (next) setIsLoadingStats(true);
-                else setIsLoadingStats(false);
+                if (next) {
+                  setIsLoadingStats(true);
+                  // Live Stats derives its numbers from the density and
+                  // movement-paths data pipelines. Enable both so the
+                  // panel isn't populated by stale/zero series.
+                  if (!showDensityLayer) {
+                    setShowDensityLayer(true);
+                    setTimeFilter('all');
+                    setHourFilter(undefined);
+                    setDayFilter(undefined);
+                    scheduleDensityRefresh();
+                  }
+                  if (!showMovementPaths) {
+                    setShowMovementPaths(true);
+                    schedulePathsRefresh();
+                  }
+                } else {
+                  setIsLoadingStats(false);
+                }
               }}
             />
 
