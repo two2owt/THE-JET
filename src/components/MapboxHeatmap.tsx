@@ -3355,6 +3355,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 const next = !showMovementPaths;
                 setShowMovementPaths(next);
                 if (next) {
+                  // Flow Paths and Time-lapse compete for the same visual
+                  // channel (animated motion). If Time-lapse is running,
+                  // stop it so the paths can breathe.
+                  if (timelapseMode) setTimelapseMode(false);
                   schedulePathsRefresh();
                 } else {
                   clearPathsRefreshTimer();
