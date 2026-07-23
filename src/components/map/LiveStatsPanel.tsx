@@ -182,7 +182,7 @@ export const LiveStatsPanel = ({
       </div>
 
       {isLoading ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--live-stats-row-v-gap, 8px)" }}>
           {[0, 1].map((i) => (
             <div
               key={i}
@@ -191,6 +191,7 @@ export const LiveStatsPanel = ({
                 alignItems: "center",
                 justifyContent: "space-between",
                 gap: "var(--live-stats-row-gap)",
+                paddingBlock: "2px",
               }}
             >
               <span
@@ -217,7 +218,7 @@ export const LiveStatsPanel = ({
           ))}
         </div>
       ) : rows.length > 0 ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--live-stats-row-v-gap, 8px)" }}>
           {rows.map((row) => (
             <div
               key={row.key}
@@ -226,6 +227,7 @@ export const LiveStatsPanel = ({
                 alignItems: "center",
                 justifyContent: "space-between",
                 gap: "var(--live-stats-row-gap)",
+                paddingBlock: "2px",
               }}
             >
               <span className="live-stats-label" style={labelStyle}>{row.label}</span>
@@ -245,8 +247,9 @@ export const LiveStatsPanel = ({
           style={{
             display: "flex",
             flexWrap: "wrap",
-            gap: "6px",
-            paddingTop: "6px",
+            gap: "8px",
+            marginTop: "4px",
+            paddingTop: "10px",
             borderTop: "1px solid hsl(var(--border) / 0.4)",
           }}
         >
