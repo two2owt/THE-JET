@@ -3027,6 +3027,15 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 } else {
                   clearDensityRefreshTimer();
                   setIsLoadingHeatmap(false);
+                  // Time-lapse and Live Stats both consume the density
+                  // layer's data pipeline. Turning heatmap off must cascade
+                  // so users don't end up with orphaned modes running
+                  // against a hidden layer.
+                  if (timelapseMode) setTimelapseMode(false);
+                  if (showLiveStats) {
+                    setShowLiveStats(false);
+                    setIsLoadingStats(false);
+                  }
                 }
               }}
             />
@@ -3122,7 +3131,24 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     triggerHaptic('medium');
                     const newMode = !timelapseMode;
                     setTimelapseMode(newMode);
-                    if (newMode) timelapse.loadHourlyData();
+                    if (newMode) {
+                      // Time-lapse renders through the density heatmap
+                      // pipeline; make sure it's on before we start
+                      // hydrating hourly buckets.
+                      if (!showDensityLayer) {
+                        setShowDensityLayer(true);
+                        scheduleDensityRefresh();
+                      }
+                      // Movement Paths animate continuously and visually
+                      // fight the time-lapse playback, so pause them while
+                      // the scrubber owns the map.
+                      if (showMovementPaths) {
+                        setShowMovementPaths(false);
+                        clearPathsRefreshTimer();
+                        setIsLoadingPaths(false);
+                      }
+                      timelapse.loadHourlyData();
+                    }
                   }}
                   style={{
                     width: '100%',
@@ -3329,6 +3355,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 const next = !showMovementPaths;
                 setShowMovementPaths(next);
                 if (next) {
+                  // Flow Paths and Time-lapse compete for the same visual
+                  // channel (animated motion). If Time-lapse is running,
+                  // stop it so the paths can breathe.
+                  if (timelapseMode) setTimelapseMode(false);
                   schedulePathsRefresh();
                 } else {
                   clearPathsRefreshTimer();
@@ -3496,8 +3526,25 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 triggerHaptic('medium');
                 const next = !showLiveStats;
                 setShowLiveStats(next);
-                if (next) setIsLoadingStats(true);
-                else setIsLoadingStats(false);
+                if (next) {
+                  setIsLoadingStats(true);
+                  // Live Stats derives its numbers from the density and
+                  // movement-paths data pipelines. Enable both so the
+                  // panel isn't populated by stale/zero series.
+                  if (!showDensityLayer) {
+                    setShowDensityLayer(true);
+                    setTimeFilter('all');
+                    setHourFilter(undefined);
+                    setDayFilter(undefined);
+                    scheduleDensityRefresh();
+                  }
+                  if (!showMovementPaths) {
+                    setShowMovementPaths(true);
+                    schedulePathsRefresh();
+                  }
+                } else {
+                  setIsLoadingStats(false);
+                }
               }}
             />
 
