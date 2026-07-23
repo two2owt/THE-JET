@@ -1,6 +1,24 @@
 import { Loader2, MapPin, Route as RouteIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
+export type LiveStatsRange = "current" | "hourly" | "daily" | "weekly";
+
+/** Map UI range → backend time filter accepted by density/paths hooks. */
+export const liveStatsRangeToTimeFilter = (
+  range: LiveStatsRange,
+): "this_hour" | "today" | "this_week" | "all" => {
+  switch (range) {
+    case "current":
+      return "this_hour";
+    case "hourly":
+      return "today";
+    case "daily":
+      return "this_week";
+    case "weekly":
+      return "all";
+  }
+};
+
 interface LiveStatsPanelProps {
   /** Single source of truth for whether the panel is open. */
   open: boolean;
@@ -33,6 +51,10 @@ interface LiveStatsPanelProps {
   onJumpToHotspot?: () => void;
   /** Temporarily highlight `topRoute` on the map. */
   onHighlightTopRoute?: () => void;
+  /** Optional controlled range; when omitted, component manages its own. */
+  range?: LiveStatsRange;
+  /** Called when the user picks a different range chip. */
+  onRangeChange?: (range: LiveStatsRange) => void;
 }
 
 /**
@@ -57,12 +79,20 @@ export const LiveStatsPanel = ({
   topRoute,
   onJumpToHotspot,
   onHighlightTopRoute,
+  range: rangeProp,
+  onRangeChange,
 }: LiveStatsPanelProps) => {
   // Props kept for backwards compatibility — live activity now renders
   // regardless of which layers are toggled on.
   void showDensityLayer;
   void showMovementPaths;
   const [mounted, setMounted] = useState(open);
+  const [rangeInternal, setRangeInternal] = useState<LiveStatsRange>("current");
+  const range: LiveStatsRange = rangeProp ?? rangeInternal;
+  const handleRangeSelect = (next: LiveStatsRange) => {
+    if (rangeProp === undefined) setRangeInternal(next);
+    onRangeChange?.(next);
+  };
 
   useEffect(() => {
     if (open) {
@@ -179,6 +209,64 @@ export const LiveStatsPanel = ({
         >
           {vibe.label}
         </p>
+      </div>
+
+      {/* Range filter chips — Current / Hourly / Daily / Weekly */}
+      <div
+        role="tablist"
+        aria-label="Live stats time range"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+          gap: "4px",
+          padding: "3px",
+          borderRadius: "8px",
+          background: "hsl(var(--muted) / 0.35)",
+          border: "1px solid hsl(var(--border) / 0.5)",
+        }}
+      >
+        {(
+          [
+            { key: "current", label: "Live" },
+            { key: "hourly", label: "Hourly" },
+            { key: "daily", label: "Daily" },
+            { key: "weekly", label: "Weekly" },
+          ] as { key: LiveStatsRange; label: string }[]
+        ).map((opt) => {
+          const active = range === opt.key;
+          return (
+            <button
+              key={opt.key}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              onClick={() => handleRangeSelect(opt.key)}
+              style={{
+                fontSize: "10px",
+                fontWeight: 700,
+                letterSpacing: "0.03em",
+                textTransform: "uppercase",
+                padding: "5px 4px",
+                borderRadius: "6px",
+                border: active
+                  ? "1px solid hsl(var(--primary) / 0.55)"
+                  : "1px solid transparent",
+                background: active
+                  ? "linear-gradient(135deg, hsl(var(--primary) / 0.25), hsl(var(--primary-glow) / 0.15))"
+                  : "transparent",
+                color: active
+                  ? "hsl(var(--foreground))"
+                  : "hsl(var(--muted-foreground))",
+                cursor: "pointer",
+                lineHeight: 1,
+                transition: "background 160ms ease, color 160ms ease, border-color 160ms ease",
+                minHeight: "26px",
+              }}
+            >
+              {opt.label}
+            </button>
+          );
+        })}
       </div>
 
       {isLoading ? (

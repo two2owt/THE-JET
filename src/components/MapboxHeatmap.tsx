@@ -87,7 +87,11 @@ import { useOpenNowTick } from "@/hooks/useOpenNowTick";
 import { Button } from "./ui/button";
 import { LayerToggleRow } from "./map/LayerToggleRow";
 import { LayerSliderRow } from "./map/LayerSliderRow";
-import { LiveStatsPanel } from "./map/LiveStatsPanel";
+import {
+  LiveStatsPanel,
+  liveStatsRangeToTimeFilter,
+  type LiveStatsRange,
+} from "./map/LiveStatsPanel";
 import { useDensityLayer } from "./map/hooks/useDensityLayer";
 import { useDensityPaint } from "./map/hooks/useDensityPaint";
 import { useMovementPathsLayer } from "./map/hooks/useMovementPathsLayer";
@@ -390,6 +394,15 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
   // Time-lapse mode state
   const [timelapseMode, setTimelapseMode] = useState(() => getPersistedTimelapseMode());
+
+  // Live Stats range selector (Current / Hourly / Daily / Weekly).
+  const [liveStatsRange, setLiveStatsRange] = useState<LiveStatsRange>("current");
+  const handleLiveStatsRangeChange = useCallback((next: LiveStatsRange) => {
+    setLiveStatsRange(next);
+    const tf = liveStatsRangeToTimeFilter(next);
+    setTimeFilter(tf);
+    setPathTimeFilter(tf);
+  }, []);
 
   // Movement paths state
   const [showMovementPaths, setShowMovementPaths] = useState(() => getLayerState("paths", false));
@@ -3508,6 +3521,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   topRoute={topRoute ? { frequency: topRoute.frequency } : null}
                   onJumpToHotspot={handleJumpToHotspot}
                   onHighlightTopRoute={handleHighlightTopRoute}
+                  range={liveStatsRange}
+                  onRangeChange={handleLiveStatsRangeChange}
                 />
               </div>
             )}
@@ -3793,6 +3808,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           topRoute={topRoute ? { frequency: topRoute.frequency } : null}
           onJumpToHotspot={handleJumpToHotspot}
           onHighlightTopRoute={handleHighlightTopRoute}
+          range={liveStatsRange}
+          onRangeChange={handleLiveStatsRangeChange}
         />
       )}
 
