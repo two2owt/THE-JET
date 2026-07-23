@@ -707,6 +707,13 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     localStorage.setItem(FILTER_KEYS.timelapseSpeed, String(timelapse.speed));
   }, [timelapse.speed]);
 
+  // When day filter changes while time-lapse is active, reload the 24-hour
+  // dataset so the animation reflects the new weekday slice.
+  useEffect(() => {
+    if (timelapseMode) timelapse.loadHourlyData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dayFilter, timelapseMode]);
+
   // Reset to defaults — clears localStorage and restores factory settings
   const handleResetToDefaults = useCallback(() => {
     triggerHaptic('medium');
@@ -3207,117 +3214,62 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   </div>
                 )}
 
-                {/* Regular filters — glassmorphic selects */}
-                {!timelapseMode && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <Select value={timeFilter} onValueChange={(v: any) => setTimeFilter(v)}>
-                      <SelectTrigger
-                        className="w-full font-display font-semibold rounded-[10px] min-h-0 h-auto map-filter-pill"
-                        style={{
-                          padding: 'clamp(6px, 1.6vw, 8px) clamp(8px, 2.2vw, 12px)',
-                          fontSize: 'clamp(10px, 2.6vw, 12px)',
-                          flexDirection: 'row',
-                          flexWrap: 'nowrap',
-                          border: timeFilter !== 'all'
-                            ? '1px solid hsl(var(--primary) / 0.45)'
-                            : '1px solid hsl(var(--border) / 0.5)',
-                          background: timeFilter !== 'all'
-                            ? 'linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--primary-glow) / 0.14))'
-                            : 'hsl(var(--card) / 0.5)',
-                          backdropFilter: 'blur(12px) saturate(1.4)',
-                          WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
-                          boxShadow: timeFilter !== 'all'
-                            ? '0 8px 24px -10px hsl(var(--primary) / 0.55), inset 0 0 0 1px hsl(var(--primary-glow) / 0.18)'
-                            : 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
-                          letterSpacing: '-0.005em',
-                          color: timeFilter !== 'all' ? 'hsl(var(--foreground))' : undefined,
-                          transition: 'background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms ease, box-shadow 220ms ease, color 220ms ease',
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(6px, 1.6vw, 10px)', flex: 1, minWidth: 0 }}>
-                          <span style={{
-                            width: 'clamp(20px, 5.2vw, 24px)', height: 'clamp(20px, 5.2vw, 24px)', borderRadius: '7px',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                            background: timeFilter !== 'all'
-                              ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
-                              : 'hsl(var(--background) / 0.6)',
-                            border: timeFilter !== 'all'
-                              ? '1px solid transparent'
-                              : '1px solid hsl(var(--border) / 0.6)',
-                            boxShadow: timeFilter !== 'all'
-                              ? '0 4px 12px -4px hsl(var(--primary) / 0.6)'
-                              : 'none',
-                            transition: 'background 220ms ease, border-color 220ms ease, box-shadow 220ms ease',
-                          }}>
-                            <Clock style={{ width: '12px', height: '12px', color: timeFilter !== 'all' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))' }} strokeWidth={2.25} />
-                          </span>
-                          <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left' }}>
-                            <SelectValue placeholder="Time" />
-                          </span>
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Time</SelectItem>
-                        <SelectItem value="today">Today</SelectItem>
-                        <SelectItem value="this_week">This Week</SelectItem>
-                        <SelectItem value="this_hour">This Hour</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Select value={dayFilter?.toString() || "all"} onValueChange={(v) => setDayFilter(v === "all" ? undefined : parseInt(v))}>
-                      <SelectTrigger
-                        className="w-full font-display font-semibold rounded-[10px] min-h-0 h-auto map-filter-pill"
-                        style={{
-                          padding: 'clamp(6px, 1.6vw, 8px) clamp(8px, 2.2vw, 12px)',
-                          fontSize: 'clamp(10px, 2.6vw, 12px)',
-                          flexDirection: 'row',
-                          flexWrap: 'nowrap',
-                          border: dayFilter !== undefined
-                            ? '1px solid hsl(var(--primary) / 0.45)'
-                            : '1px solid hsl(var(--border) / 0.5)',
-                          background: dayFilter !== undefined
-                            ? 'linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--primary-glow) / 0.14))'
-                            : 'hsl(var(--card) / 0.5)',
-                          backdropFilter: 'blur(12px) saturate(1.4)',
-                          WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
-                          boxShadow: dayFilter !== undefined
-                            ? '0 8px 24px -10px hsl(var(--primary) / 0.55), inset 0 0 0 1px hsl(var(--primary-glow) / 0.18)'
-                            : 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
-                          letterSpacing: '-0.005em',
-                          color: dayFilter !== undefined ? 'hsl(var(--foreground))' : undefined,
-                          transition: 'background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms ease, box-shadow 220ms ease, color 220ms ease',
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(6px, 1.6vw, 10px)', flex: 1, minWidth: 0 }}>
-                          <span style={{
-                            width: 'clamp(20px, 5.2vw, 24px)', height: 'clamp(20px, 5.2vw, 24px)', borderRadius: '7px',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                            background: dayFilter !== undefined
-                              ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
-                              : 'hsl(var(--background) / 0.6)',
-                            border: dayFilter !== undefined
-                              ? '1px solid transparent'
-                              : '1px solid hsl(var(--border) / 0.6)',
-                            boxShadow: dayFilter !== undefined
-                              ? '0 4px 12px -4px hsl(var(--primary) / 0.6)'
-                              : 'none',
-                            transition: 'background 220ms ease, border-color 220ms ease, box-shadow 220ms ease',
-                          }}>
-                            <Calendar style={{ width: '12px', height: '12px', color: dayFilter !== undefined ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))' }} strokeWidth={2.25} />
-                          </span>
-                          <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left' }}>
-                            <SelectValue placeholder="Day" />
-                          </span>
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Days</SelectItem>
-                        {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((d, i) => (
-                          <SelectItem key={i} value={i.toString()}>{d}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
+                {/* Time range slider — All Time / Today / This Week / This Hour.
+                    Density-based filter; hidden in time-lapse mode which drives
+                    its own hourly windowing. */}
+                {!timelapseMode && (() => {
+                  const timeSteps: Array<'all' | 'today' | 'this_week' | 'this_hour'> = ['all', 'today', 'this_week', 'this_hour'];
+                  const timeLabels = ['All Time', 'Today', 'This Week', 'This Hour'];
+                  const idx = Math.max(0, timeSteps.indexOf(timeFilter));
+                  return (
+                    <LayerSliderRow
+                      label="Time range"
+                      Icon={Clock}
+                      ariaLabel="Density time range filter"
+                      min={0}
+                      max={3}
+                      step={1}
+                      value={idx}
+                      onChange={(step) => setTimeFilter(timeSteps[step] ?? 'all')}
+                      format={(step) => timeLabels[step] ?? 'All Time'}
+                      ticks={[
+                        { value: 0, label: 'All' },
+                        { value: 1, label: 'Day' },
+                        { value: 2, label: 'Week' },
+                        { value: 3, label: 'Hour' },
+                      ]}
+                      defaultValue={0}
+                      loading={densityLoading}
+                    />
+                  );
+                })()}
+                {/* Day-of-week slider — density by weekday. Position 0 = All Days,
+                    1..7 = Sun..Sat. Works in both regular and time-lapse mode
+                    (useHeatmapTimelapse reuses `dayFilter`). */}
+                {(() => {
+                  const dayLabels = ['All', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                  const fullLabels = ['All Days', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                  const value = dayFilter === undefined ? 0 : dayFilter + 1;
+                  return (
+                    <LayerSliderRow
+                      label="Day of week"
+                      Icon={Calendar}
+                      ariaLabel="Density day-of-week filter"
+                      min={0}
+                      max={7}
+                      step={1}
+                      value={value}
+                      onChange={(step) => {
+                        const next = step === 0 ? undefined : step - 1;
+                        setDayFilter(next);
+                      }}
+                      format={(step) => fullLabels[step] ?? 'All Days'}
+                      ticks={dayLabels.map((label, i) => ({ value: i, label }))}
+                      defaultValue={0}
+                      loading={densityLoading || (timelapseMode && timelapse.loading)}
+                    />
+                  );
+                })()}
 
                 {/* Density status — loading / error */}
                 {(isLoadingHeatmap || densityError) && (
