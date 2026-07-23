@@ -2652,3 +2652,23 @@ select:-webkit-autofill:active {
   white-space: nowrap;
 }
 
+/* Live Stats — quick-action chip row: stack cleanly on phones so chips
+   never crowd or overlap the stat rows above them. */
+.live-stats-quick-actions > button {
+  min-width: 0;
+  flex: 1 1 auto;
+  justify-content: center;
+}
+
+@media (max-width: 639px) {
+  .live-stats-quick-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 6px !important;
+  }
+  .live-stats-quick-actions > button {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+}
+
