@@ -209,6 +209,74 @@ Deno.serve(async (req) => {
         .in("id", invalidIds);
     }
 
+    // Send transactional emails to users who have email notifications enabled.
+    // This is legitimate transactional mail — each recipient personally
+    // favorited this specific deal/venue and expects updates about it.
+    let emailsSent = 0;
+    try {
+      const { data: prefs } = await supabase
+        .from("user_preferences")
+        .select("user_id, email_notifications_enabled")
+        .in("user_id", userIds)
+        .eq("email_notifications_enabled", true);
+
+      const emailUserIds = (prefs ?? []).map((p) => p.user_id);
+      if (emailUserIds.length > 0) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("id, display_name")
+          .in("id", emailUserIds);
+        const nameById = new Map((profs ?? []).map((p) => [p.id, p.display_name]));
+
+        // Fetch auth emails via admin API
+        const { data: usersList } = await supabase.auth.admin.listUsers({
+          page: 1,
+          perPage: 1000,
+        });
+        const emailById = new Map(
+          (usersList?.users ?? [])
+            .filter((u) => emailUserIds.includes(u.id) && !!u.email)
+            .map((u) => [u.id, u.email as string]),
+        );
+
+        const ctaUrl = `https://www.jet-around.com${url}`;
+        const idBase = payload.deal_id ?? venueId ?? "fav";
+
+        await Promise.all(
+          emailUserIds.map(async (uid) => {
+            const recipient = emailById.get(uid);
+            if (!recipient) return;
+            try {
+              const { error: sendErr } = await supabase.functions.invoke(
+                "send-transactional-email",
+                {
+                  body: {
+                    templateName: "favorite-update",
+                    recipientEmail: recipient,
+                    idempotencyKey: `fav-${payload.event_type}-${idBase}-${uid}`,
+                    templateData: {
+                      name: nameById.get(uid) ?? undefined,
+                      venueName,
+                      dealTitle,
+                      eventType: payload.event_type,
+                      ctaUrl,
+                      expiresAt,
+                    },
+                  },
+                },
+              );
+              if (!sendErr) emailsSent++;
+              else console.error("email send error:", uid, sendErr.message);
+            } catch (e: any) {
+              console.error("email invoke error:", uid, e?.message);
+            }
+          }),
+        );
+      }
+    } catch (e: any) {
+      console.error("favorite-update email dispatch failed:", e?.message);
+    }
+
     // Log notifications
     if (userIds.length > 0) {
       const logs = userIds.map((uid) => ({
@@ -227,6 +295,7 @@ Deno.serve(async (req) => {
         favorited_users: userIds.length,
         web_sent: webSent,
         fcm_sent: fcmSent,
+        emails_sent: emailsSent,
         invalid_marked: invalidIds.length,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
