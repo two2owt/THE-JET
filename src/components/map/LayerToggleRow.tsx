@@ -133,14 +133,15 @@ const LayerToggleRowImpl = ({
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
-                width: "24px",
-                height: "24px",
-                borderRadius: "6px",
+                width: "36px",
+                height: "36px",
+                borderRadius: "8px",
                 flexShrink: 0,
                 background: "transparent",
                 border: "1px solid transparent",
                 color: "hsl(var(--muted-foreground) / 0.7)",
                 cursor: "pointer",
+                touchAction: "manipulation",
                 transition: "color 150ms ease, background 150ms ease, border-color 150ms ease",
               }}
               onMouseEnter={(e) => {
@@ -154,7 +155,7 @@ const LayerToggleRowImpl = ({
                 e.currentTarget.style.borderColor = "transparent";
               }}
             >
-              <HelpCircle style={{ width: "13px", height: "13px" }} strokeWidth={2.25} />
+              <HelpCircle style={{ width: "15px", height: "15px" }} strokeWidth={2.25} />
             </button>
           </TooltipTrigger>
           <TooltipContent
