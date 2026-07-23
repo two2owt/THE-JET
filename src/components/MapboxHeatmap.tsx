@@ -3032,8 +3032,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             />
 
             {/* Heat filters - shown when heat is on */}
-            <div style={{ overflow: 'hidden', transition: 'max-height 0.3s', maxHeight: showDensityLayer ? '900px' : '0px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '10px', paddingTop: '8px', paddingBottom: '2px' }}>
+            <div style={{ overflow: 'hidden', transition: 'max-height 0.3s', maxHeight: showDensityLayer ? '1200px' : '0px' }}>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 'clamp(8px, 2vw, 12px)',
+                paddingLeft: 'clamp(6px, 2vw, 12px)',
+                paddingRight: 'clamp(2px, 1vw, 6px)',
+                paddingTop: 'clamp(6px, 1.6vw, 10px)',
+                paddingBottom: '4px',
+              }}>
                 {/* Heatmap paint sliders — real-time, no round-trip. */}
                 <LayerSliderRow
                   label="Intensity"
