@@ -3027,6 +3027,15 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 } else {
                   clearDensityRefreshTimer();
                   setIsLoadingHeatmap(false);
+                  // Time-lapse and Live Stats both consume the density
+                  // layer's data pipeline. Turning heatmap off must cascade
+                  // so users don't end up with orphaned modes running
+                  // against a hidden layer.
+                  if (timelapseMode) setTimelapseMode(false);
+                  if (showLiveStats) {
+                    setShowLiveStats(false);
+                    setIsLoadingStats(false);
+                  }
                 }
               }}
             />
