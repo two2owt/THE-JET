@@ -3036,11 +3036,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               <div style={{
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 'clamp(8px, 2vw, 12px)',
-                paddingLeft: 'clamp(6px, 2vw, 12px)',
+                gap: 'clamp(6px, 1.8vw, 12px)',
+                paddingLeft: 'clamp(2px, 1.4vw, 10px)',
                 paddingRight: 'clamp(2px, 1vw, 6px)',
                 paddingTop: 'clamp(6px, 1.6vw, 10px)',
                 paddingBottom: '4px',
+                minWidth: 0,
               }}>
                 {/* Heatmap paint sliders — real-time, no round-trip. */}
                 <LayerSliderRow
