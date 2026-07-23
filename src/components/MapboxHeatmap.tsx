@@ -773,6 +773,49 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     timelapse.setHour(new Date().getHours());
   }, [timelapse]);
 
+  // ── Scoped resets ─────────────────────────────────────────────────────
+  // Section-level reset buttons let users restore just the Heatmap or Flow
+  // Paths controls without wiping the entire layers panel. Each clears the
+  // localStorage keys it owns first (same ordering rule as the global
+  // reset — persistence before state) so the persistence effect can't
+  // rehydrate stale values.
+  const handleResetHeatmap = useCallback(() => {
+    triggerHaptic('light');
+    [
+      FILTER_KEYS.timeFilter,
+      FILTER_KEYS.dayFilter,
+      FILTER_KEYS.timelapseMode,
+      FILTER_KEYS.timelapseSpeed,
+      FILTER_KEYS.heatIntensity,
+      FILTER_KEYS.heatRadius,
+      FILTER_KEYS.heatOpacity,
+      FILTER_KEYS.densityWindow,
+    ].forEach((key) => {
+      try { localStorage.removeItem(key); } catch { /* ignore */ }
+    });
+    setTimeFilter('all');
+    setDayFilter(undefined);
+    setHourFilter(undefined);
+    setTimelapseMode(false);
+    setHeatIntensity(1);
+    setHeatRadius(1);
+    setHeatOpacity(1);
+    setDensityWindowMinutes(null);
+    if (timelapse.isPlaying) timelapse.pause();
+    timelapse.setSpeed(1);
+    timelapse.setHour(new Date().getHours());
+  }, [timelapse]);
+
+  const handleResetFlowPaths = useCallback(() => {
+    triggerHaptic('light');
+    [FILTER_KEYS.pathTimeFilter, FILTER_KEYS.pathsWindow].forEach((key) => {
+      try { localStorage.removeItem(key); } catch { /* ignore */ }
+    });
+    setPathTimeFilter('all');
+    setPathsWindowMinutes(null);
+    setMinPathFrequency(2);
+  }, []);
+
   // ── Live Stats quick actions ──────────────────────────────────────────
   // Derived "top hotspot" (max density grid cell) and "top route"
   // (max frequency movement path) for the current data window.
@@ -3053,6 +3096,17 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 minWidth: 0,
               }}>
                 {/* Heatmap paint sliders — real-time, no round-trip. */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button
+                    type="button"
+                    onClick={handleResetHeatmap}
+                    aria-label="Reset heatmap controls to defaults"
+                    className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[10px] text-muted-foreground transition hover:bg-white/10 hover:text-foreground"
+                  >
+                    <RotateCcw style={{ width: '10px', height: '10px' }} />
+                    Reset
+                  </button>
+                </div>
                 <LayerSliderRow
                   label="Intensity"
                   Icon={Palette}
@@ -3395,6 +3449,17 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     )}
                   </div>
                 )}
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button
+                    type="button"
+                    onClick={handleResetFlowPaths}
+                    aria-label="Reset flow paths controls to defaults"
+                    className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[10px] text-muted-foreground transition hover:bg-white/10 hover:text-foreground"
+                  >
+                    <RotateCcw style={{ width: '10px', height: '10px' }} />
+                    Reset
+                  </button>
+                </div>
                 {/* Time range slider — matches the density Time Range control
                     so both layer panels share the same glassmorphic slider
                     language. Snap ticks map to the four preset windows. */}
