@@ -332,6 +332,7 @@ export const LiveStatsPanel = ({
       {/* Quick actions — jump to hotspot / highlight top route. */}
       {!isLoading && (topHotspot || topRoute) && (onJumpToHotspot || onHighlightTopRoute) && (
         <div
+          className="live-stats-quick-actions"
           style={{
             display: "flex",
             flexWrap: "wrap",
