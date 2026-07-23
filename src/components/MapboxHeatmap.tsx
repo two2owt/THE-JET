@@ -3808,6 +3808,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           topRoute={topRoute ? { frequency: topRoute.frequency } : null}
           onJumpToHotspot={handleJumpToHotspot}
           onHighlightTopRoute={handleHighlightTopRoute}
+          range={liveStatsRange}
+          onRangeChange={handleLiveStatsRangeChange}
         />
       )}
 
