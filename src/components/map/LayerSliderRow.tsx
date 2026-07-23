@@ -164,20 +164,21 @@ const LayerSliderRowImpl = ({
               onCommit?.(defaultValue);
             }}
             style={{
-              width: "20px",
-              height: "20px",
+              width: "32px",
+              height: "32px",
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
-              borderRadius: "6px",
+              borderRadius: "8px",
               border: "1px solid hsl(var(--border) / 0.6)",
               background: "hsl(var(--background) / 0.6)",
               color: "hsl(var(--muted-foreground))",
               cursor: "pointer",
               padding: 0,
+              touchAction: "manipulation",
             }}
           >
-            <RotateCcw style={{ width: "10px", height: "10px" }} strokeWidth={2.25} />
+            <RotateCcw style={{ width: "14px", height: "14px" }} strokeWidth={2.25} />
           </button>
         )}
       </div>
@@ -197,10 +198,10 @@ const LayerSliderRowImpl = ({
           style={{
             display: "flex",
             justifyContent: "space-between",
-            gap: "2px",
+            gap: "4px",
             flexWrap: "wrap",
-            rowGap: "4px",
-            marginTop: "-2px",
+            rowGap: "6px",
+            marginTop: "2px",
             paddingInline: "2px",
           }}
         >
@@ -215,11 +216,12 @@ const LayerSliderRowImpl = ({
                   onCommit?.(t.value);
                 }}
                 style={{
-                  fontSize: "clamp(9px, 2vw, 10px)",
+                  fontSize: "clamp(10px, 2.2vw, 11px)",
                   fontWeight: 700,
                   letterSpacing: "0.02em",
-                  padding: "1px clamp(4px, 1.2vw, 6px)",
-                  borderRadius: "6px",
+                  padding: "clamp(6px, 1.6vw, 8px) clamp(8px, 2vw, 12px)",
+                  minHeight: "32px",
+                  borderRadius: "8px",
                   border: active
                     ? "1px solid transparent"
                     : "1px solid hsl(var(--border) / 0.4)",
@@ -230,6 +232,7 @@ const LayerSliderRowImpl = ({
                     ? "hsl(var(--primary-foreground))"
                     : "hsl(var(--muted-foreground) / 0.85)",
                   cursor: "pointer",
+                  touchAction: "manipulation",
                 }}
               >
                 {t.label}
