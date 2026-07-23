@@ -707,6 +707,13 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     localStorage.setItem(FILTER_KEYS.timelapseSpeed, String(timelapse.speed));
   }, [timelapse.speed]);
 
+  // When day filter changes while time-lapse is active, reload the 24-hour
+  // dataset so the animation reflects the new weekday slice.
+  useEffect(() => {
+    if (timelapseMode) timelapse.loadHourlyData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dayFilter, timelapseMode]);
+
   // Reset to defaults — clears localStorage and restores factory settings
   const handleResetToDefaults = useCallback(() => {
     triggerHaptic('medium');
