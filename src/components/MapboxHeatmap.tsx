@@ -3096,6 +3096,17 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 minWidth: 0,
               }}>
                 {/* Heatmap paint sliders — real-time, no round-trip. */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button
+                    type="button"
+                    onClick={handleResetHeatmap}
+                    aria-label="Reset heatmap controls to defaults"
+                    className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[10px] text-muted-foreground transition hover:bg-white/10 hover:text-foreground"
+                  >
+                    <RotateCcw style={{ width: '10px', height: '10px' }} />
+                    Reset
+                  </button>
+                </div>
                 <LayerSliderRow
                   label="Intensity"
                   Icon={Palette}
