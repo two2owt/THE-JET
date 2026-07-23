@@ -3449,6 +3449,17 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     )}
                   </div>
                 )}
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button
+                    type="button"
+                    onClick={handleResetFlowPaths}
+                    aria-label="Reset flow paths controls to defaults"
+                    className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[10px] text-muted-foreground transition hover:bg-white/10 hover:text-foreground"
+                  >
+                    <RotateCcw style={{ width: '10px', height: '10px' }} />
+                    Reset
+                  </button>
+                </div>
                 {/* Time range slider — matches the density Time Range control
                     so both layer panels share the same glassmorphic slider
                     language. Snap ticks map to the four preset windows. */}
