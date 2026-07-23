@@ -2532,12 +2532,13 @@ select:-webkit-autofill:active {
 
 :root {
   /* Inline live stats typography & spacing */
-  --live-stats-gap: 8px;
+  --live-stats-gap: 12px;
   --live-stats-vibe-size: 11px;
   --live-stats-label-size: 11px;
   --live-stats-value-size: 13px;
-  --live-stats-row-gap: 12px;
-  --live-stats-pad: 10px 12px;
+  --live-stats-row-gap: 16px;
+  --live-stats-row-v-gap: 8px;
+  --live-stats-pad: 14px 16px;
 
   /* Chip summary typography & spacing */
   --chip-summary-gap: 6px;
@@ -2549,12 +2550,13 @@ select:-webkit-autofill:active {
 /* Ultra-small phones (iPhone SE / compact Android) */
 @media (max-width: 375px) {
   :root {
-    --live-stats-gap: 6px;
+    --live-stats-gap: 10px;
     --live-stats-vibe-size: 9px;
     --live-stats-label-size: 9px;
     --live-stats-value-size: 10px;
-    --live-stats-row-gap: 6px;
-    --live-stats-pad: 8px;
+    --live-stats-row-gap: 10px;
+    --live-stats-row-v-gap: 6px;
+    --live-stats-pad: 10px 12px;
 
     --chip-summary-gap: 4px;
     --chip-summary-pad: 5px 6px;
@@ -2566,24 +2568,26 @@ select:-webkit-autofill:active {
 /* Standard phones */
 @media (min-width: 376px) and (max-width: 639px) {
   :root {
-    --live-stats-gap: 6px;
+    --live-stats-gap: 10px;
     --live-stats-vibe-size: 10px;
     --live-stats-label-size: 10px;
     --live-stats-value-size: 11px;
-    --live-stats-row-gap: 8px;
-    --live-stats-pad: 10px;
+    --live-stats-row-gap: 12px;
+    --live-stats-row-v-gap: 7px;
+    --live-stats-pad: 12px 14px;
   }
 }
 
 /* Tablet and above */
 @media (min-width: 640px) {
   :root {
-    --live-stats-gap: 8px;
+    --live-stats-gap: 12px;
     --live-stats-vibe-size: 11px;
     --live-stats-label-size: 11px;
     --live-stats-value-size: 13px;
-    --live-stats-row-gap: 12px;
-    --live-stats-pad: 10px 12px;
+    --live-stats-row-gap: 16px;
+    --live-stats-row-v-gap: 8px;
+    --live-stats-pad: 14px 16px;
 
     --chip-summary-gap: 6px;
     --chip-summary-pad: 6px 8px;
