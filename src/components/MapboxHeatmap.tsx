@@ -3255,7 +3255,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                       onChange={(step) => {
                         const next = step === 0 ? undefined : step - 1;
                         setDayFilter(next);
-                        if (timelapseMode) timelapse.loadHourlyData();
                       }}
                       format={(step) => fullLabels[step] ?? 'All Days'}
                       ticks={dayLabels.map((label, i) => ({ value: i, label }))}
