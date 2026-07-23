@@ -395,6 +395,15 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Time-lapse mode state
   const [timelapseMode, setTimelapseMode] = useState(() => getPersistedTimelapseMode());
 
+  // Live Stats range selector (Current / Hourly / Daily / Weekly).
+  const [liveStatsRange, setLiveStatsRange] = useState<LiveStatsRange>("current");
+  const handleLiveStatsRangeChange = useCallback((next: LiveStatsRange) => {
+    setLiveStatsRange(next);
+    const tf = liveStatsRangeToTimeFilter(next);
+    setTimeFilter(tf);
+    setPathTimeFilter(tf);
+  }, []);
+
   // Movement paths state
   const [showMovementPaths, setShowMovementPaths] = useState(() => getLayerState("paths", false));
   const [pathTimeFilter, setPathTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.pathTimeFilter, 'all', 'pathTime'));
