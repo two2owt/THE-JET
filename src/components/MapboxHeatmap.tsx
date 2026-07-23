@@ -96,7 +96,7 @@ import { useDensityLayer } from "./map/hooks/useDensityLayer";
 import { useDensityPaint } from "./map/hooks/useDensityPaint";
 import { useMovementPathsLayer } from "./map/hooks/useMovementPathsLayer";
 import { useLayerPersistence } from "./map/hooks/useLayerPersistence";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "./ui/select";
 import { Slider } from "./ui/slider";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "./ui/sheet";
