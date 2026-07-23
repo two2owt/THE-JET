@@ -3131,7 +3131,24 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     triggerHaptic('medium');
                     const newMode = !timelapseMode;
                     setTimelapseMode(newMode);
-                    if (newMode) timelapse.loadHourlyData();
+                    if (newMode) {
+                      // Time-lapse renders through the density heatmap
+                      // pipeline; make sure it's on before we start
+                      // hydrating hourly buckets.
+                      if (!showDensityLayer) {
+                        setShowDensityLayer(true);
+                        scheduleDensityRefresh();
+                      }
+                      // Movement Paths animate continuously and visually
+                      // fight the time-lapse playback, so pause them while
+                      // the scrubber owns the map.
+                      if (showMovementPaths) {
+                        setShowMovementPaths(false);
+                        clearPathsRefreshTimer();
+                        setIsLoadingPaths(false);
+                      }
+                      timelapse.loadHourlyData();
+                    }
                   }}
                   style={{
                     width: '100%',
