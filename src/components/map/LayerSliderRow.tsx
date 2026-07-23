@@ -59,8 +59,9 @@ const LayerSliderRowImpl = ({
         width: "100%",
         display: "flex",
         flexDirection: "column",
-        gap: "clamp(8px, 1.6vw, 10px)",
-        padding: "clamp(10px, 2.2vw, 12px) clamp(10px, 2.6vw, 14px)",
+        gap: "clamp(6px, 1.6vw, 10px)",
+        padding: "clamp(8px, 2vw, 12px) clamp(9px, 2.4vw, 14px)",
+        minWidth: 0,
         borderRadius: "12px",
         border: isCustom
           ? "1px solid hsl(var(--primary) / 0.45)"
@@ -78,7 +79,7 @@ const LayerSliderRowImpl = ({
           "background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms ease, box-shadow 220ms ease",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "clamp(6px, 1.4vw, 8px)", minWidth: 0, flexWrap: "wrap" }}>
         <div
           style={{
             width: "clamp(22px, 5.4vw, 26px)",
@@ -108,10 +109,14 @@ const LayerSliderRowImpl = ({
           className="font-display"
           style={{
             flex: 1,
+            minWidth: 0,
             fontSize: "clamp(11px, 2.6vw, 13px)",
             fontWeight: 700,
             letterSpacing: "-0.005em",
             color: "hsl(var(--foreground) / 0.9)",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
           }}
         >
           {label}
@@ -122,7 +127,8 @@ const LayerSliderRowImpl = ({
             fontSize: "clamp(10px, 2.4vw, 12px)",
             fontWeight: 700,
             letterSpacing: "0.02em",
-            padding: "3px 10px",
+            padding: "3px clamp(7px, 1.8vw, 10px)",
+            flexShrink: 0,
             borderRadius: "9999px",
             background: isCustom
               ? "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))"
@@ -191,6 +197,9 @@ const LayerSliderRowImpl = ({
           style={{
             display: "flex",
             justifyContent: "space-between",
+            gap: "2px",
+            flexWrap: "wrap",
+            rowGap: "4px",
             marginTop: "-2px",
             paddingInline: "2px",
           }}
@@ -206,10 +215,10 @@ const LayerSliderRowImpl = ({
                   onCommit?.(t.value);
                 }}
                 style={{
-                  fontSize: "9px",
+                  fontSize: "clamp(9px, 2vw, 10px)",
                   fontWeight: 700,
                   letterSpacing: "0.02em",
-                  padding: "1px 6px",
+                  padding: "1px clamp(4px, 1.2vw, 6px)",
                   borderRadius: "6px",
                   border: active
                     ? "1px solid transparent"
