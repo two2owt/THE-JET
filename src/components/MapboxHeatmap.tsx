@@ -773,6 +773,49 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     timelapse.setHour(new Date().getHours());
   }, [timelapse]);
 
+  // ── Scoped resets ─────────────────────────────────────────────────────
+  // Section-level reset buttons let users restore just the Heatmap or Flow
+  // Paths controls without wiping the entire layers panel. Each clears the
+  // localStorage keys it owns first (same ordering rule as the global
+  // reset — persistence before state) so the persistence effect can't
+  // rehydrate stale values.
+  const handleResetHeatmap = useCallback(() => {
+    triggerHaptic('light');
+    [
+      FILTER_KEYS.timeFilter,
+      FILTER_KEYS.dayFilter,
+      FILTER_KEYS.timelapseMode,
+      FILTER_KEYS.timelapseSpeed,
+      FILTER_KEYS.heatIntensity,
+      FILTER_KEYS.heatRadius,
+      FILTER_KEYS.heatOpacity,
+      FILTER_KEYS.densityWindow,
+    ].forEach((key) => {
+      try { localStorage.removeItem(key); } catch { /* ignore */ }
+    });
+    setTimeFilter('all');
+    setDayFilter(undefined);
+    setHourFilter(undefined);
+    setTimelapseMode(false);
+    setHeatIntensity(1);
+    setHeatRadius(1);
+    setHeatOpacity(1);
+    setDensityWindowMinutes(null);
+    if (timelapse.isPlaying) timelapse.pause();
+    timelapse.setSpeed(1);
+    timelapse.setHour(new Date().getHours());
+  }, [timelapse]);
+
+  const handleResetFlowPaths = useCallback(() => {
+    triggerHaptic('light');
+    [FILTER_KEYS.pathTimeFilter, FILTER_KEYS.pathsWindow].forEach((key) => {
+      try { localStorage.removeItem(key); } catch { /* ignore */ }
+    });
+    setPathTimeFilter('all');
+    setPathsWindowMinutes(null);
+    setMinPathFrequency(2);
+  }, []);
+
   // ── Live Stats quick actions ──────────────────────────────────────────
   // Derived "top hotspot" (max density grid cell) and "top route"
   // (max frequency movement path) for the current data window.
