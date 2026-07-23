@@ -3337,8 +3337,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             />
 
             {/* Path filters */}
-            <div style={{ overflow: 'hidden', transition: 'max-height 0.3s', maxHeight: showMovementPaths ? '360px' : '0px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingLeft: '4px' }}>
+            <div style={{ overflow: 'hidden', transition: 'max-height 0.3s', maxHeight: showMovementPaths ? '700px' : '0px' }}>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 'clamp(8px, 2vw, 12px)',
+                paddingLeft: 'clamp(6px, 2vw, 12px)',
+                paddingRight: 'clamp(2px, 1vw, 6px)',
+                paddingTop: 'clamp(6px, 1.6vw, 10px)',
+                paddingBottom: '4px',
+              }}>
                 {(isLoadingPaths || pathsError) && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', background: pathsError ? 'hsl(var(--destructive) / 0.1)' : 'hsl(var(--primary) / 0.08)', borderRadius: '8px', fontSize: '10px' }}>
                     {isLoadingPaths ? (
@@ -3355,59 +3363,35 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     )}
                   </div>
                 )}
-                <Select value={pathTimeFilter} onValueChange={(v: any) => setPathTimeFilter(v)}>
-                  <SelectTrigger
-                    className="w-full font-display font-semibold rounded-[10px] min-h-0 h-auto map-filter-pill"
-                    style={{
-                      padding: 'clamp(6px, 1.6vw, 8px) clamp(8px, 2.2vw, 12px)',
-                      fontSize: 'clamp(10px, 2.6vw, 12px)',
-                      flexDirection: 'row',
-                      flexWrap: 'nowrap',
-                      border: pathTimeFilter !== 'all'
-                        ? '1px solid hsl(var(--primary) / 0.45)'
-                        : '1px solid hsl(var(--border) / 0.5)',
-                      background: pathTimeFilter !== 'all'
-                        ? 'linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--primary-glow) / 0.14))'
-                        : 'hsl(var(--card) / 0.5)',
-                      backdropFilter: 'blur(12px) saturate(1.4)',
-                      WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
-                      boxShadow: pathTimeFilter !== 'all'
-                        ? '0 8px 24px -10px hsl(var(--primary) / 0.55), inset 0 0 0 1px hsl(var(--primary-glow) / 0.18)'
-                        : 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
-                      letterSpacing: '-0.005em',
-                      color: pathTimeFilter !== 'all' ? 'hsl(var(--foreground))' : undefined,
-                      transition: 'background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms ease, box-shadow 220ms ease, color 220ms ease',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(6px, 1.6vw, 10px)', flex: 1, minWidth: 0 }}>
-                      <span style={{
-                        width: 'clamp(20px, 5.2vw, 24px)', height: 'clamp(20px, 5.2vw, 24px)', borderRadius: '7px',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                        background: pathTimeFilter !== 'all'
-                          ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
-                          : 'hsl(var(--background) / 0.6)',
-                        border: pathTimeFilter !== 'all'
-                          ? '1px solid transparent'
-                          : '1px solid hsl(var(--border) / 0.6)',
-                        boxShadow: pathTimeFilter !== 'all'
-                          ? '0 4px 12px -4px hsl(var(--primary) / 0.6)'
-                          : 'none',
-                        transition: 'background 220ms ease, border-color 220ms ease, box-shadow 220ms ease',
-                      }}>
-                        <Clock style={{ width: '12px', height: '12px', color: pathTimeFilter !== 'all' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))' }} strokeWidth={2.25} />
-                      </span>
-                      <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left' }}>
-                        <SelectValue placeholder="Time" />
-                      </span>
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Time</SelectItem>
-                    <SelectItem value="today">Today</SelectItem>
-                    <SelectItem value="this_week">This Week</SelectItem>
-                    <SelectItem value="this_hour">This Hour</SelectItem>
-                  </SelectContent>
-                </Select>
+                {/* Time range slider — matches the density Time Range control
+                    so both layer panels share the same glassmorphic slider
+                    language. Snap ticks map to the four preset windows. */}
+                {(() => {
+                  const steps: Array<'all' | 'today' | 'this_week' | 'this_hour'> = ['all', 'today', 'this_week', 'this_hour'];
+                  const labels = ['All Time', 'Today', 'This Week', 'This Hour'];
+                  const idx = Math.max(0, steps.indexOf(pathTimeFilter));
+                  return (
+                    <LayerSliderRow
+                      label="Time range"
+                      Icon={Clock}
+                      ariaLabel="Flow paths time range filter"
+                      min={0}
+                      max={3}
+                      step={1}
+                      value={idx}
+                      onChange={(step) => setPathTimeFilter(steps[step] ?? 'all')}
+                      format={(step) => labels[step] ?? 'All Time'}
+                      ticks={[
+                        { value: 0, label: 'All' },
+                        { value: 1, label: 'Day' },
+                        { value: 2, label: 'Week' },
+                        { value: 3, label: 'Hour' },
+                      ]}
+                      defaultValue={0}
+                      loading={pathsLoading}
+                    />
+                  );
+                })()}
                 {/* Time-window slider — same semantics as the density one.
                     Only re-queries on release so drags don't spam the edge fn. */}
                 <LayerSliderRow
@@ -3440,13 +3424,27 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   defaultValue={0}
                   loading={pathsLoading}
                 />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '9px' }}>
-                    <span style={{ color: 'hsl(var(--muted-foreground))' }}>Min. Frequency</span>
-                    <span style={{ fontWeight: 600, color: 'hsl(var(--primary))' }}>{minPathFrequency}</span>
-                  </div>
-                  <input type="range" min="1" max="10" value={minPathFrequency} onChange={(e) => setMinPathFrequency(parseInt(e.target.value))} className="path-flow-slider w-full" />
-                </div>
+                {/* Min-frequency slider — brought into the LayerSliderRow
+                    system so it matches the rest of the panel visually and
+                    inherits the reset/tick/adaptive-spacing behavior. */}
+                <LayerSliderRow
+                  label="Min. frequency"
+                  Icon={Route}
+                  ariaLabel="Minimum path frequency"
+                  min={1}
+                  max={10}
+                  step={1}
+                  value={minPathFrequency}
+                  onChange={setMinPathFrequency}
+                  format={(v) => `${v}+`}
+                  ticks={[
+                    { value: 1, label: '1' },
+                    { value: 3, label: '3' },
+                    { value: 5, label: '5' },
+                    { value: 10, label: '10' },
+                  ]}
+                  defaultValue={2}
+                />
                 {pathData && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '9px', color: 'hsl(var(--muted-foreground))', paddingTop: '4px', borderTop: '1px solid hsl(var(--border) / 0.3)' }}>
                     <span>{pathData.stats.total_paths} paths</span>
