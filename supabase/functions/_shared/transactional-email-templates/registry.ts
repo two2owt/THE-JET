@@ -10,7 +10,9 @@ export interface TemplateEntry {
 }
 
 import { template as welcome } from './welcome.tsx'
+import { template as favoriteUpdate } from './favorite-update.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'welcome': welcome,
+  'favorite-update': favoriteUpdate,
 }
