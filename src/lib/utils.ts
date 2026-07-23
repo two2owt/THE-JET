@@ -14,25 +14,30 @@ export function cn(...inputs: ClassValue[]) {
  * SSR/no-window contexts) is forced to the production origin instead of
  * leaking `window.location.origin`.
  */
-const PRODUCTION_URL = "https://jet-around.com";
-const STAGING_URL = "https://jet-around.lovable.app";
+// The live app is served from jet-around.lovable.app (no custom domain is
+// currently attached). jet-around.com is NOT serving the app, so redirecting
+// there produces a 404 after Google OAuth. Keep this as the canonical origin
+// until a real custom domain is wired up.
+const PRODUCTION_URL = "https://jet-around.lovable.app";
 
-// Hostnames that are safe to redirect back to as-is.
-const ALLOWED_HOSTS: Record<string, string> = {
-  "jet-around.com": PRODUCTION_URL,
-  "www.jet-around.com": PRODUCTION_URL,
-  "jet-around.lovable.app": STAGING_URL,
-};
+// Hostnames that are safe to redirect back to as-is (use the current origin).
+const ALLOWED_HOSTS = new Set<string>([
+  "jet-around.lovable.app",
+  "jet-around.com",
+  "www.jet-around.com",
+]);
 
 export const getAppUrl = (): string => {
   if (typeof window === "undefined" || !window.location?.hostname) {
     return PRODUCTION_URL;
   }
   const host = window.location.hostname.toLowerCase();
-  const allowed = ALLOWED_HOSTS[host];
-  if (allowed) return allowed;
+  if (ALLOWED_HOSTS.has(host)) {
+    return `${window.location.protocol}//${window.location.host}`;
+  }
   // Localhost, 127.0.0.1, id-preview--*.lovable.app, tunnels, anything else
-  // → send Supabase links to production so redirect_uri always validates.
+  // → send Supabase links to the live published origin so redirect_uri
+  // always resolves to a page that actually renders the app.
   return PRODUCTION_URL;
 };
 
