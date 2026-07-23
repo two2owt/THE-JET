@@ -87,8 +87,11 @@ import { useOpenNowTick } from "@/hooks/useOpenNowTick";
 import { Button } from "./ui/button";
 import { LayerToggleRow } from "./map/LayerToggleRow";
 import { LayerSliderRow } from "./map/LayerSliderRow";
-import { LiveStatsPanel } from "./map/LiveStatsPanel";
-import { liveStatsRangeToTimeFilter, type LiveStatsRange } from "./map/LiveStatsPanel";
+import {
+  LiveStatsPanel,
+  liveStatsRangeToTimeFilter,
+  type LiveStatsRange,
+} from "./map/LiveStatsPanel";
 import { useDensityLayer } from "./map/hooks/useDensityLayer";
 import { useDensityPaint } from "./map/hooks/useDensityPaint";
 import { useMovementPathsLayer } from "./map/hooks/useMovementPathsLayer";
