@@ -14,30 +14,42 @@ export function cn(...inputs: ClassValue[]) {
  * SSR/no-window contexts) is forced to the production origin instead of
  * leaking `window.location.origin`.
  */
-// The live app is served from jet-around.lovable.app (no custom domain is
-// currently attached). jet-around.com is NOT serving the app, so redirecting
-// there produces a 404 after Google OAuth. Keep this as the canonical origin
-// until a real custom domain is wired up.
+// The live app is served from jet-around.lovable.app. jet-around.com is
+// reserved for a future custom domain — once its DNS + Lovable custom domain
+// is wired up, OAuth automatically follows because Lovable-managed OAuth
+// includes every attached custom domain in the redirect allow-list.
 const PRODUCTION_URL = "https://jet-around.lovable.app";
 
-// Hostnames that are safe to redirect back to as-is (use the current origin).
-const ALLOWED_HOSTS = new Set<string>([
+// Exact hostnames that are safe to redirect back to as-is. Add new custom
+// domains here the same day they're attached in Project Settings → Domains
+// so OAuth `redirect_uri` matches the origin the user is actually browsing.
+const ALLOWED_EXACT_HOSTS = new Set<string>([
   "jet-around.lovable.app",
   "jet-around.com",
   "www.jet-around.com",
 ]);
+
+// Suffix allow-list. Any Lovable-managed subdomain (published slug, preview,
+// id-preview, workspace) is served by the same app and is included in the
+// managed OAuth redirect allow-list, so it's safe to redirect back to.
+const ALLOWED_HOST_SUFFIXES = [".lovable.app", ".lovable.dev"];
+
+const isAllowedHost = (host: string): boolean => {
+  if (ALLOWED_EXACT_HOSTS.has(host)) return true;
+  return ALLOWED_HOST_SUFFIXES.some((suffix) => host.endsWith(suffix));
+};
 
 export const getAppUrl = (): string => {
   if (typeof window === "undefined" || !window.location?.hostname) {
     return PRODUCTION_URL;
   }
   const host = window.location.hostname.toLowerCase();
-  if (ALLOWED_HOSTS.has(host)) {
+  if (isAllowedHost(host)) {
     return `${window.location.protocol}//${window.location.host}`;
   }
-  // Localhost, 127.0.0.1, id-preview--*.lovable.app, tunnels, anything else
-  // → send Supabase links to the live published origin so redirect_uri
-  // always resolves to a page that actually renders the app.
+  // Unknown host (localhost, tunnels, forks) → send Supabase links to the
+  // live published origin so `redirect_uri` always resolves to a page that
+  // actually renders the app and passes the OAuth allow-list check.
   return PRODUCTION_URL;
 };
 
