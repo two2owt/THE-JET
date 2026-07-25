@@ -121,9 +121,11 @@ export type Database = {
           job_name: string
           rows_archived: number | null
           rows_deleted: number | null
+          rows_expected: number | null
           rows_obfuscated: number | null
           started_at: string
           status: string
+          validation_status: string | null
         }
         Insert: {
           completed_at?: string | null
@@ -133,9 +135,11 @@ export type Database = {
           job_name: string
           rows_archived?: number | null
           rows_deleted?: number | null
+          rows_expected?: number | null
           rows_obfuscated?: number | null
           started_at?: string
           status?: string
+          validation_status?: string | null
         }
         Update: {
           completed_at?: string | null
@@ -145,9 +149,11 @@ export type Database = {
           job_name?: string
           rows_archived?: number | null
           rows_deleted?: number | null
+          rows_expected?: number | null
           rows_obfuscated?: number | null
           started_at?: string
           status?: string
+          validation_status?: string | null
         }
         Relationships: []
       }
