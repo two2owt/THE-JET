@@ -23,6 +23,8 @@ interface RetentionRow {
   rows_obfuscated: number | null;
   rows_deleted: number | null;
   error_message: string | null;
+  rows_expected: number | null;
+  validation_status: string | null;
 }
 
 type StatusFilter = "all" | "success" | "running" | "failed";
@@ -30,8 +32,16 @@ type StatusFilter = "all" | "success" | "running" | "failed";
 function statusVariant(status: string): "default" | "secondary" | "destructive" | "outline" {
   if (status === "success" || status === "completed") return "default";
   if (status === "running") return "secondary";
-  if (status === "failed" || status === "error") return "destructive";
+  if (status === "failed" || status === "error" || status === "mismatch") return "destructive";
   return "outline";
+}
+
+function validationBadge(v: string | null): { label: string; variant: "default" | "secondary" | "destructive" | "outline" } | null {
+  if (!v) return null;
+  if (v === "ok") return { label: "ok", variant: "default" };
+  if (v === "mismatch") return { label: "mismatch", variant: "destructive" };
+  if (v === "error") return { label: "error", variant: "destructive" };
+  return { label: v, variant: "outline" };
 }
 
 function toDateInput(d: Date): string {
@@ -62,7 +72,7 @@ export function RetentionJobLog() {
       const endIso = new Date(`${endDate}T23:59:59.999`).toISOString();
       let q = supabase
         .from("data_retention_job_log" as never)
-        .select("id, job_name, status, started_at, completed_at, rows_archived, rows_obfuscated, rows_deleted, error_message")
+        .select("id, job_name, status, started_at, completed_at, rows_archived, rows_obfuscated, rows_deleted, error_message, rows_expected, validation_status")
         .gte("started_at", startIso)
         .lte("started_at", endIso)
         .order("started_at", { ascending: false })
@@ -99,8 +109,9 @@ export function RetentionJobLog() {
         obfuscated: acc.obfuscated + (r.rows_obfuscated ?? 0),
         deleted: acc.deleted + (r.rows_deleted ?? 0),
         failed: acc.failed + (r.status === "failed" || r.status === "error" ? 1 : 0),
+        mismatches: acc.mismatches + (r.validation_status === "mismatch" ? 1 : 0),
       }),
-      { runs: 0, archived: 0, obfuscated: 0, deleted: 0, failed: 0 },
+      { runs: 0, archived: 0, obfuscated: 0, deleted: 0, failed: 0, mismatches: 0 },
     );
   }, [rows]);
 
@@ -140,13 +151,14 @@ export function RetentionJobLog() {
       </Card>
 
       {/* Totals */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
         {[
           { label: "Runs", value: totals.runs },
           { label: "Archived", value: totals.archived },
           { label: "Obfuscated", value: totals.obfuscated },
           { label: "Deleted", value: totals.deleted },
           { label: "Failed", value: totals.failed },
+          { label: "Mismatches", value: totals.mismatches },
         ].map((s) => (
           <Card key={s.label}>
             <CardContent className="pt-4">
@@ -208,6 +220,8 @@ export function RetentionJobLog() {
                   <th className="text-left px-4 py-2 font-medium">Started</th>
                   <th className="text-left px-4 py-2 font-medium">Job</th>
                   <th className="text-left px-4 py-2 font-medium">Status</th>
+                  <th className="text-left px-4 py-2 font-medium">Validation</th>
+                  <th className="text-right px-4 py-2 font-medium">Expected</th>
                   <th className="text-right px-4 py-2 font-medium">Archived</th>
                   <th className="text-right px-4 py-2 font-medium">Obfuscated</th>
                   <th className="text-right px-4 py-2 font-medium">Deleted</th>
@@ -218,18 +232,21 @@ export function RetentionJobLog() {
                 {loading && rows.length === 0 ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i} className="border-b border-border/50">
-                      <td colSpan={7} className="px-4 py-3"><Skeleton className="h-5 w-full" /></td>
+                      <td colSpan={9} className="px-4 py-3"><Skeleton className="h-5 w-full" /></td>
                     </tr>
                   ))
                 ) : rows.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-6 text-center text-muted-foreground">
+                    <td colSpan={9} className="px-4 py-6 text-center text-muted-foreground">
                       No entries.
                     </td>
                   </tr>
                 ) : (
-                  rows.map((r) => (
-                    <tr key={r.id} className="border-b border-border/50 hover:bg-muted/30">
+                  rows.map((r) => {
+                    const vb = validationBadge(r.validation_status);
+                    const mismatch = r.validation_status === "mismatch";
+                    return (
+                    <tr key={r.id} className={`border-b border-border/50 hover:bg-muted/30 ${mismatch ? "bg-destructive/5" : ""}`}>
                       <td className="px-4 py-2 whitespace-nowrap">
                         {format(new Date(r.started_at), "MMM d, HH:mm")}
                       </td>
@@ -237,6 +254,10 @@ export function RetentionJobLog() {
                       <td className="px-4 py-2">
                         <Badge variant={statusVariant(r.status)}>{r.status}</Badge>
                       </td>
+                      <td className="px-4 py-2">
+                        {vb ? <Badge variant={vb.variant}>{vb.label}</Badge> : <span className="text-muted-foreground">—</span>}
+                      </td>
+                      <td className="px-4 py-2 text-right tabular-nums">{r.rows_expected != null ? r.rows_expected.toLocaleString() : "—"}</td>
                       <td className="px-4 py-2 text-right tabular-nums">{(r.rows_archived ?? 0).toLocaleString()}</td>
                       <td className="px-4 py-2 text-right tabular-nums">{(r.rows_obfuscated ?? 0).toLocaleString()}</td>
                       <td className="px-4 py-2 text-right tabular-nums">{(r.rows_deleted ?? 0).toLocaleString()}</td>
@@ -244,7 +265,8 @@ export function RetentionJobLog() {
                         {r.error_message ?? "—"}
                       </td>
                     </tr>
-                  ))
+                    );
+                  })
                 )}
               </tbody>
             </table>
