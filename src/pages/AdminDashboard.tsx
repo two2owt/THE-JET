@@ -22,6 +22,7 @@ const TestPushPanel = lazy(() => import("@/components/admin/TestPushPanel").then
 const ManualDealSyncPanel = lazy(() => import("@/components/admin/ManualDealSyncPanel").then(m => ({ default: m.ManualDealSyncPanel })));
 const RetentionJobLog = lazy(() => import("@/components/admin/RetentionJobLog").then(m => ({ default: m.RetentionJobLog })));
 const RetentionSettings = lazy(() => import("@/components/admin/RetentionSettings").then(m => ({ default: m.RetentionSettings })));
+const ExportUsersPanel = lazy(() => import("@/components/admin/ExportUsersPanel").then(m => ({ default: m.ExportUsersPanel })));
 
 
 type SectionId = "deals" | "analytics" | "funnel" | "areas" | "retention" | "system";
@@ -237,6 +238,9 @@ export default function AdminDashboard() {
                 <div className="flex flex-col" style={{ gap: 'var(--space-md)' }}>
                   <Suspense fallback={<AdminTabFallback />}>
                     <MonetizationToggle />
+                  </Suspense>
+                  <Suspense fallback={<AdminTabFallback />}>
+                    <ExportUsersPanel />
                   </Suspense>
                   <Suspense fallback={<AdminTabFallback />}>
                     <TestPushPanel />
