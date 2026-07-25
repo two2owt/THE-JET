@@ -8,7 +8,7 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { AdminTopbar } from "@/components/admin/AdminTopbar";
 import { SEO } from "@/components/SEO";
 import {
-  ChevronsLeft, ChevronsRight, Menu, Tag, BarChart3, MapPinned, Settings2, Filter,
+  ChevronsLeft, ChevronsRight, Menu, Tag, BarChart3, MapPinned, Settings2, Filter, Archive,
 } from "lucide-react";
 
 // Lazy-loaded admin sections (UserAnalytics pulls in recharts ~200KB)
@@ -20,9 +20,10 @@ const NeighborhoodManagement = lazy(() => import("@/components/admin/Neighborhoo
 const MonetizationToggle = lazy(() => import("@/components/admin/MonetizationToggle").then(m => ({ default: m.MonetizationToggle })));
 const TestPushPanel = lazy(() => import("@/components/admin/TestPushPanel").then(m => ({ default: m.TestPushPanel })));
 const ManualDealSyncPanel = lazy(() => import("@/components/admin/ManualDealSyncPanel").then(m => ({ default: m.ManualDealSyncPanel })));
+const RetentionJobLog = lazy(() => import("@/components/admin/RetentionJobLog").then(m => ({ default: m.RetentionJobLog })));
 
 
-type SectionId = "deals" | "analytics" | "funnel" | "areas" | "system";
+type SectionId = "deals" | "analytics" | "funnel" | "areas" | "retention" | "system";
 
 interface SectionDef {
   id: SectionId;
@@ -36,6 +37,7 @@ const SECTIONS: SectionDef[] = [
   { id: "analytics", label: "Analytics", description: "User signals, retention, and conversion.",     icon: BarChart3 },
   { id: "funnel",    label: "Funnel",    description: "Search → Deal Viewed → Deal Clicked → Checkout conversion.", icon: Filter },
   { id: "areas",     label: "Areas",     description: "Neighborhood geofences and coverage areas.",   icon: MapPinned },
+  { id: "retention", label: "Retention", description: "Location data retention job runs and archived row trends.", icon: Archive },
   { id: "system",    label: "System",    description: "Monetization toggle and email settings.", icon: Settings2 },
 ];
 
@@ -220,6 +222,11 @@ export default function AdminDashboard() {
               {section === "areas" && (
                 <Suspense fallback={<AdminTabFallback />}>
                   <NeighborhoodManagement />
+                </Suspense>
+              )}
+              {section === "retention" && (
+                <Suspense fallback={<AdminTabFallback />}>
+                  <RetentionJobLog />
                 </Suspense>
               )}
               {section === "system" && (
