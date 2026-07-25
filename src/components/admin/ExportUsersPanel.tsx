@@ -5,7 +5,7 @@ import { Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const COLUMNS = [
-  "id", "display_name", "bio", "created_at", "updated_at",
+  "id", "email", "display_name", "bio", "created_at", "updated_at",
   "onboarding_completed", "discoverable", "birthdate", "gender", "pronouns",
   "location_consent_given", "location_consent_date",
   "data_processing_consent", "data_processing_consent_date",
@@ -37,7 +37,7 @@ export function ExportUsersPanel() {
       while (true) {
         const { data, error } = await supabase
           .from("profiles")
-          .select(COLUMNS.join(","))
+          .select(COLUMNS.filter((c) => c !== "email").join(","))
           .order("created_at", { ascending: false })
           .range(from, from + pageSize - 1);
         if (error) throw error;
@@ -45,6 +45,21 @@ export function ExportUsersPanel() {
         all.push(...(data as unknown as Record<string, unknown>[]));
         if (data.length < pageSize) break;
         from += pageSize;
+      }
+
+      // Attach emails from auth.users via admin-only RPC.
+      const { data: emailRows, error: emailErr } = await supabase.rpc(
+        "admin_list_user_emails",
+      );
+      if (emailErr) throw emailErr;
+      const emailById = new Map<string, string>(
+        (emailRows ?? []).map((r: { id: string; email: string | null }) => [
+          r.id,
+          r.email ?? "",
+        ]),
+      );
+      for (const row of all) {
+        row.email = emailById.get(row.id as string) ?? "";
       }
 
       const csv = toCsv(all);
