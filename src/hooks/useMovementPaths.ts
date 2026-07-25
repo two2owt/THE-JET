@@ -89,7 +89,7 @@ export const useMovementPaths = (filters: MovementPathFilters = {}) => {
           clearTimeout(debounceTimer);
           debounceTimer = setTimeout(() => {
             loadPathData();
-          }, 700);
+          }, 2000);
         }
       )
       .subscribe();
