@@ -44,23 +44,38 @@ export const useDensityLayer = ({
     const pointLayerId = `${layerId}-point`;
     const glowLayerId = `${layerId}-glow`;
 
-    try {
-      if (mapRef.current?.style?.loaded()) {
-        [glowLayerId, pointLayerId, layerId].forEach((id) => {
-          if (mapRef.current?.getLayer(id)) {
-            mapRef.current.removeLayer(id);
-          }
-        });
-        if (mapRef.current?.getSource(sourceId)) {
-          mapRef.current.removeSource(sourceId);
+    // Toggle-off: tear down layers + source cleanly.
+    if (!showDensityLayer) {
+      try {
+        if (mapRef.current?.style?.loaded()) {
+          [glowLayerId, pointLayerId, layerId].forEach((id) => {
+            if (mapRef.current?.getLayer(id)) mapRef.current.removeLayer(id);
+          });
+          if (mapRef.current?.getSource(sourceId)) mapRef.current.removeSource(sourceId);
         }
+      } catch (error) {
+        console.error('Error removing density layers:', error);
       }
-    } catch (error) {
-      console.error('Error removing existing layers:', error);
       return;
     }
 
-    if (!showDensityLayer) return;
+    // Data update path — reuse existing source so Mapbox interpolates paint
+    // transitions instead of hard-flashing on every realtime refetch.
+    const existingSource = mapRef.current.getSource(sourceId) as any;
+    if (existingSource) {
+      try {
+        existingSource.setData(activeData.geojson);
+        return;
+      } catch (err) {
+        console.warn('density setData failed, rebuilding:', err);
+        try {
+          [glowLayerId, pointLayerId, layerId].forEach((id) => {
+            if (mapRef.current?.getLayer(id)) mapRef.current.removeLayer(id);
+          });
+          if (mapRef.current?.getSource(sourceId)) mapRef.current.removeSource(sourceId);
+        } catch { /* no-op */ }
+      }
+    }
 
     mapRef.current.addSource(sourceId, {
       type: 'geojson',

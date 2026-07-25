@@ -40,41 +40,39 @@ export const useMovementPathsLayer = ({
     const arrowLayerId = 'movement-paths-arrows';
     const particleLayerId = 'movement-paths-particles';
 
-    try {
+    // Toggle-off: tear everything down.
+    if (!showMovementPaths) {
       [particleLayerId, arrowLayerId, glowLayerId, lineLayerId].forEach((id) => {
-        try {
-          if (mapRef.current?.getLayer(id)) {
-            mapRef.current.removeLayer(id);
-          }
-        } catch (_) { /* no-op */ }
+        try { if (mapRef.current?.getLayer(id)) mapRef.current.removeLayer(id); } catch { /* no-op */ }
       });
-      try {
-        if (mapRef.current?.getSource(sourceId)) {
-          mapRef.current.removeSource(sourceId);
-        }
-      } catch (_) { /* no-op */ }
-      try {
-        if (mapRef.current?.getSource(`${sourceId}-particles`)) {
-          mapRef.current.removeSource(`${sourceId}-particles`);
-        }
-      } catch (_) { /* no-op */ }
-    } catch (error) {
-      console.error('Error removing existing movement path layers:', error);
+      try { if (mapRef.current?.getSource(sourceId)) mapRef.current.removeSource(sourceId); } catch { /* no-op */ }
+      try { if (mapRef.current?.getSource(`${sourceId}-particles`)) mapRef.current.removeSource(`${sourceId}-particles`); } catch { /* no-op */ }
       return;
     }
 
-    if (!showMovementPaths) return;
-
+    // Fast path: source already exists — just push new GeoJSON so Mapbox
+    // smoothly transitions line-width/color instead of flashing on rebuild.
     const existing = mapRef.current.getSource(sourceId) as any;
     if (existing) {
-      try { existing.setData(pathData.geojson); } catch (_) { /* no-op */ }
-    } else {
-      mapRef.current.addSource(sourceId, {
-        type: 'geojson',
-        data: pathData.geojson,
-        lineMetrics: true,
-      });
+      try {
+        existing.setData(pathData.geojson);
+        // Keep particle animation running against the new path set; no rebuild.
+        return;
+      } catch (err) {
+        console.warn('paths setData failed, rebuilding:', err);
+        [particleLayerId, arrowLayerId, glowLayerId, lineLayerId].forEach((id) => {
+          try { if (mapRef.current?.getLayer(id)) mapRef.current.removeLayer(id); } catch { /* no-op */ }
+        });
+        try { if (mapRef.current?.getSource(sourceId)) mapRef.current.removeSource(sourceId); } catch { /* no-op */ }
+        try { if (mapRef.current?.getSource(`${sourceId}-particles`)) mapRef.current.removeSource(`${sourceId}-particles`); } catch { /* no-op */ }
+      }
     }
+
+    mapRef.current.addSource(sourceId, {
+      type: 'geojson',
+      data: pathData.geojson,
+      lineMetrics: true,
+    });
 
     mapRef.current.addLayer({
       id: glowLayerId,
@@ -96,6 +94,9 @@ export const useMovementPathsLayer = ({
         ],
         'line-blur': 4,
         'line-opacity': 0.6,
+        'line-width-transition': { duration: 800, delay: 0 },
+        'line-color-transition': { duration: 800, delay: 0 },
+        'line-opacity-transition': { duration: 600, delay: 0 },
       } as any,
     });
 
@@ -119,6 +120,8 @@ export const useMovementPathsLayer = ({
         ],
         'line-opacity': 0.9,
         'line-dasharray': [0, 4, 3],
+        'line-width-transition': { duration: 800, delay: 0 },
+        'line-color-transition': { duration: 800, delay: 0 },
       } as any,
     });
 
