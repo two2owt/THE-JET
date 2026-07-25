@@ -1199,6 +1199,13 @@ export type Database = {
       }
     }
     Functions: {
+      admin_list_user_emails: {
+        Args: never
+        Returns: {
+          email: string
+          id: string
+        }[]
+      }
       apply_retention_schedule: { Args: never; Returns: undefined }
       can_view_profile_field: {
         Args: { _field_name: string; _profile_id: string; _viewer_id: string }
