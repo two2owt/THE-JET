@@ -21,6 +21,7 @@ const MonetizationToggle = lazy(() => import("@/components/admin/MonetizationTog
 const TestPushPanel = lazy(() => import("@/components/admin/TestPushPanel").then(m => ({ default: m.TestPushPanel })));
 const ManualDealSyncPanel = lazy(() => import("@/components/admin/ManualDealSyncPanel").then(m => ({ default: m.ManualDealSyncPanel })));
 const RetentionJobLog = lazy(() => import("@/components/admin/RetentionJobLog").then(m => ({ default: m.RetentionJobLog })));
+const RetentionSettings = lazy(() => import("@/components/admin/RetentionSettings").then(m => ({ default: m.RetentionSettings })));
 
 
 type SectionId = "deals" | "analytics" | "funnel" | "areas" | "retention" | "system";
@@ -226,7 +227,10 @@ export default function AdminDashboard() {
               )}
               {section === "retention" && (
                 <Suspense fallback={<AdminTabFallback />}>
-                  <RetentionJobLog />
+                  <div className="flex flex-col" style={{ gap: 'var(--space-md)' }}>
+                    <RetentionSettings />
+                    <RetentionJobLog />
+                  </div>
                 </Suspense>
               )}
               {section === "system" && (
