@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+// Types are regenerated after migration approval; use a loose client cast in the meantime.
+const db = supabase as unknown as {
+  from: (t: string) => any;
+  rpc: (fn: string, args?: Record<string, unknown>) => Promise<{ error: { message: string } | null }>;
+};
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,19 +36,19 @@ export function RetentionSettings() {
 
   useEffect(() => {
     (async () => {
-      const { data, error } = await supabase
-        .from("retention_settings" as never)
+      const { data, error } = await db
+        .from("retention_settings")
         .select("live_retention_days, obfuscate_after_days, cron_schedule, updated_at")
         .eq("id", true)
-        .maybeSingle()
-        .returns<RetentionSettings>();
+        .maybeSingle();
       if (error) {
         toast.error(`Failed to load retention settings: ${error.message}`);
       } else if (data) {
-        setSettings(data);
-        setLiveDays(String(data.live_retention_days));
-        setObfDays(String(data.obfuscate_after_days));
-        setCron(data.cron_schedule);
+        const s = data as RetentionSettings;
+        setSettings(s);
+        setLiveDays(String(s.live_retention_days));
+        setObfDays(String(s.obfuscate_after_days));
+        setCron(s.cron_schedule);
       }
       setLoading(false);
     })();
@@ -61,8 +66,8 @@ export function RetentionSettings() {
     if (!canSave) return;
     setSaving(true);
     const { data: userRes } = await supabase.auth.getUser();
-    const { error } = await supabase
-      .from("retention_settings" as never)
+    const { error } = await db
+      .from("retention_settings")
       .update({
         live_retention_days: live,
         obfuscate_after_days: obf,
@@ -75,7 +80,7 @@ export function RetentionSettings() {
       setSaving(false);
       return;
     }
-    const { error: rpcErr } = await supabase.rpc("apply_retention_schedule" as never);
+    const { error: rpcErr } = await db.rpc("apply_retention_schedule");
     if (rpcErr) {
       toast.error(`Saved values, but rescheduling failed: ${rpcErr.message}`);
     } else {
@@ -93,7 +98,7 @@ export function RetentionSettings() {
   async function runNow() {
     // Best-effort: call the SECURITY DEFINER retention fn via RPC only if permitted.
     // Currently only service_role can execute; surface a clean toast either way.
-    const { error } = await supabase.rpc("process_location_data_retention" as never);
+    const { error } = await db.rpc("process_location_data_retention");
     if (error) {
       toast.info("Manual run isn't available from the client (service-role only). Job will run on the next cron tick.");
     } else {
