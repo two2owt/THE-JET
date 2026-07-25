@@ -112,6 +112,45 @@ export type Database = {
         }
         Relationships: []
       }
+      data_retention_job_log: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          job_name: string
+          rows_archived: number | null
+          rows_deleted: number | null
+          rows_obfuscated: number | null
+          started_at: string
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          job_name: string
+          rows_archived?: number | null
+          rows_deleted?: number | null
+          rows_obfuscated?: number | null
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          job_name?: string
+          rows_archived?: number | null
+          rows_deleted?: number | null
+          rows_obfuscated?: number | null
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
       deal_ending_soon_notified: {
         Row: {
           deal_id: string
@@ -891,6 +930,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_locations_archive: {
+        Row: {
+          accuracy: number | null
+          archived_at: string
+          created_at: string
+          current_neighborhood_id: string | null
+          id: string
+          latitude: number
+          longitude: number
+          user_id: string
+        }
+        Insert: {
+          accuracy?: number | null
+          archived_at?: string
+          created_at: string
+          current_neighborhood_id?: string | null
+          id: string
+          latitude: number
+          longitude: number
+          user_id: string
+        }
+        Update: {
+          accuracy?: number | null
+          archived_at?: string
+          created_at?: string
+          current_neighborhood_id?: string | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          user_id?: string
+        }
+        Relationships: []
       }
       user_preferences: {
         Row: {
