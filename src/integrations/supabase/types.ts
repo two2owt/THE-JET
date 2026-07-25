@@ -618,6 +618,36 @@ export type Database = {
         }
         Relationships: []
       }
+      retention_settings: {
+        Row: {
+          created_at: string
+          cron_schedule: string
+          id: boolean
+          live_retention_days: number
+          obfuscate_after_days: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          cron_schedule?: string
+          id?: boolean
+          live_retention_days?: number
+          obfuscate_after_days?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          cron_schedule?: string
+          id?: boolean
+          live_retention_days?: number
+          obfuscate_after_days?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       search_history: {
         Row: {
           created_at: string
@@ -1163,6 +1193,7 @@ export type Database = {
       }
     }
     Functions: {
+      apply_retention_schedule: { Args: never; Returns: undefined }
       can_view_profile_field: {
         Args: { _field_name: string; _profile_id: string; _viewer_id: string }
         Returns: boolean
