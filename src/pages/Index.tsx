@@ -68,6 +68,10 @@ const Index = () => {
   // Use shared navigation hook for consistent tab handling
   const { activeTab, setActiveTab, handleTabChange } = useBottomNavigation({ defaultTab: "map" });
   const { unreadCount: unreadMessages } = useUnreadMessages();
+  // Stream signed-in user's foreground location into `user_locations` while
+  // the map tab is active so density/paths/live-stats realtime feeds render
+  // continuously updated data. No-op when signed out or permission not granted.
+  useLocationTracker(activeTab === "map");
   const [mapUIResetKey, setMapUIResetKey] = useState(0); // Increments when switching to map tab to reset collapsed UI
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
 
