@@ -98,7 +98,7 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
           clearTimeout(debounceTimer);
           debounceTimer = setTimeout(() => {
             loadDensityData();
-          }, 500);
+          }, 1500);
         }
       )
       .subscribe();
