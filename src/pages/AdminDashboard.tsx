@@ -236,9 +236,6 @@ export default function AdminDashboard() {
                   </div>
                 </Suspense>
               )}
-              {section === "system" && (
-                <></>
-              ) && null}
               {section === "security" && (
                 <Suspense fallback={<AdminTabFallback />}>
                   <SecurityFindingsPanel />
