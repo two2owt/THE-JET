@@ -311,7 +311,7 @@ export const SearchResults = ({
                 <h4 className="flex items-center gap-1.5 heading-luxe-eyebrow px-1">
                   <Store className="w-3 h-3" />
                   JetCards
-                  <span className="ml-auto text-muted-foreground/60 tabular-nums">{filteredJetcards.length}</span>
+                  <span className="ml-auto text-muted-foreground tabular-nums">{filteredJetcards.length}</span>
                 </h4>
                 <div className="space-y-1">
                   {filteredJetcards.map((venue) => (
@@ -387,7 +387,7 @@ export const SearchResults = ({
                 <h4 className="flex items-center gap-1.5 heading-luxe-eyebrow px-1">
                   <Compass className="w-3 h-3" />
                   Areas
-                  <span className="ml-auto text-muted-foreground/60 tabular-nums">{filteredAreas.length}</span>
+                  <span className="ml-auto text-muted-foreground tabular-nums">{filteredAreas.length}</span>
                 </h4>
                 <div className="flex flex-wrap gap-1.5">
                   {filteredAreas.map((area) => (
@@ -413,7 +413,7 @@ export const SearchResults = ({
                 <h4 className="flex items-center gap-1.5 heading-luxe-eyebrow px-1">
                   <LayoutGrid className="w-3 h-3" />
                   Categories
-                  <span className="ml-auto text-muted-foreground/60 tabular-nums">{filteredCategories.length}</span>
+                  <span className="ml-auto text-muted-foreground tabular-nums">{filteredCategories.length}</span>
                 </h4>
                 <div className="flex flex-wrap gap-1.5">
                   {filteredCategories.map((cat) => (
@@ -439,7 +439,7 @@ export const SearchResults = ({
                 <h4 className="flex items-center gap-1.5 heading-luxe-eyebrow px-1">
                   <Store className="w-3 h-3" />
                   Venues
-                  <span className="ml-auto text-muted-foreground/60 tabular-nums">{filteredVenues.length}</span>
+                  <span className="ml-auto text-muted-foreground tabular-nums">{filteredVenues.length}</span>
                 </h4>
                 <div className="space-y-1">
                   {filteredVenues.map((venue) => (
@@ -487,7 +487,7 @@ export const SearchResults = ({
                 <h4 className="flex items-center gap-1.5 heading-luxe-eyebrow px-1">
                   <Sparkles className="w-3 h-3" />
                   Deals
-                  <span className="ml-auto text-muted-foreground/60 tabular-nums">{filteredDeals.length}</span>
+                  <span className="ml-auto text-muted-foreground tabular-nums">{filteredDeals.length}</span>
                 </h4>
                 <div className="space-y-1">
                   {filteredDeals.map((deal) => (

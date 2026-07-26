@@ -220,7 +220,7 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
     onToggle: (option: string) => void;
   }) => (
     <div className="space-y-2">
-      <p className="text-xs font-medium text-muted-foreground">{title} <span className="text-muted-foreground/60">(up to 5)</span></p>
+      <p className="text-xs font-medium text-muted-foreground">{title} <span className="text-muted-foreground">(up to 5)</span></p>
       <div className="flex flex-wrap gap-1.5">
         {options.map(option => (
           <OptionChip

@@ -693,7 +693,7 @@ const Onboarding = () => {
         {/* JET wordmark */}
         <div className="mt-7 flex items-center justify-center gap-3">
           <img src={jetLogo} alt="" aria-hidden className="h-4 w-4 object-contain opacity-30" />
-          <span className="font-display text-xs font-extrabold uppercase tracking-[0.5em] text-muted-foreground/30">
+          <span className="font-display text-xs font-extrabold uppercase tracking-[0.5em] text-muted-foreground">
             JET
           </span>
         </div>
