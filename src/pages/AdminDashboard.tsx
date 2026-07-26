@@ -8,7 +8,7 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { AdminTopbar } from "@/components/admin/AdminTopbar";
 import { SEO } from "@/components/SEO";
 import {
-  ChevronsLeft, ChevronsRight, Menu, Tag, BarChart3, MapPinned, Settings2, Filter, Archive,
+  ChevronsLeft, ChevronsRight, Menu, Tag, BarChart3, MapPinned, Settings2, Filter, Archive, ShieldAlert,
 } from "lucide-react";
 
 // Lazy-loaded admin sections (UserAnalytics pulls in recharts ~200KB)
@@ -23,9 +23,10 @@ const ManualDealSyncPanel = lazy(() => import("@/components/admin/ManualDealSync
 const RetentionJobLog = lazy(() => import("@/components/admin/RetentionJobLog").then(m => ({ default: m.RetentionJobLog })));
 const RetentionSettings = lazy(() => import("@/components/admin/RetentionSettings").then(m => ({ default: m.RetentionSettings })));
 const ExportUsersPanel = lazy(() => import("@/components/admin/ExportUsersPanel").then(m => ({ default: m.ExportUsersPanel })));
+const SecurityFindingsPanel = lazy(() => import("@/components/admin/SecurityFindingsPanel").then(m => ({ default: m.SecurityFindingsPanel })));
 
 
-type SectionId = "deals" | "analytics" | "funnel" | "areas" | "retention" | "system";
+type SectionId = "deals" | "analytics" | "funnel" | "areas" | "retention" | "security" | "system";
 
 interface SectionDef {
   id: SectionId;
@@ -40,6 +41,7 @@ const SECTIONS: SectionDef[] = [
   { id: "funnel",    label: "Funnel",    description: "Search → Deal Viewed → Deal Clicked → Checkout conversion.", icon: Filter },
   { id: "areas",     label: "Areas",     description: "Neighborhood geofences and coverage areas.",   icon: MapPinned },
   { id: "retention", label: "Retention", description: "Location data retention job runs and archived row trends.", icon: Archive },
+  { id: "security",  label: "Security",  description: "Current scan findings, severity, and recommended actions.", icon: ShieldAlert },
   { id: "system",    label: "System",    description: "Monetization toggle and email settings.", icon: Settings2 },
 ];
 
@@ -232,6 +234,14 @@ export default function AdminDashboard() {
                     <RetentionSettings />
                     <RetentionJobLog />
                   </div>
+                </Suspense>
+              )}
+              {section === "system" && (
+                <></>
+              ) && null}
+              {section === "security" && (
+                <Suspense fallback={<AdminTabFallback />}>
+                  <SecurityFindingsPanel />
                 </Suspense>
               )}
               {section === "system" && (
