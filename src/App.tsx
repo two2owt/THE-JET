@@ -32,6 +32,7 @@ const Messages = lazy(() => import("./pages/Messages"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const CharlotteHappyHour = lazy(() => import("./pages/guides/CharlotteHappyHour"));
 const VerificationSuccess = lazy(() => import("./pages/VerificationSuccess"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -190,6 +191,15 @@ const AppLayout = memo(function AppLayout() {
           element={
             <Suspense fallback={<NavigationShell />}>
               <TermsOfService />
+            </Suspense>
+          }
+        />
+        {/* SEO content guides */}
+        <Route
+          path="/guides/charlotte-happy-hour"
+          element={
+            <Suspense fallback={<NavigationShell />}>
+              <CharlotteHappyHour />
             </Suspense>
           }
         />

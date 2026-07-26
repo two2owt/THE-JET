@@ -38,12 +38,12 @@ export const OfflineBanner = () => {
       
       {hasCachedTiles ? (
         <>
-          <span className="text-muted-foreground/60 hidden sm:inline" aria-hidden="true">•</span>
+          <span className="text-muted-foreground hidden sm:inline" aria-hidden="true">•</span>
           <div className="hidden sm:flex items-center gap-1.5 text-foreground/85">
             <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
             <span>{cacheStats.mapboxTiles} tiles cached</span>
           </div>
-          <span className="text-muted-foreground/60 hidden md:inline" aria-hidden="true">•</span>
+          <span className="text-muted-foreground hidden md:inline" aria-hidden="true">•</span>
           <div className="hidden md:flex items-center gap-1.5" style={{ color: 'hsl(var(--gold))' }}>
             <Database className="h-3.5 w-3.5" aria-hidden="true" />
             <span>{cacheStats.totalSize}</span>
