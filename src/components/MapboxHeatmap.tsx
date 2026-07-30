@@ -3268,7 +3268,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     position: 'sticky',
                     top: isMobile ? '0px' : '26px',
                     zIndex: 2,
-                    background: 'hsl(var(--card) / 0.5)',
+                    background: 'hsl(var(--card) / 0.92)',
                     border: '1px solid hsl(var(--border) / 0.5)',
                     backdropFilter: 'blur(12px) saturate(1.4)',
                     WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
