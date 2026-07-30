@@ -3055,16 +3055,20 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 paddingBottom: '4px',
                 minWidth: 0,
               }}>
-                {/* Heatmap paint sliders — real-time, no round-trip. */}
+                {/* One-tap reset — restores default rendering + every heatmap
+                    filter (time range, day, window, time-lapse) and refetches
+                    density. Disabled while already at defaults. */}
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                   <button
                     type="button"
                     onClick={handleResetHeatmap}
-                    aria-label="Reset heatmap controls to defaults"
-                    className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[10px] text-muted-foreground transition hover:bg-white/10 hover:text-foreground"
+                    disabled={isHeatmapDefault}
+                    title={isHeatmapDefault ? 'Heatmap already at default settings' : 'Restore default heatmap settings'}
+                    aria-label="Reset heatmap to default settings"
+                    className="inline-flex min-h-[32px] items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-semibold text-muted-foreground transition hover:bg-white/10 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
                   >
-                    <RotateCcw style={{ width: '10px', height: '10px' }} />
-                    Reset
+                    <RotateCcw style={{ width: '11px', height: '11px' }} />
+                    Reset heatmap
                   </button>
                 </div>
                 {/* Time-window slider — server round-trip, only fires on
