@@ -87,6 +87,7 @@ import { useOpenNowTick } from "@/hooks/useOpenNowTick";
 import { Button } from "./ui/button";
 import { LayerToggleRow } from "./map/LayerToggleRow";
 import { LayerSliderRow } from "./map/LayerSliderRow";
+import { HeatmapColorLegend } from "./map/HeatmapColorLegend";
 import {
   LiveStatsPanel,
   liveStatsRangeToTimeFilter,
@@ -3295,6 +3296,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     />
                   );
                 })()}
+
+                {/* Compact color-scale legend — explains the heat ramp now that
+                    the intensity/radius/opacity sliders are gone. */}
+                <HeatmapColorLegend />
 
                 {/* Density status — loading / error */}
                 {(isLoadingHeatmap || densityError) && (
