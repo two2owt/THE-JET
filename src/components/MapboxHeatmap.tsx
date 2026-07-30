@@ -87,6 +87,8 @@ import { useOpenNowTick } from "@/hooks/useOpenNowTick";
 import { Button } from "./ui/button";
 import { LayerToggleRow } from "./map/LayerToggleRow";
 import { LayerSliderRow } from "./map/LayerSliderRow";
+import { HeatmapHourTimeline } from "./map/HeatmapHourTimeline";
+import { FlowPathsTimeline } from "./map/FlowPathsTimeline";
 import {
   LiveStatsPanel,
   liveStatsRangeToTimeFilter,
@@ -3292,6 +3294,17 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     </div>
                     <div className="font-display" style={{ textAlign: 'center', fontSize: '11px', fontWeight: 700, letterSpacing: '0.02em', background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{timelapse.formatHour(timelapse.currentHour)}</div>
                     <Slider value={[timelapse.currentHour]} onValueChange={([v]) => timelapse.setHour(v)} min={0} max={23} step={1} className="w-full" disabled={timelapse.isPlaying} />
+                    {/* Chronological hour timeline — horizontal nodes on a
+                        2px connector, status-coded by playback position and
+                        data availability. Click a node to jump to that hour. */}
+                    <HeatmapHourTimeline
+                      hourlyData={timelapse.hourlyData}
+                      currentHour={timelapse.currentHour}
+                      onSelectHour={(h) => { triggerHaptic('light'); timelapse.setHour(h); }}
+                      formatHour={timelapse.formatHour}
+                      loading={timelapse.loading}
+                      error={timelapse.error}
+                    />
                     {/* Speed slider — internal `speed` is seconds-per-hour
                         (higher = slower). We expose it as a playback multiplier
                         (higher = faster) via `1 / speed`. */}
@@ -3422,7 +3435,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             />
 
             {/* Path filters */}
-            <div style={{ overflow: 'hidden', transition: 'max-height 0.3s', maxHeight: showMovementPaths ? '700px' : '0px' }}>
+            <div style={{ overflow: 'hidden', transition: 'max-height 0.3s', maxHeight: showMovementPaths ? '1200px' : '0px' }}>
               <div style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -3542,13 +3555,18 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   ]}
                   defaultValue={2}
                 />
-                {pathData && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '9px', color: 'hsl(var(--muted-foreground))', paddingTop: '4px', borderTop: '1px solid hsl(var(--border) / 0.3)' }}>
-                    <span>{pathData.stats.total_paths} paths</span>
-                    <span>•</span>
-                    <span>{pathData.stats.unique_users} users</span>
-                  </div>
-                )}
+                {/* Movement-frequency chronology — vertical timeline whose
+                    nodes are frequency bands. Tapping a band applies it as
+                    the Min. frequency filter. */}
+                <div style={{ paddingTop: '6px', borderTop: '1px solid hsl(var(--border) / 0.3)' }}>
+                  <FlowPathsTimeline
+                    geojson={pathData?.geojson}
+                    stats={pathData?.stats}
+                    minFrequency={minPathFrequency}
+                    onSelectBand={(min) => { triggerHaptic('light'); setMinPathFrequency(min); }}
+                    error={Boolean(pathsError)}
+                  />
+                </div>
               </div>
             </div>
 
