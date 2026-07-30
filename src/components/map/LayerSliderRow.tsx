@@ -243,6 +243,9 @@ const LayerSliderRowImpl = ({
                     : "hsl(var(--muted-foreground) / 0.85)",
                   cursor: "pointer",
                   touchAction: "manipulation",
+                  transition:
+                    "background 200ms cubic-bezier(0.16,1,0.3,1), color 200ms ease, border-color 200ms ease, transform 160ms ease",
+                  transform: active ? "scale(1.02)" : "scale(1)",
                 }}
               >
                 {t.label}
