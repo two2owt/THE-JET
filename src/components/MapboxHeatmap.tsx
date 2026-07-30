@@ -3198,7 +3198,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     backdropFilter: 'blur(12px) saturate(1.4)',
                     WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
                     boxShadow: 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
-                  }}>
+                    // Card fades in when time-lapse is enabled so the mode
+                    // switch reads as a transition, not a layout jump.
+                    animation: 'content-fade-in 240ms cubic-bezier(0.16,1,0.3,1)',
+                  }} className={timelapse.loading ? 'layer-pending' : undefined}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <button type="button" onClick={() => { triggerHaptic('light'); timelapse.stepBackward(); }} disabled={timelapse.isPlaying}
                         style={{ width: '26px', height: '26px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', border: '1px solid hsl(var(--border) / 0.6)', background: 'hsl(var(--background) / 0.6)', color: 'hsl(var(--foreground) / 0.8)', cursor: timelapse.isPlaying ? 'not-allowed' : 'pointer', opacity: timelapse.isPlaying ? 0.5 : 1 }}>
@@ -3223,7 +3226,14 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                         <SkipForward style={{ width: '12px', height: '12px' }} />
                       </button>
                     </div>
-                    <div className="font-display" style={{ textAlign: 'center', fontSize: '11px', fontWeight: 700, letterSpacing: '0.02em', background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{timelapse.formatHour(timelapse.currentHour)}</div>
+                    <div
+                      key={timelapse.currentHour}
+                      className="font-display layer-value-transition"
+                      aria-live="polite"
+                      style={{ textAlign: 'center', fontSize: '11px', fontWeight: 700, letterSpacing: '0.02em', background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
+                    >
+                      {timelapse.formatHour(timelapse.currentHour)}
+                    </div>
                     <Slider value={[timelapse.currentHour]} onValueChange={([v]) => timelapse.setHour(v)} min={0} max={23} step={1} className="w-full" disabled={timelapse.isPlaying} />
                     {/* Hour ticks — lightweight scale under the scrubber so the
                         panel stays compact on narrow viewports. */}
@@ -3318,7 +3328,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
                 {/* Compact color-scale legend — explains the heat ramp now that
                     the intensity/radius/opacity sliders are gone. */}
-                <HeatmapColorLegend />
+                <HeatmapColorLegend loading={isLoadingHeatmap || densityLoading} />
 
                 {/* Density status — loading / error */}
                 {(isLoadingHeatmap || densityError) && (
