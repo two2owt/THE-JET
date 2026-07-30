@@ -87,8 +87,6 @@ import { useOpenNowTick } from "@/hooks/useOpenNowTick";
 import { Button } from "./ui/button";
 import { LayerToggleRow } from "./map/LayerToggleRow";
 import { LayerSliderRow } from "./map/LayerSliderRow";
-import { HeatmapHourTimeline } from "./map/HeatmapHourTimeline";
-import { FlowPathsTimeline } from "./map/FlowPathsTimeline";
 import {
   LiveStatsPanel,
   liveStatsRangeToTimeFilter,
