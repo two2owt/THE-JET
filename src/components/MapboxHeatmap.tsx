@@ -3555,13 +3555,18 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   ]}
                   defaultValue={2}
                 />
-                {pathData && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '9px', color: 'hsl(var(--muted-foreground))', paddingTop: '4px', borderTop: '1px solid hsl(var(--border) / 0.3)' }}>
-                    <span>{pathData.stats.total_paths} paths</span>
-                    <span>•</span>
-                    <span>{pathData.stats.unique_users} users</span>
-                  </div>
-                )}
+                {/* Movement-frequency chronology — vertical timeline whose
+                    nodes are frequency bands. Tapping a band applies it as
+                    the Min. frequency filter. */}
+                <div style={{ paddingTop: '6px', borderTop: '1px solid hsl(var(--border) / 0.3)' }}>
+                  <FlowPathsTimeline
+                    geojson={pathData?.geojson}
+                    stats={pathData?.stats}
+                    minFrequency={minPathFrequency}
+                    onSelectBand={(min) => { triggerHaptic('light'); setMinPathFrequency(min); }}
+                    error={Boolean(pathsError)}
+                  />
+                </div>
               </div>
             </div>
 
