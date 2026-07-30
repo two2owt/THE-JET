@@ -3435,7 +3435,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             />
 
             {/* Path filters */}
-            <div style={{ overflow: 'hidden', transition: 'max-height 0.3s', maxHeight: showMovementPaths ? '700px' : '0px' }}>
+            <div style={{ overflow: 'hidden', transition: 'max-height 0.3s', maxHeight: showMovementPaths ? '1200px' : '0px' }}>
               <div style={{
                 display: 'flex',
                 flexDirection: 'column',
