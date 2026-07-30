@@ -179,6 +179,64 @@ finding-level review.
 
 ---
 
+## 7a. Required auth/role checks — Google Places & pgmq surfaces
+
+This is the normative table. Any change to these functions must keep the
+listed check, and any new function in either family must adopt the same
+pattern.
+
+### Google Places surfaces (edge functions)
+
+All four consume the paid `GOOGLE_PLACES_API_KEY` quota, so none of them
+may ever be reachable anonymously.
+
+| Function | Required check | Enforced by | Grant level |
+| --- | --- | --- | --- |
+| `search-google-places-venues` | Valid user JWT (`Authorization: Bearer`), reject on missing/invalid | `getAuthenticatedUserId()` from `_shared/require-auth.ts` (`auth.getClaims`) | any authenticated user |
+| `get-google-places-data` | Valid user JWT | inline `auth.getClaims(token)`, `401` on failure | any authenticated user |
+| `get-nearby-parking` | Valid user JWT | inline `auth.getClaims(token)`, `401` on failure | any authenticated user |
+| `get-parking-details` | Valid user JWT | inline `auth.getClaims(token)`, `401` on failure | any authenticated user |
+| `scrape-venue-images` | Valid user JWT **plus** `has_role(uid,'admin')` on a service-role client | inline JWT check then `rpc('has_role')`, `403` on failure | admin only |
+
+Rules:
+
+- The Google API key is read only after the auth check passes, never
+  before, and is never echoed into a response or log line.
+- Upstream Google errors are collapsed into a generic message; the raw
+  provider payload is logged server-side only.
+- Anonymous access requires a finding-level review plus IP rate-limiting
+  (see §7) — it is not currently permitted for any of the above.
+
+### pgmq / email-queue database functions
+
+Every one is `SECURITY DEFINER`, owned by `postgres`, and callable only
+by `service_role` (plus the owner). `EXECUTE` is revoked from `PUBLIC`,
+`anon`, and `authenticated` — no client-side code may call them.
+
+| Function | Required caller | Notes |
+| --- | --- | --- |
+| `enqueue_email(text, jsonb)` | `service_role` (edge functions) | creates the queue on first use |
+| `read_email_batch(text, int, int)` | `service_role` (`process-email-queue`) | visibility-timeout read |
+| `delete_email(text, bigint)` | `service_role` | ack after successful send |
+| `move_to_dlq(text, text, bigint, jsonb)` | `service_role` | poison-message handling |
+| `email_queue_endpoint()` | internal / `service_role` | resolves the functions URL, reads `vault.decrypted_secrets` |
+| `email_queue_dispatch()` | `pg_cron` job owner / `service_role` | invoked by the `process-email-queue` cron schedule |
+| `email_queue_wake()` | trigger context only | bound to the `AFTER INSERT` statement triggers on both pgmq queues |
+| `ensure_email_queue_triggers()` | migration / `service_role` | self-healing rebind routine |
+
+Rules:
+
+- Never `GRANT EXECUTE ... TO anon` or `authenticated` on any of these;
+  the CI check in §11 fails the build if a migration does.
+- `email_queue_endpoint()` and `email_queue_wake()` read the vault-stored
+  `email_queue_service_role_key`. They must keep `SET search_path = ''`
+  and must never return or log that secret.
+- `ensure_email_queue_triggers()` is the only sanctioned way to
+  create/rebind the wake triggers; call it at the end of every migration
+  that touches email-queue infrastructure.
+
+---
+
 ## 8. Auth configuration
 
 > **Email queue triggers.** `pgmq.q_auth_emails` and
