@@ -16,9 +16,6 @@ interface Params {
   pathTimeFilter: string;
   dayFilter: number | undefined;
   timelapseMode: boolean;
-  heatIntensity: number;
-  heatRadius: number;
-  heatOpacity: number;
   densityWindowMinutes: number | null;
   pathsWindowMinutes: number | null;
 }
@@ -34,9 +31,6 @@ export const useLayerPersistence = ({
   pathTimeFilter,
   dayFilter,
   timelapseMode,
-  heatIntensity,
-  heatRadius,
-  heatOpacity,
   densityWindowMinutes,
   pathsWindowMinutes,
 }: Params) => {
@@ -50,9 +44,6 @@ export const useLayerPersistence = ({
   useEffect(() => { localStorage.setItem(filterKeys.dayFilter, dayFilter === undefined ? "all" : String(dayFilter)); }, [filterKeys.dayFilter, dayFilter]);
   useEffect(() => { localStorage.setItem(filterKeys.timelapseMode, String(timelapseMode)); }, [filterKeys.timelapseMode, timelapseMode]);
 
-  useEffect(() => { localStorage.setItem(filterKeys.heatIntensity, String(heatIntensity)); }, [filterKeys.heatIntensity, heatIntensity]);
-  useEffect(() => { localStorage.setItem(filterKeys.heatRadius, String(heatRadius)); }, [filterKeys.heatRadius, heatRadius]);
-  useEffect(() => { localStorage.setItem(filterKeys.heatOpacity, String(heatOpacity)); }, [filterKeys.heatOpacity, heatOpacity]);
   useEffect(() => {
     localStorage.setItem(filterKeys.densityWindow, densityWindowMinutes === null ? "off" : String(densityWindowMinutes));
   }, [filterKeys.densityWindow, densityWindowMinutes]);
