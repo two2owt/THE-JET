@@ -17,7 +17,8 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Create trigger that fires when a new deal is inserted
+DROP TRIGGER IF EXISTS on_deal_created ON public.deals;
 CREATE TRIGGER on_deal_created
-  AFTER INSERT ON public.deals
+AFTER INSERT ON public.deals
   FOR EACH ROW
   EXECUTE FUNCTION notify_admin_of_new_deal();

@@ -1,7 +1,7 @@
 -- Drop and recreate discoverable_profiles view to show all signed-up users
 DROP VIEW IF EXISTS discoverable_profiles;
 
-CREATE VIEW discoverable_profiles 
+CREATE OR REPLACE VIEW discoverable_profiles 
 WITH (security_invoker = true)
 AS
 SELECT 

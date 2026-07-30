@@ -35,8 +35,9 @@ CREATE POLICY "Admins can update retention settings"
   USING (public.has_role(auth.uid(), 'admin'::app_role))
   WITH CHECK (public.has_role(auth.uid(), 'admin'::app_role));
 
+DROP TRIGGER IF EXISTS retention_settings_updated_at ON public.retention_settings;
 CREATE TRIGGER retention_settings_updated_at
-  BEFORE UPDATE ON public.retention_settings
+BEFORE UPDATE ON public.retention_settings
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 -- Seed default singleton
