@@ -3292,17 +3292,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     </div>
                     <div className="font-display" style={{ textAlign: 'center', fontSize: '11px', fontWeight: 700, letterSpacing: '0.02em', background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{timelapse.formatHour(timelapse.currentHour)}</div>
                     <Slider value={[timelapse.currentHour]} onValueChange={([v]) => timelapse.setHour(v)} min={0} max={23} step={1} className="w-full" disabled={timelapse.isPlaying} />
-                    {/* Chronological hour timeline — horizontal nodes on a
-                        2px connector, status-coded by playback position and
-                        data availability. Click a node to jump to that hour. */}
-                    <HeatmapHourTimeline
-                      hourlyData={timelapse.hourlyData}
-                      currentHour={timelapse.currentHour}
-                      onSelectHour={(h) => { triggerHaptic('light'); timelapse.setHour(h); }}
-                      formatHour={timelapse.formatHour}
-                      loading={timelapse.loading}
-                      error={timelapse.error}
-                    />
+                    {/* Hour ticks — lightweight scale under the scrubber so the
+                        panel stays compact on narrow viewports. */}
+                    <div
+                      aria-hidden
+                      className="flex justify-between px-0.5 text-[8px] tabular-nums text-muted-foreground/70"
+                    >
+                      {[0, 6, 12, 18, 23].map((h) => (
+                        <span key={h}>{h % 12 || 12}{h < 12 ? 'a' : 'p'}</span>
+                      ))}
+                    </div>
                     {/* Speed slider — internal `speed` is seconds-per-hour
                         (higher = slower). We expose it as a playback multiplier
                         (higher = faster) via `1 / speed`. */}
