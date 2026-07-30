@@ -3296,6 +3296,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   );
                 })()}
 
+                {/* Compact color-scale legend — explains the heat ramp now that
+                    the intensity/radius/opacity sliders are gone. */}
+                <HeatmapColorLegend />
+
                 {/* Density status — loading / error */}
                 {(isLoadingHeatmap || densityError) && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', borderRadius: '8px', fontSize: '10px', background: densityError ? 'hsl(var(--destructive) / 0.1)' : 'hsl(var(--primary) / 0.08)' }}>
