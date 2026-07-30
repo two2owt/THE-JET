@@ -763,7 +763,21 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     if (timelapse.isPlaying) timelapse.pause();
     timelapse.setSpeed(1);
     timelapse.setHour(new Date().getHours());
-  }, [timelapse]);
+    // Re-pull density with the default filters so the rendered heat matches
+    // the restored controls immediately instead of on the next interaction.
+    scheduleDensityRefresh();
+    toast.success('Heatmap reset to defaults');
+  }, [timelapse, scheduleDensityRefresh]);
+
+  // Whether every heatmap control is already at its factory value — used to
+  // disable the one-tap reset so it never looks actionable when it's a no-op.
+  const isHeatmapDefault =
+    timeFilter === 'all' &&
+    dayFilter === undefined &&
+    hourFilter === undefined &&
+    !timelapseMode &&
+    densityWindowMinutes === null &&
+    timelapse.speed === 1;
 
   const handleResetFlowPaths = useCallback(() => {
     triggerHaptic('light');
