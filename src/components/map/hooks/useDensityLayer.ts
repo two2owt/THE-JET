@@ -8,17 +8,12 @@ interface Params {
   densityData: { geojson: any; stats: { grid_cells: number } } | null | undefined;
   timelapseMode: boolean;
   timelapse: { currentData: any; currentHour: number };
-  heatIntensityRef: MutableRefObject<number>;
-  heatRadiusRef: MutableRefObject<number>;
-  heatOpacityRef: MutableRefObject<number>;
 }
 
 /**
  * Adds / removes / rebuilds the density heatmap layer set
  * (`location-density-heat` + `-point` + `-glow`) on the shared Mapbox map.
  *
- * Reads slider multipliers from refs so drag interactions don't trigger a
- * full source rebuild — {@link useDensityPaint} handles paint-only updates.
  */
 export const useDensityLayer = ({
   mapRef,
@@ -28,9 +23,6 @@ export const useDensityLayer = ({
   densityData,
   timelapseMode,
   timelapse,
-  heatIntensityRef,
-  heatRadiusRef,
-  heatOpacityRef,
 }: Params) => {
   useEffect(() => {
     const activeData = timelapseMode && timelapse.currentData
@@ -99,9 +91,9 @@ export const useDensityLayer = ({
           'interpolate',
           ['exponential', 2],
           ['zoom'],
-          0, (isMobile ? 2.2 : 2) * heatIntensityRef.current,
-          9, (isMobile ? 2.6 : 3) * heatIntensityRef.current,
-          15, (isMobile ? 4 : 5) * heatIntensityRef.current,
+          0, (isMobile ? 2.2 : 2),
+          9, (isMobile ? 2.6 : 3),
+          15, (isMobile ? 4 : 5),
         ],
         'heatmap-color': [
           'interpolate',
@@ -123,26 +115,26 @@ export const useDensityLayer = ({
           'interpolate',
           ['cubic-bezier', 0.4, 0, 0.2, 1],
           ['zoom'],
-          0,  (isMobile ? 26 : 20) * heatRadiusRef.current,
-          5,  (isMobile ? 38 : 30) * heatRadiusRef.current,
-          9,  (isMobile ? 60 : 50) * heatRadiusRef.current,
-          11, (isMobile ? 72 : 60) * heatRadiusRef.current,
-          12, (isMobile ? 82 : 70) * heatRadiusRef.current,
-          13, (isMobile ? 94 : 80) * heatRadiusRef.current,
-          15, (isMobile ? 115 : 100) * heatRadiusRef.current,
-          17, (isMobile ? 130 : 115) * heatRadiusRef.current,
+          0,  (isMobile ? 26 : 20),
+          5,  (isMobile ? 38 : 30),
+          9,  (isMobile ? 60 : 50),
+          11, (isMobile ? 72 : 60),
+          12, (isMobile ? 82 : 70),
+          13, (isMobile ? 94 : 80),
+          15, (isMobile ? 115 : 100),
+          17, (isMobile ? 130 : 115),
         ],
         'heatmap-opacity': [
           'interpolate',
           ['cubic-bezier', 0.4, 0, 0.2, 1],
           ['zoom'],
-          5,  (isMobile ? 0.85 : 1)    * heatOpacityRef.current,
-          7,  (isMobile ? 0.82 : 0.95) * heatOpacityRef.current,
-          10, (isMobile ? 0.8  : 0.92) * heatOpacityRef.current,
-          12, (isMobile ? 0.78 : 0.9)  * heatOpacityRef.current,
-          14, (isMobile ? 0.74 : 0.87) * heatOpacityRef.current,
-          15, (isMobile ? 0.7  : 0.85) * heatOpacityRef.current,
-          17, (isMobile ? 0.6  : 0.75) * heatOpacityRef.current,
+          5,  (isMobile ? 0.85 : 1),
+          7,  (isMobile ? 0.82 : 0.95),
+          10, (isMobile ? 0.8  : 0.92),
+          12, (isMobile ? 0.78 : 0.9),
+          14, (isMobile ? 0.74 : 0.87),
+          15, (isMobile ? 0.7  : 0.85),
+          17, (isMobile ? 0.6  : 0.75),
         ],
         'heatmap-radius-transition': { duration: 450, delay: 0 },
         'heatmap-opacity-transition': { duration: 600, delay: 0 },
