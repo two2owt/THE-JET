@@ -30,7 +30,8 @@ CREATE POLICY "Users can update their own preferences"
   USING (auth.uid() = user_id);
 
 -- Create trigger for updated_at
+DROP TRIGGER IF EXISTS update_user_preferences_updated_at ON public.user_preferences;
 CREATE TRIGGER update_user_preferences_updated_at
-  BEFORE UPDATE ON public.user_preferences
+BEFORE UPDATE ON public.user_preferences
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();

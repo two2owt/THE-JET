@@ -39,8 +39,9 @@ CREATE POLICY "Users can delete their own reviews"
   USING (auth.uid() = user_id);
 
 -- Create trigger for updated_at
+DROP TRIGGER IF EXISTS update_venue_reviews_updated_at ON public.venue_reviews;
 CREATE TRIGGER update_venue_reviews_updated_at
-  BEFORE UPDATE ON public.venue_reviews
+BEFORE UPDATE ON public.venue_reviews
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();
 
@@ -85,7 +86,8 @@ CREATE POLICY "Users can delete their own connections"
   USING (auth.uid() = user_id OR auth.uid() = friend_id);
 
 -- Create trigger for updated_at
+DROP TRIGGER IF EXISTS update_user_connections_updated_at ON public.user_connections;
 CREATE TRIGGER update_user_connections_updated_at
-  BEFORE UPDATE ON public.user_connections
+BEFORE UPDATE ON public.user_connections
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();

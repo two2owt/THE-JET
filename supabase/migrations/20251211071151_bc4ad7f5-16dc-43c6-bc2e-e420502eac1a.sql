@@ -2,7 +2,7 @@
 
 -- 1. Recreate profiles_secure view with proper security
 DROP VIEW IF EXISTS public.profiles_secure;
-CREATE VIEW public.profiles_secure WITH (security_invoker = true) AS
+CREATE OR REPLACE VIEW public.profiles_secure WITH (security_invoker = true) AS
 SELECT 
   p.id,
   p.created_at,
@@ -111,7 +111,7 @@ GRANT SELECT ON public.profiles_secure TO authenticated;
 
 -- 2. Recreate discoverable_profiles view with authentication requirement
 DROP VIEW IF EXISTS public.discoverable_profiles;
-CREATE VIEW public.discoverable_profiles WITH (security_invoker = true) AS
+CREATE OR REPLACE VIEW public.discoverable_profiles WITH (security_invoker = true) AS
 SELECT 
   p.id,
   p.display_name,
@@ -137,7 +137,7 @@ GRANT SELECT ON public.discoverable_profiles TO authenticated;
 
 -- 3. Recreate venue_reviews_public view with authentication requirement
 DROP VIEW IF EXISTS public.venue_reviews_public;
-CREATE VIEW public.venue_reviews_public WITH (security_invoker = true) AS
+CREATE OR REPLACE VIEW public.venue_reviews_public WITH (security_invoker = true) AS
 SELECT 
   vr.id,
   vr.rating,

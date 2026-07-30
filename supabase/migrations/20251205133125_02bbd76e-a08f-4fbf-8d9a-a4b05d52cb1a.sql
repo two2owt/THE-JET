@@ -1,7 +1,7 @@
 -- Drop and recreate the profiles_secure view with security_invoker enabled
 DROP VIEW IF EXISTS public.profiles_secure;
 
-CREATE VIEW public.profiles_secure
+CREATE OR REPLACE VIEW public.profiles_secure
 WITH (security_invoker = true)
 AS
 SELECT 

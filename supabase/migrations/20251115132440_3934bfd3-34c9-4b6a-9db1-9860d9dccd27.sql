@@ -160,17 +160,20 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_neighborhoods_updated_at ON public.neighborhoods;
 CREATE TRIGGER update_neighborhoods_updated_at
-  BEFORE UPDATE ON public.neighborhoods
+BEFORE UPDATE ON public.neighborhoods
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_deals_updated_at ON public.deals;
 CREATE TRIGGER update_deals_updated_at
-  BEFORE UPDATE ON public.deals
+BEFORE UPDATE ON public.deals
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_push_subscriptions_updated_at ON public.push_subscriptions;
 CREATE TRIGGER update_push_subscriptions_updated_at
-  BEFORE UPDATE ON public.push_subscriptions
+BEFORE UPDATE ON public.push_subscriptions
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();

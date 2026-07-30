@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsHeaders, logVersion, EDGE_FUNCTION_VERSION } from "../_shared/cors.ts";
+import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
 
 const FUNCTION_NAME = "get-location-density";
 logVersion(FUNCTION_NAME);
@@ -78,6 +79,15 @@ setInterval(() => {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Aggregated GPS data is only available to authenticated users.
+  const userId = await getAuthenticatedUserId(req);
+  if (!userId) {
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 
   // Check rate limit

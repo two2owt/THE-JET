@@ -10,7 +10,7 @@ SET DEFAULT '{"show_bio": true, "show_gender": true, "show_tiktok": true, "show_
 -- Drop and recreate the profiles_secure view with discoverable filter and SECURITY INVOKER
 DROP VIEW IF EXISTS public.profiles_secure;
 
-CREATE VIEW public.profiles_secure 
+CREATE OR REPLACE VIEW public.profiles_secure 
 WITH (security_invoker = true) AS
 SELECT 
   p.id,
