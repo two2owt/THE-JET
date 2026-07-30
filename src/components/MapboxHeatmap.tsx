@@ -3198,7 +3198,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     backdropFilter: 'blur(12px) saturate(1.4)',
                     WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
                     boxShadow: 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
-                  }}>
+                    // Card fades in when time-lapse is enabled so the mode
+                    // switch reads as a transition, not a layout jump.
+                    animation: 'content-fade-in 240ms cubic-bezier(0.16,1,0.3,1)',
+                  }} className={timelapse.loading ? 'layer-pending' : undefined}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <button type="button" onClick={() => { triggerHaptic('light'); timelapse.stepBackward(); }} disabled={timelapse.isPlaying}
                         style={{ width: '26px', height: '26px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', border: '1px solid hsl(var(--border) / 0.6)', background: 'hsl(var(--background) / 0.6)', color: 'hsl(var(--foreground) / 0.8)', cursor: timelapse.isPlaying ? 'not-allowed' : 'pointer', opacity: timelapse.isPlaying ? 0.5 : 1 }}>
