@@ -93,7 +93,6 @@ import {
   type LiveStatsRange,
 } from "./map/LiveStatsPanel";
 import { useDensityLayer } from "./map/hooks/useDensityLayer";
-import { useDensityPaint } from "./map/hooks/useDensityPaint";
 import { useMovementPathsLayer } from "./map/hooks/useMovementPathsLayer";
 import { useLayerPersistence } from "./map/hooks/useLayerPersistence";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "./ui/select";
@@ -272,9 +271,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     dayFilter: "jet-map-day-filter",
     timelapseMode: "jet-map-timelapse-mode",
     timelapseSpeed: "jet-map-timelapse-speed",
-    heatIntensity: "jet-map-heat-intensity",
-    heatRadius: "jet-map-heat-radius",
-    heatOpacity: "jet-map-heat-opacity",
     densityWindow: "jet-map-density-window",
     pathsWindow: "jet-map-paths-window",
   } as const;
@@ -345,18 +341,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     return 1;
   };
 
-  // Heatmap paint multipliers + shared time-window sliders. Persisted so a
-  // user's tuned map view survives a reload.
-  const getPersistedNumber = (key: string, fallback: number, lo: number, hi: number): number => {
-    try {
-      const raw = localStorage.getItem(key);
-      if (raw) {
-        const n = parseFloat(raw);
-        if (Number.isFinite(n)) return clampNumber(n, lo, hi);
-      }
-    } catch { /* ignore */ }
-    return fallback;
-  };
+  // Shared time-window sliders. Persisted so a user's tuned map view
+  // survives a reload.
   const getPersistedWindowMinutes = (key: string): number | null => {
     try {
       const raw = localStorage.getItem(key);
@@ -408,24 +394,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [showMovementPaths, setShowMovementPaths] = useState(() => getLayerState("paths", false));
   const [pathTimeFilter, setPathTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.pathTimeFilter, 'all', 'pathTime'));
 
-  // Heatmap paint multipliers — real-time knobs, no network round-trip.
-  const [heatIntensity, setHeatIntensity] = useState<number>(() => getPersistedNumber(FILTER_KEYS.heatIntensity, 1, 0.5, 2));
-  const [heatRadius, setHeatRadius] = useState<number>(() => getPersistedNumber(FILTER_KEYS.heatRadius, 1, 0.5, 2));
-  const [heatOpacity, setHeatOpacity] = useState<number>(() => getPersistedNumber(FILTER_KEYS.heatOpacity, 1, 0, 1));
-
   // Time-window overrides (last N minutes). null → use coarse time_filter.
   const [densityWindowMinutes, setDensityWindowMinutes] = useState<number | null>(() => getPersistedWindowMinutes(FILTER_KEYS.densityWindow));
   const [pathsWindowMinutes, setPathsWindowMinutes] = useState<number | null>(() => getPersistedWindowMinutes(FILTER_KEYS.pathsWindow));
-
-  // Ref mirrors so the (expensive) layer-rebuild effect can read the latest
-  // multipliers without listing them in its dep array — a dedicated paint
-  // effect below handles subsequent slider changes via setPaintProperty.
-  const heatIntensityRef = useRef(heatIntensity);
-  const heatRadiusRef = useRef(heatRadius);
-  const heatOpacityRef = useRef(heatOpacity);
-  useEffect(() => { heatIntensityRef.current = heatIntensity; }, [heatIntensity]);
-  useEffect(() => { heatRadiusRef.current = heatRadius; }, [heatRadius]);
-  useEffect(() => { heatOpacityRef.current = heatOpacity; }, [heatOpacity]);
 
   // Sync active layer toggles and filter selections to URL query params for shareability
   const syncUrlParams = useCallback(() => {
@@ -514,9 +485,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     pathTimeFilter,
     dayFilter,
     timelapseMode,
-    heatIntensity,
-    heatRadius,
-    heatOpacity,
     densityWindowMinutes,
     pathsWindowMinutes,
   });
@@ -760,10 +728,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     setTimelapseMode(false);
     setMinPathFrequency(2);
 
-    // Reset heatmap paint sliders + data-window sliders to their defaults
-    setHeatIntensity(1);
-    setHeatRadius(1);
-    setHeatOpacity(1);
+    // Reset data-window sliders to their defaults
     setDensityWindowMinutes(null);
     setPathsWindowMinutes(null);
 
@@ -786,9 +751,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       FILTER_KEYS.dayFilter,
       FILTER_KEYS.timelapseMode,
       FILTER_KEYS.timelapseSpeed,
-      FILTER_KEYS.heatIntensity,
-      FILTER_KEYS.heatRadius,
-      FILTER_KEYS.heatOpacity,
       FILTER_KEYS.densityWindow,
     ].forEach((key) => {
       try { localStorage.removeItem(key); } catch { /* ignore */ }
@@ -797,9 +759,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     setDayFilter(undefined);
     setHourFilter(undefined);
     setTimelapseMode(false);
-    setHeatIntensity(1);
-    setHeatRadius(1);
-    setHeatOpacity(1);
     setDensityWindowMinutes(null);
     if (timelapse.isPlaying) timelapse.pause();
     timelapse.setSpeed(1);
@@ -1825,23 +1784,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     densityData,
     timelapseMode,
     timelapse: { currentData: timelapse.currentData, currentHour: timelapse.currentHour },
-    heatIntensityRef,
-    heatRadiusRef,
-    heatOpacityRef,
-  });
-
-  // Paint-only slider updates for the density heatmap — extracted hook.
-  useDensityPaint({
-    mapRef: map,
-    mapLoaded,
-    isMobile,
-    showDensityLayer,
-    densityData,
-    timelapseMode,
-    timelapseCurrentData: timelapse.currentData,
-    heatIntensity,
-    heatRadius,
-    heatOpacity,
   });
 
   // Movement paths + animated flow — extracted hook.
