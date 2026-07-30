@@ -1228,6 +1228,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      ensure_email_queue_triggers: { Args: never; Returns: undefined }
       get_user_id_by_email: { Args: { _email: string }; Returns: string }
       has_role: {
         Args: {

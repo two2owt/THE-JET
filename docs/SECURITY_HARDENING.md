@@ -181,6 +181,16 @@ finding-level review.
 
 ## 8. Auth configuration
 
+> **Email queue triggers.** `pgmq.q_auth_emails` and
+> `pgmq.q_transactional_emails` each carry an `AFTER INSERT ... FOR EACH
+> STATEMENT` trigger (`email_queue_wake_auth` /
+> `email_queue_wake_transactional`) bound to `public.email_queue_wake()`.
+> Never `DROP` that function — the triggers depend on it and publishes fail
+> with `2BP01`. Always redefine it with `CREATE OR REPLACE FUNCTION`, and end
+> any migration touching email-queue infrastructure with
+> `SELECT public.ensure_email_queue_triggers();`, which recreates or rebinds
+> either trigger if it is missing or pointing at the wrong function.
+
 - Leaked password protection (HIBP) is **enabled**
   (`password_hibp_enabled = true`). Do not disable.
 - Minimum age 21 enforced via the `enforce_minimum_age` trigger on
