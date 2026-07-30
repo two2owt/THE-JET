@@ -88,6 +88,7 @@ import { Button } from "./ui/button";
 import { LayerToggleRow } from "./map/LayerToggleRow";
 import { LayerSliderRow } from "./map/LayerSliderRow";
 import { HeatmapColorLegend } from "./map/HeatmapColorLegend";
+import { toast } from "sonner";
 import {
   LiveStatsPanel,
   liveStatsRangeToTimeFilter,
@@ -763,7 +764,21 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     if (timelapse.isPlaying) timelapse.pause();
     timelapse.setSpeed(1);
     timelapse.setHour(new Date().getHours());
-  }, [timelapse]);
+    // Re-pull density with the default filters so the rendered heat matches
+    // the restored controls immediately instead of on the next interaction.
+    scheduleDensityRefresh();
+    toast.success('Heatmap reset to defaults');
+  }, [timelapse, scheduleDensityRefresh]);
+
+  // Whether every heatmap control is already at its factory value — used to
+  // disable the one-tap reset so it never looks actionable when it's a no-op.
+  const isHeatmapDefault =
+    timeFilter === 'all' &&
+    dayFilter === undefined &&
+    hourFilter === undefined &&
+    !timelapseMode &&
+    densityWindowMinutes === null &&
+    timelapse.speed === 1;
 
   const handleResetFlowPaths = useCallback(() => {
     triggerHaptic('light');
@@ -3040,16 +3055,20 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 paddingBottom: '4px',
                 minWidth: 0,
               }}>
-                {/* Heatmap paint sliders — real-time, no round-trip. */}
+                {/* One-tap reset — restores default rendering + every heatmap
+                    filter (time range, day, window, time-lapse) and refetches
+                    density. Disabled while already at defaults. */}
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                   <button
                     type="button"
                     onClick={handleResetHeatmap}
-                    aria-label="Reset heatmap controls to defaults"
-                    className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[10px] text-muted-foreground transition hover:bg-white/10 hover:text-foreground"
+                    disabled={isHeatmapDefault}
+                    title={isHeatmapDefault ? 'Heatmap already at default settings' : 'Restore default heatmap settings'}
+                    aria-label="Reset heatmap to default settings"
+                    className="inline-flex min-h-[32px] items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-semibold text-muted-foreground transition hover:bg-white/10 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
                   >
-                    <RotateCcw style={{ width: '10px', height: '10px' }} />
-                    Reset
+                    <RotateCcw style={{ width: '11px', height: '11px' }} />
+                    Reset heatmap
                   </button>
                 </div>
                 {/* Time-window slider — server round-trip, only fires on
