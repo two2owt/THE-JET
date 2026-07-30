@@ -1222,6 +1222,8 @@ export type Database = {
         Returns: boolean
       }
       dispatch_ending_soon_favorites: { Args: never; Returns: undefined }
+      email_queue_dispatch: { Args: never; Returns: undefined }
+      email_queue_endpoint: { Args: never; Returns: string }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
