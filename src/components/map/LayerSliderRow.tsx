@@ -55,8 +55,10 @@ const LayerSliderRowImpl = ({
   return (
     <div
       aria-label={ariaLabel}
+      className={loading ? "layer-pending" : undefined}
       style={{
         width: "100%",
+        position: "relative",
         display: "flex",
         flexDirection: "column",
         gap: "clamp(6px, 1.6vw, 10px)",
@@ -79,6 +81,9 @@ const LayerSliderRowImpl = ({
           "background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms ease, box-shadow 220ms ease",
       }}
     >
+      {/* Indeterminate sweep — signals a pending refetch without shifting
+          layout (absolutely positioned, GPU transform only). */}
+      {loading && <span aria-hidden className="layer-loading-bar" />}
       <div style={{ display: "flex", alignItems: "center", gap: "clamp(6px, 1.4vw, 8px)", minWidth: 0, flexWrap: "wrap" }}>
         <div
           style={{
@@ -142,6 +147,8 @@ const LayerSliderRowImpl = ({
             display: "inline-flex",
             alignItems: "center",
             gap: "4px",
+            transition:
+              "background 220ms cubic-bezier(0.16,1,0.3,1), color 220ms ease, border-color 220ms ease",
           }}
           aria-live="polite"
         >
@@ -153,7 +160,10 @@ const LayerSliderRowImpl = ({
               strokeWidth={2.5}
             />
           )}
-          {format(value)}
+          {/* Keyed so each new value animates in rather than snapping. */}
+          <span key={value} className="layer-value-transition">
+            {format(value)}
+          </span>
         </span>
         {defaultValue !== undefined && isCustom && (
           <button
