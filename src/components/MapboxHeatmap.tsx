@@ -3552,18 +3552,19 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   ]}
                   defaultValue={2}
                 />
-                {/* Movement-frequency chronology — vertical timeline whose
-                    nodes are frequency bands. Tapping a band applies it as
-                    the Min. frequency filter. */}
-                <div style={{ paddingTop: '6px', borderTop: '1px solid hsl(var(--border) / 0.3)' }}>
-                  <FlowPathsTimeline
-                    geojson={pathData?.geojson}
-                    stats={pathData?.stats}
-                    minFrequency={minPathFrequency}
-                    onSelectBand={(min) => { triggerHaptic('light'); setMinPathFrequency(min); }}
-                    error={Boolean(pathsError)}
-                  />
-                </div>
+                {/* Compact movement summary — wraps cleanly at any width. */}
+                {pathData?.stats && (
+                  <div
+                    style={{ paddingTop: '6px', borderTop: '1px solid hsl(var(--border) / 0.3)' }}
+                    className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[9px] text-muted-foreground"
+                  >
+                    <span className="whitespace-nowrap">{pathData.stats.total_paths} routes</span>
+                    <span aria-hidden>•</span>
+                    <span className="whitespace-nowrap">{pathData.stats.unique_users} users</span>
+                    <span aria-hidden>•</span>
+                    <span className="whitespace-nowrap">peak {pathData.stats.max_frequency}x</span>
+                  </div>
+                )}
               </div>
             </div>
 
