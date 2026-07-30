@@ -3083,8 +3083,11 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               }}
             />
 
-            {/* Heat filters - shown when heat is on */}
-            <div style={{ overflow: 'hidden', transition: 'max-height 0.3s', maxHeight: showDensityLayer ? '1200px' : '0px' }}>
+            {/* Heat filters - shown when heat is on.
+                Overflow flips to `visible` once expanded so the sticky
+                time-lapse controls can pin against the panel's scroll
+                container instead of being clipped by this collapse wrapper. */}
+            <div style={{ overflow: showDensityLayer ? 'visible' : 'hidden', transition: 'max-height 0.3s', maxHeight: showDensityLayer ? '1200px' : '0px' }}>
               <div style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -3254,13 +3257,18 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   }} />
                 </button>
 
-                {/* Time-lapse controls — glassmorphic card */}
+                {/* Time-lapse controls — glassmorphic card, sticky so playback
+                    stays reachable while the layers panel scrolls (mobile
+                    sheet + desktop panel). */}
                 {timelapseMode && (
                   <div style={{
                     display: 'flex', flexDirection: 'column', gap: '8px',
                     padding: '10px',
                     borderRadius: '10px',
-                    background: 'hsl(var(--card) / 0.5)',
+                    position: 'sticky',
+                    top: isMobile ? '0px' : '26px',
+                    zIndex: 2,
+                    background: 'hsl(var(--card) / 0.92)',
                     border: '1px solid hsl(var(--border) / 0.5)',
                     backdropFilter: 'blur(12px) saturate(1.4)',
                     WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
