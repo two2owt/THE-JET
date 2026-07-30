@@ -3328,7 +3328,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
                 {/* Compact color-scale legend — explains the heat ramp now that
                     the intensity/radius/opacity sliders are gone. */}
-                <HeatmapColorLegend />
+                <HeatmapColorLegend loading={isLoadingHeatmap || densityLoading} />
 
                 {/* Density status — loading / error */}
                 {(isLoadingHeatmap || densityError) && (
