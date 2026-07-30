@@ -73,7 +73,7 @@ const loadMapboxGL = async (): Promise<MapboxGLModule> => {
   }
   return mapboxLoadPromise;
 };
-import { MapPin, Layers, Palette, X, AlertCircle, Route, Play, Pause, SkipBack, SkipForward, Clock, ChevronDown, ChevronUp, Car, BarChart3, RotateCcw, Calendar, Loader2, CircleDot } from "lucide-react";
+import { MapPin, Layers, Palette, X, AlertCircle, Route, Play, Pause, SkipBack, SkipForward, Clock, ChevronDown, ChevronUp, Car, BarChart3, RotateCcw, Calendar, Loader2 } from "lucide-react";
 import { HeatmapSkeleton } from "@/components/skeletons/HeatmapSkeleton";
 import { useLocationDensity } from "@/hooks/useLocationDensity";
 import { useMovementPaths } from "@/hooks/useMovementPaths";
@@ -3110,42 +3110,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     Reset
                   </button>
                 </div>
-                <LayerSliderRow
-                  label="Intensity"
-                  Icon={Palette}
-                  ariaLabel="Heatmap intensity multiplier"
-                  min={0.5}
-                  max={2}
-                  step={0.1}
-                  value={heatIntensity}
-                  onChange={setHeatIntensity}
-                  defaultValue={1}
-                  format={(v) => `${v.toFixed(1)}x`}
-                />
-                <LayerSliderRow
-                  label="Radius"
-                  Icon={CircleDot}
-                  ariaLabel="Heatmap radius multiplier"
-                  min={0.5}
-                  max={2}
-                  step={0.1}
-                  value={heatRadius}
-                  onChange={setHeatRadius}
-                  defaultValue={1}
-                  format={(v) => `${v.toFixed(1)}x`}
-                />
-                <LayerSliderRow
-                  label="Opacity"
-                  Icon={Layers}
-                  ariaLabel="Heatmap opacity"
-                  min={0}
-                  max={1}
-                  step={0.05}
-                  value={heatOpacity}
-                  onChange={setHeatOpacity}
-                  defaultValue={1}
-                  format={(v) => `${Math.round(v * 100)}%`}
-                />
                 {/* Time-window slider — server round-trip, only fires on
                     commit so drags don't spam the edge function. */}
                 {!timelapseMode && (
