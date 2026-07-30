@@ -7,13 +7,15 @@ import { Flame } from "lucide-react";
  * read-only explanation of what the heat colors actually mean, using the same
  * gradient stops as the `location-density-heat` layer's `heatmap-color` ramp.
  */
-const HeatmapColorLegendImpl = () => (
+const HeatmapColorLegendImpl = ({ loading }: { loading?: boolean }) => (
   <div
     role="img"
+    className={loading ? "layer-pending" : undefined}
     aria-label="Heatmap colors run from blue for quiet areas through green and yellow to red for the busiest areas"
     style={{
       width: "100%",
       minWidth: 0,
+      position: "relative",
       display: "flex",
       flexDirection: "column",
       gap: "clamp(5px, 1.4vw, 8px)",
@@ -24,8 +26,10 @@ const HeatmapColorLegendImpl = () => (
       backdropFilter: "blur(12px) saturate(1.4)",
       WebkitBackdropFilter: "blur(12px) saturate(1.4)",
       boxShadow: "inset 0 0 0 1px hsl(0 0% 100% / 0.03)",
+      animation: "content-fade-in 240ms cubic-bezier(0.16,1,0.3,1)",
     }}
   >
+    {loading && <span aria-hidden className="layer-loading-bar" />}
     <div style={{ display: "flex", alignItems: "center", gap: "clamp(6px, 1.4vw, 8px)", minWidth: 0 }}>
       <div
         aria-hidden
