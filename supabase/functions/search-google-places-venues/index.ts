@@ -1,4 +1,5 @@
 import { corsHeaders, logVersion, EDGE_FUNCTION_VERSION } from "../_shared/cors.ts";
+import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
 
 const FUNCTION_NAME = "search-google-places-venues";
 logVersion(FUNCTION_NAME);
@@ -124,11 +125,11 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Require a Bearer token (project anon key or user JWT). The Supabase
-    // gateway already validates project keys; this endpoint exposes only
-    // public Charlotte venue demo data, so we do not require a signed-in user.
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
+    // Require a valid, signed-in user JWT. The project anon key alone is not
+    // sufficient — this proxies the paid Google Places API and anonymous
+    // callers could otherwise burn through the quota.
+    const userId = await getAuthenticatedUserId(req);
+    if (!userId) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
