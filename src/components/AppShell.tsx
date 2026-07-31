@@ -26,10 +26,9 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
   const { pathname } = useLocation();
   const showChrome = !HEADERLESS_ROUTES.includes(pathname);
 
-  // Single app-wide location tracker. The map route counts as the foreground
-  // surface; on every other route it only keeps running when the user has
-  // background tracking enabled in their preferences.
-  useLocationTracker(pathname === "/");
+  // Single app-wide location tracker. Runs on every route for any signed-in
+  // user with location tracking enabled, and stops only on sign-out.
+  useLocationTracker();
 
   return (
     <div className="app-wrapper">
