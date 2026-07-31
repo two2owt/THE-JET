@@ -23,7 +23,7 @@ logVersion(FUNCTION_NAME);
 const MAX_USERS = 200;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-type Method = "password" | "invite";
+type Method = "password" | "invite" | "resend";
 type Incoming = { email?: unknown; display_name?: unknown; password?: unknown; method?: unknown };
 
 function escapeHtml(s: string) {
@@ -142,7 +142,13 @@ Deno.serve(async (req) => {
           ? raw.password.slice(0, 72)
           : null;
       const method: Method =
-        raw?.method === "invite" ? "invite" : raw?.method === "password" ? "password" : defaultMethod;
+        raw?.method === "invite"
+          ? "invite"
+          : raw?.method === "resend"
+            ? "resend"
+            : raw?.method === "password"
+              ? "password"
+              : defaultMethod;
       parsed.push({ email, display_name: displayName, password, method });
     }
 
@@ -150,6 +156,81 @@ Deno.serve(async (req) => {
     const results: Record<string, unknown>[] = [];
     for (const u of parsed) {
       try {
+        if (u.method === "resend") {
+          // Re-trigger an invite for an address that may or may not already exist.
+          if (!useCustomInviteEmail || !resend) {
+            // No custom template: let Supabase send its own invite email.
+            const { data, error } = await admin.auth.admin.inviteUserByEmail(u.email, {
+              data: u.display_name ? { display_name: u.display_name } : undefined,
+              redirectTo: tplRedirect,
+            });
+            if (error) {
+              const exists = /already|registered|exist/i.test(error.message ?? "");
+              results.push({
+                email: u.email,
+                status: "error",
+                error: exists
+                  ? "Account already exists — configure the invitation template to resend a sign-in link"
+                  : error.message,
+              });
+              continue;
+            }
+            results.push({ email: u.email, status: "resent", user_id: data.user?.id, invited: true });
+            continue;
+          }
+
+          // Custom template: mint a link ourselves (invite for new, magic link for existing).
+          let actionLink: string | null = null;
+          let userId: string | undefined;
+
+          const invite = await admin.auth.admin.generateLink({
+            type: "invite",
+            email: u.email,
+            options: {
+              data: u.display_name ? { display_name: u.display_name } : undefined,
+              redirectTo: tplRedirect,
+            },
+          });
+          if (!invite.error) {
+            actionLink = invite.data?.properties?.action_link ?? null;
+            userId = invite.data?.user?.id;
+          } else if (/already|registered|exist/i.test(invite.error.message ?? "")) {
+            const magic = await admin.auth.admin.generateLink({
+              type: "magiclink",
+              email: u.email,
+              options: { redirectTo: tplRedirect },
+            });
+            if (magic.error) {
+              results.push({ email: u.email, status: "error", error: magic.error.message });
+              continue;
+            }
+            actionLink = magic.data?.properties?.action_link ?? null;
+            userId = magic.data?.user?.id;
+          } else {
+            results.push({ email: u.email, status: "error", error: invite.error.message });
+            continue;
+          }
+
+          const vars = {
+            display_name: u.display_name ?? u.email.split("@")[0],
+            email: u.email,
+            invite_url: actionLink ?? "",
+            site_name: "JET",
+          };
+          const { error: sendErr } = await resend.emails.send({
+            from: fromAddress,
+            to: [u.email],
+            subject: renderTemplate(tplSubject!, vars, false),
+            html: renderTemplate(tplHtml!, vars, true),
+          });
+          if (sendErr) {
+            results.push({ email: u.email, status: "error", user_id: userId, error: sendErr.message });
+            continue;
+          }
+          results.push({ email: u.email, status: "resent", user_id: userId, invited: true });
+          continue;
+        }
+
         if (u.method === "invite") {
           // Custom-branded invite: mint the link ourselves and send our own email.
           if (useCustomInviteEmail && resend) {
@@ -230,6 +311,7 @@ Deno.serve(async (req) => {
 
     const summary = {
       created: results.filter((r) => r.status === "created").length,
+      resent: results.filter((r) => r.status === "resent").length,
       exists: results.filter((r) => r.status === "exists").length,
       errors: results.filter((r) => r.status === "error").length,
     };

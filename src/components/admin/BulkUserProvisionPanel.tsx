@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Loader2, Users, UserPlus, Download, AlertTriangle, KeyRound, Mail, RotateCcw, Eye } from "lucide-react";
+import { Loader2, Users, UserPlus, Download, AlertTriangle, KeyRound, Mail, RotateCcw, Eye, Send } from "lucide-react";
 import { toast } from "sonner";
 import {
   DEFAULT_INVITE_TEMPLATE,
@@ -21,7 +21,7 @@ type DirectoryUser = { id: string; email: string | null; display_name: string | 
 type Method = "password" | "invite";
 type ProvisionResult = {
   email: string;
-  status: "created" | "exists" | "error";
+  status: "created" | "resent" | "exists" | "error";
   user_id?: string;
   password?: string;
   invited?: boolean;
@@ -77,6 +77,38 @@ function MethodToggle({
   );
 }
 
+function ResendInviteButton({
+  email,
+  displayName,
+  busy,
+  disabled,
+  onClick,
+}: {
+  email: string;
+  displayName: string | null;
+  busy: boolean;
+  disabled?: boolean;
+  onClick: (email: string, displayName: string | null) => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled || busy}
+      title={`Resend invite to ${email}`}
+      aria-label={`Resend invite to ${email}`}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onClick(email, displayName);
+      }}
+      className="flex shrink-0 items-center gap-1 rounded-lg border border-border/60 bg-background/50 px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+    >
+      {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+      <span className="hidden sm:inline">Resend</span>
+    </button>
+  );
+}
+
 export function BulkUserProvisionPanel() {
   const [directory, setDirectory] = useState<DirectoryUser[] | null>(null);
   const [loadingDirectory, setLoadingDirectory] = useState(false);
@@ -90,6 +122,7 @@ export function BulkUserProvisionPanel() {
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState({ done: 0, total: 0 });
   const [results, setResults] = useState<ProvisionResult[]>([]);
+  const [resending, setResending] = useState<string | null>(null);
 
   const manualEntries = useMemo(
     () =>
@@ -239,6 +272,31 @@ export function BulkUserProvisionPanel() {
     URL.revokeObjectURL(url);
   };
 
+  const resendInvite = async (email: string, displayName: string | null) => {
+    setResending(email);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-bulk-provision-users", {
+        body: {
+          users: [{ email, display_name: displayName, method: "resend" }],
+          inviteTemplate: template,
+        },
+      });
+      if (error) throw error;
+      const result = ((data?.results ?? []) as ProvisionResult[])[0];
+      setResults((prev) => [result ?? { email, status: "error" as const }, ...prev.filter((r) => r.email !== email)]);
+      if (!result || result.status === "error") {
+        toast.error(result?.error ?? `Could not resend invite to ${email}`);
+      } else {
+        toast.success(`Invite resent to ${email}`);
+      }
+    } catch (err) {
+      console.error("Resend invite failed", err);
+      toast.error("Resend invite failed");
+    } finally {
+      setResending(null);
+    }
+  };
+
   return (
     <div className="rounded-2xl border border-border/60 bg-card/60 backdrop-blur p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -307,11 +365,20 @@ export function BulkUserProvisionPanel() {
                   {u.display_name ?? ""}
                 </span>
                 {u.email && (
-                  <MethodToggle
-                    value={overrides[u.email.toLowerCase()] ?? defaultMethod}
-                    disabled={running}
-                    onChange={(m) => setMethodFor(u.email!.toLowerCase(), m)}
-                  />
+                  <>
+                    <MethodToggle
+                      value={overrides[u.email.toLowerCase()] ?? defaultMethod}
+                      disabled={running}
+                      onChange={(m) => setMethodFor(u.email!.toLowerCase(), m)}
+                    />
+                    <ResendInviteButton
+                      email={u.email.toLowerCase()}
+                      displayName={u.display_name}
+                      busy={resending === u.email.toLowerCase()}
+                      disabled={running || (resending !== null && resending !== u.email.toLowerCase())}
+                      onClick={resendInvite}
+                    />
+                  </>
                 )}
               </label>
             ))}
@@ -489,12 +556,25 @@ export function BulkUserProvisionPanel() {
               <div key={r.email} className="flex items-center gap-3 px-3 py-2 text-sm">
                 <span className="min-w-0 flex-1 truncate">{r.email}</span>
                 <Badge
-                  variant={r.status === "created" ? "default" : r.status === "exists" ? "secondary" : "destructive"}
+                  variant={
+                    r.status === "created" || r.status === "resent"
+                      ? "default"
+                      : r.status === "exists"
+                        ? "secondary"
+                        : "destructive"
+                  }
                 >
                   {r.status}
                 </Badge>
                 {r.password && <code className="hidden sm:block text-xs text-muted-foreground">{r.password}</code>}
                 {r.invited && <span className="text-xs text-muted-foreground">invited</span>}
+                <ResendInviteButton
+                  email={r.email}
+                  displayName={null}
+                  busy={resending === r.email}
+                  disabled={running || (resending !== null && resending !== r.email)}
+                  onClick={resendInvite}
+                />
               </div>
             ))}
           </div>
