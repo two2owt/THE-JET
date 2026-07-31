@@ -757,46 +757,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   }, [timelapse]);
 
   // ── Scoped resets ─────────────────────────────────────────────────────
-  // Section-level reset buttons let users restore just the Heatmap or Flow
-  // Paths controls without wiping the entire layers panel. Each clears the
-  // localStorage keys it owns first (same ordering rule as the global
-  // reset — persistence before state) so the persistence effect can't
-  // rehydrate stale values.
-  const handleResetHeatmap = useCallback(() => {
-    triggerHaptic('light');
-    [
-      FILTER_KEYS.timeFilter,
-      FILTER_KEYS.dayFilter,
-      FILTER_KEYS.timelapseMode,
-      FILTER_KEYS.timelapseSpeed,
-    ].forEach((key) => {
-      try { localStorage.removeItem(key); } catch { /* ignore */ }
-    });
-    // Legacy key from the removed density "time window" slider — cleared so
-    // stale values from older builds can never leak back into the heatmap.
-    try { localStorage.removeItem('jet-map-density-window'); } catch { /* ignore */ }
-    setTimeFilter('all');
-    setDayFilter(undefined);
-    setHourFilter(undefined);
-    setTimelapseMode(false);
-    if (timelapse.isPlaying) timelapse.pause();
-    timelapse.setSpeed(1);
-    timelapse.setHour(new Date().getHours());
-    // Re-pull density with the default filters so the rendered heat matches
-    // the restored controls immediately instead of on the next interaction.
-    scheduleDensityRefresh();
-    toast.success('Heatmap reset to defaults');
-  }, [timelapse, scheduleDensityRefresh]);
-
-  // Whether every heatmap control is already at its factory value — used to
-  // disable the one-tap reset so it never looks actionable when it's a no-op.
-  const isHeatmapDefault =
-    timeFilter === 'all' &&
-    dayFilter === undefined &&
-    hourFilter === undefined &&
-    !timelapseMode &&
-    timelapse.speed === 1;
-
+  // The heatmap no longer has its own reset button — the single "Reset to
+  // defaults" action at the bottom of the Layers panel restores every
+  // heatmap control (time range, day, time-lapse) along with the rest.
   const handleResetFlowPaths = useCallback(() => {
     triggerHaptic('light');
     [FILTER_KEYS.pathTimeFilter, FILTER_KEYS.pathsWindow].forEach((key) => {
