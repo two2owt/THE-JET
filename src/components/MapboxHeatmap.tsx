@@ -88,7 +88,6 @@ import { Button } from "./ui/button";
 import { LayerToggleRow } from "./map/LayerToggleRow";
 import { LayerSliderRow } from "./map/LayerSliderRow";
 import { HeatmapColorLegend } from "./map/HeatmapColorLegend";
-import { toast } from "sonner";
 import {
   LiveStatsPanel,
   liveStatsRangeToTimeFilter,
