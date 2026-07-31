@@ -27,14 +27,20 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
   const [unauthorized, setUnauthorized] = useState(false);
   const lastDataHashRef = useRef<string>('');
   const isLoadingRef = useRef(false);
+  const pendingRefetchRef = useRef(false);
   // Per-instance channel name prevents the Supabase client from silently
   // deduping concurrent subscriptions when the hook remounts (e.g. city switch).
   const instanceId = useId();
 
   const loadDensityData = useCallback(async () => {
-    // Prevent concurrent requests
-    if (isLoadingRef.current) return;
+    // Prevent concurrent requests, but remember that another run was requested
+    // so an auth-driven refetch is never silently dropped.
+    if (isLoadingRef.current) {
+      pendingRefetchRef.current = true;
+      return;
+    }
     isLoadingRef.current = true;
+    pendingRefetchRef.current = false;
     
     try {
       setLoading(true);
@@ -44,6 +50,8 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
       if (!session) {
         setUnauthorized(true);
         setError('unauthorized');
+        setDensityData(null);
+        lastDataHashRef.current = '';
         return;
       }
 
@@ -84,6 +92,10 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
     } finally {
       setLoading(false);
       isLoadingRef.current = false;
+      if (pendingRefetchRef.current) {
+        pendingRefetchRef.current = false;
+        void loadDensityData();
+      }
     }
   }, [filters.timeFilter, filters.hourOfDay, filters.dayOfWeek, filters.windowMinutes]);
 
@@ -117,11 +129,21 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
     };
   }, [loadDensityData, instanceId]);
 
-  // Refetch once a session becomes available (login / token refresh).
+  // Refetch whenever the session changes (login / refresh / logout).
+  // The callback must not await Supabase calls inline — defer to a microtask
+  // so we never re-enter the auth lock from inside the listener.
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION')) {
-        loadDensityData();
+      if (event === 'SIGNED_OUT' || !session) {
+        setUnauthorized(true);
+        setError('unauthorized');
+        setDensityData(null);
+        lastDataHashRef.current = '';
+        return;
+      }
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED') {
+        // Force a fresh fetch on sign-in even if the payload hash is unchanged.
+        setTimeout(() => { void loadDensityData(); }, 0);
       }
     });
     return () => subscription.unsubscribe();
