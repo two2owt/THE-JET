@@ -358,6 +358,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Density heatmap state
   const [showDensityLayer, setShowDensityLayer] = useState(() => getLayerState("density", false));
   const [showParking, setShowParking] = useState(() => getLayerState("parking", false));
+  // Keep a ref so style reloads can restore the parking layer with the latest visibility
+  const showParkingRef = useRef(showParking);
+  showParkingRef.current = showParking;
   // Live Stats panel — hidden by default, opt-in via layers toggle
   const [showLiveStats, setShowLiveStats] = useState(() => getLayerState("stats", false));
   const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.timeFilter, 'all', 'time'));
@@ -1031,9 +1034,105 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           'bottom-right'
         );
 
+        // Adds the custom neon "P" parking icon + symbol layer.
+        // Must run on EVERY style load: setStyle() wipes custom images/layers,
+        // which is why parking icons disappeared on the light/streets basemaps.
+        const ensureParkingLayer = () => {
+          if (!map.current) return;
+          try {
+            if (!map.current.hasImage('jet-parking-p')) {
+              const size = 64;
+              const canvas = document.createElement('canvas');
+              canvas.width = size;
+              canvas.height = size;
+              const ctx = canvas.getContext('2d');
+              if (ctx) {
+                ctx.beginPath();
+                ctx.arc(size / 2, size / 2, size / 2 - 1, 0, Math.PI * 2);
+                ctx.fillStyle = '#39ff14';
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(size / 2, size / 2, size / 2 - 6, 0, Math.PI * 2);
+                ctx.fillStyle = '#0a0a0a';
+                ctx.fill();
+                ctx.fillStyle = '#39ff14';
+                ctx.font = 'bold 48px system-ui, -apple-system, Arial, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('P', size / 2, size / 2 + 2);
+                map.current.addImage('jet-parking-p', {
+                  width: size,
+                  height: size,
+                  data: ctx.getImageData(0, 0, size, size).data,
+                } as any, { pixelRatio: 2 });
+              }
+            }
+
+            if (map.current.getLayer('parking-icons')) {
+              map.current.setLayoutProperty(
+                'parking-icons',
+                'visibility',
+                showParkingRef.current ? 'visible' : 'none'
+              );
+              return;
+            }
+
+            // Some styles (satellite) may not expose the composite POI source
+            if (!map.current.getSource('composite')) return;
+
+            map.current.addLayer({
+              id: 'parking-icons',
+              type: 'symbol',
+              source: 'composite',
+              'source-layer': 'poi_label',
+              filter: [
+                'any',
+                ['==', ['get', 'maki'], 'parking'],
+                ['==', ['get', 'maki'], 'parking-garage'],
+              ],
+              layout: {
+                'icon-image': 'jet-parking-p',
+                'icon-size': [
+                  'interpolate', ['linear'], ['zoom'],
+                  12, 0.45,
+                  14, 0.6,
+                  16, 0.9,
+                  18, 1.3,
+                ],
+                'icon-allow-overlap': true,
+                'icon-ignore-placement': false,
+                'text-field': ['step', ['zoom'], '', 14, ['get', 'name']],
+                'text-font': ['DIN Pro Medium', 'Arial Unicode MS Regular'],
+                'text-size': 11,
+                'text-offset': [0, 1.3],
+                'text-anchor': 'top',
+                'text-optional': true,
+                'visibility': showParkingRef.current ? 'visible' : 'none',
+              },
+              paint: {
+                'icon-opacity': [
+                  'interpolate', ['linear'], ['zoom'],
+                  12, 0.7,
+                  13, 0.85,
+                  14, 1,
+                ],
+                'text-color': '#39ff14',
+                'text-halo-color': '#0a0a0a',
+                'text-halo-width': 2,
+              },
+              minzoom: 12,
+            });
+            console.log('MapboxHeatmap: Parking icons layer added');
+          } catch (e) {
+            console.warn('MapboxHeatmap: Could not add parking layer:', e);
+          }
+        };
+
         // Add atmospheric effects and configure Standard style when loaded
         map.current.on('style.load', () => {
           if (!map.current) return;
+          // Re-apply the custom parking layer after any basemap style swap
+          ensureParkingLayer();
           
           // Configure Standard style with dynamic lighting and native POI markers
           // Standard style includes built-in 3D buildings, landmarks, POI icons, and dynamic lighting
@@ -1322,111 +1421,31 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             activeChipRef.current?.hide();
           });
           
-          // Add parking lot icons from Mapbox vector tiles
+          // Ensure parking icons exist (also re-applied on every style change)
           if (map.current) {
-            try {
-              // Create a bold green "P" icon for parking
-              if (!map.current.hasImage('jet-parking-p')) {
-                const size = 64;
-                const canvas = document.createElement('canvas');
-                canvas.width = size;
-                canvas.height = size;
-                const ctx = canvas.getContext('2d');
-                if (ctx) {
-                  // Neon green glow background
-                  ctx.beginPath();
-                  ctx.arc(size / 2, size / 2, size / 2 - 1, 0, Math.PI * 2);
-                  ctx.fillStyle = '#39ff14'; // neon green
-                  ctx.fill();
-                  // Dark inner circle for contrast
-                  ctx.beginPath();
-                  ctx.arc(size / 2, size / 2, size / 2 - 6, 0, Math.PI * 2);
-                  ctx.fillStyle = '#0a0a0a';
-                  ctx.fill();
-                  // Bold neon P
-                  ctx.fillStyle = '#39ff14';
-                  ctx.font = 'bold 48px system-ui, -apple-system, Arial, sans-serif';
-                  ctx.textAlign = 'center';
-                  ctx.textBaseline = 'middle';
-                  ctx.fillText('P', size / 2, size / 2 + 2);
-                  map.current.addImage('jet-parking-p', {
-                    width: size,
-                    height: size,
-                    data: ctx.getImageData(0, 0, size, size).data,
-                  } as any, { pixelRatio: 2 });
-                }
-              }
+            ensureParkingLayer();
 
-              // Add a symbol layer for parking POIs using built-in Mapbox data
-              map.current.addLayer({
-                id: 'parking-icons',
-                type: 'symbol',
-                source: 'composite',
-                'source-layer': 'poi_label',
-                filter: [
-                  'any',
-                  ['==', ['get', 'maki'], 'parking'],
-                  ['==', ['get', 'maki'], 'parking-garage'],
-                ],
-                layout: {
-                  'icon-image': 'jet-parking-p',
-                  'icon-size': [
-                    'interpolate', ['linear'], ['zoom'],
-                    12, 0.45,
-                    14, 0.6,
-                    16, 0.9,
-                    18, 1.3,
-                  ],
-                  'icon-allow-overlap': true,
-                  'icon-ignore-placement': false,
-                  'text-field': ['step', ['zoom'], '', 14, ['get', 'name']],
-                  'text-font': ['DIN Pro Medium', 'Arial Unicode MS Regular'],
-                  'text-size': 11,
-                  'text-offset': [0, 1.3],
-                  'text-anchor': 'top',
-                  'text-optional': true,
-                  'visibility': showParking ? 'visible' : 'none',
-                },
-                paint: {
-                  'icon-opacity': [
-                    'interpolate', ['linear'], ['zoom'],
-                    12, 0.7,
-                    13, 0.85,
-                    14, 1,
-                  ],
-                  'text-color': '#39ff14',
-                  'text-halo-color': '#0a0a0a',
-                  'text-halo-width': 2,
-                },
-                minzoom: 12,
-              });
-              console.log('MapboxHeatmap: Parking icons layer added');
+            // One-time interactions for the parking layer (persist across style swaps)
+            map.current.on('click', 'parking-icons', (e) => {
+              if (!e.features || e.features.length === 0) return;
+              const feature = e.features[0];
+              const coords = (feature.geometry as any).coordinates;
+              const parkingName = feature.properties?.name || 'Parking';
 
-              // Add click handler for parking icons
-              map.current.on('click', 'parking-icons', (e) => {
-                if (!e.features || e.features.length === 0) return;
-                const feature = e.features[0];
-                const coords = (feature.geometry as any).coordinates;
-                const parkingName = feature.properties?.name || 'Parking';
-                
-                triggerHaptic('medium');
-                onParkingSelectRef.current?.({
-                  lat: coords[1],
-                  lng: coords[0],
-                  name: parkingName,
-                });
+              triggerHaptic('medium');
+              onParkingSelectRef.current?.({
+                lat: coords[1],
+                lng: coords[0],
+                name: parkingName,
               });
+            });
 
-              // Change cursor on hover
-              map.current.on('mouseenter', 'parking-icons', () => {
-                if (map.current) map.current.getCanvas().style.cursor = 'pointer';
-              });
-              map.current.on('mouseleave', 'parking-icons', () => {
-                if (map.current) map.current.getCanvas().style.cursor = '';
-              });
-            } catch (e) {
-              console.warn('MapboxHeatmap: Could not add parking layer:', e);
-            }
+            map.current.on('mouseenter', 'parking-icons', () => {
+              if (map.current) map.current.getCanvas().style.cursor = 'pointer';
+            });
+            map.current.on('mouseleave', 'parking-icons', () => {
+              if (map.current) map.current.getCanvas().style.cursor = '';
+            });
           }
           
           // Trigger geolocation quickly after load
