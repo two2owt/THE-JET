@@ -226,10 +226,13 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Adaptive panel metrics — one source of truth for the desktop Layers
   // container so width, padding, and inner gap scale together across
   // breakpoints instead of being hardcoded per-property.
-  const panelWidth = isDesktopXL ? 320 : isDesktopWide ? 272 : isTablet ? 244 : 224;
-  const panelPad = isDesktopXL ? 14 : isDesktopWide ? 12 : 10;
+  // Tablet has ample horizontal room, so it gets a desktop-class width —
+  // the previous 244px forced label truncation ("Time r…") and 3-row chip
+  // wrapping. Widths stay below 92vw so nothing overflows on small screens.
+  const panelWidth = isDesktopXL ? 340 : isDesktopWide ? 312 : isTablet ? 304 : 240;
+  const panelPad = isDesktopXL ? 14 : isDesktopWide ? 13 : isTablet ? 12 : 10;
   const panelGap = isDesktopXL ? 10 : isDesktopWide ? 9 : 8;
-  const panelMaxH = isDesktopXL ? 760 : isDesktopWide ? 700 : 620;
+  const panelMaxH = isDesktopXL ? 760 : isDesktopWide ? 700 : 640;
   const initStartTime = useRef<number>(0);
   const platformSettings = useRef(getPlatformSettings(isMobile));
   
