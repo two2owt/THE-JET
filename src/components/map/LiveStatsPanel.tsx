@@ -374,11 +374,18 @@ export const LiveStatsPanel = ({
       style={{
         position: "absolute",
         top: "calc(var(--map-safe-top-controls-in-map, var(--map-safe-top-controls)) + 1rem)",
-        right: "var(--map-ui-inset-right)",
+        // Left-aligned so it never overlaps the Layers container (bottom-right)
+        // or the Mapbox nav controls (top-right).
+        left: "var(--map-ui-inset-left, 0.75rem)",
         minWidth: isMobile ? "160px" : "180px",
         maxWidth: isMobile
-          ? "calc(100vw - 1.5rem - var(--map-ui-inset-right, 0.75rem))"
-          : "240px",
+          ? "calc(100vw - 1.5rem - var(--map-ui-inset-left, 0.75rem))"
+          : "clamp(200px, 24vw, 260px)",
+        // Keep clear of the bottom-left legend and the bottom nav.
+        maxHeight:
+          "calc(100dvh - var(--map-safe-top-controls-in-map, var(--map-safe-top-controls)) - var(--bottom-nav-total-height, 60px) - 11rem)",
+        overflowY: "auto",
+        overscrollBehavior: "contain",
         zIndex: 30,
         background: "hsl(var(--card))",
         backdropFilter: "blur(24px) saturate(1.6)",
