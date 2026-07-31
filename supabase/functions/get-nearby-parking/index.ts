@@ -62,8 +62,47 @@ Deno.serve(async (req) => {
       return 2 * R * Math.asin(Math.sqrt(a));
     };
 
-    // Use rankby=distance for true nearest-first ordering (returns up to 20).
-    // Falls back to a radius search if the first call yields nothing.
+    // Places API (New) — searchNearby. The legacy
+    // maps.googleapis.com/maps/api/place/nearbysearch endpoint returns
+    // REQUEST_DENIED for keys provisioned after Google retired it, which made
+    // parking silently resolve to an empty list on every JetCard.
+    const searchNearbyNew = async (radiusMeters: number) => {
+      const r = await fetch('https://places.googleapis.com/v1/places:searchNearby', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': apiKey,
+          'X-Goog-FieldMask': [
+            'places.displayName',
+            'places.formattedAddress',
+            'places.shortFormattedAddress',
+            'places.location',
+            'places.rating',
+            'places.currentOpeningHours.openNow',
+            'places.id',
+          ].join(','),
+        },
+        body: JSON.stringify({
+          includedTypes: ['parking'],
+          maxResultCount: 20,
+          rankPreference: 'DISTANCE',
+          locationRestriction: {
+            circle: {
+              center: { latitude: lat, longitude: lng },
+              radius: radiusMeters,
+            },
+          },
+        }),
+      });
+      const json = await r.json();
+      if (!r.ok) {
+        console.warn(`searchNearby (new) ${r.status}: ${json?.error?.message ?? 'unknown error'}`);
+        return null;
+      }
+      return Array.isArray(json.places) ? json.places : [];
+    };
+
+    // Legacy fallback, kept for projects whose key still has it enabled.
     const fetchPlaces = async (params: Record<string, string>) => {
       const url = new URL('https://maps.googleapis.com/maps/api/place/nearbysearch/json');
       Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
@@ -72,32 +111,49 @@ Deno.serve(async (req) => {
       return r.json();
     };
 
-    let searchData = await fetchPlaces({
-      location: `${lat},${lng}`,
-      rankby: 'distance',
-      type: 'parking',
-    });
+    const clampedRadius = Math.min(Math.max(radius, 800), 3000);
 
-    if (searchData.status !== 'OK' || !searchData.results?.length) {
-      console.warn(`rankby=distance returned ${searchData.status}; retrying with radius`);
-      searchData = await fetchPlaces({
-        location: `${lat},${lng}`,
-        radius: String(Math.min(Math.max(radius, 1500), 3000)),
-        keyword: 'parking',
+    // 1. Preferred path: Places API (New).
+    let normalized: any[] | null = null;
+    const newPlaces = await searchNearbyNew(clampedRadius);
+    if (newPlaces && newPlaces.length > 0) {
+      normalized = newPlaces.map((p: any) => {
+        const pLat = p.location?.latitude;
+        const pLng = p.location?.longitude;
+        return {
+          name: p.displayName?.text || 'Parking',
+          address: p.shortFormattedAddress || p.formattedAddress || '',
+          lat: pLat,
+          lng: pLng,
+          rating: p.rating ?? null,
+          isOpen: p.currentOpeningHours?.openNow ?? null,
+          placeId: p.id,
+          distance:
+            typeof pLat === 'number' && typeof pLng === 'number'
+              ? Math.round(distanceMeters(lat, lng, pLat, pLng))
+              : null,
+        };
       });
     }
 
-    if (searchData.status !== 'OK' || !searchData.results?.length) {
-      console.warn(`No parking results for ${lat},${lng}: ${searchData.status}`);
-      return new Response(
-        JSON.stringify({ results: [] }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Compute distance and return the 5 closest parking spots.
-    const results = searchData.results
-      .map((place: any) => {
+    // 2. Legacy fallback only when the new API returned nothing usable.
+    if (!normalized || normalized.length === 0) {
+      const searchData = await fetchPlaces({
+        location: `${lat},${lng}`,
+        radius: String(clampedRadius),
+        keyword: 'parking',
+      });
+      if (searchData.status !== 'OK' || !searchData.results?.length) {
+        console.warn(
+          `No parking results for ${lat},${lng}: legacy status=${searchData.status}` +
+            (searchData.error_message ? ` (${searchData.error_message})` : '')
+        );
+        return new Response(
+          JSON.stringify({ results: [] }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      normalized = searchData.results.map((place: any) => {
         const pLat = place.geometry?.location?.lat;
         const pLng = place.geometry?.location?.lng;
         return {
@@ -113,7 +169,11 @@ Deno.serve(async (req) => {
               ? Math.round(distanceMeters(lat, lng, pLat, pLng))
               : null,
         };
-      })
+      });
+    }
+
+    // Return the 5 closest parking spots.
+    const results = normalized
       .sort((a: any, b: any) => (a.distance ?? 9e9) - (b.distance ?? 9e9))
       .slice(0, 5);
 
