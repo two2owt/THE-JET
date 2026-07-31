@@ -7,6 +7,14 @@ import type { Venue } from "@/components/MapboxHeatmap";
  */
 const fetchPopularVenuesFromGooglePlaces = async (): Promise<Venue[]> => {
   try {
+    // This edge function requires a valid user JWT — skip when signed out
+    // instead of firing a request that always returns 401.
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      console.info('Skipping venue search: no authenticated session');
+      return [];
+    }
+
     console.log('Fetching top 10 Charlotte venues...');
     
     // Charlotte coordinates
@@ -270,9 +278,17 @@ export const useVenueActivity = (enabled: boolean = true) => {
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
+    // Refetch once auth becomes available (the venue search requires a JWT).
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") {
+        loadVenueActivity();
+      }
+    });
+
     return () => {
       supabase.removeChannel(channel);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      subscription.unsubscribe();
     };
   }, [enabled]);
 
