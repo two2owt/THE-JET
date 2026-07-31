@@ -370,12 +370,34 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     return 'night';
   };
 
-  // Auto-detect theme for initial map style
-  const [mapStyle, setMapStyle] = useState<'light' | 'dark' | 'streets' | 'satellite'>(() => {
-    const isDark = document.documentElement.classList.contains('dark');
-    return isDark ? 'dark' : 'streets';
-  });
-  const [lightPreset] = useState<'dawn' | 'day' | 'dusk' | 'night'>(getTimeOfDayPreset);
+  // Light base style during dawn/day hours, dark base style at dusk/night.
+  const styleForTimeOfDay = (
+    preset: 'dawn' | 'day' | 'dusk' | 'night'
+  ): 'light' | 'dark' => (preset === 'dawn' || preset === 'day' ? 'light' : 'dark');
+
+  const [mapStyle, setMapStyle] = useState<'light' | 'dark' | 'streets' | 'satellite'>(
+    () => styleForTimeOfDay(getTimeOfDayPreset())
+  );
+  const [lightPreset, setLightPreset] = useState<'dawn' | 'day' | 'dusk' | 'night'>(getTimeOfDayPreset);
+  // Once the user picks a style manually, stop auto-switching for the session.
+  const manualStyleOverride = useRef(false);
+
+  // Re-evaluate time of day every minute and swap the base style at dawn/dusk.
+  useEffect(() => {
+    const tick = () => {
+      const preset = getTimeOfDayPreset();
+      setLightPreset(preset);
+      if (!manualStyleOverride.current) {
+        setMapStyle((prev) => {
+          const next = styleForTimeOfDay(preset);
+          return prev === next ? prev : next;
+        });
+      }
+    };
+    tick();
+    const id = window.setInterval(tick, 60_000);
+    return () => window.clearInterval(id);
+  }, []);
   const [show3DTerrain, setShow3DTerrain] = useState(false);
 
   // Time-lapse mode state
