@@ -5,10 +5,20 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Users, UserPlus, Download, AlertTriangle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Loader2, Users, UserPlus, Download, AlertTriangle, KeyRound, Mail, RotateCcw, Eye } from "lucide-react";
 import { toast } from "sonner";
+import {
+  DEFAULT_INVITE_TEMPLATE,
+  INVITE_PLACEHOLDERS,
+  loadInviteTemplate,
+  renderInvitePreview,
+  saveInviteTemplate,
+  type InviteTemplate,
+} from "./inviteEmailTemplate";
 
 type DirectoryUser = { id: string; email: string | null; display_name: string | null; created_at: string };
+type Method = "password" | "invite";
 type ProvisionResult = {
   email: string;
   status: "created" | "exists" | "error";
@@ -31,7 +41,11 @@ export function BulkUserProvisionPanel() {
   const [loadingDirectory, setLoadingDirectory] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [manual, setManual] = useState("");
-  const [sendInvite, setSendInvite] = useState(false);
+  const [defaultMethod, setDefaultMethod] = useState<Method>("password");
+  const [overrides, setOverrides] = useState<Record<string, Method>>({});
+  const [template, setTemplate] = useState<InviteTemplate>(() => loadInviteTemplate());
+  const [showTemplate, setShowTemplate] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState({ done: 0, total: 0 });
   const [results, setResults] = useState<ProvisionResult[]>([]);
@@ -43,21 +57,64 @@ export function BulkUserProvisionPanel() {
         .map((line) => line.trim())
         .filter(Boolean)
         .map((line) => {
-          const [email, ...rest] = line.split(/[\t|]/).map((p) => p.trim());
-          return { email: email.toLowerCase(), display_name: rest.join(" ") || null };
+          const [email, name, methodRaw] = line.split(/[\t|]/).map((p) => p.trim());
+          const method: Method | undefined =
+            methodRaw?.toLowerCase() === "invite"
+              ? "invite"
+              : methodRaw?.toLowerCase() === "password"
+                ? "password"
+                : undefined;
+          return { email: (email ?? "").toLowerCase(), display_name: name || null, method };
         })
         .filter((e) => EMAIL_RE.test(e.email)),
     [manual],
   );
 
   const payload = useMemo(() => {
-    const byEmail = new Map<string, { email: string; display_name: string | null }>();
+    const byEmail = new Map<string, { email: string; display_name: string | null; method: Method }>();
     (directory ?? [])
       .filter((u) => selected.has(u.id) && u.email && EMAIL_RE.test(u.email))
-      .forEach((u) => byEmail.set(u.email!.toLowerCase(), { email: u.email!.toLowerCase(), display_name: u.display_name }));
-    manualEntries.forEach((e) => byEmail.set(e.email, e));
+      .forEach((u) => {
+        const email = u.email!.toLowerCase();
+        byEmail.set(email, {
+          email,
+          display_name: u.display_name,
+          method: overrides[email] ?? defaultMethod,
+        });
+      });
+    manualEntries.forEach((e) =>
+      byEmail.set(e.email, {
+        email: e.email,
+        display_name: e.display_name,
+        method: e.method ?? overrides[e.email] ?? defaultMethod,
+      }),
+    );
     return [...byEmail.values()];
-  }, [directory, selected, manualEntries]);
+  }, [directory, selected, manualEntries, overrides, defaultMethod]);
+
+  const inviteCount = payload.filter((p) => p.method === "invite").length;
+  const passwordCount = payload.length - inviteCount;
+
+  const setMethodFor = (email: string, method: Method) =>
+    setOverrides((prev) => ({ ...prev, [email]: method }));
+
+  const updateTemplate = (patch: Partial<InviteTemplate>) =>
+    setTemplate((prev) => {
+      const next = { ...prev, ...patch };
+      saveInviteTemplate(next);
+      return next;
+    });
+
+  const previewHtml = useMemo(
+    () =>
+      renderInvitePreview(template.html, {
+        display_name: "Alex",
+        email: "alex@example.com",
+        invite_url: "https://www.jet-around.com/invite?token=preview",
+        site_name: "JET",
+      }),
+    [template.html],
+  );
 
   const loadDirectory = async () => {
     setLoadingDirectory(true);
@@ -102,7 +159,11 @@ export function BulkUserProvisionPanel() {
       for (let i = 0; i < payload.length; i += BATCH_SIZE) {
         const batch = payload.slice(i, i + BATCH_SIZE);
         const { data, error } = await supabase.functions.invoke("admin-bulk-provision-users", {
-          body: { users: batch, sendInvite },
+          body: {
+            users: batch,
+            defaultMethod,
+            inviteTemplate: inviteCount > 0 ? template : undefined,
+          },
         });
         if (error) throw error;
         collected.push(...((data?.results ?? []) as ProvisionResult[]));
