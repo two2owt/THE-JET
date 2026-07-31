@@ -23,7 +23,7 @@ logVersion(FUNCTION_NAME);
 const MAX_USERS = 200;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-type Method = "password" | "invite";
+type Method = "password" | "invite" | "resend";
 type Incoming = { email?: unknown; display_name?: unknown; password?: unknown; method?: unknown };
 
 function escapeHtml(s: string) {
