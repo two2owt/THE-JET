@@ -1206,6 +1206,30 @@ export type Database = {
           id: string
         }[]
       }
+      admin_user_directory: {
+        Args: never
+        Returns: {
+          created_at: string
+          display_name: string
+          email: string
+          email_confirmed_at: string
+          has_profile: boolean
+          id: string
+          last_sign_in_at: string
+          onboarding_completed: boolean
+        }[]
+      }
+      admin_user_sync_status: {
+        Args: never
+        Returns: {
+          auth_users: number
+          missing_preferences: number
+          missing_profiles: number
+          orphan_profiles: number
+          preferences: number
+          profiles: number
+        }[]
+      }
       apply_retention_schedule: { Args: never; Returns: undefined }
       can_view_profile_field: {
         Args: { _field_name: string; _profile_id: string; _viewer_id: string }
