@@ -101,7 +101,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             const provider =
               (currentSession.user.app_metadata as { provider?: string } | null)
                 ?.provider ?? "email";
-            analytics.authEvent("login");
+            // Single canonical sign-in event — "Auth Event"/login was a
+            // duplicate of this and doubled every row in analytics_events.
             analytics.track("Auth Signed In", { provider });
           } else if (event === "SIGNED_OUT") {
             analytics.authEvent("logout");
