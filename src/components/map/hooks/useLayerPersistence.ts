@@ -16,7 +16,6 @@ interface Params {
   pathTimeFilter: string;
   dayFilter: number | undefined;
   timelapseMode: boolean;
-  densityWindowMinutes: number | null;
   pathsWindowMinutes: number | null;
 }
 
@@ -31,7 +30,6 @@ export const useLayerPersistence = ({
   pathTimeFilter,
   dayFilter,
   timelapseMode,
-  densityWindowMinutes,
   pathsWindowMinutes,
 }: Params) => {
   useEffect(() => { localStorage.setItem(layerKeys.density, String(showDensityLayer)); }, [layerKeys.density, showDensityLayer]);
@@ -44,9 +42,6 @@ export const useLayerPersistence = ({
   useEffect(() => { localStorage.setItem(filterKeys.dayFilter, dayFilter === undefined ? "all" : String(dayFilter)); }, [filterKeys.dayFilter, dayFilter]);
   useEffect(() => { localStorage.setItem(filterKeys.timelapseMode, String(timelapseMode)); }, [filterKeys.timelapseMode, timelapseMode]);
 
-  useEffect(() => {
-    localStorage.setItem(filterKeys.densityWindow, densityWindowMinutes === null ? "off" : String(densityWindowMinutes));
-  }, [filterKeys.densityWindow, densityWindowMinutes]);
   useEffect(() => {
     localStorage.setItem(filterKeys.pathsWindow, pathsWindowMinutes === null ? "off" : String(pathsWindowMinutes));
   }, [filterKeys.pathsWindow, pathsWindowMinutes]);
