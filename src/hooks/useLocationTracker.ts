@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocationPreferences } from "@/hooks/useLocationPreferences";
 import { isNativeApp } from "@/lib/platform";
+import { createLocationSmoother, haversineMeters } from "@/lib/geo-smoothing";
 
 /**
  * Streams the signed-in user's location into `public.user_locations`
@@ -21,25 +22,20 @@ import { isNativeApp } from "@/lib/platform";
  * - Silently no-ops when the user is signed out, when geolocation isn't
  *   available, or when the browser has already denied permission — never
  *   triggers a permission prompt (that stays in `LocationPermissionPrompt`).
- * - Debounces writes: min 60s between inserts, and only when the user has
- *   moved > ~20m OR 5 min has elapsed, to keep the table lean while still
- *   feeding realtime updates.
+ * - Every raw fix passes through `createLocationSmoother` first (accuracy gate,
+ *   implausible-speed rejection, stationary noise floor, accuracy-weighted EMA
+ *   and ~1m grid snapping) so jittery GPS can't smear or over-densify the
+ *   heatmap.
+ * - Debounces writes: min 60s between inserts, and only when the smoothed
+ *   position has moved > ~20m OR 5 min has elapsed, to keep the table lean
+ *   while still feeding realtime updates.
  */
 
 const MIN_WRITE_INTERVAL_MS = 60_000;
 const MAX_WRITE_INTERVAL_MS = 5 * 60_000;
 const MIN_MOVE_METERS = 20;
-
-function haversineMeters(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
-  const toRad = (n: number) => (n * Math.PI) / 180;
-  const R = 6371000;
-  const dLat = toRad(b.lat - a.lat);
-  const dLng = toRad(b.lng - a.lng);
-  const s =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(s));
-}
+/** Ignore raw fixes arriving faster than this — GPS bursts add no signal. */
+const MIN_SAMPLE_INTERVAL_MS = 5_000;
 
 export const useLocationTracker = () => {
   const { session } = useAuth();
@@ -49,6 +45,8 @@ export const useLocationTracker = () => {
   const lastWriteAtRef = useRef<number>(0);
   const lastCoordsRef = useRef<{ lat: number; lng: number } | null>(null);
   const inFlightRef = useRef(false);
+  const lastSampleAtRef = useRef(0);
+  const smootherRef = useRef(createLocationSmoother());
 
   const backgroundEnabled = locationTrackingEnabled && backgroundTrackingEnabled;
   // Signed in + tracking allowed is enough — no route/foreground gate.
@@ -63,9 +61,25 @@ export const useLocationTracker = () => {
     let resumeHandler: (() => void) | null = null;
     let backgroundPoll: ReturnType<typeof setInterval> | null = null;
 
-    const maybeWrite = async (lat: number, lng: number, accuracy: number | null) => {
+    const maybeWrite = async (rawLat: number, rawLng: number, rawAccuracy: number | null) => {
       if (cancelled || inFlightRef.current) return;
       const now = Date.now();
+
+      // Throttle raw sampling before doing any work — some devices fire
+      // watchPosition several times per second.
+      if (now - lastSampleAtRef.current < MIN_SAMPLE_INTERVAL_MS) return;
+      lastSampleAtRef.current = now;
+
+      // Smooth/deny noisy fixes before they can become a row.
+      const fix = smootherRef.current.push({
+        lat: rawLat,
+        lng: rawLng,
+        accuracy: rawAccuracy,
+        timestamp: now,
+      });
+      if (!fix) return;
+      const { lat, lng, accuracy } = fix;
+
       const sinceLast = now - lastWriteAtRef.current;
       const prev = lastCoordsRef.current;
       const moved = prev ? haversineMeters(prev, { lat, lng }) : Infinity;
@@ -170,6 +184,8 @@ export const useLocationTracker = () => {
 
     const stopAll = () => {
       cancelled = true;
+      smootherRef.current.reset();
+      lastSampleAtRef.current = 0;
       if (backgroundPoll) clearInterval(backgroundPoll);
       backgroundPoll = null;
       if (resumeHandler) document.removeEventListener("visibilitychange", resumeHandler);
