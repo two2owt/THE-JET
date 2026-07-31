@@ -365,11 +365,20 @@ export function BulkUserProvisionPanel() {
                   {u.display_name ?? ""}
                 </span>
                 {u.email && (
-                  <MethodToggle
-                    value={overrides[u.email.toLowerCase()] ?? defaultMethod}
-                    disabled={running}
-                    onChange={(m) => setMethodFor(u.email!.toLowerCase(), m)}
-                  />
+                  <>
+                    <MethodToggle
+                      value={overrides[u.email.toLowerCase()] ?? defaultMethod}
+                      disabled={running}
+                      onChange={(m) => setMethodFor(u.email!.toLowerCase(), m)}
+                    />
+                    <ResendInviteButton
+                      email={u.email.toLowerCase()}
+                      displayName={u.display_name}
+                      busy={resending === u.email.toLowerCase()}
+                      disabled={running || (resending !== null && resending !== u.email.toLowerCase())}
+                      onClick={resendInvite}
+                    />
+                  </>
                 )}
               </label>
             ))}
@@ -547,12 +556,25 @@ export function BulkUserProvisionPanel() {
               <div key={r.email} className="flex items-center gap-3 px-3 py-2 text-sm">
                 <span className="min-w-0 flex-1 truncate">{r.email}</span>
                 <Badge
-                  variant={r.status === "created" ? "default" : r.status === "exists" ? "secondary" : "destructive"}
+                  variant={
+                    r.status === "created" || r.status === "resent"
+                      ? "default"
+                      : r.status === "exists"
+                        ? "secondary"
+                        : "destructive"
+                  }
                 >
                   {r.status}
                 </Badge>
                 {r.password && <code className="hidden sm:block text-xs text-muted-foreground">{r.password}</code>}
                 {r.invited && <span className="text-xs text-muted-foreground">invited</span>}
+                <ResendInviteButton
+                  email={r.email}
+                  displayName={null}
+                  busy={resending === r.email}
+                  disabled={running || (resending !== null && resending !== r.email)}
+                  onClick={resendInvite}
+                />
               </div>
             ))}
           </div>
