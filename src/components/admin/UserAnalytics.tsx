@@ -246,6 +246,49 @@ export const UserAnalytics = () => {
         <p className="text-muted-foreground">Real-time platform metrics from Supabase • Auto-refreshes every 30 seconds</p>
       </div>
 
+      {/* Account sync status */}
+      {data?.syncStatus && (
+        <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Users className="h-4 w-4 text-primary" />
+              Account sync
+            </CardTitle>
+            <CardDescription>
+              Profiles compared against the authentication database
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {[
+                { label: "Accounts", value: data.syncStatus.auth_users },
+                { label: "Profiles", value: data.syncStatus.profiles },
+                { label: "Preferences", value: data.syncStatus.preferences },
+                {
+                  label: "Out of sync",
+                  value:
+                    Number(data.syncStatus.missing_profiles) +
+                    Number(data.syncStatus.missing_preferences) +
+                    Number(data.syncStatus.orphan_profiles),
+                  alert: true,
+                },
+              ].map((stat) => (
+                <div key={stat.label} className="rounded-lg border border-border/50 p-3">
+                  <p className="text-xs text-muted-foreground">{stat.label}</p>
+                  <p
+                    className={`text-lg font-bold ${
+                      stat.alert && Number(stat.value) > 0 ? "text-destructive" : "text-foreground"
+                    }`}
+                  >
+                    {Number(stat.value).toLocaleString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Live Event Feed */}
       <LiveEventFeed />
 
