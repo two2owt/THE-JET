@@ -26,6 +26,14 @@ export const UserAnalytics = () => {
       const sevenDaysAgo = subDays(new Date(), 7).toISOString();
       
       // Basic counts
+      // Authoritative account list (auth users) + sync status, admin-only RPCs.
+      const [directoryRes, syncRes] = await Promise.all([
+        supabase.rpc('admin_user_directory'),
+        supabase.rpc('admin_user_sync_status'),
+      ]);
+      const directory = directoryRes.data ?? [];
+      const syncStatus = syncRes.data?.[0] ?? null;
+
       const [
         usersRes, 
         locationsRes, 
@@ -50,8 +58,15 @@ export const UserAnalytics = () => {
         supabase.from('user_connections').select('id', { count: 'exact', head: true })
       ]);
 
-      const completedOnboarding = profilesRes.data?.filter(p => p.onboarding_completed).length || 0;
-      const recentUsers = profilesRes.data?.filter(u => u.created_at >= sevenDaysAgo) || [];
+      // Prefer the account directory so counts always match the auth database;
+      // fall back to profiles if the RPC is unavailable (non-admin viewer).
+      const useDirectory = directory.length > 0;
+      const completedOnboarding = useDirectory
+        ? directory.filter((u) => u.onboarding_completed).length
+        : profilesRes.data?.filter((p) => p.onboarding_completed).length || 0;
+      const recentUsers = useDirectory
+        ? directory.filter((u) => u.created_at >= sevenDaysAgo)
+        : profilesRes.data?.filter((u) => u.created_at >= sevenDaysAgo) || [];
 
       // User growth over last 7 days
       const userGrowth = Array.from({ length: 7 }, (_, i) => {
@@ -156,7 +171,9 @@ export const UserAnalytics = () => {
       });
 
       return {
-        totalUsers: usersRes.count || 0,
+        totalUsers: useDirectory ? directory.length : usersRes.count || 0,
+        profileCount: usersRes.count || 0,
+        syncStatus,
         totalLocations: locationsRes.count || 0,
         totalNotifications: notificationsRes.count || 0,
         totalFavorites: favoritesRes.count || 0,
