@@ -117,5 +117,15 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
     };
   }, [loadDensityData, instanceId]);
 
+  // Refetch once a session becomes available (login / token refresh).
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION')) {
+        loadDensityData();
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [loadDensityData]);
+
   return { densityData, loading, error, unauthorized, refresh: loadDensityData };
 };
