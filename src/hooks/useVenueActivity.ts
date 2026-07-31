@@ -278,9 +278,17 @@ export const useVenueActivity = (enabled: boolean = true) => {
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
+    // Refetch once auth becomes available (the venue search requires a JWT).
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") {
+        loadVenueActivity();
+      }
+    });
+
     return () => {
       supabase.removeChannel(channel);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      subscription.unsubscribe();
     };
   }, [enabled]);
 
