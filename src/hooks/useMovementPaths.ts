@@ -110,5 +110,15 @@ export const useMovementPaths = (filters: MovementPathFilters = {}) => {
     };
   }, [loadPathData, instanceId]);
 
+  // Re-fetch once the user signs in / token refreshes.
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+        loadPathData();
+      }
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [loadPathData]);
+
   return { pathData, loading, error, unauthorized, refresh: loadPathData };
 };
