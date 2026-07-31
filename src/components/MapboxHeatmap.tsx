@@ -2896,7 +2896,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   {(['light', 'dark', 'streets', 'satellite'] as const).map((style) => (
                     <button
                       key={style}
-                      onClick={() => { triggerHaptic('light'); setMapStyle(style); }}
+                      onClick={() => { triggerHaptic('light'); manualStyleOverride.current = true; setMapStyle(style); }}
                       aria-pressed={mapStyle === style}
                       style={{
                         height: '28px',
