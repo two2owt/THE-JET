@@ -45,9 +45,20 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
     try {
       setLoading(true);
 
-      // This endpoint requires a valid user JWT — skip cleanly when signed out.
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      // Revalidate the identity with Auth before calling the protected endpoint.
+      // getSession() alone only reads local storage and can briefly return a
+      // stale token while OAuth hydration or a token refresh is completing.
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        setUnauthorized(true);
+        setError('unauthorized');
+        setDensityData(null);
+        lastDataHashRef.current = '';
+        return;
+      }
+
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session?.access_token) {
         setUnauthorized(true);
         setError('unauthorized');
         setDensityData(null);
@@ -66,6 +77,9 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
 
       const { data, error: functionError } = await supabase.functions.invoke('get-location-density', {
         body: JSON.stringify(body),
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
 
       if (functionError) throw functionError;
