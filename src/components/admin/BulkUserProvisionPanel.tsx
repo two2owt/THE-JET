@@ -265,6 +265,13 @@ export function BulkUserProvisionPanel() {
                 <span className="hidden sm:block max-w-[10rem] truncate text-xs text-muted-foreground">
                   {u.display_name ?? ""}
                 </span>
+                {u.email && (
+                  <MethodToggle
+                    value={overrides[u.email.toLowerCase()] ?? defaultMethod}
+                    disabled={running}
+                    onChange={(m) => setMethodFor(u.email!.toLowerCase(), m)}
+                  />
+                )}
               </label>
             ))}
           </div>
@@ -272,7 +279,7 @@ export function BulkUserProvisionPanel() {
 
         <div className="space-y-2">
           <Label htmlFor="manual-emails" className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Or paste emails (one per line, optional <code>email | Display Name</code>)
+            Or paste emails (one per line, optional <code>email | Display Name | invite</code>)
           </Label>
           <Textarea
             id="manual-emails"
@@ -280,7 +287,7 @@ export function BulkUserProvisionPanel() {
             onChange={(e) => setManual(e.target.value)}
             disabled={running}
             rows={4}
-            placeholder={"alex@example.com | Alex\nsam@example.com"}
+            placeholder={"alex@example.com | Alex | invite\nsam@example.com | Sam | password"}
             className="font-mono text-xs"
           />
           {manualEntries.length > 0 && (
@@ -288,10 +295,142 @@ export function BulkUserProvisionPanel() {
           )}
         </div>
 
-        <label className="flex items-center gap-2 text-sm">
-          <Checkbox checked={sendInvite} disabled={running} onCheckedChange={(v) => setSendInvite(v === true)} />
-          Send invite emails instead of setting a temporary password
-        </label>
+        {/* Delivery method */}
+        <div className="rounded-xl border border-border/50 p-3 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-sm font-medium">Default delivery method</p>
+              <p className="text-xs text-muted-foreground">
+                Applies to every selected account unless you override it per user.
+              </p>
+            </div>
+            <MethodToggle value={defaultMethod} disabled={running} onChange={setDefaultMethod} size="md" />
+          </div>
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            <Badge variant="secondary" className="gap-1">
+              <KeyRound className="h-3 w-3" /> {passwordCount} temp password
+            </Badge>
+            <Badge variant="secondary" className="gap-1">
+              <Mail className="h-3 w-3" /> {inviteCount} invite email
+            </Badge>
+            {Object.keys(overrides).length > 0 && (
+              <Button type="button" variant="ghost" size="sm" disabled={running} onClick={() => setOverrides({})}>
+                Clear overrides
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Invitation email template editor */}
+        <div className="rounded-xl border border-border/50 p-3 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-sm font-medium">Invitation email template</p>
+              <p className="text-xs text-muted-foreground">
+                Used for every account set to “Invite”. Saved on this device.
+              </p>
+            </div>
+            <div className="flex gap-1">
+              <Button type="button" variant="ghost" size="sm" onClick={() => setShowTemplate((v) => !v)}>
+                {showTemplate ? "Hide" : "Edit"}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="gap-1"
+                onClick={() => {
+                  updateTemplate(DEFAULT_INVITE_TEMPLATE);
+                  toast.success("Template reset to default");
+                }}
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          {showTemplate && (
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="invite-subject" className="text-xs text-muted-foreground">
+                  Subject
+                </Label>
+                <Input
+                  id="invite-subject"
+                  value={template.subject}
+                  disabled={running}
+                  onChange={(e) => updateTemplate({ subject: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="invite-redirect" className="text-xs text-muted-foreground">
+                  Redirect URL after accepting
+                </Label>
+                <Input
+                  id="invite-redirect"
+                  value={template.redirectTo}
+                  disabled={running}
+                  placeholder="https://www.jet-around.com/"
+                  onChange={(e) => updateTemplate({ redirectTo: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="invite-html" className="text-xs text-muted-foreground">
+                  HTML body
+                </Label>
+                <Textarea
+                  id="invite-html"
+                  value={template.html}
+                  disabled={running}
+                  rows={10}
+                  onChange={(e) => updateTemplate({ html: e.target.value })}
+                  className="font-mono text-xs"
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-xs text-muted-foreground">Placeholders:</span>
+                {INVITE_PLACEHOLDERS.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    disabled={running}
+                    onClick={() => {
+                      navigator.clipboard?.writeText(`{{${p}}}`);
+                      toast.success(`Copied {{${p}}}`);
+                    }}
+                    className="rounded-md border border-border/60 bg-background/60 px-2 py-0.5 font-mono text-[11px] hover:bg-background"
+                  >
+                    {`{{${p}}}`}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1"
+                  onClick={() => setShowPreview((v) => !v)}
+                >
+                  <Eye className="h-4 w-4" /> {showPreview ? "Hide preview" : "Preview"}
+                </Button>
+                {!template.html.includes("{{invite_url}}") && (
+                  <span className="text-xs text-destructive">Body must include {"{{invite_url}}"}</span>
+                )}
+              </div>
+              {showPreview && (
+                <div className="rounded-xl border border-border/50 overflow-hidden bg-white">
+                  <iframe
+                    title="Invitation email preview"
+                    srcDoc={previewHtml}
+                    sandbox=""
+                    className="w-full h-64 bg-white"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {results.length > 0 && (
