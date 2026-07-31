@@ -75,6 +75,10 @@ export const useLocationTracker = () => {
 
       inFlightRef.current = true;
       try {
+        // Re-check the session right before writing: a sign-out can land in
+        // the gap between the geolocation callback and this insert.
+        const { data } = await supabase.auth.getSession();
+        if (cancelled || data.session?.user?.id !== userId) return;
         const { error } = await supabase.from("user_locations").insert({
           user_id: userId,
           latitude: lat,
@@ -164,10 +168,12 @@ export const useLocationTracker = () => {
 
     void start();
 
-    return () => {
+    const stopAll = () => {
       cancelled = true;
       if (backgroundPoll) clearInterval(backgroundPoll);
+      backgroundPoll = null;
       if (resumeHandler) document.removeEventListener("visibilitychange", resumeHandler);
+      resumeHandler = null;
       if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
         watchIdRef.current = null;
@@ -179,6 +185,21 @@ export const useLocationTracker = () => {
           .then(({ Geolocation }) => Geolocation.clearWatch({ id }))
           .catch(() => {});
       }
+    };
+
+    // Tear down the watchers the instant auth ends, without waiting for the
+    // React re-render that clears `session` — no points after sign-out.
+    const { data: authSub } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (event === "SIGNED_OUT" || !nextSession || nextSession.user?.id !== userId) {
+        lastCoordsRef.current = null;
+        lastWriteAtRef.current = 0;
+        stopAll();
+      }
+    });
+
+    return () => {
+      authSub.subscription.unsubscribe();
+      stopAll();
     };
   }, [enabled, backgroundEnabled, session?.user?.id]);
 };
