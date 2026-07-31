@@ -11,11 +11,12 @@ import { isNativeApp } from "@/lib/platform";
  * Gating (all must hold):
  * - user is signed in
  * - `user_preferences.location_tracking_enabled` is true
- * - either the calling surface is active (`foregroundActive`) OR
- *   `user_preferences.background_tracking_enabled` is true, which keeps the
- *   watcher alive across tabs/routes and while the app is backgrounded
- *   (Capacitor `Geolocation.watchPosition` on native, `watchPosition` +
- *   a resume-on-visibility fix-up on the web)
+ * Tracking is session-scoped: once a user signs in it runs on EVERY route and
+ * keeps contributing points until they sign out (or turn tracking off in
+ * settings). `user_preferences.background_tracking_enabled` additionally keeps
+ * the watcher fed while the app is backgrounded on native
+ * (Capacitor `Geolocation.watchPosition`); on the web a resume-on-visibility
+ * fix-up plus a slow poll always runs so throttled/hidden tabs still report.
  *
  * - Silently no-ops when the user is signed out, when geolocation isn't
  *   available, or when the browser has already denied permission — never
@@ -40,7 +41,7 @@ function haversineMeters(a: { lat: number; lng: number }, b: { lat: number; lng:
   return 2 * R * Math.asin(Math.sqrt(s));
 }
 
-export const useLocationTracker = (foregroundActive: boolean = true) => {
+export const useLocationTracker = () => {
   const { session } = useAuth();
   const { locationTrackingEnabled, backgroundTrackingEnabled } = useLocationPreferences();
   const watchIdRef = useRef<number | null>(null);
@@ -50,7 +51,8 @@ export const useLocationTracker = (foregroundActive: boolean = true) => {
   const inFlightRef = useRef(false);
 
   const backgroundEnabled = locationTrackingEnabled && backgroundTrackingEnabled;
-  const enabled = locationTrackingEnabled && (foregroundActive || backgroundTrackingEnabled);
+  // Signed in + tracking allowed is enough — no route/foreground gate.
+  const enabled = locationTrackingEnabled;
 
   useEffect(() => {
     const userId = session?.user?.id;
@@ -136,11 +138,10 @@ export const useLocationTracker = (foregroundActive: boolean = true) => {
         { enableHighAccuracy: false, maximumAge: 30_000, timeout: 20_000 }
       );
 
-      if (!backgroundEnabled) return;
-
       // Browsers throttle (or freeze) `watchPosition` callbacks for hidden
-      // tabs, so top up with an explicit fix on a slow poll and whenever the
-      // tab becomes visible again. Both go through the same write throttle.
+      // tabs (and some browsers stall it on inactive routes), so top up with an
+      // explicit fix on a slow poll and whenever the tab becomes visible again.
+      // Both go through the same write throttle, so this adds no extra rows.
       const requestFix = () => {
         if (cancelled) return;
         navigator.geolocation.getCurrentPosition(
