@@ -297,22 +297,6 @@ export function BulkUserProvisionPanel() {
     }
   };
 
-  const unusedDownloadResults = () => {
-    const cols = ["email", "status", "user_id", "password", "error"];
-    const csv = [
-      cols.join(","),
-      ...results.map((r) => cols.map((c) => csvEscape((r as Record<string, unknown>)[c])).join(",")),
-    ].join("\n");
-    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `jet-provisioned-users-${new Date().toISOString().replace(/[:.]/g, "-")}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  };
-
   return (
     <div className="rounded-2xl border border-border/60 bg-card/60 backdrop-blur p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
