@@ -3071,40 +3071,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     Reset heatmap
                   </button>
                 </div>
-                {/* Time-window slider — server round-trip, only fires on
-                    commit so drags don't spam the edge function. */}
-                {!timelapseMode && (
-                  <LayerSliderRow
-                    label="Time window"
-                    Icon={Clock}
-                    ariaLabel="Density data time window"
-                    min={0}
-                    max={4}
-                    step={1}
-                    value={
-                      densityWindowMinutes === null ? 0 :
-                      densityWindowMinutes === 15 ? 1 :
-                      densityWindowMinutes === 60 ? 2 :
-                      densityWindowMinutes === 360 ? 3 :
-                      densityWindowMinutes === 1440 ? 4 : 0
-                    }
-                    onChange={(step) => {
-                      const mapping = [null, 15, 60, 360, 1440];
-                      setDensityWindowMinutes(mapping[step] ?? null);
-                    }}
-                    onCommit={() => refreshDensity()}
-                    format={(step) => (['Preset','15m','1h','6h','24h'][step] ?? 'Preset')}
-                    ticks={[
-                      { value: 0, label: 'Preset' },
-                      { value: 1, label: '15m' },
-                      { value: 2, label: '1h' },
-                      { value: 3, label: '6h' },
-                      { value: 4, label: '24h' },
-                    ]}
-                    defaultValue={0}
-                    loading={densityLoading}
-                  />
-                )}
                 {/* Time-lapse toggle — glassmorphic pill matching LayerToggleRow */}
                 <button
                   type="button"
