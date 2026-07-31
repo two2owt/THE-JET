@@ -750,6 +750,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     ].forEach((key) => {
       try { localStorage.removeItem(key); } catch { /* ignore */ }
     });
+    // Legacy key from the removed density "time window" slider — cleared so
+    // stale values from older builds can never leak back into the heatmap.
+    try { localStorage.removeItem('jet-map-density-window'); } catch { /* ignore */ }
     setTimeFilter('all');
     setDayFilter(undefined);
     setHourFilter(undefined);
