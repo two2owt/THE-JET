@@ -273,7 +273,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     dayFilter: "jet-map-day-filter",
     timelapseMode: "jet-map-timelapse-mode",
     timelapseSpeed: "jet-map-timelapse-speed",
-    densityWindow: "jet-map-density-window",
     pathsWindow: "jet-map-paths-window",
   } as const;
   const VALID_TIME_FILTERS = new Set<'all' | 'today' | 'this_week' | 'this_hour'>(['all', 'today', 'this_week', 'this_hour']);
@@ -395,8 +394,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [showMovementPaths, setShowMovementPaths] = useState(() => getLayerState("paths", false));
   const [pathTimeFilter, setPathTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.pathTimeFilter, 'all', 'pathTime'));
 
-  // Time-window overrides (last N minutes). null → use coarse time_filter.
-  const [densityWindowMinutes, setDensityWindowMinutes] = useState<number | null>(() => getPersistedWindowMinutes(FILTER_KEYS.densityWindow));
+  // Time-window override for Flow Paths only (last N minutes). null → use
+  // coarse time_filter. The heatmap intentionally has no window: it relies
+  // solely on time range + time-lapse settings.
   const [pathsWindowMinutes, setPathsWindowMinutes] = useState<number | null>(() => getPersistedWindowMinutes(FILTER_KEYS.pathsWindow));
 
   // Sync active layer toggles and filter selections to URL query params for shareability
@@ -486,7 +486,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     pathTimeFilter,
     dayFilter,
     timelapseMode,
-    densityWindowMinutes,
     pathsWindowMinutes,
   });
   
@@ -606,9 +605,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     timeFilter,
     hourOfDay: timelapseMode ? undefined : hourFilter,
     dayOfWeek: dayFilter,
-    // Time-window slider only applies when NOT in time-lapse mode (which
-    // paints per-hour buckets across 24 hours).
-    windowMinutes: timelapseMode ? undefined : (densityWindowMinutes ?? undefined),
   });
 
   const { pathData, loading: pathsLoading, error: pathsError, refresh: refreshPaths } = useMovementPaths({
@@ -729,8 +725,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     setTimelapseMode(false);
     setMinPathFrequency(2);
 
-    // Reset data-window sliders to their defaults
-    setDensityWindowMinutes(null);
+    // Reset data-window slider to its default
     setPathsWindowMinutes(null);
 
     // Reset time-lapse playback
@@ -752,7 +747,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       FILTER_KEYS.dayFilter,
       FILTER_KEYS.timelapseMode,
       FILTER_KEYS.timelapseSpeed,
-      FILTER_KEYS.densityWindow,
     ].forEach((key) => {
       try { localStorage.removeItem(key); } catch { /* ignore */ }
     });
@@ -760,7 +754,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     setDayFilter(undefined);
     setHourFilter(undefined);
     setTimelapseMode(false);
-    setDensityWindowMinutes(null);
     if (timelapse.isPlaying) timelapse.pause();
     timelapse.setSpeed(1);
     timelapse.setHour(new Date().getHours());
@@ -777,7 +770,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     dayFilter === undefined &&
     hourFilter === undefined &&
     !timelapseMode &&
-    densityWindowMinutes === null &&
     timelapse.speed === 1;
 
   const handleResetFlowPaths = useCallback(() => {
