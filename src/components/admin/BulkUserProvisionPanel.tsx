@@ -36,6 +36,47 @@ function csvEscape(v: unknown) {
   return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
+function MethodToggle({
+  value,
+  onChange,
+  disabled,
+  size = "sm",
+}: {
+  value: Method;
+  onChange: (m: Method) => void;
+  disabled?: boolean;
+  size?: "sm" | "md";
+}) {
+  const pad = size === "md" ? "px-3 py-1.5 text-xs" : "px-2 py-1 text-[11px]";
+  const options: { key: Method; label: string; Icon: typeof KeyRound }[] = [
+    { key: "password", label: "Password", Icon: KeyRound },
+    { key: "invite", label: "Invite", Icon: Mail },
+  ];
+  return (
+    <div className="flex shrink-0 rounded-lg border border-border/60 bg-background/50 p-0.5">
+      {options.map(({ key, label, Icon }) => (
+        <button
+          key={key}
+          type="button"
+          disabled={disabled}
+          aria-pressed={value === key}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onChange(key);
+          }}
+          className={`flex items-center gap-1 rounded-md ${pad} transition-colors disabled:opacity-50 ${
+            value === key ? "bg-primary/20 text-foreground" : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Icon className="h-3 w-3" />
+          <span className={size === "sm" ? "hidden sm:inline" : ""}>{label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function BulkUserProvisionPanel() {
   const [directory, setDirectory] = useState<DirectoryUser[] | null>(null);
   const [loadingDirectory, setLoadingDirectory] = useState(false);
