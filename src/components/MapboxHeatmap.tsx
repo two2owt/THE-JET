@@ -3062,22 +3062,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 paddingBottom: '4px',
                 minWidth: 0,
               }}>
-                {/* One-tap reset — restores default rendering + every heatmap
-                    control (time range, day, time-lapse) and refetches
-                    density. Disabled while already at defaults. */}
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <button
-                    type="button"
-                    onClick={handleResetHeatmap}
-                    disabled={isHeatmapDefault}
-                    title={isHeatmapDefault ? 'Heatmap already at default settings' : 'Restore default heatmap settings'}
-                    aria-label="Reset heatmap to default settings"
-                    className="inline-flex min-h-[32px] items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-semibold text-muted-foreground transition hover:bg-white/10 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
-                  >
-                    <RotateCcw style={{ width: '11px', height: '11px' }} />
-                    Reset heatmap
-                  </button>
-                </div>
                 {/* Time-lapse toggle — glassmorphic pill matching LayerToggleRow */}
                 <button
                   type="button"
