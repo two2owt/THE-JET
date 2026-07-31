@@ -38,7 +38,15 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
     
     try {
       setLoading(true);
-      
+
+      // This endpoint requires a valid user JWT — skip cleanly when signed out.
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setUnauthorized(true);
+        setError('unauthorized');
+        return;
+      }
+
       const body: Record<string, string | number> = {};
       if (filters.windowMinutes && filters.windowMinutes > 0) {
         body.time_window_minutes = Math.floor(filters.windowMinutes);
