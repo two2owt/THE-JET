@@ -1,4 +1,4 @@
-import { useEffect, MutableRefObject } from "react";
+import { useEffect, useRef, MutableRefObject } from "react";
 
 interface Params {
   mapRef: MutableRefObject<any>;
@@ -28,6 +28,10 @@ export const useDensityLayer = ({
   timelapse,
   isLightBasemap = false,
 }: Params) => {
+  // Tracks which basemap the current layers were painted for, so a light↔dark
+  // style switch forces a rebuild instead of silently reusing the old ramp.
+  const paintedForLightRef = useRef<boolean | null>(null);
+
   useEffect(() => {
     const activeData = timelapseMode && timelapse.currentData
       ? timelapse.currentData
@@ -58,7 +62,9 @@ export const useDensityLayer = ({
     // Data update path — reuse existing source so Mapbox interpolates paint
     // transitions instead of hard-flashing on every realtime refetch.
     const existingSource = mapRef.current.getSource(sourceId) as any;
-    if (existingSource) {
+    const basemapChanged = paintedForLightRef.current !== null
+      && paintedForLightRef.current !== isLightBasemap;
+    if (existingSource && !basemapChanged) {
       try {
         existingSource.setData(activeData.geojson);
         return;
@@ -71,7 +77,16 @@ export const useDensityLayer = ({
           if (mapRef.current?.getSource(sourceId)) mapRef.current.removeSource(sourceId);
         } catch { /* no-op */ }
       }
+    } else if (existingSource && basemapChanged) {
+      // Rebuild with the contrast-matched ramp for the new basemap.
+      try {
+        [glowLayerId, pointLayerId, layerId].forEach((id) => {
+          if (mapRef.current?.getLayer(id)) mapRef.current.removeLayer(id);
+        });
+        if (mapRef.current?.getSource(sourceId)) mapRef.current.removeSource(sourceId);
+      } catch { /* no-op */ }
     }
+    paintedForLightRef.current = isLightBasemap;
 
     mapRef.current.addSource(sourceId, {
       type: 'geojson',
