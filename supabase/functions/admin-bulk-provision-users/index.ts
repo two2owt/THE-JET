@@ -158,10 +158,30 @@ Deno.serve(async (req) => {
       try {
         if (u.method === "resend") {
           // Re-trigger an invite for an address that may or may not already exist.
-          // Try an invite link first; if the account already exists, fall back to a magic link.
+          if (!useCustomInviteEmail || !resend) {
+            // No custom template: let Supabase send its own invite email.
+            const { data, error } = await admin.auth.admin.inviteUserByEmail(u.email, {
+              data: u.display_name ? { display_name: u.display_name } : undefined,
+              redirectTo: tplRedirect,
+            });
+            if (error) {
+              const exists = /already|registered|exist/i.test(error.message ?? "");
+              results.push({
+                email: u.email,
+                status: "error",
+                error: exists
+                  ? "Account already exists — configure the invitation template to resend a sign-in link"
+                  : error.message,
+              });
+              continue;
+            }
+            results.push({ email: u.email, status: "resent", user_id: data.user?.id, invited: true });
+            continue;
+          }
+
+          // Custom template: mint a link ourselves (invite for new, magic link for existing).
           let actionLink: string | null = null;
           let userId: string | undefined;
-          let existed = false;
 
           const invite = await admin.auth.admin.generateLink({
             type: "invite",
@@ -175,7 +195,6 @@ Deno.serve(async (req) => {
             actionLink = invite.data?.properties?.action_link ?? null;
             userId = invite.data?.user?.id;
           } else if (/already|registered|exist/i.test(invite.error.message ?? "")) {
-            existed = true;
             const magic = await admin.auth.admin.generateLink({
               type: "magiclink",
               email: u.email,
@@ -189,21 +208,6 @@ Deno.serve(async (req) => {
             userId = magic.data?.user?.id;
           } else {
             results.push({ email: u.email, status: "error", error: invite.error.message });
-            continue;
-          }
-
-          if (!useCustomInviteEmail || !resend) {
-            // Supabase already delivered its own email for the invite path.
-            if (!existed) {
-              results.push({ email: u.email, status: "resent", user_id: userId, invited: true });
-            } else {
-              results.push({
-                email: u.email,
-                status: "error",
-                user_id: userId,
-                error: "Configure the invitation template (subject + body) to resend to existing users",
-              });
-            }
             continue;
           }
 
