@@ -28,9 +28,16 @@ export const useMovementPaths = (filters: MovementPathFilters = {}) => {
   // Per-instance channel name prevents silent dedupe on remount.
   const instanceId = useId();
   const isLoadingRef = useRef(false);
+  // Set when a refetch is requested while one is already in flight (e.g. the
+  // user drags the min-frequency slider). Guarantees the latest filter value
+  // always wins instead of being silently dropped.
+  const pendingRefetchRef = useRef(false);
 
   const loadPathData = useCallback(async () => {
-    if (isLoadingRef.current) return;
+    if (isLoadingRef.current) {
+      pendingRefetchRef.current = true;
+      return;
+    }
     isLoadingRef.current = true;
     try {
       setLoading(true);
@@ -77,8 +84,18 @@ export const useMovementPaths = (filters: MovementPathFilters = {}) => {
     } finally {
       setLoading(false);
       isLoadingRef.current = false;
+      if (pendingRefetchRef.current) {
+        pendingRefetchRef.current = false;
+        // Re-run with the newest filters captured by the latest callback.
+        setTimeout(() => loadPathDataRef.current?.(), 0);
+      }
     }
   }, [filters.timeFilter, filters.minFrequency, filters.windowMinutes]);
+
+  // Always points at the freshest callback so a queued refetch uses the
+  // current filter values, not the ones captured when it was queued.
+  const loadPathDataRef = useRef(loadPathData);
+  loadPathDataRef.current = loadPathData;
 
   useEffect(() => {
     loadPathData();

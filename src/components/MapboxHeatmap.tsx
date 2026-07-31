@@ -3479,6 +3479,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     { value: 10, label: '10' },
                   ]}
                   defaultValue={2}
+                  loading={pathsLoading}
                 />
                 {/* Compact movement summary — wraps cleanly at any width. */}
                 {pathData?.stats && (
