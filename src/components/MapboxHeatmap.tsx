@@ -3770,30 +3770,95 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             >
               <Route style={{ width: '15px', height: '15px' }} strokeWidth={2.25} />
             </button>
-            {showParking && (
-              <div style={{
-                width: '28px', height: '28px',
-                borderRadius: '8px',
+            <button
+              type="button"
+              aria-label={`${showParking ? 'Hide' : 'Show'} parking layer`}
+              aria-pressed={showParking}
+              onClick={(e) => {
+                e.stopPropagation();
+                triggerHaptic('medium');
+                const newState = !showParking;
+                setShowParking(newState);
+                if (map.current) {
+                  try {
+                    if (map.current.getLayer('parking-icons')) {
+                      map.current.setLayoutProperty('parking-icons', 'visibility', newState ? 'visible' : 'none');
+                    }
+                  } catch (e) { /* layer may not exist yet */ }
+                }
+              }}
+              style={{
+                width: '32px', height: '32px',
+                borderRadius: '9px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'hsl(var(--primary))',
-                color: 'hsl(var(--primary-foreground))',
-                boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
-              }}>
-                <Car style={{ width: '14px', height: '14px' }} />
-              </div>
-            )}
-            {showLiveStats && (
-              <div style={{
-                width: '28px', height: '28px',
-                borderRadius: '8px',
+                cursor: 'pointer',
+                border: showParking ? '1px solid transparent' : '1px solid hsl(var(--border))',
+                background: showParking
+                  ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
+                  : 'hsl(var(--card) / 0.85)',
+                color: showParking ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
+                boxShadow: showParking
+                  ? '0 4px 12px -2px hsl(var(--primary) / 0.5)'
+                  : 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
+                backdropFilter: 'blur(12px) saturate(1.4)',
+                WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
+                transition: 'background 200ms ease, color 200ms ease, box-shadow 200ms ease, transform 200ms ease',
+                padding: 0,
+              }}
+            >
+              <Car style={{ width: '15px', height: '15px' }} strokeWidth={2.25} />
+            </button>
+            <button
+              type="button"
+              aria-label={`${showLiveStats ? 'Hide' : 'Show'} live stats`}
+              aria-pressed={showLiveStats}
+              onClick={(e) => {
+                e.stopPropagation();
+                triggerHaptic('medium');
+                const next = !showLiveStats;
+                setShowLiveStats(next);
+                if (next) {
+                  setIsLoadingStats(true);
+                  if (!showDensityLayer) {
+                    setShowDensityLayer(true);
+                    setTimeFilter('all');
+                    setHourFilter(undefined);
+                    setDayFilter(undefined);
+                    scheduleDensityRefresh();
+                  }
+                  if (!showMovementPaths) {
+                    setShowMovementPaths(true);
+                    schedulePathsRefresh();
+                  }
+                } else {
+                  setIsLoadingStats(false);
+                }
+              }}
+              style={{
+                width: '32px', height: '32px',
+                borderRadius: '9px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'hsl(var(--primary))',
-                color: 'hsl(var(--primary-foreground))',
-                boxShadow: '0 4px 12px -2px hsl(var(--primary) / 0.4)',
-              }}>
-                <BarChart3 style={{ width: '14px', height: '14px' }} />
-              </div>
-            )}
+                cursor: 'pointer',
+                border: showLiveStats ? '1px solid transparent' : '1px solid hsl(var(--border))',
+                background: showLiveStats
+                  ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
+                  : 'hsl(var(--card) / 0.85)',
+                color: showLiveStats ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
+                boxShadow: showLiveStats
+                  ? '0 4px 12px -2px hsl(var(--primary) / 0.5)'
+                  : 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
+                backdropFilter: 'blur(12px) saturate(1.4)',
+                WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
+                transition: 'background 200ms ease, color 200ms ease, box-shadow 200ms ease, transform 200ms ease',
+                padding: 0,
+              }}
+            >
+              {isLoadingStats ? (
+                <Loader2 className="animate-spin" style={{ width: '15px', height: '15px' }} />
+              ) : (
+                <BarChart3 style={{ width: '15px', height: '15px' }} strokeWidth={2.25} />
+              )}
+            </button>
           </div>
         )}
 
