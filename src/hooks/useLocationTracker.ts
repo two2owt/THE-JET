@@ -1,12 +1,22 @@
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLocationPreferences } from "@/hooks/useLocationPreferences";
+import { isNativeApp } from "@/lib/platform";
 
 /**
- * Streams the signed-in user's foreground location into `public.user_locations`
+ * Streams the signed-in user's location into `public.user_locations`
  * so the density/paths/live-stats realtime feeds have data to render.
  *
- * - Only runs when `enabled` is true (mount only on map surface).
+ * Gating (all must hold):
+ * - user is signed in
+ * - `user_preferences.location_tracking_enabled` is true
+ * - either the calling surface is active (`foregroundActive`) OR
+ *   `user_preferences.background_tracking_enabled` is true, which keeps the
+ *   watcher alive across tabs/routes and while the app is backgrounded
+ *   (Capacitor `Geolocation.watchPosition` on native, `watchPosition` +
+ *   a resume-on-visibility fix-up on the web)
+ *
  * - Silently no-ops when the user is signed out, when geolocation isn't
  *   available, or when the browser has already denied permission — never
  *   triggers a permission prompt (that stays in `LocationPermissionPrompt`).
@@ -30,12 +40,17 @@ function haversineMeters(a: { lat: number; lng: number }, b: { lat: number; lng:
   return 2 * R * Math.asin(Math.sqrt(s));
 }
 
-export const useLocationTracker = (enabled: boolean = true) => {
+export const useLocationTracker = (foregroundActive: boolean = true) => {
   const { session } = useAuth();
+  const { locationTrackingEnabled, backgroundTrackingEnabled } = useLocationPreferences();
   const watchIdRef = useRef<number | null>(null);
+  const nativeWatchIdRef = useRef<string | null>(null);
   const lastWriteAtRef = useRef<number>(0);
   const lastCoordsRef = useRef<{ lat: number; lng: number } | null>(null);
   const inFlightRef = useRef(false);
+
+  const backgroundEnabled = locationTrackingEnabled && backgroundTrackingEnabled;
+  const enabled = locationTrackingEnabled && (foregroundActive || backgroundTrackingEnabled);
 
   useEffect(() => {
     const userId = session?.user?.id;
@@ -43,6 +58,8 @@ export const useLocationTracker = (enabled: boolean = true) => {
     if (typeof navigator === "undefined" || !("geolocation" in navigator)) return;
 
     let cancelled = false;
+    let resumeHandler: (() => void) | null = null;
+    let backgroundPoll: ReturnType<typeof setInterval> | null = null;
 
     const maybeWrite = async (lat: number, lng: number, accuracy: number | null) => {
       if (cancelled || inFlightRef.current) return;
@@ -73,7 +90,29 @@ export const useLocationTracker = (enabled: boolean = true) => {
       }
     };
 
-    const start = async () => {
+    const startNative = async () => {
+      try {
+        const { Geolocation } = await import("@capacitor/geolocation");
+        const perms = await Geolocation.checkPermissions();
+        // Background tracking needs the coarse/fine "location" grant; we never
+        // prompt from here — the permission prompt stays user-initiated.
+        const granted =
+          perms.location === "granted" || (backgroundEnabled && perms.coarseLocation === "granted");
+        if (!granted || cancelled) return;
+
+        nativeWatchIdRef.current = await Geolocation.watchPosition(
+          { enableHighAccuracy: false, timeout: 20_000, maximumAge: 30_000 },
+          (pos, err) => {
+            if (err || !pos) return;
+            void maybeWrite(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy ?? null);
+          },
+        );
+      } catch (err) {
+        if (import.meta.env.DEV) console.warn("[location-tracker] native watch failed", err);
+      }
+    };
+
+    const startWeb = async () => {
       // Only track when permission is already granted — never prompt from here.
       try {
         const status = await navigator.permissions?.query?.({
@@ -96,18 +135,51 @@ export const useLocationTracker = (enabled: boolean = true) => {
         },
         { enableHighAccuracy: false, maximumAge: 30_000, timeout: 20_000 }
       );
+
+      if (!backgroundEnabled) return;
+
+      // Browsers throttle (or freeze) `watchPosition` callbacks for hidden
+      // tabs, so top up with an explicit fix on a slow poll and whenever the
+      // tab becomes visible again. Both go through the same write throttle.
+      const requestFix = () => {
+        if (cancelled) return;
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            void maybeWrite(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+          },
+          () => {},
+          { enableHighAccuracy: false, maximumAge: 60_000, timeout: 20_000 },
+        );
+      };
+
+      backgroundPoll = setInterval(requestFix, MAX_WRITE_INTERVAL_MS);
+      resumeHandler = () => {
+        if (document.visibilityState === "visible") requestFix();
+      };
+      document.addEventListener("visibilitychange", resumeHandler);
     };
+
+    const start = isNativeApp() ? startNative : startWeb;
 
     void start();
 
     return () => {
       cancelled = true;
+      if (backgroundPoll) clearInterval(backgroundPoll);
+      if (resumeHandler) document.removeEventListener("visibilitychange", resumeHandler);
       if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
         watchIdRef.current = null;
       }
+      if (nativeWatchIdRef.current !== null) {
+        const id = nativeWatchIdRef.current;
+        nativeWatchIdRef.current = null;
+        void import("@capacitor/geolocation")
+          .then(({ Geolocation }) => Geolocation.clearWatch({ id }))
+          .catch(() => {});
+      }
     };
-  }, [enabled, session?.user?.id]);
+  }, [enabled, backgroundEnabled, session?.user?.id]);
 };
 
 export default useLocationTracker;
