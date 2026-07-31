@@ -1839,6 +1839,31 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
     const mapInstance = map.current;
 
+    // Marker chrome adapts to the *map style*, not the app theme (app is dark-only).
+    // Light/streets basemaps get light glass + deeper ink; dark/satellite get dark glass.
+    const isDarkTheme = !(mapStyle === 'light' || mapStyle === 'streets');
+
+    // Floral palette — each category maps to a botanical hue with a light-map and
+    // dark-map variant so glyphs stay legible on either basemap.
+    const getCategoryFloral = (category: string): { light: string; dark: string } => {
+      const c = (category || '').toLowerCase();
+      if (/(bar|cocktail|lounge|pub|brew|beer|wine|spirits)/.test(c))
+        return { light: '#7C4DBE', dark: '#C6A0F5' }; // wisteria
+      if (/(coffee|cafe|tea|bakery|dessert)/.test(c))
+        return { light: '#B4682E', dark: '#F0B27A' }; // marigold / calendula
+      if (/(music|concert|live|venue|night|club|dj)/.test(c))
+        return { light: '#A8286B', dark: '#F58BC0' }; // orchid
+      if (/(event|festival|theater|theatre|show|comedy)/.test(c))
+        return { light: '#B8860B', dark: '#F5D06F' }; // sunflower
+      if (/(gym|fitness|yoga|sport|run|spa)/.test(c))
+        return { light: '#2E7D6B', dark: '#7FDCC2' }; // fern / eucalyptus
+      if (/(shop|retail|store|market|boutique)/.test(c))
+        return { light: '#1E6FA8', dark: '#7FC4F2' }; // hydrangea
+      if (/(hotel|stay|lodging|resort)/.test(c))
+        return { light: '#6B5BA8', dark: '#B3AAF0' }; // lavender
+      return { light: '#C13B5A', dark: '#FF8FA3' }; // camellia / rose (food default)
+    };
+
     // Category → Lucide SVG path map (24x24 viewBox)
     const getCategoryIcon = (category: string): string => {
       const c = (category || '').toLowerCase();
@@ -1904,6 +1929,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       if (!mapInstance) return;
       
       const color = getActivityColor(venue.activity);
+      const floral = getCategoryFloral(venue.category);
+      const floralColor = isDarkTheme ? floral.dark : floral.light;
       const isSelected = !!selectedVenue && selectedVenue.id === venue.id;
       const hasSelection = !!selectedVenue;
       const isHighActivity = venue.activity >= 80;
@@ -1965,7 +1992,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       // Layered depth: soft outer halo (blurred glow)
       const haloEl = document.createElement('div');
       const haloSize = markerSize + 22;
-      const haloColor = isSelected ? GOLD : color;
+      const haloColor = isSelected ? GOLD : floralColor;
       haloEl.style.cssText = `
         position: absolute;
         top: ${(markerSize - haloSize) / 2}px;
@@ -2003,7 +2030,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
       // Create teardrop shape - glassmorphic design with frosted glass effect
       const teardropEl = document.createElement('div');
-      const isDarkTheme = document.documentElement.classList.contains('dark');
       teardropEl.style.cssText = `
         position: absolute;
         top: 0;
@@ -2043,8 +2069,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         display: flex;
         align-items: center;
         justify-content: center;
-        color: ${color};
-        filter: drop-shadow(0 1px 2px rgba(0,0,0,0.35));
+        color: ${floralColor};
+        filter: drop-shadow(0 1px 2px rgba(0,0,0,${isDarkTheme ? '0.45' : '0.2'}));
       `;
       iconWrap.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">${getCategoryIcon(venue.category)}</svg>`;
       teardropEl.appendChild(iconWrap);
@@ -2259,7 +2285,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Call updateMarkers on initial load and when venues change
   useEffect(() => {
     updateMarkers();
-  }, [venues, mapLoaded, isLoadingVenues, selectedCity, selectedVenue, venueDealCounts, venueOpenStatus]);
+  }, [venues, mapLoaded, isLoadingVenues, selectedCity, selectedVenue, venueDealCounts, venueOpenStatus, mapStyle]);
 
   // Fetch active-deal counts for currently displayed venues
   useEffect(() => {
