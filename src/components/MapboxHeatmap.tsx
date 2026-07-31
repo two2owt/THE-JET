@@ -341,7 +341,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     return 1;
   };
 
-  // Shared time-window sliders. Persisted so a user's tuned map view
+  // Flow Paths time-window slider. Persisted so a user's tuned map view
   // survives a reload.
   const getPersistedWindowMinutes = (key: string): number | null => {
     try {
@@ -3048,7 +3048,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 minWidth: 0,
               }}>
                 {/* One-tap reset — restores default rendering + every heatmap
-                    filter (time range, day, window, time-lapse) and refetches
+                    control (time range, day, time-lapse) and refetches
                     density. Disabled while already at defaults. */}
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                   <button
