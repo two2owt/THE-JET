@@ -8,6 +8,9 @@ interface Params {
   densityData: { geojson: any; stats: { grid_cells: number } } | null | undefined;
   timelapseMode: boolean;
   timelapse: { currentData: any; currentHour: number };
+  /** True when the active Mapbox style is light/streets — the ramp darkens and
+   *  opacifies so heat stays legible against a bright basemap. */
+  isLightBasemap?: boolean;
 }
 
 /**
@@ -23,6 +26,7 @@ export const useDensityLayer = ({
   densityData,
   timelapseMode,
   timelapse,
+  isLightBasemap = false,
 }: Params) => {
   useEffect(() => {
     const activeData = timelapseMode && timelapse.currentData
@@ -95,22 +99,41 @@ export const useDensityLayer = ({
           9, (isMobile ? 2.6 : 3),
           15, (isMobile ? 4 : 5),
         ],
-        'heatmap-color': [
-          'interpolate',
-          ['linear'],
-          ['heatmap-density'],
-          0, 'rgba(0, 0, 0, 0)',
-          0.1, 'rgba(65, 105, 225, 0.6)',
-          0.2, 'rgba(0, 191, 255, 0.8)',
-          0.3, 'rgba(0, 255, 127, 0.85)',
-          0.4, 'rgba(50, 205, 50, 0.9)',
-          0.5, 'rgba(255, 255, 0, 0.95)',
-          0.6, 'rgba(255, 215, 0, 0.95)',
-          0.7, 'rgba(255, 165, 0, 1)',
-          0.8, 'rgba(255, 69, 0, 1)',
-          0.9, 'rgba(255, 0, 0, 1)',
-          1, 'rgba(139, 0, 0, 1)',
-        ],
+        'heatmap-color': isLightBasemap
+          ? [
+              // Light basemap: deeper, more opaque hues so low-density heat
+              // doesn't wash out against white/grey tiles.
+              'interpolate',
+              ['linear'],
+              ['heatmap-density'],
+              0, 'rgba(0, 0, 0, 0)',
+              0.1, 'rgba(37, 62, 158, 0.75)',
+              0.2, 'rgba(0, 122, 194, 0.9)',
+              0.3, 'rgba(0, 158, 96, 0.92)',
+              0.4, 'rgba(76, 160, 30, 0.95)',
+              0.5, 'rgba(214, 184, 0, 1)',
+              0.6, 'rgba(230, 150, 0, 1)',
+              0.7, 'rgba(233, 110, 0, 1)',
+              0.8, 'rgba(220, 50, 10, 1)',
+              0.9, 'rgba(190, 0, 10, 1)',
+              1, 'rgba(110, 0, 5, 1)',
+            ]
+          : [
+              'interpolate',
+              ['linear'],
+              ['heatmap-density'],
+              0, 'rgba(0, 0, 0, 0)',
+              0.1, 'rgba(65, 105, 225, 0.6)',
+              0.2, 'rgba(0, 191, 255, 0.8)',
+              0.3, 'rgba(0, 255, 127, 0.85)',
+              0.4, 'rgba(50, 205, 50, 0.9)',
+              0.5, 'rgba(255, 255, 0, 0.95)',
+              0.6, 'rgba(255, 215, 0, 0.95)',
+              0.7, 'rgba(255, 165, 0, 1)',
+              0.8, 'rgba(255, 69, 0, 1)',
+              0.9, 'rgba(255, 0, 0, 1)',
+              1, 'rgba(139, 0, 0, 1)',
+            ],
         'heatmap-radius': [
           'interpolate',
           ['cubic-bezier', 0.4, 0, 0.2, 1],
@@ -155,26 +178,46 @@ export const useDensityLayer = ({
           5, 12,
           10, 25,
         ],
-        'circle-color': [
-          'interpolate',
-          ['linear'],
-          ['get', 'density'],
-          0, 'rgb(65, 105, 225)',
-          3, 'rgb(0, 255, 127)',
-          6, 'rgb(255, 215, 0)',
-          8, 'rgb(255, 69, 0)',
-          10, 'rgb(139, 0, 0)',
-        ],
+        'circle-color': isLightBasemap
+          ? [
+              'interpolate',
+              ['linear'],
+              ['get', 'density'],
+              0, 'rgb(37, 62, 158)',
+              3, 'rgb(0, 158, 96)',
+              6, 'rgb(214, 152, 0)',
+              8, 'rgb(220, 50, 10)',
+              10, 'rgb(110, 0, 5)',
+            ]
+          : [
+              'interpolate',
+              ['linear'],
+              ['get', 'density'],
+              0, 'rgb(65, 105, 225)',
+              3, 'rgb(0, 255, 127)',
+              6, 'rgb(255, 215, 0)',
+              8, 'rgb(255, 69, 0)',
+              10, 'rgb(139, 0, 0)',
+            ],
         'circle-opacity': 0.7,
         'circle-blur': 0.3,
         'circle-stroke-width': 2,
-        'circle-stroke-color': [
-          'interpolate',
-          ['linear'],
-          ['get', 'density'],
-          0, 'rgba(255, 255, 255, 0.6)',
-          10, 'rgba(255, 255, 255, 0.9)',
-        ],
+        // Halo flips to ink on light basemaps so dots keep a visible edge.
+        'circle-stroke-color': isLightBasemap
+          ? [
+              'interpolate',
+              ['linear'],
+              ['get', 'density'],
+              0, 'rgba(15, 18, 26, 0.45)',
+              10, 'rgba(15, 18, 26, 0.75)',
+            ]
+          : [
+              'interpolate',
+              ['linear'],
+              ['get', 'density'],
+              0, 'rgba(255, 255, 255, 0.6)',
+              10, 'rgba(255, 255, 255, 0.9)',
+            ],
         'circle-stroke-opacity': 0.8,
         'circle-opacity-transition': { duration: 1000, delay: 100 },
       } as any,
@@ -194,15 +237,24 @@ export const useDensityLayer = ({
           5, 20,
           10, 40,
         ],
-        'circle-color': [
-          'interpolate',
-          ['linear'],
-          ['get', 'density'],
-          0, 'rgba(65, 105, 225, 0.3)',
-          5, 'rgba(255, 215, 0, 0.4)',
-          10, 'rgba(255, 0, 0, 0.5)',
-        ],
-        'circle-opacity': 0.3,
+        'circle-color': isLightBasemap
+          ? [
+              'interpolate',
+              ['linear'],
+              ['get', 'density'],
+              0, 'rgba(37, 62, 158, 0.35)',
+              5, 'rgba(214, 152, 0, 0.45)',
+              10, 'rgba(190, 0, 10, 0.5)',
+            ]
+          : [
+              'interpolate',
+              ['linear'],
+              ['get', 'density'],
+              0, 'rgba(65, 105, 225, 0.3)',
+              5, 'rgba(255, 215, 0, 0.4)',
+              10, 'rgba(255, 0, 0, 0.5)',
+            ],
+        'circle-opacity': isLightBasemap ? 0.38 : 0.3,
         'circle-blur': 1,
         'circle-opacity-transition': { duration: 1000, delay: 200 },
       } as any,
@@ -215,5 +267,5 @@ export const useDensityLayer = ({
       timelapseMode ? `(hour ${timelapse.currentHour})` : ''
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapLoaded, densityData, showDensityLayer, timelapseMode, timelapse.currentData, timelapse.currentHour, isMobile]);
+  }, [mapLoaded, densityData, showDensityLayer, timelapseMode, timelapse.currentData, timelapse.currentHour, isMobile, isLightBasemap]);
 };
