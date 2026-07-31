@@ -34,7 +34,17 @@ export const useMovementPaths = (filters: MovementPathFilters = {}) => {
     isLoadingRef.current = true;
     try {
       setLoading(true);
-      
+
+      // Endpoint requires an authenticated user — skip the call (and the 401)
+      // entirely when there is no session.
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setPathData(null);
+        setUnauthorized(true);
+        setError('unauthorized');
+        return;
+      }
+
       const params = new URLSearchParams();
       if (filters.windowMinutes && filters.windowMinutes > 0) {
         params.append('time_window_minutes', String(Math.floor(filters.windowMinutes)));
@@ -99,6 +109,16 @@ export const useMovementPaths = (filters: MovementPathFilters = {}) => {
       supabase.removeChannel(channel);
     };
   }, [loadPathData, instanceId]);
+
+  // Re-fetch once the user signs in / token refreshes.
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+        loadPathData();
+      }
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [loadPathData]);
 
   return { pathData, loading, error, unauthorized, refresh: loadPathData };
 };
