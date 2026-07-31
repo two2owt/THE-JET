@@ -23,6 +23,7 @@ const ManualDealSyncPanel = lazy(() => import("@/components/admin/ManualDealSync
 const RetentionJobLog = lazy(() => import("@/components/admin/RetentionJobLog").then(m => ({ default: m.RetentionJobLog })));
 const RetentionSettings = lazy(() => import("@/components/admin/RetentionSettings").then(m => ({ default: m.RetentionSettings })));
 const ExportUsersPanel = lazy(() => import("@/components/admin/ExportUsersPanel").then(m => ({ default: m.ExportUsersPanel })));
+const BulkUserProvisionPanel = lazy(() => import("@/components/admin/BulkUserProvisionPanel").then(m => ({ default: m.BulkUserProvisionPanel })));
 const SecurityFindingsPanel = lazy(() => import("@/components/admin/SecurityFindingsPanel").then(m => ({ default: m.SecurityFindingsPanel })));
 
 
@@ -248,6 +249,9 @@ export default function AdminDashboard() {
                   </Suspense>
                   <Suspense fallback={<AdminTabFallback />}>
                     <ExportUsersPanel />
+                  </Suspense>
+                  <Suspense fallback={<AdminTabFallback />}>
+                    <BulkUserProvisionPanel />
                   </Suspense>
                   <Suspense fallback={<AdminTabFallback />}>
                     <TestPushPanel />
