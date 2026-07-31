@@ -19,17 +19,19 @@ const ASKED_KEY = "location-permission-prompt-asked";
 const DISMISS_DURATION = 14 * 24 * 60 * 60 * 1000; // 14 days
 
 /**
- * First-visit foreground location prompt.
+ * Foreground location prompt.
  *
- * Mounted on the map page so we ask right at the surface that benefits from
- * location. Waits for `navigator.permissions` to confirm the browser is in
- * `prompt` state before showing — never re-asks when already granted/denied.
+ * Mounted app-wide in `AppShell`, so it appears immediately after sign-in on
+ * whatever route the user lands on — no need to visit the map tab first. Waits
+ * for `navigator.permissions` to confirm the browser is in `prompt` state
+ * before showing — never re-asks when already granted/denied.
  * Persists the granular `foreground_location` consent for signed-in users
  * (RLS scopes writes to auth.uid()); signed-out visitors get session-only
  * behavior via the dismissed flag.
  */
 export const LocationPermissionPrompt = () => {
   const { session } = useAuth();
+  const userId = session?.user?.id;
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -60,9 +62,11 @@ export const LocationPermissionPrompt = () => {
 
       if (cancelled) return;
       // Small delay so we don't compete with first paint / other prompts.
+      // Signed-in users get asked promptly so tracking can start right away.
+      const delay = userId ? 900 : 2500;
       const timer = window.setTimeout(() => {
         if (!cancelled) setOpen(true);
-      }, 2500);
+      }, delay);
       return () => window.clearTimeout(timer);
     };
 
@@ -71,7 +75,7 @@ export const LocationPermissionPrompt = () => {
       cancelled = true;
       Promise.resolve(cleanup).then((fn) => typeof fn === "function" && fn());
     };
-  }, []);
+  }, [userId]);
 
   const recordConsent = async (granted: boolean) => {
     if (!session?.user?.id) return;

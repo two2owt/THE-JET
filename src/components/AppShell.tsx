@@ -1,7 +1,13 @@
-import { ReactNode, memo } from "react";
+import { ReactNode, Suspense, lazy, memo } from "react";
 import { useLocation } from "react-router";
 import { Header } from "@/components/Header";
 import { useLocationTracker } from "@/hooks/useLocationTracker";
+
+const LocationPermissionPrompt = lazy(() =>
+  import("@/components/LocationPermissionPrompt").then((m) => ({
+    default: m.LocationPermissionPrompt,
+  })),
+);
 
 /** Routes where the global Header should be hidden (full-bleed standalone pages) */
 export const HEADERLESS_ROUTES = ["/auth", "/signin", "/signup", "/onboarding"];
@@ -52,6 +58,14 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
         </>
       )}
       {children}
+      {/* Location permission prompt — mounted app-wide so signed-in users are
+          asked right after auth instead of only on the map tab. Self-gates on
+          browser permission state and localStorage. */}
+      {showChrome && (
+        <Suspense fallback={null}>
+          <LocationPermissionPrompt />
+        </Suspense>
+      )}
     </div>
   );
 });
