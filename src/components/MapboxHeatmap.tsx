@@ -3538,39 +3538,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               }}
             />
 
-            {/* Inline Live Stats — consolidated within the Layers panel for friendlier usability */}
-            {showLiveStats && (
-              <div
-                style={{
-                  marginTop: '6px',
-                  padding: 'var(--live-stats-pad)',
-                  borderRadius: '10px',
-                  border: '1px solid hsl(var(--primary) / 0.25)',
-                  background: 'linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--primary-glow) / 0.04))',
-                  animation: 'fadeIn 220ms ease-out',
-                  overflow: 'hidden',
-                }}
-              >
-                <LiveStatsPanel
-                  open={showLiveStats}
-                  mapLoaded={mapLoaded}
-                  isMobile={isMobile}
-                  densityData={densityData}
-                  pathData={pathData}
-                  showDensityLayer={showDensityLayer}
-                  showMovementPaths={showMovementPaths}
-                  densityLoading={densityLoading}
-                  pathLoading={pathsLoading}
-                  variant="inline"
-                  topHotspot={topHotspot}
-                  topRoute={topRoute ? { frequency: topRoute.frequency } : null}
-                  onJumpToHotspot={handleJumpToHotspot}
-                  onHighlightTopRoute={handleHighlightTopRoute}
-                  range={liveStatsRange}
-                  onRangeChange={handleLiveStatsRangeChange}
-                />
-              </div>
-            )}
+            {/* Live Stats renders on the left side of the map (see the floating
+                panel below) so it never obstructs this Layers container. */}
 
             {/* Reset to defaults */}
             <button
@@ -3901,9 +3870,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
 
 
-      {/* Floating Live Stats summary — only when the Layers panel is collapsed,
-          so users still see live activity without re-opening the panel. */}
-      {controlsCollapsed && (
+      {/* Live Stats — always rendered on the left side of the map, clear of the
+          Layers container (bottom-right) and the map nav controls (top-right). */}
+      {showLiveStats && (
         <LiveStatsPanel
           open={showLiveStats}
           mapLoaded={mapLoaded}
