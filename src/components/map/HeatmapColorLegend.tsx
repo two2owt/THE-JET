@@ -7,7 +7,14 @@ import { Flame } from "lucide-react";
  * read-only explanation of what the heat colors actually mean, using the same
  * gradient stops as the `location-density-heat` layer's `heatmap-color` ramp.
  */
-const HeatmapColorLegendImpl = ({ loading }: { loading?: boolean }) => (
+const HeatmapColorLegendImpl = ({
+  loading,
+  isLightBasemap = false,
+}: {
+  loading?: boolean;
+  /** Mirrors the `location-density-heat` ramp, which darkens on light basemaps. */
+  isLightBasemap?: boolean;
+}) => (
   <div
     role="img"
     className={loading ? "layer-pending" : undefined}
@@ -72,8 +79,9 @@ const HeatmapColorLegendImpl = ({ loading }: { loading?: boolean }) => (
         width: "100%",
         height: "10px",
         borderRadius: "9999px",
-        background:
-          "linear-gradient(to right, rgba(65,105,225,0.85), rgb(0,191,255), rgb(0,255,127), rgb(255,255,0), rgb(255,165,0), rgb(255,0,0), rgb(139,0,0))",
+        background: isLightBasemap
+          ? "linear-gradient(to right, rgb(37,62,158), rgb(0,122,194), rgb(0,158,96), rgb(214,184,0), rgb(233,110,0), rgb(190,0,10), rgb(110,0,5))"
+          : "linear-gradient(to right, rgba(65,105,225,0.85), rgb(0,191,255), rgb(0,255,127), rgb(255,255,0), rgb(255,165,0), rgb(255,0,0), rgb(139,0,0))",
         border: "1px solid hsl(var(--border) / 0.5)",
         boxShadow: "inset 0 1px 3px rgba(0,0,0,0.35)",
       }}

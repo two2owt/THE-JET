@@ -1816,6 +1816,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     densityData,
     timelapseMode,
     timelapse: { currentData: timelapse.currentData, currentHour: timelapse.currentHour },
+    isLightBasemap: mapStyle === 'light' || mapStyle === 'streets',
   });
 
   // Movement paths + animated flow — extracted hook.
@@ -3337,7 +3338,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
                 {/* Compact color-scale legend — explains the heat ramp now that
                     the intensity/radius/opacity sliders are gone. */}
-                <HeatmapColorLegend loading={isLoadingHeatmap || densityLoading} />
+                <HeatmapColorLegend
+                  loading={isLoadingHeatmap || densityLoading}
+                  isLightBasemap={mapStyle === 'light' || mapStyle === 'streets'}
+                />
 
                 {/* Density status — loading / error */}
                 {(isLoadingHeatmap || densityError) && (
