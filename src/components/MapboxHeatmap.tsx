@@ -358,6 +358,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Density heatmap state
   const [showDensityLayer, setShowDensityLayer] = useState(() => getLayerState("density", false));
   const [showParking, setShowParking] = useState(() => getLayerState("parking", false));
+  // Keep a ref so style reloads can restore the parking layer with the latest visibility
+  const showParkingRef = useRef(showParking);
+  showParkingRef.current = showParking;
   // Live Stats panel — hidden by default, opt-in via layers toggle
   const [showLiveStats, setShowLiveStats] = useState(() => getLayerState("stats", false));
   const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.timeFilter, 'all', 'time'));
