@@ -1,6 +1,7 @@
 import { ReactNode, memo } from "react";
 import { useLocation } from "react-router";
 import { Header } from "@/components/Header";
+import { useLocationTracker } from "@/hooks/useLocationTracker";
 
 /** Routes where the global Header should be hidden (full-bleed standalone pages) */
 export const HEADERLESS_ROUTES = ["/auth", "/signin", "/signup", "/onboarding"];
@@ -24,6 +25,11 @@ interface AppShellProps {
 export const AppShell = memo(function AppShell({ children }: AppShellProps) {
   const { pathname } = useLocation();
   const showChrome = !HEADERLESS_ROUTES.includes(pathname);
+
+  // Single app-wide location tracker. The map route counts as the foreground
+  // surface; on every other route it only keeps running when the user has
+  // background tracking enabled in their preferences.
+  useLocationTracker(pathname === "/");
 
   return (
     <div className="app-wrapper">
