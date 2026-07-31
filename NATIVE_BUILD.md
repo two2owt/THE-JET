@@ -113,3 +113,11 @@ npx capacitor-assets generate --iconBackgroundColor '#0A0A0A' --splashBackground
 3. **Deep links** — universal links (iOS) and app links (Android) need
    `apple-app-site-association` + `assetlinks.json` hosted on `jet-around.com`.
 4. **Every native release = 24–48hr Apple review.** Plan accordingly.
+5. **Background location** — the app streams location via
+   `@capacitor/geolocation` whenever the user enables *Background tracking* in
+   Profile Settings. For OS-level background delivery you must add
+   `NSLocationAlwaysAndWhenInUseUsageDescription` + the `location` background
+   mode (iOS) and `ACCESS_BACKGROUND_LOCATION` + a foreground service (Android
+   10+). Without those the watcher only runs while the app is in the
+   foreground; on the web it keeps running across routes and throttled hidden
+   tabs, topping up with a periodic fix.
