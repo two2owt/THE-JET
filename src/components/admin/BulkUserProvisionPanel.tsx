@@ -494,6 +494,7 @@ export function BulkUserProvisionPanel() {
                   {r.status}
                 </Badge>
                 {r.password && <code className="hidden sm:block text-xs text-muted-foreground">{r.password}</code>}
+                {r.invited && <span className="text-xs text-muted-foreground">invited</span>}
               </div>
             ))}
           </div>
