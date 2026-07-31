@@ -75,6 +75,10 @@ export const useLocationTracker = () => {
 
       inFlightRef.current = true;
       try {
+        // Re-check the session right before writing: a sign-out can land in
+        // the gap between the geolocation callback and this insert.
+        const { data } = await supabase.auth.getSession();
+        if (cancelled || data.session?.user?.id !== userId) return;
         const { error } = await supabase.from("user_locations").insert({
           user_id: userId,
           latitude: lat,
