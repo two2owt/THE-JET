@@ -16,7 +16,6 @@ const FILTER_KEYS = {
   dayFilter: "jet-map-day-filter",
   timelapseMode: "jet-map-timelapse-mode",
   timelapseSpeed: "jet-map-timelapse-speed",
-  densityWindow: "jet-map-density-window",
   pathsWindow: "jet-map-paths-window",
 } as const;
 
@@ -33,7 +32,6 @@ function render(showDensityLayer: boolean, showMovementPaths: boolean) {
       pathTimeFilter: "all",
       dayFilter: undefined,
       timelapseMode: false,
-      densityWindowMinutes: null,
       pathsWindowMinutes: null,
     }),
     { initialProps: { density: showDensityLayer, paths: showMovementPaths } },
