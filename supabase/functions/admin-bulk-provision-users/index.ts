@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { Resend } from "https://esm.sh/resend@4.0.0";
 import { corsHeaders, logVersion } from "../_shared/cors.ts";
 
 const FUNCTION_NAME = "admin-bulk-provision-users";
@@ -10,14 +11,35 @@ logVersion(FUNCTION_NAME);
  * Recreates a list of accounts in the environment this function runs in
  * (invoke from the preview app => Test DB, from the live app => Live DB).
  *
- * Body: { users: [{ email, display_name?, password? }], sendInvite?: boolean }
+ * Body: {
+ *   users: [{ email, display_name?, password?, method?: 'password'|'invite' }],
+ *   defaultMethod?: 'password'|'invite',
+ *   sendInvite?: boolean,                       // legacy alias for defaultMethod: 'invite'
+ *   inviteTemplate?: { subject?: string, html?: string, redirectTo?: string }
+ * }
  * Returns: { results: [{ email, status: 'created'|'exists'|'error', user_id?, password?, error? }] }
  */
 
 const MAX_USERS = 200;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-type Incoming = { email?: unknown; display_name?: unknown; password?: unknown };
+type Method = "password" | "invite";
+type Incoming = { email?: unknown; display_name?: unknown; password?: unknown; method?: unknown };
+
+function escapeHtml(s: string) {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function renderTemplate(tpl: string, vars: Record<string, string>, escape: boolean) {
+  return tpl.replace(/\{\{\s*(\w+)\s*\}\}/g, (_m, key: string) => {
+    const v = vars[key] ?? "";
+    return escape ? escapeHtml(v) : v;
+  });
+}
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -63,7 +85,12 @@ Deno.serve(async (req) => {
     }
 
     // 3. Validate input
-    let body: { users?: unknown; sendInvite?: unknown };
+    let body: {
+      users?: unknown;
+      sendInvite?: unknown;
+      defaultMethod?: unknown;
+      inviteTemplate?: { subject?: unknown; html?: unknown; redirectTo?: unknown };
+    };
     try {
       body = await req.json();
     } catch {
@@ -75,9 +102,32 @@ Deno.serve(async (req) => {
     if (body.users.length > MAX_USERS) {
       return json({ error: `Too many users in one request (max ${MAX_USERS})` }, 400);
     }
-    const sendInvite = body.sendInvite === true;
+    const defaultMethod: Method =
+      body.defaultMethod === "invite" || body.sendInvite === true ? "invite" : "password";
 
-    const parsed: { email: string; display_name: string | null; password: string | null }[] = [];
+    const tplSubject =
+      typeof body.inviteTemplate?.subject === "string" && body.inviteTemplate.subject.trim()
+        ? body.inviteTemplate.subject.trim().slice(0, 200)
+        : null;
+    const tplHtml =
+      typeof body.inviteTemplate?.html === "string" && body.inviteTemplate.html.trim()
+        ? body.inviteTemplate.html.slice(0, 20000)
+        : null;
+    const tplRedirect =
+      typeof body.inviteTemplate?.redirectTo === "string" && /^https?:\/\//.test(body.inviteTemplate.redirectTo)
+        ? body.inviteTemplate.redirectTo.slice(0, 500)
+        : undefined;
+    const useCustomInviteEmail = Boolean(tplSubject && tplHtml);
+    const resendKey = Deno.env.get("RESEND_API_KEY");
+    const resend = resendKey ? new Resend(resendKey) : null;
+    const fromAddress = Deno.env.get("RESEND_FROM_EMAIL") ?? "JET <noreply@jet-around.com>";
+
+    const parsed: {
+      email: string;
+      display_name: string | null;
+      password: string | null;
+      method: Method;
+    }[] = [];
     for (const raw of body.users as Incoming[]) {
       const email = typeof raw?.email === "string" ? raw.email.trim().toLowerCase() : "";
       if (!EMAIL_RE.test(email) || email.length > 254) {
@@ -91,16 +141,59 @@ Deno.serve(async (req) => {
         typeof raw?.password === "string" && raw.password.length >= 8
           ? raw.password.slice(0, 72)
           : null;
-      parsed.push({ email, display_name: displayName, password });
+      const method: Method =
+        raw?.method === "invite" ? "invite" : raw?.method === "password" ? "password" : defaultMethod;
+      parsed.push({ email, display_name: displayName, password, method });
     }
 
     // 4. Provision sequentially (keeps auth rate limits happy, order is stable)
     const results: Record<string, unknown>[] = [];
     for (const u of parsed) {
       try {
-        if (sendInvite) {
+        if (u.method === "invite") {
+          // Custom-branded invite: mint the link ourselves and send our own email.
+          if (useCustomInviteEmail && resend) {
+            const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({
+              type: "invite",
+              email: u.email,
+              options: {
+                data: u.display_name ? { display_name: u.display_name } : undefined,
+                redirectTo: tplRedirect,
+              },
+            });
+            if (linkErr) {
+              const exists = /already|registered|duplicate/i.test(linkErr.message ?? "");
+              results.push({ email: u.email, status: exists ? "exists" : "error", error: linkErr.message });
+              continue;
+            }
+            const vars = {
+              display_name: u.display_name ?? u.email.split("@")[0],
+              email: u.email,
+              invite_url: linkData?.properties?.action_link ?? "",
+              site_name: "JET",
+            };
+            const { error: sendErr } = await resend.emails.send({
+              from: fromAddress,
+              to: [u.email],
+              subject: renderTemplate(tplSubject!, vars, false),
+              html: renderTemplate(tplHtml!, vars, true),
+            });
+            if (sendErr) {
+              results.push({
+                email: u.email,
+                status: "error",
+                user_id: linkData?.user?.id,
+                error: `Invite created but email failed: ${sendErr.message}`,
+              });
+              continue;
+            }
+            results.push({ email: u.email, status: "created", user_id: linkData?.user?.id, invited: true });
+            continue;
+          }
+
           const { data, error } = await admin.auth.admin.inviteUserByEmail(u.email, {
             data: u.display_name ? { display_name: u.display_name } : undefined,
+            redirectTo: tplRedirect,
           });
           if (error) {
             const exists = /already/i.test(error.message ?? "");

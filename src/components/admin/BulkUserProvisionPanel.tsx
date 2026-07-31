@@ -5,10 +5,20 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Users, UserPlus, Download, AlertTriangle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Loader2, Users, UserPlus, Download, AlertTriangle, KeyRound, Mail, RotateCcw, Eye } from "lucide-react";
 import { toast } from "sonner";
+import {
+  DEFAULT_INVITE_TEMPLATE,
+  INVITE_PLACEHOLDERS,
+  loadInviteTemplate,
+  renderInvitePreview,
+  saveInviteTemplate,
+  type InviteTemplate,
+} from "./inviteEmailTemplate";
 
 type DirectoryUser = { id: string; email: string | null; display_name: string | null; created_at: string };
+type Method = "password" | "invite";
 type ProvisionResult = {
   email: string;
   status: "created" | "exists" | "error";
@@ -26,12 +36,57 @@ function csvEscape(v: unknown) {
   return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
+function MethodToggle({
+  value,
+  onChange,
+  disabled,
+  size = "sm",
+}: {
+  value: Method;
+  onChange: (m: Method) => void;
+  disabled?: boolean;
+  size?: "sm" | "md";
+}) {
+  const pad = size === "md" ? "px-3 py-1.5 text-xs" : "px-2 py-1 text-[11px]";
+  const options: { key: Method; label: string; Icon: typeof KeyRound }[] = [
+    { key: "password", label: "Password", Icon: KeyRound },
+    { key: "invite", label: "Invite", Icon: Mail },
+  ];
+  return (
+    <div className="flex shrink-0 rounded-lg border border-border/60 bg-background/50 p-0.5">
+      {options.map(({ key, label, Icon }) => (
+        <button
+          key={key}
+          type="button"
+          disabled={disabled}
+          aria-pressed={value === key}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onChange(key);
+          }}
+          className={`flex items-center gap-1 rounded-md ${pad} transition-colors disabled:opacity-50 ${
+            value === key ? "bg-primary/20 text-foreground" : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Icon className="h-3 w-3" />
+          <span className={size === "sm" ? "hidden sm:inline" : ""}>{label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function BulkUserProvisionPanel() {
   const [directory, setDirectory] = useState<DirectoryUser[] | null>(null);
   const [loadingDirectory, setLoadingDirectory] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [manual, setManual] = useState("");
-  const [sendInvite, setSendInvite] = useState(false);
+  const [defaultMethod, setDefaultMethod] = useState<Method>("password");
+  const [overrides, setOverrides] = useState<Record<string, Method>>({});
+  const [template, setTemplate] = useState<InviteTemplate>(() => loadInviteTemplate());
+  const [showTemplate, setShowTemplate] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState({ done: 0, total: 0 });
   const [results, setResults] = useState<ProvisionResult[]>([]);
@@ -43,21 +98,64 @@ export function BulkUserProvisionPanel() {
         .map((line) => line.trim())
         .filter(Boolean)
         .map((line) => {
-          const [email, ...rest] = line.split(/[\t|]/).map((p) => p.trim());
-          return { email: email.toLowerCase(), display_name: rest.join(" ") || null };
+          const [email, name, methodRaw] = line.split(/[\t|]/).map((p) => p.trim());
+          const method: Method | undefined =
+            methodRaw?.toLowerCase() === "invite"
+              ? "invite"
+              : methodRaw?.toLowerCase() === "password"
+                ? "password"
+                : undefined;
+          return { email: (email ?? "").toLowerCase(), display_name: name || null, method };
         })
         .filter((e) => EMAIL_RE.test(e.email)),
     [manual],
   );
 
   const payload = useMemo(() => {
-    const byEmail = new Map<string, { email: string; display_name: string | null }>();
+    const byEmail = new Map<string, { email: string; display_name: string | null; method: Method }>();
     (directory ?? [])
       .filter((u) => selected.has(u.id) && u.email && EMAIL_RE.test(u.email))
-      .forEach((u) => byEmail.set(u.email!.toLowerCase(), { email: u.email!.toLowerCase(), display_name: u.display_name }));
-    manualEntries.forEach((e) => byEmail.set(e.email, e));
+      .forEach((u) => {
+        const email = u.email!.toLowerCase();
+        byEmail.set(email, {
+          email,
+          display_name: u.display_name,
+          method: overrides[email] ?? defaultMethod,
+        });
+      });
+    manualEntries.forEach((e) =>
+      byEmail.set(e.email, {
+        email: e.email,
+        display_name: e.display_name,
+        method: e.method ?? overrides[e.email] ?? defaultMethod,
+      }),
+    );
     return [...byEmail.values()];
-  }, [directory, selected, manualEntries]);
+  }, [directory, selected, manualEntries, overrides, defaultMethod]);
+
+  const inviteCount = payload.filter((p) => p.method === "invite").length;
+  const passwordCount = payload.length - inviteCount;
+
+  const setMethodFor = (email: string, method: Method) =>
+    setOverrides((prev) => ({ ...prev, [email]: method }));
+
+  const updateTemplate = (patch: Partial<InviteTemplate>) =>
+    setTemplate((prev) => {
+      const next = { ...prev, ...patch };
+      saveInviteTemplate(next);
+      return next;
+    });
+
+  const previewHtml = useMemo(
+    () =>
+      renderInvitePreview(template.html, {
+        display_name: "Alex",
+        email: "alex@example.com",
+        invite_url: "https://www.jet-around.com/invite?token=preview",
+        site_name: "JET",
+      }),
+    [template.html],
+  );
 
   const loadDirectory = async () => {
     setLoadingDirectory(true);
@@ -102,7 +200,11 @@ export function BulkUserProvisionPanel() {
       for (let i = 0; i < payload.length; i += BATCH_SIZE) {
         const batch = payload.slice(i, i + BATCH_SIZE);
         const { data, error } = await supabase.functions.invoke("admin-bulk-provision-users", {
-          body: { users: batch, sendInvite },
+          body: {
+            users: batch,
+            defaultMethod,
+            inviteTemplate: inviteCount > 0 ? template : undefined,
+          },
         });
         if (error) throw error;
         collected.push(...((data?.results ?? []) as ProvisionResult[]));
@@ -204,6 +306,13 @@ export function BulkUserProvisionPanel() {
                 <span className="hidden sm:block max-w-[10rem] truncate text-xs text-muted-foreground">
                   {u.display_name ?? ""}
                 </span>
+                {u.email && (
+                  <MethodToggle
+                    value={overrides[u.email.toLowerCase()] ?? defaultMethod}
+                    disabled={running}
+                    onChange={(m) => setMethodFor(u.email!.toLowerCase(), m)}
+                  />
+                )}
               </label>
             ))}
           </div>
@@ -211,7 +320,7 @@ export function BulkUserProvisionPanel() {
 
         <div className="space-y-2">
           <Label htmlFor="manual-emails" className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Or paste emails (one per line, optional <code>email | Display Name</code>)
+            Or paste emails (one per line, optional <code>email | Display Name | invite</code>)
           </Label>
           <Textarea
             id="manual-emails"
@@ -219,7 +328,7 @@ export function BulkUserProvisionPanel() {
             onChange={(e) => setManual(e.target.value)}
             disabled={running}
             rows={4}
-            placeholder={"alex@example.com | Alex\nsam@example.com"}
+            placeholder={"alex@example.com | Alex | invite\nsam@example.com | Sam | password"}
             className="font-mono text-xs"
           />
           {manualEntries.length > 0 && (
@@ -227,10 +336,142 @@ export function BulkUserProvisionPanel() {
           )}
         </div>
 
-        <label className="flex items-center gap-2 text-sm">
-          <Checkbox checked={sendInvite} disabled={running} onCheckedChange={(v) => setSendInvite(v === true)} />
-          Send invite emails instead of setting a temporary password
-        </label>
+        {/* Delivery method */}
+        <div className="rounded-xl border border-border/50 p-3 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-sm font-medium">Default delivery method</p>
+              <p className="text-xs text-muted-foreground">
+                Applies to every selected account unless you override it per user.
+              </p>
+            </div>
+            <MethodToggle value={defaultMethod} disabled={running} onChange={setDefaultMethod} size="md" />
+          </div>
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            <Badge variant="secondary" className="gap-1">
+              <KeyRound className="h-3 w-3" /> {passwordCount} temp password
+            </Badge>
+            <Badge variant="secondary" className="gap-1">
+              <Mail className="h-3 w-3" /> {inviteCount} invite email
+            </Badge>
+            {Object.keys(overrides).length > 0 && (
+              <Button type="button" variant="ghost" size="sm" disabled={running} onClick={() => setOverrides({})}>
+                Clear overrides
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Invitation email template editor */}
+        <div className="rounded-xl border border-border/50 p-3 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-sm font-medium">Invitation email template</p>
+              <p className="text-xs text-muted-foreground">
+                Used for every account set to “Invite”. Saved on this device.
+              </p>
+            </div>
+            <div className="flex gap-1">
+              <Button type="button" variant="ghost" size="sm" onClick={() => setShowTemplate((v) => !v)}>
+                {showTemplate ? "Hide" : "Edit"}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="gap-1"
+                onClick={() => {
+                  updateTemplate(DEFAULT_INVITE_TEMPLATE);
+                  toast.success("Template reset to default");
+                }}
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          {showTemplate && (
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="invite-subject" className="text-xs text-muted-foreground">
+                  Subject
+                </Label>
+                <Input
+                  id="invite-subject"
+                  value={template.subject}
+                  disabled={running}
+                  onChange={(e) => updateTemplate({ subject: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="invite-redirect" className="text-xs text-muted-foreground">
+                  Redirect URL after accepting
+                </Label>
+                <Input
+                  id="invite-redirect"
+                  value={template.redirectTo}
+                  disabled={running}
+                  placeholder="https://www.jet-around.com/"
+                  onChange={(e) => updateTemplate({ redirectTo: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="invite-html" className="text-xs text-muted-foreground">
+                  HTML body
+                </Label>
+                <Textarea
+                  id="invite-html"
+                  value={template.html}
+                  disabled={running}
+                  rows={10}
+                  onChange={(e) => updateTemplate({ html: e.target.value })}
+                  className="font-mono text-xs"
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-xs text-muted-foreground">Placeholders:</span>
+                {INVITE_PLACEHOLDERS.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    disabled={running}
+                    onClick={() => {
+                      navigator.clipboard?.writeText(`{{${p}}}`);
+                      toast.success(`Copied {{${p}}}`);
+                    }}
+                    className="rounded-md border border-border/60 bg-background/60 px-2 py-0.5 font-mono text-[11px] hover:bg-background"
+                  >
+                    {`{{${p}}}`}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1"
+                  onClick={() => setShowPreview((v) => !v)}
+                >
+                  <Eye className="h-4 w-4" /> {showPreview ? "Hide preview" : "Preview"}
+                </Button>
+                {!template.html.includes("{{invite_url}}") && (
+                  <span className="text-xs text-destructive">Body must include {"{{invite_url}}"}</span>
+                )}
+              </div>
+              {showPreview && (
+                <div className="rounded-xl border border-border/50 overflow-hidden bg-white">
+                  <iframe
+                    title="Invitation email preview"
+                    srcDoc={previewHtml}
+                    sandbox=""
+                    className="w-full h-64 bg-white"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {results.length > 0 && (
@@ -253,6 +494,7 @@ export function BulkUserProvisionPanel() {
                   {r.status}
                 </Badge>
                 {r.password && <code className="hidden sm:block text-xs text-muted-foreground">{r.password}</code>}
+                {r.invited && <span className="text-xs text-muted-foreground">invited</span>}
               </div>
             ))}
           </div>
