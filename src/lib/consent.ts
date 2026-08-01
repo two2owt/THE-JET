@@ -16,12 +16,23 @@ const LABELS: Record<ConsentType, string> = {
 
 type State = Record<ConsentType, boolean>;
 
-const state: State = {
-  foreground_location: false,
+/**
+ * Default consent posture.
+ *
+ * `foreground_location` is opt-out: it is ON for everyone (signed out, newly
+ * signed up, and signed in) so the Explore / Hot tab can rank deals by
+ * distance immediately. It only turns off when the user explicitly disables
+ * Location Tracking in Settings, which writes a `granted: false` row.
+ * Everything else stays opt-in.
+ */
+const DEFAULTS: State = {
+  foreground_location: true,
   background_tracking: false,
   push_notifications: false,
   messaging_analytics: false,
 };
+
+const state: State = { ...DEFAULTS };
 
 let currentUserId: string | null = null;
 let loaded = false;
@@ -39,7 +50,7 @@ export function subscribeConsent(l: (s: State) => void): () => void {
 
 export async function loadConsents(userId: string | null): Promise<void> {
   currentUserId = userId;
-  (Object.keys(state) as ConsentType[]).forEach((k) => (state[k] = false));
+  (Object.keys(state) as ConsentType[]).forEach((k) => (state[k] = DEFAULTS[k]));
   if (!userId) {
     loaded = true;
     emit();

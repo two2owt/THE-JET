@@ -108,7 +108,10 @@ export const LocationPermissionPrompt = () => {
       );
     });
 
-    await recordConsent(granted);
+    // Only ever record a grant here. A browser-level block is not an explicit
+    // app-level opt-out — Settings → Location Tracking is the only switch that
+    // revokes foreground location consent.
+    if (granted) await recordConsent(true);
     setLoading(false);
     setOpen(false);
 
@@ -127,7 +130,6 @@ export const LocationPermissionPrompt = () => {
   const handleDismiss = () => {
     localStorage.setItem(DISMISS_KEY, Date.now().toString());
     localStorage.setItem(ASKED_KEY, "1");
-    void recordConsent(false);
     setOpen(false);
   };
 
