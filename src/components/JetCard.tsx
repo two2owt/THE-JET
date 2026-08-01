@@ -278,13 +278,29 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
       {/* Image Header */}
       <div style={{
         position: 'relative',
-        height: 'clamp(72px, 14vw, 120px)',
+        // Size the hero to the card container itself (not the viewport) so it
+        // scales with the JetCard on any device or user zoom level.
+        width: '100%',
+        aspectRatio: '16 / 9',
+        minHeight: '72px',
+        maxHeight: 'clamp(96px, 26cqw, 180px)',
         background: 'linear-gradient(135deg, hsl(var(--primary) / 0.3), hsl(var(--accent) / 0.2))',
         overflow: 'hidden',
       }}>
-        {venue.imageUrl ? (
+        {photoLoading && !heroImage && (
+          <div
+            aria-hidden="true"
+            className="animate-pulse"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'hsl(var(--muted) / 0.35)',
+            }}
+          />
+        )}
+        {heroImage ? (
           <img
-            src={venue.imageUrl}
+            src={heroImage}
             alt={venue.name}
             style={{
               position: 'absolute',
@@ -292,8 +308,10 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               width: '100%',
               height: '100%',
               objectFit: 'cover',
+              objectPosition: 'center',
             }}
             loading="lazy"
+            decoding="async"
             onError={(e) => {
               // Swap to the centered JET-mark placeholder rather than the
               // generic stretched placeholder.svg so the card stays on-brand.
@@ -340,7 +358,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
         )}
         {/* JET watermark — only render over real venue photos so the
             placeholder (which is the same mark, centered) isn't duplicated. */}
-        {venue.imageUrl && (
+        {heroImage && (
           <img
             src="/jet-email-logo.png"
             alt="JET"
