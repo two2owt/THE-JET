@@ -2406,29 +2406,37 @@ All colors MUST be HSL.
     [role="option"],
     [tabindex]:not([tabindex^="-"])
   ):focus-visible {
-    outline: none;
+    /* `outline` (not box-shadow) is the canonical indicator: utility classes
+       like `shadow-none` / `ring-*` override a :where() box-shadow, which used
+       to leave some controls with no visible focus at all. An outline can't be
+       clobbered that way, so every focusable element gets the same ring. */
+    /* !important because shadcn variants ship `focus-visible:outline-none`
+       (= `outline: 2px solid transparent`), whose class specificity beats a
+       :where() rule and would leave the control with an invisible ring. */
+    outline: 2px solid hsl(var(--gold) / 0.9) !important;
+    outline-offset: 2px !important;
     box-shadow:
       0 0 0 2px hsl(var(--background)),
       0 0 0 4px hsl(var(--gold) / 0.7),
       0 0 18px hsl(var(--gold) / 0.25);
     border-radius: inherit;
-    transition: box-shadow 200ms ease-out;
+    transition: box-shadow 200ms ease-out, outline-color 200ms ease-out;
   }
 
-  /* Forced-colors / high-contrast users don't get box-shadow — keep a real
-     outline so focus is never invisible there. */
+  /* Forced-colors / high-contrast users: system Highlight instead of gold. */
   @media (forced-colors: active) {
     :where(button, a, summary, [role="button"], [role="link"], [tabindex]:not([tabindex^="-"])):focus-visible {
-      outline: 2px solid Highlight;
-      outline-offset: 2px;
+      outline-color: Highlight !important;
     }
   }
 
   /* Inputs / textareas / selects — gold border + soft glow on focus.
      Uses :where() so component-level inline styles still win. */
-  :where(input, textarea, select):focus-visible,
+  :where(input, textarea, select):focus-visible {
+    outline: 2px solid hsl(var(--gold) / 0.9) !important;
+    outline-offset: 2px !important;
+  }
   :where(input, textarea, select):focus {
-    outline: none;
     border-color: hsl(var(--gold) / 0.6) !important;
     box-shadow:
       0 0 0 3px hsl(var(--gold) / 0.12),
