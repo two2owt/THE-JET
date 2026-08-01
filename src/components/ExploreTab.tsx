@@ -537,6 +537,15 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
             <Card
               className="overflow-hidden bg-card/90 backdrop-blur-sm hover-scale cursor-pointer transition-all shadow-none"
               onClick={() => handleDealClick(deal)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleDealClick(deal);
+                }
+              }}
+              aria-label={`${deal.title} at ${deal.venue_name}`}
             >
               <div className="flex gap-4 p-4">
                 {/* Image or Icon */}
@@ -573,6 +582,12 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8"
+                        aria-label={
+                          isFavorite(deal.id)
+                            ? `Remove ${deal.title} from favorites`
+                            : `Add ${deal.title} to favorites`
+                        }
+                        aria-pressed={isFavorite(deal.id)}
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleFavorite(deal.id);
