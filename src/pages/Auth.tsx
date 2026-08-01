@@ -315,7 +315,10 @@ const Auth = () => {
 
   const handleBlur = (field: FieldName) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
-    const error = getFieldError(field);
+    // Read straight from the DOM so browser autofill (which can skip React's
+    // change events) is validated with the value the user actually sees.
+    const value = getAutofillAwareValue(field);
+    const error = getFieldError(field, value, field === "confirmPassword" ? password : undefined);
     setValidationErrors((prev) => ({ ...prev, [field]: error }));
   };
 
@@ -324,12 +327,19 @@ const Auth = () => {
     if (field === "password") setPassword(value);
     if (field === "confirmPassword") setConfirmPassword(value);
 
-    if (touched[field]) {
-      const error = getFieldError(field);
-      setValidationErrors((prev) => ({ ...prev, [field]: error }));
-    } else {
-      setValidationErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
+    // Validate against the incoming value — React state is still stale here,
+    // so passing it explicitly keeps inline errors one keystroke ahead.
+    setValidationErrors((prev) => {
+      const next = { ...prev };
+      next[field] = touched[field] ? getFieldError(field, value, field === "confirmPassword" ? password : undefined) : undefined;
+      // Keep the confirm-password error in sync while the password is edited.
+      if (field === "password" && touched.confirmPassword) {
+        next.confirmPassword = getFieldError("confirmPassword", confirmPassword, value);
+      }
+      return next;
+    });
+    // Clear the form-level banner as soon as the user starts correcting things.
+    setFormError(null);
   };
 
   /** Reset transient form state and bounce the user back to the sign-in tab. */
