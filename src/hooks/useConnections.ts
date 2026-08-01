@@ -98,18 +98,12 @@ export const useConnections = (userId?: string) => {
 
       if (error) throw error;
 
-      // Get sender's display name for the email notification
-      const { data: senderProfile } = await supabase
-        .from("profiles")
-        .select("display_name")
-        .eq("id", userId)
-        .single();
-
-      // Send email notification (fire and forget - don't block on this)
-      supabase.functions.invoke("send-friend-request-email", {
+      // Send email notification (fire and forget - don't block on this).
+      // Display names are resolved server-side.
+      supabase.functions.invoke("notify-social-email", {
         body: {
+          type: "friend_request",
           recipientUserId: friendId,
-          senderDisplayName: senderProfile?.display_name || "Someone",
         },
       }).catch((emailError) => {
         console.error("Failed to send friend request email:", emailError);
@@ -136,18 +130,11 @@ export const useConnections = (userId?: string) => {
       // The user_id in the connection is the original sender
       const originalSenderId = data.user_id;
 
-      // Get accepter's display name for the email notification
-      const { data: accepterProfile } = await supabase
-        .from("profiles")
-        .select("display_name")
-        .eq("id", userId)
-        .single();
-
       // Send email notification to the original sender (fire and forget)
-      supabase.functions.invoke("send-friend-accepted-email", {
+      supabase.functions.invoke("notify-social-email", {
         body: {
+          type: "friend_accepted",
           recipientUserId: originalSenderId,
-          accepterDisplayName: accepterProfile?.display_name || "Someone",
         },
       }).catch((emailError) => {
         console.error("Failed to send friend accepted email:", emailError);

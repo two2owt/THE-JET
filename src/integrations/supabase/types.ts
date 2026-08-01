@@ -316,6 +316,33 @@ export type Database = {
           },
         ]
       }
+      email_notification_throttle: {
+        Row: {
+          channel_key: string
+          created_at: string
+          id: string
+          last_sent_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          channel_key: string
+          created_at?: string
+          id?: string
+          last_sent_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          channel_key?: string
+          created_at?: string
+          id?: string
+          last_sent_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
