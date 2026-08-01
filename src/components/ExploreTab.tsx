@@ -535,17 +535,7 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
           className="max-h-[60vh]"
           renderItem={(deal) => (
             <Card
-              className="overflow-hidden bg-card/90 backdrop-blur-sm hover-scale cursor-pointer transition-all shadow-none"
-              onClick={() => handleDealClick(deal)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  handleDealClick(deal);
-                }
-              }}
-              aria-label={`${deal.title} at ${deal.venue_name}`}
+              className="relative overflow-hidden bg-card/90 backdrop-blur-sm hover-scale transition-all shadow-none"
             >
               <div className="flex gap-4 p-4">
                 {/* Image or Icon */}
@@ -574,10 +564,20 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 mb-2">
-                    <h3 className="text-sm font-bold text-foreground line-clamp-1">
-                      {deal.title}
+                    <h3 className="text-sm font-bold text-foreground line-clamp-1 min-w-0">
+                      {/* Stretched-link pattern: a single real button owns the
+                          card's activation so the card itself never becomes a
+                          focusable container wrapping other controls. */}
+                      <button
+                        type="button"
+                        onClick={() => handleDealClick(deal)}
+                        aria-label={`${deal.title} at ${deal.venue_name}`}
+                        className="text-left after:absolute after:inset-0 after:rounded-[inherit] after:content-['']"
+                      >
+                        {deal.title}
+                      </button>
                     </h3>
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="relative z-10 flex items-center gap-2 flex-shrink-0">
                       <Button
                         variant="ghost"
                         size="icon"
