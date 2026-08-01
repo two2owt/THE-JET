@@ -765,15 +765,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // The heatmap no longer has its own reset button — the single "Reset to
   // defaults" action at the bottom of the Layers panel restores every
   // heatmap control (time range, day, time-lapse) along with the rest.
-  const handleResetFlowPaths = useCallback(() => {
-    triggerHaptic('light');
-    [FILTER_KEYS.pathTimeFilter, FILTER_KEYS.pathsWindow].forEach((key) => {
-      try { localStorage.removeItem(key); } catch { /* ignore */ }
-    });
-    setPathTimeFilter('all');
-    setPathsWindowMinutes(null);
-    setMinPathFrequency(2);
-  }, []);
 
   // ── Live Stats quick actions ──────────────────────────────────────────
   // Derived "top hotspot" (max density grid cell) and "top route"
