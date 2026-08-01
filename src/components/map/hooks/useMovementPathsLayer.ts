@@ -140,6 +140,28 @@ export const useMovementPathsLayer = ({
   const [debouncedPathData, setDebouncedPathData] = useState(pathData);
   const isFirstPathData = useRef(true);
 
+  // Latest selection threshold, readable from effects/animation without
+  // forcing a full layer rebuild when the slider moves.
+  const minFrequencyRef = useRef(minFrequency);
+  useEffect(() => { minFrequencyRef.current = minFrequency; }, [minFrequency]);
+
+  // Live re-selection: moving the slider re-filters which routes are active
+  // (animated) vs static, immediately, without rebuilding the layer stack.
+  useEffect(() => {
+    if (!mapLoaded || !showMovementPaths) return;
+    const map = mapRef.current;
+    if (!map) return;
+    try {
+      ['movement-paths-glow', 'movement-paths-line', 'movement-paths-arrows'].forEach((id) => {
+        if (map.getLayer(id)) map.setFilter(id, activeFilter(minFrequency));
+      });
+      if (map.getLayer('movement-paths-line-static')) {
+        map.setFilter('movement-paths-line-static', inactiveFilter(minFrequency));
+      }
+    } catch { /* layers may be mid-rebuild */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [minFrequency, mapLoaded, showMovementPaths, debouncedPathData]);
+
   useEffect(() => {
     // First payload paints immediately so the layer isn't visibly delayed.
     if (isFirstPathData.current) {
