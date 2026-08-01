@@ -258,6 +258,7 @@ export const useMovementPathsLayer = ({
         if (feature.geometry.type === 'LineString') {
           const coords = feature.geometry.coordinates;
           const frequency = feature.properties?.frequency || 1;
+          const recency = recencyFactor(feature.properties?.last_seen);
           const numParticles = Math.min(Math.ceil(frequency / 3), 5);
           for (let p = 0; p < numParticles; p++) {
             const t = ((offset / 100) + (p / numParticles)) % 1;
@@ -272,7 +273,7 @@ export const useMovementPathsLayer = ({
               particles.push({
                 type: 'Feature',
                 geometry: { type: 'Point', coordinates: [lng, lat] },
-                properties: { frequency, particleIndex: p },
+                properties: { frequency, particleIndex: p, recency },
               });
             }
           }
