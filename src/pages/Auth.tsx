@@ -6,7 +6,7 @@ import { AuthButton } from "@/components/auth/AuthButton";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Loader2, Eye, EyeOff, Mail, Lock, ArrowLeft, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Loader2, Eye, EyeOff, Mail, Lock, ArrowLeft, AlertCircle, CheckCircle2, Circle } from "lucide-react";
 import { z } from "zod";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/contexts/AuthContext";
@@ -36,6 +36,14 @@ const passwordSchema = z.string()
   .regex(/[0-9]/, { message: "Password must contain at least one number" });
 
 type AuthMode = "signin" | "signup" | "forgot" | "reset";
+
+/** Live password requirements shown while creating/resetting a password. */
+const PASSWORD_RULES: { label: string; test: (v: string) => boolean }[] = [
+  { label: "8+ characters", test: (v) => v.length >= 8 },
+  { label: "Uppercase letter", test: (v) => /[A-Z]/.test(v) },
+  { label: "Lowercase letter", test: (v) => /[a-z]/.test(v) },
+  { label: "Number", test: (v) => /[0-9]/.test(v) },
+];
 type FieldName = "email" | "password" | "confirmPassword";
 type ValidationErrors = Partial<Record<FieldName | "consent" | "locationConsent", string>>;
 
@@ -315,7 +323,10 @@ const Auth = () => {
 
   const handleBlur = (field: FieldName) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
-    const error = getFieldError(field);
+    // Read straight from the DOM so browser autofill (which can skip React's
+    // change events) is validated with the value the user actually sees.
+    const value = getAutofillAwareValue(field);
+    const error = getFieldError(field, value, field === "confirmPassword" ? password : undefined);
     setValidationErrors((prev) => ({ ...prev, [field]: error }));
   };
 
@@ -324,12 +335,19 @@ const Auth = () => {
     if (field === "password") setPassword(value);
     if (field === "confirmPassword") setConfirmPassword(value);
 
-    if (touched[field]) {
-      const error = getFieldError(field);
-      setValidationErrors((prev) => ({ ...prev, [field]: error }));
-    } else {
-      setValidationErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
+    // Validate against the incoming value — React state is still stale here,
+    // so passing it explicitly keeps inline errors one keystroke ahead.
+    setValidationErrors((prev) => {
+      const next = { ...prev };
+      next[field] = touched[field] ? getFieldError(field, value, field === "confirmPassword" ? password : undefined) : undefined;
+      // Keep the confirm-password error in sync while the password is edited.
+      if (field === "password" && touched.confirmPassword) {
+        next.confirmPassword = getFieldError("confirmPassword", confirmPassword, value);
+      }
+      return next;
+    });
+    // Clear the form-level banner as soon as the user starts correcting things.
+    setFormError(null);
   };
 
   /** Reset transient form state and bounce the user back to the sign-in tab. */
@@ -916,9 +934,27 @@ const Auth = () => {
                       {validationErrors.password}
                     </p>
                   ) : (isSignUp || isResettingPassword) ? (
-                    <p className="auth-password-hint text-xs text-muted-foreground mt-0.5">
-                      8+ characters with uppercase, lowercase, and number
-                    </p>
+                    <ul
+                      className="auth-password-hint mt-0.5 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground"
+                      aria-live="polite"
+                    >
+                      {PASSWORD_RULES.map((rule) => {
+                        const met = rule.test(password);
+                        return (
+                          <li
+                            key={rule.label}
+                            className={`flex items-center gap-1 transition-colors ${met ? "text-primary" : ""}`}
+                          >
+                            {met ? (
+                              <CheckCircle2 aria-hidden="true" className="h-3 w-3" />
+                            ) : (
+                              <Circle aria-hidden="true" className="h-3 w-3 opacity-60" />
+                            )}
+                            <span>{rule.label}</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
                   ) : null}
                 </div>
 
