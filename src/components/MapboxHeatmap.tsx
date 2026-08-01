@@ -3336,15 +3336,25 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               }}
             />
 
-            {/* Path filters */}
-            <div style={{ overflow: 'hidden', transition: 'max-height 0.3s', maxHeight: showMovementPaths ? '1200px' : '0px' }}>
+            {/* Path filters — container-query driven so the section adapts to
+                the layers panel width (sheet on mobile, narrow/wide desktop)
+                rather than to the viewport. */}
+            <div
+              style={{
+                overflow: showMovementPaths ? 'visible' : 'hidden',
+                transition: 'max-height 0.3s ease, opacity 0.2s ease',
+                maxHeight: showMovementPaths ? '1200px' : '0px',
+                opacity: showMovementPaths ? 1 : 0,
+                containerType: 'inline-size',
+              }}
+            >
               <div style={{
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 'clamp(6px, 1.8vw, 12px)',
-                paddingLeft: 'clamp(2px, 1.4vw, 10px)',
-                paddingRight: 'clamp(2px, 1vw, 6px)',
-                paddingTop: 'clamp(6px, 1.6vw, 10px)',
+                gap: 'clamp(6px, 2.5cqi, 12px)',
+                paddingLeft: 'clamp(2px, 3cqi, 10px)',
+                paddingRight: 'clamp(2px, 2cqi, 8px)',
+                paddingTop: 'clamp(6px, 2.5cqi, 10px)',
                 paddingBottom: '4px',
                 minWidth: 0,
               }}>
@@ -3365,8 +3375,14 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   </div>
                 )}
                 {/* Explainer replaces the old time-window slider. */}
-                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
-                  <p className="text-[10px] leading-snug text-muted-foreground">
+                <div
+                  className="rounded-xl border border-white/10 bg-white/5"
+                  style={{ padding: 'clamp(6px, 2.5cqi, 12px)' }}
+                >
+                  <p
+                    className="leading-snug text-muted-foreground"
+                    style={{ fontSize: 'clamp(9px, 2.6cqi, 11px)' }}
+                  >
                     Real user movement between venues. Line thickness and glow scale with motion
                     frequency — brighter, thicker paths mean more people actively moving that route
                     right now.
@@ -3397,14 +3413,19 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 {/* Compact movement summary — wraps cleanly at any width. */}
                 {pathData?.stats && (
                   <div
-                    style={{ paddingTop: '6px', borderTop: '1px solid hsl(var(--border) / 0.3)' }}
-                    className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[9px] text-muted-foreground"
+                    style={{
+                      paddingTop: '6px',
+                      borderTop: '1px solid hsl(var(--border) / 0.3)',
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(64px, 1fr))',
+                      gap: 'clamp(2px, 1.5cqi, 8px)',
+                      fontSize: 'clamp(8px, 2.4cqi, 10px)',
+                    }}
+                    className="text-muted-foreground"
                   >
-                    <span className="whitespace-nowrap">{pathData.stats.total_paths} routes</span>
-                    <span aria-hidden>•</span>
-                    <span className="whitespace-nowrap">{pathData.stats.unique_users} users</span>
-                    <span aria-hidden>•</span>
-                    <span className="whitespace-nowrap">peak {pathData.stats.max_frequency}x</span>
+                    <span className="truncate">{pathData.stats.total_paths} routes</span>
+                    <span className="truncate">{pathData.stats.unique_users} users</span>
+                    <span className="truncate">peak {pathData.stats.max_frequency}x</span>
                   </div>
                 )}
               </div>
