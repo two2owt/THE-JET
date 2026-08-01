@@ -59,12 +59,15 @@ const DASH_SEQUENCE = [
  * travel offset (0..100). Module-level so the animation loop can run from the
  * latest data without being rebuilt every time paths refresh.
  */
-const buildParticleData = (geojson: any, offset: number) => {
+const buildParticleData = (geojson: any, offset: number, minFrequency = 0) => {
   const particles: any[] = [];
   (geojson?.features ?? []).forEach((feature: any) => {
     if (feature.geometry?.type !== 'LineString') return;
     const coords = feature.geometry.coordinates;
     const frequency = feature.properties?.frequency || 1;
+    // Only routes that are currently selected (>= the active frequency
+    // threshold) get travelling particles; the rest render static.
+    if (frequency < minFrequency) return;
     const recency = recencyFactor(feature.properties?.last_seen);
     const numParticles = Math.min(Math.ceil(frequency / 3), 5);
     for (let p = 0; p < numParticles; p++) {
@@ -101,6 +104,11 @@ interface Params {
   platformSettingsRef: MutableRefObject<PlatformSettings>;
   /** mapbox-gl module ref, used to construct the hover Popup. */
   mapboxglRef?: MutableRefObject<any>;
+  /**
+   * Current min-frequency selection. Routes at/above it are the "active"
+   * (selected) routes and animate; routes below render static and dimmed.
+   */
+  minFrequency?: number;
 }
 
 /**
@@ -115,6 +123,7 @@ export const useMovementPathsLayer = ({
   flowAnimationRef,
   platformSettingsRef,
   mapboxglRef,
+  minFrequency = 0,
 }: Params) => {
   // Debounce incoming path data: realtime refreshes can land in bursts, and
   // each one triggers a GeoJSON re-parse + tile re-render. Coalescing them
