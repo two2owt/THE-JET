@@ -79,7 +79,7 @@ export function ChatDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md max-h-[80vh] flex flex-col p-0 gap-0">
+      <DialogContent className="sm:max-w-md max-h-[80svh] flex flex-col p-0 gap-0">
         <DialogHeader className="px-4 py-3 border-b border-border">
           <DialogTitle className="flex items-center gap-3">
             <Avatar className="w-8 h-8">
@@ -92,7 +92,7 @@ export function ChatDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 px-4 py-3 min-h-[300px] max-h-[50vh]">
+        <ScrollArea className="flex-1 px-4 py-3 min-h-[300px] max-h-[50svh]">
           {loading ? (
             <div className="flex items-center justify-center h-full">
               <p className="text-muted-foreground text-sm">Loading messages…</p>

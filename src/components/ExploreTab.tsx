@@ -366,7 +366,7 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
       {selectedDeal && (
         <Suspense fallback={null}>
           <Sheet open={!!selectedDeal} onOpenChange={(open) => !open && handleCloseDealCard()}>
-            <SheetContent side="bottom" className="h-auto max-h-[90vh] p-0 rounded-t-2xl overflow-auto">
+            <SheetContent side="bottom" className="h-auto max-h-[90svh] p-0 rounded-t-2xl overflow-auto">
               <DealDetailCard deal={selectedDeal} onClose={handleCloseDealCard} />
             </SheetContent>
           </Sheet>
@@ -532,7 +532,7 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
           items={filteredDeals}
           estimateSize={112}
           overscan={3}
-          className="max-h-[60vh]"
+          className="max-h-[60svh]"
           renderItem={(deal) => (
             <Card
               className="relative overflow-hidden bg-card/90 backdrop-blur-sm hover-scale transition-all shadow-none"
