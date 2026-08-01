@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useFavorites, type Favorite } from "@/hooks/useFavorites";
-import { Heart, Compass, MapPin, Loader2 } from "lucide-react";
+import { Heart, Compass, MapPin, Loader2, AlertTriangle } from "lucide-react";
 import { DealCard } from "@/components/DealCard";
 import { useNavigate } from "react-router";
 import { PageLayout } from "@/components/PageLayout";
@@ -31,6 +31,7 @@ export default function Favorites() {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
   const [deals, setDeals] = useState<Deal[]>([]);
+  const [loadError, setLoadError] = useState(false);
   const headerConfig = useMemo(() => ({}), []);
 
   const { favorites, loading: favoritesLoading } = useFavorites(user?.id);
@@ -41,12 +42,14 @@ export default function Favorites() {
     if (favorites.length > 0) {
       fetchFavoriteDeals();
     } else {
+      setLoadError(false);
       setDeals([]);
     }
   }, [favorites, favoritesLoading, user]);
 
   const fetchFavoriteDeals = async () => {
     try {
+      setLoadError(false);
       // Favorites can point to either a deal id (uuid) or a map venue id (text).
       // Resolve both: pull deals by id for deal-linked rows, and pull the most
       // recent active deal per venue_id for venue-only rows, then dedupe.
