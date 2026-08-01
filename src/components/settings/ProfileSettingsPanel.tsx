@@ -12,6 +12,7 @@ import { z } from "zod";
 
 import PreferencesEditor from "@/components/settings/PreferencesEditor";
 import PrivacySettings from "@/components/settings/PrivacySettings";
+import { refreshConsents } from "@/lib/consent";
 import { AccountSection } from "@/components/settings/AccountSection";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { ReportIssueDialog } from "@/components/ReportIssueDialog";
