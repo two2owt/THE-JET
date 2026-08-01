@@ -1700,6 +1700,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     
     try {
       // Apply the light preset for dynamic lighting (instant, handled by Mapbox)
+      if (!mapInstance.isStyleLoaded?.()) return;
       mapInstance.setConfigProperty('basemap', 'lightPreset', lightPreset);
       
       // Get current fog state (approximate from previous preset or default to night)
@@ -1735,8 +1736,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           'star-intensity': lerp(startStarIntensity, targetConfig.starIntensity, progress),
         };
         
+        if (!mapInstance.isStyleLoaded?.()) return;
         mapInstance.setFog(interpolatedFog);
-        
+
         if (rawProgress < 1) {
           animationFrame = requestAnimationFrame(animate);
         }
