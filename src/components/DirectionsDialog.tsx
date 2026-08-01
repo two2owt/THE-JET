@@ -99,47 +99,34 @@ const DirectionsDialog = ({ open, onOpenChange, venue, placeId }: DirectionsDial
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-2 sm:gap-3 py-3 sm:py-4">
-          <Button
-            onClick={() => openDirections('google')}
-            variant="outline"
-            className="h-auto py-3 sm:py-4 justify-start gap-2 sm:gap-3 hover:bg-accent transition-colors"
-          >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0">
-              <MapIcon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" />
-            </div>
-            <div className="text-left">
-              <p className="text-sm sm:text-base font-semibold">Google Maps</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Navigate with Google</p>
-            </div>
-          </Button>
-          
-          <Button
-            onClick={() => openDirections('apple')}
-            variant="outline"
-            className="h-auto py-3 sm:py-4 justify-start gap-2 sm:gap-3 hover:bg-accent transition-colors"
-          >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center flex-shrink-0">
-              <Navigation className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" />
-            </div>
-            <div className="text-left">
-              <p className="text-sm sm:text-base font-semibold">Apple Maps</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Navigate with Apple</p>
-            </div>
-          </Button>
-          
-          <Button
-            onClick={() => openDirections('waze')}
-            variant="outline"
-            className="h-auto py-3 sm:py-4 justify-start gap-2 sm:gap-3 hover:bg-accent transition-colors"
-          >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center flex-shrink-0">
-              <Zap className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" />
-            </div>
-            <div className="text-left">
-              <p className="text-sm sm:text-base font-semibold">Waze</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Navigate with Waze</p>
-            </div>
-          </Button>
+          {orderedApps.map(({ id, label, hint, icon: Icon, swatch }) => {
+            const isPreferred = id === lastApp;
+            return (
+              <Button
+                key={id}
+                onClick={() => openDirections(id)}
+                variant="outline"
+                autoFocus={isPreferred}
+                aria-label={isPreferred ? `${label} (last used)` : label}
+                className={`h-auto py-3 sm:py-4 justify-start gap-2 sm:gap-3 hover:bg-accent transition-colors ${
+                  isPreferred ? 'border-primary/60 bg-primary/5 ring-1 ring-primary/40' : ''
+                }`}
+              >
+                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br ${swatch} flex items-center justify-center flex-shrink-0`}>
+                  <Icon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" />
+                </div>
+                <div className="text-left">
+                  <p className="text-sm sm:text-base font-semibold">{label}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">{hint}</p>
+                </div>
+                {isPreferred && (
+                  <span className="ml-auto text-[10px] sm:text-xs font-medium text-primary whitespace-nowrap">
+                    Last used
+                  </span>
+                )}
+              </Button>
+            );
+          })}
         </div>
       </DialogContent>
     </Dialog>
