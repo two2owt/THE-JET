@@ -120,6 +120,14 @@ const AppLayout = memo(function AppLayout() {
           }
         />
         <Route
+          path="/reset-password"
+          element={
+            <Suspense fallback={<NavigationShell />}>
+              <Auth />
+            </Suspense>
+          }
+        />
+        <Route
           path="/onboarding"
           element={
             <Suspense fallback={<NavigationShell />}>
