@@ -92,8 +92,16 @@ export const useMovementPathsLayer = ({
           15, 'rgba(255, 100, 0, 0.45)',
           20, 'rgba(255, 0, 100, 0.5)',
         ],
-        'line-blur': 4,
-        'line-opacity': 0.6,
+        // Glow softness + strength both scale with frequency so busier routes
+        // read as visibly brighter, not just wider.
+        'line-blur': [
+          'interpolate', ['linear'], ['get', 'frequency'],
+          1, 3, 10, 7, 20, 10,
+        ],
+        'line-opacity': [
+          'interpolate', ['linear'], ['get', 'frequency'],
+          1, 0.35, 5, 0.55, 10, 0.75, 20, 0.95,
+        ],
         'line-width-transition': { duration: 800, delay: 0 },
         'line-color-transition': { duration: 800, delay: 0 },
         'line-opacity-transition': { duration: 600, delay: 0 },
@@ -118,7 +126,10 @@ export const useMovementPathsLayer = ({
           15, 'rgb(255, 100, 0)',
           20, 'rgb(255, 0, 100)',
         ],
-        'line-opacity': 0.9,
+        'line-opacity': [
+          'interpolate', ['linear'], ['get', 'frequency'],
+          1, 0.6, 5, 0.8, 10, 0.95, 20, 1,
+        ],
         'line-dasharray': [0, 4, 3],
         'line-width-transition': { duration: 800, delay: 0 },
         'line-color-transition': { duration: 800, delay: 0 },
