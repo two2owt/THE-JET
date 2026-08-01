@@ -287,6 +287,8 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
         background: 'linear-gradient(135deg, hsl(var(--primary) / 0.3), hsl(var(--accent) / 0.2))',
         overflow: 'hidden',
       }}>
+        {/* Branded placeholder renders underneath while the Places photo
+            resolves, so slow networks never show an empty hero. */}
         {photoLoading && !heroImage && (
           <div
             aria-hidden="true"
@@ -295,6 +297,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               position: 'absolute',
               inset: 0,
               background: 'hsl(var(--muted) / 0.35)',
+              zIndex: 0,
             }}
           />
         )}
@@ -309,8 +312,10 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               height: '100%',
               objectFit: 'cover',
               objectPosition: 'center',
+              opacity: 1,
+              transition: 'opacity 200ms ease',
             }}
-            loading="lazy"
+            loading="eager"
             decoding="async"
             onError={(e) => {
               // Swap to the centered JET-mark placeholder rather than the
