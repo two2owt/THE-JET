@@ -74,6 +74,21 @@ export const useMessages = (userId?: string, friendId?: string) => {
         content,
       });
       if (error) console.error("Error sending message:", error);
+      if (!error) {
+        // Throttled email nudge (server decides whether to actually send).
+        supabase.functions
+          .invoke("notify-social-email", {
+            body: {
+              type: "new_message",
+              recipientUserId: friendId,
+              conversationId,
+              preview: content.slice(0, 140),
+            },
+          })
+          .catch((emailError) => {
+            console.error("Failed to queue message email:", emailError);
+          });
+      }
     },
     [userId, friendId, conversationId]
   );
