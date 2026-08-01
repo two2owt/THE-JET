@@ -971,6 +971,21 @@ const Auth = () => {
                         onCheckedChange={(checked) => {
                           setLocationConsent(checked === true);
                           setValidationErrors((prev) => ({ ...prev, locationConsent: undefined }));
+                          // Ticking the box is a real user gesture, so this is
+                          // the moment the browser will actually show its
+                          // native location prompt. Without it, consent is
+                          // recorded but the OS permission is never granted
+                          // and no heatmap points can be collected.
+                          if (checked === true) {
+                            void requestGeolocationPermission().then((result) => {
+                              if (result === "denied") {
+                                toast.error("Location blocked by your browser", {
+                                  description:
+                                    "Allow location for this site to get nearby deals and live activity. You can re-enable it in Settings → Privacy.",
+                                });
+                              }
+                            });
+                          }
                         }}
                         disabled={isLoading}
                         className="mt-0.5"
