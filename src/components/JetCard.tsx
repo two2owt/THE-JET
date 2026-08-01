@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useCallback, useMemo } from "react";
+import { memo, useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
 import { MapPin, Users, Star, TrendingUp, X, Share2, Send, Car, Navigation, Phone, Globe, RefreshCw, Loader2, Heart, Clock } from "lucide-react";
 import { glideHaptic } from "@/lib/haptics";
 import { toast } from "sonner";
@@ -11,7 +11,9 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { useNavigate } from "react-router";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { isVenueOpenNow } from "@/lib/venue-hours";
+import type { Venue as DirectionsVenue } from "@/types/venue";
 
+const DirectionsDialog = lazy(() => import("./DirectionsDialog"));
 
 interface NearbyParking {
   name: string;
