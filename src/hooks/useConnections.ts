@@ -104,6 +104,7 @@ export const useConnections = (userId?: string) => {
         body: {
           type: "friend_request",
           recipientUserId: friendId,
+          connectionId: data.id,
         },
       }).catch((emailError) => {
         console.error("Failed to send friend request email:", emailError);
@@ -135,6 +136,7 @@ export const useConnections = (userId?: string) => {
         body: {
           type: "friend_accepted",
           recipientUserId: originalSenderId,
+          connectionId: `accepted-${connectionId}`,
         },
       }).catch((emailError) => {
         console.error("Failed to send friend accepted email:", emailError);
