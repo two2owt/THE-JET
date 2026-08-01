@@ -980,9 +980,13 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
         <DirectionsDialog
           open={directionsTarget !== null}
           onOpenChange={(open) => {
-            if (!open) setDirectionsTarget(null);
+            if (!open) {
+              setDirectionsTarget(null);
+              setDirectionsPlaceId(null);
+            }
           }}
           venue={directionsTarget}
+          placeId={directionsPlaceId}
         />
       </Suspense>
 
