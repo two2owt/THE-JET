@@ -973,6 +973,16 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
         onClose={() => setShowUpgradePrompt(false)}
       />
 
+      <Suspense fallback={null}>
+        <DirectionsDialog
+          open={directionsTarget !== null}
+          onOpenChange={(open) => {
+            if (!open) setDirectionsTarget(null);
+          }}
+          venue={directionsTarget}
+        />
+      </Suspense>
+
     </article>
   );
 });
