@@ -360,13 +360,25 @@ export const useMovementPathsLayer = ({
       try { map.getCanvas().style.cursor = ''; } catch { /* no-op */ }
     };
 
-    map.on('mousemove', lineLayerId, showPopup);
+    // Throttle hover updates to one per animation frame — mousemove fires far
+    // faster than the map can usefully repaint the popup.
+    let hoverFrame: number | null = null;
+    const onHover = (e: any) => {
+      if (hoverFrame !== null) return;
+      hoverFrame = requestAnimationFrame(() => {
+        hoverFrame = null;
+        showPopup(e);
+      });
+    };
+
+    map.on('mousemove', lineLayerId, onHover);
     map.on('mouseleave', lineLayerId, hidePopup);
     map.on('click', lineLayerId, showPopup);
 
     return () => {
+      if (hoverFrame !== null) cancelAnimationFrame(hoverFrame);
       try {
-        map.off('mousemove', lineLayerId, showPopup);
+        map.off('mousemove', lineLayerId, onHover);
         map.off('mouseleave', lineLayerId, hidePopup);
         map.off('click', lineLayerId, showPopup);
       } catch { /* no-op */ }
