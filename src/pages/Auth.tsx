@@ -36,6 +36,14 @@ const passwordSchema = z.string()
   .regex(/[0-9]/, { message: "Password must contain at least one number" });
 
 type AuthMode = "signin" | "signup" | "forgot" | "reset";
+
+/** Live password requirements shown while creating/resetting a password. */
+const PASSWORD_RULES: { label: string; test: (v: string) => boolean }[] = [
+  { label: "8+ characters", test: (v) => v.length >= 8 },
+  { label: "Uppercase letter", test: (v) => /[A-Z]/.test(v) },
+  { label: "Lowercase letter", test: (v) => /[a-z]/.test(v) },
+  { label: "Number", test: (v) => /[0-9]/.test(v) },
+];
 type FieldName = "email" | "password" | "confirmPassword";
 type ValidationErrors = Partial<Record<FieldName | "consent" | "locationConsent", string>>;
 
