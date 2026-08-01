@@ -362,10 +362,6 @@ export const useMovementPathsLayer = ({
    * frequency, and the last time the route was observed. Registered in its
    * own effect so the fast-path `setData` update above never drops it.
    */
-  useEffect(() => {
-    // (tooltip effect below)
-  }, []);
-
   /**
    * Decay ticker: re-stamps `recency` on the live source against the wall
    * clock so routes visibly fade as movement slows, even when no new data
