@@ -251,6 +251,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
         boxShadow:
           '0 0 60px hsl(var(--gold) / 0.05), 0 24px 50px -20px rgba(0,0,0,0.75), 0 0 0 1px hsl(var(--gold) / 0.18), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
         maxHeight: 'min(82vh, 640px)',
+        containerType: 'inline-size',
         fontFamily: 'var(--font-sans, system-ui, -apple-system, sans-serif)',
         color: 'hsl(var(--foreground))',
         fontSize: 'clamp(13px, 0.95vw + 11px, 16px)',
