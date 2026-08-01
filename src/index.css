@@ -456,6 +456,23 @@ All colors MUST be HSL.
     animation: content-fade-in 0.25s ease-out forwards;
   }
 
+  /*
+   * Viewport reflow guard (set by useViewportReflow while an orientation
+   * change or browser-chrome resize settles). Suppressing transitions and
+   * animations for those few frames makes dvh/svh based layouts snap to the
+   * new height in a single paint instead of animating into place.
+   */
+  html.is-reflowing,
+  html.is-reflowing body,
+  html.is-reflowing *,
+  html.is-reflowing *::before,
+  html.is-reflowing *::after {
+    transition: none !important;
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+
   /* Page container with bottom nav clearance and scrolling */
   .page-container {
     flex: 1;
