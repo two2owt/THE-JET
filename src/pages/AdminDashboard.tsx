@@ -8,7 +8,7 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { AdminTopbar } from "@/components/admin/AdminTopbar";
 import { SEO } from "@/components/SEO";
 import {
-  ChevronsLeft, ChevronsRight, Menu, Tag, BarChart3, MapPinned, Settings2, Filter, Archive, ShieldAlert,
+  ChevronsLeft, ChevronsRight, Menu, Tag, BarChart3, MapPinned, Settings2, Filter, Archive, ShieldAlert, MailWarning,
 } from "lucide-react";
 
 // Lazy-loaded admin sections (UserAnalytics pulls in recharts ~200KB)
@@ -25,9 +25,10 @@ const RetentionSettings = lazy(() => import("@/components/admin/RetentionSetting
 const ExportUsersPanel = lazy(() => import("@/components/admin/ExportUsersPanel").then(m => ({ default: m.ExportUsersPanel })));
 const BulkUserProvisionPanel = lazy(() => import("@/components/admin/BulkUserProvisionPanel").then(m => ({ default: m.BulkUserProvisionPanel })));
 const SecurityFindingsPanel = lazy(() => import("@/components/admin/SecurityFindingsPanel").then(m => ({ default: m.SecurityFindingsPanel })));
+const EmailHealthPanel = lazy(() => import("@/components/admin/EmailHealthPanel").then(m => ({ default: m.EmailHealthPanel })));
 
 
-type SectionId = "deals" | "analytics" | "funnel" | "areas" | "retention" | "security" | "system";
+type SectionId = "deals" | "analytics" | "funnel" | "areas" | "retention" | "email" | "security" | "system";
 
 interface SectionDef {
   id: SectionId;
@@ -42,6 +43,7 @@ const SECTIONS: SectionDef[] = [
   { id: "funnel",    label: "Funnel",    description: "Search → Deal Viewed → Deal Clicked → Checkout conversion.", icon: Filter },
   { id: "areas",     label: "Areas",     description: "Neighborhood geofences and coverage areas.",   icon: MapPinned },
   { id: "retention", label: "Retention", description: "Location data retention job runs and archived row trends.", icon: Archive },
+  { id: "email",     label: "Email",     description: "Live delivery health — failed, retried, and suppressed sends.", icon: MailWarning },
   { id: "security",  label: "Security",  description: "Current scan findings, severity, and recommended actions.", icon: ShieldAlert },
   { id: "system",    label: "System",    description: "Monetization toggle and email settings.", icon: Settings2 },
 ];
@@ -240,6 +242,11 @@ export default function AdminDashboard() {
               {section === "security" && (
                 <Suspense fallback={<AdminTabFallback />}>
                   <SecurityFindingsPanel />
+                </Suspense>
+              )}
+              {section === "email" && (
+                <Suspense fallback={<AdminTabFallback />}>
+                  <EmailHealthPanel />
                 </Suspense>
               )}
               {section === "system" && (
