@@ -3368,46 +3368,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     )}
                   </div>
                 )}
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <button
-                    type="button"
-                    onClick={handleResetFlowPaths}
-                    aria-label="Reset flow paths controls to defaults"
-                    className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[10px] text-muted-foreground transition hover:bg-white/10 hover:text-foreground"
-                  >
-                    <RotateCcw style={{ width: '10px', height: '10px' }} />
-                    Reset
-                  </button>
-                </div>
-                {/* Time range slider — matches the density Time Range control
-                    so both layer panels share the same glassmorphic slider
-                    language. Snap ticks map to the four preset windows. */}
-                {(() => {
-                  const steps: Array<'all' | 'today' | 'this_week' | 'this_hour'> = ['all', 'today', 'this_week', 'this_hour'];
-                  const labels = ['All Time', 'Today', 'This Week', 'This Hour'];
-                  const idx = Math.max(0, steps.indexOf(pathTimeFilter));
-                  return (
-                    <LayerSliderRow
-                      label="Time range"
-                      Icon={Clock}
-                      ariaLabel="Flow paths time range filter"
-                      min={0}
-                      max={3}
-                      step={1}
-                      value={idx}
-                      onChange={(step) => setPathTimeFilter(steps[step] ?? 'all')}
-                      format={(step) => labels[step] ?? 'All Time'}
-                      ticks={[
-                        { value: 0, label: 'All' },
-                        { value: 1, label: 'Day' },
-                        { value: 2, label: 'Week' },
-                        { value: 3, label: 'Hour' },
-                      ]}
-                      defaultValue={0}
-                      loading={pathsLoading}
-                    />
-                  );
-                })()}
                 {/* Time-window slider — same semantics as the density one.
                     Only re-queries on release so drags don't spam the edge fn. */}
                 <LayerSliderRow
@@ -3444,15 +3404,15 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     system so it matches the rest of the panel visually and
                     inherits the reset/tick/adaptive-spacing behavior. */}
                 <LayerSliderRow
-                  label="Min. frequency"
+                  label="User flow paths by frequency"
                   Icon={Route}
-                  ariaLabel="Minimum path frequency"
+                  ariaLabel="User flow paths by frequency (1-10 users)"
                   min={1}
                   max={10}
                   step={1}
                   value={minPathFrequency}
                   onChange={setMinPathFrequency}
-                  format={(v) => `${v}+`}
+                  format={(v) => `${v}+ users`}
                   ticks={[
                     { value: 1, label: '1' },
                     { value: 3, label: '3' },
