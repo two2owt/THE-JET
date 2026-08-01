@@ -358,11 +358,6 @@ export const useMovementPathsLayer = ({
   }, [mapLoaded, debouncedPathData, showMovementPaths]);
 
   /**
-   * Hover / tap tooltip on flow paths: real user movement counts, route
-   * frequency, and the last time the route was observed. Registered in its
-   * own effect so the fast-path `setData` update above never drops it.
-   */
-  /**
    * Decay ticker: re-stamps `recency` on the live source against the wall
    * clock so routes visibly fade as movement slows, even when no new data
    * arrives. Paused while the tab is hidden.
@@ -379,6 +374,11 @@ export const useMovementPathsLayer = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapLoaded, showMovementPaths, debouncedPathData]);
 
+  /**
+   * Hover / tap tooltip on flow paths: real user movement counts, route
+   * frequency, and the last time the route was observed. Registered in its
+   * own effect so the fast-path `setData` update above never drops it.
+   */
   useEffect(() => {
     const map = mapRef.current;
     const mapboxgl = mapboxglRef?.current ?? (window as any).mapboxgl;
