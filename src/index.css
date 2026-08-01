@@ -2410,8 +2410,11 @@ All colors MUST be HSL.
        like `shadow-none` / `ring-*` override a :where() box-shadow, which used
        to leave some controls with no visible focus at all. An outline can't be
        clobbered that way, so every focusable element gets the same ring. */
-    outline: 2px solid hsl(var(--gold) / 0.9);
-    outline-offset: 2px;
+    /* !important because shadcn variants ship `focus-visible:outline-none`
+       (= `outline: 2px solid transparent`), whose class specificity beats a
+       :where() rule and would leave the control with an invisible ring. */
+    outline: 2px solid hsl(var(--gold) / 0.9) !important;
+    outline-offset: 2px !important;
     box-shadow:
       0 0 0 2px hsl(var(--background)),
       0 0 0 4px hsl(var(--gold) / 0.7),
@@ -2423,15 +2426,15 @@ All colors MUST be HSL.
   /* Forced-colors / high-contrast users: system Highlight instead of gold. */
   @media (forced-colors: active) {
     :where(button, a, summary, [role="button"], [role="link"], [tabindex]:not([tabindex^="-"])):focus-visible {
-      outline-color: Highlight;
+      outline-color: Highlight !important;
     }
   }
 
   /* Inputs / textareas / selects — gold border + soft glow on focus.
      Uses :where() so component-level inline styles still win. */
   :where(input, textarea, select):focus-visible {
-    outline: 2px solid hsl(var(--gold) / 0.9);
-    outline-offset: 2px;
+    outline: 2px solid hsl(var(--gold) / 0.9) !important;
+    outline-offset: 2px !important;
   }
   :where(input, textarea, select):focus {
     border-color: hsl(var(--gold) / 0.6) !important;
