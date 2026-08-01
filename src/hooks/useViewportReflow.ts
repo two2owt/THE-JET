@@ -111,10 +111,27 @@ export function useViewportReflow(): void {
     // scrolling smooth.
     const onVisualScroll = () => schedule(false);
 
+    // Returning from the background (push-notification deep link, app switch,
+    // bfcache restore) can surface a viewport that changed while the document
+    // was hidden — rotation, browser chrome, keyboard. Re-measure with the
+    // guard so the first visible paint already has the right height instead of
+    // jumping a frame later.
+    const onResume = () => {
+      if (document.visibilityState !== "visible") return;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const changed = w !== lastW || h !== lastH;
+      lastW = w;
+      lastH = h;
+      schedule(changed);
+    };
+
     window.addEventListener("resize", onResize);
     window.addEventListener("orientationchange", onResize);
     window.visualViewport?.addEventListener("resize", onResize);
     window.visualViewport?.addEventListener("scroll", onVisualScroll);
+    document.addEventListener("visibilitychange", onResume);
+    window.addEventListener("pageshow", onResume);
     const screenOrientation = window.screen?.orientation;
     screenOrientation?.addEventListener?.("change", onResize);
 
@@ -123,6 +140,8 @@ export function useViewportReflow(): void {
       window.removeEventListener("orientationchange", onResize);
       window.visualViewport?.removeEventListener("resize", onResize);
       window.visualViewport?.removeEventListener("scroll", onVisualScroll);
+      document.removeEventListener("visibilitychange", onResume);
+      window.removeEventListener("pageshow", onResume);
       screenOrientation?.removeEventListener?.("change", onResize);
       if (rafId) cancelAnimationFrame(rafId);
       if (settleId) cancelAnimationFrame(settleId);
