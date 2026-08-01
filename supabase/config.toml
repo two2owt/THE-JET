@@ -33,10 +33,6 @@ project_id = "flvhduntedvorikonuvy"
     verify_jwt = false
   [functions.send-admin-notification]
     verify_jwt = false
-  [functions.send-friend-accepted-email]
-    verify_jwt = false
-  [functions.send-friend-request-email]
-    verify_jwt = false
   [functions.send-push-notification]
     verify_jwt = false
   [functions.send-verification-email]
