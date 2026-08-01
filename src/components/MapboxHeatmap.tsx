@@ -3374,20 +3374,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     )}
                   </div>
                 )}
-                {/* Explainer replaces the old time-window slider. */}
-                <div
-                  className="rounded-xl border border-white/10 bg-white/5"
-                  style={{ padding: 'clamp(6px, 2.5cqi, 12px)' }}
-                >
-                  <p
-                    className="leading-snug text-muted-foreground"
-                    style={{ fontSize: 'clamp(9px, 2.6cqi, 11px)' }}
-                  >
-                    Real user movement between venues. Line thickness and glow scale with motion
-                    frequency — brighter, thicker paths mean more people actively moving that route
-                    right now.
-                  </p>
-                </div>
+                {/* Explainer lives in the Flow Paths toggle tooltip only. */}
                 {/* Min-frequency slider — brought into the LayerSliderRow
                     system so it matches the rest of the panel visually and
                     inherits the reset/tick/adaptive-spacing behavior. */}
