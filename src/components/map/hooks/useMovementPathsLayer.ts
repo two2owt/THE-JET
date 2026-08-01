@@ -46,6 +46,15 @@ interface PlatformSettings {
   isLowPowerMode: boolean;
 }
 
+/** Mapbox filter for routes that are currently selected (animated). */
+const activeFilter = (min: number): any => [
+  '>=', ['coalesce', ['get', 'frequency'], 0], min,
+];
+/** Mapbox filter for routes below the current selection (static). */
+const inactiveFilter = (min: number): any => [
+  '<', ['coalesce', ['get', 'frequency'], 0], min,
+];
+
 /** Dash phases used to make the flow lines appear to travel. */
 const DASH_SEQUENCE = [
   [0, 4, 3], [0.5, 4, 2.5], [1, 4, 2], [1.5, 4, 1.5],
