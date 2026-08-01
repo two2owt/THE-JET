@@ -897,9 +897,10 @@ All colors MUST be HSL.
     overscroll-behavior: contain;
   }
   .auth-content-wrapper {
-    /* Fluid outer padding: 4px on short screens up to 20px on tall ones. */
-    padding-top: clamp(4px, 1.2svh, 20px) !important;
-    padding-bottom: clamp(4px, 1.2svh, 20px) !important;
+    /* Fluid outer padding (4px on short screens → 20px on tall ones),
+       never smaller than the device safe areas. */
+    padding-top: max(env(safe-area-inset-top, 0px), clamp(4px, 1.2svh, 20px)) !important;
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), clamp(4px, 1.2svh, 20px)) !important;
   }
   .auth-card { padding: clamp(14px, 2.2svh, 32px) clamp(16px, 4vw, 28px); }
   .auth-logo { margin-bottom: clamp(4px, 1.2svh, 20px) !important; }
