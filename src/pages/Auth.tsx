@@ -883,7 +883,7 @@ const Auth = () => {
                       {validationErrors.password}
                     </p>
                   ) : (isSignUp || isResettingPassword) ? (
-                    <p className="text-xs text-muted-foreground mt-0.5">
+                    <p className="auth-password-hint text-xs text-muted-foreground mt-0.5">
                       8+ characters with uppercase, lowercase, and number
                     </p>
                   ) : null}
