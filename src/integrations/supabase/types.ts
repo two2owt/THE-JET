@@ -112,6 +112,39 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_events_archive: {
+        Row: {
+          archived_at: string
+          created_at: string
+          event_data: Json | null
+          event_name: string
+          id: string
+          page_path: string | null
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          archived_at?: string
+          created_at: string
+          event_data?: Json | null
+          event_name: string
+          id: string
+          page_path?: string | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          archived_at?: string
+          created_at?: string
+          event_data?: Json | null
+          event_name?: string
+          id?: string
+          page_path?: string | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       data_retention_job_log: {
         Row: {
           completed_at: string | null
