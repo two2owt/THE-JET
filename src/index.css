@@ -884,36 +884,49 @@ All colors MUST be HSL.
     .auth-float-shape { animation: none; }
   }
 
-  /* Responsive auth card — compact on short/tiny screens, spacious on tall desktops. */
-  @media (max-height: 850px) {
-    .auth-content-wrapper { padding: 4px !important; }
-    .auth-card { padding: 20px; border-radius: 16px; }
-    .auth-logo { margin-bottom: 8px !important; }
-    .auth-logo img { height: 36px; width: 36px; }
-    .auth-logo > span { font-size: 9px; padding: 1px 6px; }
-    .auth-title { margin-bottom: 8px !important; }
-    .auth-title h1 { font-size: 22px; }
-    .auth-title p { font-size: 12px; }
-    .auth-form { gap: 8px !important; }
-    .auth-form .flex.flex-col.gap-1,
-    .auth-form .flex.flex-col.gap-1\.5 { gap: 4px !important; }
-    .auth-input {
-      height: 44px !important;
-      min-height: 44px !important;
-      padding-block: 10px !important;
-      font-size: 14px !important;
-    }
-    .auth-social { margin-top: 4px !important; margin-bottom: 4px !important; }
-    .auth-switch { margin-top: 4px !important; }
-    .auth-footer { margin-top: 0 !important; padding-top: 0; font-size: 10px; }
-    .auth-footer a { font-size: 10px; }
+  /* ------------------------------------------------------------------
+     Responsive auth card — fluid vertical rhythm keyed off the viewport
+     height (svh so mobile browser chrome doesn't cause a scroll), so the
+     whole form fits on screen instead of scrolling. Nothing is hidden;
+     spacing and type scale down smoothly instead.
+     ------------------------------------------------------------------ */
+  .auth-fullscreen {
+    /* Fit the small-viewport height: avoids the 1–3px overflow that made
+       the page scrollable even when the card fit. */
+    max-height: 100svh;
+    overscroll-behavior: contain;
   }
-  @media (max-width: 375px) {
-    .auth-card { padding: 16px 16px; border-radius: 14px; }
-    .auth-logo { margin-bottom: 4px !important; }
+  .auth-content-wrapper {
+    /* Fluid outer padding: 4px on short screens up to 20px on tall ones. */
+    padding-top: clamp(4px, 1.2svh, 20px) !important;
+    padding-bottom: clamp(4px, 1.2svh, 20px) !important;
+  }
+  .auth-card { padding: clamp(14px, 2.2svh, 32px) clamp(16px, 4vw, 28px); }
+  .auth-logo { margin-bottom: clamp(4px, 1.2svh, 20px) !important; }
+  .auth-logo img { height: clamp(32px, 4.6svh, 48px); width: clamp(32px, 4.6svh, 48px); }
+  .auth-title { margin-bottom: clamp(4px, 1.4svh, 20px) !important; }
+  .auth-title h1 { font-size: clamp(20px, 3.1svh, 28px); }
+  .auth-title p { font-size: clamp(12px, 1.7svh, 14px); }
+  .auth-form { gap: clamp(6px, 1.4svh, 16px) !important; }
+  .auth-form .flex.flex-col.gap-1,
+  .auth-form .flex.flex-col.gap-1\.5 { gap: clamp(3px, 0.6svh, 6px) !important; }
+  .auth-input {
+    /* Never below the 44px touch target. 16px font on small screens keeps
+       iOS Safari from zooming (which would re-introduce scrolling). */
+    height: clamp(44px, 5.6svh, 48px) !important;
+    min-height: 44px !important;
+    padding-block: 10px !important;
+  }
+  .auth-social { margin-top: clamp(4px, 1.4svh, 20px) !important; margin-bottom: clamp(4px, 1.4svh, 20px) !important; }
+  .auth-switch { margin-top: clamp(4px, 1.4svh, 20px) !important; }
+  .auth-footer { margin-top: clamp(0px, 1svh, 20px) !important; padding-top: 0; font-size: clamp(10px, 1.3svh, 12px); }
+  .auth-footer a { font-size: inherit; }
+
+  /* Very short viewports (landscape phones, small windows): trim the
+     decorative bits before anything interactive gets squeezed. */
+  @media (max-height: 620px) {
     .auth-logo > span { display: none; }
-    .auth-title { margin-bottom: 4px !important; }
-    .auth-social, .auth-google { display: none; }
+    .auth-title p { display: none; }
     .auth-footer { display: none; }
   }
   @media (min-width: 640px) and (min-height: 851px) {
