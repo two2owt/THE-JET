@@ -41,6 +41,7 @@ const LayerToggleRowImpl = ({
 
   return (
     <div
+      role="button"
       tabIndex={0}
       aria-pressed={active}
       aria-label={ariaLabel}

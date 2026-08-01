@@ -2393,7 +2393,19 @@ All colors MUST be HSL.
   /* Disable the default Tailwind focus-visible blue ring so our gold
      ring shows through cleanly. Components that intentionally want a
      primary-colored ring keep their explicit `focus-visible:ring-primary`. */
-  :where(button, a, [role="button"], [role="link"]):focus-visible {
+  :where(
+    button,
+    a,
+    summary,
+    [role="button"],
+    [role="link"],
+    [role="tab"],
+    [role="switch"],
+    [role="checkbox"],
+    [role="menuitem"],
+    [role="option"],
+    [tabindex]:not([tabindex^="-"])
+  ):focus-visible {
     outline: none;
     box-shadow:
       0 0 0 2px hsl(var(--background)),
@@ -2401,6 +2413,15 @@ All colors MUST be HSL.
       0 0 18px hsl(var(--gold) / 0.25);
     border-radius: inherit;
     transition: box-shadow 200ms ease-out;
+  }
+
+  /* Forced-colors / high-contrast users don't get box-shadow — keep a real
+     outline so focus is never invisible there. */
+  @media (forced-colors: active) {
+    :where(button, a, summary, [role="button"], [role="link"], [tabindex]:not([tabindex^="-"])):focus-visible {
+      outline: 2px solid Highlight;
+      outline-offset: 2px;
+    }
   }
 
   /* Inputs / textareas / selects — gold border + soft glow on focus.
@@ -2435,7 +2456,7 @@ All colors MUST be HSL.
 
 /* Reduced-motion: keep the gold ring, but drop the transition */
 @media (prefers-reduced-motion: reduce) {
-  :where(button, a, [role="button"], [role="link"]):focus-visible,
+  :where(button, a, summary, [role="button"], [role="link"], [tabindex]:not([tabindex^="-"])):focus-visible,
   :where(input, textarea, select):focus-visible {
     transition: none;
   }
