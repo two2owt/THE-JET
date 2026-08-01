@@ -3359,38 +3359,14 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     )}
                   </div>
                 )}
-                {/* Time-window slider — same semantics as the density one.
-                    Only re-queries on release so drags don't spam the edge fn. */}
-                <LayerSliderRow
-                  label="Time window"
-                  Icon={Clock}
-                  ariaLabel="Movement paths time window"
-                  min={0}
-                  max={4}
-                  step={1}
-                  value={
-                    pathsWindowMinutes === null ? 0 :
-                    pathsWindowMinutes === 15 ? 1 :
-                    pathsWindowMinutes === 60 ? 2 :
-                    pathsWindowMinutes === 360 ? 3 :
-                    pathsWindowMinutes === 1440 ? 4 : 0
-                  }
-                  onChange={(step) => {
-                    const mapping = [null, 15, 60, 360, 1440];
-                    setPathsWindowMinutes(mapping[step] ?? null);
-                  }}
-                  onCommit={() => refreshPaths()}
-                  format={(step) => (['Preset','15m','1h','6h','24h'][step] ?? 'Preset')}
-                  ticks={[
-                    { value: 0, label: 'Preset' },
-                    { value: 1, label: '15m' },
-                    { value: 2, label: '1h' },
-                    { value: 3, label: '6h' },
-                    { value: 4, label: '24h' },
-                  ]}
-                  defaultValue={0}
-                  loading={pathsLoading}
-                />
+                {/* Explainer replaces the old time-window slider. */}
+                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+                  <p className="text-[10px] leading-snug text-muted-foreground">
+                    Real user movement between venues. Line thickness and glow scale with motion
+                    frequency — brighter, thicker paths mean more people actively moving that route
+                    right now.
+                  </p>
+                </div>
                 {/* Min-frequency slider — brought into the LayerSliderRow
                     system so it matches the rest of the panel visually and
                     inherits the reset/tick/adaptive-spacing behavior. */}
@@ -3413,11 +3389,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   defaultValue={2}
                   loading={pathsLoading}
                 />
-                <p className="text-[9px] leading-snug text-muted-foreground">
-                  Real user movement between venues. Line thickness and glow scale with motion
-                  frequency and user frequency — brighter, thicker paths mean more people actively
-                  moving that route right now.
-                </p>
                 {/* Compact movement summary — wraps cleanly at any width. */}
                 {pathData?.stats && (
                   <div
