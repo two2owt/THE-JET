@@ -1811,6 +1811,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     pathData,
     flowAnimationRef,
     platformSettingsRef: platformSettings,
+    mapboxglRef,
   });
 
 
