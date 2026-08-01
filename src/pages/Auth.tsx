@@ -16,6 +16,7 @@ import { discardCurrentAuthSession } from "@/lib/authSession";
 import { SEO } from "@/components/SEO";
 import { AuthPWAInstallPromptWrapper } from "@/components/AuthPWAInstallPromptWrapper";
 import { buildAuthRedirectUrl } from "@/lib/utils";
+import { requestGeolocationPermission } from "@/lib/requestGeolocationPermission";
 // Use the new JET logo for auth page
 import jetLogo from "@/assets/jet-auth-logo.png";
 import authBackground from "@/assets/auth-background.webp";
