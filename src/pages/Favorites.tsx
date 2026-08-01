@@ -202,7 +202,7 @@ export default function Favorites() {
                 <VirtualGrid
                   items={deals}
                   estimateSize={280}
-                  className="min-h-[20vh]"
+                  className="min-h-[20svh]"
                   columns={{ mobile: 1, tablet: 2, desktop: 3 }}
                   getItemKey={(deal) => deal.id}
                   renderItem={(deal, index) => <DealCard deal={deal} index={index} />}
