@@ -62,9 +62,9 @@ test.describe("push deep link reflow on resume", () => {
     const initial = await readState(page);
     expect(initial.dvh).toBeCloseTo(initial.inner, 0);
     expect(initial.orientation).toBe("portrait");
-    // The app may redirect an unauthenticated deep-link tap to the auth
-    // screen; either landing must reflow identically.
-    expect(page.url()).toMatch(/deal=e2e-deal|signin|auth/);
+    // The layer state carried by the push payload survives the landing
+    // (an unknown deal id is dropped by the app, which is expected).
+    expect(decodeURIComponent(page.url())).toContain("layers=density,paths");
 
     // Background the app (user taps away / OS shows another app).
     await setVisibility(page, "hidden");
