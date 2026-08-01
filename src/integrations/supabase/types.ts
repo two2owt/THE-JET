@@ -1239,6 +1239,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
+      cleanup_old_analytics_events: { Args: never; Returns: undefined }
       cleanup_old_search_history: { Args: never; Returns: undefined }
       cleanup_old_security_audit_logs: { Args: never; Returns: undefined }
       delete_email: {
