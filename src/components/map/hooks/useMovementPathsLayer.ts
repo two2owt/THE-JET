@@ -3,6 +3,44 @@ import { useEffect, useRef, useState, MutableRefObject } from "react";
 /** How long to coalesce rapid path updates before touching Mapbox (ms). */
 const PATH_UPDATE_DEBOUNCE_MS = 250;
 
+/**
+ * Decay window: a route observed right now renders at full strength, and
+ * fades linearly to `DECAY_MIN_OPACITY` once it has gone unobserved for
+ * `DECAY_WINDOW_MINUTES`. Routes with no `last_seen` are treated as fresh.
+ */
+const DECAY_WINDOW_MINUTES = 60;
+const DECAY_MIN_OPACITY = 0.12;
+/** How often the decay factor is recomputed against the wall clock. */
+const DECAY_TICK_MS = 20000;
+
+/** Returns 0..1 freshness for a route based on when it was last observed. */
+const recencyFactor = (lastSeen: string | null | undefined) => {
+  if (!lastSeen) return 1;
+  const ts = new Date(lastSeen).getTime();
+  if (!Number.isFinite(ts)) return 1;
+  const ageMin = Math.max(0, (Date.now() - ts) / 60000);
+  const decayed = 1 - ageMin / DECAY_WINDOW_MINUTES;
+  return Math.min(1, Math.max(DECAY_MIN_OPACITY, decayed));
+};
+
+/**
+ * Stamps every feature with a `recency` property so paint expressions can
+ * multiply frequency-driven styling by how fresh the movement is.
+ */
+const withDecay = (geojson: any) => {
+  if (!geojson?.features) return geojson;
+  return {
+    ...geojson,
+    features: geojson.features.map((f: any) => ({
+      ...f,
+      properties: {
+        ...(f.properties || {}),
+        recency: recencyFactor(f.properties?.last_seen),
+      },
+    })),
+  };
+};
+
 interface PlatformSettings {
   hasReducedMotion: boolean;
   isLowPowerMode: boolean;
@@ -79,7 +117,7 @@ export const useMovementPathsLayer = ({
     const existing = mapRef.current.getSource(sourceId) as any;
     if (existing) {
       try {
-        existing.setData(pathData.geojson);
+        existing.setData(withDecay(pathData.geojson));
         // Keep particle animation running against the new path set; no rebuild.
         return;
       } catch (err) {
@@ -94,7 +132,7 @@ export const useMovementPathsLayer = ({
 
     mapRef.current.addSource(sourceId, {
       type: 'geojson',
-      data: pathData.geojson,
+      data: withDecay(pathData.geojson),
       lineMetrics: true,
     });
 
@@ -122,9 +160,11 @@ export const useMovementPathsLayer = ({
           'interpolate', ['linear'], ['get', 'frequency'],
           1, 3, 10, 7, 20, 10,
         ],
+        // Frequency drives strength; recency decays it as movement slows.
         'line-opacity': [
-          'interpolate', ['linear'], ['get', 'frequency'],
-          1, 0.35, 5, 0.55, 10, 0.75, 20, 0.95,
+          '*',
+          ['interpolate', ['linear'], ['get', 'frequency'], 1, 0.35, 5, 0.55, 10, 0.75, 20, 0.95],
+          ['coalesce', ['get', 'recency'], 1],
         ],
         'line-width-transition': { duration: 800, delay: 0 },
         'line-color-transition': { duration: 800, delay: 0 },
@@ -151,9 +191,11 @@ export const useMovementPathsLayer = ({
           20, 'rgb(255, 0, 100)',
         ],
         'line-opacity': [
-          'interpolate', ['linear'], ['get', 'frequency'],
-          1, 0.6, 5, 0.8, 10, 0.95, 20, 1,
+          '*',
+          ['interpolate', ['linear'], ['get', 'frequency'], 1, 0.6, 5, 0.8, 10, 0.95, 20, 1],
+          ['coalesce', ['get', 'recency'], 1],
         ],
+        'line-opacity-transition': { duration: 900, delay: 0 },
         'line-dasharray': [0, 4, 3],
         'line-width-transition': { duration: 800, delay: 0 },
         'line-color-transition': { duration: 800, delay: 0 },
@@ -205,7 +247,9 @@ export const useMovementPathsLayer = ({
         'icon-allow-overlap': true,
         'icon-ignore-placement': true,
       } as any,
-      paint: { 'icon-opacity': 0.85 } as any,
+      paint: {
+        'icon-opacity': ['*', 0.85, ['coalesce', ['get', 'recency'], 1]],
+      } as any,
     });
 
     const createParticleData = (offset: number) => {
@@ -214,6 +258,7 @@ export const useMovementPathsLayer = ({
         if (feature.geometry.type === 'LineString') {
           const coords = feature.geometry.coordinates;
           const frequency = feature.properties?.frequency || 1;
+          const recency = recencyFactor(feature.properties?.last_seen);
           const numParticles = Math.min(Math.ceil(frequency / 3), 5);
           for (let p = 0; p < numParticles; p++) {
             const t = ((offset / 100) + (p / numParticles)) % 1;
@@ -228,7 +273,7 @@ export const useMovementPathsLayer = ({
               particles.push({
                 type: 'Feature',
                 geometry: { type: 'Point', coordinates: [lng, lat] },
-                properties: { frequency, particleIndex: p },
+                properties: { frequency, particleIndex: p, recency },
               });
             }
           }
@@ -259,7 +304,7 @@ export const useMovementPathsLayer = ({
           15, 'rgb(255, 150, 50)',
           20, 'rgb(255, 80, 150)',
         ],
-        'circle-opacity': 0.9,
+        'circle-opacity': ['*', 0.9, ['coalesce', ['get', 'recency'], 1]],
         'circle-blur': 0.3,
         'circle-stroke-width': 2,
         'circle-stroke-color': 'rgba(255, 255, 255, 0.8)',
@@ -311,6 +356,23 @@ export const useMovementPathsLayer = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapLoaded, debouncedPathData, showMovementPaths]);
+
+  /**
+   * Decay ticker: re-stamps `recency` on the live source against the wall
+   * clock so routes visibly fade as movement slows, even when no new data
+   * arrives. Paused while the tab is hidden.
+   */
+  useEffect(() => {
+    if (!mapLoaded || !showMovementPaths || !debouncedPathData?.geojson) return;
+    const id = window.setInterval(() => {
+      if (document.hidden) return;
+      const src = mapRef.current?.getSource('movement-paths') as any;
+      if (!src?.setData) return;
+      try { src.setData(withDecay(debouncedPathData.geojson)); } catch { /* no-op */ }
+    }, DECAY_TICK_MS);
+    return () => window.clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapLoaded, showMovementPaths, debouncedPathData]);
 
   /**
    * Hover / tap tooltip on flow paths: real user movement counts, route
