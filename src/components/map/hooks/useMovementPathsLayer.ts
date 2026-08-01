@@ -279,11 +279,61 @@ export const useMovementPathsLayer = ({
 
     console.log('Movement paths layer added with', pathData.stats.total_paths, 'paths and animated particles');
 
+    // ---- Hover / tap tooltip: movement counts, frequency, last observed ----
+    const map = mapRef.current;
+    const mapboxgl = (window as any).mapboxgl;
+    let popup: any = null;
+
+    const relativeTime = (iso: string | null | undefined) => {
+      if (!iso) return 'unknown';
+      const diffMin = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+      if (diffMin < 1) return 'just now';
+      if (diffMin < 60) return `${diffMin}m ago`;
+      const h = Math.round(diffMin / 60);
+      if (h < 24) return `${h}h ago`;
+      return `${Math.round(h / 24)}d ago`;
+    };
+
+    const showPopup = (e: any) => {
+      const feature = e.features?.[0];
+      if (!feature || !mapboxgl) return;
+      const p = feature.properties || {};
+      const freq = Number(p.frequency) || 0;
+      const users = Number(p.unique_users) || 0;
+      const html = `
+        <div style="font-size:11px;line-height:1.45;min-width:150px">
+          <div style="font-weight:600;margin-bottom:3px">Movement route</div>
+          <div>${freq} movement${freq === 1 ? '' : 's'} · ${users} user${users === 1 ? '' : 's'}</div>
+          <div style="opacity:.75">Route frequency: ${freq}x</div>
+          <div style="opacity:.75">Last seen: ${relativeTime(p.last_seen)}</div>
+        </div>`;
+      if (!popup) {
+        popup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, offset: 12, className: 'flow-path-popup' });
+      }
+      popup.setLngLat(e.lngLat).setHTML(html).addTo(map);
+      map.getCanvas().style.cursor = 'pointer';
+    };
+
+    const hidePopup = () => {
+      if (popup) popup.remove();
+      map.getCanvas().style.cursor = '';
+    };
+
+    map.on('mousemove', lineLayerId, showPopup);
+    map.on('mouseleave', lineLayerId, hidePopup);
+    map.on('click', lineLayerId, showPopup);
+
     return () => {
       if (flowAnimationRef.current) {
         cancelAnimationFrame(flowAnimationRef.current);
         flowAnimationRef.current = null;
       }
+      try {
+        map.off('mousemove', lineLayerId, showPopup);
+        map.off('mouseleave', lineLayerId, hidePopup);
+        map.off('click', lineLayerId, showPopup);
+      } catch { /* no-op */ }
+      if (popup) popup.remove();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapLoaded, pathData, showMovementPaths]);
