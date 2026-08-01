@@ -44,6 +44,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
   const [activeDealId, setActiveDealId] = useState<string | null>(null);
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
   const [directionsTarget, setDirectionsTarget] = useState<DirectionsVenue | null>(null);
+  const [directionsPlaceId, setDirectionsPlaceId] = useState<string | null>(null);
 
   // Look up the active deal (if any) for this venue so a favorited venue
   // can still link to the user's saved deal under /favorites.
@@ -222,6 +223,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
     }
 
     // Let the user pick Google Maps / Apple Maps / Waze instead of forcing Google.
+    setDirectionsPlaceId(parking.placeId ?? null);
     setDirectionsTarget({
       id: parking.placeId || `${parking.lat},${parking.lng}`,
       name: parking.name,
@@ -978,9 +980,13 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
         <DirectionsDialog
           open={directionsTarget !== null}
           onOpenChange={(open) => {
-            if (!open) setDirectionsTarget(null);
+            if (!open) {
+              setDirectionsTarget(null);
+              setDirectionsPlaceId(null);
+            }
           }}
           venue={directionsTarget}
+          placeId={directionsPlaceId}
         />
       </Suspense>
 

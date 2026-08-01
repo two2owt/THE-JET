@@ -11,6 +11,7 @@ export type DirectionsApp = "google" | "apple" | "waze";
 export function buildDirectionsUrl(
   app: DirectionsApp,
   venue: Pick<Venue, "lat" | "lng" | "address" | "name"> | null | undefined,
+  options?: { placeId?: string | null },
 ): string | null {
   if (!venue) return null;
 
@@ -31,27 +32,53 @@ export function buildDirectionsUrl(
 
   const label = encodeURIComponent(name || address || "Destination");
   const addressQuery = address ? encodeURIComponent(address) : "";
+  // Google place IDs look like "ChIJ..." — anything else (our own UUIDs or
+  // "lat,lng" fallbacks) must not be sent as destination_place_id.
+  const rawPlaceId = options?.placeId ?? undefined;
+  const placeId =
+    rawPlaceId && /^[A-Za-z0-9_-]{10,}$/.test(rawPlaceId) && rawPlaceId.startsWith("ChIJ")
+      ? encodeURIComponent(rawPlaceId)
+      : "";
 
   switch (app) {
     case "google":
       if (hasCoords) {
-        return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+        // destination_place_id must be paired with a destination value; adding it
+        // makes Google resolve the exact POI instead of a bare pin.
+        return (
+          `https://www.google.com/maps/dir/?api=1&destination=${lat}%2C${lng}` +
+          (placeId ? `&destination_place_id=${placeId}` : "") +
+          `&travelmode=driving&dir_action=navigate`
+        );
       }
       if (addressQuery) {
-        return `https://www.google.com/maps/dir/?api=1&destination=${addressQuery}&travelmode=driving`;
+        return (
+          `https://www.google.com/maps/dir/?api=1&destination=${addressQuery}` +
+          (placeId ? `&destination_place_id=${placeId}` : "") +
+          `&travelmode=driving&dir_action=navigate`
+        );
       }
-      return `https://www.google.com/maps/search/?api=1&query=${label}`;
+      return (
+        `https://www.google.com/maps/search/?api=1&query=${label}` +
+        (placeId ? `&query_place_id=${placeId}` : "")
+      );
     case "apple":
       if (hasCoords) {
-        return `https://maps.apple.com/?daddr=${lat},${lng}&q=${label}&dirflg=d`;
+        // Apple Maps: `daddr` drives navigation, `q` labels the pin and `ll`
+        // anchors the map so the label doesn't get geocoded somewhere else.
+        return `https://maps.apple.com/?daddr=${lat}%2C${lng}&ll=${lat}%2C${lng}&q=${label}&dirflg=d&t=m`;
       }
       if (addressQuery) {
-        return `https://maps.apple.com/?daddr=${addressQuery}&q=${label}&dirflg=d`;
+        return `https://maps.apple.com/?daddr=${addressQuery}&q=${label}&dirflg=d&t=m`;
       }
       return `https://maps.apple.com/?q=${label}`;
     case "waze":
       if (hasCoords) {
-        return `https://www.waze.com/ul?ll=${lat}%2C${lng}&navigate=yes&zoom=17`;
+        // Waze universal link: `ll` + `navigate=yes` starts turn-by-turn; `q`
+        // keeps the destination name visible in the app.
+        return `https://www.waze.com/ul?ll=${lat}%2C${lng}&navigate=yes&zoom=17${
+          name || address ? `&q=${label}` : ""
+        }`;
       }
       if (addressQuery) {
         return `https://www.waze.com/ul?q=${addressQuery}&navigate=yes`;

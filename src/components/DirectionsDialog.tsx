@@ -15,6 +15,8 @@ interface DirectionsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   venue: Venue | null;
+  /** Google Place ID for the destination, when known (parking spots, POIs). */
+  placeId?: string | null;
 }
 
 // Dynamic import for haptics to reduce initial bundle
@@ -27,13 +29,13 @@ const triggerSoarHaptic = async () => {
   }
 };
 
-const DirectionsDialog = ({ open, onOpenChange, venue }: DirectionsDialogProps) => {
+const DirectionsDialog = ({ open, onOpenChange, venue, placeId }: DirectionsDialogProps) => {
   const openDirections = async (app: DirectionsApp) => {
     if (!venue) return;
 
     await triggerSoarHaptic();
 
-    const url = buildDirectionsUrl(app, venue);
+    const url = buildDirectionsUrl(app, venue, { placeId });
     const { address, name } = venue;
 
     if (!url) {

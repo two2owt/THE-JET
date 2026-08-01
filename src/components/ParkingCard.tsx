@@ -2,6 +2,7 @@ import { memo, useState, useEffect } from "react";
 import { Car, MapPin, Star, X, Phone, Globe, Navigation, Loader2 } from "lucide-react";
 import { glideHaptic } from "@/lib/haptics";
 import { supabase } from "@/integrations/supabase/client";
+import { buildDirectionsUrl } from "@/lib/directions-url";
 
 export interface ParkingLot {
   name: string;
@@ -70,15 +71,14 @@ export const ParkingCard = memo(({ lat, lng, name, onClose, onGetDirections }: P
     }
     // Platform-aware turn-by-turn navigation across Google / Apple / Waze
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const isAndroid = /Android/.test(navigator.userAgent);
-    if (isIOS) {
-      window.open(`maps://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`, '_blank');
-    } else if (isAndroid) {
-      window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_place_id=${parking?.placeId || ''}&travelmode=driving`, '_blank');
-    } else {
-      // Desktop fallback - Google Maps web
-      window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`, '_blank');
-    }
+    const url = buildDirectionsUrl(
+      isIOS ? 'apple' : 'google',
+      { lat, lng, name: parking?.name || name || 'Parking', address: parking?.address ?? '' },
+      { placeId: parking?.placeId },
+    );
+    if (!url) return;
+    const opened = window.open(url, '_blank', 'noopener,noreferrer');
+    if (!opened) window.location.href = url;
   };
 
   const getPriceLevelLabel = (level: number | null) => {
