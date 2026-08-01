@@ -12,7 +12,7 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 sm:px-6 md:px-8 lg:px-10">
+    <div className="flex min-h-dvh items-center justify-center bg-background px-4 sm:px-6 md:px-8 lg:px-10">
       <SEO
         title="Page not found — JET"
         description="This page doesn't exist on JET. Head back to the map to discover trending Charlotte venues and deals."
