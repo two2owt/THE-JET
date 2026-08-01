@@ -80,6 +80,11 @@ const Auth = () => {
   // If already signed in, route based on onboarding status (covers OAuth return
   // and revisits to /auth by an authenticated user).
   useEffect(() => {
+    // Never bounce a recovery visitor away before the reset form mounts.
+    const isRecoveryRoute =
+      location.pathname === "/reset-password" ||
+      searchParams.get("reset") === "true";
+    if (isRecoveryRoute) return;
     if (!authUser || (mode !== "signin" && mode !== "signup")) return;
     let cancelled = false;
     setIsRedirecting(true);
@@ -100,7 +105,7 @@ const Auth = () => {
     return () => {
       cancelled = true;
     };
-  }, [authUser, mode, navigate]);
+  }, [authUser, mode, navigate, location.pathname, searchParams]);
 
   // Sync auth mode with URL: /signup → signup, /signin or /auth → signin.
   // Also supports legacy ?mode=signup query param on /auth.
