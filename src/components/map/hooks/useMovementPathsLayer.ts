@@ -282,9 +282,26 @@ export const useMovementPathsLayer = ({
 
     console.log('Movement paths layer added with', pathData.stats.total_paths, 'paths and animated particles');
 
-    // ---- Hover / tap tooltip: movement counts, frequency, last observed ----
+    return () => {
+      if (flowAnimationRef.current) {
+        cancelAnimationFrame(flowAnimationRef.current);
+        flowAnimationRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapLoaded, pathData, showMovementPaths]);
+
+  /**
+   * Hover / tap tooltip on flow paths: real user movement counts, route
+   * frequency, and the last time the route was observed. Registered in its
+   * own effect so the fast-path `setData` update above never drops it.
+   */
+  useEffect(() => {
     const map = mapRef.current;
-    const mapboxgl = (window as any).mapboxgl;
+    const mapboxgl = mapboxglRef?.current ?? (window as any).mapboxgl;
+    if (!map || !mapLoaded || !showMovementPaths || !mapboxgl) return;
+
+    const lineLayerId = 'movement-paths-line';
     let popup: any = null;
 
     const relativeTime = (iso: string | null | undefined) => {
@@ -299,14 +316,14 @@ export const useMovementPathsLayer = ({
 
     const showPopup = (e: any) => {
       const feature = e.features?.[0];
-      if (!feature || !mapboxgl) return;
+      if (!feature) return;
       const p = feature.properties || {};
       const freq = Number(p.frequency) || 0;
       const users = Number(p.unique_users) || 0;
       const html = `
         <div style="font-size:11px;line-height:1.45;min-width:150px">
           <div style="font-weight:600;margin-bottom:3px">Movement route</div>
-          <div>${freq} movement${freq === 1 ? '' : 's'} · ${users} user${users === 1 ? '' : 's'}</div>
+          <div>${freq} movement${freq === 1 ? '' : 's'} by ${users} user${users === 1 ? '' : 's'}</div>
           <div style="opacity:.75">Route frequency: ${freq}x</div>
           <div style="opacity:.75">Last seen: ${relativeTime(p.last_seen)}</div>
         </div>`;
@@ -318,8 +335,8 @@ export const useMovementPathsLayer = ({
     };
 
     const hidePopup = () => {
-      if (popup) popup.remove();
-      map.getCanvas().style.cursor = '';
+      if (popup) { popup.remove(); popup = null; }
+      try { map.getCanvas().style.cursor = ''; } catch { /* no-op */ }
     };
 
     map.on('mousemove', lineLayerId, showPopup);
@@ -327,17 +344,13 @@ export const useMovementPathsLayer = ({
     map.on('click', lineLayerId, showPopup);
 
     return () => {
-      if (flowAnimationRef.current) {
-        cancelAnimationFrame(flowAnimationRef.current);
-        flowAnimationRef.current = null;
-      }
       try {
         map.off('mousemove', lineLayerId, showPopup);
         map.off('mouseleave', lineLayerId, hidePopup);
         map.off('click', lineLayerId, showPopup);
       } catch { /* no-op */ }
-      if (popup) popup.remove();
+      hidePopup();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapLoaded, pathData, showMovementPaths]);
+  }, [mapLoaded, showMovementPaths]);
 };
