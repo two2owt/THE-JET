@@ -40,12 +40,14 @@ Deno.serve(async (req) => {
   let type: NotificationType
   let recipientUserId: string
   let conversationId: string | undefined
+  let connectionId: string | undefined
   let preview: string | undefined
   try {
     const body = await req.json()
     type = body.type
     recipientUserId = body.recipientUserId
     conversationId = typeof body.conversationId === 'string' ? body.conversationId : undefined
+    connectionId = typeof body.connectionId === 'string' ? body.connectionId : undefined
     preview = typeof body.preview === 'string' ? body.preview.slice(0, 140) : undefined
   } catch {
     return json({ error: 'Invalid JSON body' }, 400)
@@ -133,27 +135,70 @@ Deno.serve(async (req) => {
   const idempotencyKey =
     type === 'new_message'
       ? `new-message-${conversationId ?? caller.id}-${bucket}`
-      : `${templateName}-${caller.id}-${recipientUserId}`
+      : // Connection-scoped so a re-sent request (after removal/re-add) is a new
+        // email, while duplicate clicks on the same connection stay deduplicated.
+        `${templateName}-${connectionId ?? `${caller.id}-${recipientUserId}-${bucket}`}`
 
-  const response = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${serviceKey}`,
-    },
-    body: JSON.stringify({
-      templateName,
-      recipientEmail,
-      idempotencyKey,
-      templateData,
-    }),
-  })
+  // Retry the hand-off to the queue a couple of times: a transient 5xx here
+  // would otherwise drop the notification entirely (the pgmq retry loop only
+  // covers emails that were successfully enqueued).
+  const maxAttempts = 3
+  let lastStatus = 0
+  let lastDetails = ''
 
-  if (!response.ok) {
-    const details = await response.text()
-    console.error(`send-transactional-email failed [${response.status}]: ${details}`)
-    return json({ error: 'Email send failed', status: response.status, details }, response.status)
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    let response: Response
+    try {
+      response = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${serviceKey}`,
+        },
+        body: JSON.stringify({
+          templateName,
+          recipientEmail,
+          idempotencyKey,
+          templateData,
+        }),
+      })
+    } catch (err) {
+      lastStatus = 0
+      lastDetails = err instanceof Error ? err.message : String(err)
+      if (attempt < maxAttempts) {
+        await new Promise((r) => setTimeout(r, 300 * attempt))
+        continue
+      }
+      break
+    }
+
+    if (response.ok) {
+      return json({ success: true, templateName, idempotencyKey })
+    }
+
+    lastStatus = response.status
+    lastDetails = await response.text()
+
+    // 4xx responses are deterministic (bad template, suppressed recipient) —
+    // retrying cannot help.
+    if (response.status < 500) break
+    if (attempt < maxAttempts) await new Promise((r) => setTimeout(r, 300 * attempt))
   }
 
-  return json({ success: true, templateName })
+  console.error(`send-transactional-email failed [${lastStatus}]: ${lastDetails}`)
+
+  // Make the failure visible in the same place successful sends are tracked.
+  await admin.from('email_send_log').insert({
+    message_id: idempotencyKey,
+    template_name: templateName,
+    recipient_email: recipientEmail,
+    status: 'failed',
+    error_message: `send-transactional-email ${lastStatus}: ${lastDetails}`.slice(0, 500),
+    metadata: { source: 'notify-social-email', type },
+  })
+
+  return json(
+    { error: 'Email send failed', status: lastStatus, details: lastDetails },
+    lastStatus >= 400 ? lastStatus : 502,
+  )
 })
