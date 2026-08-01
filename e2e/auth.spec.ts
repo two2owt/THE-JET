@@ -127,6 +127,11 @@ test.describe("sign-up form", () => {
 test.describe("forgot-password flow", () => {
   test("`Forgot?` link reveals the forgot-password screen", async ({ page }) => {
     await page.goto("/signin");
+    // Wait for hydration before interacting — under full parallelism the
+    // click can otherwise land before React attaches its handlers.
+    await expect(
+      page.getByRole("heading", { name: /welcome back/i }),
+    ).toBeVisible();
     await page.getByRole("button", { name: /forgot\?/i }).click();
     await expect(
       page.getByRole("heading", { name: /reset password/i }),
