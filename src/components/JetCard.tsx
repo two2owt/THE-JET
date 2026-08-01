@@ -11,6 +11,7 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { useNavigate } from "react-router";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { isVenueOpenNow } from "@/lib/venue-hours";
+import { useVenuePhoto } from "@/hooks/useVenuePhoto";
 import type { Venue as DirectionsVenue } from "@/types/venue";
 
 const DirectionsDialog = lazy(() => import("./DirectionsDialog"));
@@ -45,6 +46,20 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
   const [directionsTarget, setDirectionsTarget] = useState<DirectionsVenue | null>(null);
   const [directionsPlaceId, setDirectionsPlaceId] = useState<string | null>(null);
+
+  // Google Places photo for this venue — preferred over any scraped image.
+  const { photoUrl: placesPhoto, loading: photoLoading } = useVenuePhoto(
+    {
+      id: venue.id,
+      name: venue.name,
+      address: venue.address ?? null,
+      lat: venue.lat,
+      lng: venue.lng,
+      placeId: (venue as { placeId?: string | null }).placeId ?? null,
+    },
+    900
+  );
+  const heroImage = placesPhoto ?? venue.imageUrl ?? null;
 
   // Look up the active deal (if any) for this venue so a favorited venue
   // can still link to the user's saved deal under /favorites.
@@ -263,13 +278,29 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
       {/* Image Header */}
       <div style={{
         position: 'relative',
-        height: 'clamp(72px, 14vw, 120px)',
+        // Size the hero to the card container itself (not the viewport) so it
+        // scales with the JetCard on any device or user zoom level.
+        width: '100%',
+        aspectRatio: '16 / 9',
+        minHeight: '72px',
+        maxHeight: 'clamp(96px, 26cqw, 180px)',
         background: 'linear-gradient(135deg, hsl(var(--primary) / 0.3), hsl(var(--accent) / 0.2))',
         overflow: 'hidden',
       }}>
-        {venue.imageUrl ? (
+        {photoLoading && !heroImage && (
+          <div
+            aria-hidden="true"
+            className="animate-pulse"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'hsl(var(--muted) / 0.35)',
+            }}
+          />
+        )}
+        {heroImage ? (
           <img
-            src={venue.imageUrl}
+            src={heroImage}
             alt={venue.name}
             style={{
               position: 'absolute',
@@ -277,8 +308,10 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               width: '100%',
               height: '100%',
               objectFit: 'cover',
+              objectPosition: 'center',
             }}
             loading="lazy"
+            decoding="async"
             onError={(e) => {
               // Swap to the centered JET-mark placeholder rather than the
               // generic stretched placeholder.svg so the card stays on-brand.
@@ -325,7 +358,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
         )}
         {/* JET watermark — only render over real venue photos so the
             placeholder (which is the same mark, centered) isn't duplicated. */}
-        {venue.imageUrl && (
+        {heroImage && (
           <img
             src="/jet-email-logo.png"
             alt="JET"
