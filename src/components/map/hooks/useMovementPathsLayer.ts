@@ -46,6 +46,52 @@ interface PlatformSettings {
   isLowPowerMode: boolean;
 }
 
+/** Dash phases used to make the flow lines appear to travel. */
+const DASH_SEQUENCE = [
+  [0, 4, 3], [0.5, 4, 2.5], [1, 4, 2], [1.5, 4, 1.5],
+  [2, 4, 1], [2.5, 4, 0.5], [3, 4, 0],
+  [0, 0.5, 3, 3.5], [0, 1, 3, 3], [0, 1.5, 3, 2.5],
+  [0, 2, 3, 2], [0, 2.5, 3, 1.5], [0, 3, 3, 1], [0, 3.5, 3, 0.5],
+];
+
+/**
+ * Builds the moving particle FeatureCollection for a given path GeoJSON at a
+ * travel offset (0..100). Module-level so the animation loop can run from the
+ * latest data without being rebuilt every time paths refresh.
+ */
+const buildParticleData = (geojson: any, offset: number) => {
+  const particles: any[] = [];
+  (geojson?.features ?? []).forEach((feature: any) => {
+    if (feature.geometry?.type !== 'LineString') return;
+    const coords = feature.geometry.coordinates;
+    const frequency = feature.properties?.frequency || 1;
+    const recency = recencyFactor(feature.properties?.last_seen);
+    const numParticles = Math.min(Math.ceil(frequency / 3), 5);
+    for (let p = 0; p < numParticles; p++) {
+      const t = ((offset / 100) + (p / numParticles)) % 1;
+      if (coords.length >= 2) {
+        const segmentCount = coords.length - 1;
+        const segmentIndex = Math.floor(t * segmentCount);
+        const segmentT = (t * segmentCount) - segmentIndex;
+        const start = coords[Math.min(segmentIndex, coords.length - 2)];
+        const end = coords[Math.min(segmentIndex + 1, coords.length - 1)];
+        particles.push({
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: [
+              start[0] + (end[0] - start[0]) * segmentT,
+              start[1] + (end[1] - start[1]) * segmentT,
+            ],
+          },
+          properties: { frequency, particleIndex: p, recency },
+        });
+      }
+    }
+  });
+  return { type: 'FeatureCollection' as const, features: particles };
+};
+
 interface Params {
   mapRef: MutableRefObject<any>;
   mapLoaded: boolean;
@@ -252,39 +298,9 @@ export const useMovementPathsLayer = ({
       } as any,
     });
 
-    const createParticleData = (offset: number) => {
-      const particles: any[] = [];
-      pathData.geojson.features.forEach((feature: any) => {
-        if (feature.geometry.type === 'LineString') {
-          const coords = feature.geometry.coordinates;
-          const frequency = feature.properties?.frequency || 1;
-          const recency = recencyFactor(feature.properties?.last_seen);
-          const numParticles = Math.min(Math.ceil(frequency / 3), 5);
-          for (let p = 0; p < numParticles; p++) {
-            const t = ((offset / 100) + (p / numParticles)) % 1;
-            if (coords.length >= 2) {
-              const segmentCount = coords.length - 1;
-              const segmentIndex = Math.floor(t * segmentCount);
-              const segmentT = (t * segmentCount) - segmentIndex;
-              const start = coords[Math.min(segmentIndex, coords.length - 2)];
-              const end = coords[Math.min(segmentIndex + 1, coords.length - 1)];
-              const lng = start[0] + (end[0] - start[0]) * segmentT;
-              const lat = start[1] + (end[1] - start[1]) * segmentT;
-              particles.push({
-                type: 'Feature',
-                geometry: { type: 'Point', coordinates: [lng, lat] },
-                properties: { frequency, particleIndex: p, recency },
-              });
-            }
-          }
-        }
-      });
-      return { type: 'FeatureCollection' as const, features: particles };
-    };
-
     mapRef.current.addSource(`${sourceId}-particles`, {
       type: 'geojson',
-      data: createParticleData(0),
+      data: buildParticleData(pathData.geojson, 0),
     });
 
     mapRef.current.addLayer({
@@ -311,12 +327,28 @@ export const useMovementPathsLayer = ({
       } as any,
     });
 
-    const dashArraySequence = [
-      [0, 4, 3], [0.5, 4, 2.5], [1, 4, 2], [1.5, 4, 1.5],
-      [2, 4, 1], [2.5, 4, 0.5], [3, 4, 0],
-      [0, 0.5, 3, 3.5], [0, 1, 3, 3], [0, 1.5, 3, 2.5],
-      [0, 2, 3, 2], [0, 2.5, 3, 1.5], [0, 3, 3, 1], [0, 3.5, 3, 0.5],
-    ];
+    console.log('Movement paths layer added with', pathData.stats.total_paths, 'paths and animated particles');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapLoaded, debouncedPathData, showMovementPaths]);
+
+  /**
+   * Flow animation lives in its own effect keyed only on the toggle, so it
+   * starts the moment Flow Paths is selected and keeps running across data
+   * refreshes (which previously took the early-return `setData` fast path and
+   * silently killed the rAF loop).
+   */
+  const latestPathData = useRef(pathData);
+  useEffect(() => { latestPathData.current = pathData; }, [pathData]);
+
+  useEffect(() => {
+    if (flowAnimationRef.current) {
+      cancelAnimationFrame(flowAnimationRef.current);
+      flowAnimationRef.current = null;
+    }
+    if (!mapLoaded || !showMovementPaths) return;
+
+    const lineLayerId = 'movement-paths-line';
+    const particleSourceId = 'movement-paths-particles';
 
     let step = 0;
     let particleOffset = 0;
@@ -324,29 +356,30 @@ export const useMovementPathsLayer = ({
 
     const animateFlow = (currentTime: number) => {
       const settings = platformSettingsRef.current;
-      if (!mapRef.current || !showMovementPaths || document.hidden || settings.hasReducedMotion || settings.isLowPowerMode) {
-        flowAnimationRef.current = null;
+      if (!mapRef.current || document.hidden || settings.hasReducedMotion || settings.isLowPowerMode) {
+        // Stay scheduled (cheaply) so motion resumes when the tab returns.
+        flowAnimationRef.current = requestAnimationFrame(animateFlow);
         return;
       }
-      const deltaTime = currentTime - lastTime;
-      if (deltaTime > 80) {
-        step = (step + 1) % dashArraySequence.length;
-        if (mapRef.current.getLayer(lineLayerId)) {
-          mapRef.current.setPaintProperty(lineLayerId, 'line-dasharray', dashArraySequence[step]);
-        }
-        particleOffset = (particleOffset + 2) % 100;
-        const particleSource = mapRef.current.getSource(`${sourceId}-particles`);
-        if (particleSource) {
-          particleSource.setData(createParticleData(particleOffset));
-        }
+      if (currentTime - lastTime > 80) {
+        step = (step + 1) % DASH_SEQUENCE.length;
+        try {
+          if (mapRef.current.getLayer(lineLayerId)) {
+            mapRef.current.setPaintProperty(lineLayerId, 'line-dasharray', DASH_SEQUENCE[step]);
+          }
+          particleOffset = (particleOffset + 2) % 100;
+          const particleSource = mapRef.current.getSource(particleSourceId);
+          const geojson = latestPathData.current?.geojson;
+          if (particleSource && geojson) {
+            particleSource.setData(buildParticleData(geojson, particleOffset));
+          }
+        } catch { /* layers may be mid-rebuild */ }
         lastTime = currentTime;
       }
       flowAnimationRef.current = requestAnimationFrame(animateFlow);
     };
 
     flowAnimationRef.current = requestAnimationFrame(animateFlow);
-
-    console.log('Movement paths layer added with', pathData.stats.total_paths, 'paths and animated particles');
 
     return () => {
       if (flowAnimationRef.current) {
@@ -355,7 +388,7 @@ export const useMovementPathsLayer = ({
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapLoaded, debouncedPathData, showMovementPaths]);
+  }, [mapLoaded, showMovementPaths]);
 
   /**
    * Decay ticker: re-stamps `recency` on the live source against the wall
