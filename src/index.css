@@ -923,12 +923,20 @@ All colors MUST be HSL.
   .auth-footer { margin-top: clamp(0px, 0.8svh, 20px) !important; padding-top: 0; font-size: clamp(10px, 1.3svh, 12px); }
   .auth-footer a { font-size: inherit; }
 
-  /* Very short viewports (landscape phones, small windows): trim the
-     decorative bits before anything interactive gets squeezed. */
-  @media (max-height: 620px) {
+  /* Shorter viewports (most phones in sign-up mode, small windows): trim the
+     decorative copy first so every field, consent, and button still fits
+     without scrolling. Nothing interactive is removed. */
+  @media (max-height: 740px) {
     .auth-logo > span { display: none; }
     .auth-title p { display: none; }
     .auth-footer { display: none; }
+    .auth-social { margin-top: 4px !important; margin-bottom: 4px !important; }
+    .auth-card { padding: 12px 16px; }
+  }
+  /* Very short viewports (landscape phones): also drop the helper hint. */
+  @media (max-height: 640px) {
+    .auth-form .auth-password-hint { display: none; }
+    .auth-title h1 { font-size: 19px; }
   }
   @media (min-width: 640px) and (min-height: 851px) {
     .auth-card { padding: 40px; border-radius: 20px; }
