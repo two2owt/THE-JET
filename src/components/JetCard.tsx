@@ -43,6 +43,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
   const { favorites, toggleVenueFavorite, refetch } = useFavorites(user?.id);
   const [activeDealId, setActiveDealId] = useState<string | null>(null);
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+  const [directionsTarget, setDirectionsTarget] = useState<DirectionsVenue | null>(null);
 
   // Look up the active deal (if any) for this venue so a favorited venue
   // can still link to the user's saved deal under /favorites.
@@ -220,30 +221,17 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
       return;
     }
 
-    const params = new URLSearchParams({
-      api: '1',
-      destination: `${parking.lat},${parking.lng}`,
-      travelmode: 'driving',
-      dir_action: 'navigate',
+    // Let the user pick Google Maps / Apple Maps / Waze instead of forcing Google.
+    setDirectionsTarget({
+      id: parking.placeId || `${parking.lat},${parking.lng}`,
+      name: parking.name,
+      lat: parking.lat,
+      lng: parking.lng,
+      activity: 0,
+      category: 'parking',
+      neighborhood: venue.neighborhood ?? '',
+      address: parking.address,
     });
-
-    // Prefer a stable Place ID destination when available (more accurate pin).
-    if (parking.placeId) {
-      params.set('destination_place_id', parking.placeId);
-    }
-
-    // Anchor the route at the selected venue so the user sees venue → parking.
-    if (
-      typeof venue.lat === 'number' &&
-      typeof venue.lng === 'number' &&
-      !Number.isNaN(venue.lat) &&
-      !Number.isNaN(venue.lng)
-    ) {
-      params.set('origin', `${venue.lat},${venue.lng}`);
-    }
-
-    const url = `https://www.google.com/maps/dir/?${params.toString()}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const activityLevel = getActivityLevel(venue.activity);
