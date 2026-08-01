@@ -102,6 +102,7 @@ export default function Favorites() {
       setDeals(merged);
     } catch (error) {
       console.error("Error fetching favorite deals:", error);
+      setLoadError(true);
     }
   };
 
@@ -175,7 +176,15 @@ export default function Favorites() {
               : `${totalCount} saved ${totalCount === 1 ? "item" : "items"}`
           }
         />
-        {totalCount === 0 ? (
+        {loadError && totalCount === 0 ? (
+          <EmptyState
+            icon={AlertTriangle}
+            title="Couldn't load your favorites"
+            description="Something went wrong reaching the network. Check your connection and try again."
+            actionLabel="Retry"
+            onAction={() => { void fetchFavoriteDeals(); }}
+          />
+        ) : totalCount === 0 ? (
           <EmptyState
             icon={Compass}
             title="No favorites yet"
