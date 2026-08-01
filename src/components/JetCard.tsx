@@ -223,6 +223,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
     }
 
     // Let the user pick Google Maps / Apple Maps / Waze instead of forcing Google.
+    setDirectionsPlaceId(parking.placeId ?? null);
     setDirectionsTarget({
       id: parking.placeId || `${parking.lat},${parking.lng}`,
       name: parking.name,
