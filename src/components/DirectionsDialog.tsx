@@ -113,7 +113,7 @@ const DirectionsDialog = ({ open, onOpenChange, venue, placeId }: DirectionsDial
                 }`}
               >
                 <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br ${swatch} flex items-center justify-center flex-shrink-0`}>
-                  <Icon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" />
+                  <Icon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-primary-foreground" />
                 </div>
                 <div className="text-left">
                   <p className="text-sm sm:text-base font-semibold">{label}</p>

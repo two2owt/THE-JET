@@ -279,7 +279,7 @@ function FavoriteVenueCard({
           onClick={handleUnfavorite}
           aria-label={`Remove ${favorite.venue_name ?? "venue"} from favorites`}
           disabled={removing}
-          className="absolute top-2 right-2 w-9 h-9 rounded-full bg-black/55 backdrop-blur-md flex items-center justify-center text-primary hover:bg-black/70 transition"
+          className="absolute top-2 right-2 w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-background/60 backdrop-blur-md flex items-center justify-center text-primary hover:bg-background/80 transition"
         >
           {removing ? (
             <Loader2 className="w-4 h-4 animate-spin" />
