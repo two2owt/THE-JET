@@ -77,6 +77,10 @@ const Auth = () => {
   // True while we're holding the form back because an already-authenticated
   // user is about to be redirected (prevents the form flashing for a frame).
   const [isRedirecting, setIsRedirecting] = useState(false);
+  // Hydration readiness: keeps the form out of the tree until React has
+  // painted a frame with its event handlers attached, so early taps on
+  // Sign in / Forgot? / Google can't be dropped.
+  const isHydrated = useHydrated();
 
   const mode: AuthMode = isResettingPassword
     ? "reset"
@@ -736,13 +740,18 @@ const Auth = () => {
   // redirect an already-signed-in user away from /auth, render a centered
   // loader instead of the form. This eliminates the brief flash where the
   // sign-in form mounts and then immediately unmounts on redirect.
-  if (authLoading || (isRedirecting && (mode === "signin" || mode === "signup"))) {
+  if (
+    !isHydrated ||
+    authLoading ||
+    (isRedirecting && (mode === "signin" || mode === "signup"))
+  ) {
     return (
       <div
         className="relative flex flex-1 min-h-0 w-full items-center justify-center bg-background"
         role="status"
         aria-live="polite"
         aria-busy="true"
+        data-auth-ready="false"
       >
         <SEO
           title={seoTitle}
@@ -756,7 +765,10 @@ const Auth = () => {
   }
 
   return (
-    <div className="auth-fullscreen relative flex flex-col flex-1 min-h-0 w-full overflow-y-auto">
+    <div
+      className="auth-fullscreen relative flex flex-col flex-1 min-h-0 w-full overflow-y-auto"
+      data-auth-ready="true"
+    >
       <SEO
         title={seoTitle}
         description={seoDescription}
