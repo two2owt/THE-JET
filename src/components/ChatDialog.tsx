@@ -162,6 +162,7 @@ export function ChatDialog({
             size="icon"
             onClick={() => fileInputRef.current?.click()}
             className="flex-shrink-0"
+            aria-label="Attach an image"
           >
             <ImageIcon className="w-5 h-5" />
           </Button>
@@ -177,6 +178,7 @@ export function ChatDialog({
             disabled={!text.trim()}
             size="icon"
             className="flex-shrink-0"
+            aria-label="Send message"
           >
             <Send className="w-4 h-4" />
           </Button>
