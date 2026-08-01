@@ -3321,7 +3321,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               active={showMovementPaths}
               loading={isLoadingPaths}
               ariaLabel="Toggle flow paths layer"
-              tooltip="Real user movement between venues. Line thickness and glow scale with motion frequency — brighter, thicker paths mean more people actively moving that route right now."
+              tooltip="Real user movement between venues. Line thickness and glow scale with motion frequency and user frequency — brighter, thicker paths mean more people actively moving that route right now."
               onToggle={() => {
                 triggerHaptic('medium');
                 const next = !showMovementPaths;
@@ -3461,6 +3461,11 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   defaultValue={2}
                   loading={pathsLoading}
                 />
+                <p className="text-[9px] leading-snug text-muted-foreground">
+                  Real user movement between venues. Line thickness and glow scale with motion
+                  frequency and user frequency — brighter, thicker paths mean more people actively
+                  moving that route right now.
+                </p>
                 {/* Compact movement summary — wraps cleanly at any width. */}
                 {pathData?.stats && (
                   <div
