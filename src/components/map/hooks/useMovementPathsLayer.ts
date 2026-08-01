@@ -1,4 +1,7 @@
-import { useEffect, MutableRefObject } from "react";
+import { useEffect, useRef, useState, MutableRefObject } from "react";
+
+/** How long to coalesce rapid path updates before touching Mapbox (ms). */
+const PATH_UPDATE_DEBOUNCE_MS = 250;
 
 interface PlatformSettings {
   hasReducedMotion: boolean;
@@ -29,7 +32,25 @@ export const useMovementPathsLayer = ({
   platformSettingsRef,
   mapboxglRef,
 }: Params) => {
+  // Debounce incoming path data: realtime refreshes can land in bursts, and
+  // each one triggers a GeoJSON re-parse + tile re-render. Coalescing them
+  // keeps the map at a steady framerate while data settles.
+  const [debouncedPathData, setDebouncedPathData] = useState(pathData);
+  const isFirstPathData = useRef(true);
+
   useEffect(() => {
+    // First payload paints immediately so the layer isn't visibly delayed.
+    if (isFirstPathData.current) {
+      isFirstPathData.current = false;
+      setDebouncedPathData(pathData);
+      return;
+    }
+    const t = window.setTimeout(() => setDebouncedPathData(pathData), PATH_UPDATE_DEBOUNCE_MS);
+    return () => window.clearTimeout(t);
+  }, [pathData]);
+
+  useEffect(() => {
+    const pathData = debouncedPathData;
     if (flowAnimationRef.current) {
       cancelAnimationFrame(flowAnimationRef.current);
       flowAnimationRef.current = null;
@@ -289,7 +310,7 @@ export const useMovementPathsLayer = ({
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapLoaded, pathData, showMovementPaths]);
+  }, [mapLoaded, debouncedPathData, showMovementPaths]);
 
   /**
    * Hover / tap tooltip on flow paths: real user movement counts, route
