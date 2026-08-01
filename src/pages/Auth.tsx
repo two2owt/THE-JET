@@ -114,24 +114,52 @@ const Auth = () => {
     }
   }, [location.pathname, searchParams]);
 
-  // Check if user is coming from password reset email
+  // Check if the user arrived from a password reset email.
+  // Recovery links land on /reset-password (or legacy /auth?reset=true) and
+  // Supabase may still be exchanging the code/hash for a session when we mount,
+  // so we listen for PASSWORD_RECOVERY / SIGNED_IN before declaring the link bad.
   useEffect(() => {
-    const checkResetMode = async () => {
-      const resetParam = searchParams.get('reset');
-      if (resetParam === 'true') {
-        // Verify there's a valid session from the reset link
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          setIsResettingPassword(true);
-        } else {
-          toast.error("Invalid or expired reset link", {
-            description: "Please request a new password reset link.",
-          });
-        }
-      }
+    const hash = typeof window !== 'undefined' ? window.location.hash : '';
+    const isRecoveryEntry =
+      location.pathname === '/reset-password' ||
+      searchParams.get('reset') === 'true' ||
+      searchParams.get('type') === 'recovery' ||
+      hash.includes('type=recovery');
+
+    if (!isRecoveryEntry) return;
+
+    let settled = false;
+    const enterResetMode = () => {
+      if (settled) return;
+      settled = true;
+      setIsResettingPassword(true);
     };
-    checkResetMode();
-  }, [searchParams]);
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+        enterResetMode();
+      }
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) enterResetMode();
+    });
+
+    // Give the SDK a moment to process the recovery token before erroring out.
+    const timeout = window.setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      toast.error("Invalid or expired reset link", {
+        description: "Please request a new password reset link.",
+      });
+      navigate("/auth", { replace: true });
+    }, 3000);
+
+    return () => {
+      subscription.unsubscribe();
+      window.clearTimeout(timeout);
+    };
+  }, [searchParams, location.pathname, navigate]);
 
   // Cooldown timer for resend verification
   useEffect(() => {
@@ -564,7 +592,7 @@ const Auth = () => {
 
   const doForgotPassword = async () => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: buildAuthRedirectUrl("/auth", { reset: "true" }),
+      redirectTo: buildAuthRedirectUrl("/reset-password", { reset: "true" }),
     });
     if (error) {
       if (handleCommonAuthError(error)) return;
