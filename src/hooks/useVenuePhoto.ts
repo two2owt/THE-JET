@@ -35,7 +35,9 @@ export const useVenuePhoto = (venue: VenuePhotoInput | null, maxWidth = 800) => 
       if (!session || cancelled) return;
       setLoading(true);
       try {
-        const { data, error } = await supabase.functions.invoke("get-venue-photo", {
+        // Cap the wait on slow networks so the card never sits in a loading
+        // state — it falls back to the branded placeholder instead.
+        const request = supabase.functions.invoke("get-venue-photo", {
           body: {
             name: venue.name,
             address: venue.address ?? undefined,
@@ -45,9 +47,17 @@ export const useVenuePhoto = (venue: VenuePhotoInput | null, maxWidth = 800) => 
             maxWidth,
           },
         });
+        const timeout = new Promise<{ data: null; error: Error }>((resolve) =>
+          setTimeout(() => resolve({ data: null, error: new Error("timeout") }), 8000)
+        );
+        const { data, error } = (await Promise.race([request, timeout])) as {
+          data: { photoUrl?: string | null } | null;
+          error: unknown;
+        };
         if (cancelled) return;
         const url = !error && data?.photoUrl ? (data.photoUrl as string) : null;
-        photoCache.set(key, url);
+        // Don't cache a timeout as "no photo" — allow a retry next open.
+        if (!error) photoCache.set(key, url);
         setPhotoUrl(url);
       } catch {
         if (!cancelled) setPhotoUrl(null);
