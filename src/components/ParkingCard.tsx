@@ -2,6 +2,7 @@ import { memo, useState, useEffect } from "react";
 import { Car, MapPin, Star, X, Phone, Globe, Navigation, Loader2 } from "lucide-react";
 import { glideHaptic } from "@/lib/haptics";
 import { supabase } from "@/integrations/supabase/client";
+import { buildDirectionsUrl } from "@/lib/directions-url";
 
 export interface ParkingLot {
   name: string;
