@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocationPreferences } from "@/hooks/useLocationPreferences";
@@ -47,6 +47,24 @@ export const useLocationTracker = () => {
   const inFlightRef = useRef(false);
   const lastSampleAtRef = useRef(0);
   const smootherRef = useRef(createLocationSmoother());
+  // Bumped whenever the browser geolocation permission flips (e.g. the user
+  // taps "Enable location" in the first-run prompt) so tracking starts for
+  // that user immediately instead of waiting for the next mount.
+  const [permissionTick, setPermissionTick] = useState(0);
+
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !navigator.permissions?.query) return;
+    let status: PermissionStatus | null = null;
+    const onChange = () => setPermissionTick((n) => n + 1);
+    navigator.permissions
+      .query({ name: "geolocation" as PermissionName })
+      .then((s) => {
+        status = s;
+        s.addEventListener("change", onChange);
+      })
+      .catch(() => {});
+    return () => status?.removeEventListener("change", onChange);
+  }, []);
 
   const backgroundEnabled = locationTrackingEnabled && backgroundTrackingEnabled;
   // Signed in + tracking allowed is enough — no route/foreground gate.
@@ -217,7 +235,7 @@ export const useLocationTracker = () => {
       authSub.subscription.unsubscribe();
       stopAll();
     };
-  }, [enabled, backgroundEnabled, session?.user?.id]);
+  }, [enabled, backgroundEnabled, session?.user?.id, permissionTick]);
 };
 
 export default useLocationTracker;
