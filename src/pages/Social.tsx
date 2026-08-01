@@ -665,6 +665,12 @@ export default function Social() {
                       Add
                     </button>
                   )}
+                </div>
+              );
+            })}
+          </div>
+          )}
+        </section>
       </PageShell>
 
       {/* Connection Profile Dialog */}
