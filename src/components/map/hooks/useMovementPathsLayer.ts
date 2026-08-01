@@ -363,6 +363,27 @@ export const useMovementPathsLayer = ({
    * own effect so the fast-path `setData` update above never drops it.
    */
   useEffect(() => {
+    // (tooltip effect below)
+  }, []);
+
+  /**
+   * Decay ticker: re-stamps `recency` on the live source against the wall
+   * clock so routes visibly fade as movement slows, even when no new data
+   * arrives. Paused while the tab is hidden.
+   */
+  useEffect(() => {
+    if (!mapLoaded || !showMovementPaths || !debouncedPathData?.geojson) return;
+    const id = window.setInterval(() => {
+      if (document.hidden) return;
+      const src = mapRef.current?.getSource('movement-paths') as any;
+      if (!src?.setData) return;
+      try { src.setData(withDecay(debouncedPathData.geojson)); } catch { /* no-op */ }
+    }, DECAY_TICK_MS);
+    return () => window.clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapLoaded, showMovementPaths, debouncedPathData]);
+
+  useEffect(() => {
     const map = mapRef.current;
     const mapboxgl = mapboxglRef?.current ?? (window as any).mapboxgl;
     if (!map || !mapLoaded || !showMovementPaths || !mapboxgl) return;
