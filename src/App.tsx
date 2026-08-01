@@ -11,6 +11,7 @@ import { PageLayout } from "@/components/PageLayout";
 import type { NavTab } from "@/hooks/useBottomNavigation";
 import { useNativeDeepLinking } from "@/hooks/useNativeDeepLinking";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { useViewportReflow } from "@/hooks/useViewportReflow";
 import {
   FavoritesPageSkeleton,
   SocialPageSkeleton,
@@ -85,6 +86,9 @@ const AppLayout = memo(function AppLayout() {
   useNativeDeepLinking();
   // Native (iOS/Android) push registration + tap routing. No-op on web.
   usePushNotifications();
+  // Keep dvh/svh driven full-height views correct across orientation changes
+  // and mobile browser-chrome resizes, without transition flicker.
+  useViewportReflow();
   return (
     <AppShell>
       <Sonner />
