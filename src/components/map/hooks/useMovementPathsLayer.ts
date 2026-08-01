@@ -252,39 +252,9 @@ export const useMovementPathsLayer = ({
       } as any,
     });
 
-    const createParticleData = (offset: number) => {
-      const particles: any[] = [];
-      pathData.geojson.features.forEach((feature: any) => {
-        if (feature.geometry.type === 'LineString') {
-          const coords = feature.geometry.coordinates;
-          const frequency = feature.properties?.frequency || 1;
-          const recency = recencyFactor(feature.properties?.last_seen);
-          const numParticles = Math.min(Math.ceil(frequency / 3), 5);
-          for (let p = 0; p < numParticles; p++) {
-            const t = ((offset / 100) + (p / numParticles)) % 1;
-            if (coords.length >= 2) {
-              const segmentCount = coords.length - 1;
-              const segmentIndex = Math.floor(t * segmentCount);
-              const segmentT = (t * segmentCount) - segmentIndex;
-              const start = coords[Math.min(segmentIndex, coords.length - 2)];
-              const end = coords[Math.min(segmentIndex + 1, coords.length - 1)];
-              const lng = start[0] + (end[0] - start[0]) * segmentT;
-              const lat = start[1] + (end[1] - start[1]) * segmentT;
-              particles.push({
-                type: 'Feature',
-                geometry: { type: 'Point', coordinates: [lng, lat] },
-                properties: { frequency, particleIndex: p, recency },
-              });
-            }
-          }
-        }
-      });
-      return { type: 'FeatureCollection' as const, features: particles };
-    };
-
     mapRef.current.addSource(`${sourceId}-particles`, {
       type: 'geojson',
-      data: createParticleData(0),
+      data: buildParticleData(pathData.geojson, 0),
     });
 
     mapRef.current.addLayer({
