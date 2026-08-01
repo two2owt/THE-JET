@@ -127,7 +127,6 @@ export const LocationPermissionPrompt = () => {
   const handleDismiss = () => {
     localStorage.setItem(DISMISS_KEY, Date.now().toString());
     localStorage.setItem(ASKED_KEY, "1");
-    void recordConsent(false);
     setOpen(false);
   };
 

@@ -186,6 +186,23 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         .eq("user_id", preferences.user_id);
       if (error) throw error;
 
+      // Foreground location is opt-out everywhere else in the app, so this
+      // toggle is the single explicit switch that grants/revokes it.
+      if (preferences.location_tracking_enabled !== locationTrackingEnabled) {
+        const nowIso = new Date().toISOString();
+        const { error: consentError } = await supabase.from("user_consents").insert({
+          user_id: preferences.user_id,
+          consent_type: "foreground_location",
+          granted: locationTrackingEnabled,
+          policy_version: "2025-06",
+          source: "settings.location_tracking",
+          granted_at: locationTrackingEnabled ? nowIso : null,
+          revoked_at: locationTrackingEnabled ? null : nowIso,
+        });
+        if (consentError) throw consentError;
+        await refreshConsents();
+      }
+
       setPreferences({
         ...preferences,
         notifications_enabled: notificationsEnabled,
