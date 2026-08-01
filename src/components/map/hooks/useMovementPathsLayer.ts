@@ -117,7 +117,7 @@ export const useMovementPathsLayer = ({
     const existing = mapRef.current.getSource(sourceId) as any;
     if (existing) {
       try {
-        existing.setData(pathData.geojson);
+        existing.setData(withDecay(pathData.geojson));
         // Keep particle animation running against the new path set; no rebuild.
         return;
       } catch (err) {
@@ -132,7 +132,7 @@ export const useMovementPathsLayer = ({
 
     mapRef.current.addSource(sourceId, {
       type: 'geojson',
-      data: pathData.geojson,
+      data: withDecay(pathData.geojson),
       lineMetrics: true,
     });
 
@@ -160,9 +160,11 @@ export const useMovementPathsLayer = ({
           'interpolate', ['linear'], ['get', 'frequency'],
           1, 3, 10, 7, 20, 10,
         ],
+        // Frequency drives strength; recency decays it as movement slows.
         'line-opacity': [
-          'interpolate', ['linear'], ['get', 'frequency'],
-          1, 0.35, 5, 0.55, 10, 0.75, 20, 0.95,
+          '*',
+          ['interpolate', ['linear'], ['get', 'frequency'], 1, 0.35, 5, 0.55, 10, 0.75, 20, 0.95],
+          ['coalesce', ['get', 'recency'], 1],
         ],
         'line-width-transition': { duration: 800, delay: 0 },
         'line-color-transition': { duration: 800, delay: 0 },
@@ -189,9 +191,11 @@ export const useMovementPathsLayer = ({
           20, 'rgb(255, 0, 100)',
         ],
         'line-opacity': [
-          'interpolate', ['linear'], ['get', 'frequency'],
-          1, 0.6, 5, 0.8, 10, 0.95, 20, 1,
+          '*',
+          ['interpolate', ['linear'], ['get', 'frequency'], 1, 0.6, 5, 0.8, 10, 0.95, 20, 1],
+          ['coalesce', ['get', 'recency'], 1],
         ],
+        'line-opacity-transition': { duration: 900, delay: 0 },
         'line-dasharray': [0, 4, 3],
         'line-width-transition': { duration: 800, delay: 0 },
         'line-color-transition': { duration: 800, delay: 0 },
@@ -243,7 +247,9 @@ export const useMovementPathsLayer = ({
         'icon-allow-overlap': true,
         'icon-ignore-placement': true,
       } as any,
-      paint: { 'icon-opacity': 0.85 } as any,
+      paint: {
+        'icon-opacity': ['*', 0.85, ['coalesce', ['get', 'recency'], 1]],
+      } as any,
     });
 
     const createParticleData = (offset: number) => {
@@ -297,7 +303,7 @@ export const useMovementPathsLayer = ({
           15, 'rgb(255, 150, 50)',
           20, 'rgb(255, 80, 150)',
         ],
-        'circle-opacity': 0.9,
+        'circle-opacity': ['*', 0.9, ['coalesce', ['get', 'recency'], 1]],
         'circle-blur': 0.3,
         'circle-stroke-width': 2,
         'circle-stroke-color': 'rgba(255, 255, 255, 0.8)',
