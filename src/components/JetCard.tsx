@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useCallback, useMemo } from "react";
+import { memo, useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
 import { MapPin, Users, Star, TrendingUp, X, Share2, Send, Car, Navigation, Phone, Globe, RefreshCw, Loader2, Heart, Clock } from "lucide-react";
 import { glideHaptic } from "@/lib/haptics";
 import { toast } from "sonner";
@@ -11,7 +11,9 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { useNavigate } from "react-router";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { isVenueOpenNow } from "@/lib/venue-hours";
+import type { Venue as DirectionsVenue } from "@/types/venue";
 
+const DirectionsDialog = lazy(() => import("./DirectionsDialog"));
 
 interface NearbyParking {
   name: string;
@@ -41,6 +43,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
   const { favorites, toggleVenueFavorite, refetch } = useFavorites(user?.id);
   const [activeDealId, setActiveDealId] = useState<string | null>(null);
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+  const [directionsTarget, setDirectionsTarget] = useState<DirectionsVenue | null>(null);
 
   // Look up the active deal (if any) for this venue so a favorited venue
   // can still link to the user's saved deal under /favorites.
@@ -218,30 +221,17 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
       return;
     }
 
-    const params = new URLSearchParams({
-      api: '1',
-      destination: `${parking.lat},${parking.lng}`,
-      travelmode: 'driving',
-      dir_action: 'navigate',
+    // Let the user pick Google Maps / Apple Maps / Waze instead of forcing Google.
+    setDirectionsTarget({
+      id: parking.placeId || `${parking.lat},${parking.lng}`,
+      name: parking.name,
+      lat: parking.lat,
+      lng: parking.lng,
+      activity: 0,
+      category: 'parking',
+      neighborhood: venue.neighborhood ?? '',
+      address: parking.address,
     });
-
-    // Prefer a stable Place ID destination when available (more accurate pin).
-    if (parking.placeId) {
-      params.set('destination_place_id', parking.placeId);
-    }
-
-    // Anchor the route at the selected venue so the user sees venue → parking.
-    if (
-      typeof venue.lat === 'number' &&
-      typeof venue.lng === 'number' &&
-      !Number.isNaN(venue.lat) &&
-      !Number.isNaN(venue.lng)
-    ) {
-      params.set('origin', `${venue.lat},${venue.lng}`);
-    }
-
-    const url = `https://www.google.com/maps/dir/?${params.toString()}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const activityLevel = getActivityLevel(venue.activity);
@@ -261,6 +251,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
         boxShadow:
           '0 0 60px hsl(var(--gold) / 0.05), 0 24px 50px -20px rgba(0,0,0,0.75), 0 0 0 1px hsl(var(--gold) / 0.18), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
         maxHeight: 'min(82vh, 640px)',
+        containerType: 'inline-size',
         fontFamily: 'var(--font-sans, system-ui, -apple-system, sans-serif)',
         color: 'hsl(var(--foreground))',
         fontSize: 'clamp(13px, 0.95vw + 11px, 16px)',
@@ -743,8 +734,10 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
         {/* Buttons */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr 1fr',
-          gap: 'clamp(6px, 0.8vw, 10px)',
+          // Adapts to the card's own width: three across when there's room,
+          // gracefully wrapping to 2-up / 1-up on very narrow devices.
+          gridTemplateColumns: 'repeat(auto-fit, minmax(88px, 1fr))',
+          gap: 'clamp(6px, 1.2cqw, 10px)',
         }} role="group" aria-label="Venue actions">
           <button
             onClick={handleShare}
@@ -755,19 +748,22 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               fontWeight: 600,
               minHeight: '44px',
               height: 'clamp(44px, 6vw, 52px)',
-              fontSize: 'clamp(12px, 0.4vw + 11px, 14px)',
+              fontSize: 'clamp(11px, 0.4cqw + 10.5px, 14px)',
               borderRadius: '8px',
               border: 'none',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '4px',
+              gap: 'clamp(3px, 0.6cqw, 6px)',
+              padding: '0 clamp(6px, 1cqw, 12px)',
+              minWidth: 0,
+              whiteSpace: 'nowrap',
             }}
             aria-label={`Share ${venue.name}`}
           >
-            <Share2 style={{ width: '14px', height: '14px' }} aria-hidden="true" />
-            Share
+            <Share2 style={{ width: '14px', height: '14px', flexShrink: 0 }} aria-hidden="true" />
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>Share</span>
           </button>
           <button
             onClick={() => {
@@ -781,19 +777,22 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               fontWeight: 600,
               minHeight: '44px',
               height: 'clamp(44px, 6vw, 52px)',
-              fontSize: 'clamp(12px, 0.4vw + 11px, 14px)',
+              fontSize: 'clamp(11px, 0.4cqw + 10.5px, 14px)',
               borderRadius: '8px',
               border: 'none',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '4px',
+              gap: 'clamp(3px, 0.6cqw, 6px)',
+              padding: '0 clamp(6px, 1cqw, 12px)',
+              minWidth: 0,
+              whiteSpace: 'nowrap',
             }}
             aria-label={`Send ${venue.name} to a friend`}
           >
-            <Send style={{ width: '14px', height: '14px' }} aria-hidden="true" />
-            Send
+            <Send style={{ width: '14px', height: '14px', flexShrink: 0 }} aria-hidden="true" />
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>Send</span>
           </button>
           <button
             onClick={handleGetDirections}
@@ -804,19 +803,22 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               fontWeight: 600,
               minHeight: '44px',
               height: 'clamp(44px, 6vw, 52px)',
-              fontSize: 'clamp(12px, 0.4vw + 11px, 14px)',
+              fontSize: 'clamp(11px, 0.4cqw + 10.5px, 14px)',
               borderRadius: '8px',
               border: 'none',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '4px',
+              gap: 'clamp(3px, 0.6cqw, 6px)',
+              padding: '0 clamp(6px, 1cqw, 12px)',
+              minWidth: 0,
+              whiteSpace: 'nowrap',
             }}
             aria-label={`Get directions to ${venue.name}`}
           >
-            <Navigation style={{ width: '14px', height: '14px' }} aria-hidden="true" />
-            Directions
+            <Navigation style={{ width: '14px', height: '14px', flexShrink: 0 }} aria-hidden="true" />
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>Directions</span>
           </button>
         </div>
 
@@ -971,6 +973,16 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
         isOpen={showUpgradePrompt}
         onClose={() => setShowUpgradePrompt(false)}
       />
+
+      <Suspense fallback={null}>
+        <DirectionsDialog
+          open={directionsTarget !== null}
+          onOpenChange={(open) => {
+            if (!open) setDirectionsTarget(null);
+          }}
+          venue={directionsTarget}
+        />
+      </Suspense>
 
     </article>
   );
