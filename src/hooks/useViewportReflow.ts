@@ -46,6 +46,15 @@ export function useViewportReflow(): void {
     let rafId = 0;
     let settleId = 0;
     let last = "";
+    // Cheap synchronous snapshot used to decide whether a resize event is
+    // large enough to justify suppressing motion at all.
+    let lastW = window.innerWidth;
+    let lastH = window.innerHeight;
+    // Sub-pixel/URL-bar jitter below this many px never causes visible
+    // flicker, so the guard stays off and animations keep running.
+    const FLICKER_THRESHOLD_PX = 4;
+
+    const releaseGuard = () => root.classList.remove("is-reflowing");
 
     const applyMeasurements = () => {
       rafId = 0;
@@ -56,7 +65,7 @@ export function useViewportReflow(): void {
         window.innerHeight >= window.innerWidth ? "portrait" : "landscape";
       const signature = `${dvh}|${svh}|${lvh}|${orientation}`;
       if (signature === last) {
-        root.classList.remove("is-reflowing");
+        releaseGuard();
         return;
       }
       last = signature;
@@ -69,7 +78,7 @@ export function useViewportReflow(): void {
       // Release the flicker guard only after the new sizes have painted.
       settleId = requestAnimationFrame(() => {
         settleId = requestAnimationFrame(() => {
-          root.classList.remove("is-reflowing");
+          releaseGuard();
         });
       });
     };
@@ -87,7 +96,16 @@ export function useViewportReflow(): void {
     // Initial measurement: no transition suppression needed on first paint.
     schedule(false);
 
-    const onResize = () => schedule(true);
+    const onResize = () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const significant =
+        Math.abs(w - lastW) > FLICKER_THRESHOLD_PX ||
+        Math.abs(h - lastH) > FLICKER_THRESHOLD_PX;
+      lastW = w;
+      lastH = h;
+      schedule(significant);
+    };
     // visualViewport scroll fires while the URL bar collapses; the layout
     // viewport is unchanged there, so re-measure without the guard to keep
     // scrolling smooth.
