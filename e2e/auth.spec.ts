@@ -11,9 +11,20 @@ import { test, expect } from "@playwright/test";
 
 const ROUTES = ["/auth", "/signin", "/signup"] as const;
 
+/**
+ * Navigate and wait for the auth screen's hydration readiness guard.
+ * `data-auth-ready="true"` is only set once React has painted a frame with
+ * its event handlers attached, which removes the need for arbitrary waits
+ * before clicking.
+ */
+async function gotoAuth(page: import("@playwright/test").Page, path: string) {
+  await page.goto(path);
+  await page.waitForSelector('[data-auth-ready="true"]', { state: "attached" });
+}
+
 test.describe("auth routes render the correct mode", () => {
   test("/auth defaults to sign-in", async ({ page }) => {
-    await page.goto("/auth");
+    await gotoAuth(page, "/auth");
     await expect(
       page.getByRole("heading", { name: /welcome back/i }),
     ).toBeVisible();
@@ -21,14 +32,14 @@ test.describe("auth routes render the correct mode", () => {
   });
 
   test("/signin renders sign-in mode", async ({ page }) => {
-    await page.goto("/signin");
+    await gotoAuth(page, "/signin");
     await expect(
       page.getByRole("heading", { name: /welcome back/i }),
     ).toBeVisible();
   });
 
   test("/signup renders create-account mode", async ({ page }) => {
-    await page.goto("/signup");
+    await gotoAuth(page, "/signup");
     await expect(
       page.getByRole("heading", { name: /create your account/i }),
     ).toBeVisible();
@@ -42,7 +53,7 @@ test.describe("auth routes render the correct mode", () => {
 
 test.describe("mode switching via the footer link", () => {
   test("sign-in → sign-up updates URL and heading", async ({ page }) => {
-    await page.goto("/signin");
+    await gotoAuth(page, "/signin");
     await page.getByTestId("auth-mode-switch").click();
     await expect(page).toHaveURL(/\/signup$/);
     await expect(
@@ -51,7 +62,7 @@ test.describe("mode switching via the footer link", () => {
   });
 
   test("sign-up → sign-in updates URL and heading", async ({ page }) => {
-    await page.goto("/signup");
+    await gotoAuth(page, "/signup");
     await page.getByTestId("auth-mode-switch").click();
     await expect(page).toHaveURL(/\/signin$/);
     await expect(
@@ -62,7 +73,7 @@ test.describe("mode switching via the footer link", () => {
 
 test.describe("sign-in form", () => {
   test("invalid email surfaces inline validation", async ({ page }) => {
-    await page.goto("/signin");
+    await gotoAuth(page, "/signin");
     // HTML5 `required` blocks empty submits, so feed an invalid email to
     // exercise the zod validation path.
     await page.locator("#auth-email").fill("not-an-email");
@@ -75,7 +86,7 @@ test.describe("sign-in form", () => {
   });
 
   test("password show/hide toggle flips input type", async ({ page }) => {
-    await page.goto("/signin");
+    await gotoAuth(page, "/signin");
     const pw = page.locator("#auth-password");
     await pw.fill("Hunter22A");
     await expect(pw).toHaveAttribute("type", "password");
@@ -88,7 +99,7 @@ test.describe("sign-in form", () => {
 
 test.describe("sign-up form", () => {
   test("weak password shows the strength hint as an error", async ({ page }) => {
-    await page.goto("/signup");
+    await gotoAuth(page, "/signup");
     await page.locator("#auth-email").fill("test@example.com");
     await page.locator("#auth-password").fill("weak");
     await page.locator("#auth-confirm-password").fill("weak");
@@ -99,7 +110,7 @@ test.describe("sign-up form", () => {
   });
 
   test("mismatched confirm password surfaces an error", async ({ page }) => {
-    await page.goto("/signup");
+    await gotoAuth(page, "/signup");
     await page.locator("#auth-email").fill("test@example.com");
     await page.locator("#auth-password").fill("StrongPass1");
     await page.locator("#auth-confirm-password").fill("StrongPass2");
@@ -112,7 +123,7 @@ test.describe("sign-up form", () => {
   });
 
   test("submitting without consent boxes blocks submission", async ({ page }) => {
-    await page.goto("/signup");
+    await gotoAuth(page, "/signup");
     await page.locator("#auth-email").fill("test@example.com");
     await page.locator("#auth-password").fill("StrongPass1");
     await page.locator("#auth-confirm-password").fill("StrongPass1");
@@ -126,9 +137,7 @@ test.describe("sign-up form", () => {
 
 test.describe("forgot-password flow", () => {
   test("`Forgot?` link reveals the forgot-password screen", async ({ page }) => {
-    await page.goto("/signin");
-    // Wait for hydration before interacting — under full parallelism the
-    // click can otherwise land before React attaches its handlers.
+    await gotoAuth(page, "/signin");
     await expect(
       page.getByRole("heading", { name: /welcome back/i }),
     ).toBeVisible();
@@ -146,7 +155,7 @@ test.describe("forgot-password flow", () => {
   });
 
   test("submitting an invalid email blocks the request", async ({ page }) => {
-    await page.goto("/signin");
+    await gotoAuth(page, "/signin");
     await page.getByRole("button", { name: /forgot\?/i }).click();
     await page.locator("#auth-email").fill("not-an-email");
     await page.locator("form button[type=submit]").click();
@@ -158,7 +167,7 @@ test.describe("reset-password flow", () => {
   test("`/auth?reset=true` without session falls back to sign-in", async ({
     page,
   }) => {
-    await page.goto("/auth?reset=true");
+    await gotoAuth(page, "/auth?reset=true");
     // No valid recovery session → app stays on the sign-in screen and a
     // toast (sonner) explains the link is invalid/expired.
     await expect(
