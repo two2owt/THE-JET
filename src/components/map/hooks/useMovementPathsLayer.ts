@@ -3,6 +3,44 @@ import { useEffect, useRef, useState, MutableRefObject } from "react";
 /** How long to coalesce rapid path updates before touching Mapbox (ms). */
 const PATH_UPDATE_DEBOUNCE_MS = 250;
 
+/**
+ * Decay window: a route observed right now renders at full strength, and
+ * fades linearly to `DECAY_MIN_OPACITY` once it has gone unobserved for
+ * `DECAY_WINDOW_MINUTES`. Routes with no `last_seen` are treated as fresh.
+ */
+const DECAY_WINDOW_MINUTES = 60;
+const DECAY_MIN_OPACITY = 0.12;
+/** How often the decay factor is recomputed against the wall clock. */
+const DECAY_TICK_MS = 20000;
+
+/** Returns 0..1 freshness for a route based on when it was last observed. */
+const recencyFactor = (lastSeen: string | null | undefined) => {
+  if (!lastSeen) return 1;
+  const ts = new Date(lastSeen).getTime();
+  if (!Number.isFinite(ts)) return 1;
+  const ageMin = Math.max(0, (Date.now() - ts) / 60000);
+  const decayed = 1 - ageMin / DECAY_WINDOW_MINUTES;
+  return Math.min(1, Math.max(DECAY_MIN_OPACITY, decayed));
+};
+
+/**
+ * Stamps every feature with a `recency` property so paint expressions can
+ * multiply frequency-driven styling by how fresh the movement is.
+ */
+const withDecay = (geojson: any) => {
+  if (!geojson?.features) return geojson;
+  return {
+    ...geojson,
+    features: geojson.features.map((f: any) => ({
+      ...f,
+      properties: {
+        ...(f.properties || {}),
+        recency: recencyFactor(f.properties?.last_seen),
+      },
+    })),
+  };
+};
+
 interface PlatformSettings {
   hasReducedMotion: boolean;
   isLowPowerMode: boolean;
