@@ -431,7 +431,9 @@ export const useMovementPathsLayer = ({
           const particleSource = mapRef.current.getSource(particleSourceId);
           const geojson = latestPathData.current?.geojson;
           if (particleSource && geojson) {
-            particleSource.setData(buildParticleData(geojson, particleOffset));
+            particleSource.setData(
+              buildParticleData(geojson, particleOffset, minFrequencyRef.current),
+            );
           }
         } catch { /* layers may be mid-rebuild */ }
         lastTime = currentTime;
