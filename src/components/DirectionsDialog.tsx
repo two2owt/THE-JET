@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react";
 import { Map as MapIcon, Navigation, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import type { Venue } from "@/types/venue";
 import { buildDirectionsUrl, type DirectionsApp } from "@/lib/directions-url";
+import { getLastDirectionsApp, setLastDirectionsApp } from "@/lib/lastDirectionsApp";
 
 interface DirectionsDialogProps {
   open: boolean;
@@ -29,11 +31,39 @@ const triggerSoarHaptic = async () => {
   }
 };
 
+const APPS: {
+  id: DirectionsApp;
+  label: string;
+  hint: string;
+  icon: typeof MapIcon;
+  swatch: string;
+}[] = [
+  { id: "google", label: "Google Maps", hint: "Navigate with Google", icon: MapIcon, swatch: "from-blue-500 to-blue-600" },
+  { id: "apple", label: "Apple Maps", hint: "Navigate with Apple", icon: Navigation, swatch: "from-gray-800 to-gray-900" },
+  { id: "waze", label: "Waze", hint: "Navigate with Waze", icon: Zap, swatch: "from-cyan-400 to-blue-500" },
+];
+
 const DirectionsDialog = ({ open, onOpenChange, venue, placeId }: DirectionsDialogProps) => {
+  const [lastApp, setLastApp] = useState<DirectionsApp | null>(null);
+
+  // Re-read on each open so a pick made elsewhere in the session is reflected.
+  useEffect(() => {
+    if (open) setLastApp(getLastDirectionsApp());
+  }, [open]);
+
+  // Preferred app floats to the top of the list.
+  const orderedApps = useMemo(
+    () => (lastApp ? [...APPS].sort((a, b) => (a.id === lastApp ? -1 : b.id === lastApp ? 1 : 0)) : APPS),
+    [lastApp],
+  );
+
   const openDirections = async (app: DirectionsApp) => {
     if (!venue) return;
 
     await triggerSoarHaptic();
+
+    setLastDirectionsApp(app);
+    setLastApp(app);
 
     const url = buildDirectionsUrl(app, venue, { placeId });
     const { address, name } = venue;
