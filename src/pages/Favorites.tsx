@@ -279,8 +279,18 @@ function FavoriteVenueCard({
       type="button"
       onClick={onOpen}
       className="group relative text-left rounded-2xl overflow-hidden border border-border bg-card/60 backdrop-blur-sm hover:border-primary/40 transition-colors"
+      style={{ containerType: 'inline-size' }}
     >
-      <div className="relative aspect-[16/10] bg-muted">
+      {/* Hero sizing matches JetCard: container-relative (cqw), 16/9, same clamp. */}
+      <div
+        className="relative bg-muted"
+        style={{
+          width: '100%',
+          aspectRatio: '16 / 9',
+          maxHeight: 'clamp(96px, 26cqw, 180px)',
+          overflow: 'hidden',
+        }}
+      >
         {/* Branded fallback sits underneath so slow networks never show an empty tile. */}
         <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
           <MapPin className="w-8 h-8" />
