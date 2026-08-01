@@ -46,6 +46,15 @@ interface PlatformSettings {
   isLowPowerMode: boolean;
 }
 
+/** Mapbox filter for routes that are currently selected (animated). */
+const activeFilter = (min: number): any => [
+  '>=', ['coalesce', ['get', 'frequency'], 0], min,
+];
+/** Mapbox filter for routes below the current selection (static). */
+const inactiveFilter = (min: number): any => [
+  '<', ['coalesce', ['get', 'frequency'], 0], min,
+];
+
 /** Dash phases used to make the flow lines appear to travel. */
 const DASH_SEQUENCE = [
   [0, 4, 3], [0.5, 4, 2.5], [1, 4, 2], [1.5, 4, 1.5],
@@ -59,12 +68,15 @@ const DASH_SEQUENCE = [
  * travel offset (0..100). Module-level so the animation loop can run from the
  * latest data without being rebuilt every time paths refresh.
  */
-const buildParticleData = (geojson: any, offset: number) => {
+const buildParticleData = (geojson: any, offset: number, minFrequency = 0) => {
   const particles: any[] = [];
   (geojson?.features ?? []).forEach((feature: any) => {
     if (feature.geometry?.type !== 'LineString') return;
     const coords = feature.geometry.coordinates;
     const frequency = feature.properties?.frequency || 1;
+    // Only routes that are currently selected (>= the active frequency
+    // threshold) get travelling particles; the rest render static.
+    if (frequency < minFrequency) return;
     const recency = recencyFactor(feature.properties?.last_seen);
     const numParticles = Math.min(Math.ceil(frequency / 3), 5);
     for (let p = 0; p < numParticles; p++) {
@@ -101,6 +113,11 @@ interface Params {
   platformSettingsRef: MutableRefObject<PlatformSettings>;
   /** mapbox-gl module ref, used to construct the hover Popup. */
   mapboxglRef?: MutableRefObject<any>;
+  /**
+   * Current min-frequency selection. Routes at/above it are the "active"
+   * (selected) routes and animate; routes below render static and dimmed.
+   */
+  minFrequency?: number;
 }
 
 /**
@@ -115,12 +132,35 @@ export const useMovementPathsLayer = ({
   flowAnimationRef,
   platformSettingsRef,
   mapboxglRef,
+  minFrequency = 0,
 }: Params) => {
   // Debounce incoming path data: realtime refreshes can land in bursts, and
   // each one triggers a GeoJSON re-parse + tile re-render. Coalescing them
   // keeps the map at a steady framerate while data settles.
   const [debouncedPathData, setDebouncedPathData] = useState(pathData);
   const isFirstPathData = useRef(true);
+
+  // Latest selection threshold, readable from effects/animation without
+  // forcing a full layer rebuild when the slider moves.
+  const minFrequencyRef = useRef(minFrequency);
+  useEffect(() => { minFrequencyRef.current = minFrequency; }, [minFrequency]);
+
+  // Live re-selection: moving the slider re-filters which routes are active
+  // (animated) vs static, immediately, without rebuilding the layer stack.
+  useEffect(() => {
+    if (!mapLoaded || !showMovementPaths) return;
+    const map = mapRef.current;
+    if (!map) return;
+    try {
+      ['movement-paths-glow', 'movement-paths-line', 'movement-paths-arrows'].forEach((id) => {
+        if (map.getLayer(id)) map.setFilter(id, activeFilter(minFrequency));
+      });
+      if (map.getLayer('movement-paths-line-static')) {
+        map.setFilter('movement-paths-line-static', inactiveFilter(minFrequency));
+      }
+    } catch { /* layers may be mid-rebuild */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [minFrequency, mapLoaded, showMovementPaths, debouncedPathData]);
 
   useEffect(() => {
     // First payload paints immediately so the layer isn't visibly delayed.
@@ -144,13 +184,14 @@ export const useMovementPathsLayer = ({
 
     const sourceId = 'movement-paths';
     const lineLayerId = 'movement-paths-line';
+    const staticLineLayerId = 'movement-paths-line-static';
     const glowLayerId = 'movement-paths-glow';
     const arrowLayerId = 'movement-paths-arrows';
     const particleLayerId = 'movement-paths-particles';
 
     // Toggle-off: tear everything down.
     if (!showMovementPaths) {
-      [particleLayerId, arrowLayerId, glowLayerId, lineLayerId].forEach((id) => {
+      [particleLayerId, arrowLayerId, glowLayerId, lineLayerId, staticLineLayerId].forEach((id) => {
         try { if (mapRef.current?.getLayer(id)) mapRef.current.removeLayer(id); } catch { /* no-op */ }
       });
       try { if (mapRef.current?.getSource(sourceId)) mapRef.current.removeSource(sourceId); } catch { /* no-op */ }
@@ -168,7 +209,7 @@ export const useMovementPathsLayer = ({
         return;
       } catch (err) {
         console.warn('paths setData failed, rebuilding:', err);
-        [particleLayerId, arrowLayerId, glowLayerId, lineLayerId].forEach((id) => {
+        [particleLayerId, arrowLayerId, glowLayerId, lineLayerId, staticLineLayerId].forEach((id) => {
           try { if (mapRef.current?.getLayer(id)) mapRef.current.removeLayer(id); } catch { /* no-op */ }
         });
         try { if (mapRef.current?.getSource(sourceId)) mapRef.current.removeSource(sourceId); } catch { /* no-op */ }
@@ -186,6 +227,7 @@ export const useMovementPathsLayer = ({
       id: glowLayerId,
       type: 'line',
       source: sourceId,
+      filter: activeFilter(minFrequencyRef.current),
       layout: { 'line-join': 'round', 'line-cap': 'round' },
       paint: {
         'line-width': [
@@ -218,10 +260,27 @@ export const useMovementPathsLayer = ({
       } as any,
     });
 
+    // Static (unselected) routes: below the current frequency selection.
+    // Rendered thin + dimmed with no dash animation and no particles.
+    mapRef.current.addLayer({
+      id: staticLineLayerId,
+      type: 'line',
+      source: sourceId,
+      filter: inactiveFilter(minFrequencyRef.current),
+      layout: { 'line-join': 'round', 'line-cap': 'round' },
+      paint: {
+        'line-width': 2,
+        'line-color': 'rgba(160, 190, 210, 0.85)',
+        'line-opacity': ['*', 0.25, ['coalesce', ['get', 'recency'], 1]],
+        'line-opacity-transition': { duration: 600, delay: 0 },
+      } as any,
+    });
+
     mapRef.current.addLayer({
       id: lineLayerId,
       type: 'line',
       source: sourceId,
+      filter: activeFilter(minFrequencyRef.current),
       layout: { 'line-join': 'round', 'line-cap': 'round' },
       paint: {
         'line-width': [
@@ -280,6 +339,7 @@ export const useMovementPathsLayer = ({
       id: arrowLayerId,
       type: 'symbol',
       source: sourceId,
+      filter: activeFilter(minFrequencyRef.current),
       layout: {
         'symbol-placement': 'line',
         'symbol-spacing': 40,
@@ -300,7 +360,7 @@ export const useMovementPathsLayer = ({
 
     mapRef.current.addSource(`${sourceId}-particles`, {
       type: 'geojson',
-      data: buildParticleData(pathData.geojson, 0),
+      data: buildParticleData(pathData.geojson, 0, minFrequencyRef.current),
     });
 
     mapRef.current.addLayer({
@@ -371,7 +431,9 @@ export const useMovementPathsLayer = ({
           const particleSource = mapRef.current.getSource(particleSourceId);
           const geojson = latestPathData.current?.geojson;
           if (particleSource && geojson) {
-            particleSource.setData(buildParticleData(geojson, particleOffset));
+            particleSource.setData(
+              buildParticleData(geojson, particleOffset, minFrequencyRef.current),
+            );
           }
         } catch { /* layers may be mid-rebuild */ }
         lastTime = currentTime;
