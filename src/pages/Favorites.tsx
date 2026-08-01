@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useFavorites, type Favorite } from "@/hooks/useFavorites";
-import { Heart, Compass, MapPin, Loader2 } from "lucide-react";
+import { Heart, Compass, MapPin, Loader2, AlertTriangle } from "lucide-react";
 import { DealCard } from "@/components/DealCard";
 import { useNavigate } from "react-router";
 import { PageLayout } from "@/components/PageLayout";
@@ -31,6 +31,7 @@ export default function Favorites() {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
   const [deals, setDeals] = useState<Deal[]>([]);
+  const [loadError, setLoadError] = useState(false);
   const headerConfig = useMemo(() => ({}), []);
 
   const { favorites, loading: favoritesLoading } = useFavorites(user?.id);
@@ -41,12 +42,14 @@ export default function Favorites() {
     if (favorites.length > 0) {
       fetchFavoriteDeals();
     } else {
+      setLoadError(false);
       setDeals([]);
     }
   }, [favorites, favoritesLoading, user]);
 
   const fetchFavoriteDeals = async () => {
     try {
+      setLoadError(false);
       // Favorites can point to either a deal id (uuid) or a map venue id (text).
       // Resolve both: pull deals by id for deal-linked rows, and pull the most
       // recent active deal per venue_id for venue-only rows, then dedupe.
@@ -99,6 +102,7 @@ export default function Favorites() {
       setDeals(merged);
     } catch (error) {
       console.error("Error fetching favorite deals:", error);
+      setLoadError(true);
     }
   };
 
@@ -172,7 +176,15 @@ export default function Favorites() {
               : `${totalCount} saved ${totalCount === 1 ? "item" : "items"}`
           }
         />
-        {totalCount === 0 ? (
+        {loadError && totalCount === 0 ? (
+          <EmptyState
+            icon={AlertTriangle}
+            title="Couldn't load your favorites"
+            description="Something went wrong reaching the network. Check your connection and try again."
+            actionLabel="Retry"
+            onAction={() => { void fetchFavoriteDeals(); }}
+          />
+        ) : totalCount === 0 ? (
           <EmptyState
             icon={Compass}
             title="No favorites yet"
@@ -267,7 +279,7 @@ function FavoriteVenueCard({
           onClick={handleUnfavorite}
           aria-label={`Remove ${favorite.venue_name ?? "venue"} from favorites`}
           disabled={removing}
-          className="absolute top-2 right-2 w-9 h-9 rounded-full bg-black/55 backdrop-blur-md flex items-center justify-center text-primary hover:bg-black/70 transition"
+          className="absolute top-2 right-2 w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-background/60 backdrop-blur-md flex items-center justify-center text-primary hover:bg-background/80 transition"
         >
           {removing ? (
             <Loader2 className="w-4 h-4 animate-spin" />

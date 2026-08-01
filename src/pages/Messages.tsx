@@ -601,6 +601,7 @@ function ChatView({
           size="icon"
           onClick={() => fileInputRef.current?.click()}
           className="flex-shrink-0"
+          aria-label="Attach an image"
         >
           <ImageIcon className="w-5 h-5" />
         </Button>
@@ -619,6 +620,7 @@ function ChatView({
           disabled={!text.trim()}
           size="icon"
           className="flex-shrink-0 bg-gradient-primary"
+          aria-label="Send message"
         >
           <Send className="w-4 h-4" />
         </Button>

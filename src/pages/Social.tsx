@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useConnections } from "@/hooks/useConnections";
 import { useDebounce } from "@/hooks/useDebounce";
-import { Users, UserPlus, Check, X, UserX, MessageCircle, Search, Loader2 } from "lucide-react";
+import { Users, UserPlus, Check, X, UserX, MessageCircle, Search, Loader2, AlertTriangle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -79,6 +79,7 @@ export default function Social() {
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   const [chatFriend, setChatFriend] = useState<{ id: string; name: string; avatar?: string | null } | null>(null);
   const [sentRequestIds, setSentRequestIds] = useState<Set<string>>(new Set());
+  const [profilesError, setProfilesError] = useState(false);
   const unreadCounts = useUnreadCounts(user?.id);
   const headerConfig = useMemo(() => ({ hideSearch: true }), []);
 
@@ -141,6 +142,7 @@ export default function Social() {
 
   const fetchProfiles = async () => {
     try {
+      setProfilesError(false);
       const { data, error } = await supabase
         .from("discoverable_profiles")
         .select("id, display_name, avatar_url")
@@ -166,6 +168,7 @@ export default function Social() {
       setProfiles((data || []).filter((p) => !excludedIds.has(p.id)).slice(0, 20));
     } catch (error) {
       console.error("Error fetching profiles:", error);
+      setProfilesError(true);
     }
   };
 
@@ -619,6 +622,21 @@ export default function Social() {
           <SectionTitle subtitle="Suggested connections from your area">
             Discover People
           </SectionTitle>
+          {profilesError ? (
+            <EmptyState
+              icon={AlertTriangle}
+              title="Couldn't load suggestions"
+              description="Something went wrong reaching the network. Check your connection and try again."
+              actionLabel="Retry"
+              onAction={() => { void fetchProfiles(); }}
+            />
+          ) : profiles.length === 0 ? (
+            <EmptyState
+              icon={Users}
+              title="No one new to discover"
+              description="You're connected with everyone discoverable right now. Check back as more people join JET."
+            />
+          ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {profiles.map((profile) => {
               const isSent = sentRequestIds.has(profile.id);
@@ -651,6 +669,7 @@ export default function Social() {
               );
             })}
           </div>
+          )}
         </section>
       </PageShell>
 
