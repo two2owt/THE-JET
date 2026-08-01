@@ -526,20 +526,21 @@ const Auth = () => {
         })
         .eq("id", signUpData.user.id);
 
-      // Seed granular consent records based on the boxes the user just ticked.
-      // Location consent at signup unlocks both foreground and background
-      // location tracking by default; users can revoke either one at any
-      // time from Settings → Privacy.
+      // Seed granular consent records.
+      // Foreground location is opt-out: it is granted at signup so nearby
+      // deals work on the Explore / Hot tab right away. Users can turn it off
+      // any time from Settings → Location Tracking.
+      // Background tracking stays opt-in and follows the signup checkbox.
       const now = new Date().toISOString();
       const seedRows = [
         {
           user_id: signUpData.user.id,
           consent_type: "foreground_location" as const,
-          granted: locationConsent,
+          granted: true,
           policy_version: "2025-06",
           source: "auth.signup",
-          granted_at: locationConsent ? now : null,
-          revoked_at: locationConsent ? null : now,
+          granted_at: now,
+          revoked_at: null,
         },
         {
           user_id: signUpData.user.id,
