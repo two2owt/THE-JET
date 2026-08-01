@@ -2230,7 +2230,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       }, { passive: true });
 
       // Create marker with bottom anchor for teardrop (pin point at GPS location)
-      if (!mapboxglRef.current) return;
+      // Bail if the map was removed mid-render — addTo() would throw on a
+      // torn-down container.
+      if (!mapboxglRef.current || !mapInstance || typeof mapInstance.getContainer !== 'function') return;
+      try {
+        if (!mapInstance.getContainer()) return;
+      } catch { return; }
       const marker = new mapboxglRef.current.Marker({
         element: el,
         anchor: 'bottom'
