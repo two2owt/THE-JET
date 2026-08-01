@@ -733,8 +733,10 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
         {/* Buttons */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr 1fr',
-          gap: 'clamp(6px, 0.8vw, 10px)',
+          // Adapts to the card's own width: three across when there's room,
+          // gracefully wrapping to 2-up / 1-up on very narrow devices.
+          gridTemplateColumns: 'repeat(auto-fit, minmax(88px, 1fr))',
+          gap: 'clamp(6px, 1.2cqw, 10px)',
         }} role="group" aria-label="Venue actions">
           <button
             onClick={handleShare}
@@ -745,19 +747,22 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               fontWeight: 600,
               minHeight: '44px',
               height: 'clamp(44px, 6vw, 52px)',
-              fontSize: 'clamp(12px, 0.4vw + 11px, 14px)',
+              fontSize: 'clamp(11px, 0.4cqw + 10.5px, 14px)',
               borderRadius: '8px',
               border: 'none',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '4px',
+              gap: 'clamp(3px, 0.6cqw, 6px)',
+              padding: '0 clamp(6px, 1cqw, 12px)',
+              minWidth: 0,
+              whiteSpace: 'nowrap',
             }}
             aria-label={`Share ${venue.name}`}
           >
-            <Share2 style={{ width: '14px', height: '14px' }} aria-hidden="true" />
-            Share
+            <Share2 style={{ width: '14px', height: '14px', flexShrink: 0 }} aria-hidden="true" />
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>Share</span>
           </button>
           <button
             onClick={() => {
@@ -771,19 +776,22 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               fontWeight: 600,
               minHeight: '44px',
               height: 'clamp(44px, 6vw, 52px)',
-              fontSize: 'clamp(12px, 0.4vw + 11px, 14px)',
+              fontSize: 'clamp(11px, 0.4cqw + 10.5px, 14px)',
               borderRadius: '8px',
               border: 'none',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '4px',
+              gap: 'clamp(3px, 0.6cqw, 6px)',
+              padding: '0 clamp(6px, 1cqw, 12px)',
+              minWidth: 0,
+              whiteSpace: 'nowrap',
             }}
             aria-label={`Send ${venue.name} to a friend`}
           >
-            <Send style={{ width: '14px', height: '14px' }} aria-hidden="true" />
-            Send
+            <Send style={{ width: '14px', height: '14px', flexShrink: 0 }} aria-hidden="true" />
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>Send</span>
           </button>
           <button
             onClick={handleGetDirections}
@@ -794,19 +802,22 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               fontWeight: 600,
               minHeight: '44px',
               height: 'clamp(44px, 6vw, 52px)',
-              fontSize: 'clamp(12px, 0.4vw + 11px, 14px)',
+              fontSize: 'clamp(11px, 0.4cqw + 10.5px, 14px)',
               borderRadius: '8px',
               border: 'none',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '4px',
+              gap: 'clamp(3px, 0.6cqw, 6px)',
+              padding: '0 clamp(6px, 1cqw, 12px)',
+              minWidth: 0,
+              whiteSpace: 'nowrap',
             }}
             aria-label={`Get directions to ${venue.name}`}
           >
-            <Navigation style={{ width: '14px', height: '14px' }} aria-hidden="true" />
-            Directions
+            <Navigation style={{ width: '14px', height: '14px', flexShrink: 0 }} aria-hidden="true" />
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>Directions</span>
           </button>
         </div>
 
