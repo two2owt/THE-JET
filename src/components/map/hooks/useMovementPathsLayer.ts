@@ -12,6 +12,8 @@ interface Params {
   pathData: { geojson: any; stats: { total_paths: number } } | null | undefined;
   flowAnimationRef: MutableRefObject<number | null>;
   platformSettingsRef: MutableRefObject<PlatformSettings>;
+  /** mapbox-gl module ref, used to construct the hover Popup. */
+  mapboxglRef?: MutableRefObject<any>;
 }
 
 /**
@@ -25,6 +27,7 @@ export const useMovementPathsLayer = ({
   pathData,
   flowAnimationRef,
   platformSettingsRef,
+  mapboxglRef,
 }: Params) => {
   useEffect(() => {
     if (flowAnimationRef.current) {
