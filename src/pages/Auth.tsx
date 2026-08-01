@@ -934,9 +934,27 @@ const Auth = () => {
                       {validationErrors.password}
                     </p>
                   ) : (isSignUp || isResettingPassword) ? (
-                    <p className="auth-password-hint text-xs text-muted-foreground mt-0.5">
-                      8+ characters with uppercase, lowercase, and number
-                    </p>
+                    <ul
+                      className="auth-password-hint mt-0.5 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground"
+                      aria-live="polite"
+                    >
+                      {PASSWORD_RULES.map((rule) => {
+                        const met = rule.test(password);
+                        return (
+                          <li
+                            key={rule.label}
+                            className={`flex items-center gap-1 transition-colors ${met ? "text-primary" : ""}`}
+                          >
+                            {met ? (
+                              <CheckCircle2 aria-hidden="true" className="h-3 w-3" />
+                            ) : (
+                              <Circle aria-hidden="true" className="h-3 w-3 opacity-60" />
+                            )}
+                            <span>{rule.label}</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
                   ) : null}
                 </div>
 
