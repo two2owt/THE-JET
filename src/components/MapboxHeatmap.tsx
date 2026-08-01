@@ -1803,6 +1803,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     flowAnimationRef,
     platformSettingsRef: platformSettings,
     mapboxglRef,
+    minFrequency: minPathFrequency,
   });
 
 
