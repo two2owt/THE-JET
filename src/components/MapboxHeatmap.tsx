@@ -3247,60 +3247,40 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   </div>
                 )}
 
-                {/* Time range slider — All Time / Today / This Week / This Hour.
-                    Density-based filter; hidden in time-lapse mode which drives
-                    its own hourly windowing. */}
-                {!timelapseMode && (() => {
-                  const timeSteps: Array<'all' | 'today' | 'this_week' | 'this_hour'> = ['all', 'today', 'this_week', 'this_hour'];
-                  const timeLabels = ['All Time', 'Today', 'This Week', 'This Hour'];
-                  const idx = Math.max(0, timeSteps.indexOf(timeFilter));
-                  return (
-                    <LayerSliderRow
-                      label="Time range"
-                      Icon={Clock}
-                      ariaLabel="Density time range filter"
-                      min={0}
-                      max={3}
-                      step={1}
-                      value={idx}
-                      onChange={(step) => setTimeFilter(timeSteps[step] ?? 'all')}
-                      format={(step) => timeLabels[step] ?? 'All Time'}
-                      ticks={[
-                        { value: 0, label: 'All' },
-                        { value: 1, label: 'Day' },
-                        { value: 2, label: 'Week' },
-                        { value: 3, label: 'Hour' },
-                      ]}
-                      defaultValue={0}
-                      loading={densityLoading}
-                    />
-                  );
-                })()}
-                {/* Day-of-week slider — density by weekday. Position 0 = All Days,
-                    1..7 = Sun..Sat. Works in both regular and time-lapse mode
+                {/* Day-of-week dropdown — density by weekday. "all" = All Days,
+                    0..6 = Sun..Sat. Works in both regular and time-lapse mode
                     (useHeatmapTimelapse reuses `dayFilter`). */}
                 {(() => {
-                  const dayLabels = ['All', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                  const fullLabels = ['All Days', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                  const value = dayFilter === undefined ? 0 : dayFilter + 1;
+                  const fullLabels = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                  const current = dayFilter === undefined ? 'all' : String(dayFilter);
+                  const dayLoading = densityLoading || (timelapseMode && timelapse.loading);
                   return (
-                    <LayerSliderRow
-                      label="Day of week"
-                      Icon={Calendar}
-                      ariaLabel="Density day-of-week filter"
-                      min={0}
-                      max={7}
-                      step={1}
-                      value={value}
-                      onChange={(step) => {
-                        const next = step === 0 ? undefined : step - 1;
-                        setDayFilter(next);
-                      }}
-                      format={(step) => fullLabels[step] ?? 'All Days'}
-                      ticks={dayLabels.map((label, i) => ({ value: i, label }))}
-                      defaultValue={0}
-                      loading={densityLoading || (timelapseMode && timelapse.loading)}
-                    />
+                    <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 backdrop-blur-md">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <span className="truncate text-sm font-medium">Day of week</span>
+                        {dayLoading && <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />}
+                      </div>
+                      <Select
+                        value={current}
+                        onValueChange={(v) => setDayFilter(v === 'all' ? undefined : Number(v))}
+                      >
+                        <SelectTrigger
+                          aria-label="Density day-of-week filter"
+                          className="h-9 w-[130px] shrink-0 border-white/10 bg-white/5 text-sm"
+                        >
+                          <span className="truncate">
+                            {dayFilter === undefined ? 'All Days' : fullLabels[dayFilter]}
+                          </span>
+                        </SelectTrigger>
+                        <SelectContent className="z-[10000]">
+                          <SelectItem value="all">All Days</SelectItem>
+                          {fullLabels.map((label, i) => (
+                            <SelectItem key={label} value={String(i)}>{label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   );
                 })()}
 
