@@ -153,13 +153,14 @@ export const useMovementPathsLayer = ({
 
     const sourceId = 'movement-paths';
     const lineLayerId = 'movement-paths-line';
+    const staticLineLayerId = 'movement-paths-line-static';
     const glowLayerId = 'movement-paths-glow';
     const arrowLayerId = 'movement-paths-arrows';
     const particleLayerId = 'movement-paths-particles';
 
     // Toggle-off: tear everything down.
     if (!showMovementPaths) {
-      [particleLayerId, arrowLayerId, glowLayerId, lineLayerId].forEach((id) => {
+      [particleLayerId, arrowLayerId, glowLayerId, lineLayerId, staticLineLayerId].forEach((id) => {
         try { if (mapRef.current?.getLayer(id)) mapRef.current.removeLayer(id); } catch { /* no-op */ }
       });
       try { if (mapRef.current?.getSource(sourceId)) mapRef.current.removeSource(sourceId); } catch { /* no-op */ }
@@ -177,7 +178,7 @@ export const useMovementPathsLayer = ({
         return;
       } catch (err) {
         console.warn('paths setData failed, rebuilding:', err);
-        [particleLayerId, arrowLayerId, glowLayerId, lineLayerId].forEach((id) => {
+        [particleLayerId, arrowLayerId, glowLayerId, lineLayerId, staticLineLayerId].forEach((id) => {
           try { if (mapRef.current?.getLayer(id)) mapRef.current.removeLayer(id); } catch { /* no-op */ }
         });
         try { if (mapRef.current?.getSource(sourceId)) mapRef.current.removeSource(sourceId); } catch { /* no-op */ }
@@ -195,6 +196,7 @@ export const useMovementPathsLayer = ({
       id: glowLayerId,
       type: 'line',
       source: sourceId,
+      filter: activeFilter(minFrequencyRef.current),
       layout: { 'line-join': 'round', 'line-cap': 'round' },
       paint: {
         'line-width': [
@@ -227,10 +229,27 @@ export const useMovementPathsLayer = ({
       } as any,
     });
 
+    // Static (unselected) routes: below the current frequency selection.
+    // Rendered thin + dimmed with no dash animation and no particles.
+    mapRef.current.addLayer({
+      id: staticLineLayerId,
+      type: 'line',
+      source: sourceId,
+      filter: inactiveFilter(minFrequencyRef.current),
+      layout: { 'line-join': 'round', 'line-cap': 'round' },
+      paint: {
+        'line-width': 2,
+        'line-color': 'rgba(160, 190, 210, 0.85)',
+        'line-opacity': ['*', 0.25, ['coalesce', ['get', 'recency'], 1]],
+        'line-opacity-transition': { duration: 600, delay: 0 },
+      } as any,
+    });
+
     mapRef.current.addLayer({
       id: lineLayerId,
       type: 'line',
       source: sourceId,
+      filter: activeFilter(minFrequencyRef.current),
       layout: { 'line-join': 'round', 'line-cap': 'round' },
       paint: {
         'line-width': [
@@ -289,6 +308,7 @@ export const useMovementPathsLayer = ({
       id: arrowLayerId,
       type: 'symbol',
       source: sourceId,
+      filter: activeFilter(minFrequencyRef.current),
       layout: {
         'symbol-placement': 'line',
         'symbol-spacing': 40,
@@ -309,7 +329,7 @@ export const useMovementPathsLayer = ({
 
     mapRef.current.addSource(`${sourceId}-particles`, {
       type: 'geojson',
-      data: buildParticleData(pathData.geojson, 0),
+      data: buildParticleData(pathData.geojson, 0, minFrequencyRef.current),
     });
 
     mapRef.current.addLayer({
