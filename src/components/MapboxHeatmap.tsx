@@ -3879,9 +3879,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               Legend
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(0, 100%, 65%)' }} />
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(45, 100%, 60%)' }} />
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(200, 100%, 65%)' }} />
+              {/* Same tokens as the expanded Activity legend: Hot / Warm / Cool */}
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(var(--primary))', boxShadow: '0 0 6px hsl(var(--primary) / 0.55)' }} />
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(var(--gold))', boxShadow: '0 0 6px hsl(var(--gold) / 0.5)' }} />
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(var(--silver))', boxShadow: '0 0 6px hsl(var(--silver) / 0.45)' }} />
             </div>
             <ChevronUp style={{ width: '12px', height: '12px', color: 'hsl(var(--silver))' }} />
           </div>
@@ -3979,7 +3980,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 </p>
                 <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '4px' : '8px', width: '100%', justifyContent: 'center', alignItems: 'center' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flex: isMobile ? 'none' : 1 }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(0, 100%, 65%)', boxShadow: '0 0 6px hsl(0, 100%, 65% / 0.6)' }} />
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(var(--primary))', boxShadow: '0 0 6px hsl(var(--primary) / 0.55)' }} />
                     <span style={{ fontSize: '9px', color: 'hsl(var(--foreground))' }}>Hot</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flex: isMobile ? 'none' : 1 }}>
