@@ -64,16 +64,39 @@ Deno.serve(async (req) => {
   if (type === 'new_message') {
     const channelKey = `new-message:${conversationId ?? caller.id}`
 
-    // Skip if the recipient has been active in the app very recently — they'll
-    // see the in-app badge/push instead.
-    const { data: recipientAuth } = await admin.auth.admin.getUserById(recipientUserId)
-    const lastSignIn = recipientAuth?.user?.last_sign_in_at
-    if (
-      lastSignIn &&
-      Date.now() - new Date(lastSignIn).getTime() < RECENT_ACTIVITY_MINUTES * 60_000
-    ) {
-      return json({ skipped: 'recently_active' })
+    // Respect the recipient's email notification preference.
+    const { data: prefs } = await admin
+      .from('user_preferences')
+      .select('email_notifications_enabled')
+      .eq('user_id', recipientUserId)
+      .maybeSingle()
+    if (prefs && prefs.email_notifications_enabled === false) {
+      return json({ skipped: 'email_notifications_disabled' })
     }
+
+    // Skip if the recipient is actively using the app — they'll see the in-app
+    // badge / push instead. Real activity (analytics events) is a far better
+    // signal than last_sign_in_at, which only moves on a fresh login.
+    const activityCutoff = new Date(
+      Date.now() - RECENT_ACTIVITY_MINUTES * 60_000,
+    ).toISOString()
+
+    const { count: recentEvents } = await admin
+      .from('analytics_events')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', recipientUserId)
+      .gte('created_at', activityCutoff)
+
+    if ((recentEvents ?? 0) > 0) return json({ skipped: 'recently_active' })
+
+    // Reading messages counts as activity too.
+    const { count: recentReads } = await admin
+      .from('messages')
+      .select('id', { count: 'exact', head: true })
+      .eq('recipient_id', recipientUserId)
+      .gte('read_at', activityCutoff)
+
+    if ((recentReads ?? 0) > 0) return json({ skipped: 'recently_active' })
 
     const { data: throttleRow } = await admin
       .from('email_notification_throttle')
@@ -129,6 +152,23 @@ Deno.serve(async (req) => {
   if (type === 'new_message') {
     templateData.senderName = actorName
     templateData.preview = preview
+
+    // Total unread across every conversation, so the email reflects everything
+    // waiting for them — not just this one message.
+    const { data: unreadRows } = await admin
+      .from('messages')
+      .select('conversation_id')
+      .eq('recipient_id', recipientUserId)
+      .is('read_at', null)
+      .limit(500)
+
+    const unreadCount = unreadRows?.length ?? 1
+    const conversationCount = new Set(
+      (unreadRows ?? []).map((r: { conversation_id: string }) => r.conversation_id),
+    ).size
+
+    templateData.unreadCount = Math.max(1, unreadCount)
+    templateData.conversationCount = Math.max(1, conversationCount)
   }
 
   const bucket = Math.floor(Date.now() / (MESSAGE_THROTTLE_MINUTES * 60_000))
