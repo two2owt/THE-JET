@@ -458,18 +458,36 @@ All colors MUST be HSL.
 
   /*
    * Viewport reflow guard (set by useViewportReflow while an orientation
-   * change or browser-chrome resize settles). Suppressing transitions and
-   * animations for those few frames makes dvh/svh based layouts snap to the
-   * new height in a single paint instead of animating into place.
+   * change or browser-chrome resize settles). Only geometry-affecting
+   * motion is suppressed so dvh/svh layouts snap to their new size in a
+   * single paint. Opacity/colour transitions, loading spinners and any
+   * element opting out with [data-reflow-motion="keep"] keep animating, so
+   * user-perceived motion survives the reflow.
    */
   html.is-reflowing,
   html.is-reflowing body,
-  html.is-reflowing *,
-  html.is-reflowing *::before,
-  html.is-reflowing *::after {
-    transition: none !important;
-    animation-duration: 0s !important;
+  html.is-reflowing *:not([data-reflow-motion="keep"]),
+  html.is-reflowing *:not([data-reflow-motion="keep"])::before,
+  html.is-reflowing *:not([data-reflow-motion="keep"])::after {
+    /* Freeze only properties that move or resize boxes. */
+    transition-property: opacity, color, background-color, border-color,
+      fill, stroke, box-shadow, filter !important;
+  }
+
+  /*
+   * Finite, layout-shifting animations (entrances, slide-ins, accordions)
+   * jump to their end state; infinite ones (spinners, pulses, marquees)
+   * are left untouched so feedback motion continues.
+   */
+  html.is-reflowing *:not([data-reflow-motion="keep"]):not(
+      .animate-spin
+    ):not(.animate-pulse):not(.animate-ping) {
+    animation-duration: 0.001s !important;
     animation-delay: 0s !important;
+  }
+
+  html.is-reflowing,
+  html.is-reflowing body {
     scroll-behavior: auto !important;
   }
 
