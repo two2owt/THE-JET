@@ -88,6 +88,7 @@ interface MovementPath {
   to: [number, number];
   frequency: number;
   users: string[];
+  last_seen?: string;
 }
 
 // Calculate distance between two points in meters using Haversine formula
@@ -298,7 +299,8 @@ Deno.serve(async (req) => {
               from: [fromSnapped[1], fromSnapped[0]],
               to: [toSnapped[1], toSnapped[0]],
               frequency: 0,
-              users: []
+              users: [],
+              last_seen: undefined,
             });
           }
 
@@ -306,6 +308,10 @@ Deno.serve(async (req) => {
           movement.frequency++;
           if (!movement.users.includes(userId)) {
             movement.users.push(userId);
+          }
+          // Track the most recent time this route was observed.
+          if (!movement.last_seen || new Date(next.created_at) > new Date(movement.last_seen)) {
+            movement.last_seen = next.created_at;
           }
         }
       }
@@ -327,6 +333,7 @@ Deno.serve(async (req) => {
       properties: {
         frequency: movement.frequency,
         unique_users: movement.users.length,
+        last_seen: movement.last_seen ?? null,
         weight: Math.min(movement.frequency / 2, 10) // Normalize weight for visualization
       }
     }));
