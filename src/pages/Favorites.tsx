@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { TabPageHeader } from "@/components/TabPageHeader";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { SEO } from "@/components/SEO";
+import { useVenuePhoto } from "@/hooks/useVenuePhoto";
 
 interface Deal {
   id: string;
@@ -243,6 +244,24 @@ function FavoriteVenueCard({
 }) {
   const { toggleVenueFavorite } = useFavorites(favorite.user_id);
   const [removing, setRemoving] = useState(false);
+  const [imgFailed, setImgFailed] = useState(false);
+
+  // Same Google Places photo resolution used by the JetCard hero image.
+  const photoInput = useMemo(
+    () =>
+      favorite.venue_id && favorite.venue_name
+        ? {
+            id: favorite.venue_id,
+            name: favorite.venue_name,
+            address: favorite.venue_address ?? undefined,
+            lat: favorite.venue_lat ?? undefined,
+            lng: favorite.venue_lng ?? undefined,
+          }
+        : null,
+    [favorite.venue_id, favorite.venue_name, favorite.venue_address, favorite.venue_lat, favorite.venue_lng]
+  );
+  const { photoUrl, loading: photoLoading } = useVenuePhoto(photoInput, 600);
+  const heroImage = !imgFailed ? photoUrl ?? favorite.venue_image_url ?? null : null;
 
   const handleUnfavorite = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -262,17 +281,22 @@ function FavoriteVenueCard({
       className="group relative text-left rounded-2xl overflow-hidden border border-border bg-card/60 backdrop-blur-sm hover:border-primary/40 transition-colors"
     >
       <div className="relative aspect-[16/10] bg-muted">
-        {favorite.venue_image_url ? (
+        {/* Branded fallback sits underneath so slow networks never show an empty tile. */}
+        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+          <MapPin className="w-8 h-8" />
+        </div>
+        {photoLoading && !heroImage && (
+          <div aria-hidden="true" className="absolute inset-0 animate-pulse bg-muted/40" />
+        )}
+        {heroImage && (
           <img
-            src={favorite.venue_image_url}
+            src={heroImage}
             alt={favorite.venue_name ?? "Saved venue"}
             loading="lazy"
-            className="absolute inset-0 w-full h-full object-cover"
+            decoding="async"
+            onError={() => setImgFailed(true)}
+            className="absolute inset-0 w-full h-full object-cover transition-opacity duration-200"
           />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-            <MapPin className="w-8 h-8" />
-          </div>
         )}
         <button
           type="button"
