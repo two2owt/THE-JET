@@ -100,6 +100,13 @@ const Auth = () => {
     ? "signup"
     : "signin";
 
+  // Preserve an explicit ?next= target (e.g. the MCP OAuth consent URL) so the
+  // user returns there after any sign-in method completes.
+  useEffect(() => {
+    const next = searchParams.get("next");
+    if (next) rememberPostAuthRedirect(next);
+  }, [searchParams]);
+
   // If already signed in, route based on onboarding status (covers OAuth return
   // and revisits to /auth by an authenticated user).
   useEffect(() => {
