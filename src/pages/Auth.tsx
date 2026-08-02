@@ -20,7 +20,12 @@ import { requestGeolocationPermission } from "@/lib/requestGeolocationPermission
 import { useHydrated } from "@/hooks/useHydrated";
 // Use the new JET logo for auth page
 import jetLogo from "@/assets/jet-auth-logo.png";
-import authBackground from "@/assets/auth-background.webp";
+import authBgAvif640 from "@/assets/auth-background-640.avif";
+import authBgAvif1024 from "@/assets/auth-background-1024.avif";
+import authBgAvif1600 from "@/assets/auth-background-1600.avif";
+import authBgWebp640 from "@/assets/auth-background-640.webp";
+import authBgWebp1024 from "@/assets/auth-background-1024.webp";
+import authBgWebp1600 from "@/assets/auth-background-1600.webp";
 
 
 // Enhanced validation schemas
@@ -775,12 +780,27 @@ const Auth = () => {
         description={seoDescription}
         path={seoPath}
       />
-      {/* Full-bleed background image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${authBackground})` }}
-        aria-hidden="true"
-      />
+      {/* Full-bleed background image — responsive by device width & DPR */}
+      <picture className="absolute inset-0" aria-hidden="true">
+        <source
+          type="image/avif"
+          srcSet={`${authBgAvif640} 640w, ${authBgAvif1024} 1024w, ${authBgAvif1600} 1600w`}
+          sizes="100vw"
+        />
+        <source
+          type="image/webp"
+          srcSet={`${authBgWebp640} 640w, ${authBgWebp1024} 1024w, ${authBgWebp1600} 1600w`}
+          sizes="100vw"
+        />
+        <img
+          src={authBgWebp1024}
+          alt=""
+          aria-hidden="true"
+          decoding="async"
+          fetchPriority="high"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      </picture>
       {/* Dark overlay — uses background token so it adapts with theme */}
       <div
         className="pointer-events-none absolute inset-0 bg-gradient-to-br from-background/85 via-background/70 to-background/90"
