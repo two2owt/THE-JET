@@ -321,7 +321,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     jetViteIntegrationCheck(),
     // Generates the Supabase MCP edge function from src/lib/mcp
-    mcpPlugin(),
+    mcpPlugin() as unknown as Plugin,
     // Auto-inject <link rel="preload"> for font files to break CSS→font waterfall
     // This eliminates the 1.5s LCP render delay caused by font discovery after CSS parse
     ({
