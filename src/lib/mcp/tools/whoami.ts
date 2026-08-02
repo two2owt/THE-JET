@@ -14,7 +14,7 @@ export default defineTool({
     const supabase = supabaseForUser(ctx);
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, username, display_name, bio")
+      .select("id, display_name, bio, avatar_url")
       .eq("id", ctx.getUserId())
       .maybeSingle();
 
