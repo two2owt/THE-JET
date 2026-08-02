@@ -10,7 +10,7 @@ import { Loader2, Eye, EyeOff, Mail, Lock, ArrowLeft, AlertCircle, CheckCircle2,
 import { z } from "zod";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/contexts/AuthContext";
-import { consumePostAuthRedirect } from "@/lib/postAuthRedirect";
+import { consumePostAuthRedirect, rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { writeCachedOnboardingStatus } from "@/lib/onboardingStatus";
 import { discardCurrentAuthSession } from "@/lib/authSession";
 import { SEO } from "@/components/SEO";
