@@ -140,6 +140,15 @@ const AppLayout = memo(function AppLayout() {
             </Suspense>
           }
         />
+        {/* MCP / OAuth 2.1 consent screen (Supabase authorization server) */}
+        <Route
+          path="/.lovable/oauth/consent"
+          element={
+            <Suspense fallback={<NavigationShell />}>
+              <OAuthConsent />
+            </Suspense>
+          }
+        />
 
         {/* Standard app pages — fallback mirrors each page's real shell */}
         <Route
