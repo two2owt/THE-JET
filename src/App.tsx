@@ -19,6 +19,7 @@ import {
   MessagesPageSkeleton,
   AdminPageSkeleton,
 } from "@/components/skeletons/PageSkeletons";
+import { Analytics } from "@vercel/analytics/react";
 
 // Eager load Index for fastest FCP on main route
 import Index from "./pages/Index";
@@ -92,6 +93,7 @@ const AppLayout = memo(function AppLayout() {
   return (
     <AppShell>
       <Sonner />
+      <Analytics />
       <PageTracker />
 
       <Routes>
