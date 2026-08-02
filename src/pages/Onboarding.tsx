@@ -10,7 +10,7 @@ import { Sparkles, Loader2, Upload, ArrowLeft, AlertCircle } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PreferencesStep, { PreferencesData } from "@/components/onboarding/PreferencesStep";
 import { Json } from "@/integrations/supabase/types";
-import jetLogo from "@/assets/jet-auth-logo.png";
+import jetLogo from "@/assets/jet-auth-logo-48.webp";
 import { consumePostAuthRedirect } from "@/lib/postAuthRedirect";
 import { useAuth } from "@/contexts/AuthContext";
 import { SEO } from "@/components/SEO";

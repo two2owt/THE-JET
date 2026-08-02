@@ -19,7 +19,12 @@ import { buildAuthRedirectUrl } from "@/lib/utils";
 import { requestGeolocationPermission } from "@/lib/requestGeolocationPermission";
 import { useHydrated } from "@/hooks/useHydrated";
 // Use the new JET logo for auth page
-import jetLogo from "@/assets/jet-auth-logo.png";
+import jetLogo48Avif from "@/assets/jet-auth-logo-48.avif";
+import jetLogo96Avif from "@/assets/jet-auth-logo-96.avif";
+import jetLogo144Avif from "@/assets/jet-auth-logo-144.avif";
+import jetLogo48Webp from "@/assets/jet-auth-logo-48.webp";
+import jetLogo96Webp from "@/assets/jet-auth-logo-96.webp";
+import jetLogo144Webp from "@/assets/jet-auth-logo-144.webp";
 import authBgAvif640 from "@/assets/auth-background-640.avif";
 import authBgAvif1024 from "@/assets/auth-background-1024.avif";
 import authBgAvif1600 from "@/assets/auth-background-1600.avif";
@@ -822,15 +827,25 @@ const Auth = () => {
         <div className="w-full max-w-[420px] mx-auto flex flex-col items-center animate-fade-in">
           {/* Logo above card */}
           <div className="auth-logo flex flex-col items-center mb-4 sm:mb-5">
-            <img
-              src={jetLogo}
-              alt="JET — Live City Pulse logo"
-              width="48"
-              height="48"
-              className="h-12 w-12 drop-shadow-[0_6px_22px_hsl(var(--primary)/0.55)]"
-              fetchPriority="high"
-              decoding="async"
-            />
+            <picture>
+              <source
+                type="image/avif"
+                srcSet={`${jetLogo48Avif} 1x, ${jetLogo96Avif} 2x, ${jetLogo144Avif} 3x`}
+              />
+              <source
+                type="image/webp"
+                srcSet={`${jetLogo48Webp} 1x, ${jetLogo96Webp} 2x, ${jetLogo144Webp} 3x`}
+              />
+              <img
+                src={jetLogo96Webp}
+                alt="JET — Live City Pulse logo"
+                width="48"
+                height="48"
+                className="h-12 w-12 drop-shadow-[0_6px_22px_hsl(var(--primary)/0.55)]"
+                fetchPriority="high"
+                decoding="async"
+              />
+            </picture>
             <span className="mt-3 inline-flex items-center gap-2 rounded-full border border-border/40 bg-card/30 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-foreground/75 backdrop-blur-sm">
               <span className="dot-gold" />
               Charlotte, NC
