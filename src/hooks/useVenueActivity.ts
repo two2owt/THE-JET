@@ -7,14 +7,6 @@ import type { Venue } from "@/components/MapboxHeatmap";
  */
 const fetchPopularVenuesFromGooglePlaces = async (): Promise<Venue[]> => {
   try {
-    // This edge function requires a valid user JWT — skip when signed out
-    // instead of firing a request that always returns 401.
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      console.info('Skipping venue search: no authenticated session');
-      return [];
-    }
-
     console.log('Fetching top 10 Charlotte venues...');
     
     // Charlotte coordinates
@@ -30,7 +22,7 @@ const fetchPopularVenuesFromGooglePlaces = async (): Promise<Venue[]> => {
     }
 
     // Map the response to our Venue interface
-    const venues: Venue[] = (data.venues || []).map((v: any) => ({
+    const venues: Venue[] = (data?.venues || []).map((v: any) => ({
       id: v.id,
       name: v.name,
       lat: v.lat,
