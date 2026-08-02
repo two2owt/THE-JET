@@ -45,7 +45,21 @@ export const useHeatmapTimelapse = (dayFilter?: number, initialSpeed = 1) => {
     setState(prev => ({ ...prev, loading: true, error: null }));
 
     try {
-      const hourlyPromises = Array.from({ length: 24 }, async (_, hour) => {
+      // The density endpoint requires an authenticated caller and is IP rate
+      // limited. Bail out early when signed out instead of firing 24 requests
+      // that all come back 401.
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        setState(prev => ({
+          ...prev,
+          loading: false,
+          hourlyData: [],
+          error: 'unauthorized',
+        }));
+        return;
+      }
+
+      const fetchHour = async (hour: number) => {
         const body: Record<string, string | number> = {
           time_filter: 'all',
           hour_of_day: hour,
@@ -56,7 +70,10 @@ export const useHeatmapTimelapse = (dayFilter?: number, initialSpeed = 1) => {
 
         const { data, error } = await supabase.functions.invoke(
           'get-location-density',
-          { body: JSON.stringify(body) }
+          {
+            body: JSON.stringify(body),
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          }
         );
 
         if (error) throw error;
@@ -66,9 +83,17 @@ export const useHeatmapTimelapse = (dayFilter?: number, initialSpeed = 1) => {
           geojson: data.geojson,
           stats: data.stats,
         };
-      });
+      };
 
-      const results = await Promise.all(hourlyPromises);
+      // Stay under the endpoint's per-IP rate limit by fetching in small
+      // sequential batches rather than 24 simultaneous requests.
+      const BATCH_SIZE = 4;
+      const results: HourlyDensityData[] = [];
+      for (let i = 0; i < 24; i += BATCH_SIZE) {
+        if (abortControllerRef.current?.signal.aborted) return;
+        const batch = Array.from({ length: Math.min(BATCH_SIZE, 24 - i) }, (_, k) => i + k);
+        results.push(...(await Promise.all(batch.map(fetchHour))));
+      }
       
       setState(prev => ({
         ...prev,
