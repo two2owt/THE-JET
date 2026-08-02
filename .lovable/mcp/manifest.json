@@ -205,6 +205,44 @@
         "outputSchema": null
       },
       {
+        "name": "configure_notifications",
+        "title": "Configure notifications",
+        "description": "Read or change the signed-in user's notification settings. Call with no arguments to read current settings; pass any of push_enabled, email_enabled, background_location_alerts, location_tracking, or auto_reload_updates to enable/disable that type.",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "push_enabled": {
+              "type": "boolean",
+              "description": "Master switch for in-app/device push notifications."
+            },
+            "email_enabled": {
+              "type": "boolean",
+              "description": "Email notifications (friend requests, direct messages, deal updates)."
+            },
+            "background_location_alerts": {
+              "type": "boolean",
+              "description": "Background geofence alerts when near favorite venues (requires location tracking)."
+            },
+            "location_tracking": {
+              "type": "boolean",
+              "description": "Foreground location tracking used for nearby deal alerts."
+            },
+            "auto_reload_updates": {
+              "type": "boolean",
+              "description": "Automatically apply app updates when a new version is available."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
         "name": "whoami",
         "title": "Who am I",
         "description": "Return the signed-in JET-Around user's profile summary. Useful to verify the connection works.",
