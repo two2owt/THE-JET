@@ -36,6 +36,7 @@ const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const CharlotteHappyHour = lazy(() => import("./pages/guides/CharlotteHappyHour"));
 const VerificationSuccess = lazy(() => import("./pages/VerificationSuccess"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 
 /**
  * Per-route Suspense fallback that mirrors the destination page's
@@ -136,6 +137,15 @@ const AppLayout = memo(function AppLayout() {
           element={
             <Suspense fallback={<NavigationShell />}>
               <Onboarding />
+            </Suspense>
+          }
+        />
+        {/* MCP / OAuth 2.1 consent screen (Supabase authorization server) */}
+        <Route
+          path="/.lovable/oauth/consent"
+          element={
+            <Suspense fallback={<NavigationShell />}>
+              <OAuthConsent />
             </Suspense>
           }
         />

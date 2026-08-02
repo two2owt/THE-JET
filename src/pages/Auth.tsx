@@ -10,7 +10,7 @@ import { Loader2, Eye, EyeOff, Mail, Lock, ArrowLeft, AlertCircle, CheckCircle2,
 import { z } from "zod";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/contexts/AuthContext";
-import { consumePostAuthRedirect } from "@/lib/postAuthRedirect";
+import { consumePostAuthRedirect, rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { writeCachedOnboardingStatus } from "@/lib/onboardingStatus";
 import { discardCurrentAuthSession } from "@/lib/authSession";
 import { SEO } from "@/components/SEO";
@@ -99,6 +99,13 @@ const Auth = () => {
     : isSignUp
     ? "signup"
     : "signin";
+
+  // Preserve an explicit ?next= target (e.g. the MCP OAuth consent URL) so the
+  // user returns there after any sign-in method completes.
+  useEffect(() => {
+    const next = searchParams.get("next");
+    if (next) rememberPostAuthRedirect(next);
+  }, [searchParams]);
 
   // If already signed in, route based on onboarding status (covers OAuth return
   // and revisits to /auth by an authenticated user).

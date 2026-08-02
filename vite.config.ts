@@ -7,6 +7,7 @@ import cssnano from "cssnano";
 import tailwindcss from "tailwindcss";
 import autoprefixer from "autoprefixer";
 import { visualizer } from "rollup-plugin-visualizer";
+import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/supabase/vite";
 // Critters import removed — plugin disabled (caused nav CSS deferral in prod)
 import fs from "fs";
 
@@ -319,6 +320,8 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     jetViteIntegrationCheck(),
+    // Generates the Supabase MCP edge function from src/lib/mcp
+    mcpPlugin() as unknown as Plugin,
     // Auto-inject <link rel="preload"> for font files to break CSS→font waterfall
     // This eliminates the 1.5s LCP render delay caused by font discovery after CSS parse
     ({
@@ -504,7 +507,7 @@ runtimeCaching: [
       gzipSize: true,
       brotliSize: true,
       template: "treemap", // Options: sunburst, treemap, network
-    }),
+    }) as unknown as Plugin,
   ].filter(Boolean),
   resolve: {
     alias: {
