@@ -650,9 +650,120 @@ var push_preferences_default = defineTool10({
   }
 });
 
-// src/lib/mcp/tools/whoami.ts
+// src/lib/mcp/tools/get-tier-benefits.ts
 import { defineTool as defineTool11 } from "npm:@lovable.dev/mcp-js@0.26.1";
-var whoami_default = defineTool11({
+import { z as z10 } from "npm:zod@^3.25.76";
+var TIERS = {
+  free: {
+    name: "JET",
+    price: 0,
+    benefits: [
+      "Deal discovery",
+      "Favorites & bookmarks",
+      "Search history",
+      "Location-based alerts"
+    ]
+  },
+  jet_plus: {
+    name: "JET+",
+    price: 6.99,
+    benefits: [
+      "Everything in JET",
+      "Friend connections",
+      "Social deal sharing",
+      "Venue reviews",
+      "Priority support"
+    ]
+  },
+  jetx: {
+    name: "JETx",
+    price: 12.99,
+    benefits: [
+      "Everything in JET+",
+      "VIP exclusive deals",
+      "Concierge service",
+      "Priority venue access",
+      "Early access to features"
+    ]
+  }
+};
+var ORDER = ["free", "jet_plus", "jetx"];
+var normalizeTier = (raw, subscribed) => {
+  if (!subscribed) return "free";
+  const value = (raw ?? "").toLowerCase().replace(/[\s-]/g, "_");
+  if (value === "jetx" || value === "jet_x") return "jetx";
+  if (value === "jet_plus" || value === "jetplus" || value === "plus") return "jet_plus";
+  return "free";
+};
+var get_tier_benefits_default = defineTool11({
+  name: "get_tier_benefits",
+  title: "Get my tier benefits and promotions",
+  description: "Return the benefits included with the signed-in user's current JetCard tier, plus the promotions/deals currently available to that tier and what upgrading would unlock.",
+  inputSchema: {
+    promotions_limit: z10.number().int().min(1).max(50).default(10).describe("Maximum number of currently available promotions to return.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ promotions_limit }, ctx) => {
+    if (!ctx.isAuthenticated()) {
+      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    }
+    const supabase = supabaseForUser(ctx);
+    const userId = ctx.getUserId();
+    const nowIso = (/* @__PURE__ */ new Date()).toISOString();
+    const [subRes, dealsRes] = await Promise.all([
+      supabase.from("subscribers").select("tier, subscribed, subscription_end, cancel_at_period_end, updated_at").eq("user_id", userId).maybeSingle(),
+      supabase.from("deals").select("id, title, description, deal_type, venue_id, venue_name, venue_address, starts_at, expires_at").eq("active", true).lte("starts_at", nowIso).gt("expires_at", nowIso).order("expires_at", { ascending: true }).limit(promotions_limit)
+    ]);
+    const firstError = subRes.error ?? dealsRes.error;
+    if (firstError) {
+      return { content: [{ type: "text", text: firstError.message }], isError: true };
+    }
+    const sub = subRes.data;
+    const tierKey = normalizeTier(sub?.tier, sub?.subscribed);
+    const tier = TIERS[tierKey];
+    const currentIndex = ORDER.indexOf(tierKey);
+    const upgrades = ORDER.slice(currentIndex + 1).map((key) => ({
+      tier: key,
+      name: TIERS[key].name,
+      monthly_price_usd: TIERS[key].price,
+      unlocks: TIERS[key].benefits.filter((b) => !b.startsWith("Everything in"))
+    }));
+    const promotions = (dealsRes.data ?? []).map((d) => ({
+      id: d.id,
+      title: d.title,
+      description: d.description,
+      deal_type: d.deal_type,
+      venue_id: d.venue_id,
+      venue_name: d.venue_name,
+      venue_address: d.venue_address,
+      starts_at: d.starts_at,
+      expires_at: d.expires_at
+    }));
+    const result = {
+      membership: {
+        tier: tierKey,
+        tier_name: tier.name,
+        monthly_price_usd: tier.price,
+        subscribed: sub?.subscribed ?? false,
+        renews_or_ends: sub?.subscription_end ?? null,
+        cancel_at_period_end: sub?.cancel_at_period_end ?? false,
+        last_synced: sub?.updated_at ?? null
+      },
+      benefits: tier.benefits,
+      promotions_available_now: promotions,
+      promotion_count: promotions.length,
+      upgrade_options: upgrades
+    };
+    return {
+      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+      structuredContent: result
+    };
+  }
+});
+
+// src/lib/mcp/tools/whoami.ts
+import { defineTool as defineTool12 } from "npm:@lovable.dev/mcp-js@0.26.1";
+var whoami_default = defineTool12({
   name: "whoami",
   title: "Who am I",
   description: "Return the signed-in JET-Around user's profile summary. Useful to verify the connection works.",
@@ -679,7 +790,7 @@ var mcp_default = defineMcp({
   name: "jet-around",
   title: "JET-Around",
   version: "0.1.0",
-  instructions: "Tools for JET-Around, a Charlotte, NC nightlife and deal discovery app. Use `list_deals` to find active deals, `list_favorites` / `save_favorite` / `remove_favorite` to manage the signed-in user's saved venues, `list_my_venues` for every venue and deal associated with the account (favorites, reviews, shares) grouped by venue, `get_heatmap_density` for the latest anonymized crowd-density snapshot by time range and location, `get_jetcard` for the signed-in user's JetCard (membership status, associated merchant, last activity), `configure_notifications` to read or change the user's overall push/email notification settings, `push_preferences` to view or update per-topic push preferences (JetCard updates, merchant offers, favorite venue alerts, ending-soon reminders, direct messages), `list_activity` for the user's recent JetCard activity (timestamp, venue, action), and `whoami` to confirm the connected account.",
+  instructions: "Tools for JET-Around, a Charlotte, NC nightlife and deal discovery app. Use `list_deals` to find active deals, `list_favorites` / `save_favorite` / `remove_favorite` to manage the signed-in user's saved venues, `list_my_venues` for every venue and deal associated with the account (favorites, reviews, shares) grouped by venue, `get_heatmap_density` for the latest anonymized crowd-density snapshot by time range and location, `get_jetcard` for the signed-in user's JetCard (membership status, associated merchant, last activity), `get_tier_benefits` for the benefits and promotions available to the user's current JetCard tier plus upgrade options, `configure_notifications` to read or change the user's overall push/email notification settings, `push_preferences` to view or update per-topic push preferences (JetCard updates, merchant offers, favorite venue alerts, ending-soon reminders, direct messages), `list_activity` for the user's recent JetCard activity (timestamp, venue, action), and `whoami` to confirm the connected account.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated"
@@ -695,6 +806,7 @@ var mcp_default = defineMcp({
     list_activity_default,
     list_my_venues_default,
     push_preferences_default,
+    get_tier_benefits_default,
     whoami_default
   ]
 });

@@ -357,6 +357,31 @@
         "outputSchema": null
       },
       {
+        "name": "get_tier_benefits",
+        "title": "Get my tier benefits and promotions",
+        "description": "Return the benefits included with the signed-in user's current JetCard tier, plus the promotions/deals currently available to that tier and what upgrading would unlock.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "promotions_limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10,
+              "description": "Maximum number of currently available promotions to return."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
         "name": "whoami",
         "title": "Who am I",
         "description": "Return the signed-in JET-Around user's profile summary. Useful to verify the connection works.",
