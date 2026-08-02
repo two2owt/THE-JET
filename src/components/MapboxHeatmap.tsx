@@ -312,12 +312,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         if (!Number.isNaN(n) && n >= 0 && n <= 6) return n;
       }
     } catch { /* ignore */ }
-    try {
-      const raw = localStorage.getItem(FILTER_KEYS.dayFilter);
-      if (raw === null || raw === "undefined" || raw === "all") return undefined;
-      const n = parseInt(raw, 10);
-      if (!Number.isNaN(n) && n >= 0 && n <= 6) return n;
-    } catch { /* ignore */ }
+    // Day of week always defaults to "All Days" on load — a previously
+    // selected single day is intentionally not restored from localStorage.
     return undefined;
   };
 
