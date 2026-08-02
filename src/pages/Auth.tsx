@@ -19,7 +19,12 @@ import { buildAuthRedirectUrl } from "@/lib/utils";
 import { requestGeolocationPermission } from "@/lib/requestGeolocationPermission";
 import { useHydrated } from "@/hooks/useHydrated";
 // Use the new JET logo for auth page
-import jetLogo from "@/assets/jet-auth-logo.png";
+import jetLogo48Avif from "@/assets/jet-auth-logo-48.avif";
+import jetLogo96Avif from "@/assets/jet-auth-logo-96.avif";
+import jetLogo144Avif from "@/assets/jet-auth-logo-144.avif";
+import jetLogo48Webp from "@/assets/jet-auth-logo-48.webp";
+import jetLogo96Webp from "@/assets/jet-auth-logo-96.webp";
+import jetLogo144Webp from "@/assets/jet-auth-logo-144.webp";
 import authBgAvif640 from "@/assets/auth-background-640.avif";
 import authBgAvif1024 from "@/assets/auth-background-1024.avif";
 import authBgAvif1600 from "@/assets/auth-background-1600.avif";
