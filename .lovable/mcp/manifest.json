@@ -141,6 +141,54 @@
         "outputSchema": null
       },
       {
+        "name": "get_heatmap_density",
+        "title": "Get heatmap density snapshot",
+        "description": "Return the latest aggregated, anonymized crowd-density snapshot (grid cells with activity counts) for a time range, optionally limited to a radius around a location in Charlotte, NC.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "time_window_minutes": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10080,
+              "description": "How far back to look, in minutes (1 to 10080). Default 60."
+            },
+            "latitude": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90,
+              "description": "Center latitude to filter around."
+            },
+            "longitude": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180,
+              "description": "Center longitude to filter around."
+            },
+            "radius_km": {
+              "type": "number",
+              "minimum": 0.1,
+              "maximum": 100,
+              "description": "Radius in kilometers around the center point (default 5, requires latitude/longitude)."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "description": "Maximum number of density cells to return, busiest first (default 50)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
         "name": "whoami",
         "title": "Who am I",
         "description": "Return the signed-in JET-Around user's profile summary. Useful to verify the connection works.",
