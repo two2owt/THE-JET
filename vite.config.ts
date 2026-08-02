@@ -463,11 +463,15 @@ runtimeCaching: [
             },
           },
           {
-            // Supabase API - no longer needed for fonts since self-hosted
+            // Supabase REST (deals, venues, profiles). NetworkFirst so an
+            // installed/home-screen PWA never renders a stale cached payload
+            // while the sync indicator claims it just updated. The cache is an
+            // offline fallback only.
             urlPattern: /^https:\/\/.*\.supabase\.co\/rest\/v1\/.*/i,
-            handler: "StaleWhileRevalidate",
+            handler: "NetworkFirst",
             options: {
               cacheName: "supabase-api-cache",
+              networkTimeoutSeconds: 4,
               expiration: { maxEntries: 50, maxAgeSeconds: 60 * 5 },
               cacheableResponse: { statuses: [0, 200] },
             },
