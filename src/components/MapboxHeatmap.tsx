@@ -3293,11 +3293,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
                 {/* Density status — loading / error */}
                 {(isLoadingHeatmap || densityError) && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', borderRadius: '8px', fontSize: '10px', background: densityError ? 'hsl(var(--destructive) / 0.1)' : 'hsl(var(--primary) / 0.08)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', borderRadius: '8px', fontSize: '10px', background: densityError ? (densityUnauthorized ? 'hsl(var(--muted) / 0.5)' : 'hsl(var(--destructive) / 0.1)') : 'hsl(var(--primary) / 0.08)' }}>
                     {isLoadingHeatmap ? (
                       <>
                         <Loader2 className="animate-spin" style={{ width: '12px', height: '12px', color: 'hsl(var(--primary))', flexShrink: 0 }} />
                         <span style={{ color: 'hsl(var(--foreground))' }}>Refreshing heatmap...</span>
+                      </>
+                    ) : densityUnauthorized ? (
+                      <>
+                        <AlertCircle style={{ width: '12px', height: '12px', color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                        <span style={{ color: 'hsl(var(--muted-foreground))' }}>Sign in to see live heatmap data</span>
                       </>
                     ) : (
                       <>
@@ -3362,11 +3367,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 minWidth: 0,
               }}>
                 {(isLoadingPaths || pathsError) && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', background: pathsError ? 'hsl(var(--destructive) / 0.1)' : 'hsl(var(--primary) / 0.08)', borderRadius: '8px', fontSize: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', background: pathsError ? (pathsUnauthorized ? 'hsl(var(--muted) / 0.5)' : 'hsl(var(--destructive) / 0.1)') : 'hsl(var(--primary) / 0.08)', borderRadius: '8px', fontSize: '10px' }}>
                     {isLoadingPaths ? (
                       <>
                         <Loader2 className="animate-spin" style={{ width: '12px', height: '12px', color: 'hsl(var(--primary))', flexShrink: 0 }} />
                         <span style={{ color: 'hsl(var(--foreground))' }}>Refreshing flow paths...</span>
+                      </>
+                    ) : pathsUnauthorized ? (
+                      <>
+                        <AlertCircle style={{ width: '12px', height: '12px', color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
+                        <span style={{ color: 'hsl(var(--muted-foreground))' }}>Sign in to see live flow paths</span>
                       </>
                     ) : (
                       <>
