@@ -36,6 +36,7 @@ const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const CharlotteHappyHour = lazy(() => import("./pages/guides/CharlotteHappyHour"));
 const VerificationSuccess = lazy(() => import("./pages/VerificationSuccess"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 
 /**
  * Per-route Suspense fallback that mirrors the destination page's
