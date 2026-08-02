@@ -1,0 +1,161 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.1",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://flvhduntedvorikonuvy.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "jet-around",
+      "version": "0.1.0",
+      "title": "JET-Around"
+    },
+    "tools": [
+      {
+        "name": "list_deals",
+        "title": "List active deals",
+        "description": "List currently active JET-Around deals in Charlotte, NC, optionally filtered by a text search over the title, description, or venue name.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "search": {
+              "type": "string",
+              "description": "Optional text to match against deal title, description, or venue name."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Maximum number of deals to return (default 20)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_favorites",
+        "title": "List my saved venues",
+        "description": "List the venues and deals the signed-in user has saved to their JET-Around favorites.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "Maximum number of favorites to return (default 50)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "save_favorite",
+        "title": "Save a venue to favorites",
+        "description": "Save a venue (and optionally a specific deal) to the signed-in user's JET-Around favorites.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "venue_id": {
+              "type": "string",
+              "description": "Identifier of the venue to save."
+            },
+            "venue_name": {
+              "type": "string",
+              "description": "Display name of the venue."
+            },
+            "venue_address": {
+              "type": "string",
+              "description": "Street address of the venue."
+            },
+            "venue_category": {
+              "type": "string",
+              "description": "Category such as food, drink, nightlife, or events."
+            },
+            "deal_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Optional deal id to associate with this favorite."
+            }
+          },
+          "required": [
+            "venue_id",
+            "venue_name"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "remove_favorite",
+        "title": "Remove a saved venue",
+        "description": "Remove a saved venue from the signed-in user's JET-Around favorites by favorite id or venue id.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "favorite_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Id of the favorite row to remove."
+            },
+            "venue_id": {
+              "type": "string",
+              "description": "Venue id to remove from favorites when the favorite id is unknown."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "whoami",
+        "title": "Who am I",
+        "description": "Return the signed-in JET-Around user's profile summary. Useful to verify the connection works.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
