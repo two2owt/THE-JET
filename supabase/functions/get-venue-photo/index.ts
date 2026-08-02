@@ -1,5 +1,5 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders, logVersion } from "../_shared/cors.ts";
+import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
 
 const FUNCTION_NAME = "get-venue-photo";
 logVersion(FUNCTION_NAME);
@@ -20,16 +20,8 @@ Deno.serve(async (req) => {
     });
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) return json({ error: "Unauthorized" }, 401);
-    const authClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-    );
-    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(
-      authHeader.replace("Bearer ", "")
-    );
-    if (claimsError || !claimsData?.claims) return json({ error: "Unauthorized" }, 401);
+    const userId = await getAuthenticatedUserId(req);
+    if (!userId) return json({ error: "Unauthorized" }, 401);
 
     const body = await req.json().catch(() => ({}));
     const name = typeof body.name === "string" ? body.name.trim().slice(0, 120) : "";
