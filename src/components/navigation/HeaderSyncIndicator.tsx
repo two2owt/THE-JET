@@ -32,11 +32,24 @@ export function HeaderSyncIndicator({
   mounted,
 }: HeaderSyncIndicatorProps) {
   // Tick every 15s so the relative timestamp stays fresh without thrashing.
+  // Also heal immediately when the tab returns to the foreground or the window
+  // regains focus — browsers throttle intervals in hidden tabs, which would
+  // otherwise leave "Updated Xs ago" stale for every user on resume.
   const [, setTick] = useState(0);
   useEffect(() => {
     if (!lastUpdated) return;
-    const id = window.setInterval(() => setTick((t) => t + 1), 15000);
-    return () => window.clearInterval(id);
+    const bump = () => setTick((t) => (t + 1) % 1_000_000);
+    const id = window.setInterval(bump, 15000);
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") bump();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("focus", bump);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("focus", bump);
+    };
   }, [lastUpdated]);
 
   if (!lastUpdated && !onRefresh) return null;
