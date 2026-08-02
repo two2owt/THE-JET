@@ -315,6 +315,48 @@
         "outputSchema": null
       },
       {
+        "name": "push_preferences",
+        "title": "Push notification preferences",
+        "description": "View or update the signed-in user's push notification preferences for JetCard updates and merchant offers. Call with no arguments to read current settings; pass any flag to change it.",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "push_enabled": {
+              "type": "boolean",
+              "description": "Master device push switch. Turning this off silences all push topics."
+            },
+            "jetcard_updates": {
+              "type": "boolean",
+              "description": "Push about JetCard membership/status changes and account updates."
+            },
+            "merchant_offers": {
+              "type": "boolean",
+              "description": "Push when merchants activate new deals or offers."
+            },
+            "favorite_venue_alerts": {
+              "type": "boolean",
+              "description": "Push when a saved/favorite venue posts or updates a deal."
+            },
+            "ending_soon_reminders": {
+              "type": "boolean",
+              "description": "Push when a saved deal is about to expire."
+            },
+            "direct_messages": {
+              "type": "boolean",
+              "description": "Push for direct messages from other users."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
         "name": "whoami",
         "title": "Who am I",
         "description": "Return the signed-in JET-Around user's profile summary. Useful to verify the connection works.",
