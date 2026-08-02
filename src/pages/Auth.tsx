@@ -20,7 +20,12 @@ import { requestGeolocationPermission } from "@/lib/requestGeolocationPermission
 import { useHydrated } from "@/hooks/useHydrated";
 // Use the new JET logo for auth page
 import jetLogo from "@/assets/jet-auth-logo.png";
-import authBackground from "@/assets/auth-background.webp";
+import authBgAvif640 from "@/assets/auth-background-640.avif";
+import authBgAvif1024 from "@/assets/auth-background-1024.avif";
+import authBgAvif1600 from "@/assets/auth-background-1600.avif";
+import authBgWebp640 from "@/assets/auth-background-640.webp";
+import authBgWebp1024 from "@/assets/auth-background-1024.webp";
+import authBgWebp1600 from "@/assets/auth-background-1600.webp";
 
 
 // Enhanced validation schemas
