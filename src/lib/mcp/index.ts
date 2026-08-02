@@ -4,6 +4,7 @@ import listFavoritesTool from "./tools/list-favorites";
 import saveFavoriteTool from "./tools/save-favorite";
 import removeFavoriteTool from "./tools/remove-favorite";
 import heatmapDensityTool from "./tools/heatmap-density";
+import getJetcardTool from "./tools/get-jetcard";
 import whoamiTool from "./tools/whoami";
 
 // Issuer must be the direct Supabase host, built from the project ref literal.
@@ -14,7 +15,7 @@ export default defineMcp({
   title: "JET-Around",
   version: "0.1.0",
   instructions:
-    "Tools for JET-Around, a Charlotte, NC nightlife and deal discovery app. Use `list_deals` to find active deals, `list_favorites` / `save_favorite` / `remove_favorite` to manage the signed-in user's saved venues, `get_heatmap_density` for the latest anonymized crowd-density snapshot by time range and location, and `whoami` to confirm the connected account.",
+    "Tools for JET-Around, a Charlotte, NC nightlife and deal discovery app. Use `list_deals` to find active deals, `list_favorites` / `save_favorite` / `remove_favorite` to manage the signed-in user's saved venues, `get_heatmap_density` for the latest anonymized crowd-density snapshot by time range and location, `get_jetcard` for the signed-in user's JetCard (membership status, associated merchant, last activity), and `whoami` to confirm the connected account.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated",
@@ -25,6 +26,7 @@ export default defineMcp({
     saveFavoriteTool,
     removeFavoriteTool,
     heatmapDensityTool,
+    getJetcardTool,
     whoamiTool,
   ],
 });
