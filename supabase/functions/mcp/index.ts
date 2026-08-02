@@ -177,9 +177,84 @@ var remove_favorite_default = defineTool4({
   }
 });
 
-// src/lib/mcp/tools/whoami.ts
+// src/lib/mcp/tools/heatmap-density.ts
 import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.26.1";
-var whoami_default = defineTool5({
+import { z as z5 } from "npm:zod@^3.25.76";
+function distanceKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const toRad = (d) => d * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+var heatmap_density_default = defineTool5({
+  name: "get_heatmap_density",
+  title: "Get heatmap density snapshot",
+  description: "Return the latest aggregated, anonymized crowd-density snapshot (grid cells with activity counts) for a time range, optionally limited to a radius around a location in Charlotte, NC.",
+  inputSchema: {
+    time_window_minutes: z5.number().int().min(1).max(10080).optional().describe("How far back to look, in minutes (1 to 10080). Default 60."),
+    latitude: z5.number().min(-90).max(90).optional().describe("Center latitude to filter around."),
+    longitude: z5.number().min(-180).max(180).optional().describe("Center longitude to filter around."),
+    radius_km: z5.number().min(0.1).max(100).optional().describe("Radius in kilometers around the center point (default 5, requires latitude/longitude)."),
+    limit: z5.number().int().min(1).max(200).optional().describe("Maximum number of density cells to return, busiest first (default 50).")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ time_window_minutes, latitude, longitude, radius_km, limit }, ctx) => {
+    if (!ctx.isAuthenticated()) {
+      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    }
+    if (latitude === void 0 !== (longitude === void 0)) {
+      return {
+        content: [{ type: "text", text: "Provide both latitude and longitude, or neither." }],
+        isError: true
+      };
+    }
+    const windowMinutes = time_window_minutes ?? 60;
+    const supabase = supabaseForUser(ctx);
+    const { data, error } = await supabase.functions.invoke("get-location-density", {
+      body: { time_window_minutes: windowMinutes }
+    });
+    if (error) {
+      return { content: [{ type: "text", text: error.message }], isError: true };
+    }
+    const features = data?.geojson?.features ?? [];
+    const radius = radius_km ?? 5;
+    let cells = features.map((f) => {
+      const [lng, lat] = f.geometry?.coordinates ?? [NaN, NaN];
+      return {
+        latitude: lat,
+        longitude: lng,
+        density: f.properties?.density ?? 0,
+        intensity: f.properties?.intensity ?? 0
+      };
+    }).filter((c) => Number.isFinite(c.latitude) && Number.isFinite(c.longitude));
+    if (latitude !== void 0 && longitude !== void 0) {
+      cells = cells.map((c) => ({
+        ...c,
+        distance_km: Number(distanceKm(latitude, longitude, c.latitude, c.longitude).toFixed(3))
+      })).filter((c) => c.distance_km <= radius);
+    }
+    cells.sort((a, b) => b.density - a.density);
+    cells = cells.slice(0, limit ?? 50);
+    const snapshot = {
+      generated_at: (/* @__PURE__ */ new Date()).toISOString(),
+      time_window_minutes: windowMinutes,
+      center: latitude !== void 0 && longitude !== void 0 ? { latitude, longitude, radius_km: radius } : null,
+      total_points: data?.stats?.total_points ?? null,
+      cells_returned: cells.length,
+      cells
+    };
+    return {
+      content: [{ type: "text", text: JSON.stringify(snapshot, null, 2) }],
+      structuredContent: snapshot
+    };
+  }
+});
+
+// src/lib/mcp/tools/whoami.ts
+import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.26.1";
+var whoami_default = defineTool6({
   name: "whoami",
   title: "Who am I",
   description: "Return the signed-in JET-Around user's profile summary. Useful to verify the connection works.",
@@ -206,12 +281,19 @@ var mcp_default = defineMcp({
   name: "jet-around",
   title: "JET-Around",
   version: "0.1.0",
-  instructions: "Tools for JET-Around, a Charlotte, NC nightlife and deal discovery app. Use `list_deals` to find active deals, `list_favorites` / `save_favorite` / `remove_favorite` to manage the signed-in user's saved venues, and `whoami` to confirm the connected account.",
+  instructions: "Tools for JET-Around, a Charlotte, NC nightlife and deal discovery app. Use `list_deals` to find active deals, `list_favorites` / `save_favorite` / `remove_favorite` to manage the signed-in user's saved venues, `get_heatmap_density` for the latest anonymized crowd-density snapshot by time range and location, and `whoami` to confirm the connected account.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated"
   }),
-  tools: [list_deals_default, list_favorites_default, save_favorite_default, remove_favorite_default, whoami_default]
+  tools: [
+    list_deals_default,
+    list_favorites_default,
+    save_favorite_default,
+    remove_favorite_default,
+    heatmap_density_default,
+    whoami_default
+  ]
 });
 
 // lovable-mcp-supabase-entry.ts
