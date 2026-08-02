@@ -125,14 +125,23 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Require a valid, signed-in user JWT. The project anon key alone is not
-    // sufficient — this proxies the paid Google Places API and anonymous
-    // callers could otherwise burn through the quota.
+    // Only signed-in users hit the paid Google Places API. Anonymous visitors
+    // still get the curated venue list (no quota spend, no blank map) instead
+    // of a 401 that breaks rendering.
     const userId = await getAuthenticatedUserId(req);
     if (!userId) {
+      const curated = CHARLOTTE_TOP_VENUES.map(venue => ({
+        ...venue,
+        isOpen: null,
+        openingHours: venue.openingHours ?? [],
+        phone: venue.phone ?? null,
+        website: venue.website ?? null,
+        priceLevel: venue.priceLevel ?? null,
+        description: venue.description ?? null,
+      }));
       return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ venues: curated, total: curated.length, source: 'fallback_anonymous' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
