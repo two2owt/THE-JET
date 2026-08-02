@@ -262,13 +262,18 @@ export const useVenueActivity = (enabled: boolean = true) => {
       )
       .subscribe();
 
-    // Listen for visibility changes to refresh on tab focus
+    // Resume paths: tab/PWA foreground, bfcache restore (browser bookmarks,
+    // back button), and network reconnect after offline use.
+    const resync = () => loadVenueActivity();
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        loadVenueActivity();
-      }
+      if (document.visibilityState === "visible") resync();
+    };
+    const handlePageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) resync();
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("pageshow", handlePageShow);
+    window.addEventListener("online", resync);
 
     // Refetch once auth becomes available (the venue search requires a JWT).
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
@@ -280,6 +285,8 @@ export const useVenueActivity = (enabled: boolean = true) => {
     return () => {
       supabase.removeChannel(channel);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pageshow", handlePageShow);
+      window.removeEventListener("online", resync);
       subscription.unsubscribe();
     };
   }, [enabled]);
