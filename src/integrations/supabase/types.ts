@@ -572,7 +572,7 @@ export type Database = {
           created_at: string
           data_processing_consent: boolean | null
           data_processing_consent_date: string | null
-          discoverable: boolean | null
+          discoverable: boolean
           display_name: string | null
           facebook_url: string | null
           gender: string | null
@@ -599,7 +599,7 @@ export type Database = {
           created_at?: string
           data_processing_consent?: boolean | null
           data_processing_consent_date?: string | null
-          discoverable?: boolean | null
+          discoverable?: boolean
           display_name?: string | null
           facebook_url?: string | null
           gender?: string | null
@@ -626,7 +626,7 @@ export type Database = {
           created_at?: string
           data_processing_consent?: boolean | null
           data_processing_consent_date?: string | null
-          discoverable?: boolean | null
+          discoverable?: boolean
           display_name?: string | null
           facebook_url?: string | null
           gender?: string | null

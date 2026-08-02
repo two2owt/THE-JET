@@ -147,7 +147,7 @@ export default function Social() {
         .from("discoverable_profiles")
         .select("id, display_name, avatar_url")
         .neq("id", user?.id ?? "")
-        .limit(50);
+        .limit(200);
 
       if (error) throw error;
       // Exclude the current user, accepted connections, anyone with a
