@@ -382,9 +382,90 @@ var configure_notifications_default = defineTool7({
   }
 });
 
-// src/lib/mcp/tools/whoami.ts
+// src/lib/mcp/tools/list-activity.ts
 import { defineTool as defineTool8 } from "npm:@lovable.dev/mcp-js@0.26.1";
-var whoami_default = defineTool8({
+import { z as z7 } from "npm:zod@^3.25.76";
+var list_activity_default = defineTool8({
+  name: "list_activity",
+  title: "List my recent JetCard activity",
+  description: "Return the signed-in user's recent JetCard activity \u2014 saved and removed favorites, shared deals, and venue reviews \u2014 each with a timestamp, venue, and action, newest first.",
+  inputSchema: {
+    limit: z7.number().int().min(1).max(100).default(20).describe("Maximum activities to return."),
+    since_hours: z7.number().int().min(1).max(24 * 90).optional().describe("Only include activity from the last N hours (default: no time limit).")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ limit, since_hours }, ctx) => {
+    if (!ctx.isAuthenticated()) {
+      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    }
+    const supabase = supabaseForUser(ctx);
+    const userId = ctx.getUserId();
+    const since = since_hours ? new Date(Date.now() - since_hours * 36e5).toISOString() : null;
+    const withSince = (q, col) => since ? q.gte(col, since) : q;
+    const [favRes, shareRes, reviewRes] = await Promise.all([
+      withSince(
+        supabase.from("user_favorites").select("created_at, venue_id, venue_name, deal_id").eq("user_id", userId).order("created_at", { ascending: false }).limit(limit),
+        "created_at"
+      ),
+      withSince(
+        supabase.from("deal_shares").select("shared_at, deal_id, deals(venue_id, venue_name, title)").eq("user_id", userId).order("shared_at", { ascending: false }).limit(limit),
+        "shared_at"
+      ),
+      withSince(
+        supabase.from("venue_reviews").select("created_at, venue_id, venue_name, rating, review_text").eq("user_id", userId).order("created_at", { ascending: false }).limit(limit),
+        "created_at"
+      )
+    ]);
+    const firstError = favRes.error ?? shareRes.error ?? reviewRes.error;
+    if (firstError) {
+      return { content: [{ type: "text", text: firstError.message }], isError: true };
+    }
+    const activities = [];
+    for (const row of favRes.data ?? []) {
+      activities.push({
+        timestamp: row.created_at,
+        action: "favorite_saved",
+        venue_id: row.venue_id ?? null,
+        venue_name: row.venue_name ?? null,
+        details: row.deal_id ? `Saved from deal ${row.deal_id}` : "Saved venue"
+      });
+    }
+    for (const row of shareRes.data ?? []) {
+      const deal = row.deals;
+      activities.push({
+        timestamp: row.shared_at,
+        action: "deal_shared",
+        venue_id: deal?.venue_id ?? null,
+        venue_name: deal?.venue_name ?? null,
+        details: deal?.title ? `Shared deal: ${deal.title}` : "Shared a deal"
+      });
+    }
+    for (const row of reviewRes.data ?? []) {
+      activities.push({
+        timestamp: row.created_at,
+        action: "venue_reviewed",
+        venue_id: row.venue_id ?? null,
+        venue_name: row.venue_name ?? null,
+        details: `Rated ${row.rating}/5${row.review_text ? `: ${row.review_text}` : ""}`
+      });
+    }
+    activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    const results = activities.slice(0, limit);
+    return {
+      content: [
+        {
+          type: "text",
+          text: results.length ? JSON.stringify(results, null, 2) : "No recent activity found for this account."
+        }
+      ],
+      structuredContent: { activities: results, count: results.length }
+    };
+  }
+});
+
+// src/lib/mcp/tools/whoami.ts
+import { defineTool as defineTool9 } from "npm:@lovable.dev/mcp-js@0.26.1";
+var whoami_default = defineTool9({
   name: "whoami",
   title: "Who am I",
   description: "Return the signed-in JET-Around user's profile summary. Useful to verify the connection works.",
@@ -411,7 +492,7 @@ var mcp_default = defineMcp({
   name: "jet-around",
   title: "JET-Around",
   version: "0.1.0",
-  instructions: "Tools for JET-Around, a Charlotte, NC nightlife and deal discovery app. Use `list_deals` to find active deals, `list_favorites` / `save_favorite` / `remove_favorite` to manage the signed-in user's saved venues, `get_heatmap_density` for the latest anonymized crowd-density snapshot by time range and location, `get_jetcard` for the signed-in user's JetCard (membership status, associated merchant, last activity), `configure_notifications` to read or change the user's push/email notification settings, and `whoami` to confirm the connected account.",
+  instructions: "Tools for JET-Around, a Charlotte, NC nightlife and deal discovery app. Use `list_deals` to find active deals, `list_favorites` / `save_favorite` / `remove_favorite` to manage the signed-in user's saved venues, `get_heatmap_density` for the latest anonymized crowd-density snapshot by time range and location, `get_jetcard` for the signed-in user's JetCard (membership status, associated merchant, last activity), `configure_notifications` to read or change the user's push/email notification settings, `list_activity` for the user's recent JetCard activity (timestamp, venue, action), and `whoami` to confirm the connected account.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated"
@@ -424,6 +505,7 @@ var mcp_default = defineMcp({
     heatmap_density_default,
     get_jetcard_default,
     configure_notifications_default,
+    list_activity_default,
     whoami_default
   ]
 });

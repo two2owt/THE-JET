@@ -243,6 +243,37 @@
         "outputSchema": null
       },
       {
+        "name": "list_activity",
+        "title": "List my recent JetCard activity",
+        "description": "Return the signed-in user's recent JetCard activity — saved and removed favorites, shared deals, and venue reviews — each with a timestamp, venue, and action, newest first.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "description": "Maximum activities to return."
+            },
+            "since_hours": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2160,
+              "description": "Only include activity from the last N hours (default: no time limit)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
         "name": "whoami",
         "title": "Who am I",
         "description": "Return the signed-in JET-Around user's profile summary. Useful to verify the connection works.",
