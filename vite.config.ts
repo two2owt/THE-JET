@@ -507,7 +507,7 @@ runtimeCaching: [
       gzipSize: true,
       brotliSize: true,
       template: "treemap", // Options: sunburst, treemap, network
-    }),
+    }) as unknown as Plugin,
   ].filter(Boolean),
   resolve: {
     alias: {
