@@ -274,6 +274,47 @@
         "outputSchema": null
       },
       {
+        "name": "list_my_venues",
+        "title": "List my venues and deals",
+        "description": "Return every venue and deal associated with the signed-in user's account — saved favorites (venues and deals), reviewed venues, and shared deals — grouped by venue with the reason for each association.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "include": {
+              "type": "string",
+              "enum": [
+                "all",
+                "favorites",
+                "reviews",
+                "shares"
+              ],
+              "default": "all",
+              "description": "Which associations to include."
+            },
+            "active_deals_only": {
+              "type": "boolean",
+              "default": false,
+              "description": "Only include deals that are currently active and not expired."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "description": "Maximum venues to return."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
         "name": "whoami",
         "title": "Who am I",
         "description": "Return the signed-in JET-Around user's profile summary. Useful to verify the connection works.",
