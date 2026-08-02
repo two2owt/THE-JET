@@ -321,19 +321,30 @@ export const useDeals = (enablePreferenceFilter: boolean = false, enabled: boole
       )
       .subscribe();
 
-    // Listen for visibility changes to refresh on tab focus
+    // Refresh whenever the app is resumed. `visibilitychange` covers tab
+    // switches and installed/home-screen PWA resumes; `pageshow` covers
+    // back-forward cache restores (browser bookmarks / back button), where no
+    // visibility event fires; `online` covers reconnects after offline use.
+    const resync = () => {
+      loadDeals();
+      loadUserPreferences();
+    };
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        loadDeals();
-        loadUserPreferences();
-      }
+      if (document.visibilityState === "visible") resync();
+    };
+    const handlePageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) resync();
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("pageshow", handlePageShow);
+    window.addEventListener("online", resync);
 
     return () => {
       cleanup();
       supabase.removeChannel(channel);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pageshow", handlePageShow);
+      window.removeEventListener("online", resync);
     };
   }, [enabled, preferencesLoaded, loadDeals, loadUserPreferences]);
 
