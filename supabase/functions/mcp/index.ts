@@ -572,9 +572,87 @@ var list_my_venues_default = defineTool9({
   }
 });
 
-// src/lib/mcp/tools/whoami.ts
+// src/lib/mcp/tools/push-preferences.ts
 import { defineTool as defineTool10 } from "npm:@lovable.dev/mcp-js@0.26.1";
-var whoami_default = defineTool10({
+import { z as z9 } from "npm:zod@^3.25.76";
+var DEFAULT_TOPICS = {
+  jetcard_updates: true,
+  merchant_offers: true,
+  favorite_venue_alerts: true,
+  ending_soon_reminders: true,
+  direct_messages: true
+};
+var topicFlag = (label) => z9.boolean().optional().describe(label);
+var push_preferences_default = defineTool10({
+  name: "push_preferences",
+  title: "Push notification preferences",
+  description: "View or update the signed-in user's push notification preferences for JetCard updates and merchant offers. Call with no arguments to read current settings; pass any flag to change it.",
+  inputSchema: {
+    push_enabled: topicFlag("Master device push switch. Turning this off silences all push topics."),
+    jetcard_updates: topicFlag("Push about JetCard membership/status changes and account updates."),
+    merchant_offers: topicFlag("Push when merchants activate new deals or offers."),
+    favorite_venue_alerts: topicFlag("Push when a saved/favorite venue posts or updates a deal."),
+    ending_soon_reminders: topicFlag("Push when a saved deal is about to expire."),
+    direct_messages: topicFlag("Push for direct messages from other users.")
+  },
+  annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: false },
+  handler: async (input, ctx) => {
+    if (!ctx.isAuthenticated()) {
+      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    }
+    const supabase = supabaseForUser(ctx);
+    const userId = ctx.getUserId();
+    if (input.push_enabled !== void 0) {
+      const { error } = await supabase.from("user_preferences").upsert({ user_id: userId, notifications_enabled: input.push_enabled }, { onConflict: "user_id" });
+      if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    }
+    const { data: profile, error: profileError } = await supabase.from("profiles").select("preferences").eq("id", userId).maybeSingle();
+    if (profileError) {
+      return { content: [{ type: "text", text: profileError.message }], isError: true };
+    }
+    const prefs = profile?.preferences ?? {};
+    const stored = prefs.push_topics ?? {};
+    const topics = { ...DEFAULT_TOPICS, ...stored };
+    const changedTopics = [];
+    for (const key of Object.keys(DEFAULT_TOPICS)) {
+      const next = input[key];
+      if (next !== void 0 && topics[key] !== next) {
+        topics[key] = next;
+        changedTopics.push(key);
+      }
+    }
+    if (changedTopics.length > 0) {
+      const { error } = await supabase.from("profiles").update({ preferences: { ...prefs, push_topics: topics } }).eq("id", userId);
+      if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    }
+    const { data: userPrefs, error: prefsError } = await supabase.from("user_preferences").select("notifications_enabled, updated_at").eq("user_id", userId).maybeSingle();
+    if (prefsError) {
+      return { content: [{ type: "text", text: prefsError.message }], isError: true };
+    }
+    const pushEnabled = userPrefs?.notifications_enabled ?? false;
+    const result = {
+      push_enabled: pushEnabled,
+      topics,
+      effective_topics: Object.fromEntries(
+        Object.entries(topics).map(([k, v]) => [k, pushEnabled && v])
+      ),
+      changed: [
+        ...input.push_enabled !== void 0 ? ["push_enabled"] : [],
+        ...changedTopics
+      ],
+      updated_at: userPrefs?.updated_at ?? null,
+      note: pushEnabled ? void 0 : "Device push is off, so no topics will deliver until push_enabled is set to true."
+    };
+    return {
+      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+      structuredContent: result
+    };
+  }
+});
+
+// src/lib/mcp/tools/whoami.ts
+import { defineTool as defineTool11 } from "npm:@lovable.dev/mcp-js@0.26.1";
+var whoami_default = defineTool11({
   name: "whoami",
   title: "Who am I",
   description: "Return the signed-in JET-Around user's profile summary. Useful to verify the connection works.",
@@ -601,7 +679,7 @@ var mcp_default = defineMcp({
   name: "jet-around",
   title: "JET-Around",
   version: "0.1.0",
-  instructions: "Tools for JET-Around, a Charlotte, NC nightlife and deal discovery app. Use `list_deals` to find active deals, `list_favorites` / `save_favorite` / `remove_favorite` to manage the signed-in user's saved venues, `list_my_venues` for every venue and deal associated with the account (favorites, reviews, shares) grouped by venue, `get_heatmap_density` for the latest anonymized crowd-density snapshot by time range and location, `get_jetcard` for the signed-in user's JetCard (membership status, associated merchant, last activity), `configure_notifications` to read or change the user's push/email notification settings, `list_activity` for the user's recent JetCard activity (timestamp, venue, action), and `whoami` to confirm the connected account.",
+  instructions: "Tools for JET-Around, a Charlotte, NC nightlife and deal discovery app. Use `list_deals` to find active deals, `list_favorites` / `save_favorite` / `remove_favorite` to manage the signed-in user's saved venues, `list_my_venues` for every venue and deal associated with the account (favorites, reviews, shares) grouped by venue, `get_heatmap_density` for the latest anonymized crowd-density snapshot by time range and location, `get_jetcard` for the signed-in user's JetCard (membership status, associated merchant, last activity), `configure_notifications` to read or change the user's overall push/email notification settings, `push_preferences` to view or update per-topic push preferences (JetCard updates, merchant offers, favorite venue alerts, ending-soon reminders, direct messages), `list_activity` for the user's recent JetCard activity (timestamp, venue, action), and `whoami` to confirm the connected account.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated"
@@ -616,6 +694,7 @@ var mcp_default = defineMcp({
     configure_notifications_default,
     list_activity_default,
     list_my_venues_default,
+    push_preferences_default,
     whoami_default
   ]
 });
