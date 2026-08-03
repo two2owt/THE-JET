@@ -5,6 +5,7 @@ import { useLocationPreferences } from "@/hooks/useLocationPreferences";
 import { isNativeApp } from "@/lib/platform";
 import { createLocationSmoother, haversineMeters } from "@/lib/geo-smoothing";
 import { getNetworkLocation } from "@/lib/networkGeolocation";
+import { logGeoEvent } from "@/lib/geoDiagnostics";
 
 /**
  * Streams the signed-in user's location into `public.user_locations`
@@ -94,6 +95,15 @@ export const useLocationTracker = () => {
       if (now - lastSampleAtRef.current < MIN_SAMPLE_INTERVAL_MS) return;
       lastSampleAtRef.current = now;
 
+      logGeoEvent({
+        kind: "fix",
+        source: "gps",
+        fallbackUsed: false,
+        accuracy: rawAccuracy,
+        lat: rawLat,
+        lng: rawLng,
+      });
+
       // Smooth/deny noisy fixes before they can become a row.
       const fix = smootherRef.current.push({
         lat: rawLat,
@@ -101,15 +111,44 @@ export const useLocationTracker = () => {
         accuracy: rawAccuracy,
         timestamp: now,
       });
-      if (!fix) return;
+      if (!fix) {
+        logGeoEvent({
+          kind: "rejected",
+          source: "gps",
+          fallbackUsed: false,
+          accuracy: rawAccuracy,
+          reason: "smoother rejected (accuracy/speed/noise gate)",
+        });
+        return;
+      }
       const { lat, lng, accuracy } = fix;
 
       const sinceLast = now - lastWriteAtRef.current;
       const prev = lastCoordsRef.current;
       const moved = prev ? haversineMeters(prev, { lat, lng }) : Infinity;
 
-      if (sinceLast < MIN_WRITE_INTERVAL_MS) return;
-      if (sinceLast < MAX_WRITE_INTERVAL_MS && moved < MIN_MOVE_METERS) return;
+      if (sinceLast < MIN_WRITE_INTERVAL_MS) {
+        logGeoEvent({
+          kind: "skipped",
+          source: "gps",
+          fallbackUsed: false,
+          accuracy,
+          movedMeters: moved,
+          reason: "min write interval not elapsed",
+        });
+        return;
+      }
+      if (sinceLast < MAX_WRITE_INTERVAL_MS && moved < MIN_MOVE_METERS) {
+        logGeoEvent({
+          kind: "skipped",
+          source: "gps",
+          fallbackUsed: false,
+          accuracy,
+          movedMeters: moved,
+          reason: `moved < ${MIN_MOVE_METERS}m`,
+        });
+        return;
+      }
 
       inFlightRef.current = true;
       try {
@@ -126,8 +165,23 @@ export const useLocationTracker = () => {
         if (!error) {
           lastWriteAtRef.current = now;
           lastCoordsRef.current = { lat, lng };
-        } else if (import.meta.env.DEV) {
-          console.warn("[location-tracker] insert failed", error);
+          logGeoEvent({
+            kind: "write",
+            source: "gps",
+            fallbackUsed: false,
+            accuracy,
+            lat,
+            lng,
+            movedMeters: moved,
+          });
+        } else {
+          logGeoEvent({
+            kind: "write-failed",
+            source: "gps",
+            fallbackUsed: false,
+            accuracy,
+            reason: error.message,
+          });
         }
       } finally {
         inFlightRef.current = false;
@@ -150,9 +204,27 @@ export const useLocationTracker = () => {
       const fix = await getNetworkLocation();
       if (!fix || cancelled) return;
 
+      logGeoEvent({
+        kind: "fix",
+        source: "network",
+        fallbackUsed: true,
+        accuracy: fix.accuracy,
+        lat: fix.lat,
+        lng: fix.lng,
+        reason: "gps produced no recent write",
+      });
+
       const prev = lastCoordsRef.current;
       const moved = prev ? haversineMeters(prev, fix) : Infinity;
       if (moved < NETWORK_MIN_MOVE_METERS && now - lastWriteAtRef.current < MAX_WRITE_INTERVAL_MS) {
+        logGeoEvent({
+          kind: "skipped",
+          source: "network",
+          fallbackUsed: true,
+          accuracy: fix.accuracy,
+          movedMeters: moved,
+          reason: `moved < ${NETWORK_MIN_MOVE_METERS}m`,
+        });
         return;
       }
 
@@ -169,8 +241,23 @@ export const useLocationTracker = () => {
         if (!error) {
           lastWriteAtRef.current = Date.now();
           lastCoordsRef.current = { lat: fix.lat, lng: fix.lng };
-        } else if (import.meta.env.DEV) {
-          console.warn("[location-tracker] network insert failed", error);
+          logGeoEvent({
+            kind: "write",
+            source: "network",
+            fallbackUsed: true,
+            accuracy: fix.accuracy,
+            lat: fix.lat,
+            lng: fix.lng,
+            movedMeters: moved,
+          });
+        } else {
+          logGeoEvent({
+            kind: "write-failed",
+            source: "network",
+            fallbackUsed: true,
+            accuracy: fix.accuracy,
+            reason: error.message,
+          });
         }
       } finally {
         inFlightRef.current = false;
