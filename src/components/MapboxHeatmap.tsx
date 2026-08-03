@@ -308,12 +308,22 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       const params = new URLSearchParams(window.location.search);
       const raw = params.get('day');
       if (raw !== null) {
+        if (raw === 'all') return undefined;
         const n = parseInt(raw, 10);
         if (!Number.isNaN(n) && n >= 0 && n <= 6) return n;
       }
     } catch { /* ignore */ }
-    // Day of week always defaults to "All Days" on load — a previously
-    // selected single day is intentionally not restored from localStorage.
+    // No `?day=` in the URL: fall back to the current tab session so a
+    // refresh (or a router navigation that rewrote the query) keeps the
+    // user's selection. Deliberately sessionStorage, not localStorage —
+    // a brand new session still defaults to "All Days".
+    try {
+      const raw = sessionStorage.getItem(FILTER_KEYS.dayFilter);
+      if (raw !== null && raw !== 'all') {
+        const n = parseInt(raw, 10);
+        if (!Number.isNaN(n) && n >= 0 && n <= 6) return n;
+      }
+    } catch { /* ignore */ }
     return undefined;
   };
 
