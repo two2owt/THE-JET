@@ -54,10 +54,15 @@ export function HeaderSyncIndicator({
 
   if (!lastUpdated && !onRefresh) return null;
 
-  const label = lastUpdated ? `Updated ${formatRelative(lastUpdated)}` : "Sync";
+  const label = isLoading
+    ? "Syncing…"
+    : lastUpdated
+      ? `Arrived ${formatRelative(lastUpdated)}`
+      : "Sync";
   const title = lastUpdated
-    ? `Last updated ${lastUpdated.toLocaleTimeString()} — click to refresh`
+    ? `Arrived ${lastUpdated.toLocaleTimeString()} — click to refresh`
     : "Refresh";
+  const neon = "hsl(140 100% 55%)";
 
   return (
     <button
@@ -78,7 +83,7 @@ export function HeaderSyncIndicator({
         background: "hsl(var(--muted) / 0.3)",
         backdropFilter: "blur(10px)",
         WebkitBackdropFilter: "blur(10px)",
-        color: "hsl(var(--muted-foreground))",
+        color: lastUpdated && !isLoading ? neon : "hsl(var(--muted-foreground))",
         fontSize: 12,
         lineHeight: 1,
         whiteSpace: "nowrap",
@@ -102,12 +107,16 @@ export function HeaderSyncIndicator({
         size={12}
         style={{
           animation: isLoading ? "spin 1s linear infinite" : undefined,
-          color: "hsl(var(--gold) / 0.9)",
+          color: lastUpdated && !isLoading ? neon : "hsl(var(--gold) / 0.9)",
         }}
       />
       <span
         className="hidden sm:inline"
-        style={{ fontWeight: 500 }}
+        style={{
+          fontWeight: lastUpdated && !isLoading ? 700 : 500,
+          textShadow:
+            lastUpdated && !isLoading ? `0 0 8px hsl(140 100% 55% / 0.55)` : undefined,
+        }}
       >
         {label}
       </span>
