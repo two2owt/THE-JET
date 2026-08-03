@@ -236,11 +236,11 @@ export const useMovementPathsLayer = ({
         ],
         'line-color': [
           'interpolate', ['linear'], ['get', 'frequency'],
-          1, 'rgba(100, 200, 255, 0.3)',
-          5, 'rgba(0, 255, 255, 0.35)',
-          10, 'rgba(255, 200, 0, 0.4)',
-          15, 'rgba(255, 100, 0, 0.45)',
-          20, 'rgba(255, 0, 100, 0.5)',
+          1, 'rgba(176, 224, 255, 0.45)',
+          5, 'rgba(150, 214, 255, 0.55)',
+          10, 'rgba(120, 200, 255, 0.65)',
+          15, 'rgba(96, 190, 255, 0.7)',
+          20, 'rgba(70, 180, 255, 0.75)',
         ],
         // Glow softness + strength both scale with frequency so busier routes
         // read as visibly brighter, not just wider.
@@ -251,7 +251,7 @@ export const useMovementPathsLayer = ({
         // Frequency drives strength; recency decays it as movement slows.
         'line-opacity': [
           '*',
-          ['interpolate', ['linear'], ['get', 'frequency'], 1, 0.35, 5, 0.55, 10, 0.75, 20, 0.95],
+          ['interpolate', ['linear'], ['get', 'frequency'], 1, 0.55, 5, 0.75, 10, 0.9, 20, 1],
           ['coalesce', ['get', 'recency'], 1],
         ],
         'line-width-transition': { duration: 800, delay: 0 },
@@ -270,8 +270,8 @@ export const useMovementPathsLayer = ({
       layout: { 'line-join': 'round', 'line-cap': 'round' },
       paint: {
         'line-width': 2,
-        'line-color': 'rgba(160, 190, 210, 0.85)',
-        'line-opacity': ['*', 0.25, ['coalesce', ['get', 'recency'], 1]],
+        'line-color': 'rgba(176, 224, 255, 0.9)',
+        'line-opacity': ['*', 0.45, ['coalesce', ['get', 'recency'], 1]],
         'line-opacity-transition': { duration: 600, delay: 0 },
       } as any,
     });
@@ -289,15 +289,15 @@ export const useMovementPathsLayer = ({
         ],
         'line-color': [
           'interpolate', ['linear'], ['get', 'frequency'],
-          1, 'rgb(100, 200, 255)',
-          5, 'rgb(0, 255, 255)',
-          10, 'rgb(255, 200, 0)',
-          15, 'rgb(255, 100, 0)',
-          20, 'rgb(255, 0, 100)',
+          1, 'rgb(198, 233, 255)',
+          5, 'rgb(170, 222, 255)',
+          10, 'rgb(138, 208, 255)',
+          15, 'rgb(110, 196, 255)',
+          20, 'rgb(84, 186, 255)',
         ],
         'line-opacity': [
           '*',
-          ['interpolate', ['linear'], ['get', 'frequency'], 1, 0.6, 5, 0.8, 10, 0.95, 20, 1],
+          ['interpolate', ['linear'], ['get', 'frequency'], 1, 0.8, 5, 0.92, 10, 1, 20, 1],
           ['coalesce', ['get', 'recency'], 1],
         ],
         'line-opacity-transition': { duration: 900, delay: 0 },
