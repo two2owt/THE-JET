@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLocationPreferences } from "@/hooks/useLocationPreferences";
 import { isNativeApp } from "@/lib/platform";
 import { createLocationSmoother, haversineMeters } from "@/lib/geo-smoothing";
+import { getNetworkLocation } from "@/lib/networkGeolocation";
 
 /**
  * Streams the signed-in user's location into `public.user_locations`
@@ -36,6 +37,10 @@ const MAX_WRITE_INTERVAL_MS = 5 * 60_000;
 const MIN_MOVE_METERS = 20;
 /** Ignore raw fixes arriving faster than this — GPS bursts add no signal. */
 const MIN_SAMPLE_INTERVAL_MS = 5_000;
+/** How often the coarse Google Geolocation fallback may run. */
+const NETWORK_FALLBACK_INTERVAL_MS = 5 * 60_000;
+/** Coarse fixes need a bigger move before they're worth another row. */
+const NETWORK_MIN_MOVE_METERS = 150;
 
 export const useLocationTracker = () => {
   const { session } = useAuth();
@@ -78,6 +83,7 @@ export const useLocationTracker = () => {
     let cancelled = false;
     let resumeHandler: (() => void) | null = null;
     let backgroundPoll: ReturnType<typeof setInterval> | null = null;
+    let networkPoll: ReturnType<typeof setInterval> | null = null;
 
     const maybeWrite = async (rawLat: number, rawLng: number, rawAccuracy: number | null) => {
       if (cancelled || inFlightRef.current) return;
@@ -122,6 +128,49 @@ export const useLocationTracker = () => {
           lastCoordsRef.current = { lat, lng };
         } else if (import.meta.env.DEV) {
           console.warn("[location-tracker] insert failed", error);
+        }
+      } finally {
+        inFlightRef.current = false;
+      }
+    };
+
+    /**
+     * Coarse Wi-Fi / cell / IP fix from the Google Geolocation API.
+     * Bypasses the GPS smoother (its 100m accuracy gate would reject every
+     * network fix) but keeps its own distance/time throttles so a stationary
+     * user can't flood the table. Runs only when GPS has produced nothing
+     * recently, so devices without a usable GPS signal still feed the heatmap
+     * density and the venue-to-venue movement paths.
+     */
+    const maybeWriteNetworkFix = async () => {
+      if (cancelled || inFlightRef.current) return;
+      const now = Date.now();
+      if (now - lastWriteAtRef.current < NETWORK_FALLBACK_INTERVAL_MS) return;
+
+      const fix = await getNetworkLocation();
+      if (!fix || cancelled) return;
+
+      const prev = lastCoordsRef.current;
+      const moved = prev ? haversineMeters(prev, fix) : Infinity;
+      if (moved < NETWORK_MIN_MOVE_METERS && now - lastWriteAtRef.current < MAX_WRITE_INTERVAL_MS) {
+        return;
+      }
+
+      inFlightRef.current = true;
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (cancelled || data.session?.user?.id !== userId) return;
+        const { error } = await supabase.from("user_locations").insert({
+          user_id: userId,
+          latitude: fix.lat,
+          longitude: fix.lng,
+          accuracy: fix.accuracy ?? null,
+        });
+        if (!error) {
+          lastWriteAtRef.current = Date.now();
+          lastCoordsRef.current = { lat: fix.lat, lng: fix.lng };
+        } else if (import.meta.env.DEV) {
+          console.warn("[location-tracker] network insert failed", error);
         }
       } finally {
         inFlightRef.current = false;
@@ -200,12 +249,21 @@ export const useLocationTracker = () => {
 
     void start();
 
+    // Always-on coarse fallback. It self-suppresses whenever a GPS write has
+    // landed inside the interval, so it costs nothing for users with GPS.
+    void maybeWriteNetworkFix();
+    networkPoll = setInterval(() => {
+      void maybeWriteNetworkFix();
+    }, NETWORK_FALLBACK_INTERVAL_MS);
+
     const stopAll = () => {
       cancelled = true;
       smootherRef.current.reset();
       lastSampleAtRef.current = 0;
       if (backgroundPoll) clearInterval(backgroundPoll);
       backgroundPoll = null;
+      if (networkPoll) clearInterval(networkPoll);
+      networkPoll = null;
       if (resumeHandler) document.removeEventListener("visibilitychange", resumeHandler);
       resumeHandler = null;
       if (watchIdRef.current !== null) {
