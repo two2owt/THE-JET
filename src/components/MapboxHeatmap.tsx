@@ -3942,7 +3942,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
                   <div style={{
                     width: '100%', minWidth: 0, height: '14px', borderRadius: '6px',
-                    background: 'linear-gradient(to right, rgb(100, 200, 255), rgb(0, 255, 255), rgb(255, 200, 0), rgb(255, 100, 0), rgb(255, 0, 100))',
+                    background: 'linear-gradient(to right, rgb(198, 233, 255), rgb(170, 222, 255), rgb(138, 208, 255), rgb(110, 196, 255), rgb(84, 186, 255))',
                     border: '1px solid hsl(var(--gold) / 0.35)',
                     boxShadow:
                       'inset 0 1px 3px rgba(0,0,0,0.3), 0 0 12px hsl(var(--gold) / 0.15)',
