@@ -231,16 +231,20 @@ export const useMovementPathsLayer = ({
       layout: { 'line-join': 'round', 'line-cap': 'round' },
       paint: {
         'line-width': [
-          'interpolate', ['exponential', 1.5], ['get', 'frequency'],
-          1, 8, 5, 14, 10, 22, 20, 30,
+          '*',
+          ['interpolate', ['exponential', 1.5], ['get', 'frequency'],
+            1, 12, 5, 18, 10, 26, 20, 34],
+          // Zoomed-out views compress routes into short strokes, so scale the
+          // glow up as zoom decreases to keep flows legible at city level.
+          ['interpolate', ['linear'], ['zoom'], 9, 2, 12, 1.5, 15, 1.1, 17, 1],
         ],
         'line-color': [
           'interpolate', ['linear'], ['get', 'frequency'],
-          1, 'rgba(176, 224, 255, 0.45)',
-          5, 'rgba(150, 214, 255, 0.55)',
-          10, 'rgba(120, 200, 255, 0.65)',
-          15, 'rgba(96, 190, 255, 0.7)',
-          20, 'rgba(70, 180, 255, 0.75)',
+          1, 'rgba(176, 224, 255, 0.7)',
+          5, 'rgba(150, 214, 255, 0.8)',
+          10, 'rgba(120, 200, 255, 0.9)',
+          15, 'rgba(96, 190, 255, 0.95)',
+          20, 'rgba(70, 180, 255, 1)',
         ],
         // Glow softness + strength both scale with frequency so busier routes
         // read as visibly brighter, not just wider.
@@ -251,7 +255,7 @@ export const useMovementPathsLayer = ({
         // Frequency drives strength; recency decays it as movement slows.
         'line-opacity': [
           '*',
-          ['interpolate', ['linear'], ['get', 'frequency'], 1, 0.55, 5, 0.75, 10, 0.9, 20, 1],
+          ['interpolate', ['linear'], ['get', 'frequency'], 1, 0.7, 5, 0.85, 10, 0.95, 20, 1],
           ['coalesce', ['get', 'recency'], 1],
         ],
         'line-width-transition': { duration: 800, delay: 0 },
@@ -269,9 +273,12 @@ export const useMovementPathsLayer = ({
       filter: inactiveFilter(minFrequencyRef.current),
       layout: { 'line-join': 'round', 'line-cap': 'round' },
       paint: {
-        'line-width': 2,
+        'line-width': [
+          '*', 2.5,
+          ['interpolate', ['linear'], ['zoom'], 9, 1.8, 12, 1.4, 15, 1.1, 17, 1],
+        ],
         'line-color': 'rgba(176, 224, 255, 0.9)',
-        'line-opacity': ['*', 0.45, ['coalesce', ['get', 'recency'], 1]],
+        'line-opacity': ['*', 0.6, ['coalesce', ['get', 'recency'], 1]],
         'line-opacity-transition': { duration: 600, delay: 0 },
       } as any,
     });
@@ -284,8 +291,10 @@ export const useMovementPathsLayer = ({
       layout: { 'line-join': 'round', 'line-cap': 'round' },
       paint: {
         'line-width': [
-          'interpolate', ['exponential', 1.5], ['get', 'frequency'],
-          1, 3, 5, 6, 10, 10, 20, 14,
+          '*',
+          ['interpolate', ['exponential', 1.5], ['get', 'frequency'],
+            1, 5, 5, 8, 10, 12, 20, 16],
+          ['interpolate', ['linear'], ['zoom'], 9, 1.8, 12, 1.4, 15, 1.1, 17, 1],
         ],
         'line-color': [
           'interpolate', ['linear'], ['get', 'frequency'],
@@ -297,11 +306,13 @@ export const useMovementPathsLayer = ({
         ],
         'line-opacity': [
           '*',
-          ['interpolate', ['linear'], ['get', 'frequency'], 1, 0.8, 5, 0.92, 10, 1, 20, 1],
+          ['interpolate', ['linear'], ['get', 'frequency'], 1, 0.95, 5, 1, 10, 1, 20, 1],
           ['coalesce', ['get', 'recency'], 1],
         ],
         'line-opacity-transition': { duration: 900, delay: 0 },
-        'line-dasharray': [0, 4, 3],
+        // Shorter gaps so the flow still reads as a continuous route when
+        // zoomed out; the dash offset animation still conveys direction.
+        'line-dasharray': [0, 2, 2],
         'line-width-transition': { duration: 800, delay: 0 },
         'line-color-transition': { duration: 800, delay: 0 },
       } as any,
