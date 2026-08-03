@@ -56,11 +56,14 @@ const inactiveFilter = (min: number): any => [
 ];
 
 /** Dash phases used to make the flow lines appear to travel. */
+// Long dashes with short gaps: the stroke still reads as one continuous
+// route (legible when zoomed out) while the offset animation conveys
+// direction of travel.
 const DASH_SEQUENCE = [
-  [0, 4, 3], [0.5, 4, 2.5], [1, 4, 2], [1.5, 4, 1.5],
-  [2, 4, 1], [2.5, 4, 0.5], [3, 4, 0],
-  [0, 0.5, 3, 3.5], [0, 1, 3, 3], [0, 1.5, 3, 2.5],
-  [0, 2, 3, 2], [0, 2.5, 3, 1.5], [0, 3, 3, 1], [0, 3.5, 3, 0.5],
+  [0, 6, 1.5], [0.25, 6, 1.25], [0.5, 6, 1], [0.75, 6, 0.75],
+  [1, 6, 0.5], [1.25, 6, 0.25], [1.5, 6, 0],
+  [0, 0.25, 6, 1.25], [0, 0.5, 6, 1], [0, 0.75, 6, 0.75],
+  [0, 1, 6, 0.5], [0, 1.25, 6, 0.25], [0, 1.5, 6, 0],
 ];
 
 /**
