@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { logGeoEvent } from "@/lib/geoDiagnostics";
 
 export interface NetworkFix {
   lat: number;
@@ -33,13 +34,38 @@ export async function getNetworkLocation(force = false): Promise<NetworkFix | nu
       const { data, error } = await supabase.functions.invoke("get-network-location", {
         body: { considerIp: true },
       });
-      if (error || !data?.location) return null;
+      if (error || !data?.location) {
+        logGeoEvent({
+          kind: "rejected",
+          source: "network",
+          fallbackUsed: true,
+          accuracy: null,
+          reason: error?.message ?? data?.error ?? "no location returned",
+        });
+        return null;
+      }
 
       const accuracy = typeof data.accuracy === "number" ? data.accuracy : null;
-      if (accuracy !== null && accuracy > MAX_NETWORK_ACCURACY_METERS) return null;
+      if (accuracy !== null && accuracy > MAX_NETWORK_ACCURACY_METERS) {
+        logGeoEvent({
+          kind: "rejected",
+          source: "network",
+          fallbackUsed: true,
+          accuracy,
+          reason: `coarser than ${MAX_NETWORK_ACCURACY_METERS}m accuracy cap`,
+        });
+        return null;
+      }
 
       return { lat: data.location.lat, lng: data.location.lng, accuracy };
-    } catch {
+    } catch (err) {
+      logGeoEvent({
+        kind: "rejected",
+        source: "network",
+        fallbackUsed: true,
+        accuracy: null,
+        reason: err instanceof Error ? err.message : "network lookup threw",
+      });
       return null;
     } finally {
       inFlight = null;
