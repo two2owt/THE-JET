@@ -63,13 +63,16 @@ Deno.serve(async (req) => {
             details:
               "Enable the Geolocation API on the Google Cloud project and make sure the server key has no HTTP-referrer restriction.",
           },
-          403,
+          // 200 on purpose: this is an optional coarse-location fallback, so a
+          // misconfigured key must degrade silently instead of surfacing a
+          // runtime error in the client.
+          200,
         );
       }
       if (res.status === 404) {
         return json({ location: null, error: "not_found" }, 200);
       }
-      return json({ location: null, error: reason }, res.status);
+      return json({ location: null, error: reason }, 200);
     }
 
     const lat = data?.location?.lat;
