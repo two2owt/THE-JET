@@ -470,6 +470,17 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     syncUrlParams();
   }, [syncUrlParams]);
 
+  // Mirror the day-of-week selection into the tab session so a refresh keeps
+  // it even if another route navigation rewrote the query string.
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        FILTER_KEYS.dayFilter,
+        dayFilter === undefined ? "all" : String(dayFilter),
+      );
+    } catch { /* ignore */ }
+  }, [dayFilter]);
+
   // Sync state FROM URL on browser back/forward navigation
   useEffect(() => {
     const handlePopState = () => {
