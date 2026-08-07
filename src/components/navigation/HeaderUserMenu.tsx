@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -31,6 +32,15 @@ export function HeaderUserMenu({
 }: HeaderUserMenuProps) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  // Track whether the user's uploaded avatar failed to load. Only then do we
+  // allow a fallback — a successfully uploaded image must never be replaced
+  // by initials or the brand mark (including while it's still loading).
+  const [uploadFailed, setUploadFailed] = useState(false);
+  useEffect(() => {
+    setUploadFailed(false);
+  }, [avatarUrl]);
+
+  const hasUpload = !!avatarUrl && !uploadFailed;
 
   const activeRoutes = ["/profile", "/admin"];
   const isOnAccountRoute = activeRoutes.some((p) => pathname.startsWith(p));
@@ -40,7 +50,7 @@ export function HeaderUserMenu({
   const initials = getInitials(displayName);
   // Prefer the user's uploaded avatar; otherwise fall back to the JET mark
   // so the button never renders bare initials when a brand image is available.
-  const imageSrc = avatarUrl || DEFAULT_AVATAR_SRC;
+  const imageSrc = hasUpload ? avatarUrl! : DEFAULT_AVATAR_SRC;
 
   return (
     <button
@@ -54,28 +64,38 @@ export function HeaderUserMenu({
         <AvatarImage
           src={imageSrc}
           alt=""
+          onError={() => {
+            if (avatarUrl && !uploadFailed) setUploadFailed(true);
+          }}
           // Center the JET mark inside the circular frame with a touch of
           // breathing room. `object-contain` prevents the logo from being
           // cropped to a square edge like a photo avatar would be.
-          className={avatarUrl ? "object-cover" : "object-contain p-1 bg-background"}
+          className={hasUpload ? "object-cover" : "object-contain p-1 bg-background"}
         />
-        <AvatarFallback
-          className="text-primary-foreground font-bold tracking-wide flex items-center justify-center"
-          style={avatarFallbackStyle}
-          delayMs={400}
-        >
-          <span
-            aria-hidden="true"
-            style={{
-              lineHeight: 1,
-              fontSize: "clamp(13px, 1.6vw, 15px)",
-              textShadow: "0 1px 2px hsl(0 0% 0% / 0.35)",
-              userSelect: "none",
-            }}
+        {/* Initials are a last resort: only when there is no uploaded image
+            (or it genuinely failed to load). While an upload is loading we
+            render a neutral placeholder instead of flashing initials. */}
+        {hasUpload ? (
+          <AvatarFallback style={{ background: "hsl(var(--muted))" }} delayMs={0} />
+        ) : (
+          <AvatarFallback
+            className="text-primary-foreground font-bold tracking-wide flex items-center justify-center"
+            style={avatarFallbackStyle}
+            delayMs={400}
           >
-            {initials}
-          </span>
-        </AvatarFallback>
+            <span
+              aria-hidden="true"
+              style={{
+                lineHeight: 1,
+                fontSize: "clamp(13px, 1.6vw, 15px)",
+                textShadow: "0 1px 2px hsl(0 0% 0% / 0.35)",
+                userSelect: "none",
+              }}
+            >
+              {initials}
+            </span>
+          </AvatarFallback>
+        )}
       </Avatar>
       {userId && (
         <span
