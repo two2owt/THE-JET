@@ -5,6 +5,13 @@ import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
 const FUNCTION_NAME = "get-movement-paths";
 logVersion(FUNCTION_NAME);
 
+/**
+ * k-anonymity floor: a route edge is only returned when at least this many
+ * DISTINCT users travelled it. Stops a single person's venue-to-venue
+ * movements being traceable on the flow-paths layer (anti-stalking guard).
+ */
+const K_ANONYMITY_MIN_USERS = 3;
+
 // Rate limiting: 15 requests per minute per IP
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
 const RATE_LIMIT_MAX_REQUESTS = 15;
@@ -317,11 +324,18 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Filter by minimum frequency
-    const filteredMovements = Array.from(movements.values())
+    // Filter by minimum frequency, then apply the k-anonymity floor so edges
+    // travelled by fewer than K distinct users are never exposed.
+    const frequencyMatched = Array.from(movements.values())
       .filter(m => m.frequency >= minFrequency);
+    const filteredMovements = frequencyMatched
+      .filter(m => m.users.length >= K_ANONYMITY_MIN_USERS);
+    const suppressedPaths = frequencyMatched.length - filteredMovements.length;
 
-    console.log(`Found ${filteredMovements.length} movement paths with frequency >= ${minFrequency}`);
+    console.log(
+      `Found ${filteredMovements.length} movement paths with frequency >= ${minFrequency} ` +
+      `(${suppressedPaths} suppressed by k-anonymity floor of ${K_ANONYMITY_MIN_USERS})`
+    );
 
     // Convert to GeoJSON format
     const features = filteredMovements.map(movement => ({
@@ -351,7 +365,9 @@ Deno.serve(async (req) => {
       max_frequency: Math.max(...filteredMovements.map(m => m.frequency), 0),
       avg_frequency: filteredMovements.length > 0 
         ? filteredMovements.reduce((sum, m) => sum + m.frequency, 0) / filteredMovements.length 
-        : 0
+        : 0,
+      suppressed_paths: suppressedPaths,
+      k_anonymity_min_users: K_ANONYMITY_MIN_USERS
     };
 
     console.log('Movement path statistics:', stats);

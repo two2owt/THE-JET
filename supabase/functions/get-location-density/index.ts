@@ -5,6 +5,13 @@ import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
 const FUNCTION_NAME = "get-location-density";
 logVersion(FUNCTION_NAME);
 
+/**
+ * k-anonymity floor: a grid cell is only returned when at least this many
+ * DISTINCT users contributed points to it. Prevents a single person's
+ * movements from being readable off the heatmap (anti-stalking guard).
+ */
+const K_ANONYMITY_MIN_USERS = 3;
+
 // Rate limiting: 15 requests per minute per IP
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
 const RATE_LIMIT_MAX_REQUESTS = 15;
@@ -184,7 +191,9 @@ Deno.serve(async (req) => {
 
     let query = serviceClient
       .from('user_locations')
-      .select('latitude, longitude, created_at');
+      // `user_id` is used server-side only, to enforce the k-anonymity floor.
+      // It is never included in the response payload.
+      .select('latitude, longitude, created_at, user_id');
 
     // Apply time filters. `time_window_minutes` takes precedence over the
     // coarse `time_filter` bucket when the client supplies a slider value.
@@ -237,7 +246,7 @@ Deno.serve(async (req) => {
     // Create density grid - aggregate locations into grid cells for heatmap
     // Using smaller grid for more detailed visualization
     const gridSize = 0.003; // ~300m grid cells for finer granularity
-    const densityMap = new Map<string, number>();
+    const densityMap = new Map<string, { count: number; users: Set<string> }>();
 
     filteredLocations.forEach(loc => {
       const lat = parseFloat(String(loc.latitude));
@@ -247,11 +256,23 @@ Deno.serve(async (req) => {
       const gridLat = Math.floor(lat / gridSize) * gridSize;
       const gridLng = Math.floor(lng / gridSize) * gridSize;
       const key = `${gridLat.toFixed(6)},${gridLng.toFixed(6)}`;
-      densityMap.set(key, (densityMap.get(key) || 0) + 1);
+      let cell = densityMap.get(key);
+      if (!cell) {
+        cell = { count: 0, users: new Set<string>() };
+        densityMap.set(key, cell);
+      }
+      cell.count++;
+      cell.users.add(String(loc.user_id ?? 'anonymous'));
     });
 
+    // Suppress every cell that fewer than K distinct users contributed to.
+    const allCells = Array.from(densityMap.entries());
+    const visibleCells = allCells.filter(([, cell]) => cell.users.size >= K_ANONYMITY_MIN_USERS);
+    const suppressedCells = allCells.length - visibleCells.length;
+
     // Convert to GeoJSON format for Mapbox heatmap layer
-    const features = Array.from(densityMap.entries()).map(([key, count]) => {
+    const features = visibleCells.map(([key, cell]) => {
+      const count = cell.count;
       const [lat, lng] = key.split(',').map(Number);
       return {
         type: 'Feature',
@@ -272,7 +293,7 @@ Deno.serve(async (req) => {
     };
 
     // Calculate statistics for UI display
-    const densityValues = Array.from(densityMap.values());
+    const densityValues = visibleCells.map(([, cell]) => cell.count);
     const maxDensity = densityValues.length > 0 ? Math.max(...densityValues) : 0;
     const avgDensity = densityValues.length > 0 
       ? densityValues.reduce((a, b) => a + b, 0) / densityValues.length 
@@ -285,10 +306,12 @@ Deno.serve(async (req) => {
         success: true,
         geojson,
         stats: {
-          total_points: filteredLocations.length,
+          total_points: densityValues.reduce((a, b) => a + b, 0),
           grid_cells: features.length,
           max_density: maxDensity,
           avg_density: avgDensity,
+          suppressed_cells: suppressedCells,
+          k_anonymity_min_users: K_ANONYMITY_MIN_USERS,
         },
       }),
       {
