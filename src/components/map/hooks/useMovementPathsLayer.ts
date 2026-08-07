@@ -286,8 +286,11 @@ export const useMovementPathsLayer = ({
       layout: { 'line-join': 'round', 'line-cap': 'round' },
       paint: {
         'line-width': [
-          '*', 2.5,
-          ['interpolate', ['linear'], ['zoom'], 9, 1.8, 12, 1.4, 15, 1.1, 17, 1],
+          'interpolate', ['linear'], ['zoom'],
+          9, ['*', 2.5, 1.8],
+          12, ['*', 2.5, 1.4],
+          15, ['*', 2.5, 1.1],
+          17, ['*', 2.5, 1],
         ],
         'line-color': 'rgba(176, 224, 255, 0.9)',
         'line-opacity': ['*', 0.6, ['coalesce', ['get', 'recency'], 1]],
