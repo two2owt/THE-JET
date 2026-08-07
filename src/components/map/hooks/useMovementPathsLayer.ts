@@ -241,13 +241,14 @@ export const useMovementPathsLayer = ({
       filter: activeFilter(minFrequencyRef.current),
       layout: { 'line-join': 'round', 'line-cap': 'round' },
       paint: {
+        // Zoom must be the top-level interpolate input (Mapbox v3 rule);
+        // each zoom stop multiplies the frequency-based width by a scale.
         'line-width': [
-          '*',
-          ['interpolate', ['exponential', 1.5], ['get', 'frequency'],
-            1, 12, 5, 18, 10, 26, 20, 34],
-          // Zoomed-out views compress routes into short strokes, so scale the
-          // glow up as zoom decreases to keep flows legible at city level.
-          ['interpolate', ['linear'], ['zoom'], 9, 2, 12, 1.5, 15, 1.1, 17, 1],
+          'interpolate', ['linear'], ['zoom'],
+          9, ['*', glowFreqWidth, 2],
+          12, ['*', glowFreqWidth, 1.5],
+          15, ['*', glowFreqWidth, 1.1],
+          17, ['*', glowFreqWidth, 1],
         ],
         'line-color': [
           'interpolate', ['linear'], ['get', 'frequency'],
