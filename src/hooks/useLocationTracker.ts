@@ -38,6 +38,12 @@ const MAX_WRITE_INTERVAL_MS = 5 * 60_000;
 const MIN_MOVE_METERS = 20;
 /** Ignore raw fixes arriving faster than this — GPS bursts add no signal. */
 const MIN_SAMPLE_INTERVAL_MS = 5_000;
+/**
+ * Immediately after tracking starts (permission grant, sign-in, app resume) we
+ * want a real point on the map without waiting out the steady-state throttles,
+ * so the first fix of a session is written as soon as it passes the smoother.
+ */
+const PRIMING_WINDOW_MS = 2 * 60_000;
 /** How often the coarse Google Geolocation fallback may run. */
 const NETWORK_FALLBACK_INTERVAL_MS = 5 * 60_000;
 /** Grace period letting GPS report before any coarse fallback is attempted. */
@@ -55,6 +61,8 @@ export const useLocationTracker = () => {
   const inFlightRef = useRef(false);
   const lastSampleAtRef = useRef(0);
   const smootherRef = useRef(createLocationSmoother());
+  // True until the first accepted write of this tracking session lands.
+  const primingRef = useRef(true);
   // Bumped whenever the browser geolocation permission flips (e.g. the user
   // taps "Enable location" in the first-run prompt) so tracking starts for
   // that user immediately instead of waiting for the next mount.
@@ -92,10 +100,11 @@ export const useLocationTracker = () => {
     const maybeWrite = async (rawLat: number, rawLng: number, rawAccuracy: number | null) => {
       if (cancelled || inFlightRef.current) return;
       const now = Date.now();
+      const priming = primingRef.current;
 
       // Throttle raw sampling before doing any work — some devices fire
       // watchPosition several times per second.
-      if (now - lastSampleAtRef.current < MIN_SAMPLE_INTERVAL_MS) return;
+      if (!priming && now - lastSampleAtRef.current < MIN_SAMPLE_INTERVAL_MS) return;
       lastSampleAtRef.current = now;
 
       logGeoEvent({
@@ -130,7 +139,7 @@ export const useLocationTracker = () => {
       const prev = lastCoordsRef.current;
       const moved = prev ? haversineMeters(prev, { lat, lng }) : Infinity;
 
-      if (sinceLast < MIN_WRITE_INTERVAL_MS) {
+      if (!priming && sinceLast < MIN_WRITE_INTERVAL_MS) {
         logGeoEvent({
           kind: "skipped",
           source: "gps",
@@ -141,7 +150,7 @@ export const useLocationTracker = () => {
         });
         return;
       }
-      if (sinceLast < MAX_WRITE_INTERVAL_MS && moved < MIN_MOVE_METERS) {
+      if (!priming && sinceLast < MAX_WRITE_INTERVAL_MS && moved < MIN_MOVE_METERS) {
         logGeoEvent({
           kind: "skipped",
           source: "gps",
@@ -168,6 +177,7 @@ export const useLocationTracker = () => {
         if (!error) {
           lastWriteAtRef.current = now;
           lastCoordsRef.current = { lat, lng };
+          primingRef.current = false;
           logGeoEvent({
             kind: "write",
             source: "gps",
