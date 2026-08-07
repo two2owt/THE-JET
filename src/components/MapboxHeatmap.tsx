@@ -972,9 +972,14 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Keep the map camera + built-in controls clear of the header, bottom nav and open panels
   useEffect(() => {
     const root = document.documentElement;
+    const panelOpen = !!(isMobile && selectedVenue);
+    const focus =
+      panelOpen && Number.isFinite(selectedVenue?.lng) && Number.isFinite(selectedVenue?.lat)
+        ? ([selectedVenue!.lng, selectedVenue!.lat] as [number, number])
+        : null;
 
     // Height reserved at the bottom by an open panel (JetCard on mobile / bottom sheet)
-    const panelBottom = isMobile && selectedVenue ? 'min(46svh, 420px)' : '0px';
+    const panelBottom = panelOpen ? 'min(46svh, 420px)' : '0px';
     root.style.setProperty('--map-panel-bottom', panelBottom);
 
     const readPx = (expr: string) => {
@@ -1008,7 +1013,20 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       try {
         // Canvas first: padding is meaningless against a stale canvas size.
         map.current.resize();
-        map.current.setPadding(padding, { duration: animate ? 250 : 0 } as never);
+        const duration = animate ? 260 : 0;
+        if (animate && focus) {
+          // Single combined camera move: re-centring the venue inside the
+          // shrunken viewport in the same animation avoids the double-hop
+          // jitter of setPadding() followed by a separate easeTo().
+          map.current.easeTo({
+            center: focus,
+            padding,
+            duration,
+            essential: true,
+          } as never);
+        } else {
+          map.current.setPadding(padding, { duration } as never);
+        }
       } catch {
         /* map not ready yet */
       }
@@ -1029,8 +1047,19 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         rafId = 0;
         applyPadding(animate);
       });
+      // Re-measure across the panel's own CSS transition so the final canvas
+      // size and padding settle together instead of drifting after it ends.
       [120, 320, 600].forEach((delay) =>
         timers.push(setTimeout(() => applyPadding(animate), delay)),
+      );
+      timers.push(
+        setTimeout(() => {
+          try {
+            map.current?.resize();
+          } catch {
+            /* noop */
+          }
+        }, 700),
       );
     };
 
@@ -1040,7 +1069,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       if (document.visibilityState === 'visible') schedule(false);
     };
 
-    schedule(false);
+    // First paint snaps; later panel open/close reflows animate smoothly.
+    schedule(paddingInitialisedRef.current);
+    paddingInitialisedRef.current = true;
     window.addEventListener('resize', onResize);
     window.addEventListener('orientationchange', onRotate);
     window.visualViewport?.addEventListener('resize', onResize);
@@ -1059,7 +1090,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       document.removeEventListener('visibilitychange', onResume);
       screenOrientation?.removeEventListener?.('change', onRotate);
     };
-  }, [isMobile, selectedVenue, mapLoaded]);
+    // Depend on the panel's identity/state, not the venue object reference, so
+    // unrelated re-renders never retrigger a camera move.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMobile, selectedVenue?.id, selectedVenue?.lat, selectedVenue?.lng, mapLoaded]);
 
   // Suspend map drag / scroll-zoom while the user interacts with an overlay
   // panel (JetCard, search results), and restore it when they leave/close it.
