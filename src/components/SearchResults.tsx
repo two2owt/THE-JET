@@ -252,6 +252,14 @@ export const SearchResults = ({
   };
 
   /** Open a deal via the app's existing ?deal= deep-link contract handled in Index.tsx. */
+  /** Fall back to the deal's venue photo when the deal has no image of its own. */
+  const venueImageFor = (deal: Deal): string | undefined => {
+    const match = deal.venue_id
+      ? venues.find((v) => v.id === deal.venue_id)
+      : venues.find((v) => v.name.toLowerCase() === (deal.venue_name ?? "").toLowerCase());
+    return match?.imageUrl;
+  };
+
   const handleDealSelect = (deal: Deal) => {
     // Prefer surfacing the venue's JetCard (so users land on the same
     // surface they would from a venue/area/category selection). When the
