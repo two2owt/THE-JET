@@ -36,6 +36,17 @@ import { logGeoEvent } from "@/lib/geoDiagnostics";
 const MIN_WRITE_INTERVAL_MS = 60_000;
 const MAX_WRITE_INTERVAL_MS = 5 * 60_000;
 const MIN_MOVE_METERS = 20;
+/**
+ * Motion-adaptive cadence: while the smoothed track shows the user moving
+ * faster than `MOVING_SPEED_MPS`, writes go out every ~20s with a smaller
+ * distance gate so flow paths stay sharp. When stationary we fall back to the
+ * conservative 60s / 20m gates (and the 5 min heartbeat) to keep the table lean.
+ */
+const MOVING_SPEED_MPS = 2;
+const MOVING_WRITE_INTERVAL_MS = 20_000;
+const MOVING_MIN_MOVE_METERS = 10;
+/** Speed samples older than this are stale — treat the user as stationary. */
+const SPEED_SAMPLE_MAX_AGE_MS = 2 * 60_000;
 /** Ignore raw fixes arriving faster than this — GPS bursts add no signal. */
 const MIN_SAMPLE_INTERVAL_MS = 5_000;
 /*
@@ -59,6 +70,9 @@ export const useLocationTracker = () => {
   const lastCoordsRef = useRef<{ lat: number; lng: number } | null>(null);
   const inFlightRef = useRef(false);
   const lastSampleAtRef = useRef(0);
+  // Smoothed speed (m/s) derived from consecutive accepted fixes.
+  const speedMpsRef = useRef(0);
+  const lastFixRef = useRef<{ lat: number; lng: number; at: number } | null>(null);
   const smootherRef = useRef(createLocationSmoother());
   // True until the first accepted write of this tracking session lands.
   const primingRef = useRef(true);
@@ -100,6 +114,8 @@ export const useLocationTracker = () => {
     // through the throttles so the live layers update instantly.
     primingRef.current = true;
     lastSampleAtRef.current = 0;
+    speedMpsRef.current = 0;
+    lastFixRef.current = null;
 
     const maybeWrite = async (rawLat: number, rawLng: number, rawAccuracy: number | null) => {
       if (cancelled || inFlightRef.current) return;
@@ -139,29 +155,47 @@ export const useLocationTracker = () => {
       }
       const { lat, lng, accuracy } = fix;
 
+      // Update the motion estimate from consecutive accepted fixes (EMA so a
+      // single noisy jump can't flip the cadence).
+      const lastFix = lastFixRef.current;
+      if (lastFix) {
+        const dt = (now - lastFix.at) / 1000;
+        if (dt > 0 && now - lastFix.at <= SPEED_SAMPLE_MAX_AGE_MS) {
+          const instant = haversineMeters(lastFix, { lat, lng }) / dt;
+          speedMpsRef.current = speedMpsRef.current * 0.5 + instant * 0.5;
+        } else {
+          speedMpsRef.current = 0;
+        }
+      }
+      lastFixRef.current = { lat, lng, at: now };
+
+      const moving = speedMpsRef.current > MOVING_SPEED_MPS;
+      const writeInterval = moving ? MOVING_WRITE_INTERVAL_MS : MIN_WRITE_INTERVAL_MS;
+      const moveGate = moving ? MOVING_MIN_MOVE_METERS : MIN_MOVE_METERS;
+
       const sinceLast = now - lastWriteAtRef.current;
       const prev = lastCoordsRef.current;
       const moved = prev ? haversineMeters(prev, { lat, lng }) : Infinity;
 
-      if (!priming && sinceLast < MIN_WRITE_INTERVAL_MS) {
+      if (!priming && sinceLast < writeInterval) {
         logGeoEvent({
           kind: "skipped",
           source: "gps",
           fallbackUsed: false,
           accuracy,
           movedMeters: moved,
-          reason: "min write interval not elapsed",
+          reason: `min write interval not elapsed (${moving ? "moving" : "stationary"})`,
         });
         return;
       }
-      if (!priming && sinceLast < MAX_WRITE_INTERVAL_MS && moved < MIN_MOVE_METERS) {
+      if (!priming && sinceLast < MAX_WRITE_INTERVAL_MS && moved < moveGate) {
         logGeoEvent({
           kind: "skipped",
           source: "gps",
           fallbackUsed: false,
           accuracy,
           movedMeters: moved,
-          reason: `moved < ${MIN_MOVE_METERS}m`,
+          reason: `moved < ${moveGate}m (${moving ? "moving" : "stationary"})`,
         });
         return;
       }
@@ -396,6 +430,8 @@ export const useLocationTracker = () => {
       cancelled = true;
       smootherRef.current.reset();
       lastSampleAtRef.current = 0;
+      speedMpsRef.current = 0;
+      lastFixRef.current = null;
       if (backgroundPoll) clearInterval(backgroundPoll);
       backgroundPoll = null;
       if (networkPoll) clearInterval(networkPoll);
