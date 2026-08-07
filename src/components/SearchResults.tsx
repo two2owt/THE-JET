@@ -30,6 +30,27 @@ const matchScore = (haystack: string | null | undefined, q: string): number => {
 
 const MAX_PER_SECTION = 6;
 
+/** Small square thumbnail with graceful fallback to an icon. */
+const ResultThumb = ({ src, alt }: { src?: string | null; alt: string }) => {
+  const [failed, setFailed] = useState(false);
+  return (
+    <div className="w-12 h-12 rounded-lg flex-shrink-0 overflow-hidden bg-muted/60 flex items-center justify-center">
+      {src && !failed ? (
+        <img
+          src={src}
+          alt={alt}
+          className="w-full h-full object-cover"
+          loading="lazy"
+          decoding="async"
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        <ImageIcon className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
+      )}
+    </div>
+  );
+};
+
 export const SearchResults = ({
   query,
   venues,
