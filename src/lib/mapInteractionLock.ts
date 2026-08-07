@@ -46,13 +46,13 @@ export function useMapInteractionLocked() {
  * while a touch is active on it). Returns nothing — attach the ref to the panel.
  */
 export function useLockMapWhileInteracting(
-  ref: React.RefObject<HTMLElement | null>,
+  target: React.RefObject<HTMLElement | null> | HTMLElement | null,
   enabled = true,
 ) {
   const heldRef = useRef(false);
+  const el = target && "current" in target ? target.current : target;
 
   useEffect(() => {
-    const el = ref.current;
     const hold = () => {
       if (heldRef.current) return;
       heldRef.current = true;
@@ -91,5 +91,5 @@ export function useLockMapWhileInteracting(
       el.removeEventListener("focusout", release);
       release();
     };
-  }, [ref, enabled]);
+  }, [el, enabled]);
 }
