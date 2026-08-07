@@ -265,9 +265,16 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
         border: '1px solid hsl(0 0% 100% / 0.06)',
         borderRadius: 'clamp(12px, 1.6vw, 20px)',
         overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
         boxShadow:
           '0 0 60px hsl(var(--gold) / 0.05), 0 24px 50px -20px rgba(0,0,0,0.75), 0 0 0 1px hsl(var(--gold) / 0.18), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
-        maxHeight: 'min(82svh, 640px)',
+        // Never obstruct the map: fit within the space between the fixed header
+        // and the bottom nav, on any device / orientation / zoom level.
+        maxHeight:
+          'min(calc(100svh - var(--header-total-height, 52px) - var(--bottom-nav-total-height, 60px) - 32px), 78svh, 640px)',
+        overflowY: 'auto',
+        overscrollBehavior: 'contain',
         containerType: 'inline-size',
         fontFamily: 'var(--font-sans, system-ui, -apple-system, sans-serif)',
         color: 'hsl(var(--foreground))',
