@@ -513,6 +513,50 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_deliveries: {
+        Row: {
+          channel: string
+          created_at: string
+          error: string | null
+          id: string
+          opened_at: string | null
+          queue_id: string
+          status: string
+          subscription_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          opened_at?: string | null
+          queue_id: string
+          status?: string
+          subscription_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          opened_at?: string | null
+          queue_id?: string
+          status?: string
+          subscription_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_deliveries_queue_id_fkey"
+            columns: ["queue_id"]
+            isOneToOne: false
+            referencedRelation: "notification_queue"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_logs: {
         Row: {
           deal_id: string | null
@@ -557,6 +601,99 @@ export type Database = {
           },
           {
             foreignKeyName: "notification_logs_neighborhood_id_fkey"
+            columns: ["neighborhood_id"]
+            isOneToOne: false
+            referencedRelation: "neighborhoods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_queue: {
+        Row: {
+          attempts: number
+          audience: string
+          body: string
+          category: string
+          created_at: string
+          data: Json
+          deal_id: string | null
+          event_type: string
+          id: string
+          idempotency_key: string
+          last_error: string | null
+          locked_at: string | null
+          max_attempts: number
+          neighborhood_id: string | null
+          processed_at: string | null
+          scheduled_at: string
+          source: string
+          stats: Json
+          status: string
+          target_user_ids: string[] | null
+          title: string
+          updated_at: string
+          venue_id: string | null
+        }
+        Insert: {
+          attempts?: number
+          audience?: string
+          body: string
+          category?: string
+          created_at?: string
+          data?: Json
+          deal_id?: string | null
+          event_type: string
+          id?: string
+          idempotency_key: string
+          last_error?: string | null
+          locked_at?: string | null
+          max_attempts?: number
+          neighborhood_id?: string | null
+          processed_at?: string | null
+          scheduled_at?: string
+          source?: string
+          stats?: Json
+          status?: string
+          target_user_ids?: string[] | null
+          title: string
+          updated_at?: string
+          venue_id?: string | null
+        }
+        Update: {
+          attempts?: number
+          audience?: string
+          body?: string
+          category?: string
+          created_at?: string
+          data?: Json
+          deal_id?: string | null
+          event_type?: string
+          id?: string
+          idempotency_key?: string
+          last_error?: string | null
+          locked_at?: string | null
+          max_attempts?: number
+          neighborhood_id?: string | null
+          processed_at?: string | null
+          scheduled_at?: string
+          source?: string
+          stats?: Json
+          status?: string
+          target_user_ids?: string[] | null
+          title?: string
+          updated_at?: string
+          venue_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_queue_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_queue_neighborhood_id_fkey"
             columns: ["neighborhood_id"]
             isOneToOne: false
             referencedRelation: "neighborhoods"
@@ -1060,6 +1197,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_notification_settings: {
+        Row: {
+          categories: Json
+          created_at: string
+          quiet_hours_enabled: boolean
+          quiet_hours_end: number
+          quiet_hours_start: number
+          timezone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          categories?: Json
+          created_at?: string
+          quiet_hours_enabled?: boolean
+          quiet_hours_end?: number
+          quiet_hours_start?: number
+          timezone?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          categories?: Json
+          created_at?: string
+          quiet_hours_enabled?: boolean
+          quiet_hours_end?: number
+          quiet_hours_start?: number
+          timezone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_preferences: {
         Row: {
           auto_reload_updates: boolean
@@ -1298,6 +1468,40 @@ export type Database = {
       check_connection_rate_limit: {
         Args: { _user_id: string }
         Returns: boolean
+      }
+      claim_notification_batch: {
+        Args: { _limit?: number }
+        Returns: {
+          attempts: number
+          audience: string
+          body: string
+          category: string
+          created_at: string
+          data: Json
+          deal_id: string | null
+          event_type: string
+          id: string
+          idempotency_key: string
+          last_error: string | null
+          locked_at: string | null
+          max_attempts: number
+          neighborhood_id: string | null
+          processed_at: string | null
+          scheduled_at: string
+          source: string
+          stats: Json
+          status: string
+          target_user_ids: string[] | null
+          title: string
+          updated_at: string
+          venue_id: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "notification_queue"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       cleanup_old_analytics_events: { Args: never; Returns: undefined }
       cleanup_old_search_history: { Args: never; Returns: undefined }

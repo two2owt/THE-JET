@@ -1,6 +1,13 @@
+/**
+ * JET Bridge compatibility shim.
+ *
+ * The merchant portal still POSTs here; delivery is now handled by the
+ * unified notification bus, so this function validates the payload and hands
+ * it to `notification_queue` (deduplicated by idempotency key).
+ */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import webpush from "https://esm.sh/web-push@3.6.7";
 import { corsHeaders, logVersion } from "../_shared/cors.ts";
+import { verifyBridgeAuth } from "../_shared/notifications.ts";
 
 const FUNCTION_NAME = "merchant-send-notification";
 logVersion(FUNCTION_NAME);
@@ -10,7 +17,7 @@ const cors = {
   ...corsHeaders,
   "Access-Control-Allow-Headers":
     corsHeaders["Access-Control-Allow-Headers"] +
-    ", x-webhook-secret, jetbridge_webhook_secret",
+    ", x-webhook-secret, jetbridge_webhook_secret, x-jet-signature, x-idempotency-key",
 };
 
 interface MerchantNotificationPayload {
@@ -24,6 +31,9 @@ interface MerchantNotificationPayload {
   url?: string;
   /** Canonical layer string (e.g. "density,paths") to restore heatmap state on tap. */
   layers?: string;
+  idempotency_key?: string;
+  category?: string;
+  event_type?: string;
 }
 
 Deno.serve(async (req) => {
@@ -32,31 +42,23 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Webhook auth — accept either header name (JET Bridge currently sends
-    // a non-standard "JETBRIDGE_WEBHOOK_SECRET" header).
-    const expected = Deno.env.get("JETBRIDGE_WEBHOOK_SECRET");
-    const provided =
-      req.headers.get("x-webhook-secret") ??
-      req.headers.get("jetbridge_webhook_secret") ??
-      req.headers.get("jetbridge-webhook-secret");
-
-    if (!expected || provided !== expected) {
+    const raw = await req.text();
+    if (!(await verifyBridgeAuth(req, raw))) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...cors, "Content-Type": "application/json" },
       });
     }
 
-    const vapidPublicKey = Deno.env.get("VITE_VAPID_PUBLIC_KEY");
-    const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY");
-    if (!vapidPublicKey || !vapidPrivateKey) {
-      return new Response(
-        JSON.stringify({ error: "VAPID keys not configured" }),
-        { status: 500, headers: { ...cors, "Content-Type": "application/json" } }
-      );
+    let payload: MerchantNotificationPayload;
+    try {
+      payload = JSON.parse(raw) as MerchantNotificationPayload;
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+        status: 400,
+        headers: { ...cors, "Content-Type": "application/json" },
+      });
     }
-
-    const payload = (await req.json()) as MerchantNotificationPayload;
     if (!payload?.title || !payload?.body) {
       return new Response(
         JSON.stringify({ error: "title and body are required" }),
@@ -69,143 +71,60 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    let query = supabase
-      .from("push_subscriptions")
-      .select("id, user_id, endpoint, p256dh_key, auth_key, platform")
-      .eq("active", true);
+    const audience = payload.neighborhood_id
+      ? "neighborhood"
+      : payload.deal_id || payload.venue_id
+        ? "favorites"
+        : "all";
 
-    if (payload.neighborhood_id) {
-      const { data: locs } = await supabase
-        .from("user_locations")
-        .select("user_id")
-        .eq("current_neighborhood_id", payload.neighborhood_id);
-      const userIds = (locs ?? []).map((l) => l.user_id).filter(Boolean);
-      if (userIds.length === 0) {
-        return new Response(
-          JSON.stringify({ message: "No users in neighborhood", sent: 0 }),
-          { status: 200, headers: { ...cors, "Content-Type": "application/json" } }
-        );
-      }
-      query = query.in("user_id", userIds);
-    }
+    const idempotencyKey =
+      payload.idempotency_key ??
+      req.headers.get("x-idempotency-key") ??
+      `merchant:${payload.deal_id ?? payload.venue_id ?? "broadcast"}:${payload.title}:${payload.body}`;
 
-    const { data: subs, error: subErr } = await query;
-    if (subErr) throw subErr;
-    if (!subs || subs.length === 0) {
-      return new Response(
-        JSON.stringify({ message: "No active subscriptions", sent: 0 }),
-        { status: 200, headers: { ...cors, "Content-Type": "application/json" } }
-      );
-    }
-
-    webpush.setVapidDetails(
-      "mailto:support@jet-around.com",
-      vapidPublicKey,
-      vapidPrivateKey
-    );
-
-    // Shared data payload — mirrors src/lib/pushDeepLink.ts so web SW and
-    // native tap handler both route to the same in-app state.
-    const dataPayload: Record<string, string> = {
-      dealId: payload.deal_id ?? "",
-      venueId: payload.venue_id ?? "",
-      venueName: payload.venue_name ?? "",
-      layers: payload.layers ?? "",
-      url:
-        payload.url ??
-        (payload.deal_id
-          ? `https://jet-around.com/?deal=${payload.deal_id}`
-          : payload.venue_id
-            ? `https://jet-around.com/?venue=${encodeURIComponent(payload.venue_id)}`
-            : "https://jet-around.com"),
-    };
-    const notifBody = JSON.stringify({
+    const row = {
+      idempotency_key: idempotencyKey,
+      source: "jet_bridge",
+      event_type: payload.event_type ?? "merchant_push",
+      category: payload.category ?? "deals",
       title: payload.title,
       body: payload.body,
-      icon: "/pwa-192x192.png",
-      badge: "/pwa-192x192.png",
-      tag: payload.deal_id ? `deal-${payload.deal_id}` : `jet-${Date.now()}`,
-      data: dataPayload,
-    });
+      data: {
+        venueName: payload.venue_name ?? "",
+        layers: payload.layers ?? "",
+        url: payload.url ?? "",
+        merchantId: payload.merchant_id ?? "",
+      },
+      deal_id: payload.deal_id ?? null,
+      venue_id: payload.venue_id ?? null,
+      neighborhood_id: payload.neighborhood_id ?? null,
+      audience,
+    };
 
-    const fcmServerKey = Deno.env.get("FCM_SERVER_KEY");
-    async function sendFcm(deviceToken: string) {
-      if (!fcmServerKey) throw new Error("FCM_SERVER_KEY missing");
-      const res = await fetch("https://fcm.googleapis.com/fcm/send", {
-        method: "POST",
-        headers: {
-          Authorization: `key=${fcmServerKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          to: deviceToken,
-          notification: { title: payload.title, body: payload.body },
-          data: dataPayload,
-          priority: "high",
-        }),
-      });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok || json.failure > 0) {
-        const reason = json?.results?.[0]?.error;
-        const err = new Error(`fcm ${res.status} ${reason ?? ""}`);
-        // @ts-expect-error tag error for cleanup
-        err.fcmReason = reason;
-        throw err;
+    const { data: inserted, error } = await supabase
+      .from("notification_queue")
+      .insert(row)
+      .select("id")
+      .maybeSingle();
+
+    if (error && error.code !== "23505") throw error;
+
+    if (!error) {
+      try {
+        await supabase.functions.invoke("notifications-dispatch", { body: { wake: true } });
+      } catch (_e) {
+        /* cron picks it up */
       }
-    }
-
-    let sent = 0;
-    const invalid: string[] = [];
-
-    await Promise.allSettled(
-      subs.map(async (sub) => {
-        try {
-          if (sub.platform === "ios" || sub.platform === "android") {
-            await sendFcm(sub.endpoint);
-          } else {
-            await webpush.sendNotification(
-              {
-                endpoint: sub.endpoint,
-                keys: { p256dh: sub.p256dh_key, auth: sub.auth_key },
-              },
-              notifBody
-            );
-          }
-          sent++;
-          await supabase.from("notification_logs").insert({
-            user_id: sub.user_id,
-            title: payload.title,
-            message: payload.body,
-            notification_type: sub.platform === "ios" || sub.platform === "android" ? "native_push" : "web_push",
-            deal_id: payload.deal_id ?? null,
-            neighborhood_id: payload.neighborhood_id ?? null,
-          });
-        } catch (err: any) {
-          const reason = err?.fcmReason ?? "";
-          if (
-            err?.statusCode === 404 ||
-            err?.statusCode === 410 ||
-            reason === "NotRegistered" ||
-            reason === "InvalidRegistration"
-          ) {
-            invalid.push(sub.id);
-          } else {
-            console.error("push error:", err?.message ?? err);
-          }
-        }
-      })
-    );
-
-    if (invalid.length > 0) {
-      await supabase
-        .from("push_subscriptions")
-        .update({ active: false })
-        .in("id", invalid);
     }
 
     return new Response(
-      JSON.stringify({ success: true, sent, total: subs.length, deactivated: invalid.length }),
-      { status: 200, headers: { ...cors, "Content-Type": "application/json" } }
+      JSON.stringify({
+        success: true,
+        queued: !error,
+        duplicate: !!error,
+        id: inserted?.id ?? null,
+      }),
+      { status: 202, headers: { ...cors, "Content-Type": "application/json" } }
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";

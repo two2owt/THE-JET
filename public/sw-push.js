@@ -17,6 +17,10 @@ self.addEventListener('push', function(event) {
     }
   }
 
+  // Payload contract: notifications-dispatch nests the deep-link fields under
+  // `data`. Older senders put them at the top level — support both.
+  const payloadData = data.data || data;
+
   const title = data.title || 'JET Deal Alert';
   const options = {
     body: data.body || 'Check out this deal!',
@@ -24,11 +28,12 @@ self.addEventListener('push', function(event) {
     badge: data.badge || '/pwa-192x192.png',
     tag: data.tag || 'jet-notification',
     data: {
-      url: data.url || data.click_action || '/',
-      dealId: data.dealId || null,
-      venueId: data.venueId || null,
-      venueName: data.venueName || null,
-      layers: data.layers || null
+      url: payloadData.url || data.click_action || '/',
+      dealId: payloadData.dealId || null,
+      venueId: payloadData.venueId || null,
+      venueName: payloadData.venueName || null,
+      layers: payloadData.layers || null,
+      notificationId: payloadData.notificationId || null
     },
     actions: [
       {
@@ -61,6 +66,17 @@ self.addEventListener('notificationclick', function(event) {
 
   const notificationData = event.notification.data || {};
   let urlToOpen = notificationData.url || '/';
+
+  // Fire-and-forget open receipt so merchant analytics can close the loop.
+  if (notificationData.notificationId) {
+    try {
+      fetch('https://flvhduntedvorikonuvy.supabase.co/functions/v1/notifications-receipt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notificationId: notificationData.notificationId })
+      }).catch(function () {});
+    } catch (e) {}
+  }
 
   // Build deep link URL from payload so the app opens the exact JetCard /
   // deal sheet with parking, share and directions wired up.

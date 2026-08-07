@@ -95,6 +95,13 @@ export const usePushNotifications = () => {
       // User tapped the notification → route into the correct heatmap state.
       await PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
         const data = (action.notification?.data ?? {}) as Record<string, string>;
+        if (data.notificationId) {
+          void supabase.functions
+            .invoke("notifications-receipt", {
+              body: { notificationId: data.notificationId },
+            })
+            .catch(() => {});
+        }
         const target = resolvePushDeepLink(data);
         if (target) navigate(target);
       });
