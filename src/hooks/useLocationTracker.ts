@@ -40,6 +40,8 @@ const MIN_MOVE_METERS = 20;
 const MIN_SAMPLE_INTERVAL_MS = 5_000;
 /** How often the coarse Google Geolocation fallback may run. */
 const NETWORK_FALLBACK_INTERVAL_MS = 5 * 60_000;
+/** Grace period letting GPS report before any coarse fallback is attempted. */
+const NETWORK_FALLBACK_GRACE_MS = 90_000;
 /** Coarse fixes need a bigger move before they're worth another row. */
 const NETWORK_MIN_MOVE_METERS = 150;
 
@@ -85,6 +87,7 @@ export const useLocationTracker = () => {
     let resumeHandler: (() => void) | null = null;
     let backgroundPoll: ReturnType<typeof setInterval> | null = null;
     let networkPoll: ReturnType<typeof setInterval> | null = null;
+    let networkGrace: ReturnType<typeof setTimeout> | null = null;
 
     const maybeWrite = async (rawLat: number, rawLng: number, rawAccuracy: number | null) => {
       if (cancelled || inFlightRef.current) return;
@@ -336,12 +339,17 @@ export const useLocationTracker = () => {
 
     void start();
 
-    // Always-on coarse fallback. It self-suppresses whenever a GPS write has
-    // landed inside the interval, so it costs nothing for users with GPS.
-    void maybeWriteNetworkFix();
-    networkPoll = setInterval(() => {
+    // Always-on coarse fallback, but never before GPS has had a fair chance:
+    // firing it on mount would store an ISP/Wi-Fi point (up to ~5km off) and
+    // create phantom hotspots plus fake arrival paths to the real GPS fix.
+    // The first attempt waits out the grace window and self-suppresses if a
+    // GPS write landed in the meantime.
+    networkGrace = setTimeout(() => {
       void maybeWriteNetworkFix();
-    }, NETWORK_FALLBACK_INTERVAL_MS);
+      networkPoll = setInterval(() => {
+        void maybeWriteNetworkFix();
+      }, NETWORK_FALLBACK_INTERVAL_MS);
+    }, NETWORK_FALLBACK_GRACE_MS);
 
     const stopAll = () => {
       cancelled = true;
@@ -351,6 +359,8 @@ export const useLocationTracker = () => {
       backgroundPoll = null;
       if (networkPoll) clearInterval(networkPoll);
       networkPoll = null;
+      if (networkGrace) clearTimeout(networkGrace);
+      networkGrace = null;
       if (resumeHandler) document.removeEventListener("visibilitychange", resumeHandler);
       resumeHandler = null;
       if (watchIdRef.current !== null) {
