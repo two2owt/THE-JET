@@ -226,6 +226,14 @@ export const useMovementPathsLayer = ({
       lineMetrics: true,
     });
 
+    // Frequency-based base widths, reused across glow/static/active line
+    // layers so we can scale them per-zoom without nesting `["zoom"]` inside
+    // a non-top-level expression (Mapbox v3 forbids that).
+    const glowFreqWidth = ['interpolate', ['exponential', 1.5], ['get', 'frequency'],
+      1, 12, 5, 18, 10, 26, 20, 34] as any;
+    const lineFreqWidth = ['interpolate', ['exponential', 1.5], ['get', 'frequency'],
+      1, 5, 5, 8, 10, 12, 20, 16] as any;
+
     mapRef.current.addLayer({
       id: glowLayerId,
       type: 'line',
@@ -233,13 +241,14 @@ export const useMovementPathsLayer = ({
       filter: activeFilter(minFrequencyRef.current),
       layout: { 'line-join': 'round', 'line-cap': 'round' },
       paint: {
+        // Zoom must be the top-level interpolate input (Mapbox v3 rule);
+        // each zoom stop multiplies the frequency-based width by a scale.
         'line-width': [
-          '*',
-          ['interpolate', ['exponential', 1.5], ['get', 'frequency'],
-            1, 12, 5, 18, 10, 26, 20, 34],
-          // Zoomed-out views compress routes into short strokes, so scale the
-          // glow up as zoom decreases to keep flows legible at city level.
-          ['interpolate', ['linear'], ['zoom'], 9, 2, 12, 1.5, 15, 1.1, 17, 1],
+          'interpolate', ['linear'], ['zoom'],
+          9, ['*', glowFreqWidth, 2],
+          12, ['*', glowFreqWidth, 1.5],
+          15, ['*', glowFreqWidth, 1.1],
+          17, ['*', glowFreqWidth, 1],
         ],
         'line-color': [
           'interpolate', ['linear'], ['get', 'frequency'],
@@ -277,8 +286,11 @@ export const useMovementPathsLayer = ({
       layout: { 'line-join': 'round', 'line-cap': 'round' },
       paint: {
         'line-width': [
-          '*', 2.5,
-          ['interpolate', ['linear'], ['zoom'], 9, 1.8, 12, 1.4, 15, 1.1, 17, 1],
+          'interpolate', ['linear'], ['zoom'],
+          9, ['*', 2.5, 1.8],
+          12, ['*', 2.5, 1.4],
+          15, ['*', 2.5, 1.1],
+          17, ['*', 2.5, 1],
         ],
         'line-color': 'rgba(176, 224, 255, 0.9)',
         'line-opacity': ['*', 0.6, ['coalesce', ['get', 'recency'], 1]],
@@ -294,10 +306,11 @@ export const useMovementPathsLayer = ({
       layout: { 'line-join': 'round', 'line-cap': 'round' },
       paint: {
         'line-width': [
-          '*',
-          ['interpolate', ['exponential', 1.5], ['get', 'frequency'],
-            1, 5, 5, 8, 10, 12, 20, 16],
-          ['interpolate', ['linear'], ['zoom'], 9, 1.8, 12, 1.4, 15, 1.1, 17, 1],
+          'interpolate', ['linear'], ['zoom'],
+          9, ['*', lineFreqWidth, 1.8],
+          12, ['*', lineFreqWidth, 1.4],
+          15, ['*', lineFreqWidth, 1.1],
+          17, ['*', lineFreqWidth, 1],
         ],
         'line-color': [
           'interpolate', ['linear'], ['get', 'frequency'],
