@@ -48,6 +48,10 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
   const [directionsTarget, setDirectionsTarget] = useState<DirectionsVenue | null>(null);
   const [directionsPlaceId, setDirectionsPlaceId] = useState<string | null>(null);
 
+  // Suspend map drag / scroll-zoom while the user interacts with this card.
+  const cardRef = useRef<HTMLElement | null>(null);
+  useLockMapWhileInteracting(cardRef);
+
   // Google Places photo for this venue — preferred over any scraped image.
   const { photoUrl: placesPhoto, loading: photoLoading } = useVenuePhoto(
     {
@@ -256,6 +260,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
 
   return (
     <article
+      ref={cardRef}
       style={{
         position: 'relative',
         width: '100%',
