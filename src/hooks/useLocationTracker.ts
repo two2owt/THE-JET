@@ -38,6 +38,11 @@ const MAX_WRITE_INTERVAL_MS = 5 * 60_000;
 const MIN_MOVE_METERS = 20;
 /** Ignore raw fixes arriving faster than this — GPS bursts add no signal. */
 const MIN_SAMPLE_INTERVAL_MS = 5_000;
+/*
+ * Immediately after tracking starts (permission grant, sign-in, app resume) the
+ * first accepted fix bypasses the steady-state throttles (`primingRef`) so the
+ * heatmap/flow layers get a live point instantly instead of up to 60s later.
+ */
 /** How often the coarse Google Geolocation fallback may run. */
 const NETWORK_FALLBACK_INTERVAL_MS = 5 * 60_000;
 /** Grace period letting GPS report before any coarse fallback is attempted. */
@@ -55,6 +60,8 @@ export const useLocationTracker = () => {
   const inFlightRef = useRef(false);
   const lastSampleAtRef = useRef(0);
   const smootherRef = useRef(createLocationSmoother());
+  // True until the first accepted write of this tracking session lands.
+  const primingRef = useRef(true);
   // Bumped whenever the browser geolocation permission flips (e.g. the user
   // taps "Enable location" in the first-run prompt) so tracking starts for
   // that user immediately instead of waiting for the next mount.
@@ -89,13 +96,19 @@ export const useLocationTracker = () => {
     let networkPoll: ReturnType<typeof setInterval> | null = null;
     let networkGrace: ReturnType<typeof setTimeout> | null = null;
 
+    // Fresh session (sign-in, permission grant, resume): let the first fix
+    // through the throttles so the live layers update instantly.
+    primingRef.current = true;
+    lastSampleAtRef.current = 0;
+
     const maybeWrite = async (rawLat: number, rawLng: number, rawAccuracy: number | null) => {
       if (cancelled || inFlightRef.current) return;
       const now = Date.now();
+      const priming = primingRef.current;
 
       // Throttle raw sampling before doing any work — some devices fire
       // watchPosition several times per second.
-      if (now - lastSampleAtRef.current < MIN_SAMPLE_INTERVAL_MS) return;
+      if (!priming && now - lastSampleAtRef.current < MIN_SAMPLE_INTERVAL_MS) return;
       lastSampleAtRef.current = now;
 
       logGeoEvent({
@@ -130,7 +143,7 @@ export const useLocationTracker = () => {
       const prev = lastCoordsRef.current;
       const moved = prev ? haversineMeters(prev, { lat, lng }) : Infinity;
 
-      if (sinceLast < MIN_WRITE_INTERVAL_MS) {
+      if (!priming && sinceLast < MIN_WRITE_INTERVAL_MS) {
         logGeoEvent({
           kind: "skipped",
           source: "gps",
@@ -141,7 +154,7 @@ export const useLocationTracker = () => {
         });
         return;
       }
-      if (sinceLast < MAX_WRITE_INTERVAL_MS && moved < MIN_MOVE_METERS) {
+      if (!priming && sinceLast < MAX_WRITE_INTERVAL_MS && moved < MIN_MOVE_METERS) {
         logGeoEvent({
           kind: "skipped",
           source: "gps",
@@ -168,6 +181,7 @@ export const useLocationTracker = () => {
         if (!error) {
           lastWriteAtRef.current = now;
           lastCoordsRef.current = { lat, lng };
+          primingRef.current = false;
           logGeoEvent({
             kind: "write",
             source: "gps",
@@ -277,6 +291,23 @@ export const useLocationTracker = () => {
           perms.location === "granted" || (backgroundEnabled && perms.coarseLocation === "granted");
         if (!granted || cancelled) return;
 
+        // Instant first point — don't wait for the watcher's first callback.
+        Geolocation.getCurrentPosition({
+          enableHighAccuracy: true,
+          timeout: 15_000,
+          maximumAge: 0,
+        })
+          .then((pos) => {
+            if (!cancelled && pos) {
+              void maybeWrite(
+                pos.coords.latitude,
+                pos.coords.longitude,
+                pos.coords.accuracy ?? null,
+              );
+            }
+          })
+          .catch(() => {});
+
         nativeWatchIdRef.current = await Geolocation.watchPosition(
           { enableHighAccuracy: false, timeout: 20_000, maximumAge: 30_000 },
           (pos, err) => {
@@ -333,6 +364,16 @@ export const useLocationTracker = () => {
         if (document.visibilityState === "visible") requestFix();
       };
       document.addEventListener("visibilitychange", resumeHandler);
+
+      // Instant first point on this session — a fresh, high-accuracy fix so the
+      // heatmap/flow layers reflect the user right away.
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          void maybeWrite(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+        },
+        () => {},
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 15_000 },
+      );
     };
 
     const start = isNativeApp() ? startNative : startWeb;
