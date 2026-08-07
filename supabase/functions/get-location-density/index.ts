@@ -5,6 +5,13 @@ import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
 const FUNCTION_NAME = "get-location-density";
 logVersion(FUNCTION_NAME);
 
+/**
+ * k-anonymity floor: a grid cell is only returned when at least this many
+ * DISTINCT users contributed points to it. Prevents a single person's
+ * movements from being readable off the heatmap (anti-stalking guard).
+ */
+const K_ANONYMITY_MIN_USERS = 3;
+
 // Rate limiting: 15 requests per minute per IP
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
 const RATE_LIMIT_MAX_REQUESTS = 15;
