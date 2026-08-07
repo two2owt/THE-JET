@@ -1,5 +1,4 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import webpush from "https://esm.sh/web-push@3.6.7";
 import { corsHeaders, logVersion } from "../_shared/cors.ts";
 
 const FUNCTION_NAME = "notify-favorite-update";
@@ -121,92 +120,43 @@ Deno.serve(async (req) => {
         ? `/?venue=${encodeURIComponent(venueId)}`
         : "/favorites";
 
-    const tag = `fav-${payload.event_type}-${payload.deal_id ?? venueId}`;
+    // Push delivery is handled by the unified notification bus. Enqueue one
+    // job targeting the favoriting users; the dispatcher applies quiet hours,
+    // category opt-outs, and writes notification_logs + delivery receipts.
+    let queuedId: string | null = null;
+    let queueDuplicate = false;
+    {
+      const idempotencyKey = `fav:${payload.event_type}:${payload.deal_id ?? venueId}:${title}`;
+      const { data: queued, error: queueErr } = await supabase
+        .from("notification_queue")
+        .insert({
+          idempotency_key: idempotencyKey,
+          source: "favorites",
+          event_type:
+            payload.event_type === "ending_soon" ? "ending_soon" : "favorite_update",
+          category: "favorites",
+          title,
+          body,
+          data: { venueName, url },
+          deal_id: payload.deal_id ?? null,
+          venue_id: venueId,
+          target_user_ids: userIds,
+          audience: "users",
+        })
+        .select("id")
+        .maybeSingle();
 
-    // Fetch active subs for these users
-    const { data: subs } = await supabase
-      .from("push_subscriptions")
-      .select("*")
-      .eq("active", true)
-      .in("user_id", userIds);
-
-    let webSent = 0;
-    let fcmSent = 0;
-    const invalidIds: string[] = [];
-
-    const vapidPublic = Deno.env.get("VITE_VAPID_PUBLIC_KEY");
-    const vapidPrivate = Deno.env.get("VAPID_PRIVATE_KEY");
-    const fcmKey = Deno.env.get("FCM_SERVER_KEY");
-
-    if (vapidPublic && vapidPrivate) {
-      webpush.setVapidDetails(
-        "mailto:support@jet-around.com",
-        vapidPublic,
-        vapidPrivate,
-      );
-    }
-
-    const notifPayload = JSON.stringify({
-      title,
-      body,
-      icon: "/pwa-192x192.png",
-      badge: "/pwa-192x192.png",
-      tag,
-      data: {
-        dealId: payload.deal_id ?? "",
-        venueId: venueId ?? "",
-        venueName,
-        url,
-      },
-    });
-
-    for (const sub of subs ?? []) {
-      const isFcm = sub.endpoint?.includes("fcm.googleapis.com") || sub.endpoint?.startsWith("fcm:");
-      try {
-        if (isFcm && fcmKey && !sub.p256dh_key) {
-          // Native FCM token path
-          const res = await fetch("https://fcm.googleapis.com/fcm/send", {
-            method: "POST",
-            headers: {
-              Authorization: `key=${fcmKey}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              to: sub.endpoint.replace(/^fcm:/, ""),
-              notification: { title, body, sound: "default", badge: 1 },
-              data: {
-                dealId: payload.deal_id ?? "",
-                venueId: venueId ?? "",
-                venueName,
-                url,
-              },
-              priority: "high",
-            }),
-          });
-          if (res.ok) fcmSent++;
-        } else if (vapidPublic && vapidPrivate && sub.p256dh_key && sub.auth_key) {
-          await webpush.sendNotification(
-            {
-              endpoint: sub.endpoint,
-              keys: { p256dh: sub.p256dh_key, auth: sub.auth_key },
-            },
-            notifPayload,
-          );
-          webSent++;
-        }
-      } catch (err: any) {
-        console.error("push error:", err?.statusCode, err?.message);
-        if (err?.statusCode === 404 || err?.statusCode === 410) {
-          invalidIds.push(sub.id);
+      if (queueErr) {
+        if (queueErr.code === "23505") queueDuplicate = true;
+        else console.error("queue insert failed:", queueErr.message);
+      } else {
+        queuedId = queued?.id ?? null;
+        try {
+          await supabase.functions.invoke("notifications-dispatch", { body: { wake: true } });
+        } catch (_e) {
+          /* cron picks it up */
         }
       }
-    }
-
-    if (invalidIds.length > 0) {
-      await supabase
-        .from("push_subscriptions")
-        .update({ active: false })
-        .in("id", invalidIds);
     }
 
     // Send transactional emails to users who have email notifications enabled.
