@@ -38,12 +38,11 @@ const MAX_WRITE_INTERVAL_MS = 5 * 60_000;
 const MIN_MOVE_METERS = 20;
 /** Ignore raw fixes arriving faster than this — GPS bursts add no signal. */
 const MIN_SAMPLE_INTERVAL_MS = 5_000;
-/**
- * Immediately after tracking starts (permission grant, sign-in, app resume) we
- * want a real point on the map without waiting out the steady-state throttles,
- * so the first fix of a session is written as soon as it passes the smoother.
+/*
+ * Immediately after tracking starts (permission grant, sign-in, app resume) the
+ * first accepted fix bypasses the steady-state throttles (`primingRef`) so the
+ * heatmap/flow layers get a live point instantly instead of up to 60s later.
  */
-const PRIMING_WINDOW_MS = 2 * 60_000;
 /** How often the coarse Google Geolocation fallback may run. */
 const NETWORK_FALLBACK_INTERVAL_MS = 5 * 60_000;
 /** Grace period letting GPS report before any coarse fallback is attempted. */
