@@ -275,14 +275,6 @@ export const SearchResults = ({
 
   return createPortal(
     <>
-      {/* Mobile-only dimmed backdrop — keeps focus on results, dismisses on tap */}
-      <button
-        type="button"
-        aria-label="Close search results"
-        onClick={onClose}
-        className="sm:hidden fixed inset-0 z-[9998] bg-background/40 backdrop-blur-[2px] animate-fade-in"
-      />
-
       <div
         key={posVersion}
         ref={panelRef}
@@ -291,10 +283,10 @@ export const SearchResults = ({
         className="fixed left-2 right-2 sm:left-auto sm:right-4 z-[9999] animate-fade-in sm:w-[420px] sm:max-w-[min(420px,calc(100vw-2rem))]"
         style={{
           top: 'calc(var(--header-height, 56px) + env(safe-area-inset-top, 0px) + 8px)',
-          // Stay clear of the bottom nav on mobile and the page edge on desktop.
-          // Capped so the map stays partially visible behind the panel.
+          // Fixed max height: the overlay never grows past ~half the viewport,
+          // so the map stays visible and fully interactive around it.
           maxHeight:
-            'min(calc(100dvh - var(--header-height, 56px) - var(--bottom-nav-total-height, 80px) - env(safe-area-inset-top, 0px) - 24px), 68dvh)',
+            'min(calc(100dvh - var(--header-height, 56px) - var(--bottom-nav-total-height, 80px) - env(safe-area-inset-top, 0px) - 24px), 52dvh, 480px)',
         }}
       >
         <Card className="flex flex-col h-full max-h-full overflow-hidden shadow-glow w-full bg-card/95 backdrop-blur-xl border-primary/20 rounded-2xl">
