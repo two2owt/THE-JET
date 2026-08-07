@@ -50,7 +50,8 @@ export function useLockMapWhileInteracting(
   enabled = true,
 ) {
   const heldRef = useRef(false);
-  const el = target && "current" in target ? target.current : target;
+  const el: HTMLElement | null =
+    target && "current" in target ? target.current : (target as HTMLElement | null);
 
   useEffect(() => {
     const hold = () => {
