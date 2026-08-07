@@ -148,12 +148,21 @@ export const Header = () => {
   useEffect(() => {
     let cancelled = false;
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (cancelled || !user) return;
-      setUserId(user.id);
-      setUserEmail(user.email);
+      if (cancelled) return;
+      setUserId(user?.id);
+      setUserEmail(user?.email);
+    });
+    // Keep the header identity in sync with sign-in / sign-out / token refresh
+    // so a freshly signed-in user's avatar loads immediately instead of
+    // waiting for a remount (which is why initials showed after sign-in).
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (cancelled) return;
+      setUserId(session?.user?.id);
+      setUserEmail(session?.user?.email);
     });
     return () => {
       cancelled = true;
+      sub.subscription.unsubscribe();
     };
   }, []);
 
