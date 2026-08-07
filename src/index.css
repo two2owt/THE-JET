@@ -1548,7 +1548,8 @@ All colors MUST be HSL.
 
   .mapboxgl-ctrl-bottom-left,
   .mapboxgl-ctrl-bottom-right {
-    bottom: var(--map-safe-bottom) !important;
+    bottom: var(--map-safe-bottom-panels, var(--map-safe-bottom)) !important;
+    transition: bottom 200ms ease;
   }
 
   /* Respect notches / landscape safe areas */
