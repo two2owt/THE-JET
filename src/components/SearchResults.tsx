@@ -6,6 +6,7 @@ import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
 import type { Venue } from "./MapboxHeatmap";
 import type { Database } from "@/integrations/supabase/types";
+import { useLockMapWhileInteracting } from "@/lib/mapInteractionLock";
 
 type Deal = Database['public']['Tables']['deals']['Row'];
 
@@ -64,6 +65,9 @@ export const SearchResults = ({
   // Used as a key on the panel so layout-affecting CSS variables are re-read.
   const [posVersion, setPosVersion] = useState(0);
   const panelRef = useRef<HTMLDivElement | null>(null);
+  // Element state (not just the ref) so the lock re-binds when the panel remounts.
+  const [panelEl, setPanelEl] = useState<HTMLDivElement | null>(null);
+  useLockMapWhileInteracting(panelEl, isVisible);
 
   useEffect(() => {
     if (!isVisible) return;
@@ -285,7 +289,10 @@ export const SearchResults = ({
     <>
       <div
         key={posVersion}
-        ref={panelRef}
+        ref={(node) => {
+          panelRef.current = node;
+          setPanelEl(node);
+        }}
         role="dialog"
         aria-label="Search results"
         className="fixed left-2 right-2 sm:left-auto sm:right-4 z-[9999] animate-fade-in sm:w-[420px] sm:max-w-[min(420px,calc(100vw-2rem))]"
