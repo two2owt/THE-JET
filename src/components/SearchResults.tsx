@@ -348,19 +348,7 @@ export const SearchResults = ({
                       className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-none focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        {/* Thumbnail */}
-                        <div className="w-12 h-12 rounded-lg flex-shrink-0 overflow-hidden bg-muted/60 flex items-center justify-center">
-                          {venue.imageUrl ? (
-                            <img
-                              src={venue.imageUrl}
-                              alt=""
-                              className="w-full h-full object-cover"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <ImageIcon className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
-                          )}
-                        </div>
+                        <ResultThumb src={venue.imageUrl} alt={`${venue.name} photo`} />
                         <div className="flex-1 min-w-0">
                           <h5 className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors">
                             {venue.name}
@@ -476,6 +464,7 @@ export const SearchResults = ({
                       className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-none focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"
                     >
                       <div className="flex items-center gap-3 min-w-0">
+                        <ResultThumb src={venue.imageUrl} alt={`${venue.name} photo`} />
                         <div className="flex-1 min-w-0">
                           <h5 className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors">
                             {venue.name}
