@@ -30,6 +30,27 @@ const matchScore = (haystack: string | null | undefined, q: string): number => {
 
 const MAX_PER_SECTION = 6;
 
+/** Small square thumbnail with graceful fallback to an icon. */
+const ResultThumb = ({ src, alt }: { src?: string | null; alt: string }) => {
+  const [failed, setFailed] = useState(false);
+  return (
+    <div className="w-12 h-12 rounded-lg flex-shrink-0 overflow-hidden bg-muted/60 flex items-center justify-center">
+      {src && !failed ? (
+        <img
+          src={src}
+          alt={alt}
+          className="w-full h-full object-cover"
+          loading="lazy"
+          decoding="async"
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        <ImageIcon className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
+      )}
+    </div>
+  );
+};
+
 export const SearchResults = ({
   query,
   venues,
@@ -81,6 +102,16 @@ export const SearchResults = ({
     // Use pointerdown so we beat focus/blur races on touch + mouse.
     document.addEventListener('pointerdown', handlePointerDown, true);
     return () => document.removeEventListener('pointerdown', handlePointerDown, true);
+  }, [isVisible, onClose]);
+
+  // Escape dismisses the overlay
+  useEffect(() => {
+    if (!isVisible) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
   }, [isVisible, onClose]);
 
   const q = query.trim().toLowerCase();
@@ -221,6 +252,14 @@ export const SearchResults = ({
   };
 
   /** Open a deal via the app's existing ?deal= deep-link contract handled in Index.tsx. */
+  /** Fall back to the deal's venue photo when the deal has no image of its own. */
+  const venueImageFor = (deal: Deal): string | undefined => {
+    const match = deal.venue_id
+      ? venues.find((v) => v.id === deal.venue_id)
+      : venues.find((v) => v.name.toLowerCase() === (deal.venue_name ?? "").toLowerCase());
+    return match?.imageUrl;
+  };
+
   const handleDealSelect = (deal: Deal) => {
     // Prefer surfacing the venue's JetCard (so users land on the same
     // surface they would from a venue/area/category selection). When the
@@ -244,14 +283,6 @@ export const SearchResults = ({
 
   return createPortal(
     <>
-      {/* Mobile-only dimmed backdrop — keeps focus on results, dismisses on tap */}
-      <button
-        type="button"
-        aria-label="Close search results"
-        onClick={onClose}
-        className="sm:hidden fixed inset-0 z-[9998] bg-background/40 backdrop-blur-[2px] animate-fade-in"
-      />
-
       <div
         key={posVersion}
         ref={panelRef}
@@ -260,10 +291,10 @@ export const SearchResults = ({
         className="fixed left-2 right-2 sm:left-auto sm:right-4 z-[9999] animate-fade-in sm:w-[420px] sm:max-w-[min(420px,calc(100vw-2rem))]"
         style={{
           top: 'calc(var(--header-height, 56px) + env(safe-area-inset-top, 0px) + 8px)',
-          // Stay clear of the bottom nav on mobile and the page edge on desktop.
-          // Capped so the map stays partially visible behind the panel.
+          // Fixed max height: the overlay never grows past ~half the viewport,
+          // so the map stays visible and fully interactive around it.
           maxHeight:
-            'min(calc(100dvh - var(--header-height, 56px) - var(--bottom-nav-total-height, 80px) - env(safe-area-inset-top, 0px) - 24px), 68dvh)',
+            'min(calc(100dvh - var(--header-height, 56px) - var(--bottom-nav-total-height, 80px) - env(safe-area-inset-top, 0px) - 24px), 52dvh, 480px)',
         }}
       >
         <Card className="flex flex-col h-full max-h-full overflow-hidden shadow-glow w-full bg-card/95 backdrop-blur-xl border-primary/20 rounded-2xl">
@@ -325,19 +356,7 @@ export const SearchResults = ({
                       className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-none focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        {/* Thumbnail */}
-                        <div className="w-12 h-12 rounded-lg flex-shrink-0 overflow-hidden bg-muted/60 flex items-center justify-center">
-                          {venue.imageUrl ? (
-                            <img
-                              src={venue.imageUrl}
-                              alt=""
-                              className="w-full h-full object-cover"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <ImageIcon className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
-                          )}
-                        </div>
+                        <ResultThumb src={venue.imageUrl} alt={`${venue.name} photo`} />
                         <div className="flex-1 min-w-0">
                           <h5 className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors">
                             {venue.name}
@@ -453,6 +472,7 @@ export const SearchResults = ({
                       className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-none focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"
                     >
                       <div className="flex items-center gap-3 min-w-0">
+                        <ResultThumb src={venue.imageUrl} alt={`${venue.name} photo`} />
                         <div className="flex-1 min-w-0">
                           <h5 className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors">
                             {venue.name}
@@ -497,21 +517,29 @@ export const SearchResults = ({
                       onClick={() => handleDealSelect(deal)}
                       className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-none focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"
                     >
-                      <h5 className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors">
-                        {deal.title}
-                      </h5>
-                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 leading-snug">
-                        {deal.description}
-                      </p>
-                      <div className="flex items-center gap-1.5 mt-1.5 min-w-0">
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-semibold flex-shrink-0">
-                          <Tag className="w-2.5 h-2.5 mr-0.5" />
-                          {deal.deal_type}
-                        </Badge>
-                        <span className="text-[11px] text-muted-foreground flex items-center gap-0.5 min-w-0 truncate">
-                          <MapPin className="w-3 h-3 flex-shrink-0" />
-                          <span className="truncate">{deal.venue_name}</span>
-                        </span>
+                      <div className="flex items-start gap-3 min-w-0">
+                        <ResultThumb
+                          src={deal.image_url ?? venueImageFor(deal)}
+                          alt={`${deal.title} photo`}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h5 className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors">
+                            {deal.title}
+                          </h5>
+                          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 leading-snug">
+                            {deal.description}
+                          </p>
+                          <div className="flex items-center gap-1.5 mt-1.5 min-w-0">
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-semibold flex-shrink-0">
+                              <Tag className="w-2.5 h-2.5 mr-0.5" />
+                              {deal.deal_type}
+                            </Badge>
+                            <span className="text-[11px] text-muted-foreground flex items-center gap-0.5 min-w-0 truncate">
+                              <MapPin className="w-3 h-3 flex-shrink-0" />
+                              <span className="truncate">{deal.venue_name}</span>
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </button>
                   ))}
