@@ -226,6 +226,14 @@ export const useMovementPathsLayer = ({
       lineMetrics: true,
     });
 
+    // Frequency-based base widths, reused across glow/static/active line
+    // layers so we can scale them per-zoom without nesting `["zoom"]` inside
+    // a non-top-level expression (Mapbox v3 forbids that).
+    const glowFreqWidth = ['interpolate', ['exponential', 1.5], ['get', 'frequency'],
+      1, 12, 5, 18, 10, 26, 20, 34] as any;
+    const lineFreqWidth = ['interpolate', ['exponential', 1.5], ['get', 'frequency'],
+      1, 5, 5, 8, 10, 12, 20, 16] as any;
+
     mapRef.current.addLayer({
       id: glowLayerId,
       type: 'line',
