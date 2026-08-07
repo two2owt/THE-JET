@@ -40,6 +40,8 @@ const MIN_MOVE_METERS = 20;
 const MIN_SAMPLE_INTERVAL_MS = 5_000;
 /** How often the coarse Google Geolocation fallback may run. */
 const NETWORK_FALLBACK_INTERVAL_MS = 5 * 60_000;
+/** Grace period letting GPS report before any coarse fallback is attempted. */
+const NETWORK_FALLBACK_GRACE_MS = 90_000;
 /** Coarse fixes need a bigger move before they're worth another row. */
 const NETWORK_MIN_MOVE_METERS = 150;
 
@@ -85,6 +87,7 @@ export const useLocationTracker = () => {
     let resumeHandler: (() => void) | null = null;
     let backgroundPoll: ReturnType<typeof setInterval> | null = null;
     let networkPoll: ReturnType<typeof setInterval> | null = null;
+    let networkGrace: ReturnType<typeof setTimeout> | null = null;
 
     const maybeWrite = async (rawLat: number, rawLng: number, rawAccuracy: number | null) => {
       if (cancelled || inFlightRef.current) return;
