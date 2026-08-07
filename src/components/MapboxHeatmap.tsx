@@ -1017,6 +1017,33 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     };
   }, [isMobile, selectedVenue, mapLoaded]);
 
+  // Suspend map drag / scroll-zoom while the user interacts with an overlay
+  // panel (JetCard, search results), and restore it when they leave/close it.
+  useEffect(() => {
+    if (!mapLoaded) return;
+    return subscribeMapInteractionLock((locked) => {
+      const m = map.current;
+      if (!m) return;
+      const handlers = [
+        m.dragPan,
+        m.scrollZoom,
+        m.touchZoomRotate,
+        m.doubleClickZoom,
+        m.dragRotate,
+        m.touchPitch,
+        m.keyboard,
+      ];
+      handlers.forEach((h) => {
+        try {
+          if (locked) h?.disable();
+          else h?.enable();
+        } catch {
+          /* handler unavailable */
+        }
+      });
+    });
+  }, [mapLoaded]);
+
   useEffect(() => () => {
     document.documentElement.style.removeProperty('--map-panel-bottom');
   }, []);
