@@ -104,6 +104,16 @@ export const SearchResults = ({
     return () => document.removeEventListener('pointerdown', handlePointerDown, true);
   }, [isVisible, onClose]);
 
+  // Escape dismisses the overlay
+  useEffect(() => {
+    if (!isVisible) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [isVisible, onClose]);
+
   const q = query.trim().toLowerCase();
 
   // Memoize result groups — all four sections derive from the same `venues` + `deals` props,
