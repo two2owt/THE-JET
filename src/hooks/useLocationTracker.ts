@@ -96,6 +96,11 @@ export const useLocationTracker = () => {
     let networkPoll: ReturnType<typeof setInterval> | null = null;
     let networkGrace: ReturnType<typeof setTimeout> | null = null;
 
+    // Fresh session (sign-in, permission grant, resume): let the first fix
+    // through the throttles so the live layers update instantly.
+    primingRef.current = true;
+    lastSampleAtRef.current = 0;
+
     const maybeWrite = async (rawLat: number, rawLng: number, rawAccuracy: number | null) => {
       if (cancelled || inFlightRef.current) return;
       const now = Date.now();
