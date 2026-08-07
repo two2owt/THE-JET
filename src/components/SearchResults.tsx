@@ -260,9 +260,10 @@ export const SearchResults = ({
         className="fixed left-2 right-2 sm:left-auto sm:right-4 z-[9999] animate-fade-in sm:w-[420px] sm:max-w-[min(420px,calc(100vw-2rem))]"
         style={{
           top: 'calc(var(--header-height, 56px) + env(safe-area-inset-top, 0px) + 8px)',
-          // Stay clear of the bottom nav on mobile and the page edge on desktop
+          // Stay clear of the bottom nav on mobile and the page edge on desktop.
+          // Capped so the map stays partially visible behind the panel.
           maxHeight:
-            'calc(100dvh - var(--header-height, 56px) - var(--bottom-nav-total-height, 80px) - env(safe-area-inset-top, 0px) - 24px)',
+            'min(calc(100dvh - var(--header-height, 56px) - var(--bottom-nav-total-height, 80px) - env(safe-area-inset-top, 0px) - 24px), 68dvh)',
         }}
       >
         <Card className="flex flex-col h-full max-h-full overflow-hidden shadow-glow w-full bg-card/95 backdrop-blur-xl border-primary/20 rounded-2xl">
