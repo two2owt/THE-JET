@@ -970,6 +970,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   }, []);
 
   // Keep the map camera + built-in controls clear of the header, bottom nav and open panels
+  const paddingInitialisedRef = useRef(false);
   useEffect(() => {
     const root = document.documentElement;
     const panelOpen = !!(isMobile && selectedVenue);
