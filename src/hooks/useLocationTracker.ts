@@ -291,6 +291,23 @@ export const useLocationTracker = () => {
           perms.location === "granted" || (backgroundEnabled && perms.coarseLocation === "granted");
         if (!granted || cancelled) return;
 
+        // Instant first point — don't wait for the watcher's first callback.
+        Geolocation.getCurrentPosition({
+          enableHighAccuracy: true,
+          timeout: 15_000,
+          maximumAge: 0,
+        })
+          .then((pos) => {
+            if (!cancelled && pos) {
+              void maybeWrite(
+                pos.coords.latitude,
+                pos.coords.longitude,
+                pos.coords.accuracy ?? null,
+              );
+            }
+          })
+          .catch(() => {});
+
         nativeWatchIdRef.current = await Geolocation.watchPosition(
           { enableHighAccuracy: false, timeout: 20_000, maximumAge: 30_000 },
           (pos, err) => {
@@ -347,6 +364,16 @@ export const useLocationTracker = () => {
         if (document.visibilityState === "visible") requestFix();
       };
       document.addEventListener("visibilitychange", resumeHandler);
+
+      // Instant first point on this session — a fresh, high-accuracy fix so the
+      // heatmap/flow layers reflect the user right away.
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          void maybeWrite(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+        },
+        () => {},
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 15_000 },
+      );
     };
 
     const start = isNativeApp() ? startNative : startWeb;
