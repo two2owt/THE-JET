@@ -5,6 +5,13 @@ import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
 const FUNCTION_NAME = "get-movement-paths";
 logVersion(FUNCTION_NAME);
 
+/**
+ * k-anonymity floor: a route edge is only returned when at least this many
+ * DISTINCT users travelled it. Stops a single person's venue-to-venue
+ * movements being traceable on the flow-paths layer (anti-stalking guard).
+ */
+const K_ANONYMITY_MIN_USERS = 3;
+
 // Rate limiting: 15 requests per minute per IP
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
 const RATE_LIMIT_MAX_REQUESTS = 15;
