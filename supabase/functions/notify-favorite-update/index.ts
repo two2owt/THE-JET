@@ -227,26 +227,15 @@ Deno.serve(async (req) => {
       console.error("favorite-update email dispatch failed:", e?.message);
     }
 
-    // Log notifications
-    if (userIds.length > 0) {
-      const logs = userIds.map((uid) => ({
-        user_id: uid,
-        title,
-        message: body,
-        notification_type: payload.event_type === "ending_soon" ? "ending_soon" : "favorite_update",
-        deal_id: payload.deal_id ?? null,
-      }));
-      await supabase.from("notification_logs").insert(logs);
-    }
-
+    // notification_logs rows are written by notifications-dispatch so the
+    // in-app Alerts feed matches what was actually delivered.
     return new Response(
       JSON.stringify({
         ok: true,
         favorited_users: userIds.length,
-        web_sent: webSent,
-        fcm_sent: fcmSent,
+        queued_id: queuedId,
+        queue_duplicate: queueDuplicate,
         emails_sent: emailsSent,
-        invalid_marked: invalidIds.length,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
