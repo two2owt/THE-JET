@@ -59,6 +59,11 @@ All colors MUST be HSL.
 
     /* For fixed positioned elements that need to clear bottom nav */
     --map-fixed-bottom: calc(var(--bottom-nav-total-height) + 0.75rem);
+
+    /* Extra bottom clearance contributed by open map panels (JetCard, search results).
+       Set dynamically by the map component; 0 when no panel is open. */
+    --map-panel-bottom: 0px;
+    --map-safe-bottom-panels: calc(var(--map-safe-bottom) + var(--map-panel-bottom));
     
     /* Map control panel max width for responsive layouts */
     --map-control-max-width: 140px;
@@ -1543,7 +1548,8 @@ All colors MUST be HSL.
 
   .mapboxgl-ctrl-bottom-left,
   .mapboxgl-ctrl-bottom-right {
-    bottom: var(--map-safe-bottom) !important;
+    bottom: var(--map-safe-bottom-panels, var(--map-safe-bottom)) !important;
+    transition: bottom 200ms ease;
   }
 
   /* Respect notches / landscape safe areas */

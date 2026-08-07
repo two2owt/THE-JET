@@ -968,6 +968,59 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     };
   }, []);
 
+  // Keep the map camera + built-in controls clear of the header, bottom nav and open panels
+  useEffect(() => {
+    const root = document.documentElement;
+
+    // Height reserved at the bottom by an open panel (JetCard on mobile / bottom sheet)
+    const panelBottom = isMobile && selectedVenue ? 'min(46svh, 420px)' : '0px';
+    root.style.setProperty('--map-panel-bottom', panelBottom);
+
+    const readPx = (expr: string) => {
+      const probe = document.createElement('div');
+      probe.style.cssText = `position:absolute;visibility:hidden;pointer-events:none;height:${expr}`;
+      document.body.appendChild(probe);
+      const px = probe.getBoundingClientRect().height;
+      probe.remove();
+      return Number.isFinite(px) ? px : 0;
+    };
+
+    const applyPadding = () => {
+      if (!map.current) return;
+      const top = readPx('var(--map-safe-top-controls, var(--map-safe-top))');
+      const bottom = readPx('var(--map-safe-bottom-panels, var(--map-safe-bottom))');
+      const left = readPx('var(--map-ui-inset-left)');
+      const right = readPx('var(--map-ui-inset-right)');
+      try {
+        map.current.setPadding(
+          {
+            top: Math.round(top),
+            bottom: Math.round(bottom),
+            left: Math.round(left),
+            right: Math.round(right),
+          },
+          { duration: 250 } as never,
+        );
+      } catch {
+        /* map not ready yet */
+      }
+    };
+
+    const raf = requestAnimationFrame(applyPadding);
+    window.addEventListener('resize', applyPadding);
+    window.addEventListener('orientationchange', applyPadding);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', applyPadding);
+      window.removeEventListener('orientationchange', applyPadding);
+    };
+  }, [isMobile, selectedVenue, mapLoaded]);
+
+  useEffect(() => () => {
+    document.documentElement.style.removeProperty('--map-panel-bottom');
+  }, []);
+
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
     
