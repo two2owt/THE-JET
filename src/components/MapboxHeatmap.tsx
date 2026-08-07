@@ -986,35 +986,78 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       return Number.isFinite(px) ? px : 0;
     };
 
-    const applyPadding = () => {
+    let lastSignature = '';
+
+    const applyPadding = (animate = true) => {
       if (!map.current) return;
+      // Orientation flips change both the safe-area insets and the svh basis
+      // used by --map-panel-bottom, so everything is re-measured from the DOM.
       const top = readPx('var(--map-safe-top-controls, var(--map-safe-top))');
       const bottom = readPx('var(--map-safe-bottom-panels, var(--map-safe-bottom))');
       const left = readPx('var(--map-ui-inset-left)');
       const right = readPx('var(--map-ui-inset-right)');
+      const padding = {
+        top: Math.round(top),
+        bottom: Math.round(bottom),
+        left: Math.round(left),
+        right: Math.round(right),
+      };
+      const signature = `${padding.top}|${padding.bottom}|${padding.left}|${padding.right}|${window.innerWidth}x${window.innerHeight}`;
+      if (signature === lastSignature) return;
+      lastSignature = signature;
       try {
-        map.current.setPadding(
-          {
-            top: Math.round(top),
-            bottom: Math.round(bottom),
-            left: Math.round(left),
-            right: Math.round(right),
-          },
-          { duration: 250 } as never,
-        );
+        // Canvas first: padding is meaningless against a stale canvas size.
+        map.current.resize();
+        map.current.setPadding(padding, { duration: animate ? 250 : 0 } as never);
       } catch {
         /* map not ready yet */
       }
     };
 
-    const raf = requestAnimationFrame(applyPadding);
-    window.addEventListener('resize', applyPadding);
-    window.addEventListener('orientationchange', applyPadding);
+    // iOS/Android report stale viewport metrics for a few frames after a
+    // rotation, so each trigger schedules a rAF pass plus delayed re-checks.
+    let rafId = 0;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const clearTimers = () => {
+      timers.splice(0).forEach(clearTimeout);
+    };
+
+    const schedule = (animate = true) => {
+      if (rafId) cancelAnimationFrame(rafId);
+      clearTimers();
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        applyPadding(animate);
+      });
+      [120, 320, 600].forEach((delay) =>
+        timers.push(setTimeout(() => applyPadding(animate), delay)),
+      );
+    };
+
+    const onRotate = () => schedule(false);
+    const onResize = () => schedule(true);
+    const onResume = () => {
+      if (document.visibilityState === 'visible') schedule(false);
+    };
+
+    schedule(false);
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onRotate);
+    window.visualViewport?.addEventListener('resize', onResize);
+    window.addEventListener('pageshow', onResume);
+    document.addEventListener('visibilitychange', onResume);
+    const screenOrientation = window.screen?.orientation;
+    screenOrientation?.addEventListener?.('change', onRotate);
 
     return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener('resize', applyPadding);
-      window.removeEventListener('orientationchange', applyPadding);
+      if (rafId) cancelAnimationFrame(rafId);
+      clearTimers();
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onRotate);
+      window.visualViewport?.removeEventListener('resize', onResize);
+      window.removeEventListener('pageshow', onResume);
+      document.removeEventListener('visibilitychange', onResume);
+      screenOrientation?.removeEventListener?.('change', onRotate);
     };
   }, [isMobile, selectedVenue, mapLoaded]);
 
