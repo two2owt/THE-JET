@@ -81,6 +81,8 @@ function fireDealPush(supabaseUrl: string, deal: MerchantDeal, prefix: string) {
       venue_name: deal.venue_name,
       deal_id: deal.id,
       neighborhood_id: deal.neighborhood_id ?? undefined,
+      event_type: 'new_deal',
+      audience: deal.neighborhood_id ? 'neighborhood' : 'all',
     }),
   }).catch((e) => console.error('push dispatch failed (non-blocking):', e));
 }

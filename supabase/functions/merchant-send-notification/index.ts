@@ -34,6 +34,8 @@ interface MerchantNotificationPayload {
   idempotency_key?: string;
   category?: string;
   event_type?: string;
+  /** Explicit audience override; defaults below. */
+  audience?: "favorites" | "neighborhood" | "all";
 }
 
 Deno.serve(async (req) => {
@@ -71,11 +73,24 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const audience = payload.neighborhood_id
-      ? "neighborhood"
-      : payload.deal_id || payload.venue_id
-        ? "favorites"
-        : "all";
+    // Only follow-up events about an existing deal should target favoriters.
+    // A brand-new deal has no favoriters yet, so it must broadcast.
+    const FAVORITE_EVENTS = new Set([
+      "favorite_update",
+      "updated",
+      "ending_soon",
+      "activated",
+    ]);
+    const eventType = payload.event_type ?? "merchant_push";
+    const requested = payload.audience;
+    const audience =
+      requested && ["favorites", "neighborhood", "all"].includes(requested)
+        ? requested
+        : payload.neighborhood_id
+          ? "neighborhood"
+          : FAVORITE_EVENTS.has(eventType) && (payload.deal_id || payload.venue_id)
+            ? "favorites"
+            : "all";
 
     const idempotencyKey =
       payload.idempotency_key ??
@@ -85,7 +100,7 @@ Deno.serve(async (req) => {
     const row = {
       idempotency_key: idempotencyKey,
       source: "jet_bridge",
-      event_type: payload.event_type ?? "merchant_push",
+      event_type: eventType,
       category: payload.category ?? "deals",
       title: payload.title,
       body: payload.body,
