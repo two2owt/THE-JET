@@ -108,24 +108,82 @@ export function ExploreTabSkeleton() {
 
 /* ─── Messages Page ─── */
 
+/**
+ * Rows-only conversation skeleton. Mirrors the real conversation row box model
+ * (same avatar size, same clamp() padding/gap) so swapping skeleton → data
+ * costs 0 CLS. Used inside <ConversationList>, which already renders the page
+ * header — rendering the full MessagesPageSkeleton there duplicated the header
+ * row and produced a visible shift when loading finished.
+ */
+export function ConversationRowsSkeleton({ count = 5 }: { count?: number }) {
+  return (
+    <div className="divide-y divide-border" aria-hidden="true">
+      {Array.from({ length: count }).map((_, i) => (
+        <div
+          key={i}
+          className="flex items-center"
+          style={{
+            gap: 'clamp(10px, 3vw, 14px)',
+            padding: 'clamp(10px, 2.8vw, 14px) clamp(12px, 3.2vw, 16px)',
+            // Real rows measure 48px of content (name + preview line) inside the
+            // same clamped padding — pin it so skeleton → data is pixel-stable.
+            height: 'calc(48px + clamp(10px, 2.8vw, 14px) * 2)',
+            boxSizing: 'content-box',
+          }}
+        >
+          <Skeleton className="h-11 w-11 sm:h-12 sm:w-12 lg:h-[52px] lg:w-[52px] rounded-full shrink-0" />
+          <div className="flex-1 min-w-0">
+            <Skeleton className="h-[18px] w-32 rounded" />
+            <Skeleton className="h-[15px] w-48 max-w-full rounded" style={{ marginTop: 4 }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Card-row skeleton matching the Social page list rows (same padding, radius
+ * and avatar sizing) so friend / discover lists reserve their space while the
+ * connection and profile queries are still in flight.
+ */
+export function SocialListSkeleton({ count = 3 }: { count?: number }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }} aria-hidden="true">
+      {Array.from({ length: count }).map((_, i) => (
+        <div
+          key={i}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'clamp(10px, 3vw, 14px)',
+            padding: 'clamp(10px, 2.8vw, 14px) clamp(12px, 3.2vw, 16px)',
+            borderRadius: '14px',
+            backgroundColor: 'hsl(var(--card) / 0.9)',
+            border: '1px solid hsl(var(--border) / 0.6)',
+          }}
+        >
+          <Skeleton className="w-10 h-10 min-[360px]:w-11 min-[360px]:h-11 sm:w-12 sm:h-12 lg:w-[52px] lg:h-[52px] rounded-full shrink-0" />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <Skeleton className="h-[19px] w-28 rounded" />
+            <Skeleton className="h-[17px] w-40 max-w-full rounded" style={{ marginTop: 2 }} />
+          </div>
+          <Skeleton className="h-10 w-10 rounded-[10px] shrink-0" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function MessagesPageSkeleton() {
   return (
     <div className="max-w-2xl mx-auto w-full flex flex-col">
       <div className="px-4 py-3 border-b border-border/60">
         <Skeleton className="h-8 w-32 rounded-lg" />
       </div>
-      <div className="divide-y divide-border">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3 px-4 py-3">
-            <Skeleton className="h-12 w-12 rounded-full flex-shrink-0" />
-            <div className="flex-1 space-y-2">
-              <Skeleton className="h-4 w-32 rounded" />
-              <Skeleton className="h-3 w-48 rounded" />
-            </div>
-            <Skeleton className="h-3 w-10 rounded flex-shrink-0" />
-          </div>
-        ))}
-      </div>
+      {/* Reuses the exact conversation row metrics so the route-level fallback
+          hands off to the live list without a reflow. */}
+      <ConversationRowsSkeleton />
     </div>
   );
 }

@@ -24,7 +24,7 @@ import {
   Users,
 } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
-import { MessagesPageSkeleton } from "@/components/skeletons/PageSkeletons";
+import { ConversationRowsSkeleton } from "@/components/skeletons/PageSkeletons";
 import { ConnectionProfileDialog } from "@/components/ConnectionProfileDialog";
 
 interface DiscoverableProfile {
@@ -334,7 +334,7 @@ function ConversationList({
       </div>
       <DiscoverPeopleStrip userId={userId} onSelect={onDiscoverSelect} />
       {loading ? (
-        <MessagesPageSkeleton />
+        <ConversationRowsSkeleton />
       ) : conversations.length === 0 ? (
         <div className="px-4 py-fluid-lg">
           <EmptyState
