@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { SEO } from "@/components/SEO";
 import { PageShell } from "@/components/PageShell";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
-import { SocialPageSkeleton } from "@/components/skeletons/PageSkeletons";
+import { SocialPageSkeleton, SocialListSkeleton } from "@/components/skeletons/PageSkeletons";
 import { SectionTitle } from "@/components/ui/page-title";
 import { useAuth } from "@/contexts/AuthContext";
 import { TabPageHeader } from "@/components/TabPageHeader";
@@ -80,12 +80,16 @@ export default function Social() {
   const [chatFriend, setChatFriend] = useState<{ id: string; name: string; avatar?: string | null } | null>(null);
   const [sentRequestIds, setSentRequestIds] = useState<Set<string>>(new Set());
   const [profilesError, setProfilesError] = useState(false);
+  // Tracks the very first Discover fetch so the list can reserve its height
+  // instead of rendering an empty state that later gets replaced by rows.
+  const [profilesLoading, setProfilesLoading] = useState(true);
   const unreadCounts = useUnreadCounts(user?.id);
   const headerConfig = useMemo(() => ({ hideSearch: true }), []);
 
   const {
     connections,
     pendingRequests,
+    loading: connectionsLoading,
     sendRequest,
     acceptRequest,
     removeConnection,
@@ -169,6 +173,8 @@ export default function Social() {
     } catch (error) {
       console.error("Error fetching profiles:", error);
       setProfilesError(true);
+    } finally {
+      setProfilesLoading(false);
     }
   };
 
@@ -545,7 +551,9 @@ export default function Social() {
           >
             My Friends
           </SectionTitle>
-          {connections.length === 0 ? (
+          {connectionsLoading ? (
+            <SocialListSkeleton count={2} />
+          ) : connections.length === 0 ? (
             <EmptyState
               icon={UserX}
               title="No friends yet"
@@ -617,12 +625,18 @@ export default function Social() {
           )}
         </section>
 
-        {/* Discover People */}
+        {/* Discover People — mounted only after the connections query settles.
+            Appending it below already-painted content adds height without
+            moving anything, whereas rendering it first meant the friends list
+            growing from skeleton to real rows pushed it down (CLS). */}
+        {!connectionsLoading && (
         <section className="mt-10">
           <SectionTitle subtitle="Suggested connections from your area">
             Discover People
           </SectionTitle>
-          {profilesError ? (
+          {profilesLoading ? (
+            <SocialListSkeleton count={3} />
+          ) : profilesError ? (
             <EmptyState
               icon={AlertTriangle}
               title="Couldn't load suggestions"
@@ -671,6 +685,7 @@ export default function Social() {
           </div>
           )}
         </section>
+        )}
       </PageShell>
 
       {/* Connection Profile Dialog */}
