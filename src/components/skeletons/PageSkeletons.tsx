@@ -128,7 +128,7 @@ export function ConversationRowsSkeleton({ count = 5 }: { count?: number }) {
             // Real rows measure 48px of content (name + preview line) inside the
             // same clamped padding — pin it so skeleton → data is pixel-stable.
             height: 'calc(48px + clamp(10px, 2.8vw, 14px) * 2)',
-            boxSizing: 'content-box',
+            boxSizing: 'border-box',
           }}
         >
           <Skeleton className="h-11 w-11 sm:h-12 sm:w-12 lg:h-[52px] lg:w-[52px] rounded-full shrink-0" />
