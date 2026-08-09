@@ -96,11 +96,13 @@ function DiscoverPeopleStrip({
           ? Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={`sk-${i}`}
-                className="flex flex-col items-center gap-1 shrink-0"
-                style={{ width: 64 }}
+                // Mirrors the loaded tile box model exactly (p-1 + 56px avatar
+                // + 11px/leading-tight label) so the strip keeps its height.
+                className="flex flex-col items-center gap-1 shrink-0 p-1"
+                style={{ width: 72 }}
               >
                 <div className="h-14 w-14 rounded-full bg-muted animate-pulse" />
-                <div className="h-3 w-12 rounded bg-muted animate-pulse" />
+                <div className="h-[14px] w-12 rounded bg-muted animate-pulse" />
               </div>
             ))
           : people.map((p) => (
