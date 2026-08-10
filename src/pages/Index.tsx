@@ -677,8 +677,9 @@ const Index = () => {
                 }
               />
 
-              {unreadNotifications > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                <EnablePushButton />
+                {unreadNotifications > 0 && (
                   <button
                     type="button"
                     onClick={markAllAsRead}
@@ -687,8 +688,8 @@ const Index = () => {
                   >
                     Mark all as read
                   </button>
-                </div>
-              )}
+                )}
+              </div>
 
               {notifications.length === 0 ? (
                 <div style={{
