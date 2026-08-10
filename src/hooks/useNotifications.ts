@@ -60,17 +60,62 @@ export const useNotifications = (enabled: boolean = true) => {
         return;
       }
 
-      const { data, error: fetchError } = await supabase
-        .from('notification_logs')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .order('sent_at', { ascending: false })
-        .limit(20);
+      const [logsRes, deliveriesRes] = await Promise.all([
+        supabase
+          .from('notification_logs')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .order('sent_at', { ascending: false })
+          .limit(30),
+        // Push receipts: what was actually delivered to this user, joined to
+        // the queued alert content.
+        supabase
+          .from('notification_deliveries')
+          .select('id, status, opened_at, created_at, queue_id, notification_queue(title, body, category, venue_id)')
+          .eq('user_id', session.user.id)
+          .order('created_at', { ascending: false })
+          .limit(30),
+      ]);
 
-      if (fetchError) throw fetchError;
-      
-      const mappedNotifications = (data || []).map(mapNotificationLogToNotification);
-      setNotifications(mappedNotifications);
+      if (logsRes.error) throw logsRes.error;
+
+      const fromLogs = (logsRes.data || []).map(mapNotificationLogToNotification);
+
+      type DeliveryRow = {
+        id: string;
+        status: string;
+        opened_at: string | null;
+        created_at: string;
+        queue_id: string;
+        notification_queue: {
+          title: string; body: string; category: string; venue_id: string | null;
+        } | null;
+      };
+
+      const seen = new Set<string>();
+      const fromDeliveries: Notification[] = ((deliveriesRes.data as DeliveryRow[] | null) || [])
+        .filter((d) => d.notification_queue && !seen.has(d.queue_id) && seen.add(d.queue_id) !== undefined)
+        .map((d) => ({
+          id: d.id,
+          type: CATEGORY_TO_TYPE[d.notification_queue!.category] ?? "offer",
+          title: d.notification_queue!.title,
+          message: d.notification_queue!.body,
+          venue: d.notification_queue!.venue_id ?? undefined,
+          timestamp: relativeTime(d.created_at),
+          read: d.status === 'opened' || !!d.opened_at,
+          source: "delivery" as const,
+          _sortKey: d.created_at,
+        }) as Notification & { _sortKey: string });
+
+      const merged = [
+        ...fromLogs.map((n, i) => ({ ...n, _sortKey: (logsRes.data || [])[i]?.sent_at ?? '' })),
+        ...(fromDeliveries as (Notification & { _sortKey: string })[]),
+      ]
+        .sort((a, b) => (b._sortKey || '').localeCompare(a._sortKey || ''))
+        .slice(0, 40)
+        .map(({ _sortKey, ...n }) => n);
+
+      setNotifications(merged);
       setError(null);
     } catch (err) {
       console.error('Error loading notifications:', err);
@@ -81,14 +126,20 @@ export const useNotifications = (enabled: boolean = true) => {
   };
 
   const markAsRead = async (notificationId: string) => {
+    const target = notifications.find(n => n.id === notificationId);
     try {
-      const { error: updateError } = await supabase
-        .from('notification_logs')
-        .update({ read: true })
-        .eq('id', notificationId);
+      const updateError = target?.source === 'delivery'
+        ? (await supabase
+            .from('notification_deliveries')
+            .update({ status: 'opened', opened_at: new Date().toISOString() })
+            .eq('id', notificationId)).error
+        : (await supabase
+            .from('notification_logs')
+            .update({ read: true })
+            .eq('id', notificationId)).error;
 
       if (updateError) throw updateError;
-      
+
       setNotifications(prev =>
         prev.map(notif =>
           notif.id === notificationId ? { ...notif, read: true } : notif
@@ -96,6 +147,27 @@ export const useNotifications = (enabled: boolean = true) => {
       );
     } catch (err) {
       console.error('Error marking notification as read:', err);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    const unread = notifications.filter(n => !n.read);
+    if (unread.length === 0) return;
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    const logIds = unread.filter(n => n.source !== 'delivery').map(n => n.id);
+    const deliveryIds = unread.filter(n => n.source === 'delivery').map(n => n.id);
+    try {
+      if (logIds.length) {
+        await supabase.from('notification_logs').update({ read: true }).in('id', logIds);
+      }
+      if (deliveryIds.length) {
+        await supabase
+          .from('notification_deliveries')
+          .update({ status: 'opened', opened_at: new Date().toISOString() })
+          .in('id', deliveryIds);
+      }
+    } catch (err) {
+      console.error('Error marking all notifications as read:', err);
     }
   };
 
@@ -142,5 +214,5 @@ export const useNotifications = (enabled: boolean = true) => {
     };
   }, [enabled]);
 
-  return { notifications, loading, error, refresh: loadNotifications, markAsRead };
+  return { notifications, loading, error, refresh: loadNotifications, markAsRead, markAllAsRead };
 };
