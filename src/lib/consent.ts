@@ -82,6 +82,38 @@ export function refreshConsents(): Promise<void> {
   return loadConsents(currentUserId);
 }
 
+/**
+ * Explicitly record a consent decision for the signed-in user and refresh the
+ * in-memory state so `requireConsent` immediately reflects it. Used by the
+ * push opt-in prompt and the Settings toggles.
+ */
+export async function setConsent(
+  type: ConsentType,
+  granted: boolean,
+  source: string,
+): Promise<boolean> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return false;
+  const nowIso = new Date().toISOString();
+  const { error } = await supabase.from("user_consents").insert({
+    user_id: user.id,
+    consent_type: type,
+    granted,
+    policy_version: "2025-06",
+    source,
+    granted_at: granted ? nowIso : null,
+    revoked_at: granted ? null : nowIso,
+  });
+  if (error) {
+    console.error("[consent] failed to record", type, error);
+    return false;
+  }
+  state[type] = granted;
+  emit();
+  await loadConsents(user.id);
+  return true;
+}
+
 export function hasConsent(type: ConsentType): boolean {
   return state[type] === true;
 }
