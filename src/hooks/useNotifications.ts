@@ -13,29 +13,35 @@ export interface Notification {
   timestamp: string;
   distance?: string;
   read?: boolean;
+  /** Where the row came from — decides how mark-as-read is persisted */
+  source?: "log" | "delivery";
 }
 
-const mapNotificationLogToNotification = (log: NotificationLog): Notification => {
-  const timeDiff = Date.now() - new Date(log.sent_at || '').getTime();
+const relativeTime = (iso: string | null | undefined): string => {
+  const timeDiff = Date.now() - new Date(iso || '').getTime();
   const minutes = Math.floor(timeDiff / 60000);
   const hours = Math.floor(minutes / 60);
-  
-  let timestamp: string;
-  if (hours > 0) {
-    timestamp = `${hours}h ago`;
-  } else if (minutes > 0) {
-    timestamp = `${minutes}m ago`;
-  } else {
-    timestamp = 'Just now';
-  }
+  if (hours > 0) return `${hours}h ago`;
+  if (minutes > 0) return `${minutes}m ago`;
+  return 'Just now';
+};
 
+const CATEGORY_TO_TYPE: Record<string, Notification["type"]> = {
+  deal: "offer",
+  favorite: "offer",
+  trending: "trending",
+  event: "event",
+};
+
+const mapNotificationLogToNotification = (log: NotificationLog): Notification => {
   return {
     id: log.id,
     type: log.notification_type as "offer" | "trending" | "event",
     title: log.title,
     message: log.message,
-    timestamp,
-    read: log.read || false
+    timestamp: relativeTime(log.sent_at),
+    read: log.read || false,
+    source: "log",
   };
 };
 
