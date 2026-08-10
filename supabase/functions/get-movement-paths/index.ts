@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsHeaders, logVersion, EDGE_FUNCTION_VERSION } from "../_shared/cors.ts";
 import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
+import { buildCutoffLadder } from "../_shared/fallback-windows.ts";
 
 const FUNCTION_NAME = "get-movement-paths";
 logVersion(FUNCTION_NAME);
@@ -340,17 +341,12 @@ Deno.serve(async (req) => {
     };
 
     // Fallback ladder: when the requested window has no qualifying edges, widen
-    // to the most recent data available (24h → 7d → 30d → all time) so flow
-    // paths still render instead of going blank.
+    // to the most recent data available so flow paths still render instead of
+    // going blank. Steps are configurable via the FALLBACK_WINDOW_MINUTES
+    // secret (default 24h → 7d → 30d → all time).
     const minutesSince = (d: Date | null) =>
       d === null ? Number.POSITIVE_INFINITY : Math.round((now.getTime() - d.getTime()) / 60_000);
-    const ladder: (Date | null)[] = [
-      primaryCutoff,
-      new Date(now.getTime() - 1_440 * 60_000),
-      new Date(now.getTime() - 10_080 * 60_000),
-      new Date(now.getTime() - 43_200 * 60_000),
-      null,
-    ].filter((c, i) => i === 0 || minutesSince(c) > minutesSince(primaryCutoff));
+    const ladder: (Date | null)[] = buildCutoffLadder(now, primaryCutoff);
 
     let pathResult = await computePaths(ladder[0]);
     let usedCutoff = ladder[0];
