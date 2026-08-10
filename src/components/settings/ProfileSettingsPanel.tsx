@@ -19,6 +19,7 @@ import { ReportIssueDialog } from "@/components/ReportIssueDialog";
 
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useWebPushNotifications } from "@/hooks/useWebPushNotifications";
+import { PushEnablementGuide } from "@/components/settings/PushEnablementGuide";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { isMonetizationEnabled } from "@/lib/monetization";
 
@@ -387,6 +388,15 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
                 />
               </div>
             </>
+          )}
+          {!isNative && (
+            <PushEnablementGuide
+              isSupported={isWebPushSupported}
+              isSubscribed={isWebPushSubscribed}
+              permission={webPushPermission}
+              isLoading={isWebPushLoading}
+              onEnable={() => handleWebPushToggle(true)}
+            />
           )}
         </div>
       </Card>

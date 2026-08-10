@@ -15,6 +15,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { resolvePushDeepLink } from "@/lib/pushDeepLink";
+import { toast } from "sonner";
 
 function isNativeShell() {
   return (
@@ -89,7 +90,15 @@ export const usePushNotifications = () => {
       // Foreground receipt — surface as a lightweight toast route is left
       // to the app; the OS handles background delivery natively.
       await PushNotifications.addListener("pushNotificationReceived", (notif) => {
-        console.log("[push] received", notif);
+        // Foreground on native: the OS suppresses the banner, so surface the
+        // alert in-app with a deep-link action into the matching JetCard.
+        const data = (notif?.data ?? {}) as Record<string, string>;
+        const target = resolvePushDeepLink(data);
+        toast(notif?.title || "New JET alert", {
+          description: notif?.body || undefined,
+          action: target ? { label: "View", onClick: () => navigate(target) } : undefined,
+        });
+        window.dispatchEvent(new CustomEvent("jet:notifications-refresh"));
       });
 
       // User tapped the notification → route into the correct heatmap state.

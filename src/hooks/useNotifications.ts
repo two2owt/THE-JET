@@ -124,10 +124,15 @@ export const useNotifications = (enabled: boolean = true) => {
       loadNotifications();
     });
 
+    // Foreground push arrived while the app was open — refresh immediately.
+    const onPushRefresh = () => loadNotifications();
+    window.addEventListener("jet:notifications-refresh", onPushRefresh);
+
     return () => {
       clearTimeout(timer);
       supabase.removeChannel(channel);
       subscription.unsubscribe();
+      window.removeEventListener("jet:notifications-refresh", onPushRefresh);
     };
   }, [enabled]);
 
