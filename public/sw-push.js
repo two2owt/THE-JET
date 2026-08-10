@@ -51,7 +51,29 @@ self.addEventListener('push', function(event) {
   };
 
   event.waitUntil(
-    self.registration.showNotification(title, options)
+    (async () => {
+      // Foreground delivery: if JET is already open and visible, hand the
+      // payload to the page so it renders an in-app toast instead of an OS
+      // banner (avoids duplicate alerts for an active user).
+      const windowClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+      const visible = windowClients.filter(function (c) {
+        return c.visibilityState === 'visible';
+      });
+
+      if (visible.length > 0) {
+        visible.forEach(function (client) {
+          try {
+            client.postMessage({
+              type: 'PUSH_RECEIVED',
+              payload: { title: title, body: options.body, data: options.data }
+            });
+          } catch (e) {}
+        });
+        return;
+      }
+
+      return self.registration.showNotification(title, options);
+    })()
   );
 });
 
