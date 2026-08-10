@@ -12,7 +12,7 @@ import { z } from "zod";
 
 import PreferencesEditor from "@/components/settings/PreferencesEditor";
 import PrivacySettings from "@/components/settings/PrivacySettings";
-import { refreshConsents } from "@/lib/consent";
+import { refreshConsents, setConsent } from "@/lib/consent";
 import { AccountSection } from "@/components/settings/AccountSection";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { ReportIssueDialog } from "@/components/ReportIssueDialog";
@@ -241,12 +241,16 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
   const handleWebPushToggle = async (enabled: boolean) => {
     try {
       if (enabled) {
+        // Push is opt-in: record consent first, otherwise the runtime guard
+        // inside subscribeWebPush() rejects the request.
+        await setConsent("push_notifications", true, "settings.web_push");
         const ok = await subscribeWebPush();
         if (!ok && webPushPermission === "denied") {
           toast.error("Notifications blocked. Enable them in your browser settings.");
         }
       } else {
         await unsubscribeWebPush();
+        await setConsent("push_notifications", false, "settings.web_push");
       }
     } catch (err) {
       console.error("Web push toggle failed:", err);

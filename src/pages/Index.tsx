@@ -746,10 +746,12 @@ const Index = () => {
         <AuthPWAInstallPromptWrapper showSignUpCtaForAnonymous />
       </Suspense>
 
-      {/* Push Notification Prompt - shows after PWA install */}
+      {/* Push opt-in — shown after PWA install and, more importantly, to any
+          signed-in visitor who hasn't subscribed yet (the prompt handles its
+          own dismissal/permission/platform checks internally). */}
       <Suspense fallback={null}>
         <PushNotificationPrompt 
-          show={justInstalled || showPushPrompt}
+          show={justInstalled || showPushPrompt || !!session?.user}
           onDismiss={() => {
             clearJustInstalled();
             setShowPushPrompt(false);

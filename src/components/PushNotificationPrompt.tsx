@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Bell, Zap, MapPin, Gift } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Bell, Zap, MapPin, Gift, Share, PlusSquare, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,6 +10,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useWebPushNotifications } from "@/hooks/useWebPushNotifications";
+import { setConsent } from "@/lib/consent";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PushNotificationPromptProps {
   show: boolean;
@@ -19,9 +21,21 @@ interface PushNotificationPromptProps {
 const DISMISS_KEY = "push-notification-prompt-dismissed";
 const DISMISS_DURATION = 14 * 24 * 60 * 60 * 1000; // 14 days
 
+/** iOS only delivers web push to apps installed to the Home Screen. */
+const isIOS = () =>
+  typeof navigator !== "undefined" &&
+  (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && (navigator as any).maxTouchPoints > 1));
+
+const isStandalone = () =>
+  typeof window !== "undefined" &&
+  (window.matchMedia("(display-mode: standalone)").matches ||
+    (window.navigator as any).standalone === true);
+
 export const PushNotificationPrompt = ({ show, onDismiss }: PushNotificationPromptProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
 
   const { 
     isSupported: isWebPushSupported, 
@@ -30,8 +44,21 @@ export const PushNotificationPrompt = ({ show, onDismiss }: PushNotificationProm
     permission: webPermission
   } = useWebPushNotifications();
 
+  // Subscriptions are stored per user, so only prompt signed-in visitors.
   useEffect(() => {
-    if (!show || isWebSubscribed) return;
+    let cancelled = false;
+    supabase.auth.getUser().then(({ data }) => {
+      if (!cancelled) setSignedIn(!!data.user);
+    });
+    return () => { cancelled = true; };
+  }, [show]);
+
+  // iOS Safari can't subscribe until the app is installed to the Home Screen.
+  const needsInstallFirst = useMemo(() => isIOS() && !isStandalone(), []);
+  const isBlocked = webPermission === "denied";
+
+  useEffect(() => {
+    if (!show || isWebSubscribed || !signedIn) return;
 
     const dismissedAt = localStorage.getItem(DISMISS_KEY);
     if (dismissedAt) {
@@ -40,15 +67,18 @@ export const PushNotificationPrompt = ({ show, onDismiss }: PushNotificationProm
       localStorage.removeItem(DISMISS_KEY);
     }
 
-    if (webPermission === 'denied') return;
-
-    const timer = setTimeout(() => setIsVisible(true), 1000);
+    const timer = setTimeout(() => setIsVisible(true), 1500);
     return () => clearTimeout(timer);
-  }, [show, isWebSubscribed, webPermission]);
+  }, [show, isWebSubscribed, signedIn]);
 
   const handleEnable = async () => {
     setIsLoading(true);
     let success = false;
+
+    // Record the opt-in before subscribing — the runtime consent guard inside
+    // subscribe() rejects the call when `push_notifications` isn't granted,
+    // which previously made this button a no-op.
+    await setConsent("push_notifications", true, "prompt.push_enable");
 
     if (isWebPushSupported) {
       // subscribe() internally calls Notification.requestPermission()
@@ -82,32 +112,69 @@ export const PushNotificationPrompt = ({ show, onDismiss }: PushNotificationProm
             <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
               <Bell className="h-7 w-7 text-primary" />
             </div>
-            <DialogTitle className="text-lg font-semibold">Stay in the Loop</DialogTitle>
+            <DialogTitle className="text-lg font-semibold">Turn on deal alerts</DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
-              Get instant alerts for deals near you and never miss out on exclusive offers. Your browser will ask for permission after you tap Enable.
+              {isBlocked
+                ? "Notifications are currently blocked for JET in this browser. Re-allow them, then come back and tap Enable."
+                : needsInstallFirst
+                  ? "On iPhone and iPad, alerts work once JET is added to your Home Screen. Follow the two steps below, reopen JET from your Home Screen, then tap Enable."
+                  : "Get instant alerts the moment a Charlotte deal goes live near you. Tap Enable, then choose Allow in the browser popup that appears."}
             </DialogDescription>
           </DialogHeader>
 
+          {isBlocked ? (
+            <ol className="space-y-2 my-5 text-sm text-foreground/80 list-decimal pl-5">
+              <li>Tap the lock or settings icon in your browser's address bar.</li>
+              <li>Open <span className="font-medium">Site settings</span> → <span className="font-medium">Notifications</span>.</li>
+              <li>Switch notifications to <span className="font-medium">Allow</span>, then reload JET.</li>
+            </ol>
+          ) : needsInstallFirst ? (
+            <div className="space-y-2 my-5">
+              <div className="flex items-center gap-2.5 text-sm">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
+                  <Share className="h-3.5 w-3.5 text-primary" />
+                </div>
+                <span className="text-foreground/80">1. Tap the Share button in Safari</span>
+              </div>
+              <div className="flex items-center gap-2.5 text-sm">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
+                  <PlusSquare className="h-3.5 w-3.5 text-primary" />
+                </div>
+                <span className="text-foreground/80">2. Choose "Add to Home Screen"</span>
+              </div>
+              <div className="flex items-center gap-2.5 text-sm">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
+                  <Settings2 className="h-3.5 w-3.5 text-primary" />
+                </div>
+                <span className="text-foreground/80">You can also enable alerts later in Settings</span>
+              </div>
+            </div>
+          ) : (
           <div className="space-y-2 my-5">
             <div className="flex items-center gap-2.5 text-sm">
               <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
                 <MapPin className="h-3.5 w-3.5 text-primary" />
               </div>
-              <span className="text-foreground/80">Location-based deal alerts</span>
+              <span className="text-foreground/80">Deals near you, as they drop</span>
             </div>
             <div className="flex items-center gap-2.5 text-sm">
               <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
                 <Zap className="h-3.5 w-3.5 text-primary" />
               </div>
-              <span className="text-foreground/80">Real-time notifications</span>
+              <span className="text-foreground/80">Heads-up before a favorite ends</span>
             </div>
             <div className="flex items-center gap-2.5 text-sm">
               <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
                 <Gift className="h-3.5 w-3.5 text-primary" />
               </div>
-              <span className="text-foreground/80">Exclusive member offers</span>
+              <span className="text-foreground/80">Exclusive member-only offers</span>
             </div>
           </div>
+          )}
+
+          <p className="text-xs text-muted-foreground mb-4">
+            No spam — only deals and updates you follow. You can turn alerts off any time in Settings.
+          </p>
 
           <DialogFooter className="flex-row gap-3 sm:gap-3">
             <Button
@@ -116,15 +183,17 @@ export const PushNotificationPrompt = ({ show, onDismiss }: PushNotificationProm
               onClick={handleDismiss}
               disabled={isLoading}
             >
-              Maybe Later
+              {needsInstallFirst || isBlocked ? "Close" : "Maybe Later"}
             </Button>
-            <Button
-              className="flex-1 bg-primary hover:bg-primary/90"
-              onClick={handleEnable}
-              disabled={isLoading}
-            >
-              {isLoading ? "Enabling..." : "Enable Alerts"}
-            </Button>
+            {!needsInstallFirst && (
+              <Button
+                className="flex-1 bg-primary hover:bg-primary/90"
+                onClick={handleEnable}
+                disabled={isLoading || isBlocked}
+              >
+                {isLoading ? "Enabling..." : "Enable Alerts"}
+              </Button>
+            )}
           </DialogFooter>
         </div>
       </DialogContent>
