@@ -209,19 +209,15 @@ export const useWebPushNotifications = () => {
     }
 
     const subscriptionJson = pushSubscription.toJSON();
-    
-    const { error } = await supabase
-      .from('push_subscriptions')
-      .upsert({
-        user_id: user.id,
-        endpoint: subscriptionJson.endpoint || '',
-        p256dh_key: subscriptionJson.keys?.p256dh || '',
-        auth_key: subscriptionJson.keys?.auth || '',
-        active: true,
-        updated_at: new Date().toISOString()
-      }, {
-        onConflict: 'user_id,endpoint'
-      });
+
+    // Security-definer RPC: stores the device under the current user and
+    // deactivates the same endpoint if it was registered to another account.
+    const { error } = await supabase.rpc('claim_push_subscription', {
+      _endpoint: subscriptionJson.endpoint || '',
+      _p256dh: subscriptionJson.keys?.p256dh || '',
+      _auth: subscriptionJson.keys?.auth || '',
+      _platform: 'web',
+    });
 
     if (error) {
       console.error('Error saving subscription:', error);
