@@ -12,6 +12,7 @@ import type { NavTab } from "@/hooks/useBottomNavigation";
 import { useNativeDeepLinking } from "@/hooks/useNativeDeepLinking";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useForegroundPushMessages } from "@/hooks/useForegroundPushMessages";
+import { usePushSubscriptionSync } from "@/hooks/usePushSubscriptionSync";
 import { useViewportReflow } from "@/hooks/useViewportReflow";
 import {
   FavoritesPageSkeleton,
@@ -90,6 +91,8 @@ const AppLayout = memo(function AppLayout() {
   usePushNotifications();
   // Web push received while JET is open → in-app toast + deep link action.
   useForegroundPushMessages();
+  // Re-link this browser's push subscription to whoever is signed in.
+  usePushSubscriptionSync();
   // Keep dvh/svh driven full-height views correct across orientation changes
   // and mobile browser-chrome resizes, without transition flicker.
   useViewportReflow();
