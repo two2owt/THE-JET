@@ -325,6 +325,10 @@ Deno.serve(async (req) => {
           avg_density: avgDensity,
           suppressed_cells: suppressedCells,
           k_anonymity_min_users: K_ANONYMITY_MIN_USERS,
+          is_fallback: isFallback,
+          fallback_window_minutes: isFallback
+            ? (Number.isFinite(minutesSince(usedCutoff)) ? minutesSince(usedCutoff) : null)
+            : null,
         },
       }),
       {
