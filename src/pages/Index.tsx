@@ -147,7 +147,7 @@ const Index = () => {
     };
   }, []);
 
-  const { notifications, markAsRead } = useNotifications(dataReady);
+  const { notifications, markAsRead, markAllAsRead } = useNotifications(dataReady);
   useAutoScrapeVenueImages(dataReady);
   const { deals, refresh: refreshDeals, loading: dealsLoading, lastUpdated: dealsLastUpdated } = useDeals(false, dataReady);
   const { venues: realVenues, loading: venuesLoading, refresh: refreshVenues, lastUpdated: venuesLastUpdated } = useVenueActivity(dataReady);
@@ -649,7 +649,20 @@ const Index = () => {
                 title="Notifications"
                 subtitle="Stay updated with nearby deals and events"
               />
-              
+
+              {notifications.some(n => !n.read) && (
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
+                  <button
+                    type="button"
+                    onClick={markAllAsRead}
+                    className="text-xs font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-md px-2 py-1"
+                    aria-label="Mark all notifications as read"
+                  >
+                    Mark all as read
+                  </button>
+                </div>
+              )}
+
               {notifications.length === 0 ? (
                 <div style={{
                   textAlign: 'center', padding: '48px 16px',
