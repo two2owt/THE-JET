@@ -3,8 +3,27 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { requireConsent } from "@/lib/consent";
 
-// VAPID public key for web push authentication
-const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || '';
+// VAPID public key for web push authentication.
+// The key lives as a backend secret, so Vite cannot inline it at build time.
+// Fall back to the edge function that serves the public half of the key pair.
+const BUILD_TIME_VAPID_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || '';
+let cachedVapidKey: string | null = BUILD_TIME_VAPID_KEY || null;
+
+async function getVapidPublicKey(): Promise<string> {
+  if (cachedVapidKey) return cachedVapidKey;
+  try {
+    const { data, error } = await supabase.functions.invoke('get-vapid-key');
+    if (error) throw error;
+    const key = (data as { publicKey?: string } | null)?.publicKey;
+    if (key) {
+      cachedVapidKey = key;
+      return key;
+    }
+  } catch (err) {
+    console.error('Failed to fetch VAPID public key:', err);
+  }
+  return '';
+}
 
 // Keep web-push SW isolated from the app SW to avoid scope conflicts.
 const PUSH_SW_URL = '/sw-push.js';
@@ -122,7 +141,8 @@ export const useWebPushNotifications = () => {
       return false;
     }
 
-    if (!VAPID_PUBLIC_KEY) {
+    const vapidPublicKey = await getVapidPublicKey();
+    if (!vapidPublicKey) {
       console.error("VAPID public key not configured");
       toast.error("Push notification service not configured");
       return false;
@@ -147,7 +167,7 @@ export const useWebPushNotifications = () => {
       // Subscribe to push notifications using VAPID key
       const pushSubscription = await (registration as any).pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource
+        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as BufferSource
       });
 
       setSubscription(pushSubscription);
