@@ -116,31 +116,14 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
   useEffect(() => {
     loadDensityData();
 
-    // Set up realtime subscription with debounce
-    let debounceTimer: ReturnType<typeof setTimeout>;
-    const channel = supabase
-      .channel(`location-density-updates:${instanceId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'user_locations',
-        },
-        () => {
-          // Debounce to prevent rapid re-fetching
-          clearTimeout(debounceTimer);
-          debounceTimer = setTimeout(() => {
-            loadDensityData();
-          }, 1500);
-        }
-      )
-      .subscribe();
+    // `user_locations` is not published to realtime (precise coordinates must
+    // never be broadcast), so poll while the tab is visible instead.
+    const poll = setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) return;
+      void loadDensityData();
+    }, 30000);
 
-    return () => {
-      clearTimeout(debounceTimer);
-      supabase.removeChannel(channel);
-    };
+    return () => clearInterval(poll);
   }, [loadDensityData, instanceId]);
 
   // Refetch whenever the session changes (login / refresh / logout).
