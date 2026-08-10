@@ -1503,6 +1503,15 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      claim_push_subscription: {
+        Args: {
+          _auth: string
+          _endpoint: string
+          _p256dh: string
+          _platform?: string
+        }
+        Returns: undefined
+      }
       cleanup_old_analytics_events: { Args: never; Returns: undefined }
       cleanup_old_search_history: { Args: never; Returns: undefined }
       cleanup_old_security_audit_logs: { Args: never; Returns: undefined }
