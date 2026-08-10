@@ -195,6 +195,11 @@ export const useNotifications = (enabled: boolean = true) => {
           loadNotifications();
         }
       )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'notification_deliveries' },
+        () => loadNotifications()
+      )
       .subscribe();
 
     // Reload when auth state changes
