@@ -189,87 +189,100 @@ Deno.serve(async (req) => {
 
     console.log('Fetching location density with filters:', { timeFilter, hourOfDay, dayOfWeek, timeWindowMinutes });
 
-    let query = serviceClient
-      .from('user_locations')
-      // `user_id` is used server-side only, to enforce the k-anonymity floor.
-      // It is never included in the response payload.
-      .select('latitude, longitude, created_at, user_id');
-
-    // Apply time filters. `time_window_minutes` takes precedence over the
-    // coarse `time_filter` bucket when the client supplies a slider value.
     const now = new Date();
+
+    // Resolve the primary cutoff requested by the caller.
+    let primaryCutoff: Date | null = null;
     if (timeWindowMinutes !== null) {
-      const cutoff = new Date(now.getTime() - timeWindowMinutes * 60_000);
-      query = query.gte('created_at', cutoff.toISOString());
-    } else switch (timeFilter) {
-      case 'today':
-        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        query = query.gte('created_at', startOfDay.toISOString());
-        break;
-      case 'this_week':
-        const startOfWeek = new Date(now);
-        startOfWeek.setDate(now.getDate() - now.getDay());
-        startOfWeek.setHours(0, 0, 0, 0);
-        query = query.gte('created_at', startOfWeek.toISOString());
-        break;
-      case 'this_hour':
-        const startOfHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours());
-        query = query.gte('created_at', startOfHour.toISOString());
-        break;
+      primaryCutoff = new Date(now.getTime() - timeWindowMinutes * 60_000);
+    } else if (timeFilter === 'today') {
+      primaryCutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    } else if (timeFilter === 'this_week') {
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - now.getDay());
+      startOfWeek.setHours(0, 0, 0, 0);
+      primaryCutoff = startOfWeek;
+    } else if (timeFilter === 'this_hour') {
+      primaryCutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours());
     }
 
-    const { data: locations, error } = await query;
+    /** Builds the k-anonymised density grid for one cutoff. */
+    const buildGrid = async (cutoff: Date | null) => {
+      let query = serviceClient
+        .from('user_locations')
+        // `user_id` is used server-side only, to enforce the k-anonymity floor.
+        // It is never included in the response payload.
+        .select('latitude, longitude, created_at, user_id');
+      if (cutoff) query = query.gte('created_at', cutoff.toISOString());
 
-    if (error) throw error;
+      const { data: locations, error } = await query;
+      if (error) throw error;
 
-    console.log(`Found ${locations?.length || 0} location points from all users`);
-
-    // Filter by hour of day or day of week if specified
-    let filteredLocations = locations || [];
-    
-    if (hourOfDay !== null && hourOfDay !== undefined) {
-      const targetHour = parseInt(hourOfDay);
-      filteredLocations = filteredLocations.filter(loc => {
-        const locHour = new Date(loc.created_at).getHours();
-        return locHour === targetHour;
-      });
-    }
-
-    if (dayOfWeek !== null && dayOfWeek !== undefined) {
-      const targetDay = parseInt(dayOfWeek);
-      filteredLocations = filteredLocations.filter(loc => {
-        const locDay = new Date(loc.created_at).getDay();
-        return locDay === targetDay;
-      });
-    }
-
-    // Create density grid - aggregate locations into grid cells for heatmap
-    // Using smaller grid for more detailed visualization
-    const gridSize = 0.003; // ~300m grid cells for finer granularity
-    const densityMap = new Map<string, { count: number; users: Set<string> }>();
-
-    filteredLocations.forEach(loc => {
-      const lat = parseFloat(String(loc.latitude));
-      const lng = parseFloat(String(loc.longitude));
-      if (isNaN(lat) || isNaN(lng)) return;
-      
-      const gridLat = Math.floor(lat / gridSize) * gridSize;
-      const gridLng = Math.floor(lng / gridSize) * gridSize;
-      const key = `${gridLat.toFixed(6)},${gridLng.toFixed(6)}`;
-      let cell = densityMap.get(key);
-      if (!cell) {
-        cell = { count: 0, users: new Set<string>() };
-        densityMap.set(key, cell);
+      let filteredLocations = locations || [];
+      if (hourOfDay !== null && hourOfDay !== undefined) {
+        const targetHour = parseInt(hourOfDay);
+        filteredLocations = filteredLocations.filter(
+          (loc) => new Date(loc.created_at).getHours() === targetHour,
+        );
       }
-      cell.count++;
-      cell.users.add(String(loc.user_id ?? 'anonymous'));
-    });
+      if (dayOfWeek !== null && dayOfWeek !== undefined) {
+        const targetDay = parseInt(dayOfWeek);
+        filteredLocations = filteredLocations.filter(
+          (loc) => new Date(loc.created_at).getDay() === targetDay,
+        );
+      }
 
-    // Suppress every cell that fewer than K distinct users contributed to.
-    const allCells = Array.from(densityMap.entries());
-    const visibleCells = allCells.filter(([, cell]) => cell.users.size >= K_ANONYMITY_MIN_USERS);
+      // ~300m grid cells for finer granularity
+      const gridSize = 0.003;
+      const densityMap = new Map<string, { count: number; users: Set<string> }>();
+      filteredLocations.forEach((loc) => {
+        const lat = parseFloat(String(loc.latitude));
+        const lng = parseFloat(String(loc.longitude));
+        if (isNaN(lat) || isNaN(lng)) return;
+        const gridLat = Math.floor(lat / gridSize) * gridSize;
+        const gridLng = Math.floor(lng / gridSize) * gridSize;
+        const key = `${gridLat.toFixed(6)},${gridLng.toFixed(6)}`;
+        let cell = densityMap.get(key);
+        if (!cell) {
+          cell = { count: 0, users: new Set<string>() };
+          densityMap.set(key, cell);
+        }
+        cell.count++;
+        cell.users.add(String(loc.user_id ?? 'anonymous'));
+      });
+
+      const allCells = Array.from(densityMap.entries());
+      const visibleCells = allCells.filter(([, cell]) => cell.users.size >= K_ANONYMITY_MIN_USERS);
+      return { allCells, visibleCells, points: filteredLocations.length };
+    };
+
+    // Fallback ladder: when the requested window yields no visible cells the
+    // heatmap would render empty, so progressively widen to the most recent
+    // data available (24h → 7d → 30d → all time) and flag it in the response.
+    const minutesSince = (d: Date | null) =>
+      d === null ? Number.POSITIVE_INFINITY : Math.round((now.getTime() - d.getTime()) / 60_000);
+    const ladder: (Date | null)[] = [
+      primaryCutoff,
+      new Date(now.getTime() - 1_440 * 60_000),
+      new Date(now.getTime() - 10_080 * 60_000),
+      new Date(now.getTime() - 43_200 * 60_000),
+      null,
+    ].filter((c, i) => i === 0 || minutesSince(c) > minutesSince(primaryCutoff));
+
+    let result = await buildGrid(ladder[0]);
+    let usedCutoff = ladder[0];
+    let isFallback = false;
+    for (let i = 1; i < ladder.length && result.visibleCells.length === 0; i++) {
+      result = await buildGrid(ladder[i]);
+      usedCutoff = ladder[i];
+      isFallback = result.visibleCells.length > 0;
+    }
+
+    const { allCells, visibleCells } = result;
     const suppressedCells = allCells.length - visibleCells.length;
-
+    if (isFallback) {
+      console.log(`Density fallback engaged — widened window to ${minutesSince(usedCutoff)} min`);
+    }
     // Convert to GeoJSON format for Mapbox heatmap layer
     const features = visibleCells.map(([key, cell]) => {
       const count = cell.count;
