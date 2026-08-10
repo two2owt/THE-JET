@@ -648,9 +648,34 @@ const Index = () => {
               <TabPageHeader
                 title="Notifications"
                 subtitle="Stay updated with nearby deals and events"
-              />
+              >
+                {unreadNotifications > 0 && (
+                  <span
+                    className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold leading-none"
+                    style={{
+                      background: 'hsl(var(--destructive) / 0.15)',
+                      border: '1px solid hsl(var(--destructive) / 0.4)',
+                      color: 'hsl(var(--destructive))',
+                      boxShadow: '0 0 8px hsl(var(--destructive) / 0.2)',
+                    }}
+                    aria-label={`${unreadNotifications} unread notifications`}
+                  >
+                    <span
+                      className="inline-block rounded-full"
+                      style={{
+                        width: '6px',
+                        height: '6px',
+                        background: 'hsl(var(--destructive))',
+                        boxShadow: '0 0 6px hsl(var(--destructive))',
+                      }}
+                      aria-hidden="true"
+                    />
+                    {unreadNotifications} unread
+                  </span>
+                )}
+              </TabPageHeader>
 
-              {notifications.some(n => !n.read) && (
+              {unreadNotifications > 0 && (
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
                   <button
                     type="button"
