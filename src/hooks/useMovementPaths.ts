@@ -100,31 +100,14 @@ export const useMovementPaths = (filters: MovementPathFilters = {}) => {
   useEffect(() => {
     loadPathData();
 
-    // Realtime subscription — debounce so a burst of location writes doesn't
-    // trigger a chain of edge-function invocations.
-    let debounceTimer: ReturnType<typeof setTimeout>;
-    const channel = supabase
-      .channel(`movement-path-updates:${instanceId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'user_locations',
-        },
-        () => {
-          clearTimeout(debounceTimer);
-          debounceTimer = setTimeout(() => {
-            loadPathData();
-          }, 2000);
-        }
-      )
-      .subscribe();
+    // `user_locations` is intentionally NOT published to realtime (precise
+    // coordinates must not be broadcast), so refresh on an interval instead.
+    const poll = setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) return;
+      loadPathDataRef.current?.();
+    }, 30000);
 
-    return () => {
-      clearTimeout(debounceTimer);
-      supabase.removeChannel(channel);
-    };
+    return () => clearInterval(poll);
   }, [loadPathData, instanceId]);
 
   // Re-fetch once the user signs in / token refreshes.
