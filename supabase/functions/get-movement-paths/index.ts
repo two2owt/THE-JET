@@ -208,31 +208,30 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Build query with time filter using service client
+    // Resolve the primary cutoff requested by the caller.
+    const now = new Date();
+    let primaryCutoff: Date | null = null;
+    if (timeWindowMinutes !== null) {
+      primaryCutoff = new Date(now.getTime() - timeWindowMinutes * 60_000);
+    } else if (timeFilter === 'today') {
+      primaryCutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    } else if (timeFilter === 'this_week') {
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - now.getDay());
+      startOfWeek.setHours(0, 0, 0, 0);
+      primaryCutoff = startOfWeek;
+    } else if (timeFilter === 'this_hour') {
+      primaryCutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours());
+    }
+
+    /** Computes k-anonymised movement edges for one cutoff. */
+    const computePaths = async (cutoff: Date | null) => {
     let query = serviceClient
       .from('user_locations')
       .select('latitude, longitude, created_at, user_id')
       .order('user_id')
       .order('created_at');
-
-    // Apply time filtering. `time_window_minutes` takes precedence over the
-    // coarse `time_filter` bucket when the client supplies a slider value.
-    const now = new Date();
-    if (timeWindowMinutes !== null) {
-      const cutoff = new Date(now.getTime() - timeWindowMinutes * 60_000);
-      query = query.gte('created_at', cutoff.toISOString());
-    } else if (timeFilter === 'today') {
-      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      query = query.gte('created_at', startOfDay.toISOString());
-    } else if (timeFilter === 'this_week') {
-      const startOfWeek = new Date(now);
-      startOfWeek.setDate(now.getDate() - now.getDay());
-      startOfWeek.setHours(0, 0, 0, 0);
-      query = query.gte('created_at', startOfWeek.toISOString());
-    } else if (timeFilter === 'this_hour') {
-      const startOfHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours());
-      query = query.gte('created_at', startOfHour.toISOString());
-    }
+    if (cutoff) query = query.gte('created_at', cutoff.toISOString());
 
     const { data: locations, error } = await query;
 
@@ -337,6 +336,35 @@ Deno.serve(async (req) => {
       `(${suppressedPaths} suppressed by k-anonymity floor of ${K_ANONYMITY_MIN_USERS})`
     );
 
+      return { filteredMovements, suppressedPaths };
+    };
+
+    // Fallback ladder: when the requested window has no qualifying edges, widen
+    // to the most recent data available (24h → 7d → 30d → all time) so flow
+    // paths still render instead of going blank.
+    const minutesSince = (d: Date | null) =>
+      d === null ? Number.POSITIVE_INFINITY : Math.round((now.getTime() - d.getTime()) / 60_000);
+    const ladder: (Date | null)[] = [
+      primaryCutoff,
+      new Date(now.getTime() - 1_440 * 60_000),
+      new Date(now.getTime() - 10_080 * 60_000),
+      new Date(now.getTime() - 43_200 * 60_000),
+      null,
+    ].filter((c, i) => i === 0 || minutesSince(c) > minutesSince(primaryCutoff));
+
+    let pathResult = await computePaths(ladder[0]);
+    let usedCutoff = ladder[0];
+    let isFallback = false;
+    for (let i = 1; i < ladder.length && pathResult.filteredMovements.length === 0; i++) {
+      pathResult = await computePaths(ladder[i]);
+      usedCutoff = ladder[i];
+      isFallback = pathResult.filteredMovements.length > 0;
+    }
+    const { filteredMovements, suppressedPaths } = pathResult;
+    if (isFallback) {
+      console.log(`Flow-path fallback engaged — widened window to ${minutesSince(usedCutoff)} min`);
+    }
+
     // Convert to GeoJSON format
     const features = filteredMovements.map(movement => ({
       type: 'Feature',
@@ -367,7 +395,11 @@ Deno.serve(async (req) => {
         ? filteredMovements.reduce((sum, m) => sum + m.frequency, 0) / filteredMovements.length 
         : 0,
       suppressed_paths: suppressedPaths,
-      k_anonymity_min_users: K_ANONYMITY_MIN_USERS
+      k_anonymity_min_users: K_ANONYMITY_MIN_USERS,
+      is_fallback: isFallback,
+      fallback_window_minutes: isFallback
+        ? (Number.isFinite(minutesSince(usedCutoff)) ? minutesSince(usedCutoff) : null)
+        : null,
     };
 
     console.log('Movement path statistics:', stats);
