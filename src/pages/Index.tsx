@@ -25,6 +25,7 @@ import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useBottomNavigation } from "@/hooks/useBottomNavigation";
 import { NotificationsTabSkeleton, ExploreTabSkeleton } from "@/components/skeletons/PageSkeletons";
 import { TabPageHeader } from "@/components/TabPageHeader";
+import { EnablePushButton } from "@/components/EnablePushButton";
 import { PageShell } from "@/components/PageShell";
 import { SEO } from "@/components/SEO";
 import { CityTransitionOverlay } from "@/components/CityTransitionOverlay";
