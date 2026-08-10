@@ -25,6 +25,7 @@ import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useBottomNavigation } from "@/hooks/useBottomNavigation";
 import { NotificationsTabSkeleton, ExploreTabSkeleton } from "@/components/skeletons/PageSkeletons";
 import { TabPageHeader } from "@/components/TabPageHeader";
+import { EnablePushButton } from "@/components/EnablePushButton";
 import { PageShell } from "@/components/PageShell";
 import { SEO } from "@/components/SEO";
 import { CityTransitionOverlay } from "@/components/CityTransitionOverlay";
@@ -677,8 +678,9 @@ const Index = () => {
                 }
               />
 
-              {unreadNotifications > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                <EnablePushButton />
+                {unreadNotifications > 0 && (
                   <button
                     type="button"
                     onClick={markAllAsRead}
@@ -687,8 +689,8 @@ const Index = () => {
                   >
                     Mark all as read
                   </button>
-                </div>
-              )}
+                )}
+              </div>
 
               {notifications.length === 0 ? (
                 <div style={{
