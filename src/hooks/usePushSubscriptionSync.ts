@@ -48,6 +48,22 @@ async function syncSubscription(): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
+  // Respect the user's own opt-out. Browser permission staying "granted" is
+  // not consent: the Settings toggle / Enable button writes a
+  // `push_notifications` consent row, and a revoked one must never be
+  // silently re-subscribed here.
+  const { data: consentRows, error: consentError } = await supabase
+    .from("user_consents")
+    .select("granted")
+    .eq("user_id", user.id)
+    .eq("consent_type", "push_notifications")
+    .order("created_at", { ascending: false })
+    .limit(1);
+  if (consentError) return;
+  const consentGranted = consentRows?.[0]?.granted === true;
+  const hasConsentRecord = (consentRows?.length ?? 0) > 0;
+  if (hasConsentRecord && !consentGranted) return;
+
   try {
     const registration =
       (await navigator.serviceWorker.getRegistration(PUSH_SW_SCOPE)) ??
@@ -57,6 +73,9 @@ async function syncSubscription(): Promise<void> {
 
     let sub = await registration.pushManager.getSubscription();
     if (!sub) {
+      // Only mint a brand-new subscription when the user explicitly opted in.
+      // Legacy devices with an existing subscription are still re-linked below.
+      if (!consentGranted) return;
       const key = await getVapidPublicKey();
       if (!key) return;
       sub = await registration.pushManager.subscribe({
