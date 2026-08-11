@@ -173,7 +173,7 @@ export const useWebPushNotifications = () => {
       setSubscription(pushSubscription);
       setIsSubscribed(true);
 
-      // Save subscription to database
+      // Do not report success until the endpoint is linked to this account.
       await saveSubscriptionToDatabase(pushSubscription);
 
       toast.success("Push notifications enabled!", {
@@ -185,16 +185,11 @@ export const useWebPushNotifications = () => {
     } catch (error) {
       console.error('Error subscribing to push:', error);
       
-      // Fallback: just enable notifications without full push subscription
-      if (Notification.permission === 'granted') {
-        toast.success("Notifications enabled", {
-          description: "You'll receive alerts when deals are available"
-        });
-        setIsLoading(false);
-        return true;
-      }
-      
-      toast.error("Failed to enable notifications");
+      setSubscription(null);
+      setIsSubscribed(false);
+      toast.error("Alerts could not be linked to your account", {
+        description: "Please try again after the app finishes updating."
+      });
       setIsLoading(false);
       return false;
     }
@@ -204,8 +199,7 @@ export const useWebPushNotifications = () => {
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
-      console.warn('No user logged in, subscription not saved');
-      return;
+      throw new Error('Sign in is required to save a push subscription');
     }
 
     const subscriptionJson = pushSubscription.toJSON();
@@ -221,8 +215,7 @@ export const useWebPushNotifications = () => {
 
     if (error) {
       console.error('Error saving subscription:', error);
-    } else {
-      console.log('Push subscription saved successfully');
+      throw error;
     }
   };
 
