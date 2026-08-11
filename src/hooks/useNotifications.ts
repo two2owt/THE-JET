@@ -94,18 +94,28 @@ export const useNotifications = (enabled: boolean = true) => {
 
       const seen = new Set<string>();
       const fromDeliveries: Notification[] = ((deliveriesRes.data as DeliveryRow[] | null) || [])
-        .filter((d) => d.notification_queue && !seen.has(d.queue_id) && seen.add(d.queue_id) !== undefined)
-        .map((d) => ({
-          id: d.id,
-          type: CATEGORY_TO_TYPE[d.notification_queue!.category] ?? "offer",
-          title: d.notification_queue!.title,
-          message: d.notification_queue!.body,
-          venue: d.notification_queue!.venue_id ?? undefined,
-          timestamp: relativeTime(d.created_at),
-          read: d.status === 'opened' || !!d.opened_at,
-          source: "delivery" as const,
-          _sortKey: d.created_at,
-        }) as Notification & { _sortKey: string });
+        .flatMap((delivery) => {
+          const queuedNotification = delivery.notification_queue;
+          if (!queuedNotification || seen.has(delivery.queue_id)) return [];
+          seen.add(delivery.queue_id);
+          return [{
+            id: delivery.id,
+            type: CATEGORY_TO_TYPE[queuedNotification.category] ?? "offer",
+            title: queuedNotification.title,
+            message: queuedNotification.body,
+            venue: queuedNotification.venue_id ?? undefined,
+            timestamp: relativeTime(delivery.created_at),
+            read: delivery.status === 'opened' || !!delivery.opened_at,
+            source: "delivery" as const,
+            _sortKey: delivery.created_at,
+          } as Notification & { _sortKey: string }];
+        });
+
+      // Live may briefly trail Test during a schema publish. The legacy
+      // notification log remains usable while delivery receipts catch up.
+      if (deliveriesRes.error) {
+        console.warn('Push delivery receipts are temporarily unavailable:', deliveriesRes.error.message);
+      }
 
       const merged = [
         ...fromLogs.map((n, i) => ({ ...n, _sortKey: (logsRes.data || [])[i]?.sent_at ?? '' })),
