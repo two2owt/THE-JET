@@ -71,6 +71,14 @@ for (const file of readdirSync(MIGRATIONS_DIR).filter((f) => f.endsWith(".sql"))
   const guarded = /pg_publication_tables/i.test(sql);
   const isLegacy = LEGACY_ALLOWLIST.has(file);
 
+  // A reconciliation migration rebuilds membership from the expected list via
+  // dynamic EXECUTE format(), which the static replay cannot resolve. Treat it
+  // as a reset point so the advisory diff below stays meaningful.
+  if (/RECONCILE_REALTIME_PUBLICATION|Deny-listed table public\.% is still published/i.test(sql)) {
+    members.clear();
+    for (const t of expected) members.add(t);
+  }
+
   for (const m of sql.matchAll(
     /alter\s+publication\s+supabase_realtime\s+add\s+table\s+(?:only\s+)?(?:public\.)?["']?([a-z0-9_%I]+)["']?\s*(\()?/gi,
   )) {
