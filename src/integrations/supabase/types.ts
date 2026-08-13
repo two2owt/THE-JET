@@ -1328,16 +1328,6 @@ export type Database = {
           display_name: string | null
           id: string | null
         }
-        Insert: {
-          avatar_url?: string | null
-          display_name?: string | null
-          id?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          display_name?: string | null
-          id?: string | null
-        }
         Relationships: []
       }
       profiles_secure: {
@@ -1358,42 +1348,6 @@ export type Database = {
           tiktok_url: string | null
           twitter_url: string | null
           updated_at: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          bio?: never
-          birthdate?: never
-          created_at?: string | null
-          discoverable?: boolean | null
-          display_name?: string | null
-          facebook_url?: never
-          gender?: never
-          id?: string | null
-          instagram_url?: never
-          linkedin_url?: never
-          onboarding_completed?: boolean | null
-          pronouns?: never
-          tiktok_url?: never
-          twitter_url?: never
-          updated_at?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          bio?: never
-          birthdate?: never
-          created_at?: string | null
-          discoverable?: boolean | null
-          display_name?: string | null
-          facebook_url?: never
-          gender?: never
-          id?: string | null
-          instagram_url?: never
-          linkedin_url?: never
-          onboarding_completed?: boolean | null
-          pronouns?: never
-          tiktok_url?: never
-          twitter_url?: never
-          updated_at?: string | null
         }
         Relationships: []
       }
@@ -1519,6 +1473,14 @@ export type Database = {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
       }
+      discoverable_profiles_rows: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          display_name: string
+          id: string
+        }[]
+      }
       dispatch_ending_soon_favorites: { Args: never; Returns: undefined }
       email_queue_dispatch: { Args: never; Returns: undefined }
       email_queue_endpoint: { Args: never; Returns: string }
@@ -1556,6 +1518,27 @@ export type Database = {
         }[]
       }
       process_location_data_retention: { Args: never; Returns: undefined }
+      profiles_secure_rows: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          bio: string
+          birthdate: string
+          created_at: string
+          discoverable: boolean
+          display_name: string
+          facebook_url: string
+          gender: string
+          id: string
+          instagram_url: string
+          linkedin_url: string
+          onboarding_completed: boolean
+          pronouns: string
+          tiktok_url: string
+          twitter_url: string
+          updated_at: string
+        }[]
+      }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
