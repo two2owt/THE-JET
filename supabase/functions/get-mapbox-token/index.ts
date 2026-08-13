@@ -8,8 +8,37 @@ logVersion(FUNCTION_NAME);
 // but is a meaningful speed bump vs. zero limiting and matches the pattern
 // already used by get-location-density / get-movement-paths.
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
-const RATE_LIMIT_MAX_REQUESTS = 60; // Legitimate clients cache the token; 60/min is generous.
+const RATE_LIMIT_MAX_REQUESTS = 20; // Legitimate clients cache the token; 20/min is generous.
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+// Origin allowlist. The Mapbox public token is only ever handed to our own
+// first-party web/app origins, so third-party sites and scripts can't use this
+// endpoint to bypass Mapbox domain restrictions or burn our quota.
+const ALLOWED_ORIGIN_SUFFIXES = [
+  "jet-around.com",
+  "jet-around.lovable.app",
+  "lovable.app",
+  "lovableproject.com",
+  "localhost",
+  "127.0.0.1",
+];
+
+function originAllowed(req: Request): boolean {
+  const raw = req.headers.get("origin") ?? req.headers.get("referer");
+  // Native app shells (Capacitor) send no Origin; they authenticate by
+  // presenting a Supabase Authorization header instead.
+  if (!raw) return Boolean(req.headers.get("authorization"));
+  let host: string;
+  try {
+    host = new URL(raw).hostname.toLowerCase();
+  } catch {
+    return false;
+  }
+  if (host === "localhost" || host === "127.0.0.1") return true;
+  return ALLOWED_ORIGIN_SUFFIXES.some(
+    (suffix) => host === suffix || host.endsWith(`.${suffix}`),
+  );
+}
 
 function clientIp(req: Request): string {
   return (
@@ -45,6 +74,16 @@ Deno.serve(async (req) => {
   }
 
   const ip = clientIp(req);
+  if (!originAllowed(req)) {
+    return new Response(
+      JSON.stringify({ error: "Forbidden" }),
+      {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
+  }
+
   if (overLimit(ip)) {
     return new Response(
       JSON.stringify({ error: "Too many requests" }),
