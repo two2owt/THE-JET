@@ -30,6 +30,9 @@ jobs:
       - name: Verify lockfile is in sync
         run: node scripts/verify-lockfile.mjs
 
+      - name: Migration preflight (advisory lock signatures)
+        run: node scripts/preflight-advisory-locks.mjs
+
       - name: Install dependencies (lockfile must be in sync)
         run: npm ci
 
