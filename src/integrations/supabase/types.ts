@@ -1517,6 +1517,13 @@ export type Database = {
           obfuscated_lng: number
         }[]
       }
+      preflight_check_advisory_locks: {
+        Args: never
+        Returns: {
+          problem: string
+          routine_name: string
+        }[]
+      }
       process_location_data_retention: { Args: never; Returns: undefined }
       profiles_secure_rows: {
         Args: never
