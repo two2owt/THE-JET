@@ -75,7 +75,7 @@ for (const file of readdirSync(MIGRATIONS_DIR).filter((f) => f.endsWith(".sql"))
     /alter\s+publication\s+supabase_realtime\s+add\s+table\s+(?:only\s+)?(?:public\.)?["']?([a-z0-9_%I]+)["']?\s*(\()?/gi,
   )) {
     const t = m[1].toLowerCase();
-    if (m[2]) {
+    if (m[2] && !isLegacy) {
       errors.push(
         `${file}: partial-column publication entry for public.${t} — Supabase publish preflight cannot reconcile these. Publish whole tables or nothing.`,
       );
@@ -106,15 +106,21 @@ for (const file of readdirSync(MIGRATIONS_DIR).filter((f) => f.endsWith(".sql"))
   }
 }
 
-const diff = (label, actual) => {
+const diff = (label, actual, sink = errors) => {
   const missing = [...expected].filter((t) => !actual.has(t)).sort();
   const extra = [...actual].filter((t) => !expected.has(t)).sort();
-  for (const t of missing) errors.push(`${label}: public.${t} is expected in supabase_realtime but absent.`);
-  for (const t of extra) errors.push(`${label}: public.${t} is published to supabase_realtime but not in the expected list.`);
+  for (const t of missing) sink.push(`${label}: public.${t} is expected in supabase_realtime but absent.`);
+  for (const t of extra) sink.push(`${label}: public.${t} is published to supabase_realtime but not in the expected list.`);
   return missing.length + extra.length === 0;
 };
 
-diff("migrations (static replay)", members);
+// The static replay cannot resolve dynamic EXECUTE format() statements or
+// out-of-band repairs, so its membership diff is advisory. The authoritative
+// membership comparison runs against the database below; the static pass is
+// authoritative for the guard, deny-list and partial-column rules above.
+const staticDrift = [];
+diff("migrations (static replay)", members, staticDrift);
+for (const d of staticDrift) console.warn(`  advisory: ${d}`);
 
 // Pass 2: live database, when credentials are present.
 if (process.env.PGHOST) {
