@@ -3,7 +3,105 @@
 // supabase function: mcp
 // Bundled from src/lib/mcp/index.ts by @lovable.dev/mcp-js.
 // src/lib/mcp/index.ts
-import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { auth, defineMcp, setLogLevel } from "npm:@lovable.dev/mcp-js@0.26.1";
+
+// src/lib/mcp/logging.ts
+function env(name) {
+  const runtime = globalThis;
+  return runtime.Deno?.env?.get?.(name) ?? runtime.process?.env?.[name];
+}
+function environmentLabel() {
+  return env("LOVABLE_ENVIRONMENT") ?? env("SUPABASE_ENVIRONMENT") ?? env("ENVIRONMENT") ?? "unknown";
+}
+function emit(level, event, fields) {
+  const line = JSON.stringify({
+    source: "mcp",
+    event,
+    level,
+    env: environmentLabel(),
+    at: (/* @__PURE__ */ new Date()).toISOString(),
+    ...fields
+  });
+  if (level === "error") console.error(line);
+  else if (level === "warn") console.warn(line);
+  else console.log(line);
+}
+function authSummary(ctx) {
+  const authenticated = ctx.isAuthenticated();
+  if (!authenticated) {
+    return { authenticated: false, jwt_verified: false, reason: "no_verified_token" };
+  }
+  const claims = ctx.getClaims();
+  const exp = typeof claims?.exp === "number" ? claims.exp : void 0;
+  return {
+    authenticated: true,
+    jwt_verified: true,
+    user_id: ctx.getUserId() ?? null,
+    issuer: ctx.getIssuer() ?? null,
+    audience: claims?.aud ?? null,
+    client_id: ctx.getClientId() ?? null,
+    scopes: ctx.getScopes() ?? null,
+    token_role: claims?.role ?? null,
+    expires_at: exp ? new Date(exp * 1e3).toISOString() : null,
+    seconds_to_expiry: exp ? exp - Math.floor(Date.now() / 1e3) : null
+  };
+}
+var requestSeq = 0;
+function withLogging(tool) {
+  const handler = tool.handler;
+  return {
+    ...tool,
+    handler: (async (input, ctx) => {
+      const requestId = `${Date.now().toString(36)}-${(requestSeq = (requestSeq + 1) % 1e6).toString(36)}`;
+      const auth2 = authSummary(ctx);
+      const started = Date.now();
+      emit(auth2.authenticated ? "info" : "warn", "mcp_tool_request", {
+        request_id: requestId,
+        tool: tool.name,
+        input_keys: input && typeof input === "object" ? Object.keys(input) : [],
+        ...auth2
+      });
+      if (!auth2.authenticated) {
+        emit("warn", "mcp_auth_rejected", {
+          request_id: requestId,
+          tool: tool.name,
+          http_equivalent: 401,
+          detail: "Tool invoked without a verified OAuth bearer token (JWT missing, expired, or failed issuer/audience verification)."
+        });
+      }
+      try {
+        const result = await handler(input, ctx);
+        const isError = Boolean(result?.isError);
+        emit(isError ? "warn" : "info", "mcp_tool_result", {
+          request_id: requestId,
+          tool: tool.name,
+          ok: !isError,
+          authenticated: auth2.authenticated,
+          duration_ms: Date.now() - started
+        });
+        return result;
+      } catch (error) {
+        emit("error", "mcp_tool_exception", {
+          request_id: requestId,
+          tool: tool.name,
+          authenticated: auth2.authenticated,
+          duration_ms: Date.now() - started,
+          error: error instanceof Error ? error.message : String(error)
+        });
+        throw error;
+      }
+    })
+  };
+}
+function logServerBoot(info) {
+  emit("info", "mcp_server_boot", {
+    server: info.name,
+    version: info.version,
+    issuer: info.issuer,
+    tool_count: info.toolCount,
+    supabase_url_configured: Boolean(env("SUPABASE_URL") ?? env("VITE_SUPABASE_URL"))
+  });
+}
 
 // src/lib/mcp/tools/list-deals.ts
 import { defineTool } from "npm:@lovable.dev/mcp-js@0.26.1";
@@ -908,30 +1006,34 @@ var whoami_default = defineTool13({
 
 // src/lib/mcp/index.ts
 var projectRef = "flvhduntedvorikonuvy";
+var issuerUrl = `https://${projectRef}.supabase.co/auth/v1`;
+setLogLevel("debug");
+var tools = [
+  list_deals_default,
+  list_favorites_default,
+  save_favorite_default,
+  remove_favorite_default,
+  heatmap_density_default,
+  get_jetcard_default,
+  configure_notifications_default,
+  list_activity_default,
+  list_my_venues_default,
+  push_preferences_default,
+  get_tier_benefits_default,
+  list_active_promotions_default,
+  whoami_default
+].map(withLogging);
+logServerBoot({ name: "jet-around", version: "0.1.0", issuer: issuerUrl, toolCount: tools.length });
 var mcp_default = defineMcp({
   name: "jet-around",
   title: "JET-Around",
   version: "0.1.0",
   instructions: "Tools for JET-Around, a Charlotte, NC nightlife and deal discovery app. Use `list_deals` to find active deals, `list_active_promotions` for the promotions currently available to the signed-in user with expiration dates, time remaining, and eligibility conditions (active days, redemption window, tier, saved status), `list_favorites` / `save_favorite` / `remove_favorite` to manage the signed-in user's saved venues, `list_my_venues` for every venue and deal associated with the account (favorites, reviews, shares) grouped by venue, `get_heatmap_density` for the latest anonymized crowd-density snapshot by time range and location, `get_jetcard` for the signed-in user's JetCard (membership status, associated merchant, last activity), `get_tier_benefits` for the benefits and promotions available to the user's current JetCard tier plus upgrade options, `configure_notifications` to read or change the user's overall push/email notification settings, `push_preferences` to view or update per-topic push preferences (JetCard updates, merchant offers, favorite venue alerts, ending-soon reminders, direct messages), `list_activity` for the user's recent JetCard activity (timestamp, venue, action), and `whoami` to confirm the connected account.",
   auth: auth.oauth.issuer({
-    issuer: `https://${projectRef}.supabase.co/auth/v1`,
+    issuer: issuerUrl,
     acceptedAudiences: "authenticated"
   }),
-  tools: [
-    list_deals_default,
-    list_favorites_default,
-    save_favorite_default,
-    remove_favorite_default,
-    heatmap_density_default,
-    get_jetcard_default,
-    configure_notifications_default,
-    list_activity_default,
-    list_my_venues_default,
-    push_preferences_default,
-    get_tier_benefits_default,
-    list_active_promotions_default,
-    whoami_default
-  ]
+  tools
 });
 
 // lovable-mcp-supabase-entry.ts
