@@ -10,6 +10,8 @@ type NotificationType = 'friend_request' | 'friend_accepted' | 'new_message'
 
 // Only one message email per conversation per hour, per recipient.
 const MESSAGE_THROTTLE_MINUTES = 60
+// Only one friend-request / friend-accepted email per recipient per window.
+const SOCIAL_THROTTLE_MINUTES = 10
 // Don't email if the recipient was active in the app within this window.
 const RECENT_ACTIVITY_MINUTES = 15
 
@@ -59,6 +61,68 @@ Deno.serve(async (req) => {
     return json({ error: 'Invalid recipientUserId' }, 400)
   }
   if (recipientUserId === caller.id) return json({ skipped: 'self' })
+
+  // ---- Connection verification for social notifications --------------------
+  // The caller must actually be party to a real connection in the expected
+  // state; otherwise anyone could email any user id fabricated notifications.
+  if (type === 'friend_request' || type === 'friend_accepted') {
+    const expectedStatus = type === 'friend_request' ? 'pending' : 'accepted'
+
+    let query = admin
+      .from('user_connections')
+      .select('id, user_id, friend_id, status')
+      .eq('status', expectedStatus)
+      .or(
+        `and(user_id.eq.${caller.id},friend_id.eq.${recipientUserId}),` +
+          `and(user_id.eq.${recipientUserId},friend_id.eq.${caller.id})`,
+      )
+      .limit(1)
+
+    if (connectionId && /^[0-9a-f-]{36}$/i.test(connectionId)) {
+      query = query.eq('id', connectionId)
+    }
+
+    const { data: connections } = await query
+    const connection = connections?.[0]
+    if (!connection) return json({ error: 'No matching connection' }, 403)
+
+    // friend_request must be sent by the requester; friend_accepted by the
+    // user who accepted (the original recipient of the request).
+    const senderIsRequester = connection.user_id === caller.id
+    if (type === 'friend_request' ? !senderIsRequester : senderIsRequester) {
+      return json({ error: 'No matching connection' }, 403)
+    }
+
+    connectionId = connection.id
+
+    // Per-recipient throttle so these cannot be replayed in a loop.
+    const channelKey = `${type}:${connection.id}`
+    const { data: socialThrottle } = await admin
+      .from('email_notification_throttle')
+      .select('last_sent_at')
+      .eq('user_id', recipientUserId)
+      .eq('channel_key', channelKey)
+      .maybeSingle()
+
+    if (
+      socialThrottle?.last_sent_at &&
+      Date.now() - new Date(socialThrottle.last_sent_at).getTime() <
+        SOCIAL_THROTTLE_MINUTES * 60_000
+    ) {
+      return json({ skipped: 'throttled' })
+    }
+
+    await admin
+      .from('email_notification_throttle')
+      .upsert(
+        {
+          user_id: recipientUserId,
+          channel_key: channelKey,
+          last_sent_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id,channel_key' },
+      )
+  }
 
   // ---- Throttling for direct messages -------------------------------------
   if (type === 'new_message') {
