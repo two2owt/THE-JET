@@ -209,17 +209,29 @@ Deno.serve(async (req) => {
 
     /** Builds the k-anonymised density grid for one cutoff. */
     const buildGrid = async (cutoff: Date | null) => {
-      let query = serviceClient
-        .from('user_locations')
-        // `user_id` is used server-side only, to enforce the k-anonymity floor.
-        // It is never included in the response payload.
-        .select('latitude, longitude, created_at, user_id');
-      if (cutoff) query = query.gte('created_at', cutoff.toISOString());
+      // PostgREST caps a single response at 1000 rows, which would silently
+      // truncate the grid (and break the k-anonymity counts) as data grows.
+      // Page through the table explicitly instead.
+      const PAGE_SIZE = 1000;
+      const locations: Array<Record<string, unknown>> = [];
+      for (let from = 0; ; from += PAGE_SIZE) {
+        let query = serviceClient
+          .from('user_locations')
+          // `user_id` is used server-side only, to enforce the k-anonymity floor.
+          // It is never included in the response payload.
+          .select('latitude, longitude, created_at, user_id')
+          .order('created_at', { ascending: true })
+          .range(from, from + PAGE_SIZE - 1);
+        if (cutoff) query = query.gte('created_at', cutoff.toISOString());
 
-      const { data: locations, error } = await query;
-      if (error) throw error;
+        const { data: page, error } = await query;
+        if (error) throw error;
+        if (!page?.length) break;
+        locations.push(...page);
+        if (page.length < PAGE_SIZE) break;
+      }
 
-      let filteredLocations = locations || [];
+      let filteredLocations = locations as Array<{ latitude: unknown; longitude: unknown; created_at: string; user_id: string | null }>;
       if (hourOfDay !== null && hourOfDay !== undefined) {
         const targetHour = parseInt(hourOfDay);
         filteredLocations = filteredLocations.filter(
