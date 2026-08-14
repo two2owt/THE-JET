@@ -3,6 +3,8 @@ project_id = "flvhduntedvorikonuvy"
 [functions]
   [functions.auth-email-hook]
     verify_jwt = false
+  [functions.mcp]
+    verify_jwt = false
   [functions.check-geofence]
     verify_jwt = false
   [functions.check-subscription]
