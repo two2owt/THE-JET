@@ -227,18 +227,27 @@ Deno.serve(async (req) => {
 
     /** Computes k-anonymised movement edges for one cutoff. */
     const computePaths = async (cutoff: Date | null) => {
-    let query = serviceClient
-      .from('user_locations')
-      .select('latitude, longitude, created_at, user_id')
-      .order('user_id')
-      .order('created_at');
-    if (cutoff) query = query.gte('created_at', cutoff.toISOString());
+    // PostgREST caps a single response at 1000 rows; page through so path
+    // frequency and the k-anonymity floor are computed on the full dataset.
+    const PAGE_SIZE = 1000;
+    const locations: Array<{ latitude: unknown; longitude: unknown; created_at: string; user_id: string | null }> = [];
+    for (let from = 0; ; from += PAGE_SIZE) {
+      let query = serviceClient
+        .from('user_locations')
+        .select('latitude, longitude, created_at, user_id')
+        .order('user_id')
+        .order('created_at')
+        .range(from, from + PAGE_SIZE - 1);
+      if (cutoff) query = query.gte('created_at', cutoff.toISOString());
 
-    const { data: locations, error } = await query;
-
-    if (error) {
-      console.error('Error fetching locations:', error);
-      throw error;
+      const { data: page, error } = await query;
+      if (error) {
+        console.error('Error fetching locations:', error);
+        throw error;
+      }
+      if (!page?.length) break;
+      locations.push(...page);
+      if (page.length < PAGE_SIZE) break;
     }
 
     console.log(`Processing ${locations?.length || 0} location points from all users...`);
