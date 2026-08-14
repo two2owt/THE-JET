@@ -22,7 +22,8 @@
     "verify:security": "node scripts/verify-security-hardening.mjs",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "test:smoke:density": "deno test --allow-env --allow-net --allow-read supabase/functions/get-location-density/index.test.ts"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.0",
