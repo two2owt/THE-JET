@@ -1596,7 +1596,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             // One-time interactions for the parking layer (persist across style swaps)
             map.current.on('click', 'parking-icons', (e) => {
               if (!e.features || e.features.length === 0) return;
-              const feature = e.features[0];
+              const feature = e.features[0] as MapboxGL.MapboxGeoJSONFeature;
               const coords = (feature.geometry as any).coordinates;
               const parkingName = feature.properties?.name || 'Parking';
 
@@ -2499,7 +2499,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     }
 
     // Create GeoJSON data from venues with activity as weight
-    const geojsonData: GeoJSON.FeatureCollection = {
+    const geojsonData: FeatureCollection<Geometry> = {
       type: 'FeatureCollection',
       features: venues.map(venue => ({
         type: 'Feature',
