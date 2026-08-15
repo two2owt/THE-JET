@@ -45,6 +45,16 @@ jobs:
       - name: Install dependencies (lockfile must be in sync)
         run: npm ci
 
+      - name: Verify testing-library DOM peer is resolvable
+        run: |
+          node -e "require('@testing-library/dom')" || {
+            echo "Stale npm cache detected; clearing and reinstalling..."
+            npm cache clean --force
+            rm -rf node_modules
+            npm ci
+            node -e "require('@testing-library/dom')"
+          }
+
       - name: Production build
         run: npx vite build
 
