@@ -1,6 +1,7 @@
 import { Resend } from "https://esm.sh/resend@4.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders, logVersion, EDGE_FUNCTION_VERSION } from "../_shared/cors.ts";
+import { getServiceRoleKey } from "../_shared/supabase-keys.ts";
 
 const FUNCTION_NAME = "send-admin-notification";
 logVersion(FUNCTION_NAME);
