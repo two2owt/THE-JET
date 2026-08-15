@@ -38,7 +38,7 @@ const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") ?? "";
 
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+  getServiceRoleKey(),
   { auth: { persistSession: false } },
 );
 
