@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { storeLastKnownLocation } from "@/lib/tile-prefetch";
 import { subscribeMapInteractionLock } from "@/lib/mapInteractionLock";
 import type * as MapboxGL from "mapbox-gl";
+import type { FeatureCollection, Geometry } from "geojson";
 import {
   LAYER_KEYS as SHARED_LAYER_KEYS,
   readLayerState,
@@ -1595,7 +1596,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             // One-time interactions for the parking layer (persist across style swaps)
             map.current.on('click', 'parking-icons', (e) => {
               if (!e.features || e.features.length === 0) return;
-              const feature = e.features[0];
+              const feature = e.features[0] as MapboxGL.MapboxGeoJSONFeature;
               const coords = (feature.geometry as any).coordinates;
               const parkingName = feature.properties?.name || 'Parking';
 
@@ -2498,7 +2499,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     }
 
     // Create GeoJSON data from venues with activity as weight
-    const geojsonData: GeoJSON.FeatureCollection = {
+    const geojsonData: FeatureCollection<Geometry> = {
       type: 'FeatureCollection',
       features: venues.map(venue => ({
         type: 'Feature',
