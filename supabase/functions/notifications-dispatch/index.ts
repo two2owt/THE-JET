@@ -13,6 +13,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import webpush from "https://esm.sh/web-push@3.6.7";
 import { corsHeaders, logVersion } from "../_shared/cors.ts";
 import { sendFcmV1 } from "../_shared/fcm.ts";
+import { getServiceRoleKey } from "../_shared/supabase-keys.ts";
 import {
   buildDataPayload,
   categoryAllowed,
@@ -39,7 +40,7 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    getServiceRoleKey(),
   );
 
   const vapidPublic = Deno.env.get("VITE_VAPID_PUBLIC_KEY");

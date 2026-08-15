@@ -15,6 +15,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { logVersion } from "../_shared/cors.ts";
+import { getServiceRoleKey } from "../_shared/supabase-keys.ts";
 
 const FUNCTION_NAME = "stripe-webhook";
 logVersion(FUNCTION_NAME);
