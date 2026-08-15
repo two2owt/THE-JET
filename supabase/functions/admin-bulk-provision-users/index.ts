@@ -61,21 +61,19 @@ Deno.serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
     // 1. Authenticated caller
     const authHeader = req.headers.get("Authorization") ?? "";
     if (!authHeader.toLowerCase().startsWith("bearer ")) return json({ error: "Unauthorized" }, 401);
 
-    const userClient = createClient(supabaseUrl, anonKey, {
+    const userClient = createClient(supabaseUrl, getPublishableKey(), {
       global: { headers: { Authorization: authHeader } },
     });
     const { data: userData, error: userErr } = await userClient.auth.getUser();
     if (userErr || !userData?.user) return json({ error: "Unauthorized" }, 401);
 
     // 2. Admin role required
-    const admin = createClient(supabaseUrl, serviceKey);
+    const admin = createClient(supabaseUrl, getServiceRoleKey());
     const { data: isAdmin, error: roleErr } = await admin.rpc("has_role", {
       _user_id: userData.user.id,
       _role: "admin",

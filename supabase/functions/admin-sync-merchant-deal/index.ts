@@ -28,7 +28,6 @@ Deno.serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const webhookSecret = Deno.env.get("JETBRIDGE_WEBHOOK_SECRET");
 
     if (!webhookSecret) {
@@ -47,7 +46,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const userClient = createClient(supabaseUrl, anonKey, {
+    const userClient = createClient(supabaseUrl, getPublishableKey(), {
       global: { headers: { Authorization: authHeader } },
     });
     const { data: userData, error: userErr } = await userClient.auth.getUser();
@@ -60,8 +59,7 @@ Deno.serve(async (req) => {
     const userId = userData.user.id;
 
     // 2. Verify caller is admin (service-role bypasses RLS to be safe)
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const adminClient = createClient(supabaseUrl, serviceKey);
+    const adminClient = createClient(supabaseUrl, getServiceRoleKey());
     const { data: isAdminData, error: roleErr } = await adminClient.rpc("has_role", {
       _user_id: userId,
       _role: "admin",
