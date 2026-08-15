@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders, logVersion } from "../_shared/cors.ts";
+import { getPublishableKey, getServiceRoleKey } from "../_shared/supabase-keys.ts";
 
 const FUNCTION_NAME = "admin-sync-merchant-deal";
 logVersion(FUNCTION_NAME);
