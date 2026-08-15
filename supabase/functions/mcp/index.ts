@@ -3,7 +3,7 @@
 // supabase function: mcp
 // Bundled from src/lib/mcp/index.ts by @lovable.dev/mcp-js.
 // src/lib/mcp/index.ts
-import { auth, defineMcp, setLogLevel } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { auth, defineMcp, setLogLevel } from "npm:@lovable.dev/mcp-js@0.26.2";
 
 // src/lib/mcp/logging.ts
 function env(name) {
@@ -104,11 +104,11 @@ function logServerBoot(info) {
 }
 
 // src/lib/mcp/tools/list-deals.ts
-import { defineTool } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z } from "npm:zod@^3.25.76";
 
 // src/lib/mcp/supabase.ts
-import { createClient } from "npm:@supabase/supabase-js@^2.81.1";
+import { createClient } from "npm:@supabase/supabase-js@^2.112.3";
 function runtimeEnv(name) {
   const runtime = globalThis;
   return runtime.Deno?.env?.get?.(name) ?? runtime.process?.env?.[name];
@@ -191,7 +191,7 @@ var list_deals_default = defineTool({
 });
 
 // src/lib/mcp/tools/list-favorites.ts
-import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z as z2 } from "npm:zod@^3.25.76";
 var list_favorites_default = defineTool2({
   name: "list_favorites",
@@ -216,7 +216,7 @@ var list_favorites_default = defineTool2({
 });
 
 // src/lib/mcp/tools/save-favorite.ts
-import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z as z3 } from "npm:zod@^3.25.76";
 var save_favorite_default = defineTool3({
   name: "save_favorite",
@@ -245,7 +245,7 @@ var save_favorite_default = defineTool3({
 });
 
 // src/lib/mcp/tools/remove-favorite.ts
-import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z as z4 } from "npm:zod@^3.25.76";
 var remove_favorite_default = defineTool4({
   name: "remove_favorite",
@@ -276,7 +276,7 @@ var remove_favorite_default = defineTool4({
 });
 
 // src/lib/mcp/tools/heatmap-density.ts
-import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z as z5 } from "npm:zod@^3.25.76";
 function distanceKm(lat1, lng1, lat2, lng2) {
   const R = 6371;
@@ -351,7 +351,7 @@ var heatmap_density_default = defineTool5({
 });
 
 // src/lib/mcp/tools/get-jetcard.ts
-import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.26.2";
 var get_jetcard_default = defineTool6({
   name: "get_jetcard",
   title: "Get my JetCard",
@@ -420,7 +420,7 @@ var get_jetcard_default = defineTool6({
 });
 
 // src/lib/mcp/tools/configure-notifications.ts
-import { defineTool as defineTool7 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool as defineTool7 } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z as z6 } from "npm:zod@^3.25.76";
 var PREF_COLUMNS = "notifications_enabled, email_notifications_enabled, background_tracking_enabled, location_tracking_enabled, auto_reload_updates, updated_at";
 var configure_notifications_default = defineTool7({
@@ -481,7 +481,7 @@ var configure_notifications_default = defineTool7({
 });
 
 // src/lib/mcp/tools/list-activity.ts
-import { defineTool as defineTool8 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool as defineTool8 } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z as z7 } from "npm:zod@^3.25.76";
 var list_activity_default = defineTool8({
   name: "list_activity",
@@ -562,7 +562,7 @@ var list_activity_default = defineTool8({
 });
 
 // src/lib/mcp/tools/list-my-venues.ts
-import { defineTool as defineTool9 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool as defineTool9 } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z as z8 } from "npm:zod@^3.25.76";
 var list_my_venues_default = defineTool9({
   name: "list_my_venues",
@@ -671,7 +671,7 @@ var list_my_venues_default = defineTool9({
 });
 
 // src/lib/mcp/tools/push-preferences.ts
-import { defineTool as defineTool10 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool as defineTool10 } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z as z9 } from "npm:zod@^3.25.76";
 var DEFAULT_TOPICS = {
   jetcard_updates: true,
@@ -749,7 +749,7 @@ var push_preferences_default = defineTool10({
 });
 
 // src/lib/mcp/tools/get-tier-benefits.ts
-import { defineTool as defineTool11 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool as defineTool11 } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z as z10 } from "npm:zod@^3.25.76";
 var TIERS = {
   free: {
@@ -860,7 +860,7 @@ var get_tier_benefits_default = defineTool11({
 });
 
 // src/lib/mcp/tools/list-active-promotions.ts
-import { defineTool as defineTool12 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool as defineTool12 } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z as z11 } from "npm:zod@^3.25.76";
 var DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 var TIER_LABEL = {
@@ -982,7 +982,7 @@ var list_active_promotions_default = defineTool12({
 });
 
 // src/lib/mcp/tools/whoami.ts
-import { defineTool as defineTool13 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { defineTool as defineTool13 } from "npm:@lovable.dev/mcp-js@0.26.2";
 var whoami_default = defineTool13({
   name: "whoami",
   title: "Who am I",
@@ -1037,5 +1037,5 @@ var mcp_default = defineMcp({
 });
 
 // lovable-mcp-supabase-entry.ts
-import { createSupabaseHandler } from "npm:@lovable.dev/mcp-js@0.26.1/stacks/supabase";
+import { createSupabaseHandler } from "npm:@lovable.dev/mcp-js@0.26.2/stacks/supabase";
 Deno.serve(createSupabaseHandler(mcp_default, { functionName: "mcp" }));
