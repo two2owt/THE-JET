@@ -9,14 +9,20 @@ import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
  * scaled element still occupies its visual height in flow.
  */
 export function useAutoFitScale<T extends HTMLElement>(
-  { minScale = 0.7, deps = [] as unknown[] } = {},
+  { minScale = 0.7, containerSelector, deps = [] as unknown[] }: {
+    minScale?: number;
+    containerSelector?: string;
+    deps?: unknown[];
+  } = {},
 ) {
   const ref = useRef<T | null>(null);
   const raf = useRef<number | null>(null);
 
   const measure = useCallback(() => {
     const el = ref.current;
-    const parent = el?.parentElement;
+    const parent = containerSelector
+      ? (el?.closest(containerSelector) as HTMLElement | null) ?? el?.parentElement
+      : el?.parentElement;
     if (!el || !parent) return;
 
     // Reset before measuring the natural height.
@@ -37,7 +43,7 @@ export function useAutoFitScale<T extends HTMLElement>(
     el.style.transformOrigin = "top center";
     el.style.transform = `scale(${scale})`;
     el.style.marginBottom = `${-natural * (1 - scale)}px`;
-  }, [minScale]);
+  }, [minScale, containerSelector]);
 
   const schedule = useCallback(() => {
     if (raf.current != null) cancelAnimationFrame(raf.current);
