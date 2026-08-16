@@ -1,19 +1,20 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Venue } from "@/components/MapboxHeatmap";
+import { CITIES, type City } from "@/types/cities";
+import { getNeighborhoodForCoords } from "@/data/city-neighborhoods";
 
 /**
- * Fetch the top 10 most popular venues in Charlotte
+ * Fetch the top 10 most popular venues for the given city
  */
-const fetchPopularVenuesFromGooglePlaces = async (): Promise<Venue[]> => {
+const fetchPopularVenuesFromGooglePlaces = async (city: City): Promise<Venue[]> => {
   try {
-    console.log('Fetching top 10 Charlotte venues...');
-    
-    // Charlotte coordinates
-    const charlotteLocation = { lat: 35.2271, lng: -80.8431 };
-    
+    console.log(`Fetching top 10 ${city.name} venues...`);
+
+    const cityLocation = { lat: city.lat, lng: city.lng };
+
     const { data, error } = await supabase.functions.invoke('search-google-places-venues', {
-      body: { location: charlotteLocation }
+      body: { location: cityLocation }
     });
 
     if (error) {
@@ -29,7 +30,7 @@ const fetchPopularVenuesFromGooglePlaces = async (): Promise<Venue[]> => {
       lng: v.lng,
       activity: v.activity || 50,
       category: v.category || 'Venue',
-      neighborhood: getNeighborhoodFromCoords(v.lat, v.lng),
+      neighborhood: getNeighborhoodForCoords(city.id, v.lat, v.lng),
       address: v.address,
       googleRating: v.googleRating,
       googleTotalRatings: v.googleTotalRatings,
@@ -39,7 +40,7 @@ const fetchPopularVenuesFromGooglePlaces = async (): Promise<Venue[]> => {
       website: v.website,
     }));
     
-    console.log(`Fetched ${venues.length} Charlotte venues:`);
+    console.log(`Fetched ${venues.length} ${city.name} venues:`);
     venues.forEach((v, i) => {
       console.log(`  ${i + 1}. ${v.name}: lat=${v.lat}, lng=${v.lng} | ${v.address || 'No address'}`);
     });
@@ -51,22 +52,9 @@ const fetchPopularVenuesFromGooglePlaces = async (): Promise<Venue[]> => {
 };
 
 /**
- * Determine neighborhood from coordinates
- */
-const getNeighborhoodFromCoords = (lat: number, lng: number): string => {
-  // Charlotte neighborhoods approximate boundaries
-  if (lat >= 35.245) return 'NoDa';
-  if (lat >= 35.230 && lng <= -80.820) return 'Camp North End';
-  if (lat >= 35.220 && lat < 35.235) return 'Uptown';
-  if (lat >= 35.200 && lat < 35.220 && lng >= -80.820) return 'Plaza Midwood';
-  if (lat < 35.220 && lng <= -80.840) return 'South End';
-  return 'Charlotte';
-};
-
-/**
  * Hook to fetch real venue activity data from Supabase and Google Places
  */
-export const useVenueActivity = (enabled: boolean = true) => {
+export const useVenueActivity = (enabled: boolean = true, city: City = CITIES[0]) => {
   const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -78,7 +66,7 @@ export const useVenueActivity = (enabled: boolean = true) => {
       setError(null);
 
       // First, fetch popular venues from Google Places as the base dataset
-      const googleVenues = await fetchPopularVenuesFromGooglePlaces();
+      const googleVenues = await fetchPopularVenuesFromGooglePlaces(city);
       
       // Then, enhance with our own platform data (deals, engagement, etc.)
       const { data: deals, error: dealsError } = await supabase
@@ -289,7 +277,7 @@ export const useVenueActivity = (enabled: boolean = true) => {
       window.removeEventListener("online", resync);
       subscription.unsubscribe();
     };
-  }, [enabled]);
+  }, [enabled, city.id]);
 
   return { venues, loading, error, refresh: loadVenueActivity, lastUpdated };
 };
