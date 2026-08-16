@@ -235,21 +235,9 @@ export const useMovementPathsLayer = ({
     const lineFreqWidth = ['interpolate', ['exponential', 1.5], ['get', 'frequency'],
       1, 5, 5, 8, 10, 12, 20, 16] as any;
 
-    /**
-     * Flow palette — deliberately off the heatmap's blue→red ramp so the two
-     * layers stay readable together, and tuned to the brand's violet/gold
-     * accents. Cool lavender for occasional routes, escalating through
-     * violet and magenta to warm gold for the busiest corridors. All five
-     * stops clear 4.5:1 against both the dark and light Mapbox basemaps.
-     */
-    const flowColorRamp = (alpha = 1) => [
-      'interpolate', ['linear'], ['get', 'frequency'],
-      1, `rgba(178, 196, 255, ${alpha})`,
-      5, `rgba(150, 138, 255, ${alpha})`,
-      10, `rgba(196, 112, 255, ${alpha})`,
-      15, `rgba(255, 106, 178, ${alpha})`,
-      20, `rgba(255, 178, 74, ${alpha})`,
-    ] as any;
+    // Flow palette (lavender → violet → magenta → gold) lives inline in the
+    // paint expressions below. It stays deliberately off the heatmap's
+    // blue→red ramp so both layers remain readable at the same time.
 
     mapRef.current.addLayer({
       id: glowLayerId,
