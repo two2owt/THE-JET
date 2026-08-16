@@ -79,6 +79,8 @@ Deno.serve(async (req) => {
             'places.location',
             'places.rating',
             'places.currentOpeningHours.openNow',
+            'places.priceLevel',
+            'places.priceRange',
             'places.id',
           ].join(','),
         },
