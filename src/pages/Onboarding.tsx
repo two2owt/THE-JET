@@ -209,8 +209,8 @@ const Onboarding = () => {
       errors.birthdate = "Birthdate is required";
     } else {
       const age = calculateAge(birthdate);
-      if (age < 21) {
-        errors.birthdate = "You must be 21 or older";
+      if (age < MIN_AGE) {
+        errors.birthdate = `You must be ${MIN_AGE} or older`;
       }
     }
 
@@ -235,7 +235,9 @@ const Onboarding = () => {
         return;
       }
 
-      let avatarUrl = null;
+      // Default to whatever is already on the profile so resuming Step 1
+      // without re-uploading never wipes an existing (or OAuth) avatar.
+      let avatarUrl = existingAvatarUrl;
       
       // Upload avatar if provided
       if (avatarFile && userId) {
@@ -253,6 +255,7 @@ const Onboarding = () => {
           .getPublicUrl(fileName);
         
         avatarUrl = publicUrl;
+        setExistingAvatarUrl(publicUrl);
       }
       
       // Use upsert to handle cases where profile might not exist yet
@@ -263,7 +266,7 @@ const Onboarding = () => {
           display_name: displayName.trim(),
           display_name_claimed: true,
           bio: bio || null,
-          avatar_url: avatarUrl,
+          ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
           birthdate: birthdate,
           gender: gender,
           pronouns: pronouns || null,
@@ -365,7 +368,9 @@ const Onboarding = () => {
       label: "Finish",
       title: "You're",
       titleAccent: "All Set",
-      description: "Based on your preferences, we'll surface the best of Charlotte.",
+      description: savedPreferences
+        ? "Based on your preferences, we'll surface the best of Charlotte."
+        : "You can set your taste preferences any time from your profile.",
     },
   ] as const;
   const current = STEPS[step - 1];
