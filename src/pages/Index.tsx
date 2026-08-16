@@ -123,6 +123,9 @@ const Index = () => {
   const [sendDialogUserId, setSendDialogUserId] = useState<string | null>(null);
   const [, setDeepLinkedDeal] = useState<any>(null);
   const { token: mapboxToken, loading: mapboxLoading, error: mapboxError } = useMapboxToken();
+  // Gate the map on hydration: the token can already be warm in cache on the
+  // client, so rendering it during hydration diverged from the empty SSR tree.
+  const hydrated = useHydrated();
   const { getVenueImage } = useVenueImages();
 
   // Idle-defer non-critical data hooks so they don't block LCP / inflate TBT
