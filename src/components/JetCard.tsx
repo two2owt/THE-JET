@@ -548,15 +548,15 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
 
       {/* Content */}
       <div style={{
-        padding: 'clamp(10px, 1.6vw, 18px)',
+        padding: 'clamp(12px, 3.4cqw, 20px)',
         display: 'flex',
         flexDirection: 'column',
-        gap: 'clamp(6px, 1vw, 12px)',
+        gap: 'clamp(6px, 2cqw, 12px)',
       }}>
         {/* Title */}
         <div>
           <h3 style={{
-            fontSize: 'clamp(15px, 1.2vw + 11px, 20px)',
+            fontSize: 'clamp(15px, 3.4cqw + 4px, 21px)',
             fontWeight: 700,
             color: 'hsl(var(--foreground))',
             lineHeight: 1.25,
@@ -584,7 +584,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
                   alignItems: 'center',
                   gap: '6px',
                   marginTop: '6px',
-                  fontSize: 'clamp(10.5px, 0.35vw + 9.5px, 12.5px)',
+                  fontSize: 'clamp(10.5px, 1.1cqw + 7px, 12.5px)',
                   color: 'hsl(var(--muted-foreground))',
                 }}>
                   {showPill && (
@@ -636,7 +636,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
             gap: '6px',
             marginTop: '4px',
             color: 'hsl(var(--muted-foreground))',
-            fontSize: 'clamp(11px, 0.4vw + 10px, 13px)',
+            fontSize: 'clamp(11px, 1.2cqw + 7.2px, 13px)',
           }}>
             <MapPin style={{ width: '12px', height: '12px', flexShrink: 0 }} />
             <span>{venue.neighborhood}</span>
@@ -653,7 +653,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               alignItems: 'center',
               gap: '10px',
               marginTop: '6px',
-              fontSize: 'clamp(11px, 0.4vw + 10px, 13px)',
+              fontSize: 'clamp(11px, 1.2cqw + 7.2px, 13px)',
             }}>
               {venue.phone && (
                 <a
@@ -719,14 +719,14 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: '8px',
-            padding: 'clamp(6px, 0.9vw, 12px) clamp(8px, 1.1vw, 14px)',
+            padding: 'clamp(6px, 1.8cqw, 12px) clamp(8px, 2.4cqw, 14px)',
             borderRadius: '10px',
             background:
               'linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.18))',
             border: '1px solid hsl(0 0% 100% / 0.05)',
             boxShadow:
               'inset 0 1px 0 hsl(0 0% 100% / 0.04), 0 0 24px hsl(var(--gold) / 0.04)',
-            fontSize: 'clamp(12px, 0.4vw + 11px, 14px)',
+            fontSize: 'clamp(12px, 1.2cqw + 8px, 14px)',
           }}
         >
           {/* Activity — primary metric (kept on JET red/purple via activityLevel.color) */}
@@ -800,7 +800,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               color: 'hsl(var(--primary-foreground))',
               fontWeight: 600,
               minHeight: '44px',
-              height: 'clamp(44px, 6vw, 52px)',
+              height: 'clamp(44px, 10cqw, 52px)',
               fontSize: 'clamp(11px, 0.4cqw + 10.5px, 14px)',
               borderRadius: '8px',
               border: 'none',
@@ -829,7 +829,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               color: 'hsl(var(--primary-foreground))',
               fontWeight: 600,
               minHeight: '44px',
-              height: 'clamp(44px, 6vw, 52px)',
+              height: 'clamp(44px, 10cqw, 52px)',
               fontSize: 'clamp(11px, 0.4cqw + 10.5px, 14px)',
               borderRadius: '8px',
               border: 'none',
@@ -855,7 +855,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               color: 'hsl(var(--primary-foreground))',
               fontWeight: 600,
               minHeight: '44px',
-              height: 'clamp(44px, 6vw, 52px)',
+              height: 'clamp(44px, 10cqw, 52px)',
               fontSize: 'clamp(11px, 0.4cqw + 10.5px, 14px)',
               borderRadius: '8px',
               border: 'none',
