@@ -24,7 +24,7 @@ logVersion(FUNCTION_NAME);
 const MAX_USERS = 200;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-type Method = "password" | "invite" | "resend";
+type Method = "password" | "invite" | "resend" | "reverify";
 type Incoming = { email?: unknown; display_name?: unknown; password?: unknown; method?: unknown };
 
 function escapeHtml(s: string) {
@@ -145,9 +145,11 @@ Deno.serve(async (req) => {
           ? "invite"
           : raw?.method === "resend"
             ? "resend"
-            : raw?.method === "password"
-              ? "password"
-              : defaultMethod;
+            : raw?.method === "reverify"
+              ? "reverify"
+              : raw?.method === "password"
+                ? "password"
+                : defaultMethod;
       parsed.push({ email, display_name: displayName, password, method });
     }
 
@@ -155,6 +157,28 @@ Deno.serve(async (req) => {
     const results: Record<string, unknown>[] = [];
     for (const u of parsed) {
       try {
+        if (u.method === "reverify") {
+          // Re-send the signup confirmation email to an account that exists but
+          // never confirmed its address. Uses the project's own auth email
+          // pipeline so the branded verification template is reused.
+          const { error } = await admin.auth.resend({
+            type: "signup",
+            email: u.email,
+            options: tplRedirect ? { emailRedirectTo: tplRedirect } : undefined,
+          });
+          if (error) {
+            const already = /already\s+confirmed|already\s+registered/i.test(error.message ?? "");
+            results.push({
+              email: u.email,
+              status: already ? "exists" : "error",
+              error: already ? "Email is already confirmed" : error.message,
+            });
+            continue;
+          }
+          results.push({ email: u.email, status: "resent", invited: true });
+          continue;
+        }
+
         if (u.method === "resend") {
           // Re-trigger an invite for an address that may or may not already exist.
           if (!useCustomInviteEmail || !resend) {
