@@ -1597,8 +1597,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             map.current.on('click', 'parking-icons', (e) => {
               if (!e.features || e.features.length === 0) return;
               const feature = e.features[0] as MapboxGL.MapboxGeoJSONFeature;
-              const coords = (feature.geometry as any).coordinates;
-              const parkingName = feature.properties?.name || 'Parking';
+              const coords = ((feature as any).geometry as any).coordinates;
+              const parkingName = (feature as any).properties?.name || 'Parking';
 
               triggerHaptic('medium');
               onParkingSelectRef.current?.({

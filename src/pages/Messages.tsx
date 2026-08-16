@@ -61,7 +61,7 @@ function DiscoverPeopleStrip({
           .limit(25);
         if (cancelled) return;
         if (error) throw error;
-        setPeople(data || []);
+        setPeople((data || []) as DiscoverableProfile[]);
       } catch (err) {
         console.error("Error loading discoverable people:", err);
         if (!cancelled) setPeople([]);

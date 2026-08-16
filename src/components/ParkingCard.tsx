@@ -140,9 +140,9 @@ export const ParkingCard = memo(({ lat, lng, name, onClose, onGetDirections }: P
                   {parking?.isOpen !== null && (
                     <span style={{
                       fontSize: '11px', fontWeight: 600,
-                      color: parking.isOpen ? 'hsl(142, 76%, 36%)' : 'hsl(0, 84%, 60%)',
+                      color: parking?.isOpen ? 'hsl(142, 76%, 36%)' : 'hsl(0, 84%, 60%)',
                     }}>
-                      {parking.isOpen ? '● Open' : '● Closed'}
+                      {parking?.isOpen ? '● Open' : '● Closed'}
                     </span>
                   )}
                   {getPriceLevelLabel(parking?.priceLevel ?? null) && (

@@ -243,7 +243,7 @@ const Onboarding = () => {
       const { error } = await supabase
         .from("profiles")
         .upsert({
-          id: userId,
+          id: userId as string,
           display_name: displayName.trim(),
           bio: bio || null,
           avatar_url: avatarUrl,
@@ -290,7 +290,7 @@ const Onboarding = () => {
         .update({
           preferences: preferencesJson as unknown as Json,
         })
-        .eq('id', userId);
+        .eq('id', userId as string);
       
       if (error) throw error;
       
@@ -309,7 +309,7 @@ const Onboarding = () => {
       const { error } = await supabase
         .from("profiles")
         .upsert({
-          id: userId,
+          id: userId as string,
           onboarding_completed: true
         }, {
           onConflict: 'id'

@@ -36,7 +36,7 @@ const tools = [
   getTierBenefitsTool,
   listActivePromotionsTool,
   whoamiTool,
-].map(withLogging);
+].map((tool) => withLogging(tool as never)) as unknown as Parameters<typeof defineMcp>[0]["tools"];
 
 logServerBoot({ name: "jet-around", version: "0.1.0", issuer: issuerUrl, toolCount: tools.length });
 

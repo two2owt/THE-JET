@@ -129,7 +129,7 @@ export default function Social() {
           .abortSignal(controller.signal);
         if (cancelled) return;
         if (error) throw error;
-        setSearchResults(data || []);
+        setSearchResults((data || []) as Profile[]);
       } catch (err) {
         if (cancelled || (err as { name?: string })?.name === "AbortError") return;
         console.error("Error searching users:", err);
@@ -169,7 +169,7 @@ export default function Social() {
         excludedIds.add(r.friend_id);
       }
       sentRequestIds.forEach((id) => excludedIds.add(id));
-      setProfiles((data || []).filter((p) => !excludedIds.has(p.id)).slice(0, 20));
+      setProfiles(((data || []) as Profile[]).filter((p) => !excludedIds.has(p.id ?? "")).slice(0, 20));
     } catch (error) {
       console.error("Error fetching profiles:", error);
       setProfilesError(true);

@@ -107,7 +107,7 @@ export const UserAnalytics = () => {
         const date = subDays(new Date(), 6 - i);
         const dateStr = format(date, 'MM/dd');
         const count = recentLocations?.filter(l => 
-          format(new Date(l.created_at), 'MM/dd') === dateStr
+          format(new Date(l.created_at ?? 0), 'MM/dd') === dateStr
         ).length || 0;
         return { date: dateStr, locations: count };
       });

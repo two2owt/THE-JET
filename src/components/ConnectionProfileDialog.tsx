@@ -57,7 +57,7 @@ export function ConnectionProfileDialog({ connectionId, isOpen, onClose }: Conne
         .maybeSingle();
 
       if (error) throw error;
-      setProfile(data);
+      setProfile((data as unknown as SecureProfile | null) ?? null);
     } catch (error) {
       console.error("Error fetching profile:", error);
     } finally {
