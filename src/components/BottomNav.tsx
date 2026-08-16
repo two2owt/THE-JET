@@ -192,8 +192,8 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, messa
               <Icon
                 className="relative z-10"
                 style={{
-                  width: '20px',
-                  height: '20px',
+                  width: 'clamp(18px, 4.8vw, 22px)',
+                  height: 'clamp(18px, 4.8vw, 22px)',
                   color: isActive ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
                   strokeWidth: isActive ? 2.4 : 1.8,
                   transition: 'color 0.2s, transform 0.2s',
