@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Venue } from "@/components/MapboxHeatmap";
 import { CITIES, type City } from "@/types/cities";
 import { getNeighborhoodForCoords } from "@/data/city-neighborhoods";
+import { scoreVenueMomentum } from "@/lib/venue-momentum";
 
 /**
  * Fetch the top 10 most popular venues for the given city
@@ -182,8 +183,24 @@ export const useVenueActivity = (enabled: boolean = true, city: City = CITIES[0]
         return venue;
       });
 
-      // Sort by activity score
-      const sortedVenues = enhancedVenues.sort((a, b) => b.activity - a.activity);
+      // Second pass: momentum. Compares each venue against its own recent
+      // baseline with a 25-minute half-life, so "filling up" beats "big".
+      const now = Date.now();
+      const withMomentum = enhancedVenues.map((venue) => {
+        const momentum = scoreVenueMomentum(venue.id, venue.activity, now);
+        return {
+          ...venue,
+          activity: momentum.adjustedActivity,
+          momentum: momentum.score,
+          momentumTrend: momentum.trend,
+          momentumLabel: momentum.label,
+        };
+      });
+
+      // Sort by activity, breaking ties toward venues that are on the way up.
+      const sortedVenues = withMomentum.sort(
+        (a, b) => b.activity - a.activity || (b.momentum ?? 0) - (a.momentum ?? 0),
+      );
       
       devLog(`Loaded ${sortedVenues.length} venues with activity scores`);
       setVenues(sortedVenues);
