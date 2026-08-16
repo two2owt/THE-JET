@@ -18,6 +18,7 @@ import { AuthPWAInstallPromptWrapper } from "@/components/AuthPWAInstallPromptWr
 import { buildAuthRedirectUrl } from "@/lib/utils";
 import { requestGeolocationPermission } from "@/lib/requestGeolocationPermission";
 import { useHydrated } from "@/hooks/useHydrated";
+import { useAutoFitScale } from "@/hooks/useAutoFitScale";
 // Use the new JET logo for auth page
 import jetLogo48Avif from "@/assets/jet-auth-logo-48.avif";
 import jetLogo96Avif from "@/assets/jet-auth-logo-96.avif";
