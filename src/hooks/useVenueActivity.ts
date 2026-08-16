@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Venue } from "@/components/MapboxHeatmap";
 import { CITIES, type City } from "@/types/cities";
@@ -59,11 +59,15 @@ export const useVenueActivity = (enabled: boolean = true, city: City = CITIES[0]
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const channelId = useId();
+  const lastLoadRef = useRef(0);
+  const pendingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadVenueActivity = async () => {
     try {
       setLoading(true);
       setError(null);
+      lastLoadRef.current = Date.now();
 
       // First, fetch popular venues from Google Places as the base dataset
       const googleVenues = await fetchPopularVenuesFromGooglePlaces(city);
@@ -197,9 +201,22 @@ export const useVenueActivity = (enabled: boolean = true, city: City = CITIES[0]
     
     loadVenueActivity();
 
+    // Realtime tables like user_locations fire constantly; coalesce refreshes
+    // to at most one Google Places round-trip per 60s so the map doesn't
+    // thrash (and burn quota) on every location ping.
+    const REFRESH_INTERVAL_MS = 60_000;
+    const scheduleRefresh = () => {
+      if (pendingRef.current) return;
+      const wait = Math.max(0, REFRESH_INTERVAL_MS - (Date.now() - lastLoadRef.current));
+      pendingRef.current = setTimeout(() => {
+        pendingRef.current = null;
+        loadVenueActivity();
+      }, wait);
+    };
+
     // Set up real-time subscription for deal changes
     const channel = supabase
-      .channel('venue-activity-changes')
+      .channel(`venue-activity-changes-${channelId}`)
       .on(
         'postgres_changes',
         {
@@ -209,7 +226,7 @@ export const useVenueActivity = (enabled: boolean = true, city: City = CITIES[0]
         },
         () => {
           console.log('Deal change detected, refreshing venue activity');
-          loadVenueActivity();
+          scheduleRefresh();
         }
       )
       .on(
@@ -221,7 +238,7 @@ export const useVenueActivity = (enabled: boolean = true, city: City = CITIES[0]
         },
         () => {
           console.log('User location update detected, refreshing venue activity');
-          loadVenueActivity();
+          scheduleRefresh();
         }
       )
       .on(
@@ -233,7 +250,7 @@ export const useVenueActivity = (enabled: boolean = true, city: City = CITIES[0]
         },
         () => {
           console.log('Favorites change detected, refreshing venue activity');
-          loadVenueActivity();
+          scheduleRefresh();
         }
       )
       .on(
@@ -245,14 +262,14 @@ export const useVenueActivity = (enabled: boolean = true, city: City = CITIES[0]
         },
         () => {
           console.log('Deal share detected, refreshing venue activity');
-          loadVenueActivity();
+          scheduleRefresh();
         }
       )
       .subscribe();
 
     // Resume paths: tab/PWA foreground, bfcache restore (browser bookmarks,
     // back button), and network reconnect after offline use.
-    const resync = () => loadVenueActivity();
+    const resync = () => scheduleRefresh();
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") resync();
     };
@@ -265,12 +282,14 @@ export const useVenueActivity = (enabled: boolean = true, city: City = CITIES[0]
 
     // Refetch once auth becomes available (the venue search requires a JWT).
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") {
-        loadVenueActivity();
+      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        scheduleRefresh();
       }
     });
 
     return () => {
+      if (pendingRef.current) clearTimeout(pendingRef.current);
+      pendingRef.current = null;
       supabase.removeChannel(channel);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("pageshow", handlePageShow);
