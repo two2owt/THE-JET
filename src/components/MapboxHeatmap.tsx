@@ -1202,13 +1202,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           localFontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         });
 
-        // Add attribution control in a better position
-        map.current.addControl(
-          new mapboxgl.AttributionControl({
-            compact: true,
-          }),
-          'bottom-right'
-        );
+        // No attribution/logo control is added: the map keeps a clean bottom
+        // edge so overlays align to the nav footer padding.
 
         // Adds the custom neon "P" parking icon + symbol layer.
         // Must run on EVERY style load: setStyle() wipes custom images/layers,
@@ -3150,7 +3145,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       <div 
         style={{
           position: 'absolute',
-          bottom: 'calc(var(--map-safe-bottom-panels, var(--map-fixed-bottom, calc(60px + 0.75rem))) + 1.25rem)',
+          bottom: 'var(--map-safe-bottom-panels, var(--map-fixed-bottom, calc(60px + 0.75rem)))',
           right: 'var(--map-ui-inset-right, 0.75rem)',
           zIndex: 30,
         }}
@@ -4044,8 +4039,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       <div 
         style={{
           position: 'absolute',
-          // Sit above the Mapbox attribution row and any open bottom panel (JetCard/search)
-          bottom: 'calc(var(--map-safe-bottom-panels, var(--map-fixed-bottom)) + 2.75rem)',
+          // The attribution/logo row is hidden, so the legend uses the same
+          // uniform nav-footer padding as every other bottom overlay.
+          bottom: 'var(--map-safe-bottom-panels, var(--map-fixed-bottom))',
           left: 'var(--map-ui-inset-left)',
           maxWidth: 'var(--map-control-max-width)',
           width: 'clamp(160px, 38vw, 240px)',

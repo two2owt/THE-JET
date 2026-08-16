@@ -1666,6 +1666,15 @@ All colors MUST be HSL.
     transition: bottom 200ms ease;
   }
 
+  /* Hide the Mapbox wordmark and the attribution strip so the bottom of the
+     map is a clean row: legend, layers FAB and zoom/geolocate all share the
+     same nav-footer padding with nothing stacked underneath them. */
+  .mapboxgl-ctrl-logo,
+  .mapboxgl-ctrl-attrib,
+  .mapboxgl-ctrl-attrib-button {
+    display: none !important;
+  }
+
   /* Respect notches / landscape safe areas */
   .mapboxgl-ctrl-top-left,
   .mapboxgl-ctrl-bottom-left {
