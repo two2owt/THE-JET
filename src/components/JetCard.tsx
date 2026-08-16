@@ -205,10 +205,6 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
     };
     return { label: `${emoji[tier.id]} ${tier.label}`, color: tier.dark };
   };
-  const _unusedActivityLevelTail = () => {
-    return { label: `${emoji} ${tier.label}`, color: tier.dark };
-  };
-
   const handleGetDirections = async () => {
     await glideHaptic();
     try {
