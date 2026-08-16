@@ -476,6 +476,9 @@ const Index = () => {
         description="Discover trending venues, live events, and exclusive happy-hour deals across Charlotte on a real-time heatmap. Your guide to what's hot right now."
         path="/"
       />
+      <h1 className="sr-only">
+        JET — Real-time heatmap of live deals, events, and trending venues near you
+      </h1>
       {/* FULL-SCREEN MAP LAYER - only on map tab */}
       {activeTab === "map" && (
         <>
