@@ -1,75 +1,76 @@
-import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+type Options = {
+  /** Lower bound for the scale factor (0–1). */
+  minScale?: number;
+  /** CSS selector for the height-constraining ancestor (defaults to the parent). */
+  containerSelector?: string;
+};
 
 /**
- * Scales an element down just enough to fit its parent's available height,
- * so a page never needs to scroll on short viewports (landscape phones,
- * small browser windows, on-screen-keyboard-free layouts).
+ * Scales an element down just enough to fit the available height of its
+ * container, so a page never needs to scroll on short viewports (landscape
+ * phones, small desktop windows, browser chrome variations).
  *
- * Layout-safe: the negative margin compensates for the transform so the
- * scaled element still occupies its visual height in flow.
+ * Layout-safe: a compensating negative margin keeps the scaled element's
+ * flow height equal to its visual height.
  */
-export function useAutoFitScale<T extends HTMLElement>(
-  { minScale = 0.7, containerSelector, deps = [] as unknown[] }: {
-    minScale?: number;
-    containerSelector?: string;
-    deps?: unknown[];
-  } = {},
-) {
-  const ref = useRef<T | null>(null);
+export function useAutoFitScale<T extends HTMLElement>({
+  minScale = 0.7,
+  containerSelector,
+}: Options = {}) {
+  const [node, setNode] = useState<T | null>(null);
   const raf = useRef<number | null>(null);
 
   const measure = useCallback(() => {
-    console.warn("[autofit] measure", !!ref.current);
-    const el = ref.current;
-    const parent = containerSelector
-      ? (el?.closest(containerSelector) as HTMLElement | null) ?? el?.parentElement
-      : el?.parentElement;
-    if (!el || !parent) return;
+    const el = node;
+    if (!el) return;
+    const container = containerSelector
+      ? ((el.closest(containerSelector) as HTMLElement | null) ?? el.parentElement)
+      : el.parentElement;
+    if (!container) return;
 
-    // Reset before measuring the natural height.
+    // Reset before measuring the natural (unscaled) height.
     el.style.transform = "";
     el.style.marginBottom = "";
 
-    const cs = getComputedStyle(parent);
+    const cs = getComputedStyle(container);
     let available =
-      parent.clientHeight -
+      container.clientHeight -
       parseFloat(cs.paddingTop || "0") -
       parseFloat(cs.paddingBottom || "0");
     const inner = el.parentElement;
-    if (inner && inner !== parent) {
+    if (inner && inner !== container) {
       const ics = getComputedStyle(inner);
       available -=
         parseFloat(ics.paddingTop || "0") + parseFloat(ics.paddingBottom || "0");
     }
-    const natural = el.scrollHeight;
-    if (!available || !natural) return;
 
-    console.warn("[autofit]",{available,natural,parent:parent.className});
+    const natural = el.scrollHeight;
+    if (available <= 0 || natural <= 0) return;
+
     const scale = Math.min(1, Math.max(minScale, available / natural));
     if (scale >= 0.999) return;
 
     el.style.transformOrigin = "top center";
     el.style.transform = `scale(${scale})`;
     el.style.marginBottom = `${-natural * (1 - scale)}px`;
-  }, [minScale, containerSelector]);
+  }, [node, containerSelector, minScale]);
 
   const schedule = useCallback(() => {
     if (raf.current != null) cancelAnimationFrame(raf.current);
     raf.current = requestAnimationFrame(measure);
   }, [measure]);
 
-  useLayoutEffect(() => {
-    console.warn("[autofit] mount");
-    schedule();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [schedule, ...deps]);
-
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
+    if (!node) return;
+    schedule();
     const ro = new ResizeObserver(schedule);
-    ro.observe(el);
-    if (el.parentElement) ro.observe(el.parentElement);
+    ro.observe(node);
+    const container = containerSelector
+      ? (node.closest(containerSelector) as HTMLElement | null)
+      : node.parentElement;
+    if (container) ro.observe(container);
     window.addEventListener("resize", schedule);
     window.addEventListener("orientationchange", schedule);
     return () => {
@@ -78,7 +79,7 @@ export function useAutoFitScale<T extends HTMLElement>(
       window.removeEventListener("orientationchange", schedule);
       if (raf.current != null) cancelAnimationFrame(raf.current);
     };
-  }, [schedule]);
+  }, [node, schedule, containerSelector]);
 
-  return ref;
+  return setNode as (el: T | null) => void;
 }
