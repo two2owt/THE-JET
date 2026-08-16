@@ -49,6 +49,7 @@ export const useNotifications = (enabled: boolean = true) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const instanceId = useId();
 
   const loadNotifications = async () => {
     try {
@@ -192,7 +193,7 @@ export const useNotifications = (enabled: boolean = true) => {
 
     // Set up real-time subscription
     const channel = supabase
-      .channel('notifications-changes')
+      .channel(`notifications-changes-${instanceId}`)
       .on(
         'postgres_changes',
         {
@@ -227,7 +228,7 @@ export const useNotifications = (enabled: boolean = true) => {
       subscription.unsubscribe();
       window.removeEventListener("jet:notifications-refresh", onPushRefresh);
     };
-  }, [enabled]);
+  }, [enabled, instanceId]);
 
   return { notifications, loading, error, refresh: loadNotifications, markAsRead, markAllAsRead };
 };
