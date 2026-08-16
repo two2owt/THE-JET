@@ -1,5 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, Loader2, Mail } from "lucide-react";
+import { Camera, Loader2, Mail, Sparkles, User } from "lucide-react";
 
 interface ProfileHeaderProps {
   email: string | null | undefined;
