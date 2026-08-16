@@ -27,7 +27,7 @@ export const CITY_NEIGHBORHOODS: Record<string, Neighborhood[]> = {
     { name: "Midtown", lat: 40.7549, lng: -73.984, radiusKm: 2 },
     { name: "Lower East Side", lat: 40.715, lng: -73.9843, radiusKm: 1.5 },
     { name: "West Village", lat: 40.7358, lng: -74.0036, radiusKm: 1.5 },
-    { name: "SoHo", lat: 40.7233, lng: -74.0.0, radiusKm: 1.2 },
+    { name: "SoHo", lat: 40.7233, lng: -74.0020, radiusKm: 1.2 },
     { name: "Williamsburg", lat: 40.7081, lng: -73.9571, radiusKm: 2.5 },
     { name: "Harlem", lat: 40.8116, lng: -73.9465, radiusKm: 3 },
     { name: "Upper East Side", lat: 40.7736, lng: -73.9566, radiusKm: 2.5 },
@@ -71,7 +71,7 @@ export const CITY_NEIGHBORHOODS: Record<string, Neighborhood[]> = {
     { name: "Hyde Park", lat: 30.3053, lng: -97.7297, radiusKm: 2 },
   ],
   denver: [
-    { name: "Downtown / LoDo", lat: 39.7508, lng: -105.0 + 0.0, radiusKm: 1.8 },
+    { name: "Downtown / LoDo", lat: 39.7508, lng: -104.9993, radiusKm: 1.8 },
     { name: "RiNo", lat: 39.7692, lng: -104.9805, radiusKm: 2 },
     { name: "Capitol Hill", lat: 39.7328, lng: -104.9787, radiusKm: 2 },
     { name: "Highlands", lat: 39.7625, lng: -105.0143, radiusKm: 2.5 },
