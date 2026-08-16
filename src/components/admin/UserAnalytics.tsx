@@ -61,6 +61,23 @@ export const UserAnalytics = () => {
       // Prefer the account directory so counts always match the auth database;
       // fall back to profiles if the RPC is unavailable (non-admin viewer).
       const useDirectory = directory.length > 0;
+
+      // Signup funnel — derived from the authoritative auth directory so
+      // half-finished sign-ups are never invisible.
+      const signupFunnel = useDirectory
+        ? {
+            total: directory.length,
+            unverified: directory.filter((u) => !u.email_confirmed_at).length,
+            verifiedNeverSignedIn: directory.filter(
+              (u) => u.email_confirmed_at && !u.last_sign_in_at,
+            ).length,
+            onboardingIncomplete: directory.filter(
+              (u) => u.email_confirmed_at && u.last_sign_in_at && !u.onboarding_completed,
+            ).length,
+            completed: directory.filter((u) => u.onboarding_completed).length,
+            missingProfile: directory.filter((u) => !u.has_profile).length,
+          }
+        : null;
       const completedOnboarding = useDirectory
         ? directory.filter((u) => u.onboarding_completed).length
         : profilesRes.data?.filter((p) => p.onboarding_completed).length || 0;
@@ -174,6 +191,7 @@ export const UserAnalytics = () => {
         totalUsers: useDirectory ? directory.length : usersRes.count || 0,
         profileCount: usersRes.count || 0,
         syncStatus,
+        signupFunnel,
         totalLocations: locationsRes.count || 0,
         totalNotifications: notificationsRes.count || 0,
         totalFavorites: favoritesRes.count || 0,
@@ -291,6 +309,48 @@ export const UserAnalytics = () => {
 
       {/* Live Event Feed */}
       <LiveEventFeed />
+
+      {/* Sign-up funnel */}
+      {data?.signupFunnel && (
+        <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <TrendingUp className="h-4 w-4 text-primary" />
+              Sign-up funnel
+            </CardTitle>
+            <CardDescription>
+              Every account in the authentication database, by how far they got
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+              {[
+                { label: "Accounts created", value: data.signupFunnel.total },
+                { label: "Email unverified", value: data.signupFunnel.unverified, warn: true },
+                { label: "Verified, never signed in", value: data.signupFunnel.verifiedNeverSignedIn, warn: true },
+                { label: "Onboarding incomplete", value: data.signupFunnel.onboardingIncomplete, warn: true },
+                { label: "Fully onboarded", value: data.signupFunnel.completed },
+              ].map((stat) => (
+                <div key={stat.label} className="rounded-lg border border-border/50 p-3">
+                  <p className="text-xs text-muted-foreground">{stat.label}</p>
+                  <p
+                    className={`text-lg font-bold ${
+                      stat.warn && stat.value > 0 ? "text-amber-400" : "text-foreground"
+                    }`}
+                  >
+                    {stat.value.toLocaleString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+            {data.signupFunnel.missingProfile > 0 && (
+              <p className="mt-3 text-xs text-destructive">
+                {data.signupFunnel.missingProfile} account(s) have no profile row — data is out of sync.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Key Metrics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
