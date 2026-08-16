@@ -27,8 +27,8 @@ const PrivacyPolicy = () => {
             <h2 className="text-2xl font-bold mb-4">1. Introduction</h2>
             <p className="text-foreground/80 mb-4">
               Welcome to Jet Mobile App (&quot;Jet&quot;, &quot;we&quot;, &quot;our&quot;, or &quot;us&quot;). This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application and website at{" "}
-              <a href="https://jet-around.com/" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-                https://jet-around.com/
+              <a href="https://www.jet-around.com/" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+                https://www.jet-around.com/
               </a>. Please read this policy carefully. By using Jet, you consent to the practices described in this policy.
             </p>
           </section>
@@ -274,8 +274,8 @@ const PrivacyPolicy = () => {
                 </a>
               </li>
               <li><strong>Website:</strong>{" "}
-                <a href="https://jet-around.com" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-                  https://jet-around.com
+                <a href="https://www.jet-around.com" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+                  https://www.jet-around.com
                 </a>
               </li>
             </ul>
