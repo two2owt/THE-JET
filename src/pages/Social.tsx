@@ -218,7 +218,7 @@ export default function Social() {
 
   if (!user) {
     return (
-      <PageLayout defaultTab="social" notificationCount={0} headerConfig={headerConfig}>
+      <PageLayout defaultTab="social" headerConfig={headerConfig}>
         <PageShell>
           <EmptyState
             icon={Users}
