@@ -14,6 +14,7 @@ import { template as favoriteUpdate } from './favorite-update.tsx'
 import { template as friendRequest } from './friend-request.tsx'
 import { template as friendAccepted } from './friend-accepted.tsx'
 import { template as newMessage } from './new-message.tsx'
+import { template as finishOnboarding } from './finish-onboarding.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'welcome': welcome,
@@ -21,4 +22,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'friend-request': friendRequest,
   'friend-accepted': friendAccepted,
   'new-message': newMessage,
+  'finish-onboarding': finishOnboarding,
 }
