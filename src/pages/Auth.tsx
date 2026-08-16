@@ -837,6 +837,7 @@ const Auth = () => {
       <div className="auth-content-wrapper relative z-10 flex w-full flex-1 flex-col items-center justify-center px-4 sm:px-6 md:px-8 pt-[max(env(safe-area-inset-top,0px),12px)] sm:pt-[max(env(safe-area-inset-top,0px),20px)] pb-[max(env(safe-area-inset-bottom,0px),12px)] sm:pb-[max(env(safe-area-inset-bottom,0px),20px)]">
         <div
           ref={autoFitRef}
+          data-autofit="1"
           className="w-full max-w-[420px] mx-auto flex flex-col items-center animate-fade-in"
         >
           {/* Logo above card */}
