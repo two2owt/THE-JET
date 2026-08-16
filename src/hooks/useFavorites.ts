@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useId } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -34,6 +34,10 @@ export interface VenueFavoriteSnapshot {
 export const useFavorites = (userId: string | undefined) => {
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [loading, setLoading] = useState(true);
+  // Channel names must be unique per hook instance: Supabase reuses a channel
+  // by name, and adding postgres_changes callbacks to an already-subscribed
+  // channel throws. Multiple components can mount this hook on one page.
+  const instanceId = useId();
 
   const fetchFavorites = useCallback(async () => {
     if (!userId) {
@@ -66,7 +70,7 @@ export const useFavorites = (userId: string | undefined) => {
     if (!userId) return;
 
     const channel = supabase
-      .channel(`favorites-${userId}`)
+      .channel(`favorites-${userId}-${instanceId}`)
       .on(
         'postgres_changes',
         {
@@ -94,7 +98,7 @@ export const useFavorites = (userId: string | undefined) => {
       supabase.removeChannel(channel);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [userId, fetchFavorites]);
+  }, [userId, fetchFavorites, instanceId]);
 
   const isFavorite = (dealId: string) => {
     return favorites.some((fav) => fav.deal_id === dealId);
