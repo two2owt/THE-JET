@@ -62,11 +62,58 @@ Deno.serve(async (req) => {
       return 2 * R * Math.asin(Math.sqrt(a));
     };
 
-    // Places API (New) — searchNearby. The legacy
     // Parking pricing. Google exposes a coarse price level (and sometimes an
     // explicit price range) for parking places; translate both into a short
     // label plus an estimated hourly band so the JetCard can show something
     // useful instead of nothing.
+    const PRICE_LEVEL_BANDS: Record<string, { label: string; from: number; to: number }> = {
+      PRICE_LEVEL_FREE: { label: 'Free', from: 0, to: 0 },
+      PRICE_LEVEL_INEXPENSIVE: { label: '$', from: 1, to: 3 },
+      PRICE_LEVEL_MODERATE: { label: '$$', from: 3, to: 7 },
+      PRICE_LEVEL_EXPENSIVE: { label: '$$$', from: 7, to: 15 },
+      PRICE_LEVEL_VERY_EXPENSIVE: { label: '$$$$', from: 15, to: 30 },
+    };
+    const LEGACY_LEVELS = [
+      'PRICE_LEVEL_FREE',
+      'PRICE_LEVEL_INEXPENSIVE',
+      'PRICE_LEVEL_MODERATE',
+      'PRICE_LEVEL_EXPENSIVE',
+      'PRICE_LEVEL_VERY_EXPENSIVE',
+    ];
+
+    const money = (units?: string | number | null, currency = 'USD') => {
+      const n = typeof units === 'string' ? Number(units) : units;
+      if (typeof n !== 'number' || Number.isNaN(n)) return null;
+      const symbol = currency === 'USD' ? '$' : `${currency} `;
+      return `${symbol}${Number.isInteger(n) ? n : n.toFixed(2)}`;
+    };
+
+    const pricing = (place: any) => {
+      const level: string | null = place?.priceLevel ?? null;
+      const range = place?.priceRange ?? null;
+      const currency = range?.startPrice?.currencyCode || range?.endPrice?.currencyCode || 'USD';
+      const start = money(range?.startPrice?.units, currency);
+      const end = money(range?.endPrice?.units, currency);
+
+      let priceLabel: string | null = null;
+      let priceDetail: string | null = null;
+
+      if (start && end && start !== end) {
+        priceLabel = `${start}–${end}`;
+        priceDetail = 'Typical rate';
+      } else if (start || end) {
+        priceLabel = (start ?? end) as string;
+        priceDetail = 'Typical rate';
+      } else if (level && PRICE_LEVEL_BANDS[level]) {
+        const band = PRICE_LEVEL_BANDS[level];
+        priceLabel = band.label;
+        priceDetail = band.to === 0 ? 'No charge' : `~$${band.from}–$${band.to}/hr est.`;
+      }
+
+      return { priceLevel: level, priceLabel, priceDetail };
+    };
+
+    // Places API (New) — searchNearby. The legacy
     // maps.googleapis.com/maps/api/place/nearbysearch endpoint returns
     // REQUEST_DENIED for keys provisioned after Google retired it, which made
     // parking silently resolve to an empty list on every JetCard.
@@ -134,6 +181,7 @@ Deno.serve(async (req) => {
           rating: p.rating ?? null,
           isOpen: p.currentOpeningHours?.openNow ?? null,
           placeId: p.id,
+          ...pricing(p),
           distance:
             typeof pLat === 'number' && typeof pLng === 'number'
               ? Math.round(distanceMeters(lat, lng, pLat, pLng))
@@ -170,6 +218,10 @@ Deno.serve(async (req) => {
           rating: place.rating || null,
           isOpen: place.opening_hours?.open_now ?? null,
           placeId: place.place_id,
+          ...pricing({
+            priceLevel:
+              typeof place.price_level === 'number' ? LEGACY_LEVELS[place.price_level] ?? null : null,
+          }),
           distance:
             typeof pLat === 'number' && typeof pLng === 'number'
               ? Math.round(distanceMeters(lat, lng, pLat, pLng))
