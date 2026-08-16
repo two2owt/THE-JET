@@ -84,6 +84,9 @@ const Auth = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const [shake, setShake] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  // Auto-fit: scales the auth card down just enough to fit short viewports
+  // (landscape phones, small windows) so the page never needs scrolling.
+  const autoFitRef = useAutoFitScale<HTMLDivElement>({ minScale: 0.62 });
   const { user: authUser, isLoading: authLoading } = useAuth();
   // True while we're holding the form back because an already-authenticated
   // user is about to be redirected (prevents the form flashing for a frame).
