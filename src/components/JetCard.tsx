@@ -8,7 +8,7 @@ import { UpgradePrompt, useFeatureAccess } from "./UpgradePrompt";
 import { shareVenue } from "@/utils/shareUtils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFavorites } from "@/hooks/useFavorites";
-import { useNavigate } from "react-router";
+import { useNavigate } from "@/lib/router-compat";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { isVenueOpenNow } from "@/lib/venue-hours";
 import { useVenuePhoto } from "@/hooks/useVenuePhoto";
@@ -265,7 +265,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
         position: 'relative',
         width: '100%',
         // Dark luxe surface — vertical gradient + hairline border with
-        // a barely-there gold ambient ring (JET red/purple stays in shadow).
+        // a barely-there gold ambient ring (JET red/purple stays in shadow-sm).
         background:
           'linear-gradient(180deg, hsl(var(--card) / 0.96), hsl(var(--card) / 0.82))',
         border: '1px solid hsl(0 0% 100% / 0.06)',

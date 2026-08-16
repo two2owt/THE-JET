@@ -8,7 +8,7 @@
  * refresh so the Alerts tab and badge stay in sync.
  */
 import { useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate } from "@/lib/router-compat";
 import { toast } from "sonner";
 import { resolvePushDeepLink } from "@/lib/pushDeepLink";
 

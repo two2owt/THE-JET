@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { MessageContent } from "@/components/chat/MessageContent";
 import { ChatImage } from "@/components/chat/ChatImage";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate, useSearchParams } from "react-router";
+import { useNavigate, useSearchParams } from "@/lib/router-compat";
 import { PageLayout } from "@/components/PageLayout";
 import { EmptyState } from "@/components/EmptyState";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
@@ -61,7 +61,7 @@ function DiscoverPeopleStrip({
           .limit(25);
         if (cancelled) return;
         if (error) throw error;
-        setPeople(data || []);
+        setPeople((data || []) as DiscoverableProfile[]);
       } catch (err) {
         console.error("Error loading discoverable people:", err);
         if (!cancelled) setPeople([]);
@@ -110,7 +110,7 @@ function DiscoverPeopleStrip({
                 key={p.id}
                 type="button"
                 onClick={() => onSelect(p.id)}
-                className="flex flex-col items-center gap-1 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded-lg p-1"
+                className="flex flex-col items-center gap-1 shrink-0 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/60 rounded-lg p-1"
                 style={{ width: 72 }}
                 aria-label={`View ${p.display_name || 'user'}'s profile`}
               >

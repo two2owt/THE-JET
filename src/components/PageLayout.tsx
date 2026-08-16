@@ -84,7 +84,7 @@ export function PageLayout({
     setHeaderConfig({
       venues: headerConfig.venues ?? defaultVenues,
       deals: headerConfig.deals ?? defaultDeals,
-      onVenueSelect: headerConfig.onVenueSelect ?? defaultOnVenueSelect,
+      onVenueSelect: (headerConfig.onVenueSelect as ((venue: string | Venue) => void) | undefined) ?? defaultOnVenueSelect,
       isLoading: headerConfig.isLoading,
       lastUpdated: headerConfig.lastUpdated,
       onRefresh: headerConfig.onRefresh,

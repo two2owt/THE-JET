@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState, useCallback } from "react";
-import { Navigate, useSearchParams } from "react-router";
+import { Navigate, useSearchParams } from "@/lib/router-compat";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { PageLayout } from "@/components/PageLayout";
 import { AdminPageSkeleton } from "@/components/skeletons/PageSkeletons";

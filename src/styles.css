@@ -1,6 +1,81 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* JET design system — ported from the Classic tailwind.config.ts + index.css. */
+@theme inline {
+  --font-sans: "Plus Jakarta Sans Variable", "Plus Jakarta Sans Fallback", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: "Syne Variable", "Plus Jakarta Sans Variable", system-ui, sans-serif;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-glow: hsl(var(--primary-glow));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-hot: hsl(var(--hot));
+  --color-warm: hsl(var(--warm));
+  --color-cool: hsl(var(--cool));
+  --color-cold: hsl(var(--cold));
+  --color-gold: hsl(var(--gold));
+  --color-gold-soft: hsl(var(--gold-soft));
+  --color-silver: hsl(var(--silver));
+  --color-sunset-orange: hsl(24 100% 60%);
+  --color-sunset-pink: hsl(320 80% 65%);
+
+  --color-sidebar: hsl(var(--sidebar-background, var(--background)));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground, var(--foreground)));
+
+  --background-image-gradient-jet: var(--gradient-jet);
+  --background-image-gradient-primary: var(--gradient-primary);
+  --background-image-gradient-hot: var(--gradient-hot);
+  --background-image-gradient-warm: var(--gradient-warm);
+  --background-image-gradient-gold: var(--gradient-gold);
+  --background-image-gradient-silver: var(--gradient-silver);
+  --background-image-gradient-luxe-bg: var(--gradient-luxe-bg);
+
+  --ease-jet: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-fade-in: fade-in 0.3s ease-out forwards;
+  --animate-scale-in: scale-in 0.2s ease-out forwards;
+}
+
+@utility shadow-glow { box-shadow: var(--shadow-glow); }
+@utility shadow-card { box-shadow: var(--shadow-card); }
+@utility shadow-jet { box-shadow: var(--shadow-jet); }
+@utility shadow-ambient { box-shadow: var(--shadow-ambient); }
+@utility shadow-hairline { box-shadow: var(--shadow-hairline); }
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+  max-width: 1400px;
+}
+
 
 /* @fontsource-variable handles font-face declarations via CSS import in main.tsx */
 

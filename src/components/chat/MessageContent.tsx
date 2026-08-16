@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router";
+import { useNavigate } from "@/lib/router-compat";
 import { MapPin } from "lucide-react";
 
 interface MessageContentProps {

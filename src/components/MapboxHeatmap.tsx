@@ -1597,8 +1597,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             map.current.on('click', 'parking-icons', (e) => {
               if (!e.features || e.features.length === 0) return;
               const feature = e.features[0] as MapboxGL.MapboxGeoJSONFeature;
-              const coords = (feature.geometry as any).coordinates;
-              const parkingName = feature.properties?.name || 'Parking';
+              const coords = ((feature as any).geometry as any).coordinates;
+              const parkingName = (feature as any).properties?.name || 'Parking';
 
               triggerHaptic('medium');
               onParkingSelectRef.current?.({
@@ -2941,7 +2941,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     type="button"
                     onClick={() => setCitySearchQuery("")}
                     aria-label="Clear search"
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors"
                   >
                     <X className="w-3 h-3" />
                   </button>

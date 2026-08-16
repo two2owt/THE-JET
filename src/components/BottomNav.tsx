@@ -79,7 +79,7 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, messa
             'linear-gradient(90deg, transparent 0%, hsl(var(--gold) / 0.35) 50%, transparent 100%)',
         }}
       />
-      {/* Soft shadow above */}
+      {/* Soft shadow-sm above */}
       <div
         className="absolute -top-3 left-0 right-0 h-3 pointer-events-none"
         style={{
@@ -122,7 +122,7 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, messa
               onClick={() => onTabChange(item.id)}
               aria-label={`${item.label}${hasNotification ? `, ${badgeCount} unread` : ''}`}
               aria-current={isActive ? "page" : undefined}
-              className="touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
+              className="touch-manipulation focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
               style={{
                 position: 'relative',
                 display: 'flex',

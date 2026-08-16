@@ -1,0 +1,15 @@
+{
+  "customizations": [
+    { "token": "--font-sans (Plus Jakarta Sans Variable)", "source": "tailwind.config.ts", "reappliedIn": "src/styles.css" },
+    { "token": "--font-display (Syne Variable)", "source": "tailwind.config.ts", "reappliedIn": "src/styles.css" },
+    { "token": "color tokens: border/input/ring/background/foreground/primary(+glow)/secondary/destructive/muted/accent/popover/card", "source": "tailwind.config.ts", "reappliedIn": "src/styles.css" },
+    { "token": "heat tokens: hot/warm/cool/cold", "source": "tailwind.config.ts", "reappliedIn": "src/styles.css" },
+    { "token": "luxe tokens: gold, gold-soft, silver, sunset-orange, sunset-pink", "source": "tailwind.config.ts", "reappliedIn": "src/styles.css" },
+    { "token": "gradients: gradient-jet/primary/hot/warm/gold/silver/luxe-bg", "source": "tailwind.config.ts", "reappliedIn": "src/styles.css" },
+    { "token": "shadows: shadow-glow/card/jet/ambient/hairline", "source": "tailwind.config.ts", "reappliedIn": "src/styles.css" },
+    { "token": "ease-jet timing function", "source": "tailwind.config.ts", "reappliedIn": "src/styles.css" },
+    { "token": "keyframes + animations: accordion-down/up, fade-in, scale-in", "source": "tailwind.config.ts", "reappliedIn": "src/styles.css" },
+    { "token": "container center/padding/2xl max-width", "source": "tailwind.config.ts", "reappliedIn": "src/styles.css" },
+    { "token": "full index.css body: safe-area vars, layout height vars, Dark Luxe :root/.dark palettes, @layer base/components/utilities rules, keyframes", "source": "src/index.css", "reappliedIn": "src/styles.css" }
+  ]
+}

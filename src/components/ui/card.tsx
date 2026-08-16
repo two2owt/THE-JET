@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, style, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("rounded-lg border bg-card text-card-foreground shadow-sm", className)}
+    className={cn("rounded-lg border bg-card text-card-foreground shadow-xs", className)}
     style={{
       borderRadius: '12px',
       // Hairline border — barely-there 5% white for the dark luxe aesthetic
@@ -16,7 +16,7 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
       color: 'hsl(var(--card-foreground))',
       backdropFilter: 'blur(12px)',
       WebkitBackdropFilter: 'blur(12px)',
-      // Soft ambient gold glow + diffused depth shadow + inset hairline highlight
+      // Soft ambient gold glow + diffused depth shadow-sm + inset hairline highlight
       boxShadow:
         '0 0 60px hsl(var(--gold, 41 44% 58%) / 0.04), 0 20px 50px -20px rgba(0,0,0,0.7), inset 0 1px 0 hsl(0 0% 100% / 0.04)',
       ...style,

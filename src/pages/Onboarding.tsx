@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate } from "@/lib/router-compat";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -243,7 +243,7 @@ const Onboarding = () => {
       const { error } = await supabase
         .from("profiles")
         .upsert({
-          id: userId,
+          id: userId as string,
           display_name: displayName.trim(),
           bio: bio || null,
           avatar_url: avatarUrl,
@@ -290,7 +290,7 @@ const Onboarding = () => {
         .update({
           preferences: preferencesJson as unknown as Json,
         })
-        .eq('id', userId);
+        .eq('id', userId as string);
       
       if (error) throw error;
       
@@ -309,7 +309,7 @@ const Onboarding = () => {
       const { error } = await supabase
         .from("profiles")
         .upsert({
-          id: userId,
+          id: userId as string,
           onboarding_completed: true
         }, {
           onConflict: 'id'
@@ -412,7 +412,7 @@ const Onboarding = () => {
               <button
                 type="button"
                 onClick={goBack}
-                className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+                className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
                 aria-label="Go back"
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
@@ -465,7 +465,7 @@ const Onboarding = () => {
               <button
                 type="button"
                 onClick={() => { setDirection("forward"); setStep(3); }}
-                className="mt-1 self-start text-[11px] font-semibold uppercase tracking-widest text-muted-foreground underline-offset-4 hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+                className="mt-1 self-start text-[11px] font-semibold uppercase tracking-widest text-muted-foreground underline-offset-4 hover:text-primary hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
               >
                 Skip for now
               </button>

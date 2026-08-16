@@ -230,7 +230,7 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
         return deal;
       });
 
-      setDeals(dealsWithDistance);
+      setDeals(dealsWithDistance as unknown as Deal[]);
       
       // Extract unique categories
       const categories = [...new Set((data || []).map(d => d.deal_type))].sort();

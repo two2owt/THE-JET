@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router";
+import { useNavigate, useLocation } from "@/lib/router-compat";
 
 export type NavTab = "map" | "explore" | "notifications" | "favorites" | "social";
 
@@ -66,14 +66,14 @@ export function useBottomNavigation(options: UseBottomNavigationOptions = {}) {
         params.set("tab", "notifications");
         break;
       case "favorites":
-        navigate({ pathname: "/favorites", search: params.toString() ? `?${params.toString()}` : "" });
+        navigate(`/favorites${params.toString() ? `?${params.toString()}` : ""}`);
         return;
       case "social":
-        navigate({ pathname: "/social", search: params.toString() ? `?${params.toString()}` : "" });
+        navigate(`/social${params.toString() ? `?${params.toString()}` : ""}`);
         return;
     }
     const search = params.toString();
-    navigate({ pathname: "/", search: search ? `?${search}` : "" }, { replace: true });
+    navigate(`/${search ? `?${search}` : ""}`, { replace: true });
   }, [navigate, onBeforeNavigate, location.search]);
 
   return {

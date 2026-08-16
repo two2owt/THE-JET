@@ -197,7 +197,7 @@ const SelectTrigger = React.forwardRef<
       aria-describedby={describedBy}
       data-invalid={invalid ? "" : undefined}
       className={cn(
-        "flex h-11 min-h-[44px] w-full items-center justify-between rounded-xl border border-border/40 bg-card backdrop-blur-xl px-3 py-2 text-sm text-foreground ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-0 focus:border-primary/60 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-all duration-300 hover:bg-card/80 hover:border-border/60 shadow-lg touch-manipulation",
+        "flex h-11 min-h-[44px] w-full items-center justify-between rounded-xl border border-border/40 bg-card backdrop-blur-xl px-3 py-2 text-sm text-foreground ring-offset-background placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/50 focus:ring-offset-0 focus:border-primary/60 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-all duration-300 hover:bg-card/80 hover:border-border/60 shadow-lg touch-manipulation",
         "data-[invalid]:border-destructive data-[invalid]:focus:ring-destructive/50",
         className,
       )}
@@ -312,7 +312,7 @@ const SelectItem = React.forwardRef<
     ref={ref}
     value={value}
     className={cn(
-      "relative flex w-full cursor-pointer select-none items-center rounded-lg py-3 pl-8 pr-2 text-sm outline-none min-h-[44px] text-popover-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-primary/10 focus:text-foreground data-[state=checked]:bg-primary/10 data-[state=checked]:text-foreground transition-all duration-200 hover:bg-primary/10 hover:text-foreground touch-manipulation",
+      "relative flex w-full cursor-pointer select-none items-center rounded-lg py-3 pl-8 pr-2 text-sm outline-hidden min-h-[44px] text-popover-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-primary/10 focus:text-foreground data-[state=checked]:bg-primary/10 data-[state=checked]:text-foreground transition-all duration-200 hover:bg-primary/10 hover:text-foreground touch-manipulation",
       className,
     )}
     style={{

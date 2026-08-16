@@ -54,7 +54,8 @@ export const useConnections = (userId?: string) => {
           .in("id", friendIds);
         
         profilesMap = (profiles || []).reduce((acc, p) => {
-          acc[p.id] = p;
+          if (!p.id) return acc;
+          acc[p.id] = p as Profile;
           return acc;
         }, {} as Record<string, Profile>);
       }

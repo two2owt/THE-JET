@@ -21,7 +21,7 @@ const authButtonVariants = cva(
     "relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full",
     "font-semibold tracking-wide select-none",
     "transition-all duration-150 ease-out",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+    "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
     // Suppress focus ring on pure pointer interaction; keyboard still shows it.
     "[&:focus:not(:focus-visible)]:ring-0",
     "active:scale-[0.98]",

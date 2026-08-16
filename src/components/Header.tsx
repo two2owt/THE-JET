@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { useNavigate, useSearchParams, useLocation } from "react-router";
+import { useNavigate, useSearchParams, useLocation } from "@/lib/router-compat";
 import { Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSearchHistory } from "@/hooks/useSearchHistory";
