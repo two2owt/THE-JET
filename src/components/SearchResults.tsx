@@ -7,6 +7,7 @@ import { Badge } from "./ui/badge";
 import type { Venue } from "./MapboxHeatmap";
 import type { Database } from "@/integrations/supabase/types";
 import { useLockMapWhileInteracting } from "@/lib/mapInteractionLock";
+import { activityTier } from "@/lib/activity-palette";
 
 type Deal = Database['public']['Tables']['deals']['Row'];
 
@@ -394,12 +395,9 @@ export const SearchResults = ({
                           )}
                         </div>
                         <div
-                          className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                            venue.activity >= 80 ? 'bg-sunset-orange' :
-                            venue.activity >= 60 ? 'bg-warm' :
-                            venue.activity >= 40 ? 'bg-sunset-pink' : 'bg-cool'
-                          }`}
-                          aria-label={`Activity ${venue.activity}`}
+                          className="w-2 h-2 rounded-full flex-shrink-0"
+                          style={{ background: activityTier(venue.activity).dark }}
+                          aria-label={`Activity ${venue.activity} — ${activityTier(venue.activity).label}`}
                         />
                       </div>
                     </button>
@@ -495,12 +493,9 @@ export const SearchResults = ({
                           </div>
                         </div>
                         <div
-                          className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                            venue.activity >= 80 ? 'bg-sunset-orange' :
-                            venue.activity >= 60 ? 'bg-warm' :
-                            venue.activity >= 40 ? 'bg-sunset-pink' : 'bg-cool'
-                          }`}
-                          aria-label={`Activity ${venue.activity}`}
+                          className="w-2 h-2 rounded-full flex-shrink-0"
+                          style={{ background: activityTier(venue.activity).dark }}
+                          aria-label={`Activity ${venue.activity} — ${activityTier(venue.activity).label}`}
                         />
                       </div>
                     </button>
