@@ -3142,7 +3142,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       <div 
         style={{
           position: 'absolute',
-          bottom: 'var(--map-fixed-bottom, calc(60px + 0.75rem))',
+          bottom: 'var(--map-safe-bottom-panels, var(--map-fixed-bottom, calc(60px + 0.75rem)))',
           right: 'var(--map-ui-inset-right, 0.75rem)',
           zIndex: 30,
         }}
