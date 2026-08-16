@@ -127,10 +127,11 @@ All colors MUST be HSL.
     /* Extra top clearance for Map UI controls to avoid glass header overlap across devices */
     --map-safe-top-controls: calc(var(--map-safe-top) + clamp(0.5rem, 1vw, 1rem));
 
-    /* Index map layer uses position:fixed to fill the full viewport.
-       Map UI controls inside it use these variables for clearance from fixed Header/BottomNav. */
-    --map-safe-top-in-map: var(--map-safe-top);
-    --map-safe-top-controls-in-map: var(--map-safe-top-controls);
+    /* The map layer is nested BELOW the header in the layout flow, so overlays
+       inside it must not add the header height again (that double-counted the
+       header and pushed the Mapbox controls / live stats far down the map). */
+    --map-safe-top-in-map: var(--map-ui-inset-top);
+    --map-safe-top-controls-in-map: calc(var(--map-ui-inset-top) + clamp(0.5rem, 1vw, 1rem));
 
     /* For fixed positioned elements that need to clear bottom nav */
     --map-fixed-bottom: calc(var(--bottom-nav-total-height) + 0.75rem);
@@ -1616,6 +1617,35 @@ All colors MUST be HSL.
 
   /* Mobile map controls - responsive based on device */
   /* Offset Mapbox built-in controls so they never sit under Header/BottomNav */
+  /* Accessibility skip link — visually hidden until keyboard focused.
+     Without this it renders in-flow and offsets every fixed/absolute
+     map overlay, pushing the legend under the bottom nav. */
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    z-index: 10001;
+  }
+
+  .skip-link:focus-visible,
+  .skip-link:focus {
+    left: 0.75rem;
+    top: 0.75rem;
+    width: auto;
+    height: auto;
+    padding: 0.5rem 0.875rem;
+    border-radius: 0.5rem;
+    background: hsl(var(--card));
+    color: hsl(var(--foreground));
+    border: 1px solid hsl(var(--border));
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+  }
+
   .mapboxgl-ctrl-top-left,
   .mapboxgl-ctrl-top-right {
     top: var(--map-safe-top-controls-in-map, var(--map-safe-top-controls, var(--map-safe-top))) !important;

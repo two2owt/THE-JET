@@ -373,7 +373,8 @@ export const LiveStatsPanel = ({
     <div
       style={{
         position: "absolute",
-        top: "calc(var(--map-safe-top-controls-in-map, var(--map-safe-top-controls)) + 1rem)",
+        // Clear the top-left control row (city selector + map style button)
+        top: "calc(var(--map-safe-top-controls-in-map, var(--map-safe-top-controls)) + clamp(32px, 5vw, 40px) + 0.75rem)",
         // Left-aligned so it never overlaps the Layers container (bottom-right)
         // or the Mapbox nav controls (top-right).
         left: "var(--map-ui-inset-left, 0.75rem)",
@@ -383,7 +384,7 @@ export const LiveStatsPanel = ({
           : "clamp(200px, 24vw, 260px)",
         // Keep clear of the bottom-left legend and the bottom nav.
         maxHeight:
-          "calc(100dvh - var(--map-safe-top-controls-in-map, var(--map-safe-top-controls)) - var(--bottom-nav-total-height, 60px) - 11rem)",
+          "calc(100dvh - var(--header-total-height, 56px) - var(--map-safe-top-controls-in-map, var(--map-safe-top-controls)) - var(--bottom-nav-total-height, 60px) - 11rem)",
         overflowY: "auto",
         overscrollBehavior: "contain",
         zIndex: 30,
