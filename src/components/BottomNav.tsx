@@ -96,9 +96,9 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, messa
           alignItems: 'center',
           justifyContent: 'space-around',
           height: '100%',
-          maxWidth: 'clamp(320px, 60vw, 560px)',
+          maxWidth: 'clamp(320px, 72vw, 600px)',
           margin: '0 auto',
-          padding: '0 clamp(8px, 1.5vw, 16px)',
+          padding: '0 clamp(10px, 2.4vw, 20px)',
         }}
         onMouseOver={handleDelegatedPrefetch}
         onTouchStart={handleDelegatedPrefetch}
