@@ -7,6 +7,7 @@ import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useConnections } from "@/hooks/useConnections";
 import { useProfile } from "@/hooks/useProfile";
+import { needsDisplayNameClaim } from "@/lib/display-name";
 import { SEO } from "@/components/SEO";
 import { useNotifications } from "@/hooks/useNotifications";
 import {
