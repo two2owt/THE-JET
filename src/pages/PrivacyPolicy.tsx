@@ -222,9 +222,35 @@ const PrivacyPolicy = () => {
           </section>
 
           <section className="mb-8">
+            <h2 className="text-2xl font-bold mb-4">11a. Messaging and Social Features</h2>
+            <p className="text-foreground/80 mb-4">
+              Direct messages and images you send are stored so they can be delivered and displayed in your conversation history. They are visible to you and the recipient, and to our staff only where necessary to investigate abuse, comply with law, or operate the service.
+            </p>
+            <ul className="list-disc pl-6 space-y-2 text-foreground/80">
+              <li>Messages are not end-to-end encrypted. Do not share sensitive information such as payment details or government identifiers.</li>
+              <li>Your profile is shown in discovery only when discoverability is enabled; users you have connected with can always see your profile.</li>
+              <li>Deleting your account removes your profile from discovery and deletes your messages from your account.</li>
+            </ul>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-bold mb-4">11b. Cookies and Local Storage</h2>
+            <p className="text-foreground/80">
+              We use cookies and browser storage (localStorage, sessionStorage, and a service worker cache) to keep you signed in, remember your preferences and dismissed prompts, cache map assets for performance, and support offline behavior. We do not use advertising or cross-site tracking cookies. You can clear this data through your browser settings, though doing so will sign you out and reset your preferences.
+            </p>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-bold mb-4">11c. Connected Applications</h2>
+            <p className="text-foreground/80">
+              If you authorize a third-party application to connect to your JET account, that application receives only the access you approve at the time of authorization. You can revoke access at any time from your account settings or by contacting us. We are not responsible for how an authorized third-party application uses data you permit it to access.
+            </p>
+          </section>
+
+          <section className="mb-8">
             <h2 className="text-2xl font-bold mb-4">12. Children&apos;s Privacy</h2>
             <p className="text-foreground/80">
-              Jet is intended for users 21 years of age and older due to alcohol-related content. We do not knowingly collect personal information from minors. If we learn we have collected data from anyone under 21, we will delete it promptly.
+              Jet is intended for users 18 years of age and older. The app surfaces venues and specials that may involve alcohol; alcohol may only be purchased and consumed by persons of legal drinking age in their jurisdiction. We do not knowingly collect personal information from anyone under 18. If we learn we have collected data from anyone under 18, we will delete it promptly.
             </p>
           </section>
 
