@@ -197,7 +197,15 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
   // as "Moderate" on its card. App chrome is dark-only -> dark tier variant.
   const getActivityLevel = (activity: number) => {
     const tier = activityTier(activity);
-    const emoji = { peak: "🔥", busy: "🌟", steady: "✨", quiet: "😌" }[tier.id];
+    const emoji: Record<ActivityTierId, string> = {
+      peak: "🔥",
+      busy: "🌟",
+      steady: "✨",
+      quiet: "😌",
+    };
+    return { label: `${emoji[tier.id]} ${tier.label}`, color: tier.dark };
+  };
+  const _unusedActivityLevelTail = () => {
     return { label: `${emoji} ${tier.label}`, color: tier.dark };
   };
 
