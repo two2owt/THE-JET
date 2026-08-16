@@ -310,6 +310,48 @@ export const UserAnalytics = () => {
       {/* Live Event Feed */}
       <LiveEventFeed />
 
+      {/* Sign-up funnel */}
+      {data?.signupFunnel && (
+        <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <TrendingUp className="h-4 w-4 text-primary" />
+              Sign-up funnel
+            </CardTitle>
+            <CardDescription>
+              Every account in the authentication database, by how far they got
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+              {[
+                { label: "Accounts created", value: data.signupFunnel.total },
+                { label: "Email unverified", value: data.signupFunnel.unverified, warn: true },
+                { label: "Verified, never signed in", value: data.signupFunnel.verifiedNeverSignedIn, warn: true },
+                { label: "Onboarding incomplete", value: data.signupFunnel.onboardingIncomplete, warn: true },
+                { label: "Fully onboarded", value: data.signupFunnel.completed },
+              ].map((stat) => (
+                <div key={stat.label} className="rounded-lg border border-border/50 p-3">
+                  <p className="text-xs text-muted-foreground">{stat.label}</p>
+                  <p
+                    className={`text-lg font-bold ${
+                      stat.warn && stat.value > 0 ? "text-amber-400" : "text-foreground"
+                    }`}
+                  >
+                    {stat.value.toLocaleString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+            {data.signupFunnel.missingProfile > 0 && (
+              <p className="mt-3 text-xs text-destructive">
+                {data.signupFunnel.missingProfile} account(s) have no profile row — data is out of sync.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Key Metrics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {cards.map((card) => {
