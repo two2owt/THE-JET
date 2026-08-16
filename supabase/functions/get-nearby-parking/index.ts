@@ -63,6 +63,10 @@ Deno.serve(async (req) => {
     };
 
     // Places API (New) — searchNearby. The legacy
+    // Parking pricing. Google exposes a coarse price level (and sometimes an
+    // explicit price range) for parking places; translate both into a short
+    // label plus an estimated hourly band so the JetCard can show something
+    // useful instead of nothing.
     // maps.googleapis.com/maps/api/place/nearbysearch endpoint returns
     // REQUEST_DENIED for keys provisioned after Google retired it, which made
     // parking silently resolve to an empty list on every JetCard.
