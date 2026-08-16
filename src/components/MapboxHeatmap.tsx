@@ -3142,7 +3142,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       <div 
         style={{
           position: 'absolute',
-          bottom: 'var(--map-safe-bottom-panels, var(--map-fixed-bottom, calc(60px + 0.75rem)))',
+          bottom: 'calc(var(--map-safe-bottom-panels, var(--map-fixed-bottom, calc(60px + 0.75rem))) + 1.25rem)',
           right: 'var(--map-ui-inset-right, 0.75rem)',
           zIndex: 30,
         }}
@@ -4037,7 +4037,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         style={{
           position: 'absolute',
           // Sit above the Mapbox attribution row and any open bottom panel (JetCard/search)
-          bottom: 'calc(var(--map-safe-bottom-panels, var(--map-fixed-bottom)) + 1.5rem)',
+          bottom: 'calc(var(--map-safe-bottom-panels, var(--map-fixed-bottom)) + 2.75rem)',
           left: 'var(--map-ui-inset-left)',
           maxWidth: 'var(--map-control-max-width)',
           width: 'clamp(160px, 38vw, 240px)',
