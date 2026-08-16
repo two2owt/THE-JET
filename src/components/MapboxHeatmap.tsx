@@ -4209,19 +4209,33 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 >
                   Activity
                 </p>
-                <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '4px' : '8px', width: '100%', justifyContent: 'center', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flex: isMobile ? 'none' : 1 }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(var(--primary))', boxShadow: '0 0 6px hsl(var(--primary) / 0.55)' }} />
-                    <span style={{ fontSize: '9px', color: 'hsl(var(--foreground))' }}>Hot</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flex: isMobile ? 'none' : 1 }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(var(--gold))', boxShadow: '0 0 6px hsl(var(--gold) / 0.55)' }} />
-                    <span style={{ fontSize: '9px', color: 'hsl(var(--foreground))' }}>Warm</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flex: isMobile ? 'none' : 1 }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(var(--silver))', boxShadow: '0 0 6px hsl(var(--silver) / 0.5)' }} />
-                    <span style={{ fontSize: '9px', color: 'hsl(var(--foreground))' }}>Cool</span>
-                  </div>
+                {/* Four tiers, same palette and casing as the venue markers.
+                    Two columns on mobile so the extra tier costs no height. */}
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, auto)',
+                    gap: isMobile ? '4px 8px' : '8px',
+                    width: '100%',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  {activityLegendTiers(mapStyle === 'light' || mapStyle === 'streets').map((tier) => (
+                    <div key={tier.id} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <div
+                        style={{
+                          width: '8px',
+                          height: '8px',
+                          flexShrink: 0,
+                          borderRadius: '50%',
+                          background: tier.color,
+                          boxShadow: `0 0 0 1.5px ${casingFor(mapStyle === 'light' || mapStyle === 'streets')}`,
+                        }}
+                      />
+                      <span style={{ fontSize: '9px', color: 'hsl(var(--foreground))' }}>{tier.label}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
