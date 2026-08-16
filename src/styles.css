@@ -127,10 +127,11 @@ All colors MUST be HSL.
     /* Extra top clearance for Map UI controls to avoid glass header overlap across devices */
     --map-safe-top-controls: calc(var(--map-safe-top) + clamp(0.5rem, 1vw, 1rem));
 
-    /* Index map layer uses position:fixed to fill the full viewport.
-       Map UI controls inside it use these variables for clearance from fixed Header/BottomNav. */
-    --map-safe-top-in-map: var(--map-safe-top);
-    --map-safe-top-controls-in-map: var(--map-safe-top-controls);
+    /* The map layer is nested BELOW the header in the layout flow, so overlays
+       inside it must not add the header height again (that double-counted the
+       header and pushed the Mapbox controls / live stats far down the map). */
+    --map-safe-top-in-map: var(--map-ui-inset-top);
+    --map-safe-top-controls-in-map: calc(var(--map-ui-inset-top) + clamp(0.5rem, 1vw, 1rem));
 
     /* For fixed positioned elements that need to clear bottom nav */
     --map-fixed-bottom: calc(var(--bottom-nav-total-height) + 0.75rem);
