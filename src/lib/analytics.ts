@@ -35,6 +35,19 @@ class Analytics {
 
   private async sendEvent(eventName: string, eventData: Record<string, unknown> = {}, pagePath?: string) {
     try {
+      // Resolve the signed-in user at send time. RLS requires
+      // `user_id = auth.uid()` for the authenticated role and `user_id IS NULL`
+      // for anon, so relying on a cached id set by identify() made every event
+      // from a signed-in session fail with 403.
+      let userId = this.userId;
+      try {
+        const { data } = await supabase.auth.getSession();
+        userId = data.session?.user?.id ?? null;
+        this.userId = userId;
+      } catch {
+        /* fall back to the cached id */
+      }
+
       // Insert analytics event - using any type since table was just created
       const client = supabase as unknown as { from: (table: string) => { insert: (data: unknown) => Promise<{ error: { message: string } | null }> } };
       const { error } = await client.from('analytics_events').insert({
@@ -42,7 +55,7 @@ class Analytics {
         event_data: eventData,
         page_path: pagePath || window.location.pathname,
         session_id: getSessionId(),
-        user_id: this.userId,
+        user_id: userId,
       });
       
       if (error && import.meta.env.DEV) {
