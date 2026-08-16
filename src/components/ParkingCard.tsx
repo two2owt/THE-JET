@@ -14,6 +14,8 @@ export interface ParkingLot {
   isOpen: boolean | null;
   openingHours: string[];
   priceLevel: number | null;
+  priceLabel?: string | null;
+  priceDetail?: string | null;
   phone?: string | null;
   website?: string | null;
   placeId?: string;
@@ -87,6 +89,15 @@ export const ParkingCard = memo(({ lat, lng, name, onClose, onGetDirections }: P
     return '$'.repeat(level);
   };
 
+  const priceLabel = parking?.priceLabel ?? getPriceLevelLabel(parking?.priceLevel ?? null);
+  const priceDetail =
+    parking?.priceDetail ??
+    (priceLabel === 'Free'
+      ? 'No charge'
+      : priceLabel
+        ? 'Estimated hourly rate'
+        : null);
+
   return (
     <article
       style={{
@@ -145,16 +156,18 @@ export const ParkingCard = memo(({ lat, lng, name, onClose, onGetDirections }: P
                       {parking?.isOpen ? '● Open' : '● Closed'}
                     </span>
                   )}
-                  {getPriceLevelLabel(parking?.priceLevel ?? null) && (
-                    <span style={{
-                      fontSize: '11px', fontWeight: 600,
-                      color: 'hsl(var(--primary))',
-                      background: 'hsl(var(--primary) / 0.1)',
-                      padding: '1px 6px', borderRadius: '4px',
-                    }}>
-                      {getPriceLevelLabel(parking?.priceLevel ?? null)}
-                    </span>
-                  )}
+                  <span style={{
+                    fontSize: '11px', fontWeight: 700,
+                    color: priceLabel === 'Free'
+                      ? 'hsl(142, 76%, 40%)'
+                      : priceLabel ? 'hsl(var(--gold))' : 'hsl(var(--muted-foreground))',
+                    background: priceLabel === 'Free'
+                      ? 'hsl(142, 76%, 40% / 0.12)'
+                      : priceLabel ? 'hsl(var(--gold) / 0.15)' : 'hsl(var(--muted) / 0.25)',
+                    padding: '1px 6px', borderRadius: '999px', whiteSpace: 'nowrap',
+                  }}>
+                    {priceLabel ?? 'Rate varies'}
+                  </span>
                 </div>
               </>
             )}
