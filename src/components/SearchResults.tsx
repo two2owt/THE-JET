@@ -1,7 +1,7 @@
 import { MapPin, Tag, X, Search as SearchIcon, Store, Sparkles, Compass, LayoutGrid, Star, ImageIcon } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate } from "@/lib/router-compat";
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
 import type { Venue } from "./MapboxHeatmap";

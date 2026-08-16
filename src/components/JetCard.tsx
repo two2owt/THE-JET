@@ -8,7 +8,7 @@ import { UpgradePrompt, useFeatureAccess } from "./UpgradePrompt";
 import { shareVenue } from "@/utils/shareUtils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFavorites } from "@/hooks/useFavorites";
-import { useNavigate } from "react-router";
+import { useNavigate } from "@/lib/router-compat";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { isVenueOpenNow } from "@/lib/venue-hours";
 import { useVenuePhoto } from "@/hooks/useVenuePhoto";

@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { MessageContent } from "@/components/chat/MessageContent";
 import { ChatImage } from "@/components/chat/ChatImage";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate, useSearchParams } from "react-router";
+import { useNavigate, useSearchParams } from "@/lib/router-compat";
 import { PageLayout } from "@/components/PageLayout";
 import { EmptyState } from "@/components/EmptyState";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";

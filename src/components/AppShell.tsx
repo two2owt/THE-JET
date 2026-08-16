@@ -1,5 +1,5 @@
 import { ReactNode, Suspense, lazy, memo } from "react";
-import { useLocation } from "react-router";
+import { useLocation } from "@/lib/router-compat";
 import { Header } from "@/components/Header";
 import { useLocationTracker } from "@/hooks/useLocationTracker";
 

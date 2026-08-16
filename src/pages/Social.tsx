@@ -4,7 +4,7 @@ import { useConnections } from "@/hooks/useConnections";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Users, UserPlus, Check, X, UserX, MessageCircle, Search, Loader2, AlertTriangle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useNavigate } from "react-router";
+import { useNavigate } from "@/lib/router-compat";
 import { toast } from "sonner";
 import { PageLayout } from "@/components/PageLayout";
 import { EmptyState } from "@/components/EmptyState";

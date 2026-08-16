@@ -12,7 +12,7 @@
  * On web: no-op — `useWebPushNotifications` handles the browser side.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate } from "@/lib/router-compat";
 import { supabase } from "@/integrations/supabase/client";
 import { resolvePushDeepLink } from "@/lib/pushDeepLink";
 import { toast } from "sonner";

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { useNavigate, Link } from "react-router";
+import { useNavigate, Link } from "@/lib/router-compat";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 

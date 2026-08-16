@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { Navigate, useNavigate } from "react-router";
+import { Navigate, useNavigate } from "@/lib/router-compat";
 import { PageLayout } from "@/components/PageLayout";
 import { ProfilePageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { PageShell } from "@/components/PageShell";

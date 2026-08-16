@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router";
+import { useNavigate } from "@/lib/router-compat";
 import { Heart, Users, Bell, type LucideIcon } from "lucide-react";
 
 interface StatPill {

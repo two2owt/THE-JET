@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate, useSearchParams, useLocation, Link } from "react-router";
+import { useNavigate, useSearchParams, useLocation, Link } from "@/lib/router-compat";
 import { supabase } from "@/integrations/supabase/client";
 import { IconButton } from "@/components/ui/icon-button";
 import { AuthButton } from "@/components/auth/AuthButton";

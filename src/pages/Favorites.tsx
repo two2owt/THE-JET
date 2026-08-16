@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useFavorites, type Favorite } from "@/hooks/useFavorites";
 import { Heart, Compass, MapPin, Loader2, AlertTriangle } from "lucide-react";
 import { DealCard } from "@/components/DealCard";
-import { useNavigate } from "react-router";
+import { useNavigate } from "@/lib/router-compat";
 import { PageLayout } from "@/components/PageLayout";
 import { EmptyState } from "@/components/EmptyState";
 import { VirtualGrid } from "@/components/ui/virtual-list";

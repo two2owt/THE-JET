@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate } from "@/lib/router-compat";
 import {
   Bell, LogOut, Search, Settings, User as UserIcon, X,
   LayoutGrid, Tag, Store, MapPinned, Loader2,

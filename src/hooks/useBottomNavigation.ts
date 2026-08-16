@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router";
+import { useNavigate, useLocation } from "@/lib/router-compat";
 
 export type NavTab = "map" | "explore" | "notifications" | "favorites" | "social";
 
