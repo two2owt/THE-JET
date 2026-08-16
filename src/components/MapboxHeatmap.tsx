@@ -2100,7 +2100,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       // Guard against map becoming null during iteration
       if (!mapInstance) return;
       
-      const color = getActivityColor(venue.activity);
+      // `isDarkTheme` here tracks the basemap, not the app theme.
+      const color = getActivityColor(venue.activity, !isDarkTheme);
+      const casing = casingFor(!isDarkTheme);
       const floral = getCategoryFloral(venue.category);
       const floralColor = isDarkTheme ? floral.dark : floral.light;
       const isSelected = !!selectedVenue && selectedVenue.id === venue.id;
@@ -2225,7 +2227,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         box-shadow: 
           0 4px 16px rgba(0, 0, 0, ${isDarkTheme ? '0.4' : '0.15'}),
           inset 0 1px 0 rgba(255, 255, 255, ${isDarkTheme ? '0.1' : '0.5'}),
-          0 0 0 1px ${isSelected ? GOLD : color}${isSelected ? '99' : '40'};
+          0 0 0 1px ${isSelected ? GOLD : color}${isSelected ? '99' : '40'},
+          /* Contrast casing: drawn outside the fill so the marker stays
+             readable over arbitrary basemap pixels (satellite especially). */
+          0 0 0 3px ${casing};
       `;
       
       // Category-aware iconography (counter-rotated to stay upright)
