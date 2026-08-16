@@ -12,6 +12,7 @@ import { useHeaderConfig } from "@/contexts/HeaderContext";
 
 // Hooks must be imported synchronously (React rules)
 import { useMapboxToken } from "@/hooks/useMapboxToken";
+import { useHydrated } from "@/hooks/useHydrated";
 import { useDeepLinking } from "@/hooks/useDeepLinking";
 import { useSwipeToDismiss } from "@/hooks/useSwipeToDismiss";
 import { useBreakpointUp } from "@/hooks/useBreakpoint";
