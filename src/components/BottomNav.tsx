@@ -50,7 +50,7 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, messa
       role="navigation"
       aria-label="Main navigation"
       style={{
-        paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 4px)',
+        paddingBottom: 'var(--safe-area-inset-bottom)',
         paddingLeft: 'var(--safe-area-inset-left)',
         paddingRight: 'var(--safe-area-inset-right)',
         height: 'var(--bottom-nav-total-height)',
