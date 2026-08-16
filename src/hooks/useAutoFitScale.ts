@@ -19,7 +19,7 @@ export function useAutoFitScale<T extends HTMLElement>(
   const raf = useRef<number | null>(null);
 
   const measure = useCallback(() => {
-    console.debug("[autofit] measure", !!ref.current);
+    console.warn("[autofit] measure", !!ref.current);
     const el = ref.current;
     const parent = containerSelector
       ? (el?.closest(containerSelector) as HTMLElement | null) ?? el?.parentElement
@@ -44,7 +44,7 @@ export function useAutoFitScale<T extends HTMLElement>(
     const natural = el.scrollHeight;
     if (!available || !natural) return;
 
-    console.debug("[autofit]",{available,natural,parent:parent.className});
+    console.warn("[autofit]",{available,natural,parent:parent.className});
     const scale = Math.min(1, Math.max(minScale, available / natural));
     if (scale >= 0.999) return;
 
@@ -59,7 +59,7 @@ export function useAutoFitScale<T extends HTMLElement>(
   }, [measure]);
 
   useLayoutEffect(() => {
-    console.debug("[autofit] mount");
+    console.warn("[autofit] mount");
     schedule();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schedule, ...deps]);
