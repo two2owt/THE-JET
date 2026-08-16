@@ -16,25 +16,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v1
         with:
-          node-version-file: ".nvmrc"
-          cache: npm
-
-      - name: Pin npm to the version in package.json packageManager
-        run: |
-          corepack enable
-          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
-          node -v && npm -v
-
-      - name: Verify lockfile is in sync
-        run: node scripts/verify-lockfile.mjs
+          bun-version: 1.2.17
 
       - name: Migration preflight (advisory lock signatures)
-        run: node scripts/preflight-advisory-locks.mjs
+        run: bun run scripts/preflight-advisory-locks.mjs
 
       - name: Migration preflight (realtime publication membership)
-        run: node scripts/verify-realtime-publication.mjs
+        run: bun run scripts/verify-realtime-publication.mjs
         env:
           PGHOST: ${{ secrets.PGHOST }}
           PGPORT: ${{ secrets.PGPORT }}
@@ -43,20 +33,19 @@ jobs:
           PGDATABASE: ${{ secrets.PGDATABASE }}
 
       - name: Install dependencies (lockfile must be in sync)
-        run: npm ci
+        run: bun install --frozen-lockfile
 
       - name: Verify testing-library DOM peer is resolvable
         run: |
-          node -e "require('@testing-library/dom')" || {
-            echo "Stale npm cache detected; clearing and reinstalling..."
-            npm cache clean --force
-            rm -rf node_modules
-            npm ci
-            node -e "require('@testing-library/dom')"
+          bun -e "require('@testing-library/dom')" || {
+            echo "Stale bun cache detected; clearing and reinstalling..."
+            rm -rf node_modules bun.lockb
+            bun install --frozen-lockfile
+            bun -e "require('@testing-library/dom')"
           }
 
       - name: Production build
-        run: npx vite build
+        run: bun run build
 
       - name: Unit tests
-        run: npm test
+        run: bun test
