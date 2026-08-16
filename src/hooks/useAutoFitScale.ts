@@ -19,6 +19,7 @@ export function useAutoFitScale<T extends HTMLElement>(
   const raf = useRef<number | null>(null);
 
   const measure = useCallback(() => {
+    console.debug("[autofit] measure", !!ref.current);
     const el = ref.current;
     const parent = containerSelector
       ? (el?.closest(containerSelector) as HTMLElement | null) ?? el?.parentElement
@@ -58,6 +59,7 @@ export function useAutoFitScale<T extends HTMLElement>(
   }, [measure]);
 
   useLayoutEffect(() => {
+    console.debug("[autofit] mount");
     schedule();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schedule, ...deps]);
