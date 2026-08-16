@@ -7,6 +7,7 @@ import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useConnections } from "@/hooks/useConnections";
 import { useProfile } from "@/hooks/useProfile";
+import { needsDisplayNameClaim } from "@/lib/display-name";
 import { SEO } from "@/components/SEO";
 import { useNotifications } from "@/hooks/useNotifications";
 import {
@@ -202,6 +203,7 @@ export default function Profile() {
       try {
         await updateProfile({
           display_name: validatedData.display_name,
+          display_name_claimed: true,
           bio: validatedData.bio || null,
           gender: form.gender,
           pronouns: form.pronouns || null,
@@ -318,6 +320,8 @@ export default function Profile() {
         <ProfileHeader
           email={user.email}
           displayName={form.displayName}
+          unclaimedName={needsDisplayNameClaim(profile)}
+          onClaimName={() => setIsEditing(true)}
           avatarUrl={profile?.avatar_url}
           pronouns={form.pronouns}
           bio={form.bio}

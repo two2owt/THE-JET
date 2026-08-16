@@ -711,6 +711,7 @@ export type Database = {
           data_processing_consent_date: string | null
           discoverable: boolean
           display_name: string | null
+          display_name_claimed: boolean
           facebook_url: string | null
           gender: string | null
           id: string
@@ -738,6 +739,7 @@ export type Database = {
           data_processing_consent_date?: string | null
           discoverable?: boolean
           display_name?: string | null
+          display_name_claimed?: boolean
           facebook_url?: string | null
           gender?: string | null
           id: string
@@ -765,6 +767,7 @@ export type Database = {
           data_processing_consent_date?: string | null
           discoverable?: boolean
           display_name?: string | null
+          display_name_claimed?: boolean
           facebook_url?: string | null
           gender?: string | null
           id?: string
@@ -1489,6 +1492,7 @@ export type Database = {
         Returns: number
       }
       ensure_email_queue_triggers: { Args: never; Returns: undefined }
+      generate_auto_handle: { Args: { _user_id: string }; Returns: string }
       get_user_id_by_email: { Args: { _email: string }; Returns: string }
       has_role: {
         Args: {

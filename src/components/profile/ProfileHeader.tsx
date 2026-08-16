@@ -1,5 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, Loader2, Mail } from "lucide-react";
+import { Camera, Loader2, Mail, Sparkles, User } from "lucide-react";
 
 interface ProfileHeaderProps {
   email: string | null | undefined;
@@ -10,6 +10,9 @@ interface ProfileHeaderProps {
   isEditing: boolean;
   isUploading: boolean;
   onAvatarSelected: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  /** True when the name is still a system-generated handle. */
+  unclaimedName?: boolean;
+  onClaimName?: () => void;
 }
 
 /**
@@ -25,6 +28,8 @@ export function ProfileHeader({
   isEditing,
   isUploading,
   onAvatarSelected,
+  unclaimedName = false,
+  onClaimName,
 }: ProfileHeaderProps) {
   return (
     <header className="profile-header">
@@ -33,7 +38,11 @@ export function ProfileHeader({
           <Avatar className="ring-4 ring-background profile-avatar-shadow profile-avatar-img">
             <AvatarImage src={avatarUrl || undefined} alt={displayName || "User avatar"} />
             <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-primary to-primary-glow text-primary-foreground">
-              {displayName.charAt(0).toUpperCase() || "U"}
+              {unclaimedName ? (
+                <User className="w-1/2 h-1/2" aria-hidden="true" />
+              ) : (
+                displayName.charAt(0).toUpperCase() || "U"
+              )}
             </AvatarFallback>
           </Avatar>
           {isEditing && (
@@ -58,7 +67,19 @@ export function ProfileHeader({
         </div>
 
         <div className="profile-identity-text">
-          <h1 className="profile-name">{displayName || "User"}</h1>
+          <h1 className={`profile-name${unclaimedName ? " text-muted-foreground" : ""}`}>
+            {displayName || "User"}
+          </h1>
+          {unclaimedName && !isEditing && (
+            <button
+              type="button"
+              onClick={onClaimName}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border-hairline bg-card/60 text-fluid-xs font-semibold text-primary hover:bg-card transition-colors"
+            >
+              <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+              Set your name
+            </button>
+          )}
           {pronouns && (
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full border-hairline bg-card/50 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               {pronouns}

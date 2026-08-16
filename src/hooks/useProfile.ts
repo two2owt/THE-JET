@@ -2,10 +2,12 @@ import { useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
+import { autoHandle } from "@/lib/display-name";
 
 export interface Profile {
   id: string;
   display_name: string | null;
+  display_name_claimed?: boolean | null;
   avatar_url: string | null;
   bio: string | null;
   gender: string | null;
@@ -20,6 +22,7 @@ export interface Profile {
 
 export interface UpdateProfileInput {
   display_name: string;
+  display_name_claimed?: boolean;
   bio: string | null;
   gender: string | null;
   pronouns: string | null;
@@ -57,13 +60,15 @@ export function useProfile(userId: string | undefined) {
       if (error) {
         // Row missing — auto-create a minimal profile so the page can render.
         if (error.code === "PGRST116") {
-          const {
-            data: { user },
-          } = await supabase.auth.getUser();
-          const fallbackName = user?.email?.split("@")[0] || "User";
+          // Never derive a name from the email address — use an anonymous handle
+          // until the user claims one on their profile.
           const { data: created, error: createErr } = await supabase
             .from("profiles")
-            .insert({ id: userId!, display_name: fallbackName })
+            .insert({
+              id: userId!,
+              display_name: autoHandle(userId),
+              display_name_claimed: false,
+            })
             .select()
             .single();
           if (createErr) throw createErr;

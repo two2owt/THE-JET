@@ -245,6 +245,7 @@ const Onboarding = () => {
         .upsert({
           id: userId as string,
           display_name: displayName.trim(),
+          display_name_claimed: true,
           bio: bio || null,
           avatar_url: avatarUrl,
           birthdate: birthdate,
