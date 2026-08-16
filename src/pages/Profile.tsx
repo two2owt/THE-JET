@@ -319,6 +319,8 @@ export default function Profile() {
         <ProfileHeader
           email={user.email}
           displayName={form.displayName}
+          unclaimedName={needsDisplayNameClaim(profile)}
+          onClaimName={() => setIsEditing(true)}
           avatarUrl={profile?.avatar_url}
           pronouns={form.pronouns}
           bio={form.bio}
