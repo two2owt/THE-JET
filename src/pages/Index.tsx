@@ -564,7 +564,16 @@ const Index = () => {
           }}
           {...(isMobile ? swipeHandlers : {})}
         >
-          <div style={{ pointerEvents: 'auto', width: '100%', maxWidth: '480px', margin: '0 auto', boxSizing: 'border-box' }}>
+          <div style={{
+            pointerEvents: 'auto',
+            width: '100%',
+            maxWidth: '480px',
+            margin: '0 auto',
+            boxSizing: 'border-box',
+            maxHeight: 'calc(100dvh - var(--header-total-height, 56px) - var(--bottom-nav-total-height, 60px) - 1.5rem)',
+            overflowY: 'auto',
+            overscrollBehavior: 'contain',
+          }}>
             {isMobile && (
               <div className="flex justify-center pb-2 sm:pb-2.5">
                 <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
