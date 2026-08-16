@@ -12,6 +12,7 @@ import { useHeaderConfig } from "@/contexts/HeaderContext";
 
 // Hooks must be imported synchronously (React rules)
 import { useMapboxToken } from "@/hooks/useMapboxToken";
+import { useHydrated } from "@/hooks/useHydrated";
 import { useDeepLinking } from "@/hooks/useDeepLinking";
 import { useSwipeToDismiss } from "@/hooks/useSwipeToDismiss";
 import { useBreakpointUp } from "@/hooks/useBreakpoint";
@@ -123,6 +124,9 @@ const Index = () => {
   const [sendDialogUserId, setSendDialogUserId] = useState<string | null>(null);
   const [, setDeepLinkedDeal] = useState<any>(null);
   const { token: mapboxToken, loading: mapboxLoading, error: mapboxError } = useMapboxToken();
+  // Gate the map on hydration: the token can already be warm in cache on the
+  // client, so rendering it during hydration diverged from the empty SSR tree.
+  const hydrated = useHydrated();
   const { getVenueImage } = useVenueImages();
 
   // Idle-defer non-critical data hooks so they don't block LCP / inflate TBT
@@ -510,7 +514,7 @@ const Index = () => {
             <div 
               className="absolute inset-0 w-full h-full"
             >
-              {mapboxToken && (
+              {hydrated && mapboxToken && (
                 <Suspense fallback={null}>
                   <MapboxHeatmap
                     onVenueSelect={handleVenueSelect}

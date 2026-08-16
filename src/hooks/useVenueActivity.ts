@@ -1,3 +1,4 @@
+import { devLog } from "@/lib/log";
 import { useEffect, useId, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Venue } from "@/components/MapboxHeatmap";
@@ -9,7 +10,7 @@ import { getNeighborhoodForCoords } from "@/data/city-neighborhoods";
  */
 const fetchPopularVenuesFromGooglePlaces = async (city: City): Promise<Venue[]> => {
   try {
-    console.log(`Fetching top 10 ${city.name} venues...`);
+    devLog(`Fetching top 10 ${city.name} venues...`);
 
     const cityLocation = { lat: city.lat, lng: city.lng };
 
@@ -40,9 +41,9 @@ const fetchPopularVenuesFromGooglePlaces = async (city: City): Promise<Venue[]> 
       website: v.website,
     }));
     
-    console.log(`Fetched ${venues.length} ${city.name} venues:`);
+    devLog(`Fetched ${venues.length} ${city.name} venues:`);
     venues.forEach((v, i) => {
-      console.log(`  ${i + 1}. ${v.name}: lat=${v.lat}, lng=${v.lng} | ${v.address || 'No address'}`);
+      devLog(`  ${i + 1}. ${v.name}: lat=${v.lat}, lng=${v.lng} | ${v.address || 'No address'}`);
     });
     return venues;
   } catch (error) {
@@ -184,7 +185,7 @@ export const useVenueActivity = (enabled: boolean = true, city: City = CITIES[0]
       // Sort by activity score
       const sortedVenues = enhancedVenues.sort((a, b) => b.activity - a.activity);
       
-      console.log(`Loaded ${sortedVenues.length} venues with activity scores`);
+      devLog(`Loaded ${sortedVenues.length} venues with activity scores`);
       setVenues(sortedVenues);
       setLastUpdated(new Date());
     } catch (err) {
@@ -225,7 +226,7 @@ export const useVenueActivity = (enabled: boolean = true, city: City = CITIES[0]
           table: 'deals'
         },
         () => {
-          console.log('Deal change detected, refreshing venue activity');
+          devLog('Deal change detected, refreshing venue activity');
           scheduleRefresh();
         }
       )
@@ -237,7 +238,7 @@ export const useVenueActivity = (enabled: boolean = true, city: City = CITIES[0]
           table: 'user_locations'
         },
         () => {
-          console.log('User location update detected, refreshing venue activity');
+          devLog('User location update detected, refreshing venue activity');
           scheduleRefresh();
         }
       )
@@ -249,7 +250,7 @@ export const useVenueActivity = (enabled: boolean = true, city: City = CITIES[0]
           table: 'user_favorites'
         },
         () => {
-          console.log('Favorites change detected, refreshing venue activity');
+          devLog('Favorites change detected, refreshing venue activity');
           scheduleRefresh();
         }
       )
@@ -261,7 +262,7 @@ export const useVenueActivity = (enabled: boolean = true, city: City = CITIES[0]
           table: 'deal_shares'
         },
         () => {
-          console.log('Deal share detected, refreshing venue activity');
+          devLog('Deal share detected, refreshing venue activity');
           scheduleRefresh();
         }
       )

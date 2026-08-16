@@ -1,3 +1,4 @@
+import { devLog } from "@/lib/log";
 import { useEffect, useId, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
@@ -202,7 +203,7 @@ export const useNotifications = (enabled: boolean = true) => {
           table: 'notification_logs'
         },
         (payload) => {
-          console.log('New notification:', payload);
+          devLog('New notification:', payload);
           loadNotifications();
         }
       )

@@ -1,3 +1,4 @@
+import { devLog } from "@/lib/log";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { storeLastKnownLocation } from "@/lib/tile-prefetch";
 import { subscribeMapInteractionLock } from "@/lib/mapInteractionLock";
@@ -54,13 +55,13 @@ const loadMapboxGL = async (): Promise<MapboxGLModule> => {
       // First, try to use CDN version (production)
       const cdnMapbox = await waitForCDNMapbox();
       if (cdnMapbox) {
-        console.log('MapboxHeatmap: Using CDN mapbox-gl');
+        devLog('MapboxHeatmap: Using CDN mapbox-gl');
         mapboxglModule = cdnMapbox;
         return mapboxglModule;
       }
       
       // Fallback to dynamic import (development or if CDN fails)
-      console.log('MapboxHeatmap: Loading mapbox-gl via import');
+      devLog('MapboxHeatmap: Loading mapbox-gl via import');
       try {
         const m = await import("mapbox-gl");
         // Also load the CSS in dev
@@ -246,7 +247,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         mapboxglRef.current = mapboxgl;
         setMapboxLoaded(true);
         setLoadingStage('init');
-        console.log('MapboxHeatmap: mapbox-gl module loaded');
+        devLog('MapboxHeatmap: mapbox-gl module loaded');
       }
     }).catch((err) => {
       console.error('MapboxHeatmap: Failed to load mapbox-gl:', err);
@@ -1159,7 +1160,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         initStartTime.current = performance.now();
         setMapInitializing(true);
         mapboxgl.accessToken = mapboxToken;
-        console.log('MapboxHeatmap: Initializing map for', selectedCity.name);
+        devLog('MapboxHeatmap: Initializing map for', selectedCity.name);
 
         const settings = platformSettings.current;
         
@@ -1293,7 +1294,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               },
               minzoom: 12,
             });
-            console.log('MapboxHeatmap: Parking icons layer added');
+            devLog('MapboxHeatmap: Parking icons layer added');
           } catch (e) {
             console.warn('MapboxHeatmap: Could not add parking layer:', e);
           }
@@ -1324,7 +1325,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             map.current.setConfigProperty('basemap', 'theme', 'default');
           } catch (e) {
             // Config properties may not be available in all style versions
-            console.log('Standard style config not fully available:', e);
+            devLog('Standard style config not fully available:', e);
           }
           
           // Dynamic fog based on light preset for atmospheric depth
@@ -1589,7 +1590,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         // Ensure map resizes to container after initialization
         map.current.on('load', () => {
           const loadTime = performance.now() - initStartTime.current;
-          console.log(`MapboxHeatmap: Map loaded successfully in ${loadTime.toFixed(2)}ms`);
+          devLog(`MapboxHeatmap: Map loaded successfully in ${loadTime.toFixed(2)}ms`);
           
           // Finalize immediately for fastest LCP
           finalizeMapLoad();
@@ -1638,11 +1639,11 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         // Fallback: style.load fires earlier and more reliably on some browsers
         // Use this for early LCP - finalize immediately when style is ready
         map.current.once('style.load', () => {
-          console.log('MapboxHeatmap: Style loaded');
+          devLog('MapboxHeatmap: Style loaded');
           // Finalize quickly if main load hasn't fired yet
           setTimeout(() => {
             if (mapInitializing && map.current) {
-              console.log('MapboxHeatmap: Finalizing via style.load fallback');
+              devLog('MapboxHeatmap: Finalizing via style.load fallback');
               finalizeMapLoad();
             }
           }, 100);
@@ -1651,7 +1652,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         // Fallback: idle event fires when map is completely ready
         map.current.once('idle', () => {
           if (mapInitializing && map.current) {
-            console.log('MapboxHeatmap: Finalizing via idle fallback');
+            devLog('MapboxHeatmap: Finalizing via idle fallback');
             finalizeMapLoad();
           }
         });
@@ -1703,7 +1704,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 (typeof (map.current as any).isStyleLoaded === 'function' && map.current.isStyleLoaded());
 
               if (isActuallyLoaded) {
-                console.log('MapboxHeatmap: Map was actually loaded, finalizing');
+                devLog('MapboxHeatmap: Map was actually loaded, finalizing');
                 finalizeMapLoad();
               } else {
                 console.warn('MapboxHeatmap: Map load timeout - silently retrying');
@@ -1715,7 +1716,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   setMapInitializing(false);
                 } else {
                   // Silent retry instead of showing error overlay
-                  console.log('MapboxHeatmap: Auto-retrying map load...');
+                  devLog('MapboxHeatmap: Auto-retrying map load...');
                   setMapInitializing(false);
                   setTimeout(() => {
                     setMapError(null);
@@ -1940,7 +1941,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         }
       };
     } catch (e) {
-      console.log('Light preset configuration not available:', e);
+      devLog('Light preset configuration not available:', e);
     }
   }, [lightPreset, mapLoaded]);
 
