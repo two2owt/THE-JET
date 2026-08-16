@@ -2,10 +2,12 @@ import { useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
+import { autoHandle } from "@/lib/display-name";
 
 export interface Profile {
   id: string;
   display_name: string | null;
+  display_name_claimed?: boolean | null;
   avatar_url: string | null;
   bio: string | null;
   gender: string | null;
@@ -20,6 +22,7 @@ export interface Profile {
 
 export interface UpdateProfileInput {
   display_name: string;
+  display_name_claimed?: boolean;
   bio: string | null;
   gender: string | null;
   pronouns: string | null;
