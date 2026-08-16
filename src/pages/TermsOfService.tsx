@@ -213,6 +213,31 @@ const TermsOfService = () => {
           </section>
 
           <section className="mb-8">
+            <h2 className="text-2xl font-bold mb-4">9a. Alcohol, Venues, and Personal Safety</h2>
+            <ul className="list-disc pl-6 space-y-2 text-foreground/80">
+              <li>Jet is a discovery tool. We do not sell, serve, or deliver alcohol, food, or any other product, and we are not an agent of any venue.</li>
+              <li>Deals, hours, prices, and parking rates shown in the app are supplied by venues or third-party data sources and may be inaccurate or out of date. Confirm details with the venue before relying on them.</li>
+              <li>Drink responsibly and never drive while impaired. You are solely responsible for your own conduct and safety at any venue.</li>
+              <li>Directions and parking features hand off to third-party navigation apps (such as Apple Maps, Google Maps, and Waze). Do not interact with the app while driving; follow all traffic laws and posted parking signage.</li>
+              <li>Meeting other users in person is at your own risk. We do not conduct background checks on users.</li>
+            </ul>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-bold mb-4">9b. Mobile App Store Terms</h2>
+            <p className="text-foreground/80">
+              If you install Jet from the Apple App Store or Google Play, you also agree to that store&apos;s terms. Those stores are not parties to these Terms, are not responsible for the app or its content, and have no obligation to provide support for it. Apple and its subsidiaries are third-party beneficiaries of these Terms with the right to enforce them against you.
+            </p>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-bold mb-4">9c. Copyright Complaints</h2>
+            <p className="text-foreground/80">
+              If you believe content on Jet infringes your copyright, send a notice to our contact address below that identifies the copyrighted work, the material you believe is infringing and where it appears, your contact information, a statement that you have a good-faith belief the use is unauthorized, and a statement under penalty of perjury that your notice is accurate and that you are authorized to act on the owner&apos;s behalf. We will remove or disable access to material as appropriate and may terminate repeat infringers.
+            </p>
+          </section>
+
+          <section className="mb-8">
             <h2 className="text-2xl font-bold mb-4">10. Disclaimers</h2>
             <p className="text-foreground/80 mb-4">
               THE SERVICE IS PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED. WE DISCLAIM ALL WARRANTIES INCLUDING, BUT NOT LIMITED TO:
