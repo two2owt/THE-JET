@@ -548,19 +548,20 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
 
       {/* Content */}
       <div style={{
-        padding: 'clamp(10px, 1.6vw, 18px)',
+        padding: 'clamp(12px, 3.4cqw, 20px)',
         display: 'flex',
         flexDirection: 'column',
-        gap: 'clamp(6px, 1vw, 12px)',
+        gap: 'clamp(6px, 2cqw, 12px)',
       }}>
         {/* Title */}
         <div>
           <h3 style={{
-            fontSize: 'clamp(15px, 1.2vw + 11px, 20px)',
+            fontSize: 'clamp(15px, 3.4cqw + 4px, 21px)',
             fontWeight: 700,
             color: 'hsl(var(--foreground))',
             lineHeight: 1.25,
             margin: 0,
+            overflowWrap: 'anywhere',
           }}>{venue.name}</h3>
           {/* Open / Closed status + today's hours from Google Places */}
           {(venue.isOpen !== null && venue.isOpen !== undefined) || (venue.openingHours && venue.openingHours.length > 0) ? (
@@ -584,7 +585,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
                   alignItems: 'center',
                   gap: '6px',
                   marginTop: '6px',
-                  fontSize: 'clamp(10.5px, 0.35vw + 9.5px, 12.5px)',
+                  fontSize: 'clamp(10.5px, 1.1cqw + 7px, 12.5px)',
                   color: 'hsl(var(--muted-foreground))',
                 }}>
                   {showPill && (
@@ -636,12 +637,12 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
             gap: '6px',
             marginTop: '4px',
             color: 'hsl(var(--muted-foreground))',
-            fontSize: 'clamp(11px, 0.4vw + 10px, 13px)',
+            fontSize: 'clamp(11px, 1.2cqw + 7.2px, 13px)',
           }}>
             <MapPin style={{ width: '12px', height: '12px', flexShrink: 0 }} />
-            <span>{venue.neighborhood}</span>
+            <span style={{ flexShrink: 0 }}>{venue.neighborhood}</span>
             {venue.address && (
-              <span style={{ opacity: 0.6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <span style={{ opacity: 0.6, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 · {venue.address}
               </span>
             )}
@@ -653,7 +654,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               alignItems: 'center',
               gap: '10px',
               marginTop: '6px',
-              fontSize: 'clamp(11px, 0.4vw + 10px, 13px)',
+              fontSize: 'clamp(11px, 1.2cqw + 7.2px, 13px)',
             }}>
               {venue.phone && (
                 <a
@@ -719,14 +720,14 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: '8px',
-            padding: 'clamp(6px, 0.9vw, 12px) clamp(8px, 1.1vw, 14px)',
+            padding: 'clamp(6px, 1.8cqw, 12px) clamp(8px, 2.4cqw, 14px)',
             borderRadius: '10px',
             background:
               'linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.18))',
             border: '1px solid hsl(0 0% 100% / 0.05)',
             boxShadow:
               'inset 0 1px 0 hsl(0 0% 100% / 0.04), 0 0 24px hsl(var(--gold) / 0.04)',
-            fontSize: 'clamp(12px, 0.4vw + 11px, 14px)',
+            fontSize: 'clamp(12px, 1.2cqw + 8px, 14px)',
           }}
         >
           {/* Activity — primary metric (kept on JET red/purple via activityLevel.color) */}
@@ -800,7 +801,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               color: 'hsl(var(--primary-foreground))',
               fontWeight: 600,
               minHeight: '44px',
-              height: 'clamp(44px, 6vw, 52px)',
+              height: 'clamp(44px, 10cqw, 52px)',
               fontSize: 'clamp(11px, 0.4cqw + 10.5px, 14px)',
               borderRadius: '8px',
               border: 'none',
@@ -829,7 +830,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               color: 'hsl(var(--primary-foreground))',
               fontWeight: 600,
               minHeight: '44px',
-              height: 'clamp(44px, 6vw, 52px)',
+              height: 'clamp(44px, 10cqw, 52px)',
               fontSize: 'clamp(11px, 0.4cqw + 10.5px, 14px)',
               borderRadius: '8px',
               border: 'none',
@@ -855,7 +856,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
               color: 'hsl(var(--primary-foreground))',
               fontWeight: 600,
               minHeight: '44px',
-              height: 'clamp(44px, 6vw, 52px)',
+              height: 'clamp(44px, 10cqw, 52px)',
               fontSize: 'clamp(11px, 0.4cqw + 10.5px, 14px)',
               borderRadius: '8px',
               border: 'none',
@@ -879,16 +880,16 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
         {venue.lat && venue.lng && (
           <div style={{
             borderTop: '1px solid hsl(var(--border) / 0.5)',
-            paddingTop: '8px',
+            paddingTop: 'clamp(8px, 2cqw, 12px)',
             display: 'flex',
             flexDirection: 'column',
-            gap: '6px',
+            gap: 'clamp(6px, 1.6cqw, 10px)',
           }}>
             <div style={{
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              fontSize: '11px',
+              fontSize: 'clamp(10.5px, 0.9cqw + 7.5px, 12px)',
               fontWeight: 600,
               color: 'hsl(var(--muted-foreground))',
               textTransform: 'uppercase',
@@ -909,9 +910,10 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
                   background: 'hsl(var(--secondary) / 0.5)',
                   border: '1px solid hsl(var(--border) / 0.4)',
                   color: 'hsl(var(--foreground))',
-                  padding: '3px 8px',
+                  padding: 'clamp(6px, 1.4cqw, 9px) clamp(10px, 2.4cqw, 14px)',
+                  minHeight: '32px',
                   borderRadius: '9999px',
-                  fontSize: '10px',
+                  fontSize: 'clamp(10px, 0.8cqw + 7.5px, 11.5px)',
                   fontWeight: 600,
                   letterSpacing: '0.04em',
                   cursor: parkingLoading ? 'not-allowed' : 'pointer',
@@ -958,9 +960,10 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  padding: '6px 8px',
-                  borderRadius: '8px',
+                  gap: 'clamp(8px, 2cqw, 12px)',
+                  padding: 'clamp(8px, 2cqw, 12px) clamp(8px, 2.2cqw, 12px)',
+                  minHeight: '44px',
+                  borderRadius: 'clamp(8px, 2cqw, 12px)',
                   background: 'hsl(var(--secondary) / 0.4)',
                   border: '1px solid hsl(var(--border) / 0.3)',
                   cursor: 'pointer',
@@ -970,9 +973,9 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
                 }}
               >
                 <div style={{
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '6px',
+                  width: 'clamp(28px, 7cqw, 34px)',
+                  height: 'clamp(28px, 7cqw, 34px)',
+                  borderRadius: 'clamp(6px, 1.8cqw, 10px)',
                   background: 'hsl(var(--primary) / 0.15)',
                   display: 'flex',
                   alignItems: 'center',
@@ -983,7 +986,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{
-                    fontSize: '12px',
+                    fontSize: 'clamp(12px, 1cqw + 8.5px, 13.5px)',
                     fontWeight: 600,
                     color: 'hsl(var(--foreground))',
                     overflow: 'hidden',
@@ -991,7 +994,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
                     whiteSpace: 'nowrap',
                   }}>{parking.name}</div>
                   <div style={{
-                    fontSize: '10px',
+                    fontSize: 'clamp(10px, 0.9cqw + 7px, 11.5px)',
                     color: 'hsl(var(--muted-foreground))',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
