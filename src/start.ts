@@ -2,6 +2,25 @@ import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/r
 
 import { renderErrorPage } from "./lib/error-page";
 
+// Consolidate SEO authority on the primary host: permanently redirect the
+// apex domain (jet-around.com) to www.jet-around.com, which is what every
+// canonical tag, og:url, and sitemap entry advertises.
+const canonicalHostMiddleware = createMiddleware().server(async ({ next, request }) => {
+  try {
+    const url = new URL(request.url);
+    if (url.hostname === "jet-around.com") {
+      url.hostname = "www.jet-around.com";
+      return new Response(null, {
+        status: 301,
+        headers: { location: url.toString(), "cache-control": "public, max-age=3600" },
+      });
+    }
+  } catch {
+    // Malformed URL — fall through to normal handling.
+  }
+  return await next();
+});
+
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
     return await next();
@@ -25,5 +44,5 @@ const csrfMiddleware = createCsrfMiddleware({
 });
 
 export const startInstance = createStart(() => ({
-  requestMiddleware: [errorMiddleware, csrfMiddleware],
+  requestMiddleware: [canonicalHostMiddleware, errorMiddleware, csrfMiddleware],
 }));
