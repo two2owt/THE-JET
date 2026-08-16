@@ -1,3 +1,4 @@
+import { devLog } from "@/lib/log";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -23,12 +24,12 @@ export const useAutoScrapeVenueImages = (enabled: boolean = true) => {
 
         if (dealsToScrape && dealsToScrape.length > 0) {
           setIsScrapingActive(true);
-          console.log(`Found ${dealsToScrape.length} deals to scrape images for`);
+          devLog(`Found ${dealsToScrape.length} deals to scrape images for`);
 
           // Process deals one at a time
           for (const deal of dealsToScrape) {
             try {
-              console.log(`Scraping image for ${deal.venue_name}...`);
+              devLog(`Scraping image for ${deal.venue_name}...`);
               
               const { data, error: functionError } = await supabase.functions.invoke(
                 'scrape-venue-images',
@@ -43,7 +44,7 @@ export const useAutoScrapeVenueImages = (enabled: boolean = true) => {
               if (functionError) {
                 console.error(`Failed to scrape ${deal.venue_name}:`, functionError);
               } else if (data?.imageUrl) {
-                console.log(`Successfully scraped image for ${deal.venue_name}`);
+                devLog(`Successfully scraped image for ${deal.venue_name}`);
               }
 
               // Small delay between requests
@@ -82,7 +83,7 @@ export const useAutoScrapeVenueImages = (enabled: boolean = true) => {
         async (payload) => {
           const newDeal = payload.new as any;
           if (newDeal.website_url && !newDeal.image_url) {
-            console.log('New deal detected, scraping image...');
+            devLog('New deal detected, scraping image...');
             try {
               await supabase.functions.invoke('scrape-venue-images', {
                 body: {

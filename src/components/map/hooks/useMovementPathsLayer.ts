@@ -1,3 +1,4 @@
+import { devLog } from "@/lib/log";
 import { useEffect, useRef, useState, MutableRefObject } from "react";
 
 /** How long to coalesce rapid path updates before touching Mapbox (ms). */
@@ -443,7 +444,7 @@ export const useMovementPathsLayer = ({
       } as any,
     });
 
-    console.log('Movement paths layer added with', pathData.stats.total_paths, 'paths and animated particles');
+    devLog('Movement paths layer added with', pathData.stats.total_paths, 'paths and animated particles');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapLoaded, debouncedPathData, showMovementPaths]);
 

@@ -1,3 +1,4 @@
+import { devLog } from "@/lib/log";
 import { useEffect, useRef, MutableRefObject } from "react";
 
 interface Params {
@@ -275,7 +276,7 @@ export const useDensityLayer = ({
       } as any,
     });
 
-    console.log(
+    devLog(
       'Density heatmap layer added with',
       activeData.stats.grid_cells,
       'points',

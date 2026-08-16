@@ -1,3 +1,4 @@
+import { devLog } from "@/lib/log";
 /**
  * Utility to clear cached Mapbox token
  * This is useful when the token has been updated or there are loading issues
@@ -12,7 +13,7 @@ export const clearMapboxTokenCache = (): void => {
     localStorage.removeItem('mapbox_token_cache');
     sessionStorage.removeItem('mapbox_token_cache');
 
-    console.log('✅ Mapbox token cache cleared');
+    devLog('✅ Mapbox token cache cleared');
   } catch (error) {
     console.error('Failed to clear Mapbox token cache:', error);
   }
