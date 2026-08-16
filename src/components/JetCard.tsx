@@ -744,6 +744,33 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
           {/* Hairline silver vertical separator */}
           <div aria-hidden="true" style={{ width: '1px', height: '14px', background: 'hsl(var(--silver) / 0.18)' }} />
 
+          {/* Momentum — venue-relative trend ("Filling up" / "Winding down") */}
+          {venue.momentumLabel && venue.momentumTrend && venue.momentumTrend !== 'unknown' && (
+            <>
+              <div
+                title={`Momentum ${(venue.momentum ?? 0) > 0 ? '+' : ''}${venue.momentum ?? 0}`}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontWeight: 600,
+                  color:
+                    venue.momentumTrend === 'falling'
+                      ? 'hsl(var(--silver))'
+                      : venue.momentumTrend === 'steady'
+                        ? 'hsl(var(--muted-foreground))'
+                        : 'hsl(var(--hot))',
+                }}
+              >
+                <span aria-hidden="true">
+                  {venue.momentumTrend === 'falling' ? '↓' : venue.momentumTrend === 'steady' ? '→' : '↑'}
+                </span>
+                <span>{venue.momentumLabel}</span>
+              </div>
+              <div aria-hidden="true" style={{ width: '1px', height: '14px', background: 'hsl(var(--silver) / 0.18)' }} />
+            </>
+          )}
+
           {/* Rating — GOLD luxe overlay (precious metal accent) */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
             <Star
