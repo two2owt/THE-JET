@@ -561,6 +561,7 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
             color: 'hsl(var(--foreground))',
             lineHeight: 1.25,
             margin: 0,
+            overflowWrap: 'anywhere',
           }}>{venue.name}</h3>
           {/* Open / Closed status + today's hours from Google Places */}
           {(venue.isOpen !== null && venue.isOpen !== undefined) || (venue.openingHours && venue.openingHours.length > 0) ? (
@@ -639,9 +640,9 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
             fontSize: 'clamp(11px, 1.2cqw + 7.2px, 13px)',
           }}>
             <MapPin style={{ width: '12px', height: '12px', flexShrink: 0 }} />
-            <span>{venue.neighborhood}</span>
+            <span style={{ flexShrink: 0 }}>{venue.neighborhood}</span>
             {venue.address && (
-              <span style={{ opacity: 0.6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <span style={{ opacity: 0.6, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 · {venue.address}
               </span>
             )}
