@@ -4100,7 +4100,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               <>
                 <p
                   style={{
-                    fontSize: '10px',
+                    fontSize: 'clamp(9px, 2.4vw, 11px)',
                     fontWeight: 600,
                     color: 'hsl(var(--gold))',
                     marginBottom: '6px',
@@ -4114,16 +4114,18 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
                   <div style={{
-                    width: '100%', minWidth: 0, height: '14px', borderRadius: '6px',
-                    background: 'linear-gradient(to right, rgb(198, 233, 255), rgb(170, 222, 255), rgb(138, 208, 255), rgb(110, 196, 255), rgb(84, 186, 255))',
-                    border: '1px solid hsl(var(--gold) / 0.35)',
+                    width: '100%', minWidth: 0,
+                    height: 'clamp(12px, 3.2vw, 16px)', borderRadius: '6px',
+                    // Mirrors the flow-path line ramp exactly.
+                    background: 'linear-gradient(to right, rgb(178, 196, 255), rgb(150, 138, 255), rgb(196, 112, 255), rgb(255, 106, 178), rgb(255, 178, 74))',
+                    border: '1px solid hsl(0 0% 100% / 0.14)',
                     boxShadow:
-                      'inset 0 1px 3px rgba(0,0,0,0.3), 0 0 12px hsl(var(--gold) / 0.15)',
+                      'inset 0 1px 3px rgba(0,0,0,0.35), 0 0 14px rgba(196,112,255,0.22)',
                   }} />
-                  <div style={{ display: 'flex', width: '100%', fontSize: '9px', color: 'hsl(var(--muted-foreground))', fontWeight: 500 }}>
-                    <span style={{ flex: 1, textAlign: 'center' }}>Low</span>
-                    <span style={{ flex: 1, textAlign: 'center' }}>Medium</span>
-                    <span style={{ flex: 1, textAlign: 'center' }}>High</span>
+                  <div style={{ display: 'flex', width: '100%', fontSize: 'clamp(8px, 2.2vw, 10px)', color: 'hsl(var(--muted-foreground))', fontWeight: 500 }}>
+                    <span style={{ flex: 1, textAlign: 'left' }}>Occasional</span>
+                    <span style={{ flex: 1, textAlign: 'center' }}>Frequent</span>
+                    <span style={{ flex: 1, textAlign: 'right' }}>Busiest</span>
                   </div>
                 </div>
               </>
