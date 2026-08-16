@@ -199,6 +199,19 @@ Deno.serve(async (req) => {
     // Parse query parameters for filtering
     const url = new URL(req.url);
     const timeFilter = url.searchParams.get('time_filter') || 'all';
+
+    // Identify the caller (if signed in). Their own routes are always visible
+    // to them; the k-anonymity floor still hides every other user's edges.
+    let callerId: string | null = null;
+    const authHeader = req.headers.get('Authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+      try {
+        const { data } = await serviceClient.auth.getUser(authHeader.replace('Bearer ', ''));
+        callerId = data.user?.id ?? null;
+      } catch (_) {
+        callerId = null;
+      }
+    }
     const minFrequency = parseInt(url.searchParams.get('min_frequency') || '2');
     const timeWindowMinutesRaw = url.searchParams.get('time_window_minutes');
     let timeWindowMinutes: number | null = null;
@@ -338,7 +351,11 @@ Deno.serve(async (req) => {
     const frequencyMatched = Array.from(movements.values())
       .filter(m => m.frequency >= minFrequency);
     const filteredMovements = frequencyMatched
-      .filter(m => m.users.length >= K_ANONYMITY_MIN_USERS);
+      .filter(
+        m =>
+          m.users.length >= K_ANONYMITY_MIN_USERS ||
+          (callerId !== null && m.users.includes(callerId)),
+      );
     const suppressedPaths = frequencyMatched.length - filteredMovements.length;
 
     console.log(
