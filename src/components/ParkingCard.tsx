@@ -202,6 +202,19 @@ export const ParkingCard = memo(({ lat, lng, name, onClose, onGetDirections }: P
             </div>
           )}
 
+          {/* Price */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Car style={{ width: '14px', height: '14px', color: 'hsl(var(--gold))', flexShrink: 0 }} />
+            <span style={{ fontSize: '12px', color: 'hsl(var(--foreground))' }}>
+              {priceLabel ? `${priceLabel} parking` : 'Parking rate varies'}
+              {priceDetail && (
+                <span style={{ color: 'hsl(var(--muted-foreground))', marginLeft: '4px' }}>
+                  · {priceDetail}
+                </span>
+              )}
+            </span>
+          </div>
+
           {/* Rating */}
           {parking.rating && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
