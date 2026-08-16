@@ -18,6 +18,7 @@ import { AuthPWAInstallPromptWrapper } from "@/components/AuthPWAInstallPromptWr
 import { buildAuthRedirectUrl } from "@/lib/utils";
 import { requestGeolocationPermission } from "@/lib/requestGeolocationPermission";
 import { useHydrated } from "@/hooks/useHydrated";
+import { useAutoFitScale } from "@/hooks/useAutoFitScale";
 // Use the new JET logo for auth page
 import jetLogo48Avif from "@/assets/jet-auth-logo-48.avif";
 import jetLogo96Avif from "@/assets/jet-auth-logo-96.avif";
@@ -83,6 +84,9 @@ const Auth = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const [shake, setShake] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  // Auto-fit: scales the auth card down just enough to fit short viewports
+  // (landscape phones, small windows) so the page never needs scrolling.
+  const autoFitRef = useAutoFitScale<HTMLDivElement>({ minScale: 0.7, containerSelector: ".auth-fullscreen" });
   const { user: authUser, isLoading: authLoading } = useAuth();
   // True while we're holding the form back because an already-authenticated
   // user is about to be redirected (prevents the form flashing for a frame).
@@ -831,7 +835,10 @@ const Auth = () => {
 
       {/* Centered content — column flex fills the viewport and centers the card both axes */}
       <div className="auth-content-wrapper relative z-10 flex w-full flex-1 flex-col items-center justify-center px-4 sm:px-6 md:px-8 pt-[max(env(safe-area-inset-top,0px),12px)] sm:pt-[max(env(safe-area-inset-top,0px),20px)] pb-[max(env(safe-area-inset-bottom,0px),12px)] sm:pb-[max(env(safe-area-inset-bottom,0px),20px)]">
-        <div className="w-full max-w-[420px] mx-auto flex flex-col items-center animate-fade-in">
+        <div
+          ref={autoFitRef}
+          className="w-full max-w-[420px] mx-auto flex flex-col items-center animate-fade-in"
+        >
           {/* Logo above card */}
           <div className="auth-logo flex flex-col items-center mb-4 sm:mb-5">
             <picture>
