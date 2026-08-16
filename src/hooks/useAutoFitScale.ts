@@ -43,6 +43,7 @@ export function useAutoFitScale<T extends HTMLElement>(
     const natural = el.scrollHeight;
     if (!available || !natural) return;
 
+    console.debug("[autofit]",{available,natural,parent:parent.className});
     const scale = Math.min(1, Math.max(minScale, available / natural));
     if (scale >= 0.999) return;
 
