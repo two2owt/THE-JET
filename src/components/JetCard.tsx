@@ -26,6 +26,9 @@ interface NearbyParking {
   isOpen: boolean | null;
   placeId: string;
   distance?: number | null;
+  priceLevel?: string | null;
+  priceLabel?: string | null;
+  priceDetail?: string | null;
 }
 
 interface JetCardProps {
@@ -1015,6 +1018,51 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
                       </span>
                     )}
                   </div>
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-end',
+                    gap: '2px',
+                    flexShrink: 0,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 'clamp(10px, 0.9cqw + 7px, 12px)',
+                      fontWeight: 700,
+                      lineHeight: 1.1,
+                      padding: '3px 7px',
+                      borderRadius: '999px',
+                      whiteSpace: 'nowrap',
+                      color:
+                        parking.priceLabel === 'Free'
+                          ? 'hsl(var(--cool))'
+                          : parking.priceLabel
+                            ? 'hsl(var(--gold))'
+                            : 'hsl(var(--muted-foreground))',
+                      background:
+                        parking.priceLabel === 'Free'
+                          ? 'hsl(var(--cool) / 0.15)'
+                          : parking.priceLabel
+                            ? 'hsl(var(--gold) / 0.15)'
+                            : 'hsl(var(--muted) / 0.25)',
+                    }}
+                  >
+                    {parking.priceLabel ?? 'Rate varies'}
+                  </span>
+                  {parking.priceDetail && (
+                    <span
+                      style={{
+                        fontSize: 'clamp(9px, 0.8cqw + 6px, 10.5px)',
+                        color: 'hsl(var(--muted-foreground))',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {parking.priceDetail}
+                    </span>
+                  )}
                 </div>
                 <Navigation style={{ width: '14px', height: '14px', color: 'hsl(var(--primary))', flexShrink: 0 }} />
               </button>
