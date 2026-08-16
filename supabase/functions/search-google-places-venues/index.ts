@@ -263,21 +263,7 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Error in search-google-places-venues:', error);
-    
-    // Even on error, return fallback data
-    const fallbackVenues = CHARLOTTE_TOP_VENUES.map(venue => ({
-      ...venue,
-      isOpen: null,
-      openingHours: venue.openingHours ?? [],
-      phone: venue.phone ?? null,
-      website: venue.website ?? null,
-      priceLevel: venue.priceLevel ?? null,
-      description: venue.description ?? null,
-    }));
-
-    return new Response(
-      JSON.stringify({ venues: fallbackVenues, total: fallbackVenues.length, source: 'fallback_error' }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    // Even on error, return curated data for the requested city.
+    return curatedFor('fallback_error');
   }
 });
