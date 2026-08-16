@@ -207,7 +207,7 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, messa
               <span
                 className="relative z-10"
                 style={{
-                  fontSize: '10px',
+                  fontSize: 'clamp(9px, 2.2vw, 11px)',
                   fontWeight: isActive ? 600 : 500,
                   color: isActive ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
                   opacity: isActive ? 1 : 0.65,
