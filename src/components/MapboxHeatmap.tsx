@@ -91,6 +91,7 @@ import { Button } from "./ui/button";
 import { LayerToggleRow } from "./map/LayerToggleRow";
 import { LayerSliderRow } from "./map/LayerSliderRow";
 import { HeatmapColorLegend } from "./map/HeatmapColorLegend";
+import { activityColor, activityLegendTiers, casingFor } from "@/lib/activity-palette";
 import {
   LiveStatsPanel,
   liveStatsRangeToTimeFilter,
