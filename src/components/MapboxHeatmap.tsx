@@ -4044,8 +4044,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       <div 
         style={{
           position: 'absolute',
-          // Sit above the Mapbox attribution row and any open bottom panel (JetCard/search)
-          bottom: 'calc(var(--map-safe-bottom-panels, var(--map-fixed-bottom)) + 2.75rem)',
+          // The attribution/logo row is hidden, so the legend uses the same
+          // uniform nav-footer padding as every other bottom overlay.
+          bottom: 'var(--map-safe-bottom-panels, var(--map-fixed-bottom))',
           left: 'var(--map-ui-inset-left)',
           maxWidth: 'var(--map-control-max-width)',
           width: 'clamp(160px, 38vw, 240px)',
