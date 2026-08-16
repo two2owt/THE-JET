@@ -413,12 +413,6 @@ const Onboarding = () => {
     <div
       className="relative flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto bg-background px-fluid-sm sm:px-fluid-md pt-[max(env(safe-area-inset-top,0px),var(--space-lg))] pb-[max(env(safe-area-inset-bottom,0px),var(--space-lg))]"
     >
-      <SEO
-        title="Set up your JET account"
-        description="Finish setting up your JET profile to see personalized deals and venues in Charlotte."
-        path="/onboarding"
-        noindex
-      />
       {/* Ambient corner glow accents */}
       <div className="pointer-events-none absolute -top-32 -left-32 h-80 w-80 rounded-full bg-primary/10 blur-[140px]" aria-hidden />
       <div className="pointer-events-none absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-primary-glow/10 blur-[140px]" aria-hidden />
@@ -430,7 +424,7 @@ const Onboarding = () => {
         <div className="flex flex-col gap-8 rounded-[40px] border border-white/10 bg-card/60 p-7 sm:p-8 shadow-2xl backdrop-blur-3xl">
           {/* Top row: back affordance */}
           <div className="flex h-5 items-center justify-between">
-            {step > 1 && step < 3 ? (
+            {step > 1 ? (
               <button
                 type="button"
                 onClick={goBack}
@@ -570,6 +564,7 @@ const Onboarding = () => {
                 type="date"
                 value={birthdate}
                 onChange={(e) => setBirthdate(e.target.value)}
+                max={maxBirthdate}
                 className={`bg-card/60 ${step1Errors.birthdate ? "focus-visible:!ring-destructive/30" : ""}`}
                 aria-invalid={!!step1Errors.birthdate}
                 aria-describedby={step1Errors.birthdate ? "birthdate-error" : undefined}
@@ -652,6 +647,7 @@ const Onboarding = () => {
                 onBack={() => { setDirection("backward"); setStep(1); }}
                 onNext={handleStep2Next}
                 isLoading={isLoading}
+                initialPreferences={savedPreferences}
               />
             </div>
           )}
