@@ -38,11 +38,8 @@ function DisplayName({ name, style }: { name: string; style: React.CSSProperties
       }
     : style;
   return (
-    <button
-      type="button"
+    <span
       title={name}
-      aria-label={expanded ? `Collapse ${name}` : `Show full name: ${name}`}
-      aria-expanded={expanded}
       onClick={(e) => {
         e.stopPropagation();
         setExpanded((v) => !v);
@@ -59,7 +56,7 @@ function DisplayName({ name, style }: { name: string; style: React.CSSProperties
       }}
     >
       {name}
-    </button>
+    </span>
   );
 }
 

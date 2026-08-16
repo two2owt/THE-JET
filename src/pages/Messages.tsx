@@ -211,11 +211,8 @@ function DisplayName({
       }
     : { ...nameStyle, ...style };
   return (
-    <button
-      type="button"
+    <span
       title={name}
-      aria-label={name}
-      aria-expanded={expanded}
       onClick={(e) => {
         e.stopPropagation();
         setExpanded((v) => !v);
@@ -224,7 +221,7 @@ function DisplayName({
       style={merged}
     >
       {name}
-    </button>
+    </span>
   );
 }
 

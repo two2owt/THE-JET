@@ -510,7 +510,7 @@ const Index = () => {
             <div 
               className="absolute inset-0 w-full h-full"
             >
-              {mapboxToken && (
+              {hydrated && mapboxToken && (
                 <Suspense fallback={null}>
                   <MapboxHeatmap
                     onVenueSelect={handleVenueSelect}
