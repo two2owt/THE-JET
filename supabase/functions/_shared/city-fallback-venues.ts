@@ -1,0 +1,172 @@
+// Curated, well-known venues for every city in the JET city selector.
+// Used ONLY as a last-resort fallback when the live Google Places path is
+// unavailable (missing key, API error, anonymous visitor) so the map never
+// renders Charlotte venues while another city is selected.
+// Charlotte's richer curated list stays in search-google-places-venues/index.ts
+// and is passed in by the caller.
+
+export interface FallbackVenue {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  address: string;
+  category: string;
+  googleRating: number;
+  googleTotalRatings: number;
+  activity: number;
+  priceLevel?: number | null;
+  description?: string | null;
+}
+
+/** Centers mirror src/types/cities.ts so fallback selection matches the UI. */
+export const CITY_CENTERS = [
+  { id: "charlotte", lat: 35.2271, lng: -80.8431 },
+  { id: "new-york", lat: 40.7128, lng: -74.006 },
+  { id: "los-angeles", lat: 34.0522, lng: -118.2437 },
+  { id: "chicago", lat: 41.8781, lng: -87.6298 },
+  { id: "miami", lat: 25.7617, lng: -80.1918 },
+  { id: "austin", lat: 30.2672, lng: -97.7431 },
+  { id: "denver", lat: 39.7392, lng: -104.9903 },
+  { id: "seattle", lat: 47.6062, lng: -122.3321 },
+  { id: "atlanta", lat: 33.749, lng: -84.388 },
+  { id: "nashville", lat: 36.1627, lng: -86.7816 },
+];
+
+export const CITY_FALLBACK_VENUES: Record<string, FallbackVenue[]> = {
+  "new-york": [
+    { id: "ny-katzs", name: "Katz's Delicatessen", lat: 40.7223, lng: -73.9874, address: "205 E Houston St, New York, NY 10002", category: "Restaurant", googleRating: 4.5, googleTotalRatings: 48000, activity: 95, priceLevel: 2, description: "Lower East Side institution serving hand-carved pastrami since 1888." },
+    { id: "ny-deadrabbit", name: "The Dead Rabbit", lat: 40.7033, lng: -74.0113, address: "30 Water St, New York, NY 10004", category: "Cocktail Bar", googleRating: 4.6, googleTotalRatings: 5200, activity: 90, priceLevel: 3, description: "Award-winning Irish taproom and parlor bar in the Financial District." },
+    { id: "ny-employees-only", name: "Employees Only", lat: 40.7337, lng: -74.0043, address: "510 Hudson St, New York, NY 10014", category: "Cocktail Bar", googleRating: 4.5, googleTotalRatings: 3100, activity: 87, priceLevel: 3, description: "West Village speakeasy with classic cocktails and late-night dining." },
+    { id: "ny-lartusi", name: "L'Artusi", lat: 40.7333, lng: -74.0063, address: "228 W 10th St, New York, NY 10014", category: "Restaurant", googleRating: 4.6, googleTotalRatings: 4200, activity: 88, priceLevel: 3, description: "Modern Italian known for pastas and a deep wine list." },
+    { id: "ny-westlight", name: "Westlight", lat: 40.7215, lng: -73.9575, address: "111 N 12th St, Brooklyn, NY 11249", category: "Rooftop Bar", googleRating: 4.5, googleTotalRatings: 3600, activity: 86, priceLevel: 3, description: "22nd-floor Williamsburg rooftop with panoramic skyline views." },
+    { id: "ny-house-of-yes", name: "House of Yes", lat: 40.7069, lng: -73.9235, address: "2 Wyckoff Ave, Brooklyn, NY 11237", category: "Nightclub", googleRating: 4.6, googleTotalRatings: 4400, activity: 89, priceLevel: 2, description: "Bushwick performance club known for immersive themed nights." },
+    { id: "ny-torst", name: "Torst", lat: 40.7237, lng: -73.9541, address: "615 Manhattan Ave, Brooklyn, NY 11222", category: "Brewery", googleRating: 4.4, googleTotalRatings: 1400, activity: 78, priceLevel: 2, description: "Greenpoint craft beer bar with a rotating international draft list." },
+    { id: "ny-chelsea-market", name: "Chelsea Market", lat: 40.742, lng: -74.0048, address: "75 9th Ave, New York, NY 10011", category: "Food Hall", googleRating: 4.6, googleTotalRatings: 92000, activity: 93, priceLevel: 2, description: "Landmark food hall in the former Nabisco factory." },
+  ],
+  "los-angeles": [
+    { id: "la-bestia", name: "Bestia", lat: 34.0334, lng: -118.2312, address: "2121 E 7th Pl, Los Angeles, CA 90021", category: "Restaurant", googleRating: 4.6, googleTotalRatings: 6300, activity: 92, priceLevel: 3, description: "Arts District Italian with house-cured salumi and wood-fired pizzas." },
+    { id: "la-republique", name: "Republique", lat: 34.0629, lng: -118.3446, address: "624 S La Brea Ave, Los Angeles, CA 90036", category: "Restaurant", googleRating: 4.6, googleTotalRatings: 7100, activity: 90, priceLevel: 3, description: "French brasserie and bakery in a historic Charlie Chaplin building." },
+    { id: "la-perch", name: "Perch", lat: 34.0479, lng: -118.2519, address: "448 S Hill St, Los Angeles, CA 90013", category: "Rooftop Bar", googleRating: 4.4, googleTotalRatings: 8800, activity: 89, priceLevel: 3, description: "French-inspired rooftop bistro overlooking Downtown LA." },
+    { id: "la-grandcentral", name: "Grand Central Market", lat: 34.0507, lng: -118.2488, address: "317 S Broadway, Los Angeles, CA 90013", category: "Food Hall", googleRating: 4.5, googleTotalRatings: 41000, activity: 94, priceLevel: 1, description: "Century-old downtown market hall with tacos, ramen and more." },
+    { id: "la-varnish", name: "The Varnish", lat: 34.0479, lng: -118.2481, address: "118 E 6th St, Los Angeles, CA 90014", category: "Cocktail Bar", googleRating: 4.5, googleTotalRatings: 1500, activity: 82, priceLevel: 3, description: "Hidden downtown speakeasy behind Cole's." },
+    { id: "la-arts-district-brewing", name: "Arts District Brewing Co.", lat: 34.0421, lng: -118.2337, address: "828 Traction Ave, Los Angeles, CA 90013", category: "Brewery", googleRating: 4.5, googleTotalRatings: 2600, activity: 83, priceLevel: 2, description: "Cavernous taproom with skee-ball and a rotating tap list." },
+    { id: "la-abbey", name: "The Abbey Food & Bar", lat: 34.0837, lng: -118.3853, address: "692 N Robertson Blvd, West Hollywood, CA 90069", category: "Nightclub", googleRating: 4.5, googleTotalRatings: 8900, activity: 88, priceLevel: 2, description: "Landmark West Hollywood bar and club with an open-air patio." },
+    { id: "la-gjelina", name: "Gjelina", lat: 33.9908, lng: -118.4653, address: "1429 Abbot Kinney Blvd, Venice, CA 90291", category: "Restaurant", googleRating: 4.5, googleTotalRatings: 5200, activity: 86, priceLevel: 3, description: "Abbot Kinney standby for wood-fired vegetables and pizzas." },
+  ],
+  chicago: [
+    { id: "chi-girl-goat", name: "Girl & the Goat", lat: 41.8847, lng: -87.6486, address: "809 W Randolph St, Chicago, IL 60607", category: "Restaurant", googleRating: 4.6, googleTotalRatings: 8600, activity: 93, priceLevel: 3, description: "Stephanie Izard's West Loop flagship built on live-fire shared plates." },
+    { id: "chi-au-cheval", name: "Au Cheval", lat: 41.8846, lng: -87.6478, address: "800 W Randolph St, Chicago, IL 60607", category: "Restaurant", googleRating: 4.6, googleTotalRatings: 6400, activity: 91, priceLevel: 2, description: "Diner-style room famous for its double cheeseburger." },
+    { id: "chi-violet-hour", name: "The Violet Hour", lat: 41.9082, lng: -87.6768, address: "1520 N Damen Ave, Chicago, IL 60622", category: "Cocktail Bar", googleRating: 4.5, googleTotalRatings: 2300, activity: 86, priceLevel: 3, description: "Wicker Park speakeasy behind an unmarked door." },
+    { id: "chi-londonhouse", name: "LondonHouse Rooftop", lat: 41.8878, lng: -87.6247, address: "85 E Wacker Dr, Chicago, IL 60601", category: "Rooftop Bar", googleRating: 4.4, googleTotalRatings: 5800, activity: 88, priceLevel: 3, description: "Three-level rooftop above the river with Wrigley Building views." },
+    { id: "chi-goose-island", name: "Goose Island Brewhouse", lat: 41.9142, lng: -87.6489, address: "1800 N Clybourn Ave, Chicago, IL 60614", category: "Brewery", googleRating: 4.4, googleTotalRatings: 3900, activity: 82, priceLevel: 2, description: "The original Goose Island brewpub in Lincoln Park." },
+    { id: "chi-green-mill", name: "Green Mill Cocktail Lounge", lat: 41.9694, lng: -87.6597, address: "4802 N Broadway, Chicago, IL 60640", category: "Lounge", googleRating: 4.6, googleTotalRatings: 3400, activity: 84, priceLevel: 2, description: "Prohibition-era jazz club with nightly live sets in Uptown." },
+    { id: "chi-time-out-market", name: "Time Out Market Chicago", lat: 41.8862, lng: -87.6512, address: "916 W Fulton Market, Chicago, IL 60607", category: "Food Hall", googleRating: 4.4, googleTotalRatings: 4100, activity: 85, priceLevel: 2, description: "Fulton Market food hall curating the city's best-known chefs." },
+    { id: "chi-lonesome-rose", name: "Lonesome Rose", lat: 41.9291, lng: -87.7091, address: "2101 N California Ave, Chicago, IL 60647", category: "Restaurant", googleRating: 4.5, googleTotalRatings: 1900, activity: 79, priceLevel: 2, description: "Logan Square Tex-Mex with frozen margaritas and a lively patio." },
+  ],
+  miami: [
+    { id: "mia-joes-stone-crab", name: "Joe's Stone Crab", lat: 25.7683, lng: -80.1352, address: "11 Washington Ave, Miami Beach, FL 33139", category: "Seafood", googleRating: 4.5, googleTotalRatings: 12000, activity: 93, priceLevel: 4, description: "South Beach institution serving stone crab claws since 1913." },
+    { id: "mia-versailles", name: "Versailles Restaurant", lat: 25.7651, lng: -80.2359, address: "3555 SW 8th St, Miami, FL 33135", category: "Restaurant", googleRating: 4.5, googleTotalRatings: 22000, activity: 92, priceLevel: 2, description: "Little Havana's most famous Cuban restaurant and ventanita." },
+    { id: "mia-wynwood-brewing", name: "Wynwood Brewing Company", lat: 25.8021, lng: -80.1993, address: "565 NW 24th St, Miami, FL 33127", category: "Brewery", googleRating: 4.6, googleTotalRatings: 2400, activity: 85, priceLevel: 2, description: "Family-run Wynwood craft brewery, the neighborhood's first." },
+    { id: "mia-sugar", name: "Sugar", lat: 25.7616, lng: -80.1866, address: "788 Brickell Plaza, Miami, FL 33131", category: "Rooftop Bar", googleRating: 4.5, googleTotalRatings: 5600, activity: 90, priceLevel: 4, description: "40th-floor Brickell rooftop garden with bay views." },
+    { id: "mia-ball-chain", name: "Ball & Chain", lat: 25.7655, lng: -80.2196, address: "1513 SW 8th St, Miami, FL 33135", category: "Lounge", googleRating: 4.4, googleTotalRatings: 8700, activity: 87, priceLevel: 2, description: "Historic Calle Ocho club with live salsa and a pineapple stage." },
+    { id: "mia-lagniappe", name: "Lagniappe", lat: 25.8106, lng: -80.1928, address: "3425 NE 2nd Ave, Miami, FL 33137", category: "Wine Bar", googleRating: 4.6, googleTotalRatings: 2100, activity: 80, priceLevel: 2, description: "Backyard wine house with nightly live music near the Design District." },
+    { id: "mia-time-out-market", name: "Time Out Market Miami", lat: 25.7803, lng: -80.1315, address: "1601 Drexel Ave, Miami Beach, FL 33139", category: "Food Hall", googleRating: 4.4, googleTotalRatings: 6900, activity: 86, priceLevel: 2, description: "South Beach food hall with a rotating roster of local chefs." },
+    { id: "mia-montys", name: "Monty's Raw Bar", lat: 25.7276, lng: -80.2377, address: "2550 S Bayshore Dr, Miami, FL 33133", category: "Seafood", googleRating: 4.3, googleTotalRatings: 7400, activity: 81, priceLevel: 2, description: "Coconut Grove waterfront raw bar with tiki drinks and marina views." },
+  ],
+  austin: [
+    { id: "atx-franklin", name: "Franklin Barbecue", lat: 30.2701, lng: -97.7313, address: "900 E 11th St, Austin, TX 78702", category: "BBQ", googleRating: 4.6, googleTotalRatings: 12000, activity: 95, priceLevel: 2, description: "James Beard-winning brisket, and the line that comes with it." },
+    { id: "atx-continental", name: "The Continental Club", lat: 30.2504, lng: -97.7497, address: "1315 S Congress Ave, Austin, TX 78704", category: "Live Music", googleRating: 4.6, googleTotalRatings: 3200, activity: 88, priceLevel: 2, description: "South Congress music room running nightly sets since 1955." },
+    { id: "atx-container-bar", name: "Container Bar", lat: 30.2588, lng: -97.7381, address: "90 Rainey St, Austin, TX 78701", category: "Bar", googleRating: 4.4, googleTotalRatings: 2600, activity: 84, priceLevel: 2, description: "Rainey Street bar built from stacked shipping containers." },
+    { id: "atx-jester-king", name: "Jester King Brewery", lat: 30.2166, lng: -98.0389, address: "13187 Fitzhugh Rd, Austin, TX 78736", category: "Brewery", googleRating: 4.7, googleTotalRatings: 4300, activity: 83, priceLevel: 2, description: "Hill Country farmhouse brewery with wild ales and a working farm." },
+    { id: "atx-uchi", name: "Uchi", lat: 30.2549, lng: -97.7638, address: "801 S Lamar Blvd, Austin, TX 78704", category: "Restaurant", googleRating: 4.7, googleTotalRatings: 4100, activity: 91, priceLevel: 4, description: "Tyson Cole's landmark Japanese restaurant on South Lamar." },
+    { id: "atx-veracruz", name: "Veracruz All Natural", lat: 30.2626, lng: -97.7185, address: "1704 E Cesar Chavez St, Austin, TX 78702", category: "Restaurant", googleRating: 4.7, googleTotalRatings: 5800, activity: 87, priceLevel: 1, description: "East Austin trailer famous for the migas taco." },
+    { id: "atx-whislers", name: "Whisler's", lat: 30.2601, lng: -97.7288, address: "1816 E 6th St, Austin, TX 78702", category: "Cocktail Bar", googleRating: 4.5, googleTotalRatings: 2200, activity: 82, priceLevel: 2, description: "East Sixth cocktail bar with a mezcal loft upstairs." },
+    { id: "atx-fareground", name: "Fareground", lat: 30.2668, lng: -97.7414, address: "111 Congress Ave, Austin, TX 78701", category: "Food Hall", googleRating: 4.4, googleTotalRatings: 3100, activity: 80, priceLevel: 2, description: "Downtown food hall with local chef counters and a shaded plaza." },
+  ],
+  denver: [
+    { id: "den-terminal-bar", name: "Terminal Bar at Union Station", lat: 39.7527, lng: -105.0001, address: "1701 Wynkoop St, Denver, CO 80202", category: "Bar", googleRating: 4.5, googleTotalRatings: 3300, activity: 87, priceLevel: 2, description: "Bar set in Union Station's original ticket windows." },
+    { id: "den-great-divide", name: "Great Divide Brewing Co.", lat: 39.7549, lng: -104.9857, address: "2201 Arapahoe St, Denver, CO 80205", category: "Brewery", googleRating: 4.6, googleTotalRatings: 3900, activity: 86, priceLevel: 2, description: "One of Denver's original craft breweries." },
+    { id: "den-linger", name: "Linger", lat: 39.7621, lng: -105.0135, address: "2030 W 30th Ave, Denver, CO 80211", category: "Restaurant", googleRating: 4.4, googleTotalRatings: 4400, activity: 85, priceLevel: 3, description: "Global street food in a former mortuary, with a skyline rooftop." },
+    { id: "den-death-co", name: "Death & Co Denver", lat: 39.7691, lng: -104.9793, address: "1280 25th St, Denver, CO 80205", category: "Cocktail Bar", googleRating: 4.6, googleTotalRatings: 1700, activity: 84, priceLevel: 3, description: "RiNo outpost of the NYC cocktail institution." },
+    { id: "den-avanti", name: "Avanti Food & Beverage", lat: 39.7629, lng: -105.0093, address: "3200 Pecos St, Denver, CO 80211", category: "Food Hall", googleRating: 4.5, googleTotalRatings: 4700, activity: 88, priceLevel: 2, description: "LoHi collective eatery with rotating kitchens and a mountain-view deck." },
+    { id: "den-tavernetta", name: "Tavernetta", lat: 39.7517, lng: -105.0011, address: "1889 16th St, Denver, CO 80202", category: "Restaurant", googleRating: 4.6, googleTotalRatings: 2400, activity: 83, priceLevel: 3, description: "Northern Italian dining next to Union Station." },
+    { id: "den-williams-graham", name: "Williams & Graham", lat: 39.7626, lng: -105.0133, address: "3160 Tejon St, Denver, CO 80211", category: "Cocktail Bar", googleRating: 4.7, googleTotalRatings: 2000, activity: 85, priceLevel: 3, description: "Bookstore-fronted speakeasy in LoHi." },
+    { id: "den-larimer-square", name: "Larimer Square", lat: 39.7476, lng: -104.9993, address: "1430 Larimer St, Denver, CO 80202", category: "Bar", googleRating: 4.6, googleTotalRatings: 7600, activity: 89, priceLevel: 2, description: "Denver's oldest block — string lights, restaurants and bars end to end." },
+  ],
+  seattle: [
+    { id: "sea-pike-place", name: "Pike Place Market", lat: 47.6097, lng: -122.3422, address: "85 Pike St, Seattle, WA 98101", category: "Food Hall", googleRating: 4.7, googleTotalRatings: 68000, activity: 95, priceLevel: 2, description: "Historic public market above the waterfront." },
+    { id: "sea-canon", name: "Canon", lat: 47.6136, lng: -122.3155, address: "928 12th Ave, Seattle, WA 98122", category: "Cocktail Bar", googleRating: 4.6, googleTotalRatings: 2000, activity: 86, priceLevel: 3, description: "Capitol Hill whiskey bar with an enormous spirits list." },
+    { id: "sea-walrus", name: "The Walrus and the Carpenter", lat: 47.6659, lng: -122.3826, address: "4743 Ballard Ave NW, Seattle, WA 98107", category: "Seafood", googleRating: 4.6, googleTotalRatings: 2600, activity: 87, priceLevel: 3, description: "Ballard oyster bar that helped define the Northwest raw bar." },
+    { id: "sea-fremont-brewing", name: "Fremont Brewing", lat: 47.6494, lng: -122.348, address: "1050 N 34th St, Seattle, WA 98103", category: "Brewery", googleRating: 4.6, googleTotalRatings: 5200, activity: 88, priceLevel: 2, description: "Fremont urban beer garden known for Interurban IPA." },
+    { id: "sea-neumos", name: "Neumos", lat: 47.6153, lng: -122.3202, address: "925 E Pike St, Seattle, WA 98122", category: "Live Music", googleRating: 4.4, googleTotalRatings: 2400, activity: 82, priceLevel: 2, description: "Capitol Hill music venue with the Barboza basement club." },
+    { id: "sea-shiros", name: "Shiro's Sushi", lat: 47.6165, lng: -122.3541, address: "2401 2nd Ave, Seattle, WA 98121", category: "Restaurant", googleRating: 4.6, googleTotalRatings: 2100, activity: 84, priceLevel: 4, description: "Belltown sushi counter founded by Shiro Kashiba." },
+    { id: "sea-mbar", name: "Mbar", lat: 47.6236, lng: -122.3376, address: "400 Fairview Ave N, Seattle, WA 98109", category: "Rooftop Bar", googleRating: 4.4, googleTotalRatings: 1800, activity: 81, priceLevel: 3, description: "South Lake Union rooftop with Space Needle views." },
+    { id: "sea-pike-brewing", name: "Pike Brewing Company", lat: 47.6088, lng: -122.3403, address: "1415 1st Ave, Seattle, WA 98101", category: "Brewery", googleRating: 4.4, googleTotalRatings: 4900, activity: 83, priceLevel: 2, description: "Multi-level brewpub tucked inside Pike Place Market." },
+  ],
+  atlanta: [
+    { id: "atl-ponce-city", name: "Ponce City Market", lat: 33.7726, lng: -84.3654, address: "675 Ponce De Leon Ave NE, Atlanta, GA 30308", category: "Food Hall", googleRating: 4.6, googleTotalRatings: 34000, activity: 94, priceLevel: 2, description: "Food hall and rooftop in a restored Sears building on the BeltLine." },
+    { id: "atl-krog-street", name: "Krog Street Market", lat: 33.7541, lng: -84.3653, address: "99 Krog St NE, Atlanta, GA 30307", category: "Food Hall", googleRating: 4.6, googleTotalRatings: 12000, activity: 89, priceLevel: 2, description: "Inman Park market hall with chef stalls and a beer garden." },
+    { id: "atl-bones", name: "Bone's Restaurant", lat: 33.8393, lng: -84.3671, address: "3130 Piedmont Rd NE, Atlanta, GA 30305", category: "Steakhouse", googleRating: 4.6, googleTotalRatings: 2900, activity: 85, priceLevel: 4, description: "Buckhead's classic power steakhouse since 1979." },
+    { id: "atl-monday-night-garage", name: "Monday Night Garage", lat: 33.7422, lng: -84.4197, address: "933 Lee St SW, Atlanta, GA 30310", category: "Brewery", googleRating: 4.6, googleTotalRatings: 3300, activity: 84, priceLevel: 2, description: "West End brewery on the BeltLine with sours and a big patio." },
+    { id: "atl-sos-tiki", name: "S.O.S. Tiki Bar", lat: 33.7748, lng: -84.2963, address: "340 Church St, Decatur, GA 30030", category: "Cocktail Bar", googleRating: 4.6, googleTotalRatings: 1900, activity: 80, priceLevel: 2, description: "Decatur tiki hideaway with rum flights and frozen daiquiris." },
+    { id: "atl-clermont", name: "Clermont Lounge", lat: 33.7724, lng: -84.3524, address: "789 Ponce De Leon Ave NE, Atlanta, GA 30306", category: "Lounge", googleRating: 4.4, googleTotalRatings: 2600, activity: 82, priceLevel: 1, description: "Atlanta's most notorious dive, beneath the Clermont Hotel." },
+    { id: "atl-staplehouse", name: "Staplehouse", lat: 33.7549, lng: -84.3705, address: "541 Edgewood Ave SE, Atlanta, GA 30312", category: "Restaurant", googleRating: 4.6, googleTotalRatings: 1500, activity: 83, priceLevel: 4, description: "Old Fourth Ward tasting-menu restaurant supporting The Giving Kitchen." },
+    { id: "atl-nine-mile", name: "9 Mile Station", lat: 33.7727, lng: -84.3655, address: "675 Ponce De Leon Ave NE, Atlanta, GA 30308", category: "Rooftop Bar", googleRating: 4.4, googleTotalRatings: 2700, activity: 86, priceLevel: 3, description: "Rooftop beer garden atop Ponce City Market." },
+  ],
+  nashville: [
+    { id: "bna-roberts", name: "Robert's Western World", lat: 36.1608, lng: -86.7783, address: "416 Broadway, Nashville, TN 37203", category: "Live Music", googleRating: 4.7, googleTotalRatings: 9600, activity: 93, priceLevel: 1, description: "Lower Broadway honky-tonk with traditional country." },
+    { id: "bna-hattie-b", name: "Hattie B's Hot Chicken", lat: 36.1516, lng: -86.7936, address: "112 19th Ave S, Nashville, TN 37203", category: "Restaurant", googleRating: 4.6, googleTotalRatings: 14000, activity: 92, priceLevel: 1, description: "Midtown hot chicken shop, mild through 'shut the cluck up'." },
+    { id: "bna-patterson-house", name: "The Patterson House", lat: 36.1495, lng: -86.7938, address: "1711 Division St, Nashville, TN 37203", category: "Cocktail Bar", googleRating: 4.6, googleTotalRatings: 1800, activity: 85, priceLevel: 3, description: "Midtown speakeasy that started Nashville's cocktail scene." },
+    { id: "bna-pinewood", name: "Pinewood Social", lat: 36.1607, lng: -86.7684, address: "33 Peabody St, Nashville, TN 37210", category: "Restaurant", googleRating: 4.4, googleTotalRatings: 5200, activity: 87, priceLevel: 2, description: "All-day cafe, bar and bowling lanes near the Gulch." },
+    { id: "bna-yazoo", name: "Yazoo Brewing Company", lat: 36.1611, lng: -86.7331, address: "900 River Bluff Dr, Madison, TN 37115", category: "Brewery", googleRating: 4.6, googleTotalRatings: 2200, activity: 79, priceLevel: 2, description: "Long-running Nashville brewery with a taproom and tours." },
+    { id: "bna-l27", name: "L27 Rooftop Lounge", lat: 36.1513, lng: -86.7871, address: "807 Clark Pl, Nashville, TN 37203", category: "Rooftop Bar", googleRating: 4.4, googleTotalRatings: 2100, activity: 84, priceLevel: 3, description: "Gulch rooftop pool bar atop the Westin." },
+    { id: "bna-bluebird", name: "The Bluebird Cafe", lat: 36.0975, lng: -86.8163, address: "4104 Hillsboro Pike, Nashville, TN 37215", category: "Live Music", googleRating: 4.7, googleTotalRatings: 3400, activity: 86, priceLevel: 2, description: "Legendary songwriter listening room in Green Hills." },
+    { id: "bna-assembly", name: "Assembly Food Hall", lat: 36.1626, lng: -86.7787, address: "5055 Broadway, Nashville, TN 37203", category: "Food Hall", googleRating: 4.4, googleTotalRatings: 8800, activity: 88, priceLevel: 2, description: "Multi-level food hall and music venue at Fifth + Broadway." },
+  ],
+};
+
+function distanceKm(aLat: number, aLng: number, bLat: number, bLng: number): number {
+  const R = 6371;
+  const dLat = ((bLat - aLat) * Math.PI) / 180;
+  const dLng = ((bLng - aLng) * Math.PI) / 180;
+  const s =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((aLat * Math.PI) / 180) * Math.cos((bLat * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+
+/** Nearest selector city to a coordinate (defaults to Charlotte). */
+export function nearestCityId(lat: number, lng: number): string {
+  let bestId = CITY_CENTERS[0].id;
+  let bestDistance = Infinity;
+  for (const city of CITY_CENTERS) {
+    const d = distanceKm(lat, lng, city.lat, city.lng);
+    if (d < bestDistance) {
+      bestDistance = d;
+      bestId = city.id;
+    }
+  }
+  return bestId;
+}
+
+/**
+ * Curated fallback venues for the city nearest to `location`. Charlotte falls
+ * through to the caller-supplied list so its richer hours/phone/website data
+ * is preserved.
+ */
+export function fallbackVenuesForLocation<T>(
+  location: { lat?: unknown; lng?: unknown } | null | undefined,
+  charlotteVenues: readonly T[],
+): { cityId: string; venues: readonly (T | FallbackVenue)[] } {
+  const lat = location?.lat;
+  const lng = location?.lng;
+  if (typeof lat !== "number" || typeof lng !== "number") {
+    return { cityId: "charlotte", venues: charlotteVenues };
+  }
+  const cityId = nearestCityId(lat, lng);
+  const venues = CITY_FALLBACK_VENUES[cityId];
+  return venues && venues.length > 0
+    ? { cityId, venues }
+    : { cityId: "charlotte", venues: charlotteVenues };
+}

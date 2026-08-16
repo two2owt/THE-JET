@@ -1,5 +1,6 @@
 import { corsHeaders, logVersion, EDGE_FUNCTION_VERSION } from "../_shared/cors.ts";
 import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
+import { fallbackVenuesForLocation } from "../_shared/city-fallback-venues.ts";
 
 const FUNCTION_NAME = "search-google-places-venues";
 logVersion(FUNCTION_NAME);
@@ -124,13 +125,16 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: corsHeaders });
   }
 
-  try {
-    // Only signed-in users hit the paid Google Places API. Anonymous visitors
-    // still get the curated venue list (no quota spend, no blank map) instead
-    // of a 401 that breaks rendering.
-    const userId = await getAuthenticatedUserId(req);
-    if (!userId) {
-      const curated = CHARLOTTE_TOP_VENUES.map(venue => ({
+  // Parse the body first: the requested city drives which curated list a
+  // fallback returns, so no path can serve Charlotte venues while another
+  // city is selected.
+  let body: any = {};
+  try { body = await req.json(); } catch { /* GET-like call */ }
+  const location = body?.location;
+
+  const curatedFor = (source: string) => {
+      const { cityId, venues } = fallbackVenuesForLocation(location, CHARLOTTE_TOP_VENUES);
+      const normalized = (venues as any[]).map((venue) => ({
         ...venue,
         isOpen: null,
         openingHours: venue.openingHours ?? [],
@@ -139,20 +143,26 @@ Deno.serve(async (req) => {
         priceLevel: venue.priceLevel ?? null,
         description: venue.description ?? null,
       }));
+      console.log(`Returning ${normalized.length} curated ${cityId} venues (${source})`);
       return new Response(
-        JSON.stringify({ venues: curated, total: curated.length, source: 'fallback_anonymous' }),
+        JSON.stringify({ venues: normalized, total: normalized.length, city: cityId, source }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    );
+  };
+
+  try {
+    // Only signed-in users hit the paid Google Places API. Anonymous visitors
+    // still get the curated venue list (no quota spend, no blank map) instead
+    // of a 401 that breaks rendering.
+    const userId = await getAuthenticatedUserId(req);
+    if (!userId) {
+      return curatedFor('fallback_anonymous');
     }
 
-    let body: any = {};
-    try { body = await req.json(); } catch { /* GET-like call */ }
-    const location = body?.location;
-    
     const apiKey = Deno.env.get('GOOGLE_PLACES_API_KEY');
-    
-    // Charlotte coordinates
-    const charlotteLocation = location || { lat: 35.2271, lng: -80.8431 };
+
+    // Requested city center; Charlotte only when the caller sent nothing.
+    const searchCenter = location || { lat: 35.2271, lng: -80.8431 };
 
     // === Primary path: live Google Places Nearby Search ===
     if (apiKey) {
@@ -163,8 +173,8 @@ Deno.serve(async (req) => {
         const nearbyResults = await Promise.all(
           NEARBY_TYPES.map(async (type) => {
             const url = new URL('https://maps.googleapis.com/maps/api/place/nearbysearch/json');
-            url.searchParams.set('location', `${charlotteLocation.lat},${charlotteLocation.lng}`);
-            url.searchParams.set('radius', '8000'); // ~5mi around Charlotte center
+            url.searchParams.set('location', `${searchCenter.lat},${searchCenter.lng}`);
+            url.searchParams.set('radius', '8000'); // ~5mi around the city center
             url.searchParams.set('type', type);
             url.searchParams.set('key', apiKey);
             const r = await fetch(url.toString());
@@ -249,38 +259,11 @@ Deno.serve(async (req) => {
     }
 
     // === Fallback: curated, verified venues (only when API unavailable) ===
-    const fallbackVenues = CHARLOTTE_TOP_VENUES.map(venue => ({
-      ...venue,
-      isOpen: null,
-      openingHours: venue.openingHours ?? [],
-      phone: venue.phone ?? null,
-      website: venue.website ?? null,
-      priceLevel: venue.priceLevel ?? null,
-      description: venue.description ?? null,
-    }));
-
-    return new Response(
-      JSON.stringify({ venues: fallbackVenues, total: fallbackVenues.length, source: 'fallback' }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return curatedFor('fallback');
 
   } catch (error) {
     console.error('Error in search-google-places-venues:', error);
-    
-    // Even on error, return fallback data
-    const fallbackVenues = CHARLOTTE_TOP_VENUES.map(venue => ({
-      ...venue,
-      isOpen: null,
-      openingHours: venue.openingHours ?? [],
-      phone: venue.phone ?? null,
-      website: venue.website ?? null,
-      priceLevel: venue.priceLevel ?? null,
-      description: venue.description ?? null,
-    }));
-
-    return new Response(
-      JSON.stringify({ venues: fallbackVenues, total: fallbackVenues.length, source: 'fallback_error' }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    // Even on error, return curated data for the requested city.
+    return curatedFor('fallback_error');
   }
 });
