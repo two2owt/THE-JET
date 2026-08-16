@@ -1202,13 +1202,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           localFontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         });
 
-        // Add attribution control in a better position
-        map.current.addControl(
-          new mapboxgl.AttributionControl({
-            compact: true,
-          }),
-          'bottom-right'
-        );
+        // No attribution/logo control is added: the map keeps a clean bottom
+        // edge so overlays align to the nav footer padding.
 
         // Adds the custom neon "P" parking icon + symbol layer.
         // Must run on EVERY style load: setStyle() wipes custom images/layers,
