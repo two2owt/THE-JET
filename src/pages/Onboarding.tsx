@@ -13,7 +13,6 @@ import { Json } from "@/integrations/supabase/types";
 import jetLogo from "@/assets/jet-auth-logo-48.webp";
 import { consumePostAuthRedirect } from "@/lib/postAuthRedirect";
 import { useAuth } from "@/contexts/AuthContext";
-import { SEO } from "@/components/SEO";
 import {
   readCachedOnboardingStatus,
   writeCachedOnboardingStatus,
@@ -36,6 +35,14 @@ const PRONOUN_OPTIONS = [
   { value: "prefer-not-to-say", label: "Prefer not to say" },
   { value: "other", label: "Other" },
 ];
+
+const MIN_AGE = 18;
+// Latest birthdate that still satisfies the age gate (used as the date input max).
+const maxBirthdate = (() => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - MIN_AGE);
+  return d.toISOString().slice(0, 10);
+})();
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -64,6 +71,9 @@ const Onboarding = () => {
   const [bio, setBio] = useState("");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  // Avatar already stored on the profile — preserved when the user resumes
+  // Step 1 without picking a new file.
+  const [existingAvatarUrl, setExistingAvatarUrl] = useState<string | null>(null);
   const [birthdate, setBirthdate] = useState("");
   const [gender, setGender] = useState("");
   const [pronouns, setPronouns] = useState("");
@@ -123,13 +133,19 @@ const Onboarding = () => {
         if (profile) {
           if (profile.display_name) setDisplayName(profile.display_name);
           if (profile.bio) setBio(profile.bio);
-          if (profile.avatar_url) setAvatarPreview(profile.avatar_url);
+          if (profile.avatar_url) {
+            setAvatarPreview(profile.avatar_url);
+            setExistingAvatarUrl(profile.avatar_url);
+          }
           if (profile.birthdate) setBirthdate(profile.birthdate);
           if (profile.gender) setGender(profile.gender);
           if (profile.pronouns) setPronouns(profile.pronouns);
 
           const hasStep1 = !!(profile.display_name && profile.birthdate && profile.gender);
           const hasStep2 = !!profile.preferences;
+          if (hasStep2) {
+            setSavedPreferences(profile.preferences as unknown as PreferencesData);
+          }
           if (hasStep2) setStep(3);
           else if (hasStep1) setStep(2);
         }
