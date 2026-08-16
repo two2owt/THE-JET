@@ -125,15 +125,14 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: corsHeaders });
   }
 
-  try {
-    // Parse the body first: the requested city drives which curated list a
-    // fallback returns, so anonymous visitors don't get Charlotte venues while
-    // another city is selected.
-    let body: any = {};
-    try { body = await req.json(); } catch { /* GET-like call */ }
-    const location = body?.location;
+  // Parse the body first: the requested city drives which curated list a
+  // fallback returns, so no path can serve Charlotte venues while another
+  // city is selected.
+  let body: any = {};
+  try { body = await req.json(); } catch { /* GET-like call */ }
+  const location = body?.location;
 
-    const curatedFor = (source: string) => {
+  const curatedFor = (source: string) => {
       const { cityId, venues } = fallbackVenuesForLocation(location, CHARLOTTE_TOP_VENUES);
       const normalized = (venues as any[]).map((venue) => ({
         ...venue,
@@ -148,9 +147,10 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ venues: normalized, total: normalized.length, city: cityId, source }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    };
+    );
+  };
 
+  try {
     // Only signed-in users hit the paid Google Places API. Anonymous visitors
     // still get the curated venue list (no quota spend, no blank map) instead
     // of a 401 that breaks rendering.
