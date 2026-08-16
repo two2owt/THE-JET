@@ -239,11 +239,12 @@ export default function Favorites() {
 function FavoriteVenueCard({
   favorite,
   onOpen,
+  onRemove,
 }: {
   favorite: Favorite;
   onOpen: () => void;
+  onRemove: (venueId: string, dealId?: string | null) => Promise<void>;
 }) {
-  const { toggleVenueFavorite } = useFavorites(favorite.user_id);
   const [removing, setRemoving] = useState(false);
   const [imgFailed, setImgFailed] = useState(false);
 
@@ -269,17 +270,25 @@ function FavoriteVenueCard({
     if (removing || !favorite.venue_id) return;
     setRemoving(true);
     try {
-      await toggleVenueFavorite(favorite.venue_id, favorite.deal_id);
+      await onRemove(favorite.venue_id, favorite.deal_id);
     } finally {
       setRemoving(false);
     }
   };
 
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onOpen}
-      className="group relative text-left rounded-2xl overflow-hidden border border-border bg-card/60 backdrop-blur-sm hover:border-primary/40 transition-colors"
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen();
+        }
+      }}
+      aria-label={`Open ${favorite.venue_name ?? "saved venue"} on the map`}
+      className="group relative cursor-pointer text-left rounded-2xl overflow-hidden border border-border bg-card/60 backdrop-blur-sm hover:border-primary/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       style={{ containerType: 'inline-size' }}
     >
       {/* Hero sizing matches JetCard: container-relative (cqw), 16/9, same clamp. */}
@@ -331,6 +340,6 @@ function FavoriteVenueCard({
           {favorite.venue_neighborhood ?? favorite.venue_address ?? favorite.venue_category ?? ""}
         </div>
       </div>
-    </button>
+    </div>
   );
 }
