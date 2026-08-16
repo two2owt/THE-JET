@@ -35,7 +35,7 @@ export default function Favorites() {
   const [loadError, setLoadError] = useState(false);
   const headerConfig = useMemo(() => ({}), []);
 
-  const { favorites, loading: favoritesLoading } = useFavorites(user?.id);
+  const { favorites, loading: favoritesLoading, toggleVenueFavorite } = useFavorites(user?.id);
 
   useEffect(() => {
     if (!user || favoritesLoading) return;
@@ -220,6 +220,7 @@ export default function Favorites() {
                     <FavoriteVenueCard
                       key={f.id}
                       favorite={f}
+                      onRemove={toggleVenueFavorite}
                       onOpen={() => {
                         if (f.venue_id) navigate(`/?venue=${encodeURIComponent(f.venue_id)}`);
                       }}
