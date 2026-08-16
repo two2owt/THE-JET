@@ -2210,9 +2210,11 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         left: 0;
         width: ${markerSize}px;
         height: ${markerSize}px;
+        /* Near-opaque core: letting the basemap show through the fill is what
+           made markers wash out over satellite and busy street tiles. */
         background: ${isDarkTheme 
-          ? 'rgba(30, 30, 35, 0.75)' 
-          : 'rgba(255, 255, 255, 0.8)'};
+          ? 'rgba(30, 30, 35, 0.94)' 
+          : 'rgba(255, 255, 255, 0.95)'};
         backdrop-filter: blur(12px) saturate(180%);
         -webkit-backdrop-filter: blur(12px) saturate(180%);
         border-radius: 50% 50% 50% 0;
