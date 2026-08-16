@@ -19,6 +19,13 @@ const ASKED_KEY = "location-permission-prompt-asked";
 const DISMISS_DURATION = 14 * 24 * 60 * 60 * 1000; // 14 days
 
 /**
+ * Module-level latch: guarantees only one prompt instance can ever open per
+ * page load, even if the component double-mounts (StrictMode, lazy remount,
+ * route churn). Prevents stacked/duplicate dialogs.
+ */
+let promptShownThisSession = false;
+
+/**
  * Foreground location prompt.
  *
  * Mounted app-wide in `AppShell`, so it appears immediately after sign-in on
@@ -40,6 +47,7 @@ export const LocationPermissionPrompt = () => {
 
     const maybeShow = async () => {
       if (typeof navigator === "undefined" || !("geolocation" in navigator)) return;
+      if (promptShownThisSession) return;
 
       // Respect earlier dismissal within window.
       const dismissedAt = localStorage.getItem(DISMISS_KEY);
@@ -50,11 +58,33 @@ export const LocationPermissionPrompt = () => {
       }
 
       // Only prompt if browser is in `prompt` state — never re-ask.
+      let status: PermissionStatus | undefined;
       try {
-        const status = await navigator.permissions?.query?.({
+        status = await navigator.permissions?.query?.({
           name: "geolocation" as PermissionName,
         });
-        if (status && status.state !== "prompt") return;
+        if (status) {
+          if (status.state === "granted") {
+            // Granted elsewhere (signup flow, map locate button, OS settings):
+            // clear the snooze so nothing re-asks and stay silent.
+            localStorage.removeItem(DISMISS_KEY);
+            localStorage.setItem(ASKED_KEY, "1");
+            return;
+          }
+          if (status.state !== "prompt") return;
+          // Close/suppress the dialog the moment permission is granted or
+          // blocked through any other surface, so the user never sees a
+          // second ask for something they already answered.
+          status.onchange = () => {
+            if (cancelled) return;
+            if (status!.state !== "prompt") {
+              promptShownThisSession = true;
+              setOpen(false);
+              if (status!.state === "granted") localStorage.removeItem(DISMISS_KEY);
+              localStorage.setItem(ASKED_KEY, "1");
+            }
+          };
+        }
       } catch {
         // Permissions API unsupported — fall through and show once.
         if (localStorage.getItem(ASKED_KEY)) return;
@@ -65,9 +95,18 @@ export const LocationPermissionPrompt = () => {
       // Signed-in users get asked promptly so tracking can start right away.
       const delay = userId ? 900 : 2500;
       const timer = window.setTimeout(() => {
-        if (!cancelled) setOpen(true);
+        // Re-check at fire time: permission may have been granted during the
+        // delay (map locate button, signup consent), which would otherwise
+        // surface a redundant prompt.
+        if (cancelled || promptShownThisSession) return;
+        if (status && status.state !== "prompt") return;
+        promptShownThisSession = true;
+        setOpen(true);
       }, delay);
-      return () => window.clearTimeout(timer);
+      return () => {
+        window.clearTimeout(timer);
+        if (status) status.onchange = null;
+      };
     };
 
     const cleanup = maybeShow();
