@@ -160,6 +160,11 @@ const Index = () => {
   const parkingCardRef = useRef<HTMLDivElement>(null);
   // Swipe-to-dismiss JetCard only on touch-first viewports (< md).
   const isMobile = !useBreakpointUp("md");
+
+  // Lift map overlays by the panels' *measured* height so nothing overlaps and
+  // no dead space is reserved when a card is closed.
+  useMapPanelInset(jetCardRef, !!selectedVenue && activeTab === "map");
+  useMapPanelInset(parkingCardRef, !!selectedParking && activeTab === "map");
   
   // Swipe to dismiss for JetCard on mobile
   const { handlers: swipeHandlers, style: swipeStyle } = useSwipeToDismiss({
