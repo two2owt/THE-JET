@@ -25,6 +25,7 @@ import { Route as TermsOfServiceRouteImport } from './routes/terms-of-service'
 import { Route as VerificationSuccessRouteImport } from './routes/verification-success'
 import { Route as GuidesCharlotteHappyHourRouteImport } from './routes/guides/charlotte-happy-hour'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable/oauth/consent'
+import { Route as ApiPublicHooksNudgeIncompleteOnboardingRouteImport } from './routes/api/public/hooks/nudge-incomplete-onboarding'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -107,6 +108,12 @@ const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksNudgeIncompleteOnboardingRoute =
+  ApiPublicHooksNudgeIncompleteOnboardingRouteImport.update({
+    id: '/api/public/hooks/nudge-incomplete-onboarding',
+    path: '/api/public/hooks/nudge-incomplete-onboarding',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -125,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/verification-success': typeof VerificationSuccessRoute
   '/guides/charlotte-happy-hour': typeof GuidesCharlotteHappyHourRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/api/public/hooks/nudge-incomplete-onboarding': typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -143,6 +151,7 @@ export interface FileRoutesByTo {
   '/verification-success': typeof VerificationSuccessRoute
   '/guides/charlotte-happy-hour': typeof GuidesCharlotteHappyHourRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/api/public/hooks/nudge-incomplete-onboarding': typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -162,6 +171,7 @@ export interface FileRoutesById {
   '/verification-success': typeof VerificationSuccessRoute
   '/guides/charlotte-happy-hour': typeof GuidesCharlotteHappyHourRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/api/public/hooks/nudge-incomplete-onboarding': typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -182,6 +192,7 @@ export interface FileRouteTypes {
     | '/verification-success'
     | '/guides/charlotte-happy-hour'
     | '/.lovable/oauth/consent'
+    | '/api/public/hooks/nudge-incomplete-onboarding'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -200,6 +211,7 @@ export interface FileRouteTypes {
     | '/verification-success'
     | '/guides/charlotte-happy-hour'
     | '/.lovable/oauth/consent'
+    | '/api/public/hooks/nudge-incomplete-onboarding'
   id:
     | '__root__'
     | '/'
@@ -218,6 +230,7 @@ export interface FileRouteTypes {
     | '/verification-success'
     | '/guides/charlotte-happy-hour'
     | '/.lovable/oauth/consent'
+    | '/api/public/hooks/nudge-incomplete-onboarding'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -237,6 +250,7 @@ export interface RootRouteChildren {
   VerificationSuccessRoute: typeof VerificationSuccessRoute
   GuidesCharlotteHappyHourRoute: typeof GuidesCharlotteHappyHourRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
+  ApiPublicHooksNudgeIncompleteOnboardingRoute: typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -353,6 +367,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/nudge-incomplete-onboarding': {
+      id: '/api/public/hooks/nudge-incomplete-onboarding'
+      path: '/api/public/hooks/nudge-incomplete-onboarding'
+      fullPath: '/api/public/hooks/nudge-incomplete-onboarding'
+      preLoaderRoute: typeof ApiPublicHooksNudgeIncompleteOnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -373,6 +394,8 @@ const rootRouteChildren: RootRouteChildren = {
   VerificationSuccessRoute: VerificationSuccessRoute,
   GuidesCharlotteHappyHourRoute: GuidesCharlotteHappyHourRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
+  ApiPublicHooksNudgeIncompleteOnboardingRoute:
+    ApiPublicHooksNudgeIncompleteOnboardingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
