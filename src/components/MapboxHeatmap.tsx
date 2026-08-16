@@ -1520,11 +1520,19 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             onNearestCityDetected(nearestCity);
           }
 
-          // If the user is in "Use Current Location" mode, keep the parent's
-          // selectedCity in sync with the nearest detected city so data filters
-          // (deals, density, paths) match where the user actually is.
+          // A geolocate event after the initial auto-locate means the user tapped
+          // "center on map". Treat that as switching back to current-location mode
+          // so the city selector label and all data filters follow where they are.
+          const userInitiatedRecenter = !isInitialGeolocate;
+          if (userInitiatedRecenter) {
+            setIsUsingCurrentLocation(true);
+            isUsingCurrentLocationRef.current = true;
+          }
+
+          // Keep the parent's selectedCity in sync with the nearest detected city
+          // so data filters (deals, density, paths) match the user's location.
           if (
-            isUsingCurrentLocationRef.current &&
+            (isUsingCurrentLocationRef.current || userInitiatedRecenter) &&
             nearestCity.id !== selectedCityRef.current.id
           ) {
             onCityChangeRef.current(nearestCity);
