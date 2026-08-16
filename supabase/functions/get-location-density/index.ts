@@ -158,6 +158,21 @@ Deno.serve(async (req) => {
     
     // Read filters from URL params or request body
     let timeFilter = url.searchParams.get('time_filter') || 'all';
+
+    // Identify the caller (if signed in). A user's OWN points are never hidden
+    // from them by the k-anonymity floor — it exists to protect other users,
+    // and suppressing their own data is what makes the map look blank while
+    // tracking is actually working.
+    let callerId: string | null = null;
+    const authHeader = req.headers.get('Authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+      try {
+        const { data } = await serviceClient.auth.getUser(authHeader.replace('Bearer ', ''));
+        callerId = data.user?.id ?? null;
+      } catch (_) {
+        callerId = null;
+      }
+    }
     let hourOfDay = url.searchParams.get('hour_of_day');
     let dayOfWeek = url.searchParams.get('day_of_week');
     let timeWindowMinutesRaw: string | number | null =
@@ -265,7 +280,11 @@ Deno.serve(async (req) => {
       });
 
       const allCells = Array.from(densityMap.entries());
-      const visibleCells = allCells.filter(([, cell]) => cell.users.size >= K_ANONYMITY_MIN_USERS);
+      const visibleCells = allCells.filter(
+        ([, cell]) =>
+          cell.users.size >= K_ANONYMITY_MIN_USERS ||
+          (callerId !== null && cell.users.has(callerId)),
+      );
       return { allCells, visibleCells, points: filteredLocations.length };
     };
 
