@@ -57,7 +57,7 @@ export function HeaderUserMenu({
       onClick={() => navigate(target)}
       aria-label={label}
       title={userId ? displayName : label}
-      className="group focus:outline-none focus-visible:outline-none"
+      className="group focus:outline-hidden focus-visible:outline-hidden"
       style={triggerStyle(mounted, isOnAccountRoute)}
     >
       <Avatar className="h-full w-full" style={avatarInnerStyle}>

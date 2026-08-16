@@ -110,7 +110,7 @@ function DiscoverPeopleStrip({
                 key={p.id}
                 type="button"
                 onClick={() => onSelect(p.id)}
-                className="flex flex-col items-center gap-1 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded-lg p-1"
+                className="flex flex-col items-center gap-1 shrink-0 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/60 rounded-lg p-1"
                 style={{ width: 72 }}
                 aria-label={`View ${p.display_name || 'user'}'s profile`}
               >

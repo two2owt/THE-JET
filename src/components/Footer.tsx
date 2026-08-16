@@ -77,7 +77,7 @@ export const Footer = () => {
               </span>
             );
 
-            const className = "hover:text-foreground transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md px-2 py-1.5";
+            const className = "hover:text-foreground transition-colors duration-200 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary rounded-md px-2 py-1.5";
 
             if (link.isExternal) {
               return (

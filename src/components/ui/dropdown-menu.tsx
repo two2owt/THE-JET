@@ -18,7 +18,7 @@ const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
  * - 16px lucide icons (muted by default)
  */
 const itemBase =
-  "group relative flex w-full cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm min-h-9 outline-none transition-colors " +
+  "group relative flex w-full cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm min-h-9 outline-hidden transition-colors " +
   "text-popover-foreground " +
   "focus:bg-accent/70 focus:text-accent-foreground " +
   "data-[highlighted]:bg-accent/70 data-[highlighted]:text-accent-foreground " +

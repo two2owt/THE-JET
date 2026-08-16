@@ -684,7 +684,7 @@ const Index = () => {
                   <button
                     type="button"
                     onClick={markAllAsRead}
-                    className="text-xs font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-md px-2 py-1"
+                    className="text-xs font-semibold text-primary hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 rounded-md px-2 py-1"
                     aria-label="Mark all notifications as read"
                   >
                     Mark all as read

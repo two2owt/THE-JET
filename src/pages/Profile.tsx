@@ -422,7 +422,7 @@ export default function Profile() {
                             href={url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full border-hairline bg-card/40 backdrop-blur-sm text-foreground text-sm font-semibold hover:border-primary/50 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors"
+                            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full border-hairline bg-card/40 backdrop-blur-sm text-foreground text-sm font-semibold hover:border-primary/50 hover:bg-primary/10 hover:text-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors"
                           >
                             <Icon className="w-4 h-4 text-primary" />
                             {label}
@@ -456,7 +456,7 @@ export default function Profile() {
                     <button
                       type="button"
                       onClick={() => navigate('/admin')}
-                      className="group w-full text-left rounded-2xl border-hairline bg-card/40 backdrop-blur-xl hover:border-primary/50 hover:bg-card/60 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-all"
+                      className="group w-full text-left rounded-2xl border-hairline bg-card/40 backdrop-blur-xl hover:border-primary/50 hover:bg-card/60 active:scale-[0.99] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 transition-all"
                       style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', padding: 'var(--space-sm)', minWidth: 0 }}
                     >
                       <span

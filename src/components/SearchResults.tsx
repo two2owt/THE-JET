@@ -324,7 +324,7 @@ export const SearchResults = ({
               type="button"
               onClick={onClose}
               aria-label="Close search results"
-              className="w-9 h-9 rounded-full bg-secondary/60 hover:bg-primary/10 hover:text-primary text-foreground flex items-center justify-center transition-colors active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 flex-shrink-0"
+              className="w-9 h-9 rounded-full bg-secondary/60 hover:bg-primary/10 hover:text-primary text-foreground flex items-center justify-center transition-colors active:scale-95 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 flex-shrink-0"
             >
               <X className="w-4 h-4" />
             </button>
@@ -360,7 +360,7 @@ export const SearchResults = ({
                         onVenueSelect(venue);
                         onClose();
                       }}
-                      className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-none focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"
+                      className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-hidden focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <ResultThumb src={venue.imageUrl} alt={`${venue.name} photo`} />
@@ -421,7 +421,7 @@ export const SearchResults = ({
                     <button
                       key={`area-${area.name}`}
                       onClick={() => handleAreaSelect(area.name)}
-                      className="group inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-secondary/60 hover:bg-primary/10 hover:text-primary border border-border/60 hover:border-primary/40 text-xs font-semibold text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95"
+                      className="group inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-secondary/60 hover:bg-primary/10 hover:text-primary border border-border/60 hover:border-primary/40 text-xs font-semibold text-foreground transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95"
                     >
                       <MapPin className="w-3 h-3" />
                       <span className="truncate max-w-[140px]">{area.name}</span>
@@ -447,7 +447,7 @@ export const SearchResults = ({
                     <button
                       key={`cat-${cat.source}-${cat.name}`}
                       onClick={() => handleCategorySelect(cat.name)}
-                      className="group inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-secondary/60 hover:bg-primary/10 hover:text-primary border border-border/60 hover:border-primary/40 text-xs font-semibold text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95"
+                      className="group inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-secondary/60 hover:bg-primary/10 hover:text-primary border border-border/60 hover:border-primary/40 text-xs font-semibold text-foreground transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95"
                     >
                       <Tag className="w-3 h-3" />
                       <span className="truncate max-w-[160px]">{cat.name}</span>
@@ -476,7 +476,7 @@ export const SearchResults = ({
                         onVenueSelect(venue);
                         onClose();
                       }}
-                      className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-none focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"
+                      className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-hidden focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <ResultThumb src={venue.imageUrl} alt={`${venue.name} photo`} />
@@ -522,7 +522,7 @@ export const SearchResults = ({
                     <button
                       key={deal.id}
                       onClick={() => handleDealSelect(deal)}
-                      className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-none focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"
+                      className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-hidden focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"
                     >
                       <div className="flex items-start gap-3 min-w-0">
                         <ResultThumb
