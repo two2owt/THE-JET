@@ -9,6 +9,7 @@ interface PreferencesStepProps {
   onBack: () => void;
   onNext: (preferences: PreferencesData) => void;
   isLoading: boolean;
+  initialPreferences?: PreferencesData | null;
 }
 
 export interface PreferencesData {
@@ -69,34 +70,40 @@ const EVENTS_OPTIONS = {
   timeSetting: ["Daytime events", "Evening events", "Outdoor", "Indoor", "Seasonal/holiday"],
 };
 
-const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) => {
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+const MAX_CATEGORIES = 3;
+const MAX_OPTIONS = 5;
+
+const PreferencesStep = ({ onBack, onNext, isLoading, initialPreferences }: PreferencesStepProps) => {
+  const init = initialPreferences ?? null;
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(init?.categories ?? []);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [categoryError, setCategoryError] = useState<string | null>(null);
-  
+
   // Food preferences
-  const [foodCuisine, setFoodCuisine] = useState<string[]>([]);
-  const [foodDietary, setFoodDietary] = useState<string[]>([]);
-  const [foodMeal, setFoodMeal] = useState<string[]>([]);
-  
+  const [foodCuisine, setFoodCuisine] = useState<string[]>(init?.food?.cuisineType ?? []);
+  const [foodDietary, setFoodDietary] = useState<string[]>(init?.food?.dietaryPreference ?? []);
+  const [foodMeal, setFoodMeal] = useState<string[]>(init?.food?.mealOccasion ?? []);
+
   // Drink preferences
-  const [drinkCoffee, setDrinkCoffee] = useState<string[]>([]);
-  const [drinkBar, setDrinkBar] = useState<string[]>([]);
-  const [drinkAtmosphere, setDrinkAtmosphere] = useState<string[]>([]);
-  
+  const [drinkCoffee, setDrinkCoffee] = useState<string[]>(init?.drink?.coffeeTea ?? []);
+  const [drinkBar, setDrinkBar] = useState<string[]>(init?.drink?.barCocktail ?? []);
+  const [drinkAtmosphere, setDrinkAtmosphere] = useState<string[]>(init?.drink?.atmosphere ?? []);
+
   // Nightlife preferences
-  const [nightlifeVenue, setNightlifeVenue] = useState<string[]>([]);
-  const [nightlifeMusic, setNightlifeMusic] = useState<string[]>([]);
-  const [nightlifeCrowd, setNightlifeCrowd] = useState<string[]>([]);
-  
+  const [nightlifeVenue, setNightlifeVenue] = useState<string[]>(init?.nightlife?.venueType ?? []);
+  const [nightlifeMusic, setNightlifeMusic] = useState<string[]>(init?.nightlife?.musicPreference ?? []);
+  const [nightlifeCrowd, setNightlifeCrowd] = useState<string[]>(init?.nightlife?.crowdVibe ?? []);
+
   // Events preferences
-  const [eventsType, setEventsType] = useState<string[]>([]);
-  const [eventsGroup, setEventsGroup] = useState<string[]>([]);
-  const [eventsTime, setEventsTime] = useState<string[]>([]);
-  
+  const [eventsType, setEventsType] = useState<string[]>(init?.events?.eventType ?? []);
+  const [eventsGroup, setEventsGroup] = useState<string[]>(init?.events?.groupType ?? []);
+  const [eventsTime, setEventsTime] = useState<string[]>(init?.events?.timeSetting ?? []);
+
   // Live discovery
-  const [trendingVenues, setTrendingVenues] = useState(true);
-  const [activityInArea, setActivityInArea] = useState(false);
+  const [trendingVenues, setTrendingVenues] = useState(init?.trendingVenues ?? true);
+  const [activityInArea, setActivityInArea] = useState(init?.activityInArea ?? false);
+
+  const atCategoryCap = selectedCategories.length >= MAX_CATEGORIES;
 
   const toggleCategory = (category: string) => {
     setSelectedCategories(prev => {
@@ -121,7 +128,7 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
         }
         return prev.filter(c => c !== category);
       }
-      if (prev.length >= 3) {
+      if (prev.length >= MAX_CATEGORIES) {
         return prev;
       }
       return [...prev, category];
@@ -137,7 +144,7 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
     option: string,
     _currentSelection: string[],
     setter: React.Dispatch<React.SetStateAction<string[]>>,
-    maxSelections: number = 5
+    maxSelections: number = MAX_OPTIONS
   ) => {
     setter(prev => {
       if (prev.includes(option)) {
@@ -188,20 +195,25 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
   const OptionChip = ({ 
     label, 
     selected, 
-    onClick 
+    onClick,
+    disabled,
   }: { 
     label: string; 
     selected: boolean; 
     onClick: () => void;
+    disabled?: boolean;
   }) => (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
+      aria-pressed={selected}
       className={cn(
-        "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
+        "inline-flex min-h-11 items-center rounded-full border px-4 text-xs font-medium transition-all",
         selected
           ? "bg-primary text-primary-foreground border-primary"
-          : "bg-muted/50 text-muted-foreground border-border hover:border-primary/50 hover:bg-muted"
+          : "bg-muted/50 text-muted-foreground border-border hover:border-primary/50 hover:bg-muted",
+        disabled && !selected && "opacity-40 cursor-not-allowed hover:border-border hover:bg-muted/50"
       )}
     >
       {label}
@@ -220,13 +232,19 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
     onToggle: (option: string) => void;
   }) => (
     <div className="space-y-2">
-      <p className="text-xs font-medium text-muted-foreground">{title} <span className="text-muted-foreground">(up to 5)</span></p>
+      <p className="text-xs font-medium text-muted-foreground">
+        {title}{" "}
+        <span className={cn(selected.length >= MAX_OPTIONS ? "text-primary" : "text-muted-foreground")}>
+          ({selected.length}/{MAX_OPTIONS})
+        </span>
+      </p>
       <div className="flex flex-wrap gap-1.5">
         {options.map(option => (
           <OptionChip
             key={option}
             label={option}
             selected={selected.includes(option)}
+            disabled={selected.length >= MAX_OPTIONS && !selected.includes(option)}
             onClick={() => onToggle(option)}
           />
         ))}
@@ -253,42 +271,44 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
         isSelected ? "border-primary bg-primary/5" : "border-border bg-card"
       )}
     >
-      <button
-        type="button"
-        onClick={() => toggleCategory(category)}
-        className="w-full p-3 flex items-center justify-between"
-      >
-        <div className="flex items-center gap-3">
-          <Icon className={cn("w-5 h-5", isSelected ? "text-primary" : "text-muted-foreground")} />
-          <span className={cn(
-            "font-medium text-sm",
-            isSelected ? "text-foreground" : "text-muted-foreground"
-          )}>
-            {category}
+      <div className="flex items-center pr-2">
+        <button
+          type="button"
+          onClick={() => toggleCategory(category)}
+          disabled={!isSelected && atCategoryCap}
+          aria-pressed={isSelected}
+          className={cn(
+            "flex min-h-11 flex-1 items-center justify-between gap-3 p-3 text-left",
+            !isSelected && atCategoryCap && "opacity-40 cursor-not-allowed"
+          )}
+        >
+          <span className="flex items-center gap-3">
+            <Icon className={cn("w-5 h-5", isSelected ? "text-primary" : "text-muted-foreground")} />
+            <span className={cn(
+              "font-medium text-sm",
+              isSelected ? "text-foreground" : "text-muted-foreground"
+            )}>
+              {category}
+            </span>
           </span>
-        </div>
-        <div className="flex items-center gap-2">
-          {isSelected && (
-            <Check className="w-4 h-4 text-primary" />
-          )}
-          {isSelected && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleExpanded(category);
-              }}
-              className="p-1 hover:bg-muted rounded"
-            >
-              {isExpanded ? (
-                <ChevronUp className="w-4 h-4 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-muted-foreground" />
-              )}
-            </button>
-          )}
-        </div>
-      </button>
+          {isSelected && <Check className="w-4 h-4 shrink-0 text-primary" />}
+        </button>
+        {isSelected && (
+          <button
+            type="button"
+            onClick={() => toggleExpanded(category)}
+            aria-expanded={isExpanded}
+            aria-label={`${isExpanded ? "Hide" : "Show"} ${category} preferences`}
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg hover:bg-muted"
+          >
+            {isExpanded ? (
+              <ChevronUp className="w-4 h-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            )}
+          </button>
+        )}
+      </div>
       {isSelected && isExpanded && (
         <div className="px-3 pb-3 space-y-3 border-t border-border/50 pt-3">
           {children}
@@ -301,8 +321,20 @@ const PreferencesStep = ({ onBack, onNext, isLoading }: PreferencesStepProps) =>
     <div className="flex flex-col gap-fluid-sm">
       <div className="space-y-3">
         <div>
-          <Label className="heading-luxe-eyebrow mb-1 block text-left">Select up to 3 categories</Label>
-          <p className="text-xs text-muted-foreground mb-3">Tap a category to select, then expand to set preferences</p>
+          <div className="mb-1 flex items-center justify-between gap-2">
+            <Label className="heading-luxe-eyebrow text-left">Select up to 3 categories</Label>
+            <span
+              className={cn("text-[11px] font-semibold", atCategoryCap ? "text-primary" : "text-muted-foreground")}
+              aria-live="polite"
+            >
+              {selectedCategories.length}/{MAX_CATEGORIES}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">
+            {atCategoryCap
+              ? "Max reached — deselect one to swap in another."
+              : "Tap a category to select, then expand to set preferences"}
+          </p>
           
           <div className="space-y-2">
             <CategoryCard

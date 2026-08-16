@@ -13,7 +13,6 @@ import { Json } from "@/integrations/supabase/types";
 import jetLogo from "@/assets/jet-auth-logo-48.webp";
 import { consumePostAuthRedirect } from "@/lib/postAuthRedirect";
 import { useAuth } from "@/contexts/AuthContext";
-import { SEO } from "@/components/SEO";
 import {
   readCachedOnboardingStatus,
   writeCachedOnboardingStatus,
@@ -36,6 +35,14 @@ const PRONOUN_OPTIONS = [
   { value: "prefer-not-to-say", label: "Prefer not to say" },
   { value: "other", label: "Other" },
 ];
+
+const MIN_AGE = 18;
+// Latest birthdate that still satisfies the age gate (used as the date input max).
+const maxBirthdate = (() => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - MIN_AGE);
+  return d.toISOString().slice(0, 10);
+})();
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -64,6 +71,9 @@ const Onboarding = () => {
   const [bio, setBio] = useState("");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  // Avatar already stored on the profile — preserved when the user resumes
+  // Step 1 without picking a new file.
+  const [existingAvatarUrl, setExistingAvatarUrl] = useState<string | null>(null);
   const [birthdate, setBirthdate] = useState("");
   const [gender, setGender] = useState("");
   const [pronouns, setPronouns] = useState("");
@@ -123,13 +133,19 @@ const Onboarding = () => {
         if (profile) {
           if (profile.display_name) setDisplayName(profile.display_name);
           if (profile.bio) setBio(profile.bio);
-          if (profile.avatar_url) setAvatarPreview(profile.avatar_url);
+          if (profile.avatar_url) {
+            setAvatarPreview(profile.avatar_url);
+            setExistingAvatarUrl(profile.avatar_url);
+          }
           if (profile.birthdate) setBirthdate(profile.birthdate);
           if (profile.gender) setGender(profile.gender);
           if (profile.pronouns) setPronouns(profile.pronouns);
 
           const hasStep1 = !!(profile.display_name && profile.birthdate && profile.gender);
           const hasStep2 = !!profile.preferences;
+          if (hasStep2) {
+            setSavedPreferences(profile.preferences as unknown as PreferencesData);
+          }
           if (hasStep2) setStep(3);
           else if (hasStep1) setStep(2);
         }
@@ -193,8 +209,8 @@ const Onboarding = () => {
       errors.birthdate = "Birthdate is required";
     } else {
       const age = calculateAge(birthdate);
-      if (age < 21) {
-        errors.birthdate = "You must be 21 or older";
+      if (age < MIN_AGE) {
+        errors.birthdate = `You must be ${MIN_AGE} or older`;
       }
     }
 
@@ -219,7 +235,9 @@ const Onboarding = () => {
         return;
       }
 
-      let avatarUrl = null;
+      // Default to whatever is already on the profile so resuming Step 1
+      // without re-uploading never wipes an existing (or OAuth) avatar.
+      let avatarUrl = existingAvatarUrl;
       
       // Upload avatar if provided
       if (avatarFile && userId) {
@@ -237,6 +255,7 @@ const Onboarding = () => {
           .getPublicUrl(fileName);
         
         avatarUrl = publicUrl;
+        setExistingAvatarUrl(publicUrl);
       }
       
       // Use upsert to handle cases where profile might not exist yet
@@ -247,7 +266,7 @@ const Onboarding = () => {
           display_name: displayName.trim(),
           display_name_claimed: true,
           bio: bio || null,
-          avatar_url: avatarUrl,
+          ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
           birthdate: birthdate,
           gender: gender,
           pronouns: pronouns || null,
@@ -349,7 +368,9 @@ const Onboarding = () => {
       label: "Finish",
       title: "You're",
       titleAccent: "All Set",
-      description: "Based on your preferences, we'll surface the best of Charlotte.",
+      description: savedPreferences
+        ? "Based on your preferences, we'll surface the best of Charlotte."
+        : "You can set your taste preferences any time from your profile.",
     },
   ] as const;
   const current = STEPS[step - 1];
@@ -392,12 +413,6 @@ const Onboarding = () => {
     <div
       className="relative flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto bg-background px-fluid-sm sm:px-fluid-md pt-[max(env(safe-area-inset-top,0px),var(--space-lg))] pb-[max(env(safe-area-inset-bottom,0px),var(--space-lg))]"
     >
-      <SEO
-        title="Set up your JET account"
-        description="Finish setting up your JET profile to see personalized deals and venues in Charlotte."
-        path="/onboarding"
-        noindex
-      />
       {/* Ambient corner glow accents */}
       <div className="pointer-events-none absolute -top-32 -left-32 h-80 w-80 rounded-full bg-primary/10 blur-[140px]" aria-hidden />
       <div className="pointer-events-none absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-primary-glow/10 blur-[140px]" aria-hidden />
@@ -409,7 +424,7 @@ const Onboarding = () => {
         <div className="flex flex-col gap-8 rounded-[40px] border border-white/10 bg-card/60 p-7 sm:p-8 shadow-2xl backdrop-blur-3xl">
           {/* Top row: back affordance */}
           <div className="flex h-5 items-center justify-between">
-            {step > 1 && step < 3 ? (
+            {step > 1 ? (
               <button
                 type="button"
                 onClick={goBack}
@@ -549,6 +564,7 @@ const Onboarding = () => {
                 type="date"
                 value={birthdate}
                 onChange={(e) => setBirthdate(e.target.value)}
+                max={maxBirthdate}
                 className={`bg-card/60 ${step1Errors.birthdate ? "focus-visible:!ring-destructive/30" : ""}`}
                 aria-invalid={!!step1Errors.birthdate}
                 aria-describedby={step1Errors.birthdate ? "birthdate-error" : undefined}
@@ -631,6 +647,7 @@ const Onboarding = () => {
                 onBack={() => { setDirection("backward"); setStep(1); }}
                 onNext={handleStep2Next}
                 isLoading={isLoading}
+                initialPreferences={savedPreferences}
               />
             </div>
           )}
@@ -647,8 +664,19 @@ const Onboarding = () => {
                 </div>
                 <h3 className="heading-luxe-card mb-fluid-xs">All Set!</h3>
                 <p className="text-fluid-sm text-muted-foreground">
-                  Based on your preferences, we'll show you the best deals in Charlotte
+                  {savedPreferences
+                    ? "Based on your preferences, we'll show you the best deals in Charlotte"
+                    : "You're ready to explore Charlotte. Add your taste preferences whenever you like for a more personal feed."}
                 </p>
+                {!savedPreferences && (
+                  <button
+                    type="button"
+                    onClick={() => { setDirection("backward"); setStep(2); }}
+                    className="mt-3 inline-flex min-h-11 items-center text-fluid-xs font-semibold uppercase tracking-widest text-primary underline-offset-4 hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+                  >
+                    Set preferences now
+                  </button>
+                )}
                 </div>
               </div>
 
