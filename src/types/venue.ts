@@ -21,4 +21,10 @@ export interface Venue {
   openingHours?: string[];
   phone?: string;
   website?: string;
+  /** Momentum score, -100 (emptying) .. +100 (filling up). */
+  momentum?: number;
+  /** Momentum trend bucket. */
+  momentumTrend?: "rising" | "peaking" | "falling" | "steady" | "unknown";
+  /** Human-readable momentum label, e.g. "Filling up". */
+  momentumLabel?: string;
 }
