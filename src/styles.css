@@ -1616,6 +1616,35 @@ All colors MUST be HSL.
 
   /* Mobile map controls - responsive based on device */
   /* Offset Mapbox built-in controls so they never sit under Header/BottomNav */
+  /* Accessibility skip link — visually hidden until keyboard focused.
+     Without this it renders in-flow and offsets every fixed/absolute
+     map overlay, pushing the legend under the bottom nav. */
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    z-index: 10001;
+  }
+
+  .skip-link:focus-visible,
+  .skip-link:focus {
+    left: 0.75rem;
+    top: 0.75rem;
+    width: auto;
+    height: auto;
+    padding: 0.5rem 0.875rem;
+    border-radius: 0.5rem;
+    background: hsl(var(--card));
+    color: hsl(var(--foreground));
+    border: 1px solid hsl(var(--border));
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+  }
+
   .mapboxgl-ctrl-top-left,
   .mapboxgl-ctrl-top-right {
     top: var(--map-safe-top-controls-in-map, var(--map-safe-top-controls, var(--map-safe-top))) !important;
