@@ -3,6 +3,23 @@ import { corsHeaders, logVersion, EDGE_FUNCTION_VERSION } from "../_shared/cors.
 const FUNCTION_NAME = "get-parking-details";
 logVersion(FUNCTION_NAME);
 
+// Coarse Google price level -> short label + estimated hourly band, so the
+// parking card can show a rate instead of nothing.
+const PRICE_BANDS: Array<{ label: string; detail: string }> = [
+  { label: 'Free', detail: 'No charge' },
+  { label: '$', detail: '~$1–$3/hr est.' },
+  { label: '$$', detail: '~$3–$7/hr est.' },
+  { label: '$$$', detail: '~$7–$15/hr est.' },
+  { label: '$$$$', detail: '~$15–$30/hr est.' },
+];
+
+const pricing = (level: number | null | undefined) => {
+  if (typeof level !== 'number' || !PRICE_BANDS[level]) {
+    return { priceLabel: null, priceDetail: null };
+  }
+  return { priceLabel: PRICE_BANDS[level].label, priceDetail: PRICE_BANDS[level].detail };
+};
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -103,6 +120,7 @@ Deno.serve(async (req) => {
       isOpen: place.opening_hours?.open_now ?? null,
       openingHours: details.opening_hours?.weekday_text || [],
       priceLevel: details.price_level ?? place.price_level ?? null,
+      ...pricing(details.price_level ?? place.price_level ?? null),
       phone: details.formatted_phone_number || null,
       website: details.website || null,
       placeId: place.place_id,
