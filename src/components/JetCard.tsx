@@ -14,6 +14,7 @@ import { isVenueOpenNow } from "@/lib/venue-hours";
 import { useVenuePhoto } from "@/hooks/useVenuePhoto";
 import { useLockMapWhileInteracting } from "@/lib/mapInteractionLock";
 import type { Venue as DirectionsVenue } from "@/types/venue";
+import { activityTier, type ActivityTierId } from "@/lib/activity-palette";
 
 const DirectionsDialog = lazy(() => import("./DirectionsDialog"));
 
