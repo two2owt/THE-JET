@@ -91,6 +91,7 @@ import { Button } from "./ui/button";
 import { LayerToggleRow } from "./map/LayerToggleRow";
 import { LayerSliderRow } from "./map/LayerSliderRow";
 import { HeatmapColorLegend } from "./map/HeatmapColorLegend";
+import { activityColor, activityLegendTiers, casingFor } from "@/lib/activity-palette";
 import {
   LiveStatsPanel,
   liveStatsRangeToTimeFilter,
@@ -129,12 +130,14 @@ interface MapboxHeatmapProps {
   isTokenLoading?: boolean; // True while the mapbox token is being fetched
 }
 
-const getActivityColor = (activity: number) => {
-  // Brighter, more saturated colors for better visibility on dark map
-  if (activity >= 80) return "hsl(0, 100%, 65%)"; // hot red - bright coral
-  if (activity >= 60) return "hsl(45, 100%, 60%)"; // warm yellow-orange 
-  return "hsl(200, 100%, 65%)"; // cool blue - vibrant sky blue
-};
+/**
+ * Activity fill for a marker. Delegates to the shared palette so the markers
+ * and the Activity legend can never drift apart, and so the colour responds to
+ * the *basemap* rather than the app theme — the map style can be light while
+ * the app is in dark mode.
+ */
+const getActivityColor = (activity: number, isLightBasemap: boolean) =>
+  activityColor(activity, isLightBasemap);
 
 // Platform detection for optimized settings
 const getPlatformSettings = (isMobile: boolean) => {
@@ -2097,7 +2100,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       // Guard against map becoming null during iteration
       if (!mapInstance) return;
       
-      const color = getActivityColor(venue.activity);
+      // `isDarkTheme` here tracks the basemap, not the app theme.
+      const color = getActivityColor(venue.activity, !isDarkTheme);
+      const casing = casingFor(!isDarkTheme);
       const floral = getCategoryFloral(venue.category);
       const floralColor = isDarkTheme ? floral.dark : floral.light;
       const isSelected = !!selectedVenue && selectedVenue.id === venue.id;
@@ -2205,9 +2210,11 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         left: 0;
         width: ${markerSize}px;
         height: ${markerSize}px;
+        /* Near-opaque core: letting the basemap show through the fill is what
+           made markers wash out over satellite and busy street tiles. */
         background: ${isDarkTheme 
-          ? 'rgba(30, 30, 35, 0.75)' 
-          : 'rgba(255, 255, 255, 0.8)'};
+          ? 'rgba(30, 30, 35, 0.94)' 
+          : 'rgba(255, 255, 255, 0.95)'};
         backdrop-filter: blur(12px) saturate(180%);
         -webkit-backdrop-filter: blur(12px) saturate(180%);
         border-radius: 50% 50% 50% 0;
@@ -2222,7 +2229,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         box-shadow: 
           0 4px 16px rgba(0, 0, 0, ${isDarkTheme ? '0.4' : '0.15'}),
           inset 0 1px 0 rgba(255, 255, 255, ${isDarkTheme ? '0.1' : '0.5'}),
-          0 0 0 1px ${isSelected ? GOLD : color}${isSelected ? '99' : '40'};
+          0 0 0 1px ${isSelected ? GOLD : color}${isSelected ? '99' : '40'},
+          /* Contrast casing: drawn outside the fill so the marker stays
+             readable over arbitrary basemap pixels (satellite especially). */
+          0 0 0 3px ${casing};
       `;
       
       // Category-aware iconography (counter-rotated to stay upright)
@@ -4089,10 +4099,19 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               Legend
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              {/* Same tokens as the expanded Activity legend: Hot / Warm / Cool */}
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(var(--primary))', boxShadow: '0 0 6px hsl(var(--primary) / 0.55)' }} />
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(var(--gold))', boxShadow: '0 0 6px hsl(var(--gold) / 0.5)' }} />
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(var(--silver))', boxShadow: '0 0 6px hsl(var(--silver) / 0.45)' }} />
+              {/* Same palette the venue markers use, resolved for this basemap. */}
+              {activityLegendTiers(mapStyle === 'light' || mapStyle === 'streets').map((tier) => (
+                <div
+                  key={tier.id}
+                  style={{
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    background: tier.color,
+                    boxShadow: `0 0 0 1.5px ${casingFor(mapStyle === 'light' || mapStyle === 'streets')}`,
+                  }}
+                />
+              ))}
             </div>
             <ChevronUp style={{ width: '12px', height: '12px', color: 'hsl(var(--silver))' }} />
           </div>
@@ -4190,19 +4209,33 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 >
                   Activity
                 </p>
-                <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '4px' : '8px', width: '100%', justifyContent: 'center', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flex: isMobile ? 'none' : 1 }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(var(--primary))', boxShadow: '0 0 6px hsl(var(--primary) / 0.55)' }} />
-                    <span style={{ fontSize: '9px', color: 'hsl(var(--foreground))' }}>Hot</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flex: isMobile ? 'none' : 1 }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(var(--gold))', boxShadow: '0 0 6px hsl(var(--gold) / 0.55)' }} />
-                    <span style={{ fontSize: '9px', color: 'hsl(var(--foreground))' }}>Warm</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flex: isMobile ? 'none' : 1 }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(var(--silver))', boxShadow: '0 0 6px hsl(var(--silver) / 0.5)' }} />
-                    <span style={{ fontSize: '9px', color: 'hsl(var(--foreground))' }}>Cool</span>
-                  </div>
+                {/* Four tiers, same palette and casing as the venue markers.
+                    Two columns on mobile so the extra tier costs no height. */}
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, auto)',
+                    gap: isMobile ? '4px 8px' : '8px',
+                    width: '100%',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  {activityLegendTiers(mapStyle === 'light' || mapStyle === 'streets').map((tier) => (
+                    <div key={tier.id} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <div
+                        style={{
+                          width: '8px',
+                          height: '8px',
+                          flexShrink: 0,
+                          borderRadius: '50%',
+                          background: tier.color,
+                          boxShadow: `0 0 0 1.5px ${casingFor(mapStyle === 'light' || mapStyle === 'streets')}`,
+                        }}
+                      />
+                      <span style={{ fontSize: '9px', color: 'hsl(var(--foreground))' }}>{tier.label}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
