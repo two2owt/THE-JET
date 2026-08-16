@@ -86,7 +86,7 @@ const Auth = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   // Auto-fit: scales the auth card down just enough to fit short viewports
   // (landscape phones, small windows) so the page never needs scrolling.
-  const autoFitRef = useAutoFitScale<HTMLDivElement>({ minScale: 0.62, containerSelector: ".auth-fullscreen" });
+  const autoFitRef = useAutoFitScale<HTMLDivElement>({ minScale: 0.7, containerSelector: ".auth-fullscreen" });
   const { user: authUser, isLoading: authLoading } = useAuth();
   // True while we're holding the form back because an already-authenticated
   // user is about to be redirected (prevents the form flashing for a frame).
@@ -837,7 +837,6 @@ const Auth = () => {
       <div className="auth-content-wrapper relative z-10 flex w-full flex-1 flex-col items-center justify-center px-4 sm:px-6 md:px-8 pt-[max(env(safe-area-inset-top,0px),12px)] sm:pt-[max(env(safe-area-inset-top,0px),20px)] pb-[max(env(safe-area-inset-bottom,0px),12px)] sm:pb-[max(env(safe-area-inset-bottom,0px),20px)]">
         <div
           ref={autoFitRef}
-          data-autofit="1"
           className="w-full max-w-[420px] mx-auto flex flex-col items-center animate-fade-in"
         >
           {/* Logo above card */}
