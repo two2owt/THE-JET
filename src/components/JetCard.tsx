@@ -26,6 +26,9 @@ interface NearbyParking {
   isOpen: boolean | null;
   placeId: string;
   distance?: number | null;
+  priceLevel?: string | null;
+  priceLabel?: string | null;
+  priceDetail?: string | null;
 }
 
 interface JetCardProps {
