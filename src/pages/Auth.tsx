@@ -835,7 +835,10 @@ const Auth = () => {
 
       {/* Centered content — column flex fills the viewport and centers the card both axes */}
       <div className="auth-content-wrapper relative z-10 flex w-full flex-1 flex-col items-center justify-center px-4 sm:px-6 md:px-8 pt-[max(env(safe-area-inset-top,0px),12px)] sm:pt-[max(env(safe-area-inset-top,0px),20px)] pb-[max(env(safe-area-inset-bottom,0px),12px)] sm:pb-[max(env(safe-area-inset-bottom,0px),20px)]">
-        <div className="w-full max-w-[420px] mx-auto flex flex-col items-center animate-fade-in">
+        <div
+          ref={autoFitRef}
+          className="w-full max-w-[420px] mx-auto flex flex-col items-center animate-fade-in"
+        >
           {/* Logo above card */}
           <div className="auth-logo flex flex-col items-center mb-4 sm:mb-5">
             <picture>
