@@ -8,7 +8,7 @@ import { createClient } from "@supabase/supabase-js";
  *  - auth email is confirmed
  *  - profiles.onboarding_completed = false
  *  - account is at least MIN_AGE_HOURS old (don't interrupt a live signup)
- *  - account is younger than MAX_AGE_DAYS (stop nagging cold accounts)
+ *  - account is younger than MAX_AGE_DAYS (stop nagging dead accounts)
  *  - email_notifications_enabled is not false
  *  - fewer than MAX_NUDGES already sent, last one older than THROTTLE_HOURS
  *
@@ -17,7 +17,9 @@ import { createClient } from "@supabase/supabase-js";
  */
 
 const MIN_AGE_HOURS = 24;
-const MAX_AGE_DAYS = 30;
+// Wide enough to cover the existing backlog of stalled sign-ups; MAX_NUDGES
+// still caps each person at two emails, ever.
+const MAX_AGE_DAYS = 365;
 const THROTTLE_HOURS = 72;
 const MAX_NUDGES = 2;
 const CHANNEL_KEY = "finish-onboarding";
