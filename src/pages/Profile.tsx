@@ -202,6 +202,7 @@ export default function Profile() {
       try {
         await updateProfile({
           display_name: validatedData.display_name,
+          display_name_claimed: true,
           bio: validatedData.bio || null,
           gender: form.gender,
           pronouns: form.pronouns || null,
