@@ -1646,6 +1646,15 @@ All colors MUST be HSL.
     outline-offset: 2px;
   }
 
+  /* Zoom / pan / geolocate controls always sit above venue markers,
+     which use marker z-index values up to 300. */
+  .mapboxgl-control-container .mapboxgl-ctrl-top-left,
+  .mapboxgl-control-container .mapboxgl-ctrl-top-right,
+  .mapboxgl-control-container .mapboxgl-ctrl-bottom-left,
+  .mapboxgl-control-container .mapboxgl-ctrl-bottom-right {
+    z-index: 1000 !important;
+  }
+
   .mapboxgl-ctrl-top-left,
   .mapboxgl-ctrl-top-right {
     top: var(--map-safe-top-controls-in-map, var(--map-safe-top-controls, var(--map-safe-top))) !important;
