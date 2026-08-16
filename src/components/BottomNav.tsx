@@ -50,7 +50,7 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, messa
       role="navigation"
       aria-label="Main navigation"
       style={{
-        paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 4px)',
+        paddingBottom: 'var(--safe-area-inset-bottom)',
         paddingLeft: 'var(--safe-area-inset-left)',
         paddingRight: 'var(--safe-area-inset-right)',
         height: 'var(--bottom-nav-total-height)',
@@ -96,9 +96,9 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, messa
           alignItems: 'center',
           justifyContent: 'space-around',
           height: '100%',
-          maxWidth: 'clamp(320px, 60vw, 560px)',
+          maxWidth: 'clamp(320px, 72vw, 600px)',
           margin: '0 auto',
-          padding: '0 clamp(8px, 1.5vw, 16px)',
+          padding: '0 clamp(10px, 2.4vw, 20px)',
         }}
         onMouseOver={handleDelegatedPrefetch}
         onTouchStart={handleDelegatedPrefetch}
@@ -129,12 +129,12 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, messa
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                minWidth: 'clamp(48px, 12vw, 64px)',
-                height: 'clamp(40px, 6vw, 52px)',
-                gap: '2px',
+                minWidth: 'clamp(52px, 13vw, 72px)',
+                height: 'clamp(44px, 7vw, 56px)',
+                gap: 'clamp(2px, 0.6vw, 4px)',
                 background: 'transparent',
                 border: 'none',
-                padding: 0,
+                padding: '0 clamp(2px, 0.6vw, 6px)',
                 cursor: 'pointer',
                 WebkitAppearance: 'none' as any,
                 opacity: mounted ? 1 : 0,
@@ -192,8 +192,8 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, messa
               <Icon
                 className="relative z-10"
                 style={{
-                  width: '20px',
-                  height: '20px',
+                  width: 'clamp(18px, 4.8vw, 22px)',
+                  height: 'clamp(18px, 4.8vw, 22px)',
                   color: isActive ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
                   strokeWidth: isActive ? 2.4 : 1.8,
                   transition: 'color 0.2s, transform 0.2s',
@@ -207,7 +207,7 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, messa
               <span
                 className="relative z-10"
                 style={{
-                  fontSize: '10px',
+                  fontSize: 'clamp(9px, 2.2vw, 11px)',
                   fontWeight: isActive ? 600 : 500,
                   color: isActive ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
                   opacity: isActive ? 1 : 0.65,
