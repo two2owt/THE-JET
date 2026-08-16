@@ -120,6 +120,7 @@ Deno.serve(async (req) => {
       isOpen: place.opening_hours?.open_now ?? null,
       openingHours: details.opening_hours?.weekday_text || [],
       priceLevel: details.price_level ?? place.price_level ?? null,
+      ...pricing(details.price_level ?? place.price_level ?? null),
       phone: details.formatted_phone_number || null,
       website: details.website || null,
       placeId: place.place_id,
