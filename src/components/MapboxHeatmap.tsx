@@ -91,7 +91,7 @@ import { Button } from "./ui/button";
 import { LayerToggleRow } from "./map/LayerToggleRow";
 import { LayerSliderRow } from "./map/LayerSliderRow";
 import { HeatmapColorLegend } from "./map/HeatmapColorLegend";
-import { activityColor, activityLegendTiers, casingFor } from "@/lib/activity-palette";
+import { activityColor, activityLegendTiers, activityTier, casingFor } from "@/lib/activity-palette";
 import {
   LiveStatsPanel,
   liveStatsRangeToTimeFilter,
@@ -2107,7 +2107,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       const floralColor = isDarkTheme ? floral.dark : floral.light;
       const isSelected = !!selectedVenue && selectedVenue.id === venue.id;
       const hasSelection = !!selectedVenue;
-      const isHighActivity = venue.activity >= 80;
+      // Tier drives every activity-derived visual (fill, size, pulse) so the
+      // marker, the legend and the JetCard always agree on the same venue.
+      const tier = activityTier(venue.activity);
+      const isHighActivity = tier.id === 'peak';
       const GOLD = '#C9A961';
 
       // Check proximity to other venues
@@ -2121,7 +2124,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
       // Adjust size based on proximity - slightly smaller for clustered areas
       const proximityFactor = nearbyCount > 0 ? Math.max(0.85, 1 - (nearbyCount * 0.04)) : 1;
-      const activitySizeFactor = isHighActivity ? 1.15 : venue.activity >= 60 ? 1.08 : 1;
+      const activitySizeFactor = tier.id === 'peak' ? 1.15 : tier.id === 'busy' ? 1.08 : 1;
       const selectionFactor = isSelected ? 1.25 : 1;
       // Increased minimum size for better visibility
       const markerSize = Math.max(32, Math.min(38, baseSize * 0.8)) * proximityFactor * activitySizeFactor * selectionFactor;
@@ -2149,8 +2152,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       // Determine pulse animation speed based on activity level
       // Disable pulse for reduced motion/low power mode
       const shouldAnimate = platformSettings.current.markerAnimation && isTabVisible;
-      const pulseSpeed = venue.activity >= 80 ? '1.5s' : venue.activity >= 60 ? '2.5s' : '4s';
-      const pulseOpacity = venue.activity >= 80 ? '0.8' : venue.activity >= 60 ? '0.5' : '0.3';
+      const pulseSpeed = tier.id === 'peak' ? '1.5s' : tier.id === 'busy' ? '2.5s' : tier.id === 'steady' ? '3.2s' : '4s';
+      const pulseOpacity = tier.id === 'peak' ? '0.8' : tier.id === 'busy' ? '0.5' : tier.id === 'steady' ? '0.38' : '0.3';
       
       // Create teardrop pin container
       const pinEl = document.createElement('div');
