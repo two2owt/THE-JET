@@ -14,6 +14,7 @@ import { isVenueOpenNow } from "@/lib/venue-hours";
 import { useVenuePhoto } from "@/hooks/useVenuePhoto";
 import { useLockMapWhileInteracting } from "@/lib/mapInteractionLock";
 import type { Venue as DirectionsVenue } from "@/types/venue";
+import { activityTier, type ActivityTierId } from "@/lib/activity-palette";
 
 const DirectionsDialog = lazy(() => import("./DirectionsDialog"));
 
@@ -191,13 +192,19 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
     await loadParking(true);
   };
 
+  // Single source of truth: the same tier boundaries and colours the map
+  // markers and the Activity legend use, so a "Peak" marker can never read
+  // as "Moderate" on its card. App chrome is dark-only -> dark tier variant.
   const getActivityLevel = (activity: number) => {
-    if (activity >= 80) return { label: "🔥 Very Busy", color: 'hsl(var(--hot))' };
-    if (activity >= 60) return { label: "🌟 Busy", color: 'hsl(var(--warm))' };
-    if (activity >= 40) return { label: "✨ Moderate", color: 'hsl(var(--cool))' };
-    return { label: "😌 Quiet", color: 'hsl(var(--cold))' };
+    const tier = activityTier(activity);
+    const emoji: Record<ActivityTierId, string> = {
+      peak: "🔥",
+      busy: "🌟",
+      steady: "✨",
+      quiet: "😌",
+    };
+    return { label: `${emoji[tier.id]} ${tier.label}`, color: tier.dark };
   };
-
   const handleGetDirections = async () => {
     await glideHaptic();
     try {
