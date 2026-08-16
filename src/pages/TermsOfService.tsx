@@ -27,7 +27,7 @@ const TermsOfService = () => {
         <div className="prose prose-sm sm:prose lg:prose-lg dark:prose-invert max-w-none">
           <h1 className="text-4xl font-extrabold mb-2" style={{ backgroundImage: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary)), hsl(var(--accent)))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Terms of Service</h1>
           <p className="text-muted-foreground mb-2">Jet Mobile App</p>
-          <p className="text-muted-foreground mb-8">Last updated: January 3, 2025</p>
+          <p className="text-muted-foreground mb-8">Last updated: August 16, 2026</p>
 
           <section className="mb-8">
             <h2 className="text-2xl font-bold mb-4">1. Acceptance of Terms</h2>
@@ -51,13 +51,17 @@ const TermsOfService = () => {
               Jet is a location-based mobile application that helps users discover deals, specials, and promotions at local bars, restaurants, and venues. Our services include:
             </p>
             <ul className="list-disc pl-6 space-y-2 text-foreground/80">
-              <li>Interactive map displaying nearby venues with active deals</li>
-              <li>Location-based notifications for deals near you</li>
-              <li>Ability to save favorite venues and deals</li>
-              <li>Social features to connect with friends</li>
-              <li>Venue reviews and ratings</li>
-              <li>Premium subscription features</li>
+              <li>An interactive map displaying nearby venues, deals, and open/closed status</li>
+              <li>Aggregated activity layers (heatmap and flow paths) built from many users&apos; location points</li>
+              <li>Nearby parking information and hand-off links to third-party navigation apps</li>
+              <li>Location-based and favorite-based alerts delivered by push notification and an in-app Alerts inbox</li>
+              <li>Saving favorite venues and deals</li>
+              <li>Social discovery, connection (crew) requests, and direct messaging between users</li>
+              <li>Optional paid subscription tiers</li>
             </ul>
+            <p className="text-foreground/80 mt-4">
+              Service coverage is currently limited to the Charlotte, North Carolina metropolitan area and selected additional cities. Availability of venues, deals, and features varies by location.
+            </p>
             <p className="text-foreground/80 mt-4">
               We reserve the right to modify, suspend, or discontinue any aspect of the service at any time without prior notice.
             </p>
@@ -68,7 +72,7 @@ const TermsOfService = () => {
             
             <h3 className="text-xl font-semibold mb-3">3.1 Age Requirements</h3>
             <p className="text-foreground/80 mb-4">
-              You must be at least 21 years old to use Jet. The app contains references to alcohol and venue specials that may include alcoholic beverages. By using Jet, you confirm that you meet this age requirement.
+              You must be at least 18 years old to create an account and use Jet, and you must provide your date of birth during onboarding so we can verify this. The app contains references to alcohol and to venue specials that may include alcoholic beverages. Nothing in Jet is an offer to sell alcohol to anyone under the legal drinking age, and you may only purchase or consume alcohol if you are of legal drinking age in your jurisdiction (21 in the United States). Venues remain responsible for verifying age at the point of sale.
             </p>
 
             <h3 className="text-xl font-semibold mb-3">3.2 Account Responsibilities</h3>
@@ -99,7 +103,13 @@ const TermsOfService = () => {
               <li>Use automated systems (bots, scrapers) to access the service</li>
               <li>Circumvent any security or access controls</li>
               <li>Use the service to promote competing products or services</li>
+              <li>Send unsolicited, bulk, or commercial messages to other users</li>
+              <li>Contact, follow, or attempt to locate another user based on activity shown on the map</li>
+              <li>Reverse-engineer, de-anonymize, or attempt to identify individuals from aggregated activity data</li>
             </ul>
+            <p className="text-foreground/80 mt-4">
+              Messages and images you send to other users are subject to the same content standards as all other User Content. Recipients can report or block you, and we may review reported conversations to investigate violations.
+            </p>
           </section>
 
           <section className="mb-8">
@@ -133,11 +143,15 @@ const TermsOfService = () => {
               Jet uses location data to provide core functionality. By using location features, you:
             </p>
             <ul className="list-disc pl-6 space-y-2 text-foreground/80">
-              <li>Consent to the collection of your precise location data</li>
-              <li>Understand that location data is used to show nearby deals and send proximity alerts</li>
-              <li>Acknowledge that background location may be used if enabled</li>
-              <li>Can control location permissions through your device settings</li>
+              <li>Consent to the collection of your precise location data while location sharing is enabled</li>
+              <li>Understand that location data is used to show nearby deals, send proximity alerts, and contribute to aggregated activity layers shown to other users</li>
+              <li>Acknowledge that aggregated layers only display areas where enough distinct users are present, and that we do not display your individual position to other users</li>
+              <li>Acknowledge that background location may be used if you enable it</li>
+              <li>Can control location permissions through your device settings or the app&apos;s location settings at any time</li>
             </ul>
+            <p className="text-foreground/80 mt-4">
+              Location accuracy depends on your device, network, and surroundings. Do not rely on Jet for navigation, emergency, or safety-critical purposes.
+            </p>
             <p className="text-foreground/80 mt-4">
               For full details on how we handle location data, please see our{" "}
               <Link to="/privacy-policy" className="text-primary hover:underline">
@@ -157,7 +171,9 @@ const TermsOfService = () => {
             <h3 className="text-xl font-semibold mb-3">7.2 Billing</h3>
             <ul className="list-disc pl-6 space-y-2 text-foreground/80">
               <li>Subscriptions are billed in advance on a recurring basis (monthly or annually)</li>
-              <li>Payment is processed through the App Store (iOS) or our payment provider (Stripe)</li>
+              <li>Payment on the web is processed by Stripe; we do not receive or store your full card details</li>
+              <li>Where the app is installed from a mobile app store, that store&apos;s billing and refund rules may apply instead</li>
+              <li>You can manage or cancel a Stripe subscription from the billing portal linked in your account settings</li>
               <li>Prices are subject to change with notice</li>
             </ul>
 
