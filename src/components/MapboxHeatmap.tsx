@@ -4099,10 +4099,19 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               Legend
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              {/* Same tokens as the expanded Activity legend: Hot / Warm / Cool */}
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(var(--primary))', boxShadow: '0 0 6px hsl(var(--primary) / 0.55)' }} />
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(var(--gold))', boxShadow: '0 0 6px hsl(var(--gold) / 0.5)' }} />
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'hsl(var(--silver))', boxShadow: '0 0 6px hsl(var(--silver) / 0.45)' }} />
+              {/* Same palette the venue markers use, resolved for this basemap. */}
+              {activityLegendTiers(mapStyle === 'light' || mapStyle === 'streets').map((tier) => (
+                <div
+                  key={tier.id}
+                  style={{
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    background: tier.color,
+                    boxShadow: `0 0 0 1.5px ${casingFor(mapStyle === 'light' || mapStyle === 'streets')}`,
+                  }}
+                />
+              ))}
             </div>
             <ChevronUp style={{ width: '12px', height: '12px', color: 'hsl(var(--silver))' }} />
           </div>
