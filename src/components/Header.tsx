@@ -397,7 +397,7 @@ export const Header = () => {
         {/* Spacer only when no search element is present — otherwise the
             search pill already absorbs the free space (two flex:1 siblings
             would split the row and shrink the pill to half width). */}
-        {!showSearchBar && !showSearchIcon && (
+        {(!isMobile || (!showSearchBar && !showSearchIcon)) && (
           <div style={{ flex: '1 1 0%', minWidth: 0 }} />
         )}
 
