@@ -24,6 +24,7 @@ const RetentionJobLog = lazy(() => import("@/components/admin/RetentionJobLog").
 const RetentionSettings = lazy(() => import("@/components/admin/RetentionSettings").then(m => ({ default: m.RetentionSettings })));
 const ExportUsersPanel = lazy(() => import("@/components/admin/ExportUsersPanel").then(m => ({ default: m.ExportUsersPanel })));
 const BulkUserProvisionPanel = lazy(() => import("@/components/admin/BulkUserProvisionPanel").then(m => ({ default: m.BulkUserProvisionPanel })));
+const UnverifiedNudgePanel = lazy(() => import("@/components/admin/UnverifiedNudgePanel").then(m => ({ default: m.UnverifiedNudgePanel })));
 const SecurityFindingsPanel = lazy(() => import("@/components/admin/SecurityFindingsPanel").then(m => ({ default: m.SecurityFindingsPanel })));
 const EmailHealthPanel = lazy(() => import("@/components/admin/EmailHealthPanel").then(m => ({ default: m.EmailHealthPanel })));
 
@@ -235,7 +236,10 @@ export default function AdminDashboard() {
               )}
               {section === "analytics" && (
                 <Suspense fallback={<AdminTabFallback />}>
-                  <UserAnalytics />
+                  <div className="flex flex-col" style={{ gap: 'var(--space-md)' }}>
+                    <UserAnalytics />
+                    <UnverifiedNudgePanel />
+                  </div>
                 </Suspense>
               )}
               {section === "funnel" && (
