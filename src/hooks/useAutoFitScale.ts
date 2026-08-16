@@ -30,10 +30,16 @@ export function useAutoFitScale<T extends HTMLElement>(
     el.style.marginBottom = "";
 
     const cs = getComputedStyle(parent);
-    const available =
+    let available =
       parent.clientHeight -
       parseFloat(cs.paddingTop || "0") -
       parseFloat(cs.paddingBottom || "0");
+    const inner = el.parentElement;
+    if (inner && inner !== parent) {
+      const ics = getComputedStyle(inner);
+      available -=
+        parseFloat(ics.paddingTop || "0") + parseFloat(ics.paddingBottom || "0");
+    }
     const natural = el.scrollHeight;
     if (!available || !natural) return;
 
