@@ -129,12 +129,14 @@ interface MapboxHeatmapProps {
   isTokenLoading?: boolean; // True while the mapbox token is being fetched
 }
 
-const getActivityColor = (activity: number) => {
-  // Brighter, more saturated colors for better visibility on dark map
-  if (activity >= 80) return "hsl(0, 100%, 65%)"; // hot red - bright coral
-  if (activity >= 60) return "hsl(45, 100%, 60%)"; // warm yellow-orange 
-  return "hsl(200, 100%, 65%)"; // cool blue - vibrant sky blue
-};
+/**
+ * Activity fill for a marker. Delegates to the shared palette so the markers
+ * and the Activity legend can never drift apart, and so the colour responds to
+ * the *basemap* rather than the app theme — the map style can be light while
+ * the app is in dark mode.
+ */
+const getActivityColor = (activity: number, isLightBasemap: boolean) =>
+  activityColor(activity, isLightBasemap);
 
 // Platform detection for optimized settings
 const getPlatformSettings = (isMobile: boolean) => {
