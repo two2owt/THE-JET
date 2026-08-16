@@ -189,12 +189,13 @@ export const useMovementPathsLayer = ({
     const lineLayerId = 'movement-paths-line';
     const staticLineLayerId = 'movement-paths-line-static';
     const glowLayerId = 'movement-paths-glow';
+    const casingLayerId = 'movement-paths-casing';
     const arrowLayerId = 'movement-paths-arrows';
     const particleLayerId = 'movement-paths-particles';
 
     // Toggle-off: tear everything down.
     if (!showMovementPaths) {
-      [particleLayerId, arrowLayerId, glowLayerId, lineLayerId, staticLineLayerId].forEach((id) => {
+      [particleLayerId, arrowLayerId, lineLayerId, staticLineLayerId, casingLayerId, glowLayerId].forEach((id) => {
         try { if (mapRef.current?.getLayer(id)) mapRef.current.removeLayer(id); } catch { /* no-op */ }
       });
       try { if (mapRef.current?.getSource(sourceId)) mapRef.current.removeSource(sourceId); } catch { /* no-op */ }
@@ -212,7 +213,7 @@ export const useMovementPathsLayer = ({
         return;
       } catch (err) {
         console.warn('paths setData failed, rebuilding:', err);
-        [particleLayerId, arrowLayerId, glowLayerId, lineLayerId, staticLineLayerId].forEach((id) => {
+        [particleLayerId, arrowLayerId, lineLayerId, staticLineLayerId, casingLayerId, glowLayerId].forEach((id) => {
           try { if (mapRef.current?.getLayer(id)) mapRef.current.removeLayer(id); } catch { /* no-op */ }
         });
         try { if (mapRef.current?.getSource(sourceId)) mapRef.current.removeSource(sourceId); } catch { /* no-op */ }
@@ -234,6 +235,22 @@ export const useMovementPathsLayer = ({
     const lineFreqWidth = ['interpolate', ['exponential', 1.5], ['get', 'frequency'],
       1, 5, 5, 8, 10, 12, 20, 16] as any;
 
+    /**
+     * Flow palette — deliberately off the heatmap's blue→red ramp so the two
+     * layers stay readable together, and tuned to the brand's violet/gold
+     * accents. Cool lavender for occasional routes, escalating through
+     * violet and magenta to warm gold for the busiest corridors. All five
+     * stops clear 4.5:1 against both the dark and light Mapbox basemaps.
+     */
+    const flowColorRamp = (alpha = 1) => [
+      'interpolate', ['linear'], ['get', 'frequency'],
+      1, `rgba(178, 196, 255, ${alpha})`,
+      5, `rgba(150, 138, 255, ${alpha})`,
+      10, `rgba(196, 112, 255, ${alpha})`,
+      15, `rgba(255, 106, 178, ${alpha})`,
+      20, `rgba(255, 178, 74, ${alpha})`,
+    ] as any;
+
     mapRef.current.addLayer({
       id: glowLayerId,
       type: 'line',
@@ -252,11 +269,11 @@ export const useMovementPathsLayer = ({
         ],
         'line-color': [
           'interpolate', ['linear'], ['get', 'frequency'],
-          1, 'rgba(176, 224, 255, 0.7)',
-          5, 'rgba(150, 214, 255, 0.8)',
-          10, 'rgba(120, 200, 255, 0.9)',
-          15, 'rgba(96, 190, 255, 0.95)',
-          20, 'rgba(70, 180, 255, 1)',
+          1, 'rgba(150, 170, 255, 0.75)',
+          5, 'rgba(140, 120, 255, 0.85)',
+          10, 'rgba(186, 96, 255, 0.9)',
+          15, 'rgba(255, 92, 168, 0.95)',
+          20, 'rgba(255, 168, 56, 1)',
         ],
         // Glow softness + strength both scale with frequency so busier routes
         // read as visibly brighter, not just wider.
@@ -287,13 +304,37 @@ export const useMovementPathsLayer = ({
       paint: {
         'line-width': [
           'interpolate', ['linear'], ['zoom'],
-          9, ['*', 2.5, 1.8],
-          12, ['*', 2.5, 1.4],
-          15, ['*', 2.5, 1.1],
-          17, ['*', 2.5, 1],
+          9, ['*', 3, 1.8],
+          12, ['*', 3, 1.4],
+          15, ['*', 3, 1.1],
+          17, ['*', 3, 1],
         ],
-        'line-color': 'rgba(176, 224, 255, 0.9)',
-        'line-opacity': ['*', 0.6, ['coalesce', ['get', 'recency'], 1]],
+        'line-color': 'rgba(196, 205, 255, 0.9)',
+        'line-opacity': ['*', 0.55, ['coalesce', ['get', 'recency'], 1]],
+        'line-opacity-transition': { duration: 600, delay: 0 },
+      } as any,
+    });
+
+    // Dark casing under the active flow lines: keeps the bright ramp legible
+    // over pale roads/water on the light (dawn) basemap without changing the
+    // hue, and adds separation from the heatmap underneath on dark.
+    mapRef.current.addLayer({
+      id: casingLayerId,
+      type: 'line',
+      source: sourceId,
+      filter: activeFilter(minFrequencyRef.current),
+      layout: { 'line-join': 'round', 'line-cap': 'round' },
+      paint: {
+        'line-width': [
+          'interpolate', ['linear'], ['zoom'],
+          9, ['*', lineFreqWidth, 2.4],
+          12, ['*', lineFreqWidth, 1.9],
+          15, ['*', lineFreqWidth, 1.5],
+          17, ['*', lineFreqWidth, 1.35],
+        ],
+        'line-color': 'rgba(8, 10, 24, 0.55)',
+        'line-blur': 0.5,
+        'line-opacity': ['*', 0.8, ['coalesce', ['get', 'recency'], 1]],
         'line-opacity-transition': { duration: 600, delay: 0 },
       } as any,
     });
@@ -314,11 +355,11 @@ export const useMovementPathsLayer = ({
         ],
         'line-color': [
           'interpolate', ['linear'], ['get', 'frequency'],
-          1, 'rgb(198, 233, 255)',
-          5, 'rgb(170, 222, 255)',
-          10, 'rgb(138, 208, 255)',
-          15, 'rgb(110, 196, 255)',
-          20, 'rgb(84, 186, 255)',
+          1, 'rgb(178, 196, 255)',
+          5, 'rgb(150, 138, 255)',
+          10, 'rgb(196, 112, 255)',
+          15, 'rgb(255, 106, 178)',
+          20, 'rgb(255, 178, 74)',
         ],
         'line-opacity': [
           '*',
@@ -401,11 +442,11 @@ export const useMovementPathsLayer = ({
         ],
         'circle-color': [
           'interpolate', ['linear'], ['get', 'frequency'],
-          1, 'rgb(150, 220, 255)',
-          5, 'rgb(100, 255, 255)',
-          10, 'rgb(255, 230, 100)',
-          15, 'rgb(255, 150, 50)',
-          20, 'rgb(255, 80, 150)',
+          1, 'rgb(222, 232, 255)',
+          5, 'rgb(198, 178, 255)',
+          10, 'rgb(236, 168, 255)',
+          15, 'rgb(255, 176, 214)',
+          20, 'rgb(255, 226, 170)',
         ],
         'circle-opacity': ['*', 0.9, ['coalesce', ['get', 'recency'], 1]],
         'circle-blur': 0.3,
