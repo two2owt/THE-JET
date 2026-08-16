@@ -28,7 +28,6 @@ import { NotificationsTabSkeleton, ExploreTabSkeleton } from "@/components/skele
 import { TabPageHeader } from "@/components/TabPageHeader";
 import { EnablePushButton } from "@/components/EnablePushButton";
 import { PageShell } from "@/components/PageShell";
-import { SEO } from "@/components/SEO";
 import { CityTransitionOverlay } from "@/components/CityTransitionOverlay";
 import { useAuth } from "@/contexts/AuthContext";
 import {
