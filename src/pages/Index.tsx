@@ -152,7 +152,7 @@ const Index = () => {
   const unreadNotifications = notifications.filter(n => !n.read).length;
   useAutoScrapeVenueImages(dataReady);
   const { deals, refresh: refreshDeals, loading: dealsLoading, lastUpdated: dealsLastUpdated } = useDeals(false, dataReady);
-  const { venues: realVenues, loading: venuesLoading, refresh: refreshVenues, lastUpdated: venuesLastUpdated } = useVenueActivity(dataReady);
+  const { venues: realVenues, loading: venuesLoading, refresh: refreshVenues, lastUpdated: venuesLastUpdated } = useVenueActivity(dataReady, selectedCity);
   const { justInstalled, clearJustInstalled } = usePWAInstall();
   const [showPushPrompt, setShowPushPrompt] = useState(false);
   const jetCardRef = useRef<HTMLDivElement>(null);
