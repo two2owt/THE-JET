@@ -664,8 +664,19 @@ const Onboarding = () => {
                 </div>
                 <h3 className="heading-luxe-card mb-fluid-xs">All Set!</h3>
                 <p className="text-fluid-sm text-muted-foreground">
-                  Based on your preferences, we'll show you the best deals in Charlotte
+                  {savedPreferences
+                    ? "Based on your preferences, we'll show you the best deals in Charlotte"
+                    : "You're ready to explore Charlotte. Add your taste preferences whenever you like for a more personal feed."}
                 </p>
+                {!savedPreferences && (
+                  <button
+                    type="button"
+                    onClick={() => { setDirection("backward"); setStep(2); }}
+                    className="mt-3 inline-flex min-h-11 items-center text-fluid-xs font-semibold uppercase tracking-widest text-primary underline-offset-4 hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+                  >
+                    Set preferences now
+                  </button>
+                )}
                 </div>
               </div>
 
