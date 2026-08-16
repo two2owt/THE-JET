@@ -980,9 +980,14 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         ? ([selectedVenue!.lng, selectedVenue!.lat] as [number, number])
         : null;
 
-    // Height reserved at the bottom by an open panel (JetCard on mobile / bottom sheet)
-    const panelBottom = panelOpen ? 'min(46svh, 420px)' : '0px';
-    root.style.setProperty('--map-panel-bottom', panelBottom);
+    // Height reserved at the bottom by an open panel (JetCard / ParkingCard).
+    // The page measures the real card via useMapPanelInset; this only supplies a
+    // first-frame estimate before that measurement lands, and resets on close.
+    const current = root.style.getPropertyValue('--map-panel-bottom').trim();
+    const alreadyMeasured = panelOpen && current !== '' && current !== '0px';
+    if (!alreadyMeasured) {
+      root.style.setProperty('--map-panel-bottom', panelOpen ? 'min(46svh, 420px)' : '0px');
+    }
 
     const readPx = (expr: string) => {
       const probe = document.createElement('div');
@@ -1075,6 +1080,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     schedule(paddingInitialisedRef.current);
     paddingInitialisedRef.current = true;
     window.addEventListener('resize', onResize);
+    // The page re-publishes --map-panel-bottom whenever a card resizes.
+    window.addEventListener('jet:panel-metrics', onResize);
     window.addEventListener('orientationchange', onRotate);
     window.visualViewport?.addEventListener('resize', onResize);
     window.addEventListener('pageshow', onResume);
@@ -1086,6 +1093,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       if (rafId) cancelAnimationFrame(rafId);
       clearTimers();
       window.removeEventListener('resize', onResize);
+      window.removeEventListener('jet:panel-metrics', onResize);
       window.removeEventListener('orientationchange', onRotate);
       window.visualViewport?.removeEventListener('resize', onResize);
       window.removeEventListener('pageshow', onResume);

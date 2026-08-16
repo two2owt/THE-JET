@@ -23,6 +23,7 @@ import { useDeals } from "@/hooks/useDeals";
 import { useVenueActivity } from "@/hooks/useVenueActivity";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useBottomNavigation } from "@/hooks/useBottomNavigation";
+import { useMapPanelInset } from "@/hooks/useMapPanelInset";
 import { NotificationsTabSkeleton, ExploreTabSkeleton } from "@/components/skeletons/PageSkeletons";
 import { TabPageHeader } from "@/components/TabPageHeader";
 import { EnablePushButton } from "@/components/EnablePushButton";
@@ -156,8 +157,14 @@ const Index = () => {
   const { justInstalled, clearJustInstalled } = usePWAInstall();
   const [showPushPrompt, setShowPushPrompt] = useState(false);
   const jetCardRef = useRef<HTMLDivElement>(null);
+  const parkingCardRef = useRef<HTMLDivElement>(null);
   // Swipe-to-dismiss JetCard only on touch-first viewports (< md).
   const isMobile = !useBreakpointUp("md");
+
+  // Lift map overlays by the panels' *measured* height so nothing overlaps and
+  // no dead space is reserved when a card is closed.
+  useMapPanelInset(jetCardRef, !!selectedVenue && activeTab === "map");
+  useMapPanelInset(parkingCardRef, !!selectedParking && activeTab === "map");
   
   // Swipe to dismiss for JetCard on mobile
   const { handlers: swipeHandlers, style: swipeStyle } = useSwipeToDismiss({
@@ -557,7 +564,16 @@ const Index = () => {
           }}
           {...(isMobile ? swipeHandlers : {})}
         >
-          <div style={{ pointerEvents: 'auto', width: '100%', maxWidth: '480px', margin: '0 auto', boxSizing: 'border-box' }}>
+          <div style={{
+            pointerEvents: 'auto',
+            width: '100%',
+            maxWidth: '480px',
+            margin: '0 auto',
+            boxSizing: 'border-box',
+            maxHeight: 'calc(100dvh - var(--header-total-height, 56px) - var(--bottom-nav-total-height, 60px) - 1.5rem)',
+            overflowY: 'auto',
+            overscrollBehavior: 'contain',
+          }}>
             {isMobile && (
               <div className="flex justify-center pb-2 sm:pb-2.5">
                 <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
@@ -587,6 +603,7 @@ const Index = () => {
       {/* ParkingCard - portaled to body like JetCard */}
       {selectedParking && activeTab === "map" && createPortal(
         <div 
+          ref={parkingCardRef}
           className="animate-fade-in"
           style={{
             position: 'fixed',
@@ -599,7 +616,16 @@ const Index = () => {
             pointerEvents: 'none',
           }}
         >
-          <div style={{ pointerEvents: 'auto', width: '100%', maxWidth: '480px', margin: '0 auto', boxSizing: 'border-box' }}>
+          <div style={{
+            pointerEvents: 'auto',
+            width: '100%',
+            maxWidth: '480px',
+            margin: '0 auto',
+            boxSizing: 'border-box',
+            maxHeight: 'calc(100dvh - var(--header-total-height, 56px) - var(--bottom-nav-total-height, 60px) - 1.5rem)',
+            overflowY: 'auto',
+            overscrollBehavior: 'contain',
+          }}>
             {isMobile && (
               <div className="flex justify-center pb-2 sm:pb-2.5">
                 <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
