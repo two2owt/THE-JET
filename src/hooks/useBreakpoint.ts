@@ -35,10 +35,9 @@ function resolveBreakpoint(width: number): Breakpoint {
 }
 
 export function useBreakpoint(): Breakpoint {
-  const [bp, setBp] = React.useState<Breakpoint>(() => {
-    if (typeof window === "undefined") return "xs";
-    return resolveBreakpoint(window.innerWidth);
-  });
+  // Always start at the SSR default so the first client render matches the
+  // server HTML; the effect below corrects it immediately after hydration.
+  const [bp, setBp] = React.useState<Breakpoint>("xs");
 
   React.useEffect(() => {
     const onResize = () => setBp(resolveBreakpoint(window.innerWidth));

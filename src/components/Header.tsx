@@ -26,28 +26,36 @@ export const Header = () => {
   // the URL is rewritten externally without preserving the param.
   const SEARCH_QUERY_KEY = "jet-header-search-query";
   const SEARCH_EXPANDED_KEY = "jet-header-search-expanded";
-  const [searchQuery, setSearchQuery] = useState<string>(() => {
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  useEffect(() => {
     try {
-      if (typeof window === "undefined") return "";
       const url = new URLSearchParams(window.location.search).get("q");
-      if (url) return url;
-      return window.sessionStorage.getItem(SEARCH_QUERY_KEY) ?? "";
+      const restored = url || window.sessionStorage.getItem(SEARCH_QUERY_KEY) || "";
+      if (restored) {
+        setSearchQuery(restored);
+        setShowResults(restored.trim().length > 0);
+      }
     } catch {
-      return "";
+      /* storage disabled — ignore */
     }
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [showResults, setShowResults] = useState(false);
   const [mounted, setMounted] = useState(false);
   const mountedRef = useRef(false);
-  const [searchExpanded, setSearchExpanded] = useState<boolean>(() => {
+  // Start collapsed so SSR markup matches the first client render; the stored
+  // value is restored after hydration in the effect below.
+  const [searchExpanded, setSearchExpanded] = useState(false);
+  useEffect(() => {
     try {
-      return typeof window !== "undefined"
-        ? window.sessionStorage.getItem(SEARCH_EXPANDED_KEY) === "1"
-        : false;
+      if (window.sessionStorage.getItem(SEARCH_EXPANDED_KEY) === "1") {
+        setSearchExpanded(true);
+      }
     } catch {
-      return false;
+      /* storage disabled — ignore */
     }
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const [userEmail, setUserEmail] = useState<string | undefined>(undefined);
   const { isAdmin } = useIsAdmin();
@@ -386,8 +394,12 @@ export const Header = () => {
         )}
 
 
-        {/* Spacer pushes avatar flush to the right edge of the header */}
-        <div style={{ flex: '1 1 0%', minWidth: 0 }} />
+        {/* Spacer only when no search element is present — otherwise the
+            search pill already absorbs the free space (two flex:1 siblings
+            would split the row and shrink the pill to half width). */}
+        {(!isMobile || (!showSearchBar && !showSearchIcon)) && (
+          <div style={{ flex: '1 1 0%', minWidth: 0 }} />
+        )}
 
         {/* Sync indicator — between search and avatar */}
         {!(isMobile && searchExpanded) && (
