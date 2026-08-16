@@ -28,7 +28,6 @@ import { NotificationsTabSkeleton, ExploreTabSkeleton } from "@/components/skele
 import { TabPageHeader } from "@/components/TabPageHeader";
 import { EnablePushButton } from "@/components/EnablePushButton";
 import { PageShell } from "@/components/PageShell";
-import { SEO } from "@/components/SEO";
 import { CityTransitionOverlay } from "@/components/CityTransitionOverlay";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -471,11 +470,6 @@ const Index = () => {
         position: 'relative',
       }}
     >
-      <SEO
-        title="JET — Find Live Deals & Events Near You in Charlotte"
-        description="Discover trending venues, live events, and exclusive happy-hour deals across Charlotte on a real-time heatmap. Your guide to what's hot right now."
-        path="/"
-      />
       {/* FULL-SCREEN MAP LAYER - only on map tab */}
       {activeTab === "map" && (
         <>

@@ -99,7 +99,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "canonical", href: "https://www.jet-around.com/" },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon-180x180.png" },
       { rel: "apple-touch-icon", sizes: "152x152", href: "/apple-touch-icon-152x152.png" },
