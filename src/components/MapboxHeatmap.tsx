@@ -3145,9 +3145,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       <div 
         style={{
           position: 'absolute',
-          bottom: 'var(--map-safe-bottom-panels, var(--map-fixed-bottom, calc(60px + 0.75rem)))',
+          // Anchored to the fixed nav-footer inset only: opening a JetCard must
+          // not shift the FAB. On mobile the card covers this area, so the FAB
+          // fades out instead of moving.
+          bottom: 'var(--map-safe-bottom, var(--map-fixed-bottom, calc(60px + 0.75rem)))',
           right: 'var(--map-ui-inset-right, 0.75rem)',
           zIndex: 30,
+          opacity: isMobile && selectedVenue ? 0 : 1,
+          visibility: isMobile && selectedVenue ? 'hidden' : 'visible',
+          pointerEvents: isMobile && selectedVenue ? 'none' : 'auto',
+          transition: 'opacity 200ms ease',
         }}
       >
         {/* Expanded panel - slides up from FAB */}
@@ -4041,7 +4048,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           position: 'absolute',
           // The attribution/logo row is hidden, so the legend uses the same
           // uniform nav-footer padding as every other bottom overlay.
-          bottom: 'var(--map-safe-bottom-panels, var(--map-fixed-bottom))',
+          bottom: 'var(--map-safe-bottom, var(--map-fixed-bottom))',
           left: 'var(--map-ui-inset-left)',
           maxWidth: 'var(--map-control-max-width)',
           width: 'clamp(160px, 38vw, 240px)',
