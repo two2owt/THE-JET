@@ -1,5 +1,5 @@
-import { lazy, Suspense, useEffect, useState, useCallback } from "react";
-import { Navigate, useSearchParams } from "@/lib/router-compat";
+import { lazy, Suspense, useEffect, useRef, useState, useCallback } from "react";
+import { useNavigate, useSearchParams } from "@/lib/router-compat";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { PageLayout } from "@/components/PageLayout";
 import { AdminPageSkeleton } from "@/components/skeletons/PageSkeletons";
@@ -113,6 +113,17 @@ export default function AdminDashboard() {
   // Mobile drawer state.
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  // Redirect non-admins exactly once. Rendering <Navigate> here re-fired the
+  // navigation on every render and tripped React's update-depth limit.
+  const navigate = useNavigate();
+  const redirectedRef = useRef(false);
+  useEffect(() => {
+    if (!loading && !isAdmin && !redirectedRef.current) {
+      redirectedRef.current = true;
+      navigate("/", { replace: true });
+    }
+  }, [loading, isAdmin, navigate]);
+
   // Sync URL when section changes via UI.
   const handleSelect = useCallback((id: SectionId) => {
     setSection(id);
@@ -129,7 +140,13 @@ export default function AdminDashboard() {
       </PageLayout>
     );
   }
-  if (!isAdmin) return <Navigate to="/" replace />;
+  if (!isAdmin) {
+    return (
+      <PageLayout defaultTab="map">
+        <AdminPageSkeleton />
+      </PageLayout>
+    );
+  }
 
   const current = SECTIONS.find(s => s.id === section)!;
 
