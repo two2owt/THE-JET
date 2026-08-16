@@ -23,6 +23,7 @@ import { useDeals } from "@/hooks/useDeals";
 import { useVenueActivity } from "@/hooks/useVenueActivity";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useBottomNavigation } from "@/hooks/useBottomNavigation";
+import { useMapPanelInset } from "@/hooks/useMapPanelInset";
 import { NotificationsTabSkeleton, ExploreTabSkeleton } from "@/components/skeletons/PageSkeletons";
 import { TabPageHeader } from "@/components/TabPageHeader";
 import { EnablePushButton } from "@/components/EnablePushButton";
@@ -156,6 +157,7 @@ const Index = () => {
   const { justInstalled, clearJustInstalled } = usePWAInstall();
   const [showPushPrompt, setShowPushPrompt] = useState(false);
   const jetCardRef = useRef<HTMLDivElement>(null);
+  const parkingCardRef = useRef<HTMLDivElement>(null);
   // Swipe-to-dismiss JetCard only on touch-first viewports (< md).
   const isMobile = !useBreakpointUp("md");
   
