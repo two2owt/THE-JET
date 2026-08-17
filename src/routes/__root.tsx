@@ -27,9 +27,10 @@ import { useViewportReflow } from "@/hooks/useViewportReflow";
 import { reportLovableError } from "@/lib/lovable-error-reporting";
 import appCss from "../styles.css?url";
 
-// ported from main.tsx — variable fonts
-import "@fontsource-variable/plus-jakarta-sans";
-import "@fontsource-variable/syne/index.css";
+// Fonts are declared in styles.css (linked in <head>) so they are discovered
+// with the stylesheet instead of after the JS bundle executes — no FOUT flash.
+import jakartaLatin from "@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2?url";
+import syneLatin from "@fontsource-variable/syne/files/syne-latin-wght-normal.woff2?url";
 
 // ported from index.html — runs before paint so the theme class never flashes
 const themeInitScript = `(function(){var t='dark';try{var s=localStorage.getItem('theme');if(s==='light'||s==='dark'){t=s}}catch(e){}document.documentElement.classList.remove('light','dark');document.documentElement.classList.add(t);document.documentElement.style.colorScheme=t})();`;
@@ -99,6 +100,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      // Preload the latin variable subsets actually used above the fold so the
+      // first paint uses the real typeface (no swap-induced reflow / flash).
+      {
+        rel: "preload",
+        as: "font",
+        type: "font/woff2",
+        href: jakartaLatin,
+        crossOrigin: "anonymous",
+      },
+      {
+        rel: "preload",
+        as: "font",
+        type: "font/woff2",
+        href: syneLatin,
+        crossOrigin: "anonymous",
+      },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon-180x180.png" },
       { rel: "apple-touch-icon", sizes: "152x152", href: "/apple-touch-icon-152x152.png" },
@@ -215,9 +232,12 @@ function AppLayout() {
       () => {
         (async () => {
           await yieldToMain();
-          const { prefetchMapboxToken, prefetchRoutes } = await import("@/lib/prefetch");
+          const { prefetchMapboxToken, prefetchRoutes, prefetchHomeTabChunks } = await import(
+            "@/lib/prefetch"
+          );
           prefetchMapboxToken();
           prefetchRoutes();
+          prefetchHomeTabChunks();
           import("@/utils/clearMapboxCache");
 
           await new Promise<void>((resolve) => {

@@ -144,19 +144,48 @@ export const prefetchRoutes = () => {
  */
 export const createPrefetchHandlers = (routeImport: () => Promise<unknown>) => {
   let prefetched = false;
-  
+
   const prefetch = () => {
     if (!prefetched) {
       prefetched = true;
       routeImport().catch(() => {});
     }
   };
-  
+
   return {
     onMouseEnter: prefetch,
     onFocus: prefetch,
     onTouchStart: prefetch,
   };
+};
+
+/**
+ * Prefetch the lazily-loaded chunks used by the in-page tabs on the home
+ * route (Explore / Alerts / JetCard). Without this the first tab switch
+ * downloads a chunk and flashes a skeleton; warming them during idle time
+ * makes the switch render on the first frame.
+ */
+let tabChunksPrefetched = false;
+export const prefetchHomeTabChunks = () => {
+  if (tabChunksPrefetched || typeof window === "undefined") return;
+  const connection = (navigator as Navigator & {
+    connection?: { saveData?: boolean; effectiveType?: string };
+  }).connection;
+  if (connection?.saveData) return;
+  tabChunksPrefetched = true;
+
+  const run = () =>
+    prefetchBatch([
+      () => import("@/components/ExploreTab"),
+      () => import("@/components/JetCard"),
+      () => import("@/components/NotificationCard"),
+    ]);
+
+  if ("requestIdleCallback" in window) {
+    requestIdleCallback(run, { timeout: 4000 });
+  } else {
+    setTimeout(run, 2500);
+  }
 };
 
 /**

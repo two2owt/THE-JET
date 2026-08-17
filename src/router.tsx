@@ -18,7 +18,16 @@ export const getRouter = () => {
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
-    defaultPreloadStaleTime: 0,
+    // Warm route chunks + loader data on hover/touch-intent so tab switches
+    // feel instant instead of downloading a chunk on click.
+    defaultPreload: "intent",
+    defaultPreloadDelay: 50,
+    // Reuse preloaded data for 30s instead of refetching immediately on nav.
+    defaultPreloadStaleTime: 30_000,
+    // Suppress sub-200ms pending fallbacks so fast navigations never flash a
+    // skeleton; once shown, keep it up long enough to avoid a strobe.
+    defaultPendingMs: 200,
+    defaultPendingMinMs: 400,
   });
 
   return router;
