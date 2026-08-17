@@ -430,6 +430,36 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_audience_sync_log: {
+        Row: {
+          audience_id: string
+          created_at: string
+          details: Json | null
+          failed_count: number
+          id: string
+          removed_count: number
+          synced_count: number
+        }
+        Insert: {
+          audience_id: string
+          created_at?: string
+          details?: Json | null
+          failed_count?: number
+          id?: string
+          removed_count?: number
+          synced_count?: number
+        }
+        Update: {
+          audience_id?: string
+          created_at?: string
+          details?: Json | null
+          failed_count?: number
+          id?: string
+          removed_count?: number
+          synced_count?: number
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string | null
@@ -1241,6 +1271,8 @@ export type Database = {
           email_notifications_enabled: boolean
           id: string
           location_tracking_enabled: boolean
+          marketing_consent_updated_at: string | null
+          marketing_emails_enabled: boolean
           notifications_enabled: boolean
           updated_at: string | null
           user_id: string
@@ -1252,6 +1284,8 @@ export type Database = {
           email_notifications_enabled?: boolean
           id?: string
           location_tracking_enabled?: boolean
+          marketing_consent_updated_at?: string | null
+          marketing_emails_enabled?: boolean
           notifications_enabled?: boolean
           updated_at?: string | null
           user_id: string
@@ -1263,6 +1297,8 @@ export type Database = {
           email_notifications_enabled?: boolean
           id?: string
           location_tracking_enabled?: boolean
+          marketing_consent_updated_at?: string | null
+          marketing_emails_enabled?: boolean
           notifications_enabled?: boolean
           updated_at?: string | null
           user_id?: string
@@ -1566,6 +1602,7 @@ export type Database = {
         | "background_tracking"
         | "push_notifications"
         | "messaging_analytics"
+        | "marketing_email"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1699,6 +1736,7 @@ export const Constants = {
         "background_tracking",
         "push_notifications",
         "messaging_analytics",
+        "marketing_email",
       ],
     },
   },

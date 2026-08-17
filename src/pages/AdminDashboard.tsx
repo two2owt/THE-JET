@@ -27,6 +27,7 @@ const BulkUserProvisionPanel = lazy(() => import("@/components/admin/BulkUserPro
 const UnverifiedNudgePanel = lazy(() => import("@/components/admin/UnverifiedNudgePanel").then(m => ({ default: m.UnverifiedNudgePanel })));
 const SecurityFindingsPanel = lazy(() => import("@/components/admin/SecurityFindingsPanel").then(m => ({ default: m.SecurityFindingsPanel })));
 const EmailHealthPanel = lazy(() => import("@/components/admin/EmailHealthPanel").then(m => ({ default: m.EmailHealthPanel })));
+const MarketingAudiencePanel = lazy(() => import("@/components/admin/MarketingAudiencePanel").then(m => ({ default: m.MarketingAudiencePanel })));
 
 
 type SectionId = "deals" | "analytics" | "funnel" | "areas" | "retention" | "email" | "security" | "system";
@@ -267,7 +268,10 @@ export default function AdminDashboard() {
               )}
               {section === "email" && (
                 <Suspense fallback={<AdminTabFallback />}>
-                  <EmailHealthPanel />
+                  <div className="flex flex-col" style={{ gap: 'var(--space-md)' }}>
+                    <EmailHealthPanel />
+                    <MarketingAudiencePanel />
+                  </div>
                 </Suspense>
               )}
               {section === "system" && (
