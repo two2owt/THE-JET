@@ -46,15 +46,31 @@ export function useAutoFitScale<T extends HTMLElement>({
         parseFloat(ics.paddingTop || "0") + parseFloat(ics.paddingBottom || "0");
     }
 
-    const natural = el.scrollHeight;
+    // scrollHeight rounds down and ignores collapsed/overflowing child margins,
+    // so prefer the rendered box height and keep a 1px safety margin.
+    const natural = Math.max(el.scrollHeight, Math.ceil(el.getBoundingClientRect().height));
     if (available <= 0 || natural <= 0) return;
 
-    const scale = Math.min(1, Math.max(minScale, available / natural));
-    if (scale >= 0.999) return;
+    const apply = (scale: number) => {
+      el.style.transformOrigin = "top center";
+      el.style.transform = `scale(${scale})`;
+      el.style.marginBottom = `${-natural * (1 - scale)}px`;
+    };
 
-    el.style.transformOrigin = "top center";
-    el.style.transform = `scale(${scale})`;
-    el.style.marginBottom = `${-natural * (1 - scale)}px`;
+    let scale = Math.min(1, Math.max(minScale, (available - 1) / natural));
+    if (scale >= 1) return;
+    apply(scale);
+
+    // Correction pass: sub-pixel rounding or late-loading content can still
+    // leave a few pixels of overflow. Shrink once more if the container scrolls.
+    for (let i = 0; i < 3; i++) {
+      const overflow = container.scrollHeight - container.clientHeight;
+      if (overflow <= 0 || scale <= minScale) break;
+      const next = Math.max(minScale, scale * (1 - (overflow + 1) / natural));
+      if (next >= scale) break;
+      scale = next;
+      apply(scale);
+    }
   }, [node, containerSelector, minScale]);
 
   const schedule = useCallback(() => {
