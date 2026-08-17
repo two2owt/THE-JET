@@ -11,8 +11,8 @@ interface SEOProps {
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
-const SITE_URL = "https://www.jet-around.com";
-const DEFAULT_OG = "https://www.jet-around.com/pwa-512x512.png";
+const SITE_URL = "https://jet-around.com";
+const DEFAULT_OG = "https://jet-around.com/pwa-512x512.png";
 
 /**
  * Per-route SEO tags. Sets unique title, description, canonical, and og:* tags

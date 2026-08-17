@@ -14,11 +14,10 @@ export function cn(...inputs: ClassValue[]) {
  * SSR/no-window contexts) is forced to the production origin instead of
  * leaking `window.location.origin`.
  */
-// The live app is served from jet-around.lovable.app. jet-around.com is
-// reserved for a future custom domain — once its DNS + Lovable custom domain
-// is wired up, OAuth automatically follows because Lovable-managed OAuth
-// includes every attached custom domain in the redirect allow-list.
-const PRODUCTION_URL = "https://jet-around.lovable.app";
+// The live app is served from jet-around.lovable.app with jet-around.com as
+// the primary custom domain. OAuth automatically follows because Lovable-managed
+// OAuth includes every attached custom domain in the redirect allow-list.
+const PRODUCTION_URL = "https://jet-around.com";
 
 // Exact hostnames that are safe to redirect back to as-is. Add new custom
 // domains here the same day they're attached in Project Settings → Domains
