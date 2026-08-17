@@ -1522,8 +1522,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             }
           });
           
-          // Notify parent of detected city on initial geolocate (auto-select nearest city)
-          if (isInitialGeolocate && onNearestCityDetected) {
+          // Notify parent of detected city on initial geolocate (auto-select nearest city),
+          // but never override a city the user explicitly picked.
+          if (isInitialGeolocate && isUsingCurrentLocationRef.current && onNearestCityDetected) {
             onNearestCityDetected(nearestCity);
           }
 
