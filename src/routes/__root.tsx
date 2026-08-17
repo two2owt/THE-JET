@@ -232,9 +232,12 @@ function AppLayout() {
       () => {
         (async () => {
           await yieldToMain();
-          const { prefetchMapboxToken, prefetchRoutes } = await import("@/lib/prefetch");
+          const { prefetchMapboxToken, prefetchRoutes, prefetchHomeTabChunks } = await import(
+            "@/lib/prefetch"
+          );
           prefetchMapboxToken();
           prefetchRoutes();
+          prefetchHomeTabChunks();
           import("@/utils/clearMapboxCache");
 
           await new Promise<void>((resolve) => {
