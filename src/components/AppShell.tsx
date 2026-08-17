@@ -1,4 +1,4 @@
-import { ReactNode, Suspense, lazy, memo } from "react";
+import { ReactNode, Suspense, lazy, memo, useEffect } from "react";
 import { useLocation } from "@/lib/router-compat";
 import { Header } from "@/components/Header";
 import { useLocationTracker } from "@/hooks/useLocationTracker";
@@ -35,6 +35,25 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
   // Single app-wide location tracker. Runs on every route for any signed-in
   // user with location tracking enabled, and stops only on sign-out.
   useLocationTracker();
+
+  // Safety net: if a modal unmounts while open, Radix can leave
+  // `pointer-events: none` stuck on <body>, freezing the whole UI (including
+  // the bottom nav). Clear it whenever no dialog is actually open.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const body = document.body;
+    const unstick = () => {
+      if (body.style.pointerEvents !== "none") return;
+      const openModal = document.querySelector(
+        '[role="dialog"][data-state="open"], [role="alertdialog"][data-state="open"], [data-radix-popper-content-wrapper]',
+      );
+      if (!openModal) body.style.removeProperty("pointer-events");
+    };
+    const observer = new MutationObserver(unstick);
+    observer.observe(body, { attributes: true, attributeFilter: ["style"], childList: true, subtree: true });
+    unstick();
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div className="app-wrapper">
