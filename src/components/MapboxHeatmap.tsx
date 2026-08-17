@@ -210,6 +210,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const activeChipRef = useRef<{ el: HTMLElement; venueId: string; hide: () => void } | null>(null);
   const [venueDealCounts, setVenueDealCounts] = useState<Record<string, number>>({});
   const geolocateControlRef = useRef<MapboxGL.GeolocateControl | null>(null);
+  // Applies a raw geolocation fix (city sync, marker, label) — set once the map
+  // and geolocate handler are wired, so UI controls can refresh location too.
+  const applyGeolocationRef = useRef<((coords: { latitude: number; longitude: number }) => void) | null>(null);
   const onVenueSelectRef = useRef(onVenueSelect);
   onVenueSelectRef.current = onVenueSelect;
   const onParkingSelectRef = useRef(onParkingSelect);
@@ -1497,8 +1500,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         // Listen for geolocate events to update city and marker.
         // The control may not exist in environments without Geolocation
         // (handled above), so guard the listener wiring.
-        geolocateControl?.on('geolocate', async (e: any) => {
-          const { longitude, latitude } = e.coords;
+        const handleGeolocation = (coords: { latitude: number; longitude: number }) => {
+          const { longitude, latitude } = coords;
           
           // Update user location state
           setUserLocation({ lat: latitude, lng: longitude });
@@ -1522,8 +1525,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             }
           });
           
-          // Notify parent of detected city on initial geolocate (auto-select nearest city)
-          if (isInitialGeolocate && onNearestCityDetected) {
+          // Notify parent of detected city on initial geolocate (auto-select nearest city),
+          // but never override a city the user explicitly picked.
+          if (isInitialGeolocate && isUsingCurrentLocationRef.current && onNearestCityDetected) {
             onNearestCityDetected(nearestCity);
           }
 
@@ -1570,7 +1574,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             // Smoothly animate to new position
             animateMarkerTo(longitude, latitude, 400);
           }
-        });
+        };
+
+        applyGeolocationRef.current = handleGeolocation;
+        geolocateControl?.on('geolocate', (e: any) => handleGeolocation(e.coords));
         
         // Remove marker when tracking stops
         geolocateControl?.on('trackuserlocationend', () => {
@@ -2860,13 +2867,34 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             
             if (value === "current-location") {
               setIsUsingCurrentLocation(true);
+              isUsingCurrentLocationRef.current = true;
               // Immediately sync the parent's selectedCity to the already-known
               // nearest city so data filters update without waiting for a fresh
               // geolocate event.
               if (detectedCity && detectedCity.id !== selectedCity.id) {
                 onCityChange(detectedCity);
               }
-              // Fly to user's current location if known
+              // Always request a fresh position so the city follows where the
+              // user actually is right now (the cached fix can be stale).
+              const control = geolocateControlRef.current as any;
+              const watchState = control?._watchState;
+              if (control && (!watchState || watchState === 'OFF' || watchState === 'ACTIVE_ERROR')) {
+                try {
+                  control.trigger();
+                } catch {
+                  /* control not ready — fall back to a direct fix below */
+                }
+              } else if (typeof navigator !== 'undefined' && navigator.geolocation) {
+                // Tracking is already active — triggering again would turn it
+                // off, so read a fresh fix directly and apply it.
+                navigator.geolocation.getCurrentPosition(
+                  (pos) => applyGeolocationRef.current?.(pos.coords),
+                  (err) => console.warn('MapboxHeatmap: location refresh failed', err?.message),
+                  { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+              }
+              // Optimistically fly to the last known location while the fresh
+              // fix resolves.
               if (userLocation && map.current) {
                 map.current.flyTo({
                   center: [userLocation.lng, userLocation.lat],
@@ -2874,12 +2902,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   duration: 1500,
                   essential: true
                 });
-              } else if (geolocateControlRef.current) {
-                // Trigger geolocation if location not yet known
-                geolocateControlRef.current.trigger();
               }
             } else {
               setIsUsingCurrentLocation(false);
+              isUsingCurrentLocationRef.current = false;
               const city = CITIES.find(c => c.id === value);
               if (city) {
                 onCityChange(city);
