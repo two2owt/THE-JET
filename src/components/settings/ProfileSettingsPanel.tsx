@@ -426,6 +426,24 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
               onEnable={() => handleWebPushToggle(true)}
             />
           )}
+          <Separator className="my-2" />
+          <div className="flex items-center justify-between gap-3">
+            <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
+              <label htmlFor="marketing-emails" className="text-xs sm:text-sm font-medium text-foreground block">
+                JET Newsletter
+              </label>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">
+                Occasional emails about new venues, city drops and features. Separate from
+                account and deal alerts — you can unsubscribe any time.
+              </p>
+            </div>
+            <Switch
+              id="marketing-emails"
+              checked={marketingEmailsEnabled}
+              onCheckedChange={setMarketingEmailsEnabled}
+              className="flex-shrink-0"
+            />
+          </div>
         </div>
       </Card>
 
