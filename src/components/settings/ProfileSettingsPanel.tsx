@@ -28,6 +28,7 @@ const preferencesSchema = z.object({
   location_tracking_enabled: z.boolean(),
   background_tracking_enabled: z.boolean(),
   auto_reload_updates: z.boolean(),
+  marketing_emails_enabled: z.boolean(),
 });
 
 interface UserPreferencesRow {
@@ -37,6 +38,7 @@ interface UserPreferencesRow {
   location_tracking_enabled: boolean;
   background_tracking_enabled: boolean;
   auto_reload_updates: boolean;
+  marketing_emails_enabled: boolean;
 }
 
 interface ProfileSettingsPanelProps {
@@ -72,6 +74,7 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
   const [locationTrackingEnabled, setLocationTrackingEnabled] = useState(false);
   const [backgroundTrackingEnabled, setBackgroundTrackingEnabled] = useState(true);
   const [autoReloadUpdates, setAutoReloadUpdates] = useState(false);
+  const [marketingEmailsEnabled, setMarketingEmailsEnabled] = useState(false);
 
   // Sync the auto-reload preference to localStorage so the service worker
   // tracker can read it without waiting for the settings panel to open.
@@ -118,6 +121,7 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         setLocationTrackingEnabled(row.location_tracking_enabled);
         setBackgroundTrackingEnabled(row.background_tracking_enabled);
         setAutoReloadUpdates(row.auto_reload_updates);
+        setMarketingEmailsEnabled(row.marketing_emails_enabled ?? false);
         persistAutoReloadPreference(row.auto_reload_updates);
       } catch (err) {
         console.error("Error loading preferences:", err);
@@ -157,9 +161,10 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
       preferences.notifications_enabled !== notificationsEnabled ||
       preferences.location_tracking_enabled !== locationTrackingEnabled ||
       preferences.background_tracking_enabled !== backgroundTrackingEnabled ||
-      preferences.auto_reload_updates !== autoReloadUpdates
+      preferences.auto_reload_updates !== autoReloadUpdates ||
+      (preferences.marketing_emails_enabled ?? false) !== marketingEmailsEnabled
     );
-  }, [preferences, notificationsEnabled, locationTrackingEnabled, backgroundTrackingEnabled, autoReloadUpdates]);
+  }, [preferences, notificationsEnabled, locationTrackingEnabled, backgroundTrackingEnabled, autoReloadUpdates, marketingEmailsEnabled]);
 
   const handleSaveSettings = async () => {
     if (!preferences) return;
@@ -169,6 +174,7 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         location_tracking_enabled: locationTrackingEnabled,
         background_tracking_enabled: backgroundTrackingEnabled,
         auto_reload_updates: autoReloadUpdates,
+        marketing_emails_enabled: marketingEmailsEnabled,
       });
     } catch {
       toast.error("Invalid settings");
@@ -184,6 +190,10 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
           location_tracking_enabled: locationTrackingEnabled,
           background_tracking_enabled: backgroundTrackingEnabled,
           auto_reload_updates: autoReloadUpdates,
+          marketing_emails_enabled: marketingEmailsEnabled,
+          ...((preferences.marketing_emails_enabled ?? false) !== marketingEmailsEnabled
+            ? { marketing_consent_updated_at: new Date().toISOString() }
+            : {}),
         })
         .eq("user_id", preferences.user_id);
       if (error) throw error;
@@ -205,12 +215,30 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         await refreshConsents();
       }
 
+      // Marketing email consent is tracked separately from transactional
+      // notifications so newsletter opt-in is auditable on its own.
+      if ((preferences.marketing_emails_enabled ?? false) !== marketingEmailsEnabled) {
+        const nowIso = new Date().toISOString();
+        const { error: marketingConsentError } = await supabase.from("user_consents").insert({
+          user_id: preferences.user_id,
+          consent_type: "marketing_email",
+          granted: marketingEmailsEnabled,
+          policy_version: "2025-06",
+          source: "settings.marketing_emails",
+          granted_at: marketingEmailsEnabled ? nowIso : null,
+          revoked_at: marketingEmailsEnabled ? null : nowIso,
+        });
+        if (marketingConsentError) throw marketingConsentError;
+        await refreshConsents();
+      }
+
       setPreferences({
         ...preferences,
         notifications_enabled: notificationsEnabled,
         location_tracking_enabled: locationTrackingEnabled,
         background_tracking_enabled: backgroundTrackingEnabled,
         auto_reload_updates: autoReloadUpdates,
+        marketing_emails_enabled: marketingEmailsEnabled,
       });
       persistAutoReloadPreference(autoReloadUpdates);
       toast.success("Settings saved");
