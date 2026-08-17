@@ -788,7 +788,7 @@ const Auth = () => {
 
   return (
     <div
-      className="auth-fullscreen relative flex flex-col flex-1 min-h-0 w-full overflow-y-auto"
+      className="auth-fullscreen relative flex flex-col flex-1 min-h-0 w-full overflow-hidden"
       data-auth-ready="true"
     >
       <SEO
@@ -834,7 +834,7 @@ const Auth = () => {
       </div>
 
       {/* Centered content — column flex fills the viewport and centers the card both axes */}
-      <div className="auth-content-wrapper relative z-10 flex w-full flex-1 flex-col items-center justify-center px-4 sm:px-6 md:px-8 pt-[max(env(safe-area-inset-top,0px),12px)] sm:pt-[max(env(safe-area-inset-top,0px),20px)] pb-[max(env(safe-area-inset-bottom,0px),12px)] sm:pb-[max(env(safe-area-inset-bottom,0px),20px)]">
+      <div className="auth-content-wrapper relative z-10 flex w-full flex-1 min-h-0 overflow-y-auto flex-col items-center justify-center px-4 sm:px-6 md:px-8 pt-[max(env(safe-area-inset-top,0px),12px)] sm:pt-[max(env(safe-area-inset-top,0px),20px)] pb-[max(env(safe-area-inset-bottom,0px),12px)] sm:pb-[max(env(safe-area-inset-bottom,0px),20px)]">
         <div
           ref={autoFitRef}
           className="w-full max-w-[420px] mx-auto flex flex-col items-center animate-fade-in"
