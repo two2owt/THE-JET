@@ -1602,6 +1602,7 @@ export type Database = {
         | "background_tracking"
         | "push_notifications"
         | "messaging_analytics"
+        | "marketing_email"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1735,6 +1736,7 @@ export const Constants = {
         "background_tracking",
         "push_notifications",
         "messaging_analytics",
+        "marketing_email",
       ],
     },
   },

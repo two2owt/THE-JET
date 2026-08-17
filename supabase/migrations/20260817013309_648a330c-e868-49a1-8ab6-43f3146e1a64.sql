@@ -1,0 +1,1 @@
+ALTER TYPE public.consent_type ADD VALUE IF NOT EXISTS 'marketing_email';
