@@ -210,6 +210,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const activeChipRef = useRef<{ el: HTMLElement; venueId: string; hide: () => void } | null>(null);
   const [venueDealCounts, setVenueDealCounts] = useState<Record<string, number>>({});
   const geolocateControlRef = useRef<MapboxGL.GeolocateControl | null>(null);
+  // Applies a raw geolocation fix (city sync, marker, label) — set once the map
+  // and geolocate handler are wired, so UI controls can refresh location too.
+  const applyGeolocationRef = useRef<((coords: { latitude: number; longitude: number }) => void) | null>(null);
   const onVenueSelectRef = useRef(onVenueSelect);
   onVenueSelectRef.current = onVenueSelect;
   const onParkingSelectRef = useRef(onParkingSelect);
