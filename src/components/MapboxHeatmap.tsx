@@ -2876,12 +2876,22 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               }
               // Always request a fresh position so the city follows where the
               // user actually is right now (the cached fix can be stale).
-              if (geolocateControlRef.current) {
+              const control = geolocateControlRef.current as any;
+              const watchState = control?._watchState;
+              if (control && (!watchState || watchState === 'OFF' || watchState === 'ACTIVE_ERROR')) {
                 try {
-                  geolocateControlRef.current.trigger();
+                  control.trigger();
                 } catch {
-                  /* control not ready — fall back to cached position below */
+                  /* control not ready — fall back to a direct fix below */
                 }
+              } else if (typeof navigator !== 'undefined' && navigator.geolocation) {
+                // Tracking is already active — triggering again would turn it
+                // off, so read a fresh fix directly and apply it.
+                navigator.geolocation.getCurrentPosition(
+                  (pos) => applyGeolocationRef.current?.(pos.coords),
+                  (err) => console.warn('MapboxHeatmap: location refresh failed', err?.message),
+                  { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
               }
               // Optimistically fly to the last known location while the fresh
               // fix resolves.
