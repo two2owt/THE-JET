@@ -2861,13 +2861,24 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             
             if (value === "current-location") {
               setIsUsingCurrentLocation(true);
+              isUsingCurrentLocationRef.current = true;
               // Immediately sync the parent's selectedCity to the already-known
               // nearest city so data filters update without waiting for a fresh
               // geolocate event.
               if (detectedCity && detectedCity.id !== selectedCity.id) {
                 onCityChange(detectedCity);
               }
-              // Fly to user's current location if known
+              // Always request a fresh position so the city follows where the
+              // user actually is right now (the cached fix can be stale).
+              if (geolocateControlRef.current) {
+                try {
+                  geolocateControlRef.current.trigger();
+                } catch {
+                  /* control not ready — fall back to cached position below */
+                }
+              }
+              // Optimistically fly to the last known location while the fresh
+              // fix resolves.
               if (userLocation && map.current) {
                 map.current.flyTo({
                   center: [userLocation.lng, userLocation.lat],
@@ -2875,12 +2886,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                   duration: 1500,
                   essential: true
                 });
-              } else if (geolocateControlRef.current) {
-                // Trigger geolocation if location not yet known
-                geolocateControlRef.current.trigger();
               }
             } else {
               setIsUsingCurrentLocation(false);
+              isUsingCurrentLocationRef.current = false;
               const city = CITIES.find(c => c.id === value);
               if (city) {
                 onCityChange(city);
