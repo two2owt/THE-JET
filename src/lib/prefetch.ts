@@ -188,23 +188,6 @@ export const prefetchHomeTabChunks = () => {
   }
 };
 
-const _unusedLegacyPrefetchHandlers = (routeImport: () => Promise<unknown>) => {
-  let prefetched = false;
-  
-  const prefetch = () => {
-    if (!prefetched) {
-      prefetched = true;
-      routeImport().catch(() => {});
-    }
-  };
-  
-  return {
-    onMouseEnter: prefetch,
-    onFocus: prefetch,
-    onTouchStart: prefetch,
-  };
-};
-
 /**
  * Register prefetch handlers to load resources during idle time
  * Should be called once on app initialization
