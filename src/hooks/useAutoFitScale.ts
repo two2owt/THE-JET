@@ -47,8 +47,11 @@ export function useAutoFitScale<T extends HTMLElement>({
     }
 
     // scrollHeight rounds down and ignores collapsed/overflowing child margins,
-    // so prefer the rendered box height and keep a 1px safety margin.
-    const natural = Math.max(el.scrollHeight, Math.ceil(el.getBoundingClientRect().height));
+    // so prefer the rendered box height and fold in any residual container
+    // overflow measured while unscaled.
+    const residual = Math.max(0, container.scrollHeight - container.clientHeight);
+    const natural =
+      Math.max(el.scrollHeight, Math.ceil(el.getBoundingClientRect().height)) + residual;
     if (available <= 0 || natural <= 0) return;
 
     const apply = (scale: number) => {
