@@ -27,9 +27,10 @@ import { useViewportReflow } from "@/hooks/useViewportReflow";
 import { reportLovableError } from "@/lib/lovable-error-reporting";
 import appCss from "../styles.css?url";
 
-// ported from main.tsx — variable fonts
-import "@fontsource-variable/plus-jakarta-sans";
-import "@fontsource-variable/syne/index.css";
+// Fonts are declared in styles.css (linked in <head>) so they are discovered
+// with the stylesheet instead of after the JS bundle executes — no FOUT flash.
+import jakartaLatin from "@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2?url";
+import syneLatin from "@fontsource-variable/syne/files/syne-latin-wght-normal.woff2?url";
 
 // ported from index.html — runs before paint so the theme class never flashes
 const themeInitScript = `(function(){var t='dark';try{var s=localStorage.getItem('theme');if(s==='light'||s==='dark'){t=s}}catch(e){}document.documentElement.classList.remove('light','dark');document.documentElement.classList.add(t);document.documentElement.style.colorScheme=t})();`;
