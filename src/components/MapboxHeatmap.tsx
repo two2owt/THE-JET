@@ -2920,33 +2920,13 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             triggerHaptic('light');
             
             if (value === "current-location") {
-              setIsUsingCurrentLocation(true);
-              isUsingCurrentLocationRef.current = true;
               // Immediately sync the parent's selectedCity to the already-known
               // nearest city so data filters update without waiting for a fresh
-              // geolocate event.
+              // geolocate event, then always resolve a fresh fix.
               if (detectedCity && detectedCity.id !== selectedCity.id) {
                 onCityChange(detectedCity);
               }
-              // Always request a fresh position so the city follows where the
-              // user actually is right now (the cached fix can be stale).
-              const control = geolocateControlRef.current as any;
-              const watchState = control?._watchState;
-              if (control && (!watchState || watchState === 'OFF' || watchState === 'ACTIVE_ERROR')) {
-                try {
-                  control.trigger();
-                } catch {
-                  /* control not ready — fall back to a direct fix below */
-                }
-              } else if (typeof navigator !== 'undefined' && navigator.geolocation) {
-                // Tracking is already active — triggering again would turn it
-                // off, so read a fresh fix directly and apply it.
-                navigator.geolocation.getCurrentPosition(
-                  (pos) => applyGeolocationRef.current?.(pos.coords),
-                  (err) => console.warn('MapboxHeatmap: location refresh failed', err?.message),
-                  { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-                );
-              }
+              refreshCurrentLocation();
               // Optimistically fly to the last known location while the fresh
               // fix resolves.
               if (userLocation && map.current) {
