@@ -26,6 +26,7 @@ import { Route as VerificationSuccessRouteImport } from './routes/verification-s
 import { Route as GuidesCharlotteHappyHourRouteImport } from './routes/guides/charlotte-happy-hour'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable/oauth/consent'
 import { Route as ApiPublicHooksNudgeIncompleteOnboardingRouteImport } from './routes/api/public/hooks/nudge-incomplete-onboarding'
+import { Route as ApiPublicHooksSyncResendAudienceRouteImport } from './routes/api/public/hooks/sync-resend-audience'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -114,6 +115,12 @@ const ApiPublicHooksNudgeIncompleteOnboardingRoute =
     path: '/api/public/hooks/nudge-incomplete-onboarding',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksSyncResendAudienceRoute =
+  ApiPublicHooksSyncResendAudienceRouteImport.update({
+    id: '/api/public/hooks/sync-resend-audience',
+    path: '/api/public/hooks/sync-resend-audience',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -133,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/guides/charlotte-happy-hour': typeof GuidesCharlotteHappyHourRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/hooks/nudge-incomplete-onboarding': typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
+  '/api/public/hooks/sync-resend-audience': typeof ApiPublicHooksSyncResendAudienceRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -152,6 +160,7 @@ export interface FileRoutesByTo {
   '/guides/charlotte-happy-hour': typeof GuidesCharlotteHappyHourRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/hooks/nudge-incomplete-onboarding': typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
+  '/api/public/hooks/sync-resend-audience': typeof ApiPublicHooksSyncResendAudienceRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -172,6 +181,7 @@ export interface FileRoutesById {
   '/guides/charlotte-happy-hour': typeof GuidesCharlotteHappyHourRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/hooks/nudge-incomplete-onboarding': typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
+  '/api/public/hooks/sync-resend-audience': typeof ApiPublicHooksSyncResendAudienceRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -193,6 +203,7 @@ export interface FileRouteTypes {
     | '/guides/charlotte-happy-hour'
     | '/.lovable/oauth/consent'
     | '/api/public/hooks/nudge-incomplete-onboarding'
+    | '/api/public/hooks/sync-resend-audience'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -212,6 +223,7 @@ export interface FileRouteTypes {
     | '/guides/charlotte-happy-hour'
     | '/.lovable/oauth/consent'
     | '/api/public/hooks/nudge-incomplete-onboarding'
+    | '/api/public/hooks/sync-resend-audience'
   id:
     | '__root__'
     | '/'
@@ -231,6 +243,7 @@ export interface FileRouteTypes {
     | '/guides/charlotte-happy-hour'
     | '/.lovable/oauth/consent'
     | '/api/public/hooks/nudge-incomplete-onboarding'
+    | '/api/public/hooks/sync-resend-audience'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -251,6 +264,7 @@ export interface RootRouteChildren {
   GuidesCharlotteHappyHourRoute: typeof GuidesCharlotteHappyHourRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   ApiPublicHooksNudgeIncompleteOnboardingRoute: typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
+  ApiPublicHooksSyncResendAudienceRoute: typeof ApiPublicHooksSyncResendAudienceRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -374,6 +388,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksNudgeIncompleteOnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/sync-resend-audience': {
+      id: '/api/public/hooks/sync-resend-audience'
+      path: '/api/public/hooks/sync-resend-audience'
+      fullPath: '/api/public/hooks/sync-resend-audience'
+      preLoaderRoute: typeof ApiPublicHooksSyncResendAudienceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -396,6 +417,7 @@ const rootRouteChildren: RootRouteChildren = {
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   ApiPublicHooksNudgeIncompleteOnboardingRoute:
     ApiPublicHooksNudgeIncompleteOnboardingRoute,
+  ApiPublicHooksSyncResendAudienceRoute: ApiPublicHooksSyncResendAudienceRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
