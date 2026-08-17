@@ -49,7 +49,8 @@ export function useAutoFitScale<T extends HTMLElement>({
     // scrollHeight rounds down and ignores collapsed/overflowing child margins,
     // so prefer the rendered box height and fold in any residual container
     // overflow measured while unscaled.
-    const residual = Math.max(0, container.scrollHeight - container.clientHeight);
+    const scroller = inner && inner !== container ? inner : container;
+    const residual = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
     const natural =
       Math.max(el.scrollHeight, Math.ceil(el.getBoundingClientRect().height)) + residual;
     if (available <= 0 || natural <= 0) return;
@@ -67,7 +68,7 @@ export function useAutoFitScale<T extends HTMLElement>({
     // Correction pass: sub-pixel rounding or late-loading content can still
     // leave a few pixels of overflow. Shrink once more if the container scrolls.
     for (let i = 0; i < 3; i++) {
-      const overflow = container.scrollHeight - container.clientHeight;
+      const overflow = scroller.scrollHeight - scroller.clientHeight;
       if (overflow <= 0 || scale <= minScale) break;
       const next = Math.max(minScale, scale * (1 - (overflow + 1) / natural));
       if (next >= scale) break;
