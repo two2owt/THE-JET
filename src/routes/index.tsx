@@ -4,7 +4,7 @@ import Index from "@/pages/Index";
 const TITLE = "JET — Find Live Deals & Events Near You in Charlotte";
 const DESCRIPTION =
   "Discover trending venues, live events, and exclusive happy-hour deals across Charlotte on a real-time heatmap. Your guide to what's hot right now.";
-const URL = "https://www.jet-around.com";
+const URL = "https://jet-around.com";
 
 export const Route = createFileRoute("/")({
   component: HomeRoute,
@@ -17,8 +17,8 @@ export const Route = createFileRoute("/")({
       { property: "og:type", content: "website" },
       { property: "og:url", content: URL },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:image", content: "https://www.jet-around.com/pwa-512x512.png" },
-      { name: "twitter:image", content: "https://www.jet-around.com/pwa-512x512.png" },
+      { property: "og:image", content: "https://jet-around.com/pwa-512x512.png" },
+      { name: "twitter:image", content: "https://jet-around.com/pwa-512x512.png" },
     ],
     links: [{ rel: "canonical", href: URL }],
   }),

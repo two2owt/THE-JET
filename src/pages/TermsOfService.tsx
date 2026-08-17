@@ -27,8 +27,8 @@ const TermsOfService = () => {
             <h2 className="text-2xl font-bold mb-4">1. Acceptance of Terms</h2>
             <p className="text-foreground/80 mb-4">
               By downloading, accessing, or using the Jet Mobile App (&quot;Jet&quot;, &quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) available at{" "}
-              <a href="https://www.jet-around.com/" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-                https://www.jet-around.com/
+              <a href="https://jet-around.com/" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+                https://jet-around.com/
               </a>, you agree to be bound by these Terms of Service (&quot;Terms&quot;). If you do not agree to these Terms, do not use Jet.
             </p>
             <p className="text-foreground/80">
@@ -346,8 +346,8 @@ const TermsOfService = () => {
                 </a>
               </li>
               <li><strong>Website:</strong>{" "}
-                <a href="https://www.jet-around.com" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-                  https://www.jet-around.com
+                <a href="https://jet-around.com" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+                  https://jet-around.com
                 </a>
               </li>
             </ul>

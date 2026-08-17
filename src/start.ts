@@ -3,13 +3,13 @@ import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/r
 import { renderErrorPage } from "./lib/error-page";
 
 // Consolidate SEO authority on the primary host: permanently redirect the
-// apex domain (jet-around.com) to www.jet-around.com, which is what every
+// www subdomain to the apex domain (jet-around.com), which is what every
 // canonical tag, og:url, and sitemap entry advertises.
 const canonicalHostMiddleware = createMiddleware().server(async ({ next, request }) => {
   try {
     const url = new URL(request.url);
-    if (url.hostname === "jet-around.com") {
-      url.hostname = "www.jet-around.com";
+    if (url.hostname === "www.jet-around.com") {
+      url.hostname = "jet-around.com";
       return new Response(null, {
         status: 301,
         headers: { location: url.toString(), "cache-control": "public, max-age=3600" },
