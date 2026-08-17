@@ -1500,8 +1500,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         // Listen for geolocate events to update city and marker.
         // The control may not exist in environments without Geolocation
         // (handled above), so guard the listener wiring.
-        geolocateControl?.on('geolocate', async (e: any) => {
-          const { longitude, latitude } = e.coords;
+        const handleGeolocation = (coords: { latitude: number; longitude: number }) => {
+          const { longitude, latitude } = coords;
           
           // Update user location state
           setUserLocation({ lat: latitude, lng: longitude });
@@ -1574,7 +1574,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             // Smoothly animate to new position
             animateMarkerTo(longitude, latitude, 400);
           }
-        });
+        };
+
+        applyGeolocationRef.current = handleGeolocation;
+        geolocateControl?.on('geolocate', (e: any) => handleGeolocation(e.coords));
         
         // Remove marker when tracking stops
         geolocateControl?.on('trackuserlocationend', () => {
