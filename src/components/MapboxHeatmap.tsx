@@ -632,7 +632,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       import("@/lib/networkGeolocation")
         .then(({ getNetworkLocation }) => getNetworkLocation(true))
         .then((fix) => {
-          if (fix) apply(fix.latitude, fix.longitude);
+          if (fix) apply(fix.lat, fix.lng);
         })
         .catch(() => { /* no location available */ });
     };
