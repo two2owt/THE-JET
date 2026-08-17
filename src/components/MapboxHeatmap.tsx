@@ -3034,7 +3034,15 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               </div>
             </div>
             {!citySearchQuery && (
-            <SelectItem value="current-location" className="py-3 px-2.5 my-0.5 rounded-lg focus:bg-primary/10">
+            <SelectItem
+              value="current-location"
+              className="py-3 px-2.5 my-0.5 rounded-lg focus:bg-primary/10"
+              onPointerUp={() => {
+                // Radix skips onValueChange when the current value is picked
+                // again — re-tapping must still re-detect the user's location.
+                if (isUsingCurrentLocation) refreshCurrentLocation();
+              }}
+            >
               <div className="flex items-center gap-3 w-full min-w-0">
                 <span className="w-2 h-2 bg-primary rounded-full animate-pulse flex-shrink-0" aria-hidden="true" />
                 <div className="flex flex-col min-w-0 flex-1">
