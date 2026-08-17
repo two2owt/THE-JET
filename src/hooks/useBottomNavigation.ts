@@ -66,9 +66,12 @@ export function useBottomNavigation(options: UseBottomNavigationOptions = {}) {
         params.set("tab", "notifications");
         break;
       case "favorites":
+        // `tab` only addresses Index sub-tabs — don't drag it onto other pages.
+        params.delete("tab");
         navigate(`/favorites${params.toString() ? `?${params.toString()}` : ""}`);
         return;
       case "social":
+        params.delete("tab");
         navigate(`/social${params.toString() ? `?${params.toString()}` : ""}`);
         return;
     }

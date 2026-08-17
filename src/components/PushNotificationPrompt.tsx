@@ -12,6 +12,7 @@ import {
 import { useWebPushNotifications } from "@/hooks/useWebPushNotifications";
 import { setConsent } from "@/lib/consent";
 import { supabase } from "@/integrations/supabase/client";
+import { usePromptSlot, PROMPT_PRIORITY } from "@/hooks/usePromptSlot";
 
 interface PushNotificationPromptProps {
   show: boolean;
@@ -36,6 +37,7 @@ export const PushNotificationPrompt = ({ show, onDismiss }: PushNotificationProm
   const [isVisible, setIsVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
+  const hasSlot = usePromptSlot("push", PROMPT_PRIORITY.push, isVisible);
 
   const { 
     isSupported: isWebPushSupported, 
@@ -59,6 +61,8 @@ export const PushNotificationPrompt = ({ show, onDismiss }: PushNotificationProm
 
   useEffect(() => {
     if (!show || isWebSubscribed || !signedIn) return;
+    // Browser-level block: nothing we can do in-app, so don't nag on load.
+    if (webPermission === "denied") return;
 
     const dismissedAt = localStorage.getItem(DISMISS_KEY);
     if (dismissedAt) {
@@ -69,7 +73,7 @@ export const PushNotificationPrompt = ({ show, onDismiss }: PushNotificationProm
 
     const timer = setTimeout(() => setIsVisible(true), 1500);
     return () => clearTimeout(timer);
-  }, [show, isWebSubscribed, signedIn]);
+  }, [show, isWebSubscribed, signedIn, webPermission]);
 
   const handleEnable = async () => {
     setIsLoading(true);
@@ -101,7 +105,7 @@ export const PushNotificationPrompt = ({ show, onDismiss }: PushNotificationProm
 
   return (
     <Dialog
-      open={isVisible}
+      open={isVisible && hasSlot}
       onOpenChange={(open) => {
         if (!open && !isLoading) handleDismiss();
       }}

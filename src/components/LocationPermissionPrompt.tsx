@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { refreshConsents } from "@/lib/consent";
+import { usePromptSlot, PROMPT_PRIORITY } from "@/hooks/usePromptSlot";
 
 const DISMISS_KEY = "location-permission-prompt-dismissed";
 const ASKED_KEY = "location-permission-prompt-asked";
@@ -41,6 +42,9 @@ export const LocationPermissionPrompt = () => {
   const userId = session?.user?.id;
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  // Only ever render while this prompt owns the global dialog slot, so it can
+  // never stack with the push / PWA prompts.
+  const hasSlot = usePromptSlot("location", PROMPT_PRIORITY.location, open);
 
   useEffect(() => {
     let cancelled = false;
@@ -174,7 +178,7 @@ export const LocationPermissionPrompt = () => {
 
   return (
     <Dialog
-      open={open}
+      open={open && hasSlot}
       onOpenChange={(next) => {
         if (!next && !loading) handleDismiss();
       }}

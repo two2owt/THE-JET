@@ -61,15 +61,19 @@ export function useNavigate(): NavigateFn {
 
 export function useLocation() {
   const loc = tsLocation();
+  // TanStack's `searchStr` already carries a leading "?" when non-empty.
+  // Prefixing another one produced "??tab=..." and, once re-parsed, keys like
+  // "?tab" that accumulated on every tab change.
+  const searchStr = (loc.searchStr ?? "").replace(/^\?+/, "");
   return useMemo(
     () => ({
       pathname: loc.pathname,
-      search: loc.searchStr ? `?${loc.searchStr}` : "",
+      search: searchStr ? `?${searchStr}` : "",
       hash: loc.hash ?? "",
       state: (loc.state ?? null) as unknown,
-      key: loc.pathname + (loc.searchStr ?? ""),
+      key: loc.pathname + searchStr,
     }),
-    [loc.pathname, loc.searchStr, loc.hash, loc.state],
+    [loc.pathname, searchStr, loc.hash, loc.state],
   );
 }
 
