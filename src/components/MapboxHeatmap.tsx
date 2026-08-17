@@ -604,6 +604,60 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   useEffect(() => { selectedCityRef.current = selectedCity; }, [selectedCity]);
   useEffect(() => { onCityChangeRef.current = onCityChange; }, [onCityChange]);
 
+  /**
+   * Always resolves a *fresh* position and pushes it through the shared
+   * geolocation handler so the city selector label, detected city, and all
+   * data filters follow where the user actually is. Falls back to a
+   * network (IP/WiFi) fix when GPS is denied or times out, and finally to a
+   * nearest-city sync so the dropdown never stays stale.
+   */
+  const refreshCurrentLocation = useCallback(() => {
+    setIsUsingCurrentLocation(true);
+    isUsingCurrentLocationRef.current = true;
+
+    const apply = (latitude: number, longitude: number) => {
+      if (applyGeolocationRef.current) {
+        applyGeolocationRef.current({ latitude, longitude });
+        return;
+      }
+      // Map handler not wired yet — still sync city + label.
+      const nearest = getNearestCity(latitude, longitude);
+      setUserLocation({ lat: latitude, lng: longitude });
+      setDetectedCity(nearest);
+      setDetectedLocationName(`${nearest.name}, ${nearest.state}`);
+      if (nearest.id !== selectedCityRef.current.id) onCityChangeRef.current(nearest);
+    };
+
+    const networkFallback = () => {
+      import("@/lib/networkGeolocation")
+        .then(({ getNetworkLocation }) => getNetworkLocation(true))
+        .then((fix) => {
+          if (fix) apply(fix.latitude, fix.longitude);
+        })
+        .catch(() => { /* no location available */ });
+    };
+
+    if (typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => apply(pos.coords.latitude, pos.coords.longitude),
+        (err) => {
+          console.warn('MapboxHeatmap: location refresh failed', err?.message);
+          networkFallback();
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+      );
+    } else {
+      networkFallback();
+    }
+
+    // Also start/refresh the built-in puck when tracking is off.
+    const control = geolocateControlRef.current as any;
+    const watchState = control?._watchState;
+    if (control && (!watchState || watchState === 'OFF' || watchState === 'ACTIVE_ERROR')) {
+      try { control.trigger(); } catch { /* control not ready */ }
+    }
+  }, []);
+
   // City selector search query
   const [citySearchQuery, setCitySearchQuery] = useState("");
   
