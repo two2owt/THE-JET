@@ -17,6 +17,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import type { Venue } from "@/types/venue";
 
+import { openExternalUrl } from "@/lib/open-external";
+
 const DirectionsDialog = lazy(() => import("./DirectionsDialog"));
 
 // Defer haptics import - only loaded when user interacts
@@ -131,7 +133,7 @@ export const DealDetailCard = memo(({ deal, onClose }: DealDetailCardProps) => {
 
   const handleViewWebsite = () => {
     if (deal.website_url) {
-      window.open(deal.website_url, "_blank");
+      openExternalUrl(deal.website_url);
     }
   };
 

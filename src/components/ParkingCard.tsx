@@ -438,7 +438,7 @@ export const ParkingCard = memo(
               )}
               {parking.website && (
                 <button
-                  onClick={() => window.open(parking.website!, "_blank")}
+                  onClick={() => openExternalUrl(parking.website!)}
                   style={{
                     background:
                       "linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))",
