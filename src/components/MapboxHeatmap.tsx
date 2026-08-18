@@ -5347,6 +5347,7 @@ export const MapboxHeatmap = ({
           cityLabel={selectedCity?.name}
           isLightBasemap={mapStyle === "light" || mapStyle === "streets"}
           onClose={() => setInspectedCell(null)}
+          onHeightChange={setInspectorHeight}
           onZoomTo={(cell) => {
             map.current?.flyTo({
               center: [cell.lng, cell.lat],
