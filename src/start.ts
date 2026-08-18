@@ -71,10 +71,8 @@ if (!csrfMiddleware) {
 const requestMiddleware = [
   canonicalHostMiddleware,
   errorMiddleware,
-  ...(csrfMiddleware ? [csrfMiddleware] : []),
-] as Parameters<typeof createStart>[0] extends never
-  ? never
-  : ReturnType<typeof createMiddleware>[];
+  ...(csrfMiddleware ? [csrfMiddleware as typeof errorMiddleware] : []),
+];
 
 export const startInstance = createStart(() => ({
   requestMiddleware,
