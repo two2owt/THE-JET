@@ -23,6 +23,9 @@ jobs:
       - name: Migration preflight (advisory lock signatures)
         run: bun run scripts/preflight-advisory-locks.mjs
 
+      - name: Migration preflight (idempotency + no live-data mutations)
+        run: bun run scripts/verify-migration-idempotency.mjs
+
       - name: Migration preflight (realtime publication membership)
         run: bun run scripts/verify-realtime-publication.mjs
         env:
