@@ -2233,6 +2233,16 @@ export const MapboxHeatmap = ({
             return;
           }
 
+          // Style/layer validation errors are our own config bugs, not a
+          // connectivity problem — they must never surface the "check your
+          // connection" banner or block the map from showing.
+          const message: string = err?.message ?? "";
+          const isNetworkError =
+            typeof status === "number" ||
+            typeof url === "string" ||
+            /network|fetch|timeout|tile/i.test(message);
+          if (!isNetworkError) return;
+
           errorCount++;
 
           // If too many errors occur during loading, show error state
