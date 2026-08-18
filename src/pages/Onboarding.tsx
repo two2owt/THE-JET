@@ -61,6 +61,12 @@ const maxBirthdate = (() => {
 const Onboarding = () => {
   const navigate = useNavigate();
   const { session, isLoading: authLoading } = useAuth();
+  // Review mode: open /onboarding?preview=1 to walk the flow even when your
+  // account has already completed onboarding. Nothing is persisted and you
+  // are never redirected away.
+  const previewMode =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("preview") === "1";
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -72,6 +78,7 @@ const Onboarding = () => {
   // sessionStorage cache so already-known users never see the spinner.
   const initialChecking = (() => {
     if (authLoading) return true;
+    if (previewMode) return false;
     if (!session) return false; // we'll redirect to /auth synchronously
     const cached = readCachedOnboardingStatus(session.user.id);
     // If we know they've already finished, we'll redirect immediately
@@ -108,6 +115,13 @@ const Onboarding = () => {
   useEffect(() => {
     // Wait for AuthContext to finish bootstrapping its session.
     if (authLoading) return;
+
+    // Review mode never redirects and never reads/writes profile state.
+    if (previewMode) {
+      if (session) setUserId(session.user.id);
+      setIsCheckingAuth(false);
+      return;
+    }
 
     if (!session) {
       navigate("/auth", { replace: true });
@@ -179,7 +193,7 @@ const Onboarding = () => {
     return () => {
       cancelled = true;
     };
-  }, [authLoading, session, navigate]);
+  }, [authLoading, session, navigate, previewMode]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -256,6 +270,13 @@ const Onboarding = () => {
 
     setStep1Errors({});
 
+    if (previewMode) {
+      toast.info("Review mode — nothing saved");
+      setDirection("forward");
+      setStep(2);
+      return;
+    }
+
     setIsLoading(true);
     try {
       // Check if display name is unique
@@ -330,6 +351,12 @@ const Onboarding = () => {
   };
 
   const handleStep2Next = async (preferences: PreferencesData) => {
+    if (previewMode) {
+      toast.info("Review mode — nothing saved");
+      setDirection("forward");
+      setStep(3);
+      return;
+    }
     setIsLoading(true);
     setSavedPreferences(preferences);
     try {
@@ -362,6 +389,10 @@ const Onboarding = () => {
   };
 
   const handleComplete = async () => {
+    if (previewMode) {
+      toast.info("Review mode — onboarding not marked complete");
+      return;
+    }
     setIsLoading(true);
     try {
       const { error } = await supabase.from("profiles").upsert(
@@ -473,6 +504,11 @@ const Onboarding = () => {
       />
 
       <div className="relative z-10 mx-auto w-full max-w-[420px]">
+        {previewMode && (
+          <div className="mb-3 rounded-2xl border border-primary/30 bg-primary/10 px-4 py-2 text-center text-[11px] font-medium uppercase tracking-widest text-primary">
+            Review mode — nothing is saved
+          </div>
+        )}
         {/* Glassmorphic Card */}
         <div className="flex flex-col gap-8 rounded-[40px] border border-white/10 bg-card/60 p-7 sm:p-8 shadow-2xl backdrop-blur-3xl">
           {/* Top row: back affordance */}
