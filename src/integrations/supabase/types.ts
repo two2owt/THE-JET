@@ -430,6 +430,51 @@ export type Database = {
         }
         Relationships: []
       }
+      location_permission_events: {
+        Row: {
+          created_at: string
+          detail: string | null
+          duration_ms: number | null
+          fallback_used: boolean
+          id: string
+          method: string | null
+          outcome: string
+          platform: string
+          prompt_suppressed: boolean
+          surface: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          detail?: string | null
+          duration_ms?: number | null
+          fallback_used?: boolean
+          id?: string
+          method?: string | null
+          outcome: string
+          platform?: string
+          prompt_suppressed?: boolean
+          surface?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          detail?: string | null
+          duration_ms?: number | null
+          fallback_used?: boolean
+          id?: string
+          method?: string | null
+          outcome?: string
+          platform?: string
+          prompt_suppressed?: boolean
+          surface?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       location_tracking_diagnostics: {
         Row: {
           background_enabled: boolean | null

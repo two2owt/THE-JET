@@ -22,6 +22,7 @@ import {
   shouldPromptForLocation,
 } from "@/lib/locationPromptPolicy";
 import { recordPromptOutcome } from "@/lib/locationDiagnostics";
+import { logGeoPermissionEvent } from "@/lib/locationPermissionLog";
 import {
   isPromptSuppressed,
   recordPromptAttempt,
@@ -76,6 +77,12 @@ export const LocationPermissionPrompt = () => {
         if (import.meta.env.DEV)
           console.debug("[location-prompt] suppressed:", decision.reason);
         if (userId) recordPromptOutcome("suppressed");
+        logGeoPermissionEvent({
+          outcome: "suppressed",
+          surface: "first_visit_prompt",
+          promptSuppressed: true,
+          detail: decision.reason,
+        });
         return;
       }
 
@@ -130,6 +137,11 @@ export const LocationPermissionPrompt = () => {
         promptShownFor = signature;
         markLocationPromptShown(signature);
         if (userId) recordPromptOutcome("shown");
+        logGeoPermissionEvent({
+          outcome: "prompt_shown",
+          surface: "first_visit_prompt",
+          method: "ui",
+        });
         setOpen(true);
       }, delay);
       return () => {
@@ -195,6 +207,17 @@ export const LocationPermissionPrompt = () => {
       markLocationPermissionResolved(signature);
     }
     recordPromptOutcome(granted ? "granted" : "denied");
+    logGeoPermissionEvent({
+      outcome: granted
+        ? "granted"
+        : result.deniedError
+          ? "denied"
+          : "dismissed",
+      surface: "first_visit_prompt",
+      method: "get_current_position",
+      durationMs: Date.now() - startedAt,
+      promptSuppressed: result.deniedError && Date.now() - startedAt < 500,
+    });
     setLoading(false);
     setOpen(false);
 
@@ -213,6 +236,11 @@ export const LocationPermissionPrompt = () => {
   const handleDismiss = () => {
     markLocationPromptDismissed(signature);
     recordPromptOutcome("dismissed");
+    logGeoPermissionEvent({
+      outcome: "dismissed",
+      surface: "first_visit_prompt",
+      method: "ui",
+    });
     setOpen(false);
   };
 

@@ -7,6 +7,7 @@ import {
   recordPromptAttempt,
   subscribeToPromptSuppression,
 } from "@/lib/geolocationPromptSuppression";
+import { logGeoPermissionEvent } from "@/lib/locationPermissionLog";
 
 /** Non-standard Permissions API with one-tap request(), available in Chrome. */
 type PermissionsWithRequest = Permissions & {
@@ -137,9 +138,14 @@ export function useGeolocationPermission() {
    * `getCurrentPosition()` prompt. On native shells it routes through the
    * Capacitor Geolocation plugin.
    */
-  const request = useCallback(async () => {
-    if (typeof navigator === "undefined" || !("geolocation" in navigator))
+  const request = useCallback(async (surface = "unknown") => {
+    if (typeof navigator === "undefined" || !("geolocation" in navigator)) {
+      logGeoPermissionEvent({ outcome: "unsupported", surface });
       return "unsupported" as const;
+    }
+
+    const requestedAt = Date.now();
+    logGeoPermissionEvent({ outcome: "prompt_shown", surface });
 
     if (isNativeApp()) {
       try {
@@ -149,9 +155,28 @@ export function useGeolocationPermission() {
         const next: GeoPermissionState =
           loc === "granted" ? "granted" : loc === "denied" ? "denied" : "prompt";
         setState(next);
+        logGeoPermissionEvent({
+          outcome:
+            next === "granted"
+              ? "granted"
+              : next === "denied"
+                ? "denied"
+                : "dismissed",
+          surface,
+          method: "capacitor",
+          durationMs: Date.now() - requestedAt,
+        });
         return next;
       } catch {
-        return refresh();
+        const fallbackState = await refresh();
+        logGeoPermissionEvent({
+          outcome: "dismissed",
+          surface,
+          method: "capacitor",
+          durationMs: Date.now() - requestedAt,
+          detail: `plugin error, state=${fallbackState}`,
+        });
+        return fallbackState;
       }
     }
 
@@ -172,6 +197,17 @@ export function useGeolocationPermission() {
           outcome: next,
           durationMs: Date.now() - startedAt,
         });
+        logGeoPermissionEvent({
+          outcome:
+            next === "granted"
+              ? "granted"
+              : next === "denied"
+                ? "denied"
+                : "dismissed",
+          surface,
+          method: "permissions_api",
+          durationMs: Date.now() - startedAt,
+        });
         return next;
       } catch {
         // Fall through to legacy prompt if the API throws or is unsupported.
@@ -190,6 +226,20 @@ export function useGeolocationPermission() {
       outcome: next,
       durationMs: Date.now() - startedAt,
       deniedError,
+    });
+    const duration = Date.now() - startedAt;
+    logGeoPermissionEvent({
+      outcome:
+        next === "granted"
+          ? "granted"
+          : next === "denied" || deniedError
+            ? "denied"
+            : "dismissed",
+      surface,
+      method: "get_current_position",
+      durationMs: duration,
+      promptSuppressed: deniedError && duration < 500,
+      detail: deniedError ? "PERMISSION_DENIED error" : undefined,
     });
     return next;
   }, [refresh, setState]);
