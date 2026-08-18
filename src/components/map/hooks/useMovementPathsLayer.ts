@@ -433,6 +433,7 @@ export const useMovementPathsLayer = ({
         "line-width-transition": { duration: 800, delay: 0 },
         "line-color-transition": { duration: 800, delay: 0 },
         "line-opacity-transition": { duration: 600, delay: 0 },
+        "line-occlusion-opacity": OCCLUSION_OPACITY * 0.6,
       } as any,
     });
 
@@ -443,7 +444,11 @@ export const useMovementPathsLayer = ({
       type: "line",
       source: sourceId,
       filter: inactiveFilter(minFrequencyRef.current),
-      layout: { "line-join": "round", "line-cap": "round" },
+      layout: {
+        "line-join": "round",
+        "line-cap": "round",
+        ...FLOW_LINE_ELEVATION_LAYOUT,
+      } as any,
       paint: {
         "line-width": [
           "interpolate",
@@ -461,6 +466,7 @@ export const useMovementPathsLayer = ({
         "line-color": "rgba(196, 205, 255, 0.9)",
         "line-opacity": ["*", 0.55, ["coalesce", ["get", "recency"], 1]],
         "line-opacity-transition": { duration: 600, delay: 0 },
+        "line-occlusion-opacity": OCCLUSION_OPACITY * 0.5,
       } as any,
     });
 
@@ -472,7 +478,11 @@ export const useMovementPathsLayer = ({
       type: "line",
       source: sourceId,
       filter: activeFilter(minFrequencyRef.current),
-      layout: { "line-join": "round", "line-cap": "round" },
+      layout: {
+        "line-join": "round",
+        "line-cap": "round",
+        ...FLOW_LINE_ELEVATION_LAYOUT,
+      } as any,
       paint: {
         "line-width": [
           "interpolate",
@@ -491,6 +501,7 @@ export const useMovementPathsLayer = ({
         "line-blur": 0.5,
         "line-opacity": ["*", 0.8, ["coalesce", ["get", "recency"], 1]],
         "line-opacity-transition": { duration: 600, delay: 0 },
+        "line-occlusion-opacity": OCCLUSION_OPACITY * 0.4,
       } as any,
     });
 
@@ -499,7 +510,11 @@ export const useMovementPathsLayer = ({
       type: "line",
       source: sourceId,
       filter: activeFilter(minFrequencyRef.current),
-      layout: { "line-join": "round", "line-cap": "round" },
+      layout: {
+        "line-join": "round",
+        "line-cap": "round",
+        ...FLOW_LINE_ELEVATION_LAYOUT,
+      } as any,
       paint: {
         "line-width": [
           "interpolate",
@@ -552,7 +567,7 @@ export const useMovementPathsLayer = ({
         "line-dasharray": [0, 2, 2],
         "line-width-transition": { duration: 800, delay: 0 },
         "line-color-transition": { duration: 800, delay: 0 },
-        "line-occlusion-opacity": OCCLUSION_OPACITY * 0.6,
+        "line-occlusion-opacity": OCCLUSION_OPACITY,
       } as any,
     });
 
@@ -608,6 +623,8 @@ export const useMovementPathsLayer = ({
         "icon-rotation-alignment": "map",
         "icon-allow-overlap": true,
         "icon-ignore-placement": true,
+        // Lift arrows with the elevated route so they ride on top of 3D geometry.
+        "symbol-z-elevate": true,
       } as any,
       paint: {
         "icon-opacity": ["*", 0.85, ["coalesce", ["get", "recency"], 1]],
