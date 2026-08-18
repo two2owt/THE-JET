@@ -61,6 +61,10 @@ const maxBirthdate = (() => {
 const Onboarding = () => {
   const navigate = useNavigate();
   const { session, isLoading: authLoading } = useAuth();
+  // Admins can always open /onboarding to review the flow, even once their
+  // own account is fully onboarded — same escape hatch as ?preview=1, but
+  // without needing the query param.
+  const { isAdmin, loading: adminLoading } = useIsAdmin();
   // Review mode: open /onboarding?preview=1 to walk the flow even when your
   // account has already completed onboarding. Nothing is persisted and you
   // are never redirected away.
@@ -80,6 +84,10 @@ const Onboarding = () => {
     if (authLoading) return true;
     if (previewMode) return false;
     if (!session) return false; // we'll redirect to /auth synchronously
+    // Hold the first paint until we know whether this is an admin, so an
+    // onboarded admin never gets bounced to "/" before the check resolves.
+    if (adminLoading) return true;
+    if (isAdmin) return false;
     const cached = readCachedOnboardingStatus(session.user.id);
     // If we know they've already finished, we'll redirect immediately
     // without ever painting the spinner OR the form.
@@ -131,10 +139,13 @@ const Onboarding = () => {
     const uid = session.user.id;
     setUserId(uid);
 
+    // Wait for the admin check before any redirect decision.
+    if (adminLoading) return;
+
     // Fast-path: if cache says they're done, redirect synchronously —
     // no spinner, no profile fetch.
     const cached = readCachedOnboardingStatus(uid);
-    if (cached === true) {
+    if (cached === true && !isAdmin) {
       navigate(consumePostAuthRedirect("/"), { replace: true });
       return;
     }
@@ -154,8 +165,10 @@ const Onboarding = () => {
 
         if (profile?.onboarding_completed) {
           writeCachedOnboardingStatus(uid, true);
-          navigate(consumePostAuthRedirect("/"), { replace: true });
-          return;
+          if (!isAdmin) {
+            navigate(consumePostAuthRedirect("/"), { replace: true });
+            return;
+          }
         }
 
         writeCachedOnboardingStatus(uid, false);
@@ -193,7 +206,7 @@ const Onboarding = () => {
     return () => {
       cancelled = true;
     };
-  }, [authLoading, session, navigate, previewMode]);
+  }, [authLoading, session, navigate, previewMode, isAdmin, adminLoading]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
