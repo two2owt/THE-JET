@@ -4,6 +4,10 @@ import { storeLastKnownLocation } from "@/lib/tile-prefetch";
 import { GEO_GRANTED_EVENT } from "@/lib/geolocationGrantEvent";
 import { subscribeMapInteractionLock } from "@/lib/mapInteractionLock";
 import { verifyMapboxVersion } from "@/lib/mapbox-version";
+import {
+  createTileRetryController,
+  type TileRetryController,
+} from "@/lib/mapTileRetry";
 import type * as MapboxGL from "mapbox-gl";
 import type { FeatureCollection, Geometry } from "geojson";
 import {
@@ -270,6 +274,7 @@ export const MapboxHeatmap = ({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapboxGL.Map | null>(null);
   const mapboxglRef = useRef<MapboxGLModule | null>(null);
+  const tileRetry = useRef<TileRetryController | null>(null);
   const [mapboxLoaded, setMapboxLoaded] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapInitializing, setMapInitializing] = useState(true);
@@ -2129,6 +2134,8 @@ export const MapboxHeatmap = ({
             setMapInitializing(false);
             setLoadingStage("ready");
           }
+          // Tiles are in: clear any pending backoff state.
+          tileRetry.current?.notifySuccess();
         };
 
         // Ensure map resizes to container after initialization
@@ -2213,6 +2220,28 @@ export const MapboxHeatmap = ({
         let errorCount = 0;
         const maxErrors = 5;
 
+        // Transient tile/network failures are retried automatically with
+        // exponential backoff (and immediately when the browser comes back
+        // online) before we ever show a connection error to the user.
+        tileRetry.current?.dispose();
+        tileRetry.current = createTileRetryController(map.current, {
+          onRetry: (attempt, delayMs) =>
+            devLog(
+              `MapboxHeatmap: retrying tiles (attempt ${attempt}) in ${delayMs}ms`,
+            ),
+          onRecovered: () => {
+            errorCount = 0;
+            setMapError(null);
+            devLog("MapboxHeatmap: tiles recovered after retry");
+          },
+          onExhausted: () => {
+            setMapError(
+              "Failed to load map tiles. Please check your connection.",
+            );
+            setMapInitializing(false);
+          },
+        });
+
         map.current.on("error", (e) => {
           const err: any = (e as any)?.error;
           const status = err?.status ?? err?.statusCode;
@@ -2242,6 +2271,9 @@ export const MapboxHeatmap = ({
             typeof url === "string" ||
             /network|fetch|timeout|tile/i.test(message);
           if (!isNetworkError) return;
+
+          // Let the retry controller absorb transient failures.
+          if (tileRetry.current?.handleError(err)) return;
 
           errorCount++;
 
@@ -2362,6 +2394,8 @@ export const MapboxHeatmap = ({
     function cleanupMap() {
       setMapLoaded(false);
       setMapError(null);
+      tileRetry.current?.dispose();
+      tileRetry.current = null;
       if (userMarker.current) {
         userMarker.current.remove();
       }
