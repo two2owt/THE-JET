@@ -53,6 +53,16 @@ export function useColdStartLocationFallback() {
           return;
         }
 
+        // Confirm the auth server actually accepts this token. When the backend
+        // is unreachable or the token was revoked, skip quietly instead of
+        // letting the server function throw "Unauthorized: Invalid token".
+        const { data: userData, error: userErr } =
+          await supabase.auth.getUser();
+        if (cancelled || userErr || !userData?.user) {
+          attemptedForUser = null;
+          return;
+        }
+
         const freshness = await getLocationFreshness();
         if (cancelled || !freshness.stale) return;
 
