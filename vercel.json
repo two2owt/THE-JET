@@ -1,9 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "vite",
   "installCommand": "bun install --frozen-lockfile",
   "buildCommand": "bun run build",
-  "outputDirectory": "dist",
   "headers": [
     {
       "source": "/sw.js",
@@ -282,9 +280,5 @@
         }
       ]
     }
-  ],
-  "rewrites": [
-    { "source": "/.lovable/:path*", "destination": "/index.html" },
-    { "source": "/((?!api|_next|assets|fonts|sw|workbox|.*\\..*).*)", "destination": "/index.html" }
   ]
 }
