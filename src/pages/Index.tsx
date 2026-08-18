@@ -209,6 +209,13 @@ const Index = () => {
   const { notifications, markAsRead, markAllAsRead } =
     useNotifications(dataReady);
   const unreadNotifications = notifications.filter((n) => !n.read).length;
+  const [notificationFilter, setNotificationFilter] = useState<
+    "all" | "unread"
+  >("all");
+  const visibleNotifications =
+    notificationFilter === "unread"
+      ? notifications.filter((n) => !n.read)
+      : notifications;
   useAutoScrapeVenueImages(dataReady);
   const {
     deals,
@@ -862,6 +869,33 @@ const Index = () => {
                   }}
                 >
                   <EnablePushButton />
+                  <div
+                    role="group"
+                    aria-label="Filter notifications"
+                    className="flex items-center gap-1 rounded-full p-1"
+                    style={{
+                      background: "hsl(var(--muted) / 0.4)",
+                      border: "1px solid hsl(var(--border) / 0.5)",
+                    }}
+                  >
+                    {(["all", "unread"] as const).map((mode) => (
+                      <button
+                        key={mode}
+                        type="button"
+                        onClick={() => setNotificationFilter(mode)}
+                        aria-pressed={notificationFilter === mode}
+                        className={`text-xs font-semibold rounded-full px-3 py-1 transition-colors ${
+                          notificationFilter === mode
+                            ? "bg-primary/15 text-primary"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {mode === "all"
+                          ? "All"
+                          : `Unread${unreadNotifications > 0 ? ` (${unreadNotifications})` : ""}`}
+                      </button>
+                    ))}
+                  </div>
                   {unreadNotifications > 0 && (
                     <button
                       type="button"
@@ -874,7 +908,7 @@ const Index = () => {
                   )}
                 </div>
 
-                {notifications.length === 0 ? (
+                {visibleNotifications.length === 0 ? (
                   <div
                     style={{
                       textAlign: "center",
@@ -914,7 +948,9 @@ const Index = () => {
                         marginBottom: "6px",
                       }}
                     >
-                      No notifications yet
+                      {notificationFilter === "unread"
+                        ? "You're all caught up"
+                        : "No notifications yet"}
                     </p>
                     <p
                       style={{
@@ -922,12 +958,14 @@ const Index = () => {
                         color: "hsl(var(--muted-foreground))",
                       }}
                     >
-                      Enable location tracking to receive deal alerts
+                      {notificationFilter === "unread"
+                        ? "Every alert has been read"
+                        : "Enable location tracking to receive deal alerts"}
                     </p>
                   </div>
                 ) : (
                   <>
-                    {notifications.map((notification) => (
+                    {visibleNotifications.map((notification) => (
                       <div key={notification.id}>
                         <Suspense fallback={null}>
                           <NotificationCard

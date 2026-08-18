@@ -12,6 +12,8 @@ export interface Notification {
   message: string;
   venue?: string;
   timestamp: string;
+  /** Absolute ISO time the alert was sent/delivered */
+  sentAt?: string;
   distance?: string;
   read?: boolean;
   /** Where the row came from — decides how mark-as-read is persisted */
@@ -43,6 +45,7 @@ const mapNotificationLogToNotification = (
     title: log.title,
     message: log.message,
     timestamp: relativeTime(log.sent_at),
+    sentAt: log.sent_at ?? undefined,
     read: log.read || false,
     source: "log",
   };
@@ -120,6 +123,7 @@ export const useNotifications = (enabled: boolean = true) => {
             message: queuedNotification.body,
             venue: queuedNotification.venue_id ?? undefined,
             timestamp: relativeTime(delivery.created_at),
+            sentAt: delivery.created_at,
             read: delivery.status === "opened" || !!delivery.opened_at,
             source: "delivery" as const,
             _sortKey: delivery.created_at,
