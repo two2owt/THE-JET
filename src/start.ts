@@ -4,15 +4,16 @@ import { createStart, createMiddleware } from "@tanstack/react-start";
 import { attachSupabaseAuth } from "./integrations/supabase/auth-attacher";
 import { renderErrorPage } from "./lib/error-page";
 
-// Consolidate SEO authority on the primary host: permanently redirect the
-// www subdomain to the apex domain (jet-around.com), which is what every
-// canonical tag, og:url, and sitemap entry advertises.
+// Consolidate SEO authority on the primary host. The hosting platform already
+// 308-redirects the apex (jet-around.com) to www, so redirecting www back to
+// the apex here creates an infinite redirect loop. Keep www as the served host
+// and only normalize the apex if a request ever reaches the function directly.
 const canonicalHostMiddleware = createMiddleware().server(
   async ({ next, request }) => {
     try {
       const url = new URL(request.url);
-      if (url.hostname === "www.jet-around.com") {
-        url.hostname = "jet-around.com";
+      if (url.hostname === "jet-around.com") {
+        url.hostname = "www.jet-around.com";
         return new Response(null, {
           status: 301,
           headers: {
