@@ -35,14 +35,18 @@ export const triggerHaptic = async (
       soar: [10, 40, 10, 40, 20, 40, 20, 40, 40, 60, 40, 40, 20, 40, 10],
     };
     navigator.vibrate(patterns[pattern] ?? 10);
-  } catch {}
+  } catch {
+    // vibration unsupported or blocked; ignore
+  }
 };
 
 export const triggerCustomHaptic = async (duration = 20): Promise<void> => {
   if (!canVibrate()) return;
   try {
     navigator.vibrate(duration);
-  } catch {}
+  } catch {
+    // vibration unsupported or blocked; ignore
+  }
 };
 
 export const glideHaptic = async () => triggerHaptic("glide");

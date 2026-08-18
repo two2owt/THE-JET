@@ -4237,9 +4237,11 @@ export const MapboxHeatmap = ({
                             type="button"
                             onClick={() => {
                               triggerHaptic("medium");
-                              timelapse.isPlaying
-                                ? timelapse.pause()
-                                : timelapse.play();
+                              if (timelapse.isPlaying) {
+                                timelapse.pause();
+                              } else {
+                                timelapse.play();
+                              }
                             }}
                             style={{
                               flex: 1,

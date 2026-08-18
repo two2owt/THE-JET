@@ -102,7 +102,7 @@ export const useMapboxToken = (options: UseMapboxTokenOptions = {}) => {
         const { data, error: fetchError } = await supabase.functions.invoke(
           "get-mapbox-token",
           {
-            // @ts-ignore - abort signal is supported but not in types
+            // @ts-expect-error - abort signal is supported but not in types
             signal: controller.signal,
           },
         );

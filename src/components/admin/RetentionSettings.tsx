@@ -26,7 +26,7 @@ interface RetentionSettings {
 /** Simple 5-field cron shape check (minute hour dom month dow). */
 function isValidCron(expr: string): boolean {
   const parts = expr.trim().split(/\s+/);
-  return parts.length === 5 && parts.every((p) => /^[\d*/,\-]+$/.test(p));
+  return parts.length === 5 && parts.every((p) => /^[\d*/,-]+$/.test(p));
 }
 
 export function RetentionSettings() {

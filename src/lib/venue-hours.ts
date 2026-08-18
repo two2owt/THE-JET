@@ -79,7 +79,7 @@ function isOpenForLine(
     .filter(Boolean);
   let parsedAny = false;
   for (const iv of intervals) {
-    const parts = iv.split(/\s*[\u2013\u2014\-]\s*|\s+to\s+/);
+    const parts = iv.split(/\s*[\u2013\u2014-]\s*|\s+to\s+/);
     if (parts.length !== 2) continue;
     const start = parseTimeToMinutes(parts[0]);
     const end = parseTimeToMinutes(parts[1]);
@@ -143,7 +143,7 @@ export function isVenueOpenNow(
       .toLowerCase();
     if (value && value !== "closed") {
       for (const iv of value.split(",").map((s) => s.trim())) {
-        const parts = iv.split(/\s*[\u2013\u2014\-]\s*|\s+to\s+/);
+        const parts = iv.split(/\s*[\u2013\u2014-]\s*|\s+to\s+/);
         if (parts.length !== 2) continue;
         const start = parseTimeToMinutes(parts[0]);
         const end = parseTimeToMinutes(parts[1]);

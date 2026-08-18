@@ -108,7 +108,9 @@ export const useWebPushNotifications = () => {
             permissionStatus.addEventListener("change", handlePermissionChange);
           })
           .catch(() => {});
-      } catch {}
+      } catch {
+        // best-effort cleanup; ignore failures
+      }
     }
 
     const handleVisibility = () => {
