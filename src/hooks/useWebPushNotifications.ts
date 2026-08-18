@@ -282,6 +282,12 @@ export const useWebPushNotifications = () => {
       console.error("Error saving subscription:", error);
       throw error;
     }
+
+    try {
+      localStorage.setItem(WEB_ENDPOINT_KEY, subscriptionJson.endpoint || "");
+    } catch {
+      /* ignore */
+    }
   };
 
   const unsubscribe = useCallback(async (): Promise<boolean> => {
@@ -303,6 +309,11 @@ export const useWebPushNotifications = () => {
           .update({ active: false })
           .eq("user_id", user.id)
           .eq("endpoint", subscription.endpoint);
+      }
+      try {
+        localStorage.removeItem(WEB_ENDPOINT_KEY);
+      } catch {
+        /* ignore */
       }
 
       setSubscription(null);
