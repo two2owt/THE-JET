@@ -14,7 +14,15 @@ import { TabPageHeader } from "@/components/TabPageHeader";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { SEO } from "@/components/SEO";
 import { useVenuePhoto } from "@/hooks/useVenuePhoto";
-import { Trash2 } from "lucide-react";
+import { Trash2, Search, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -45,6 +53,10 @@ export default function Favorites() {
   const { user, isLoading: authLoading } = useAuth();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loadError, setLoadError] = useState(false);
+  const [query, setQuery] = useState("");
+  const [sortBy, setSortBy] = useState<
+    "recent" | "name" | "venue" | "expiring"
+  >("recent");
   const headerConfig = useMemo(() => ({}), []);
 
   const {
