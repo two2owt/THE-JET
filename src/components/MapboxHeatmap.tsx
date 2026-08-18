@@ -136,7 +136,10 @@ import {
   type LiveStatsRange,
 } from "./map/LiveStatsPanel";
 import { useDensityLayer } from "./map/hooks/useDensityLayer";
-import { useMovementPathsLayer } from "./map/hooks/useMovementPathsLayer";
+import {
+  useMovementPathsLayer,
+  FLOW_LINE_ELEVATION_LAYOUT,
+} from "./map/hooks/useMovementPathsLayer";
 import { useLayerPersistence } from "./map/hooks/useLayerPersistence";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "./ui/select";
 import { Slider } from "./ui/slider";
