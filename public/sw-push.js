@@ -80,6 +80,9 @@ self.addEventListener("push", function (event) {
   );
 });
 
+// Ids whose open-receipt has already been posted in this SW lifetime.
+self.__jetSeenAlerts = self.__jetSeenAlerts || new Set();
+
 self.addEventListener("notificationclick", function (event) {
   console.log("[SW-Push] Notification click received:", event);
 
@@ -93,7 +96,16 @@ self.addEventListener("notificationclick", function (event) {
   let urlToOpen = notificationData.url || "/";
 
   // Fire-and-forget open receipt so merchant analytics can close the loop.
-  if (notificationData.notificationId) {
+  // Guarded so a duplicate tap (or a re-delivered notification with the same
+  // id) can't post the receipt twice.
+  if (
+    notificationData.notificationId &&
+    !self.__jetSeenAlerts.has(notificationData.notificationId)
+  ) {
+    self.__jetSeenAlerts.add(notificationData.notificationId);
+    if (self.__jetSeenAlerts.size > 200) {
+      self.__jetSeenAlerts.delete(self.__jetSeenAlerts.values().next().value);
+    }
     try {
       fetch(
         "https://flvhduntedvorikonuvy.supabase.co/functions/v1/notifications-receipt",
