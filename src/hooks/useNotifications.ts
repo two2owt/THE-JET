@@ -2,6 +2,11 @@ import { devLog } from "@/lib/log";
 import { useEffect, useId, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { syncNotificationRead } from "@/lib/notificationRead";
+import {
+  enqueueRead,
+  flushPendingReads,
+  initNotificationReadQueue,
+} from "@/lib/notificationReadQueue";
 import type { Database } from "@/integrations/supabase/types";
 
 type NotificationLog = Database["public"]["Tables"]["notification_logs"]["Row"];
@@ -188,25 +193,33 @@ export const useNotifications = (enabled: boolean = true) => {
       .map((n) => n.id);
     try {
       if (logIds.length) {
-        await supabase
+        const { error } = await supabase
           .from("notification_logs")
           .update({ read: true })
           .in("id", logIds);
+        if (error) logIds.forEach((id) => enqueueRead(id, "log"));
       }
       if (deliveryIds.length) {
-        await supabase
+        const { error } = await supabase
           .from("notification_deliveries")
           .update({ status: "opened", opened_at: new Date().toISOString() })
           .in("id", deliveryIds);
+        if (error) deliveryIds.forEach((id) => enqueueRead(id, "delivery"));
       }
     } catch (err) {
       console.error("Error marking all notifications as read:", err);
+      // Keep the optimistic state and let the durable queue land the write.
+      logIds.forEach((id) => enqueueRead(id, "log"));
+      deliveryIds.forEach((id) => enqueueRead(id, "delivery"));
     }
   };
 
   useEffect(() => {
     // Skip initialization if disabled (deferred loading)
     if (!enabled) return;
+
+    // Replay any read-sync writes that failed while offline.
+    initNotificationReadQueue();
 
     // Defer loading notifications slightly to prioritize critical content
     const timer = setTimeout(() => {
@@ -245,12 +258,15 @@ export const useNotifications = (enabled: boolean = true) => {
     // Foreground push arrived while the app was open — refresh immediately.
     const onPushRefresh = () => loadNotifications();
     window.addEventListener("jet:notifications-refresh", onPushRefresh);
+    const onOnline = () => void flushPendingReads();
+    window.addEventListener("online", onOnline);
 
     return () => {
       clearTimeout(timer);
       supabase.removeChannel(channel);
       subscription.unsubscribe();
       window.removeEventListener("jet:notifications-refresh", onPushRefresh);
+      window.removeEventListener("online", onOnline);
     };
   }, [enabled, instanceId]);
 
