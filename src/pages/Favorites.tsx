@@ -187,15 +187,17 @@ export default function Favorites() {
             (new Date(a.expires_at).getTime() || Infinity) -
             (new Date(b.expires_at).getTime() || Infinity)
           );
-        default:
-          return (
-            (savedAt.get(`deal:${a.id}`) ??
-              savedAt.get(`venue:${a.venue_id ?? ""}`) ??
-              0) * -1 +
-            (savedAt.get(`deal:${b.id}`) ??
-              savedAt.get(`venue:${b.venue_id ?? ""}`) ??
-              0)
-          );
+        default: {
+          const at =
+            savedAt.get(`deal:${a.id}`) ??
+            savedAt.get(`venue:${a.venue_id ?? ""}`) ??
+            0;
+          const bt =
+            savedAt.get(`deal:${b.id}`) ??
+            savedAt.get(`venue:${b.venue_id ?? ""}`) ??
+            0;
+          return bt - at;
+        }
       }
     });
     return sorted;
