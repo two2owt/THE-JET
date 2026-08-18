@@ -125,7 +125,7 @@ const HeatmapColorLegendImpl = ({
         color: "hsl(var(--muted-foreground) / 0.85)",
       }}
     >
-      Color shows how many people are checked in nearby. Zoom in past street
+      Color shows recent JET member check-ins nearby. Zoom in past street
       level to see individual hotspots as dots.
     </p>
   </div>

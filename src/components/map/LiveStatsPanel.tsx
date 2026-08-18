@@ -154,7 +154,7 @@ export const LiveStatsPanel = ({
     if (checkins > 0)
       rows.push({
         key: "checkins",
-        label: "Recent check-ins",
+        label: "Recent JET activity",
         value: checkins.toLocaleString(),
         tone: "hsl(var(--foreground))",
       });
@@ -379,7 +379,7 @@ export const LiveStatsPanel = ({
                 label="Top hotspot"
                 hint={`${topHotspot.density}`}
                 onClick={onJumpToHotspot}
-                ariaLabel={`Jump to the busiest hotspot with ${topHotspot.density} check-ins`}
+                ariaLabel={`Jump to the busiest hotspot with ${topHotspot.density} recent check${topHotspot.density === 1 ? "" : "-ins"}`}
               />
             )}
             {topRoute && onHighlightTopRoute && (
