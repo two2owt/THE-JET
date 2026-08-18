@@ -76,9 +76,14 @@ export const SearchResults = ({
   isVisible,
 }: SearchResultsProps) => {
   const navigate = useNavigate();
-  // Position version — bumped whenever we should recalc (resize, orientation, dropdown open/close).
-  // Used as a key on the panel so layout-affecting CSS variables are re-read.
-  const [posVersion, setPosVersion] = useState(0);
+  // Measured layout box (in px) so the panel never relies on dvh/env() support
+  // being correct on a given browser. Recomputed on resize, orientation change,
+  // visual-viewport changes (iOS keyboard/zoom) and header/nav size changes.
+  const [box, setBox] = useState<{
+    top: number;
+    bottom: number;
+    maxHeight: number;
+  } | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   // Element state (not just the ref) so the lock re-binds when the panel remounts.
@@ -86,23 +91,86 @@ export const SearchResults = ({
   useLockMapWhileInteracting(panelEl, isVisible);
 
   useEffect(() => {
-    if (!isVisible) return;
-    const recalc = () => setPosVersion((v) => v + 1);
+    if (!isVisible || typeof window === "undefined") return;
+
+    let frame = 0;
+    const measure = () => {
+      const vv = window.visualViewport;
+      // Visual viewport height is the only value that shrinks with the iOS
+      // keyboard; fall back to layout viewport elsewhere.
+      const viewportH = vv?.height ?? window.innerHeight;
+      // Offset of the visual viewport within the layout viewport (iOS zoom/scroll).
+      const vvTop = vv?.offsetTop ?? 0;
+
+      const headerEl = document.querySelector('header[role="banner"]');
+      const headerRect = headerEl?.getBoundingClientRect();
+      const headerBottom = headerRect ? Math.max(0, headerRect.bottom) : 56;
+
+      const navEl = document.querySelector('nav[aria-label="Main navigation"]');
+      const navRect = navEl?.getBoundingClientRect();
+      // Actual nav height including its safe-area padding, measured live.
+      const navHeight = navRect
+        ? Math.max(0, viewportH + vvTop - navRect.top)
+        : 0;
+
+      const GAP_TOP = 8;
+      const GAP_BOTTOM = 12;
+      const top = headerBottom + GAP_TOP;
+      const bottom = navHeight + GAP_BOTTOM;
+      const available = Math.max(160, viewportH - top - bottom);
+      // Keep the map visible around the panel on tall screens, but never
+      // exceed the space actually left between header and footer nav.
+      const maxHeight = Math.min(available, Math.max(240, viewportH * 0.52), 480);
+
+      setBox((prev) =>
+        prev &&
+        prev.top === top &&
+        prev.bottom === bottom &&
+        prev.maxHeight === maxHeight
+          ? prev
+          : { top, bottom, maxHeight },
+      );
+    };
+
+    const recalc = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(measure);
+    };
+
+    measure();
 
     window.addEventListener("resize", recalc);
     window.addEventListener("orientationchange", recalc);
+    window.addEventListener("scroll", recalc, { passive: true });
     // Custom event dispatched by other floating UI (e.g. city dropdown) when it opens/closes
     window.addEventListener("jet:floating-ui-toggle", recalc);
 
     // VisualViewport handles iOS keyboard/zoom changes that affect safe-area insets
     const vv = window.visualViewport;
     vv?.addEventListener("resize", recalc);
+    vv?.addEventListener("scroll", recalc);
+
+    // Header/footer can change height (search expands, safe areas settle).
+    const ro =
+      typeof ResizeObserver !== "undefined" ? new ResizeObserver(recalc) : null;
+    const headerEl = document.querySelector('header[role="banner"]');
+    const navEl = document.querySelector('nav[aria-label="Main navigation"]');
+    if (headerEl) ro?.observe(headerEl);
+    if (navEl) ro?.observe(navEl);
+
+    // Orientation change on iOS reports stale sizes for a frame or two.
+    const settle = window.setTimeout(measure, 250);
 
     return () => {
+      cancelAnimationFrame(frame);
+      window.clearTimeout(settle);
       window.removeEventListener("resize", recalc);
       window.removeEventListener("orientationchange", recalc);
+      window.removeEventListener("scroll", recalc);
       window.removeEventListener("jet:floating-ui-toggle", recalc);
       vv?.removeEventListener("resize", recalc);
+      vv?.removeEventListener("scroll", recalc);
+      ro?.disconnect();
     };
   }, [isVisible]);
 
@@ -366,7 +434,6 @@ export const SearchResults = ({
   return createPortal(
     <>
       <div
-        key={posVersion}
         ref={(node) => {
           panelRef.current = node;
           setPanelEl(node);
@@ -376,15 +443,19 @@ export const SearchResults = ({
         aria-label="Search results"
         className="fixed left-2 right-2 sm:left-auto sm:right-4 z-[9999] animate-fade-in sm:w-[420px] sm:max-w-[min(420px,calc(100vw-2rem))]"
         style={{
-          top: "calc(var(--header-height, 56px) + env(safe-area-inset-top, 0px) + 8px)",
+          // Measured values win; the CSS fallbacks only apply for the very
+          // first paint before measurement lands.
+          top: box
+            ? `${box.top}px`
+            : "calc(var(--header-height, 56px) + env(safe-area-inset-top, 0px) + 8px)",
           // Hard-anchor the bottom edge above the nav bar so the panel can
           // never sit under (or scroll behind) the footer navigation.
-          bottom:
-            "calc(var(--bottom-nav-total-height, 80px) + env(safe-area-inset-bottom, 0px) + 12px)",
-          // Still cap the height so the map stays visible around it; the
-          // bottom anchor wins whenever the viewport is shorter than this.
-          maxHeight:
-            "min(calc(100dvh - var(--header-height, 56px) - var(--bottom-nav-total-height, 80px) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 24px), 52dvh, 480px)",
+          bottom: box
+            ? `${box.bottom}px`
+            : "calc(var(--bottom-nav-total-height, 80px) + env(safe-area-inset-bottom, 0px) + 12px)",
+          maxHeight: box
+            ? `${box.maxHeight}px`
+            : "min(calc(100dvh - var(--header-height, 56px) - var(--bottom-nav-total-height, 80px) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 24px), 52dvh, 480px)",
         }}
       >
         <Card className="flex flex-col h-full max-h-full overflow-hidden shadow-glow w-full bg-card/95 backdrop-blur-xl border-primary/20 rounded-2xl">
