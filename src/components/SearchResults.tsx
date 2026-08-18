@@ -397,7 +397,10 @@ export const SearchResults = ({
                 >
                   “{query}”
                 </h3>
-                <p className="text-[11px] font-medium text-muted-foreground tabular-nums">
+                <p
+                  className="text-[11px] font-medium text-muted-foreground tabular-nums"
+                  aria-live="polite"
+                >
                   {totalCount} {totalCount === 1 ? "result" : "results"}
                 </p>
               </div>
