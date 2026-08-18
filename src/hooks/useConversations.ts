@@ -16,6 +16,7 @@ export interface Conversation {
  */
 export const useConversations = (userId?: string) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const rtId = useId().replace(/[^a-zA-Z0-9]/g, "");
   const [loading, setLoading] = useState(true);
 
   const fetchConversations = useCallback(async () => {

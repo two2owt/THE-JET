@@ -71,6 +71,7 @@ export const useDeals = (
 ) => {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [filteredDeals, setFilteredDeals] = useState<Deal[]>([]);
+  const rtId = useId().replace(/[^a-zA-Z0-9]/g, "");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [userPreferences, setUserPreferences] =

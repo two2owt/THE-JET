@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const useAutoScrapeVenueImages = (enabled: boolean = true) => {
+  const rtId = useId().replace(/[^a-zA-Z0-9]/g, "");
   const [isScrapingActive, setIsScrapingActive] = useState(false);
 
   useEffect(() => {

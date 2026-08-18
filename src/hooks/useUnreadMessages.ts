@@ -16,6 +16,7 @@ export function useUnreadMessages() {
   const userId = session?.user?.id;
   const navigate = useNavigate();
   const location = useLocation();
+  const rtId = useId().replace(/[^a-zA-Z0-9]/g, "");
   const [unreadCount, setUnreadCount] = useState(0);
   const locationRef = useRef(location);
   locationRef.current = location;
