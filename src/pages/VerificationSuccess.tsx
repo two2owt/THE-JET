@@ -33,6 +33,27 @@ export default function VerificationSuccess() {
   // be signaled explicitly via ?context=email_change.
   const [flow, setFlow] = useState<"signup" | "email_change">("signup");
 
+  // Route the verified user into the app. When the email link established a
+  // session they are already signed in — send them to onboarding or home
+  // instead of back to the sign-in form.
+  const goToApp = useCallback(async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      navigate("/auth?mode=signin", { replace: true });
+      return;
+    }
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("onboarding_completed")
+      .eq("id", user.id)
+      .maybeSingle();
+    navigate(profile?.onboarding_completed ? "/" : "/onboarding", {
+      replace: true,
+    });
+  }, [navigate]);
+
   useEffect(() => {
     // Parse signals BEFORE stripping URL
     const params = new URLSearchParams(location.search);
