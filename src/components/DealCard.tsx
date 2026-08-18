@@ -9,6 +9,7 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { UpgradePrompt, useFeatureAccess } from "./UpgradePrompt";
+import { useNavigate } from "@/lib/router-compat";
 
 interface Deal {
   id: string;
@@ -20,15 +21,19 @@ interface Deal {
   active_days: number[];
   starts_at: string;
   expires_at: string;
+  venue_id?: string | null;
 }
 
 interface DealCardProps {
   deal: Deal;
   /** Card index in list - used for lazy loading (index >= 2 defers image loading) */
   index?: number;
+  /** Overrides the default "open this deal's JetCard on the map" behaviour. */
+  onOpen?: () => void;
 }
 
-export const DealCard = memo(({ deal, index = 0 }: DealCardProps) => {
+export const DealCard = memo(({ deal, index = 0, onOpen }: DealCardProps) => {
+  const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const { canAccessSocialFeatures } = useFeatureAccess();
@@ -81,6 +86,21 @@ export const DealCard = memo(({ deal, index = 0 }: DealCardProps) => {
     }
   };
 
+  // Tapping the card opens the venue's JetCard on the map. Prefer the stable
+  // venue id; fall back to the deal deep link, which resolves its venue.
+  const handleOpen = () => {
+    if (onOpen) {
+      onOpen();
+      return;
+    }
+    void glideHaptic();
+    if (deal.venue_id) {
+      navigate(`/?venue=${encodeURIComponent(deal.venue_id)}`);
+    } else {
+      navigate(`/?deal=${encodeURIComponent(deal.id)}`);
+    }
+  };
+
   const handleFavoriteToggle = async () => {
     await glideHaptic();
     await toggleFavorite(deal.id);
@@ -105,7 +125,19 @@ export const DealCard = memo(({ deal, index = 0 }: DealCardProps) => {
   };
 
   return (
-    <div className="bg-card rounded-xl sm:rounded-2xl overflow-hidden border border-border shadow-[var(--shadow-card)] transition-all duration-300 hover-scale">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={handleOpen}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleOpen();
+        }
+      }}
+      aria-label={`Open ${deal.venue_name} on the map`}
+      className="bg-card rounded-xl sm:rounded-2xl overflow-hidden border border-border shadow-[var(--shadow-card)] transition-all duration-300 hover-scale cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
       {/* Image Header with Gradient Overlay */}
       <div className="relative h-40 sm:h-48 md:h-56 bg-gradient-to-br from-primary/20 via-accent/20 to-secondary/20 overflow-hidden">
         {deal.image_url ? (
@@ -140,7 +172,10 @@ export const DealCard = memo(({ deal, index = 0 }: DealCardProps) => {
 
         {/* Favorite Button */}
         <button
-          onClick={handleFavoriteToggle}
+          onClick={(e) => {
+            e.stopPropagation();
+            void handleFavoriteToggle();
+          }}
           className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-background/90 backdrop-blur-md p-2.5 sm:p-2.5 rounded-full hover:bg-background transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
           aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
         >
@@ -205,14 +240,24 @@ export const DealCard = memo(({ deal, index = 0 }: DealCardProps) => {
         {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-3">
           <Button
-            onClick={handleShare}
+            onClick={(e) => {
+              e.stopPropagation();
+              void handleShare();
+            }}
             variant="outline"
             className="w-full border-border/60 hover:border-primary/60 hover:bg-primary/5 font-semibold py-6 rounded-xl transition-all duration-300 hover-scale"
           >
             <Share2 className="w-4 h-4 mr-2" />
             Share
           </Button>
-          <Button variant="jet" className="w-full py-6 rounded-xl">
+          <Button
+            variant="jet"
+            className="w-full py-6 rounded-xl"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOpen();
+            }}
+          >
             View Details
           </Button>
         </div>
