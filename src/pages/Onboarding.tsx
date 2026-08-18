@@ -31,6 +31,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   readCachedOnboardingStatus,
   writeCachedOnboardingStatus,
+  snoozeOnboarding,
+  clearOnboardingSnooze,
 } from "@/lib/onboardingStatus";
 
 const GENDER_OPTIONS = [
@@ -429,6 +431,7 @@ const Onboarding = () => {
       if (error) throw error;
 
       if (userId) writeCachedOnboardingStatus(userId, true);
+      if (userId) clearOnboardingSnooze(userId);
       toast.success("Welcome to JET Charlotte!", {
         description: "Let's discover what's hot",
       });
@@ -440,6 +443,18 @@ const Onboarding = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSkipForLater = () => {
+    if (previewMode) {
+      toast.info("Review mode — skipping is disabled");
+      return;
+    }
+    if (userId) snoozeOnboarding(userId);
+    toast("Onboarding skipped", {
+      description: "You can finish setting up any time from your profile.",
+    });
+    navigate(consumePostAuthRedirect("/"), { replace: true });
   };
 
   const STEPS = [
