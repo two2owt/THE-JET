@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { X, Activity, MapPin, Users, Crosshair } from "lucide-react";
 import { activityTier } from "@/lib/activity-palette";
 import { triggerHaptic } from "@/lib/haptics";
@@ -17,6 +18,8 @@ interface HeatCellInspectorProps {
   isLightBasemap?: boolean;
   onClose: () => void;
   onZoomTo?: (cell: HeatCell) => void;
+  /** Reports the rendered card height so sibling overlays can stack above it. */
+  onHeightChange?: (height: number) => void;
 }
 
 /**
@@ -30,7 +33,29 @@ export const HeatCellInspector = ({
   isLightBasemap = false,
   onClose,
   onZoomTo,
+  onHeightChange,
 }: HeatCellInspectorProps) => {
+  const cardRef = useRef<HTMLDivElement | null>(null);
+
+  // Measure the card so the time-filter chips (and any future overlay) can sit
+  // directly above it instead of relying on a hardcoded offset that breaks when
+  // the copy wraps on small Android/iOS widths.
+  useEffect(() => {
+    const node = cardRef.current;
+    if (!node || !onHeightChange) {
+      onHeightChange?.(0);
+      return;
+    }
+    const report = () => onHeightChange(node.getBoundingClientRect().height);
+    report();
+    const ro = new ResizeObserver(report);
+    ro.observe(node);
+    return () => {
+      ro.disconnect();
+      onHeightChange(0);
+    };
+  }, [cell, onHeightChange]);
+
   if (!cell) return null;
 
   const score = Math.round(Math.min(1, Math.max(0, cell.intensity)) * 100);
@@ -39,6 +64,7 @@ export const HeatCellInspector = ({
 
   return (
     <div
+      ref={cardRef}
       role="dialog"
       aria-label="Heat cell details"
       className="absolute left-1/2 -translate-x-1/2 w-[min(420px,calc(100%-24px))] rounded-2xl p-4 pointer-events-auto"
