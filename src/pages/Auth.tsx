@@ -29,7 +29,10 @@ import {
   consumePostAuthRedirect,
   rememberPostAuthRedirect,
 } from "@/lib/postAuthRedirect";
-import { writeCachedOnboardingStatus } from "@/lib/onboardingStatus";
+import {
+  writeCachedOnboardingStatus,
+  isOnboardingSnoozed,
+} from "@/lib/onboardingStatus";
 import { discardCurrentAuthSession } from "@/lib/authSession";
 import { SEO } from "@/components/SEO";
 import { AuthPWAInstallPromptWrapper } from "@/components/AuthPWAInstallPromptWrapper";
@@ -162,7 +165,10 @@ const Auth = () => {
       if (cancelled) return;
       const completed = !!profile?.onboarding_completed;
       writeCachedOnboardingStatus(authUser.id, completed);
-      const target = completed ? consumePostAuthRedirect("/") : "/onboarding";
+      const target =
+        completed || isOnboardingSnoozed(authUser.id)
+          ? consumePostAuthRedirect("/")
+          : "/onboarding";
       navigate(target, { replace: true });
     })();
     return () => {
@@ -749,7 +755,8 @@ const Auth = () => {
     toast.success("Signed in successfully");
     const completed = !!profile?.onboarding_completed;
     writeCachedOnboardingStatus(data.user.id, completed);
-    navigate(completed ? consumePostAuthRedirect("/") : "/onboarding", {
+    const skipOnboarding = completed || isOnboardingSnoozed(data.user.id);
+    navigate(skipOnboarding ? consumePostAuthRedirect("/") : "/onboarding", {
       replace: true,
     });
   };
