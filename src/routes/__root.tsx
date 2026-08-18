@@ -11,7 +11,6 @@ import {
 import type { QueryClient } from "@tanstack/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
-import { HelmetProvider } from "react-helmet-async";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -40,11 +39,20 @@ const MAPBOX_CDN_BASE = `https://api.mapbox.com/mapbox-gl-js/v${EXPECTED_MAPBOX_
 const MAPBOX_CDN_SCRIPT = `${MAPBOX_CDN_BASE}/mapbox-gl.js`;
 const MAPBOX_CDN_STYLESHEET = `${MAPBOX_CDN_BASE}/mapbox-gl.css`;
 
+// Backend origin/key come from the environment so preview (Test) and published
+// (Live) builds each warm their OWN backend — hardcoding a project ref here is
+// a classic source of test-to-live drift.
+const SUPABASE_URL: string = import.meta.env.VITE_SUPABASE_URL ?? "";
+const SUPABASE_PUBLISHABLE_KEY: string =
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "";
+
 // ported from index.html — runs before paint so the theme class never flashes
 const themeInitScript = `(function(){var t='dark';try{var s=localStorage.getItem('theme');if(s==='light'||s==='dark'){t=s}}catch(e){}document.documentElement.classList.remove('light','dark');document.documentElement.classList.add(t);document.documentElement.style.colorScheme=t})();`;
 
 // ported from index.html — warms the Mapbox token before the map chunk loads
-const mapboxTokenPreloadScript = `!function(){var k="mapbox_token_cache_v2",c=localStorage.getItem(k);if(c){try{var d=JSON.parse(c);if(d.token&&d.token.startsWith("pk.")&&Date.now()-d.timestamp<864e5)return}catch(e){}}window.__mapboxTokenPromise=fetch("https://flvhduntedvorikonuvy.supabase.co/functions/v1/get-mapbox-token",{headers:{"apikey":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZsdmhkdW50ZWR2b3Jpa29udXZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2NTA0MTYsImV4cCI6MjA4NjIyNjQxNn0.7sAHhmXL_2c68FYDs27gd2dRP2V8ZvtTcovBKnU4FHw"}}).then(function(r){return r.json()}).then(function(d){if(d&&d.token){localStorage.setItem(k,JSON.stringify({token:d.token,timestamp:Date.now()}));sessionStorage.setItem(k,JSON.stringify({token:d.token,timestamp:Date.now()}));window.__mapboxToken=d.token}}).catch(function(){})}();`;
+const mapboxTokenPreloadScript = SUPABASE_URL
+  ? `!function(){var k="mapbox_token_cache_v2",c=localStorage.getItem(k);if(c){try{var d=JSON.parse(c);if(d.token&&d.token.startsWith("pk.")&&Date.now()-d.timestamp<864e5)return}catch(e){}}window.__mapboxTokenPromise=fetch(${JSON.stringify(`${SUPABASE_URL}/functions/v1/get-mapbox-token`)},{headers:{"apikey":${JSON.stringify(SUPABASE_PUBLISHABLE_KEY)}}}).then(function(r){return r.json()}).then(function(d){if(d&&d.token){localStorage.setItem(k,JSON.stringify({token:d.token,timestamp:Date.now()}));sessionStorage.setItem(k,JSON.stringify({token:d.token,timestamp:Date.now()}));window.__mapboxToken=d.token}}).catch(function(){})}();`
+  : "";
 
 // ported from index.html — defers the Mapbox GL JS bundle until idle/visible
 const mapboxLoaderScript = `!function(){var m=!1,l=function(){if(!m){m=!0;var s=document.createElement("script");s.src="${MAPBOX_CDN_SCRIPT}";s.async=!0;s.crossOrigin="anonymous";document.head.appendChild(s)}};var d=function(){typeof requestIdleCallback!=="undefined"?requestIdleCallback(l,{timeout:6e3}):setTimeout(l,5e3)};document.readyState==="complete"?d():window.addEventListener("load",function(){setTimeout(d,200)},{once:!0});if("IntersectionObserver"in window){var o=new IntersectionObserver(function(e){e[0].isIntersecting&&(l(),o.disconnect())},{rootMargin:"200px"}),b=function(){var e=document.querySelector("[data-map-container]");e&&o.observe(e)};document.readyState==="loading"?document.addEventListener("DOMContentLoaded",b):b()}}();`;
@@ -143,7 +151,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         },
         {
           rel: "preconnect",
-          href: "https://flvhduntedvorikonuvy.supabase.co",
+          href: SUPABASE_URL,
           crossOrigin: "anonymous",
         },
         { rel: "dns-prefetch", href: "https://b.tiles.mapbox.com" },
@@ -327,17 +335,15 @@ function RootComponent() {
       disableTransitionOnChange
     >
       <QueryClientProvider client={queryClient}>
-        <HelmetProvider>
-          <ErrorBoundary>
-            <AuthProvider>
-              <HeaderProvider>
-                <TooltipProvider>
-                  <AppLayout />
-                </TooltipProvider>
-              </HeaderProvider>
-            </AuthProvider>
-          </ErrorBoundary>
-        </HelmetProvider>
+        <ErrorBoundary>
+          <AuthProvider>
+            <HeaderProvider>
+              <TooltipProvider>
+                <AppLayout />
+              </TooltipProvider>
+            </HeaderProvider>
+          </AuthProvider>
+        </ErrorBoundary>
       </QueryClientProvider>
     </ThemeProvider>
   );

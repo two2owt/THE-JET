@@ -13,7 +13,6 @@ import { AdminPageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { AdminTopbar } from "@/components/admin/AdminTopbar";
-import { SEO } from "@/components/SEO";
 import {
   ChevronsLeft,
   ChevronsRight,
@@ -306,12 +305,6 @@ export default function AdminDashboard() {
 
   return (
     <PageLayout defaultTab="map">
-      <SEO
-        title="Admin — JET"
-        description="Internal JET admin dashboard."
-        path="/admin"
-        noindex
-      />
       <div
         className={`admin-shell${collapsed ? " admin-shell-collapsed" : ""}`}
       >

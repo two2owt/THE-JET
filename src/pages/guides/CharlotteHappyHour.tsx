@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Clock, MapPin, Bell } from "lucide-react";
 import { useNavigate, Link } from "@/lib/router-compat";
 import { Footer } from "@/components/Footer";
-import { SEO } from "@/components/SEO";
 
 const NEIGHBORHOODS = [
   {
@@ -52,7 +51,7 @@ const FAQ = [
   },
 ];
 
-const jsonLd = [
+export const guideJsonLd = [
   {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -82,12 +81,6 @@ const CharlotteHappyHour = () => {
       className="bg-background flex-1 overflow-y-auto"
       style={{ WebkitOverflowScrolling: "touch" }}
     >
-      <SEO
-        title="Best Charlotte Happy Hour Deals — 2026 Guide | JET"
-        description="Where to find the best happy hour deals in Charlotte, NC — by neighborhood, with typical times, prices, and live specials happening right now."
-        path="/guides/charlotte-happy-hour"
-        jsonLd={jsonLd}
-      />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 pb-nav-safe">
         <Button
           onClick={() => navigate(-1)}

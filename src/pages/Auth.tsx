@@ -34,7 +34,6 @@ import {
   isOnboardingSnoozed,
 } from "@/lib/onboardingStatus";
 import { discardCurrentAuthSession } from "@/lib/authSession";
-import { SEO } from "@/components/SEO";
 import { AuthPWAInstallPromptWrapper } from "@/components/AuthPWAInstallPromptWrapper";
 import { buildAuthRedirectUrl } from "@/lib/utils";
 import { requestGeolocationPermission } from "@/lib/requestGeolocationPermission";
@@ -844,33 +843,6 @@ const Auth = () => {
           ? "Create Account"
           : "Sign In";
 
-  // Dynamic SEO per mode so /signin, /signup, and recovery views have
-  // distinct titles, descriptions, and canonical paths.
-  const seoTitle =
-    mode === "signup"
-      ? "Create your JET account — Charlotte's Live City Pulse"
-      : mode === "forgot"
-        ? "Reset your JET password"
-        : mode === "reset"
-          ? "Set a new JET password"
-          : "Sign in to JET — Charlotte's Live City Pulse";
-  const seoDescription =
-    mode === "signup"
-      ? "Create your JET account to unlock real-time deals, events, and trending venues across Charlotte, NC."
-      : mode === "forgot" || mode === "reset"
-        ? "Reset your JET password to get back to discovering what's hot in Charlotte, NC."
-        : "Sign in to JET to discover real-time deals, events, and trending venues across Charlotte, NC.";
-  // Canonical must always be self-referencing: use the URL the visitor is
-  // actually on, so /auth never canonicalises to /signin (and vice versa).
-  const seoPath = ["/auth", "/signin", "/signup", "/reset-password"].includes(
-    location.pathname,
-  )
-    ? location.pathname
-    : mode === "signup"
-      ? "/signup"
-      : mode === "signin"
-        ? "/signin"
-        : "/auth";
 
   const switchToMode = (next: "signin" | "signup") => {
     setIsSignUp(next === "signup");
@@ -905,7 +877,6 @@ const Auth = () => {
         aria-busy="true"
         data-auth-ready="false"
       >
-        <SEO title={seoTitle} description={seoDescription} path={seoPath} />
         <Loader2
           className="h-6 w-6 animate-spin text-primary"
           aria-hidden="true"
@@ -920,7 +891,6 @@ const Auth = () => {
       className="auth-fullscreen relative flex flex-col flex-1 min-h-0 w-full overflow-hidden"
       data-auth-ready="true"
     >
-      <SEO title={seoTitle} description={seoDescription} path={seoPath} />
       {/* Full-bleed background image — responsive by device width & DPR */}
       <picture className="absolute inset-0" aria-hidden="true">
         <source

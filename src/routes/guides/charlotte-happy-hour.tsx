@@ -1,6 +1,8 @@
 import { SITE_URL } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
-import CharlotteHappyHour from "@/pages/guides/CharlotteHappyHour";
+import CharlotteHappyHour, {
+  guideJsonLd,
+} from "@/pages/guides/CharlotteHappyHour";
 
 const title = "Best Happy Hours in Charlotte, NC (2026 Guide)";
 const description =
@@ -20,6 +22,10 @@ export const Route = createFileRoute("/guides/charlotte-happy-hour")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: CANONICAL_URL }],
+    scripts: guideJsonLd.map((data) => ({
+      type: "application/ld+json",
+      children: JSON.stringify(data),
+    })),
   }),
   component: CharlotteHappyHour,
 });
