@@ -5268,7 +5268,7 @@ export const MapboxHeatmap = ({
       {showDensityLayer && !(isMobile && selectedVenue) && (
         <HeatCellInspector
           cell={inspectedCell}
-          cityLabel={selectedCity}
+          cityLabel={selectedCity?.name}
           isLightBasemap={mapStyle === "light" || mapStyle === "streets"}
           onClose={() => setInspectedCell(null)}
           onZoomTo={(cell) => {
