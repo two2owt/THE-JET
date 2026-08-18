@@ -117,6 +117,8 @@ import { Button } from "./ui/button";
 import { LayerToggleRow } from "./map/LayerToggleRow";
 import { LayerSliderRow } from "./map/LayerSliderRow";
 import { HeatmapColorLegend } from "./map/HeatmapColorLegend";
+import { HeatCellInspector, type HeatCell } from "./map/HeatCellInspector";
+import { HeatFilterChips } from "./map/HeatFilterChips";
 import {
   activityColor,
   activityLegendTiers,
@@ -1078,6 +1080,66 @@ export const MapboxHeatmap = ({
     const [lng, lat] = best.geometry.coordinates as [number, number];
     return { lng, lat, density: bestDensity };
   }, [densityData]);
+
+  // ── Tap-to-inspect: heat cell details ────────────────────────────────
+  const [inspectedCell, setInspectedCell] = useState<HeatCell | null>(null);
+
+  useEffect(() => {
+    if (!showDensityLayer) setInspectedCell(null);
+  }, [showDensityLayer]);
+
+  useEffect(() => {
+    const mapInstance = map.current;
+    if (!mapInstance || !mapLoaded || !showDensityLayer) return;
+
+    const handleHeatClick = (e: any) => {
+      const feats = densityData?.geojson?.features as any[] | undefined;
+      if (!feats?.length) return;
+
+      // Nearest grid cell within a finger-sized radius of the tap.
+      const threshold = isMobile ? 44 : 32;
+      let best: any = null;
+      let bestDist = Infinity;
+      for (const feature of feats) {
+        const coords = feature?.geometry?.coordinates;
+        if (!Array.isArray(coords)) continue;
+        const projected = mapInstance.project({
+          lng: coords[0],
+          lat: coords[1],
+        });
+        const dist = Math.hypot(
+          projected.x - e.point.x,
+          projected.y - e.point.y,
+        );
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = feature;
+        }
+      }
+
+      if (!best || bestDist > threshold) {
+        setInspectedCell(null);
+        return;
+      }
+
+      const [lng, lat] = best.geometry.coordinates as [number, number];
+      const density = Number(best.properties?.density ?? 0);
+      triggerHaptic("light");
+      setInspectedCell({
+        lat,
+        lng,
+        density,
+        intensity: Number(
+          best.properties?.intensity ?? Math.min(density / 10, 1),
+        ),
+      });
+    };
+
+    mapInstance.on("click", handleHeatClick);
+    return () => {
+      mapInstance.off("click", handleHeatClick);
+    };
+  }, [mapLoaded, showDensityLayer, densityData, isMobile]);
 
   const topRoute = useMemo(() => {
     const feats = pathData?.geojson?.features as any[] | undefined;
@@ -5180,6 +5242,45 @@ export const MapboxHeatmap = ({
 
       {/* Live Stats — always rendered on the left side of the map, clear of the
           Layers container (bottom-right) and the map nav controls (top-right). */}
+      {showDensityLayer && !(isMobile && selectedVenue) && (
+        <div
+          className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
+          style={{
+            bottom: inspectedCell
+              ? "calc(var(--map-ui-inset-bottom, 1rem) + 116px)"
+              : "calc(var(--map-ui-inset-bottom, 1rem) + 8px)",
+            zIndex: 34,
+            transition: "bottom 220ms cubic-bezier(0.16,1,0.3,1)",
+          }}
+        >
+          <HeatFilterChips
+            value={timeFilter}
+            onChange={(next) => {
+              setTimeFilter(next);
+              setInspectedCell(null);
+              scheduleDensityRefresh();
+            }}
+            loading={densityLoading}
+          />
+        </div>
+      )}
+
+      {showDensityLayer && !(isMobile && selectedVenue) && (
+        <HeatCellInspector
+          cell={inspectedCell}
+          cityLabel={selectedCity?.name}
+          isLightBasemap={mapStyle === "light" || mapStyle === "streets"}
+          onClose={() => setInspectedCell(null)}
+          onZoomTo={(cell) => {
+            map.current?.flyTo({
+              center: [cell.lng, cell.lat],
+              zoom: Math.max(map.current.getZoom(), 15),
+              duration: 900,
+            });
+          }}
+        />
+      )}
+
       {showLiveStats && (
         <LiveStatsPanel
           open={showLiveStats}
