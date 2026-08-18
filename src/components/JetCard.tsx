@@ -348,6 +348,7 @@ export const JetCard = memo(
     return (
       <article
         ref={cardRef}
+        className="map-scroll-safe"
         style={{
           position: "relative",
           width: "100%",
