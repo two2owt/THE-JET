@@ -109,6 +109,10 @@ import { useLocationDensity } from "@/hooks/useLocationDensity";
 import { useMovementPaths } from "@/hooks/useMovementPaths";
 import { useHeatmapTimelapse } from "@/hooks/useHeatmapTimelapse";
 import { useBreakpointUp } from "@/hooks/useBreakpoint";
+import {
+  applyMapScaleFactor,
+  getMapScaleFactor,
+} from "@/lib/mapScaleFactor";
 import { useOpenVenues } from "@/hooks/useOpenVenues";
 import { supabase } from "@/integrations/supabase/client";
 import { triggerHaptic } from "@/lib/haptics";
@@ -1306,6 +1310,9 @@ export const MapboxHeatmap = ({
       resizeTimeout = setTimeout(() => {
         if (map.current) {
           map.current.resize();
+          // Viewport class may have changed (rotation, split view, desktop
+          // window resize) — keep label scaling in sync with it.
+          applyMapScaleFactor(map.current, getMapScaleFactor());
         }
       }, 100);
     };
@@ -1671,6 +1678,10 @@ export const MapboxHeatmap = ({
             "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         });
 
+        // Scale label/icon rendering up on phones so street, POI and venue
+        // labels stay readable at arm's length (Mapbox GL JS >= 3.19).
+        applyMapScaleFactor(map.current);
+
         // No attribution/logo control is added: the map keeps a clean bottom
         // edge so overlays align to the nav footer padding.
 
@@ -1789,6 +1800,8 @@ export const MapboxHeatmap = ({
           if (!map.current) return;
           // Re-apply the custom parking layer after any basemap style swap
           ensureParkingLayer();
+          // Basemap swaps rebuild symbol layers — re-assert the scale factor.
+          applyMapScaleFactor(map.current);
 
           // Configure Standard style with dynamic lighting and native POI markers
           // Standard style includes built-in 3D buildings, landmarks, POI icons, and dynamic lighting
