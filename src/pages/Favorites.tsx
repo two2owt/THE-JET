@@ -153,6 +153,82 @@ export default function Favorites() {
 
   const totalCount = deals.length + venueOnlyFavorites.length;
 
+  // When a favorite was saved, keyed by deal id and venue id, so both lists
+  // can share the same "recently saved" ordering.
+  const savedAt = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const f of favorites) {
+      const t = new Date(f.created_at).getTime() || 0;
+      if (f.deal_id) map.set(`deal:${f.deal_id}`, t);
+      if (f.venue_id) map.set(`venue:${f.venue_id}`, t);
+    }
+    return map;
+  }, [favorites]);
+
+  const normalizedQuery = query.trim().toLowerCase();
+
+  const visibleDeals = useMemo(() => {
+    const filtered = normalizedQuery
+      ? deals.filter((d) =>
+          [d.title, d.venue_name, d.description, d.deal_type]
+            .filter(Boolean)
+            .some((v) => v!.toLowerCase().includes(normalizedQuery)),
+        )
+      : deals;
+    const sorted = [...filtered];
+    sorted.sort((a, b) => {
+      switch (sortBy) {
+        case "name":
+          return a.title.localeCompare(b.title);
+        case "venue":
+          return (a.venue_name || "").localeCompare(b.venue_name || "");
+        case "expiring":
+          return (
+            (new Date(a.expires_at).getTime() || Infinity) -
+            (new Date(b.expires_at).getTime() || Infinity)
+          );
+        default:
+          return (
+            (savedAt.get(`deal:${a.id}`) ??
+              savedAt.get(`venue:${a.venue_id ?? ""}`) ??
+              0) * -1 +
+            (savedAt.get(`deal:${b.id}`) ??
+              savedAt.get(`venue:${b.venue_id ?? ""}`) ??
+              0)
+          );
+      }
+    });
+    return sorted;
+  }, [deals, normalizedQuery, sortBy, savedAt]);
+
+  const visibleVenues = useMemo(() => {
+    const filtered = normalizedQuery
+      ? venueOnlyFavorites.filter((f) =>
+          [f.venue_name, f.venue_address, f.venue_category, f.venue_neighborhood]
+            .filter(Boolean)
+            .some((v) => v!.toLowerCase().includes(normalizedQuery)),
+        )
+      : venueOnlyFavorites;
+    const sorted = [...filtered];
+    sorted.sort((a, b) => {
+      switch (sortBy) {
+        case "name":
+        case "venue":
+          return (a.venue_name || "").localeCompare(b.venue_name || "");
+        case "expiring":
+          // Venue favorites have no expiry; keep them stable by name.
+          return (a.venue_name || "").localeCompare(b.venue_name || "");
+        default:
+          return (
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+      }
+    });
+    return sorted;
+  }, [venueOnlyFavorites, normalizedQuery, sortBy]);
+
+  const visibleCount = visibleDeals.length + visibleVenues.length;
+
   if (authLoading) {
     return (
       <PageLayout defaultTab="favorites" headerConfig={headerConfig}>
