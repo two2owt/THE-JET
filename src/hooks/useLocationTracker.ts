@@ -7,6 +7,14 @@ import { createLocationSmoother, haversineMeters } from "@/lib/geo-smoothing";
 import { getNetworkLocation } from "@/lib/networkGeolocation";
 import { logGeoEvent } from "@/lib/geoDiagnostics";
 import {
+  readPermissionState,
+  recordLocationSkip,
+  recordLocationWrite,
+  recordLocationWriteError,
+  recordPermissionState,
+  recordTrackerStart,
+} from "@/lib/locationDiagnostics";
+import {
   startBackgroundWatcher,
   stopBackgroundWatcher,
   type BackgroundWatcher,
@@ -94,7 +102,10 @@ export const useLocationTracker = () => {
     if (typeof navigator === "undefined" || !navigator.permissions?.query)
       return;
     let status: PermissionStatus | null = null;
-    const onChange = () => setPermissionTick((n) => n + 1);
+    const onChange = () => {
+      if (status) recordPermissionState(status.state as never);
+      setPermissionTick((n) => n + 1);
+    };
     navigator.permissions
       .query({ name: "geolocation" as PermissionName })
       .then((s) => {
@@ -109,6 +120,26 @@ export const useLocationTracker = () => {
     locationTrackingEnabled && backgroundTrackingEnabled;
   // Signed in + tracking allowed is enough — no route/foreground gate.
   const enabled = locationTrackingEnabled;
+
+  // Server-side diagnostics snapshot: records the permission state and the
+  // preference toggles for every signed-in device, so we can tell apart
+  // "tracking off", "permission never granted" and "granted but silent".
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    let cancelled = false;
+    void (async () => {
+      const state = await readPermissionState();
+      if (cancelled) return;
+      void recordTrackerStart({
+        trackingEnabled: enabled,
+        backgroundEnabled,
+        permissionState: state,
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled, backgroundEnabled, session?.user?.id, permissionTick]);
 
   useEffect(() => {
     const userId = session?.user?.id;
@@ -168,6 +199,7 @@ export const useLocationTracker = () => {
           accuracy: rawAccuracy,
           reason: "smoother rejected (accuracy/speed/noise gate)",
         });
+        recordLocationSkip("smoother rejected (accuracy/speed/noise gate)");
         return;
       }
       const { lat, lng, accuracy } = fix;
@@ -205,6 +237,9 @@ export const useLocationTracker = () => {
           movedMeters: moved,
           reason: `min write interval not elapsed (${moving ? "moving" : "stationary"})`,
         });
+        recordLocationSkip(
+          `min write interval not elapsed (${moving ? "moving" : "stationary"})`,
+        );
         return;
       }
       if (!priming && sinceLast < MAX_WRITE_INTERVAL_MS && moved < moveGate) {
@@ -216,6 +251,9 @@ export const useLocationTracker = () => {
           movedMeters: moved,
           reason: `moved < ${moveGate}m (${moving ? "moving" : "stationary"})`,
         });
+        recordLocationSkip(
+          `moved < ${moveGate}m (${moving ? "moving" : "stationary"})`,
+        );
         return;
       }
 
@@ -244,6 +282,7 @@ export const useLocationTracker = () => {
             lng,
             movedMeters: moved,
           });
+          recordLocationWrite("gps");
         } else {
           logGeoEvent({
             kind: "write-failed",
@@ -252,6 +291,7 @@ export const useLocationTracker = () => {
             accuracy,
             reason: error.message,
           });
+          recordLocationWriteError(error.message);
         }
       } finally {
         inFlightRef.current = false;
@@ -298,6 +338,7 @@ export const useLocationTracker = () => {
           movedMeters: moved,
           reason: `moved < ${NETWORK_MIN_MOVE_METERS}m`,
         });
+        recordLocationSkip(`network fix moved < ${NETWORK_MIN_MOVE_METERS}m`);
         return;
       }
 
@@ -323,6 +364,7 @@ export const useLocationTracker = () => {
             lng: fix.lng,
             movedMeters: moved,
           });
+          recordLocationWrite("network");
         } else {
           logGeoEvent({
             kind: "write-failed",
@@ -331,6 +373,7 @@ export const useLocationTracker = () => {
             accuracy: fix.accuracy,
             reason: error.message,
           });
+          recordLocationWriteError(error.message);
         }
       } finally {
         inFlightRef.current = false;
