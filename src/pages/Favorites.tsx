@@ -14,7 +14,8 @@ import { TabPageHeader } from "@/components/TabPageHeader";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { SEO } from "@/components/SEO";
 import { useVenuePhoto } from "@/hooks/useVenuePhoto";
-import { Trash2, Search, X } from "lucide-react";
+import { Trash2, Search, X, Bell } from "lucide-react";
+import { useFavoriteAlerts } from "@/hooks/useFavoriteAlerts";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -152,6 +153,25 @@ export default function Favorites() {
   }, [favorites, deals]);
 
   const totalCount = deals.length + venueOnlyFavorites.length;
+
+  // Alerts that belong to the user's saved venues/deals, so the tab can badge
+  // exactly which favorite has news and open its JetCard on tap.
+  const { byVenue, byDeal, totalUnread, markFavoriteAlertsRead } =
+    useFavoriteAlerts(favorites, !!user);
+
+  const openFavorite = (venueId?: string | null, dealId?: string | null) => {
+    void markFavoriteAlertsRead({ venueId, dealId });
+    if (venueId) navigate(`/?venue=${encodeURIComponent(venueId)}`);
+    else if (dealId) navigate(`/?deal=${encodeURIComponent(dealId)}`);
+  };
+
+  const firstAlertTarget = useMemo(() => {
+    const venueId = [...byVenue.keys()][0];
+    if (venueId) return { venueId, dealId: null as string | null };
+    const dealId = [...byDeal.keys()][0];
+    if (dealId) return { venueId: null as string | null, dealId };
+    return null;
+  }, [byVenue, byDeal]);
 
   // When a favorite was saved, keyed by deal id and venue id, so both lists
   // can share the same "recently saved" ordering.
@@ -345,6 +365,35 @@ export default function Favorites() {
                 </SelectContent>
               </Select>
             </div>
+            {totalUnread > 0 && firstAlertTarget && (
+              <button
+                type="button"
+                onClick={() =>
+                  openFavorite(
+                    firstAlertTarget.venueId,
+                    firstAlertTarget.dealId,
+                  )
+                }
+                aria-label={`${totalUnread} new alert${totalUnread === 1 ? "" : "s"} on your favorites. Open the latest.`}
+                className="w-full flex items-center gap-3 rounded-xl border border-primary/40 bg-primary/10 px-3 py-2.5 text-left hover:bg-primary/15 transition min-h-[44px]"
+              >
+                <span className="relative shrink-0 grid place-items-center w-9 h-9 rounded-full bg-primary/20 text-primary">
+                  <Bell className="w-4 h-4" />
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold grid place-items-center">
+                    {totalUnread > 99 ? "99+" : totalUnread}
+                  </span>
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold">
+                    {totalUnread} new alert{totalUnread === 1 ? "" : "s"} on
+                    your favorites
+                  </span>
+                  <span className="block text-xs text-muted-foreground">
+                    Tap to open the JetCard
+                  </span>
+                </span>
+              </button>
+            )}
             {visibleCount === 0 && (
               <EmptyState
                 icon={Search}
@@ -366,7 +415,23 @@ export default function Favorites() {
                   columns={{ mobile: 1, tablet: 2, desktop: 3 }}
                   getItemKey={(deal) => deal.id}
                   renderItem={(deal, index) => (
-                    <DealCard deal={deal} index={index} />
+                    <div className="relative">
+                      <DealCard deal={deal} index={index} />
+                      {(byDeal.get(deal.id)?.length ||
+                        (deal.venue_id &&
+                          byVenue.get(deal.venue_id)?.length)) && (
+                        <AlertBadgeButton
+                          count={
+                            (byDeal.get(deal.id)?.length ?? 0) +
+                            (deal.venue_id
+                              ? (byVenue.get(deal.venue_id)?.length ?? 0)
+                              : 0)
+                          }
+                          label={deal.venue_name}
+                          onClick={() => openFavorite(deal.venue_id, deal.id)}
+                        />
+                      )}
+                    </div>
                   )}
                 />
               </section>
@@ -381,11 +446,11 @@ export default function Favorites() {
                     <FavoriteVenueCard
                       key={f.id}
                       favorite={f}
+                      alertCount={
+                        f.venue_id ? (byVenue.get(f.venue_id)?.length ?? 0) : 0
+                      }
                       onRemove={toggleVenueFavorite}
-                      onOpen={() => {
-                        if (f.venue_id)
-                          navigate(`/?venue=${encodeURIComponent(f.venue_id)}`);
-                      }}
+                      onOpen={() => openFavorite(f.venue_id, f.deal_id)}
                     />
                   ))}
                 </div>
@@ -402,10 +467,55 @@ function FavoriteVenueCard({
   favorite,
   onOpen,
   onRemove,
+  alertCount = 0,
 }: {
   favorite: Favorite;
   onOpen: () => void;
   onRemove: (venueId: string, dealId?: string | null) => Promise<void>;
+  alertCount?: number;
+}) {
+  return <FavoriteVenueCardInner favorite={favorite} onOpen={onOpen} onRemove={onRemove} alertCount={alertCount} />;
+}
+
+/** Unread-alerts pill overlaid on a favorite card; opens that venue's JetCard. */
+function AlertBadgeButton({
+  count,
+  label,
+  onClick,
+}: {
+  count: number;
+  label?: string | null;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      aria-label={`${count} new alert${count === 1 ? "" : "s"} for ${label ?? "this favorite"}. Open JetCard.`}
+      className="absolute top-2 left-2 z-10 flex items-center gap-1.5 h-11 min-h-[44px] px-3 rounded-full bg-background/70 backdrop-blur-md border border-primary/40 text-primary text-xs font-semibold hover:bg-background/90 transition"
+    >
+      <span className="relative flex">
+        <Bell className="w-4 h-4" />
+        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-primary animate-pulse" />
+      </span>
+      {count > 9 ? "9+" : count} new
+    </button>
+  );
+}
+
+function FavoriteVenueCardInner({
+  favorite,
+  onOpen,
+  onRemove,
+  alertCount = 0,
+}: {
+  favorite: Favorite;
+  onOpen: () => void;
+  onRemove: (venueId: string, dealId?: string | null) => Promise<void>;
+  alertCount?: number;
 }) {
   const [removing, setRemoving] = useState(false);
   const [imgFailed, setImgFailed] = useState(false);
@@ -511,6 +621,13 @@ function FavoriteVenueCard({
             <Heart className="w-4 h-4 fill-current" />
           )}
         </button>
+        {alertCount > 0 && (
+          <AlertBadgeButton
+            count={alertCount}
+            label={favorite.venue_name}
+            onClick={onOpen}
+          />
+        )}
       </div>
       <div className="p-3">
         <div className="flex items-center gap-2">
