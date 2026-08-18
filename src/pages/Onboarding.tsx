@@ -389,6 +389,10 @@ const Onboarding = () => {
   };
 
   const handleComplete = async () => {
+    if (previewMode) {
+      toast.info("Review mode — onboarding not marked complete");
+      return;
+    }
     setIsLoading(true);
     try {
       const { error } = await supabase.from("profiles").upsert(
