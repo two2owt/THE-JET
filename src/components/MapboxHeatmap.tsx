@@ -2394,6 +2394,8 @@ export const MapboxHeatmap = ({
     function cleanupMap() {
       setMapLoaded(false);
       setMapError(null);
+      tileRetry.current?.dispose();
+      tileRetry.current = null;
       if (userMarker.current) {
         userMarker.current.remove();
       }
