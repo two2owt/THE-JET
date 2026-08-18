@@ -1002,7 +1002,7 @@ const Index = () => {
             import("@/components/MapboxHeatmap");
           }
         }}
-        notificationCount={notifications.filter((n) => !n.read).length}
+        notificationCount={unreadNotifications}
         messageCount={unreadMessages}
       />
 
