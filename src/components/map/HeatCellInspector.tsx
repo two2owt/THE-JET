@@ -43,7 +43,8 @@ export const HeatCellInspector = ({
       aria-label="Heat cell details"
       className="absolute left-1/2 -translate-x-1/2 w-[min(420px,calc(100%-24px))] rounded-2xl p-4 pointer-events-auto"
       style={{
-        bottom: "calc(var(--map-ui-inset-bottom, 1rem) + 12px)",
+        bottom:
+          "calc(var(--map-safe-bottom, calc(var(--bottom-nav-total-height, 60px) + 1rem)) + 12px)",
         zIndex: 35,
         background: "hsl(var(--card) / 0.86)",
         border: "1px solid hsl(var(--border) / 0.6)",
