@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -18,6 +18,7 @@ export interface LocationPreferences {
 export function useLocationPreferences(): LocationPreferences {
   const { session } = useAuth();
   const userId = session?.user?.id;
+  const instanceId = useId();
   const [prefs, setPrefs] = useState({ location: false, background: false });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -49,7 +50,7 @@ export function useLocationPreferences(): LocationPreferences {
     void load();
 
     const channel = supabase
-      .channel(`user-preferences-${userId}`)
+      .channel(`user-preferences-${userId}-${instanceId.replace(/[^a-zA-Z0-9]/g, "")}`)
       .on(
         "postgres_changes",
         {
@@ -76,7 +77,7 @@ export function useLocationPreferences(): LocationPreferences {
       cancelled = true;
       void supabase.removeChannel(channel);
     };
-  }, [userId]);
+  }, [userId, instanceId]);
 
   return {
     locationTrackingEnabled: prefs.location,
