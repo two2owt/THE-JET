@@ -99,7 +99,7 @@ export const PWAInstallPrompt = ({ signUpCta }: PWAInstallPromptProps = {}) => {
 
   return (
     <div
-      className="fixed inset-x-0 bottom-0 z-50 p-4 pb-[calc(var(--safe-area-inset-bottom,0px)+1rem)] animate-in slide-in-from-bottom-4 duration-500"
+      className="fixed inset-x-0 bottom-0 z-50 p-4 pb-[calc(var(--nav-clearance,0px)+max(var(--safe-area-inset-bottom,0px),0px)+1rem)] animate-in slide-in-from-bottom-4 duration-500"
       role="dialog"
       aria-label={isSignUpMode ? "Join JET and install the app" : "Install JET"}
     >
