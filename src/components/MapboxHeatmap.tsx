@@ -1310,6 +1310,9 @@ export const MapboxHeatmap = ({
       resizeTimeout = setTimeout(() => {
         if (map.current) {
           map.current.resize();
+          // Viewport class may have changed (rotation, split view, desktop
+          // window resize) — keep label scaling in sync with it.
+          applyMapScaleFactor(map.current, getMapScaleFactor());
         }
       }, 100);
     };
