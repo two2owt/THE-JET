@@ -2,6 +2,7 @@ import { ReactNode, Suspense, lazy, memo, useEffect } from "react";
 import { useLocation } from "@/lib/router-compat";
 import { Header } from "@/components/Header";
 import { useLocationTracker } from "@/hooks/useLocationTracker";
+import { useColdStartLocationFallback } from "@/hooks/useColdStartLocationFallback";
 
 const LocationPermissionPrompt = lazy(() =>
   import("@/components/LocationPermissionPrompt").then((m) => ({
@@ -35,6 +36,10 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
   // Single app-wide location tracker. Runs on every route for any signed-in
   // user with location tracking enabled, and stops only on sign-out.
   useLocationTracker();
+
+  // If no fix has landed in the last 24h (GPS denied, app closed for days),
+  // force one coarse network/IP write on open so the map is never empty.
+  useColdStartLocationFallback();
 
   // Safety net: if a modal unmounts while open, Radix can leave
   // `pointer-events: none` stuck on <body>, freezing the whole UI (including

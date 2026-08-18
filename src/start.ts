@@ -4,6 +4,7 @@ import {
   createMiddleware,
 } from "@tanstack/react-start";
 
+import { attachSupabaseAuth } from "./integrations/supabase/auth-attacher";
 import { renderErrorPage } from "./lib/error-page";
 
 // Consolidate SEO authority on the primary host: permanently redirect the
@@ -54,4 +55,5 @@ const csrfMiddleware = createCsrfMiddleware({
 
 export const startInstance = createStart(() => ({
   requestMiddleware: [canonicalHostMiddleware, errorMiddleware, csrfMiddleware],
+  functionMiddleware: [attachSupabaseAuth],
 }));
