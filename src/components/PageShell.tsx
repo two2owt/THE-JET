@@ -48,7 +48,9 @@ export function PageShell({
   const resolvedGap = gap ?? preset.gap;
   // Safe-area-aware padding: respects iOS notch (top), home indicator (bottom),
   // and landscape notch insets (left/right) while preserving the base padding.
-  const safePadding = `calc(${resolvedPadding} + env(safe-area-inset-top, 0px)) calc(${resolvedPadding} + env(safe-area-inset-right, 0px)) calc(${resolvedPadding} + env(safe-area-inset-bottom, 0px)) calc(${resolvedPadding} + env(safe-area-inset-left, 0px))`;
+  // Bottom padding also clears the fixed footer nav so trailing content is never
+  // hidden behind it on any screen size.
+  const safePadding = `calc(${resolvedPadding} + env(safe-area-inset-top, 0px)) calc(${resolvedPadding} + env(safe-area-inset-right, 0px)) calc(${resolvedPadding} + var(--bottom-nav-total-height, calc(60px + env(safe-area-inset-bottom, 0px))) + 8px) calc(${resolvedPadding} + env(safe-area-inset-left, 0px))`;
   return (
     <div
       className={`w-full max-w-7xl mx-auto${className ? ` ${className}` : ""}`}
