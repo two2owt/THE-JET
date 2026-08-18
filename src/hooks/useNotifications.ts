@@ -123,6 +123,7 @@ export const useNotifications = (enabled: boolean = true) => {
             message: queuedNotification.body,
             venue: queuedNotification.venue_id ?? undefined,
             timestamp: relativeTime(delivery.created_at),
+            sentAt: delivery.created_at,
             read: delivery.status === "opened" || !!delivery.opened_at,
             source: "delivery" as const,
             _sortKey: delivery.created_at,
