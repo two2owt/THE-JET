@@ -1,6 +1,7 @@
 import { devLog } from "@/lib/log";
 import { useEffect, useId, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { syncNotificationRead } from "@/lib/notificationRead";
 import type { Database } from "@/integrations/supabase/types";
 
 type NotificationLog = Database["public"]["Tables"]["notification_logs"]["Row"];
@@ -163,35 +164,16 @@ export const useNotifications = (enabled: boolean = true) => {
 
   const markAsRead = async (notificationId: string) => {
     const target = notifications.find((n) => n.id === notificationId);
-    try {
-      const updateError =
-        target?.source === "delivery"
-          ? (
-              await supabase
-                .from("notification_deliveries")
-                .update({
-                  status: "opened",
-                  opened_at: new Date().toISOString(),
-                })
-                .eq("id", notificationId)
-            ).error
-          : (
-              await supabase
-                .from("notification_logs")
-                .update({ read: true })
-                .eq("id", notificationId)
-            ).error;
-
-      if (updateError) throw updateError;
-
-      setNotifications((prev) =>
-        prev.map((notif) =>
-          notif.id === notificationId ? { ...notif, read: true } : notif,
-        ),
-      );
-    } catch (err) {
-      console.error("Error marking notification as read:", err);
-    }
+    if (target?.read) return;
+    // Optimistic: the badge and inbox update instantly.
+    setNotifications((prev) =>
+      prev.map((notif) =>
+        notif.id === notificationId ? { ...notif, read: true } : notif,
+      ),
+    );
+    // Same idempotent path a push tap uses, so opening a JetCard from the
+    // Alerts tab syncs read state everywhere exactly once.
+    await syncNotificationRead(notificationId, target?.source);
   };
 
   const markAllAsRead = async () => {
