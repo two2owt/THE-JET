@@ -80,6 +80,7 @@ export const SearchResults = ({
   // Used as a key on the panel so layout-affecting CSS variables are re-read.
   const [posVersion, setPosVersion] = useState(0);
   const panelRef = useRef<HTMLDivElement | null>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
   // Element state (not just the ref) so the lock re-binds when the panel remounts.
   const [panelEl, setPanelEl] = useState<HTMLDivElement | null>(null);
   useLockMapWhileInteracting(panelEl, isVisible);
@@ -124,12 +125,53 @@ export const SearchResults = ({
       document.removeEventListener("pointerdown", handlePointerDown, true);
   }, [isVisible, onClose]);
 
-  // Escape dismisses the overlay
+  // Keyboard support: Escape dismisses, Arrow keys / Home / End walk the
+  // result options, Tab out closes. Works whether focus is still in the
+  // search input or already inside the panel.
   useEffect(() => {
     if (!isVisible) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+
+    const options = (): HTMLElement[] =>
+      Array.from(
+        listRef.current?.querySelectorAll<HTMLElement>(
+          '[data-search-option="true"]',
+        ) ?? [],
+      );
+
+    const focusAt = (index: number) => {
+      const items = options();
+      if (items.length === 0) return;
+      const next = (index + items.length) % items.length;
+      const el = items[next];
+      el.focus();
+      el.scrollIntoView({ block: "nearest" });
     };
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+      if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) return;
+      const active = document.activeElement as HTMLElement | null;
+      const insidePanel = !!(active && panelRef.current?.contains(active));
+      const inSearchInput =
+        !!active &&
+        active.tagName === "INPUT" &&
+        active.getAttribute("aria-controls") === "jet-search-results";
+      if (!insidePanel && !inSearchInput) return;
+
+      const items = options();
+      if (items.length === 0) return;
+      e.preventDefault();
+      const current = active ? items.indexOf(active) : -1;
+      if (e.key === "Home") focusAt(0);
+      else if (e.key === "End") focusAt(items.length - 1);
+      else if (e.key === "ArrowDown") focusAt(current + 1);
+      else focusAt(current <= 0 ? items.length - 1 : current - 1);
+    };
+
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [isVisible, onClose]);
@@ -329,6 +371,7 @@ export const SearchResults = ({
           panelRef.current = node;
           setPanelEl(node);
         }}
+        id="jet-search-results"
         role="dialog"
         aria-label="Search results"
         className="fixed left-2 right-2 sm:left-auto sm:right-4 z-[9999] animate-fade-in sm:w-[420px] sm:max-w-[min(420px,calc(100vw-2rem))]"
@@ -354,7 +397,10 @@ export const SearchResults = ({
                 >
                   “{query}”
                 </h3>
-                <p className="text-[11px] font-medium text-muted-foreground tabular-nums">
+                <p
+                  className="text-[11px] font-medium text-muted-foreground tabular-nums"
+                  aria-live="polite"
+                >
                   {totalCount} {totalCount === 1 ? "result" : "results"}
                 </p>
               </div>
@@ -370,7 +416,8 @@ export const SearchResults = ({
           </div>
 
           {/* Scrollable body */}
-          <CardContent className="map-scroll-safe p-3 sm:p-4 space-y-4 overflow-y-auto flex-1 min-h-0">
+          <CardContent
+            ref={listRef} className="map-scroll-safe p-3 sm:p-4 space-y-4 overflow-y-auto flex-1 min-h-0">
             {!hasResults && (
               <div className="text-center py-10">
                 <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3">
@@ -398,6 +445,7 @@ export const SearchResults = ({
                 <div className="space-y-1">
                   {filteredJetcards.map((venue) => (
                     <button
+                      data-search-option="true"
                       key={venue.id}
                       onClick={() => {
                         onVenueSelect(venue);
@@ -472,6 +520,7 @@ export const SearchResults = ({
                 <div className="flex flex-wrap gap-1.5">
                   {filteredAreas.map((area) => (
                     <button
+                      data-search-option="true"
                       key={`area-${area.name}`}
                       onClick={() => handleAreaSelect(area.name)}
                       className="group inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-secondary/60 hover:bg-primary/10 hover:text-primary border border-border/60 hover:border-primary/40 text-xs font-semibold text-foreground transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95"
@@ -502,6 +551,7 @@ export const SearchResults = ({
                 <div className="flex flex-wrap gap-1.5">
                   {filteredCategories.map((cat) => (
                     <button
+                      data-search-option="true"
                       key={`cat-${cat.source}-${cat.name}`}
                       onClick={() => handleCategorySelect(cat.name)}
                       className="group inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-secondary/60 hover:bg-primary/10 hover:text-primary border border-border/60 hover:border-primary/40 text-xs font-semibold text-foreground transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95"
@@ -530,6 +580,7 @@ export const SearchResults = ({
                 <div className="space-y-1">
                   {filteredVenues.map((venue) => (
                     <button
+                      data-search-option="true"
                       key={venue.id}
                       onClick={() => {
                         onVenueSelect(venue);
@@ -588,6 +639,7 @@ export const SearchResults = ({
                 <div className="space-y-1">
                   {filteredDeals.map((deal) => (
                     <button
+                      data-search-option="true"
                       key={deal.id}
                       onClick={() => handleDealSelect(deal)}
                       className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-hidden focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"
