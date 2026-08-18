@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef , useId } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { generateThumbnail, thumbnailPathFor } from "@/lib/image-thumbnail";
 
@@ -20,6 +20,7 @@ function getConversationId(userA: string, userB: string): string {
 
 export const useMessages = (userId?: string, friendId?: string) => {
   const [messages, setMessages] = useState<Message[]>([]);
+  const rtId = useId().replace(/[^a-zA-Z0-9]/g, "");
   const [loading, setLoading] = useState(false);
   const [isFriendTyping, setIsFriendTyping] = useState(false);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
@@ -168,7 +169,7 @@ export const useMessages = (userId?: string, friendId?: string) => {
     fetchMessages();
 
     channelRef.current = supabase
-      .channel(`messages:${conversationId}`)
+      .channel(`messages:${conversationId}:${rtId}`)
       .on(
         "postgres_changes",
         {
@@ -259,6 +260,7 @@ export const useMessages = (userId?: string, friendId?: string) => {
 
 // Hook to get unread counts across all conversations
 export const useUnreadCounts = (userId?: string) => {
+  const rtId = useId().replace(/[^a-zA-Z0-9]/g, "");
   const [counts, setCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
@@ -283,7 +285,7 @@ export const useUnreadCounts = (userId?: string) => {
     fetchCounts();
 
     const channel = supabase
-      .channel(`unread:${userId}`)
+      .channel(`unread:${userId}:${rtId}`)
       .on(
         "postgres_changes",
         {
