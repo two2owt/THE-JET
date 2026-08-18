@@ -72,6 +72,16 @@
 @utility shadow-ambient { box-shadow: var(--shadow-ambient); }
 @utility shadow-hairline { box-shadow: var(--shadow-hairline); }
 
+/* Clear the fixed footer nav with padding (scrollable content). */
+@utility pb-nav-safe {
+  padding-bottom: calc(var(--nav-clearance, 0px) + 1rem);
+}
+
+/* Sit above the fixed footer nav (fixed/absolute overlays). */
+@utility bottom-nav-offset {
+  bottom: calc(var(--nav-clearance, 0px) + 0.75rem);
+}
+
 @utility container {
   margin-inline: auto;
   padding-inline: 2rem;
