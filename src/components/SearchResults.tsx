@@ -422,15 +422,15 @@ export const SearchResults = ({
   // Stay mounted while the closing transition plays out.
   if (!mounted) return null;
 
-  const filteredVenues = groups.venues
+  const filteredVenues = displayGroups.venues
     .slice(0, MAX_PER_SECTION)
     .map((r) => r.venue);
-  const filteredDeals = groups.deals
+  const filteredDeals = displayGroups.deals
     .slice(0, MAX_PER_SECTION)
     .map((r) => r.deal);
-  const filteredAreas = groups.areas.slice(0, MAX_PER_SECTION);
-  const filteredCategories = groups.categories.slice(0, MAX_PER_SECTION);
-  const filteredJetcards = (groups.jetcards ?? []).map((r) => r.venue);
+  const filteredAreas = displayGroups.areas.slice(0, MAX_PER_SECTION);
+  const filteredCategories = displayGroups.categories.slice(0, MAX_PER_SECTION);
+  const filteredJetcards = (displayGroups.jetcards ?? []).map((r) => r.venue);
 
   const totalCount =
     filteredJetcards.length +
@@ -544,7 +544,7 @@ export const SearchResults = ({
                   className="font-bold text-sm text-foreground truncate"
                   style={{ letterSpacing: "-0.01em" }}
                 >
-                  “{query}”
+                  “{displayQuery}”
                 </h3>
                 <p
                   className="text-[11px] font-medium text-muted-foreground tabular-nums"
