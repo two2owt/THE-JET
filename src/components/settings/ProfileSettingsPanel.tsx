@@ -656,7 +656,7 @@ export function ProfileSettingsPanel({
                 }
                 setLocationTrackingEnabled(true);
                 if (!geoGranted) {
-                  const state = await requestGeoPermission();
+                  const state = await requestGeoPermission("settings_panel");
                   if (state !== "granted") {
                     toast.error("Location access not allowed", {
                       description: isNativeApp()
