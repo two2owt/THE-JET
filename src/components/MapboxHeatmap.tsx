@@ -5242,6 +5242,45 @@ export const MapboxHeatmap = ({
 
       {/* Live Stats — always rendered on the left side of the map, clear of the
           Layers container (bottom-right) and the map nav controls (top-right). */}
+      {showDensityLayer && !(isMobile && selectedVenue) && (
+        <div
+          className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
+          style={{
+            bottom: inspectedCell
+              ? "calc(var(--map-ui-inset-bottom, 1rem) + 116px)"
+              : "calc(var(--map-ui-inset-bottom, 1rem) + 8px)",
+            zIndex: 34,
+            transition: "bottom 220ms cubic-bezier(0.16,1,0.3,1)",
+          }}
+        >
+          <HeatFilterChips
+            value={timeFilter}
+            onChange={(next) => {
+              setTimeFilter(next);
+              setInspectedCell(null);
+              scheduleDensityRefresh();
+            }}
+            loading={densityLoading}
+          />
+        </div>
+      )}
+
+      {showDensityLayer && !(isMobile && selectedVenue) && (
+        <HeatCellInspector
+          cell={inspectedCell}
+          cityLabel={selectedCity}
+          isLightBasemap={mapStyle === "light" || mapStyle === "streets"}
+          onClose={() => setInspectedCell(null)}
+          onZoomTo={(cell) => {
+            map.current?.flyTo({
+              center: [cell.lng, cell.lat],
+              zoom: Math.max(map.current.getZoom(), 15),
+              duration: 900,
+            });
+          }}
+        />
+      )}
+
       {showLiveStats && (
         <LiveStatsPanel
           open={showLiveStats}
