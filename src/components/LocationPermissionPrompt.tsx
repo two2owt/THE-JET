@@ -114,7 +114,7 @@ export const LocationPermissionPrompt = () => {
         // Re-check at fire time: permission may have been granted during the
         // delay (map locate button, signup consent), which would otherwise
         // surface a redundant prompt.
-        if (cancelled || promptShownThisSession) return;
+        if (cancelled || promptShownFor === signature) return;
         if (status && status.state !== "prompt") return;
         promptShownFor = signature;
         markLocationPromptShown(signature);
@@ -155,7 +155,7 @@ export const LocationPermissionPrompt = () => {
 
   const handleEnable = async () => {
     setLoading(true);
-    localStorage.setItem(ASKED_KEY, "1");
+    markLocationPromptShown(signature);
 
     const granted = await new Promise<boolean>((resolve) => {
       navigator.geolocation.getCurrentPosition(
@@ -168,7 +168,10 @@ export const LocationPermissionPrompt = () => {
     // Only ever record a grant here. A browser-level block is not an explicit
     // app-level opt-out — Settings → Location Tracking is the only switch that
     // revokes foreground location consent.
-    if (granted) await recordConsent(true);
+    if (granted) {
+      await recordConsent(true);
+      markLocationPermissionResolved(signature);
+    }
     setLoading(false);
     setOpen(false);
 
@@ -177,7 +180,7 @@ export const LocationPermissionPrompt = () => {
         description: "We'll show deals near you.",
       });
     } else {
-      localStorage.setItem(DISMISS_KEY, Date.now().toString());
+      markLocationPromptDismissed(signature);
       toast.error("Location blocked", {
         description: "You can re-enable it anytime in Settings → Privacy.",
       });
@@ -185,8 +188,7 @@ export const LocationPermissionPrompt = () => {
   };
 
   const handleDismiss = () => {
-    localStorage.setItem(DISMISS_KEY, Date.now().toString());
-    localStorage.setItem(ASKED_KEY, "1");
+    markLocationPromptDismissed(signature);
     setOpen(false);
   };
 
