@@ -21,6 +21,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useGeolocationPermission } from "@/hooks/useGeolocationPermission";
 import { z } from "zod";
 
 import PreferencesEditor from "@/components/settings/PreferencesEditor";
@@ -103,6 +104,15 @@ export function ProfileSettingsPanel({
   const [pushNotificationsEnabled, setPushNotificationsEnabled] =
     useState(false);
   const [locationTrackingEnabled, setLocationTrackingEnabled] = useState(false);
+  // Browser/OS permission is the source of truth for whether tracking can
+  // actually run — the stored preference alone doesn't collect anything.
+  const {
+    permission: geoPermission,
+    isGranted: geoGranted,
+    isBlocked: geoBlocked,
+    request: requestGeoPermission,
+  } = useGeolocationPermission();
+  const trackingActive = locationTrackingEnabled && geoGranted;
   const [backgroundTrackingEnabled, setBackgroundTrackingEnabled] =
     useState(true);
   const [autoReloadUpdates, setAutoReloadUpdates] = useState(false);
@@ -611,11 +621,44 @@ export function ProfileSettingsPanel({
               <p className="text-[10px] sm:text-xs text-muted-foreground">
                 Allow the app to track your location for nearby deals
               </p>
+              {locationTrackingEnabled && !geoGranted && (
+                <p className="text-[10px] sm:text-xs text-destructive">
+                  {geoPermission === "unsupported"
+                    ? "This device doesn't support location."
+                    : geoBlocked
+                      ? "Blocked in your device/browser settings — tracking is off until you re-allow it."
+                      : "Permission not granted yet — tracking stays off until you allow location."}
+                </p>
+              )}
             </div>
             <Switch
               id="location-tracking"
-              checked={locationTrackingEnabled}
-              onCheckedChange={setLocationTrackingEnabled}
+              checked={trackingActive}
+              onCheckedChange={async (next) => {
+                if (!next) {
+                  setLocationTrackingEnabled(false);
+                  return;
+                }
+                setLocationTrackingEnabled(true);
+                if (!geoGranted) {
+                  const state = await requestGeoPermission();
+                  if (state !== "granted") {
+                    toast.error("Location access not allowed", {
+                      description: isNativeApp()
+                        ? "Allow location for JET in your device settings to start tracking."
+                        : "Allow location for this site in your browser settings to start tracking.",
+                      ...(isNativeApp()
+                        ? {
+                            action: {
+                              label: "Open settings",
+                              onClick: () => void openLocationSettings(),
+                            },
+                          }
+                        : {}),
+                    });
+                  }
+                }
+              }}
               className="flex-shrink-0"
             />
           </div>
@@ -654,7 +697,7 @@ export function ProfileSettingsPanel({
                 }
                 setBackgroundTrackingEnabled(next);
               }}
-              disabled={!locationTrackingEnabled}
+              disabled={!trackingActive}
               className="flex-shrink-0"
             />
           </div>
