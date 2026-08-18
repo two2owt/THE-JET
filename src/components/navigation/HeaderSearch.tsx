@@ -1,4 +1,4 @@
-import { lazy, Suspense, useRef } from "react";
+import { lazy, Suspense, useRef, useCallback } from "react";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { IconButton } from "@/components/ui/icon-button";
@@ -57,6 +57,30 @@ export function HeaderSearch({
   onCollapse,
 }: HeaderSearchProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  /** Return focus to the search input after any panel close or selection. */
+  const focusInput = useCallback(() => {
+    // Defer slightly so any parent state updates (mobile collapse, etc.)
+    // settle before we attempt focus; if the input is unmounted the call
+    // simply no-ops.
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+  }, []);
+
+  const handleCloseResults = useCallback(() => {
+    onCloseResults();
+    focusInput();
+  }, [onCloseResults, focusInput]);
+
+  const handleVenueSelect = useCallback(
+    (venue: Parameters<typeof onVenueSelect>[0]) => {
+      onVenueSelect(venue);
+      focusInput();
+    },
+    [onVenueSelect, focusInput],
+  );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -121,6 +145,7 @@ export function HeaderSearch({
       </div>
 
       <Input
+        ref={inputRef}
         type="text"
         placeholder="Search venues, deals, neighborhoods..."
         value={query}
@@ -226,8 +251,8 @@ export function HeaderSearch({
             query={query}
             venues={venues}
             deals={deals}
-            onVenueSelect={onVenueSelect}
-            onClose={onCloseResults}
+            onVenueSelect={handleVenueSelect}
+            onClose={handleCloseResults}
             isVisible={showResults}
           />
         </Suspense>
