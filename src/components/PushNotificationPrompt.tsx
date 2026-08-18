@@ -173,6 +173,19 @@ export const PushNotificationPrompt = ({
           </DialogHeader>
 
           {isBlocked ? (
+            isNative ? (
+              <ol className="space-y-2 my-5 text-sm text-foreground/80 list-decimal pl-5">
+                <li>Open your device Settings app.</li>
+                <li>
+                  Find <span className="font-medium">JET</span> →{" "}
+                  <span className="font-medium">Notifications</span>.
+                </li>
+                <li>
+                  Turn <span className="font-medium">Allow Notifications</span>{" "}
+                  on, then reopen JET.
+                </li>
+              </ol>
+            ) : (
             <ol className="space-y-2 my-5 text-sm text-foreground/80 list-decimal pl-5">
               <li>
                 Tap the lock or settings icon in your browser's address bar.
@@ -186,6 +199,7 @@ export const PushNotificationPrompt = ({
                 <span className="font-medium">Allow</span>, then reload JET.
               </li>
             </ol>
+            )
           ) : needsInstallFirst ? (
             <div className="space-y-2 my-5">
               <div className="flex items-center gap-2.5 text-sm">
