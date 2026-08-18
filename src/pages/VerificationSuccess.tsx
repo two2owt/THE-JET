@@ -23,6 +23,8 @@ export default function VerificationSuccess() {
   >("idle");
   const [resendMessage, setResendMessage] = useState<string>("");
   const [isVerified, setIsVerified] = useState(false);
+  // Whether a Supabase session exists (the email link signs the user in).
+  const [hasSession, setHasSession] = useState(false);
   // True when Supabase redirected here with an expired/invalid OTP error in
   // the URL hash (e.g. user clicked a verification link >1h old).
   const [linkExpired, setLinkExpired] = useState(false);
