@@ -412,6 +412,13 @@ export const SearchResults = ({
     };
   }, [q, venues, deals]);
 
+  // Freeze the last rendered query + results so the closing transition doesn't
+  // flash an empty "no results" state when the input clears.
+  const frozen = useRef({ query, groups });
+  if (shouldShow) frozen.current = { query, groups };
+  const displayQuery = shouldShow ? query : frozen.current.query;
+  const displayGroups = shouldShow ? groups : frozen.current.groups;
+
   // Stay mounted while the closing transition plays out.
   if (!mounted) return null;
 
