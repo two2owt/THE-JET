@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useLocation } from "@/lib/router-compat";
 import { CheckCircle2, Mail, Loader2, MailCheck, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
