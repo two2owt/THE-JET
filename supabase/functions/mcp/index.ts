@@ -158,7 +158,9 @@ function supabasePublishableKey() {
           ?.trim();
         if (key) return key;
       }
-    } catch {}
+    } catch {
+      // ignore and fall through to the legacy env lookup
+    }
   }
   const legacy = configuredEnv(["SUPABASE_ANON_KEY", "VITE_SUPABASE_ANON_KEY"]);
   if (legacy) return legacy;
