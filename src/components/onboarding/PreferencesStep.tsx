@@ -573,10 +573,10 @@ const PreferencesStep = ({
             Live Discovery
           </Label>
 
-          <div className="flex items-center justify-between p-3 bg-card/40 border border-border/40 rounded-xl backdrop-blur-sm">
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-primary" />
-              <div>
+          <div className="flex items-center justify-between gap-3 p-3 bg-card/40 border border-border/40 rounded-xl backdrop-blur-sm">
+            <div className="flex min-w-0 items-center gap-2">
+              <MapPin className="w-4 h-4 shrink-0 text-primary" />
+              <div className="min-w-0">
                 <p className="font-medium text-xs">Trending Venues</p>
                 <p className="text-[10px] text-muted-foreground">
                   See what's popular now
@@ -584,15 +584,16 @@ const PreferencesStep = ({
               </div>
             </div>
             <Switch
+              className="shrink-0"
               checked={trendingVenues}
               onCheckedChange={setTrendingVenues}
             />
           </div>
 
-          <div className="flex items-center justify-between p-3 bg-card/40 border border-border/40 rounded-xl backdrop-blur-sm">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <div>
+          <div className="flex items-center justify-between gap-3 p-3 bg-card/40 border border-border/40 rounded-xl backdrop-blur-sm">
+            <div className="flex min-w-0 items-center gap-2">
+              <Sparkles className="w-4 h-4 shrink-0 text-primary" />
+              <div className="min-w-0">
                 <p className="font-medium text-xs">Activity in Your Area</p>
                 <p className="text-[10px] text-muted-foreground">
                   Get location-based alerts
@@ -600,6 +601,7 @@ const PreferencesStep = ({
               </div>
             </div>
             <Switch
+              className="shrink-0"
               checked={activityInArea}
               onCheckedChange={setActivityInArea}
             />
@@ -614,7 +616,7 @@ const PreferencesStep = ({
         </p>
       )}
 
-      <div className="flex gap-3 pt-2">
+      <div className="flex flex-col-reverse gap-3 pt-2 xs:flex-row">
         <Button
           variant="outline"
           onClick={onBack}
