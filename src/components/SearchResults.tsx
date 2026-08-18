@@ -371,6 +371,7 @@ export const SearchResults = ({
           panelRef.current = node;
           setPanelEl(node);
         }}
+        id="jet-search-results"
         role="dialog"
         aria-label="Search results"
         className="fixed left-2 right-2 sm:left-auto sm:right-4 z-[9999] animate-fade-in sm:w-[420px] sm:max-w-[min(420px,calc(100vw-2rem))]"
@@ -412,7 +413,8 @@ export const SearchResults = ({
           </div>
 
           {/* Scrollable body */}
-          <CardContent className="map-scroll-safe p-3 sm:p-4 space-y-4 overflow-y-auto flex-1 min-h-0">
+          <CardContent
+            ref={listRef} className="map-scroll-safe p-3 sm:p-4 space-y-4 overflow-y-auto flex-1 min-h-0">
             {!hasResults && (
               <div className="text-center py-10">
                 <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3">
@@ -440,6 +442,7 @@ export const SearchResults = ({
                 <div className="space-y-1">
                   {filteredJetcards.map((venue) => (
                     <button
+                      data-search-option="true"
                       key={venue.id}
                       onClick={() => {
                         onVenueSelect(venue);
@@ -514,6 +517,7 @@ export const SearchResults = ({
                 <div className="flex flex-wrap gap-1.5">
                   {filteredAreas.map((area) => (
                     <button
+                      data-search-option="true"
                       key={`area-${area.name}`}
                       onClick={() => handleAreaSelect(area.name)}
                       className="group inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-secondary/60 hover:bg-primary/10 hover:text-primary border border-border/60 hover:border-primary/40 text-xs font-semibold text-foreground transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95"
@@ -544,6 +548,7 @@ export const SearchResults = ({
                 <div className="flex flex-wrap gap-1.5">
                   {filteredCategories.map((cat) => (
                     <button
+                      data-search-option="true"
                       key={`cat-${cat.source}-${cat.name}`}
                       onClick={() => handleCategorySelect(cat.name)}
                       className="group inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-secondary/60 hover:bg-primary/10 hover:text-primary border border-border/60 hover:border-primary/40 text-xs font-semibold text-foreground transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95"
@@ -572,6 +577,7 @@ export const SearchResults = ({
                 <div className="space-y-1">
                   {filteredVenues.map((venue) => (
                     <button
+                      data-search-option="true"
                       key={venue.id}
                       onClick={() => {
                         onVenueSelect(venue);
@@ -630,6 +636,7 @@ export const SearchResults = ({
                 <div className="space-y-1">
                   {filteredDeals.map((deal) => (
                     <button
+                      data-search-option="true"
                       key={deal.id}
                       onClick={() => handleDealSelect(deal)}
                       className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-hidden focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"
