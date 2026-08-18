@@ -209,6 +209,13 @@ const Index = () => {
   const { notifications, markAsRead, markAllAsRead } =
     useNotifications(dataReady);
   const unreadNotifications = notifications.filter((n) => !n.read).length;
+  const [notificationFilter, setNotificationFilter] = useState<
+    "all" | "unread"
+  >("all");
+  const visibleNotifications =
+    notificationFilter === "unread"
+      ? notifications.filter((n) => !n.read)
+      : notifications;
   useAutoScrapeVenueImages(dataReady);
   const {
     deals,
