@@ -4802,7 +4802,7 @@ export const MapboxHeatmap = ({
                   active={showLiveStats}
                   loading={isLoadingStats}
                   ariaLabel="Toggle live stats panel"
-                  tooltip="Actionable insights from live activity: busiest hotspots right now, momentum trend vs. the last hour, top movement routes, and recent check-ins to help you decide where to go next."
+                  tooltip="Actionable insights from live activity: busiest hotspots right now, momentum trend vs. the last hour, top movement routes, and recent JET member check-ins to help you decide where to go next."
                   onToggle={() => {
                     triggerHaptic("medium");
                     const next = !showLiveStats;
