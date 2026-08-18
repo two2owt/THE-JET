@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getNetworkLocation } from "@/lib/networkGeolocation";
+import { logGeoPermissionEvent } from "@/lib/locationPermissionLog";
 import { logGeoEvent } from "@/lib/geoDiagnostics";
 import { recordLocationWrite, recordLocationSkip } from "@/lib/locationDiagnostics";
 import {
