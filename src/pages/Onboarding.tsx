@@ -501,7 +501,7 @@ const Onboarding = () => {
   }
 
   return (
-    <div className="relative flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto bg-background px-fluid-sm sm:px-fluid-md pt-[max(env(safe-area-inset-top,0px),var(--space-lg))] pb-[max(env(safe-area-inset-bottom,0px),var(--space-lg))]">
+    <div className="relative flex flex-1 min-h-0 w-full flex-col overflow-y-auto overscroll-contain bg-background px-fluid-sm sm:px-fluid-md pt-[max(env(safe-area-inset-top,0px),var(--space-md))] pb-[max(env(safe-area-inset-bottom,0px),var(--space-md))]">
       {/* Ambient corner glow accents */}
       <div
         className="pointer-events-none absolute -top-32 -left-32 h-80 w-80 rounded-full bg-primary/10 blur-[140px]"
@@ -517,14 +517,16 @@ const Onboarding = () => {
         aria-hidden
       />
 
-      <div className="relative z-10 mx-auto w-full max-w-[420px]">
+      {/* my-auto centres the card on tall screens but lets it scroll from the
+          top (instead of clipping) once the content outgrows the viewport. */}
+      <div className="relative z-10 mx-auto my-auto w-full max-w-[420px] sm:max-w-[460px] lg:max-w-[500px] py-fluid-sm">
         {previewMode && (
-          <div className="mb-3 rounded-2xl border border-primary/30 bg-primary/10 px-4 py-2 text-center text-[11px] font-medium uppercase tracking-widest text-primary">
+          <div className="mb-fluid-sm rounded-2xl border border-primary/30 bg-primary/10 px-4 py-2 text-center text-[11px] font-medium uppercase tracking-widest text-primary">
             Review mode — nothing is saved
           </div>
         )}
         {/* Glassmorphic Card */}
-        <div className="flex flex-col gap-8 rounded-[40px] border border-white/10 bg-card/60 p-7 sm:p-8 shadow-2xl backdrop-blur-3xl">
+        <div className="flex flex-col gap-fluid-md rounded-[28px] xs:rounded-[32px] sm:rounded-[40px] border border-white/10 bg-card/60 p-fluid-md sm:p-fluid-lg shadow-2xl backdrop-blur-3xl">
           {/* Top row: back affordance */}
           <div className="flex h-5 items-center justify-between">
             {step > 1 ? (
@@ -570,19 +572,19 @@ const Onboarding = () => {
           </div>
 
           {/* Header */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-fluid-xs">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70">
               Step {String(step).padStart(2, "0")} /{" "}
               {String(STEPS.length).padStart(2, "0")} · {current.label}
             </span>
-            <h1 className="text-3xl font-extrabold leading-[1.05] text-foreground font-display">
+            <h1 className="text-fluid-3xl font-extrabold leading-[1.05] text-foreground font-display text-balance">
               {current.title}
               <br />
               <span className="bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
                 {current.titleAccent}
               </span>
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-fluid-sm text-muted-foreground text-pretty">
               {current.description}
             </p>
             {step === 2 && (
@@ -592,7 +594,7 @@ const Onboarding = () => {
                   setDirection("forward");
                   setStep(3);
                 }}
-                className="mt-1 self-start text-[11px] font-semibold uppercase tracking-widest text-muted-foreground underline-offset-4 hover:text-primary hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+                className="mt-1 inline-flex min-h-11 items-center self-start text-[11px] font-semibold uppercase tracking-widest text-muted-foreground underline-offset-4 hover:text-primary hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
               >
                 Skip for now
               </button>
@@ -604,11 +606,11 @@ const Onboarding = () => {
             <div
               key="step-1"
               onKeyDown={handleStep1KeyDown}
-              className={`flex flex-col gap-5 ${direction === "forward" ? "animate-fade-in" : "animate-fade-in"}`}
+              className="flex flex-col gap-fluid-sm animate-fade-in"
             >
               <div className="flex flex-col items-center">
                 <div className="relative">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-card/40 border border-border/60 backdrop-blur-sm flex items-center justify-center overflow-hidden">
+                  <div className="h-[clamp(4rem,18vw,6rem)] w-[clamp(4rem,18vw,6rem)] rounded-full bg-card/40 border border-border/60 backdrop-blur-sm flex items-center justify-center overflow-hidden">
                     {avatarPreview ? (
                       <img
                         src={avatarPreview}
@@ -623,7 +625,7 @@ const Onboarding = () => {
                       <Upload className="w-8 h-8 text-muted-foreground" />
                     )}
                   </div>
-                  <label className="absolute bottom-0 right-0 w-8 h-8 bg-gradient-to-r from-primary to-primary-glow rounded-full flex items-center justify-center cursor-pointer shadow-md shadow-primary/30 transition-transform hover:scale-105">
+                  <label className="absolute -bottom-0.5 -right-0.5 h-9 w-9 bg-gradient-to-r from-primary to-primary-glow rounded-full flex items-center justify-center cursor-pointer shadow-md shadow-primary/30 transition-transform hover:scale-105">
                     <Upload className="w-4 h-4 text-primary-foreground" />
                     <input
                       type="file"
@@ -726,7 +728,7 @@ const Onboarding = () => {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 xs:grid-cols-2 gap-fluid-sm">
                 <div className="flex flex-col gap-1.5">
                   <Label className="heading-luxe-eyebrow text-left">
                     Gender <span className="text-destructive">*</span>
@@ -779,7 +781,7 @@ const Onboarding = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end pt-2">
+              <div className="flex justify-end pt-fluid-xs">
                 <Button
                   onClick={handleStep1Next}
                   disabled={isLoading}
@@ -888,7 +890,7 @@ const Onboarding = () => {
           )}
         </div>
         {/* JET wordmark */}
-        <div className="mt-7 flex items-center justify-center gap-3">
+        <div className="mt-fluid-md flex items-center justify-center gap-3">
           <img
             src={jetLogo}
             alt=""
