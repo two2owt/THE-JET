@@ -382,18 +382,18 @@ export default function VerificationSuccess() {
                   : "You're all set. Tap “Go to app” below to start exploring JET."
                 : `Check your inbox${
                     resendEmail ? ` (${resendEmail})` : ""
-                  } and click the verification link. You'll be redirected to sign in in ${countdown}s.`}
+                  } and click the verification link. You'll be redirected in ${countdown}s.`}
             </p>
           </div>
         </div>
 
         <Button
-          onClick={() => navigate("/auth?mode=signin", { replace: true })}
+          onClick={() => void goToApp()}
           variant="jet"
           className="w-full"
           size="lg"
         >
-          Sign In Now
+          {hasSession ? "Continue to JET" : "Sign In Now"}
         </Button>
 
         {isVerified ? (
