@@ -78,6 +78,49 @@ export const useWebPushNotifications = () => {
         ).pushManager.getSubscription();
         setSubscription(existingSubscription);
         setIsSubscribed(!!existingSubscription);
+
+        // Browsers rotate push endpoints (pushsubscriptionchange, profile
+        // resets, key rotation). If the live endpoint differs from the one we
+        // last stored, retire the stale row and re-claim under the new one so
+        // delivery never silently breaks.
+        if (existingSubscription) {
+          const json = existingSubscription.toJSON() as {
+            endpoint?: string;
+            keys?: { p256dh?: string; auth?: string };
+          };
+          const endpoint = json.endpoint || existingSubscription.endpoint;
+          let previous: string | null = null;
+          try {
+            previous = localStorage.getItem(WEB_ENDPOINT_KEY);
+          } catch {
+            previous = null;
+          }
+
+          if (endpoint && previous !== endpoint) {
+            if (previous) {
+              await supabase
+                .from("push_subscriptions")
+                .update({ active: false })
+                .eq("endpoint", previous);
+            }
+            const { error: claimError } = await supabase.rpc(
+              "claim_push_subscription",
+              {
+                _endpoint: endpoint,
+                _p256dh: json.keys?.p256dh || "",
+                _auth: json.keys?.auth || "",
+                _platform: "web",
+              },
+            );
+            if (!claimError) {
+              try {
+                localStorage.setItem(WEB_ENDPOINT_KEY, endpoint);
+              } catch {
+                /* ignore */
+              }
+            }
+          }
+        }
       } else {
         setSubscription(null);
         setIsSubscribed(false);
