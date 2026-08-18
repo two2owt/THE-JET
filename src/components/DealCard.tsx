@@ -298,6 +298,33 @@ export const DealCard = memo(({ deal, index = 0, onOpen }: DealCardProps) => {
         isOpen={showUpgradePrompt}
         onClose={() => setShowUpgradePrompt(false)}
       />
+
+      <AlertDialog
+        open={confirmRemoveOpen}
+        onOpenChange={setConfirmRemoveOpen}
+      >
+        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove from favorites?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deal.title} at {deal.venue_name} will no longer appear in your
+              saved list. You can save it again anytime.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={removing}>Keep</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={removing}
+              onClick={(e) => {
+                e.preventDefault();
+                void handleConfirmRemove();
+              }}
+            >
+              {removing ? "Removing…" : "Remove"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 });
