@@ -58,6 +58,7 @@ const JetCard = lazy(() =>
   import("@/components/JetCard").then((m) => ({ default: m.JetCard })),
 );
 import { JetCardSkeleton } from "@/components/skeletons/JetCardSkeleton";
+import { LocationStatusBanner } from "@/components/map/LocationStatusBanner";
 const ParkingCard = lazy(() =>
   import("@/components/ParkingCard").then((m) => ({ default: m.ParkingCard })),
 );

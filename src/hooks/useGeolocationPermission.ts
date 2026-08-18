@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { isNativeApp } from "@/lib/nativeBackgroundGeolocation";
+import { isNativeApp } from "@/lib/platform";
 
 export type GeoPermissionState =
   | "unknown"

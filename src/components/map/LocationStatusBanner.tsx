@@ -4,10 +4,8 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocationPreferences } from "@/hooks/useLocationPreferences";
 import { useGeolocationPermission } from "@/hooks/useGeolocationPermission";
-import {
-  isNativeApp,
-  openLocationSettings,
-} from "@/lib/nativeBackgroundGeolocation";
+import { openLocationSettings } from "@/lib/nativeBackgroundGeolocation";
+import { isNativeApp } from "@/lib/platform";
 
 /**
  * Map-tab status banner that reflects the *effective* tracking state.
