@@ -154,7 +154,7 @@ export const LiveStatsPanel = ({
     if (checkins > 0)
       rows.push({
         key: "checkins",
-        label: "Recent check-ins",
+        label: "Recent JET activity",
         value: checkins.toLocaleString(),
         tone: "hsl(var(--foreground))",
       });
