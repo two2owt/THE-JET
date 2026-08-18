@@ -29,6 +29,10 @@ export const NotificationCard = memo(
         onRead();
       }
     };
+
+    // Tapping any alert is meaningful: it either opens the JetCard or at least
+    // marks the alert read.
+    const interactive = Boolean(onVenueClick || (onRead && !notification.read));
     const getIcon = () => {
       switch (notification.type) {
         case "offer":
@@ -64,13 +68,13 @@ export const NotificationCard = memo(
     return (
       <div
         className={`bg-gradient-to-r ${getGradient()} rounded-lg sm:rounded-xl p-3 sm:p-4 border border-border/50 hover-scale transition-all touch-manipulation ${
-          onVenueClick ? "cursor-pointer active:scale-[0.98]" : ""
+          interactive ? "cursor-pointer active:scale-[0.98]" : ""
         } ${notification.read ? "opacity-60" : ""}`}
         onClick={handleClick}
-        role={onVenueClick ? "button" : undefined}
-        tabIndex={onVenueClick ? 0 : undefined}
+        role={interactive ? "button" : undefined}
+        tabIndex={interactive ? 0 : undefined}
         onKeyDown={
-          onVenueClick
+          interactive
             ? (e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
