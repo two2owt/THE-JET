@@ -83,13 +83,25 @@ const rules = [
     hint: "add DROP POLICY IF EXISTS <name> ON <table>; first",
     guard: (sql, m) => {
       const name = m[1].replace(/^["']|["']$/g, "");
-      return new RegExp(
+      const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      // Accepted form 1: an explicit DROP POLICY IF EXISTS for the same name.
+      if (
+        new RegExp(
         `drop\\s+policy\\s+if\\s+exists\\s+["']?${name.replace(
           /[.*+?^${}()|[\]\\]/g,
           "\\$&",
         )}["']?`,
         "i",
-      ).test(sql);
+        ).test(sql)
+      ) {
+        return true;
+      }
+      // Accepted form 2: CREATE POLICY guarded by a pg_policies existence check
+      // for the same policy name inside a DO $$ ... $$ block.
+      return (
+        /pg_policies/i.test(sql) &&
+        new RegExp(`policyname\\s*=\\s*["']${escaped}["']`, "i").test(sql)
+      );
     },
   },
   {
