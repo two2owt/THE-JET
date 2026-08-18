@@ -11,6 +11,8 @@ import { claimAlert, releaseAlert } from "@/lib/notificationIdempotency";
  */
 export async function syncNotificationRead(
   notificationId: string | null | undefined,
+  /** When known, only the owning table is touched. */
+  source?: "log" | "delivery",
 ) {
   if (!notificationId) return;
   // Durable claim: survives reloads, so the SW `?nid=` path and the deep-link
@@ -18,16 +20,24 @@ export async function syncNotificationRead(
   if (!claimAlert("read", notificationId)) return;
 
   try {
-    const results = await Promise.allSettled([
-      supabase
-        .from("notification_logs")
-        .update({ read: true })
-        .eq("id", notificationId),
-      supabase
-        .from("notification_deliveries")
-        .update({ status: "opened", opened_at: new Date().toISOString() })
-        .eq("id", notificationId),
-    ]);
+    const writes = [];
+    if (source !== "delivery") {
+      writes.push(
+        supabase
+          .from("notification_logs")
+          .update({ read: true })
+          .eq("id", notificationId),
+      );
+    }
+    if (source !== "log") {
+      writes.push(
+        supabase
+          .from("notification_deliveries")
+          .update({ status: "opened", opened_at: new Date().toISOString() })
+          .eq("id", notificationId),
+      );
+    }
+    const results = await Promise.allSettled(writes);
     // If neither write landed (offline / transient), allow a later retry.
     const anyOk = results.some(
       (r) => r.status === "fulfilled" && !(r.value as { error?: unknown })?.error,
