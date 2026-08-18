@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { storeLastKnownLocation } from "@/lib/tile-prefetch";
 import { GEO_GRANTED_EVENT } from "@/lib/geolocationGrantEvent";
 import { subscribeMapInteractionLock } from "@/lib/mapInteractionLock";
+import { verifyMapboxVersion } from "@/lib/mapbox-version";
 import type * as MapboxGL from "mapbox-gl";
 import type { FeatureCollection, Geometry } from "geojson";
 import {
@@ -59,6 +60,7 @@ const loadMapboxGL = async (): Promise<MapboxGLModule> => {
       const cdnMapbox = await waitForCDNMapbox();
       if (cdnMapbox) {
         devLog("MapboxHeatmap: Using CDN mapbox-gl");
+        verifyMapboxVersion(cdnMapbox, "cdn");
         mapboxglModule = cdnMapbox;
         return mapboxglModule;
       }
@@ -69,6 +71,7 @@ const loadMapboxGL = async (): Promise<MapboxGLModule> => {
         const m = await import("mapbox-gl");
         // Also load the CSS in dev
         await import("mapbox-gl/dist/mapbox-gl.css");
+        verifyMapboxVersion(m.default, "bundle");
         mapboxglModule = m.default;
         return m.default;
       } catch (importError) {
