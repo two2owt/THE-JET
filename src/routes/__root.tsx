@@ -65,10 +65,11 @@ const websiteJsonLd = JSON.stringify({
   url: "https://www.jet-around.com/",
 });
 
-const TITLE = "JET — Find Live Deals & Events Near You in Charlotte";
-const DESCRIPTION =
-  "Discover trending venues, live events, and exclusive happy-hour deals across Charlotte on a real-time heatmap. Your guide to what's hot right now.";
-const SOCIAL_IMAGE = "https://www.jet-around.com/pwa-512x512.png";
+// Sitewide fallbacks only — every content route sets its own title,
+// description, og:title/og:description, og:url and canonical.
+const FALLBACK_TITLE = "JET";
+const FALLBACK_DESCRIPTION =
+  "JET is a real-time guide to live deals, events, and trending venues near you.";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   {
@@ -79,8 +80,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           name: "viewport",
           content: "width=device-width, initial-scale=1.0, viewport-fit=cover",
         },
-        { title: TITLE },
-        { name: "description", content: DESCRIPTION },
+        { title: FALLBACK_TITLE },
+        { name: "description", content: FALLBACK_DESCRIPTION },
         { name: "author", content: "JET" },
         {
           name: "keywords",
@@ -97,18 +98,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         { name: "apple-mobile-web-app-status-bar-style", content: "default" },
         { name: "apple-mobile-web-app-title", content: "JET" },
         { property: "og:type", content: "website" },
-        { property: "og:url", content: "https://www.jet-around.com/" },
-        { property: "og:title", content: TITLE },
-        { property: "og:description", content: DESCRIPTION },
-        { property: "og:image", content: SOCIAL_IMAGE },
-        { property: "og:image:width", content: "512" },
-        { property: "og:image:height", content: "512" },
-        { property: "og:image:type", content: "image/png" },
+        { property: "og:site_name", content: "JET" },
         { name: "twitter:card", content: "summary_large_image" },
         { name: "twitter:site", content: "@JETaround" },
-        { name: "twitter:title", content: TITLE },
-        { name: "twitter:description", content: DESCRIPTION },
-        { name: "twitter:image", content: SOCIAL_IMAGE },
       ],
       links: [
         { rel: "stylesheet", href: appCss },
