@@ -379,7 +379,7 @@ export const LiveStatsPanel = ({
                 label="Top hotspot"
                 hint={`${topHotspot.density}`}
                 onClick={onJumpToHotspot}
-                ariaLabel={`Jump to the busiest hotspot with ${topHotspot.density} check-ins`}
+                ariaLabel={`Jump to the busiest hotspot with ${topHotspot.density} recent check${topHotspot.density === 1 ? "" : "-ins"}`}
               />
             )}
             {topRoute && onHighlightTopRoute && (
