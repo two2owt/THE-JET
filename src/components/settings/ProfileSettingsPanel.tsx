@@ -20,6 +20,8 @@ import {
   Radio,
   RefreshCw,
 } from "lucide-react";
+import { openNotificationSettings } from "@/lib/openAppSettings";
+import { Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import { useGeolocationPermission } from "@/hooks/useGeolocationPermission";
 import { z } from "zod";
@@ -472,6 +474,19 @@ export function ProfileSettingsPanel({
                   className="flex-shrink-0"
                 />
               </div>
+              {nativePushPermission === "denied" && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-2 h-8 text-xs"
+                  onClick={() => {
+                    void openNotificationSettings();
+                  }}
+                >
+                  <Settings2 className="w-3.5 h-3.5 mr-1.5" />
+                  Open settings
+                </Button>
+              )}
             </>
           )}
           {!isNative && isWebPushSupported && (
