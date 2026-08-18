@@ -647,6 +647,18 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
+  /* Consistent bottom clearance for scrollable surfaces layered over the map.
+     padding keeps the last row above the footer nav, scroll-padding keeps
+     keyboard focus/scrollIntoView targets from landing under it. */
+  .map-scroll-safe {
+    padding-bottom: var(--map-scroll-clearance, 1.5rem);
+    scroll-padding-bottom: var(--map-scroll-clearance, 1.5rem);
+    overscroll-behavior: contain;
+  }
+  .map-scroll-safe :focus-visible {
+    scroll-margin-bottom: var(--map-scroll-clearance, 1.5rem);
+  }
+
   /* Subtle dot grid pattern for non-map tab backgrounds */
   .dot-grid-pattern {
     position: relative;
