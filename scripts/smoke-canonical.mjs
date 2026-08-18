@@ -63,8 +63,8 @@ console.log(`Canonical host: https://${CANONICAL_HOST}\n`);
 
 if (ORIGIN) console.log(`Fetching from origin: ${ORIGIN} (redirect checks skipped)\n`);
 
-if (!ORIGIN) console.log('1) Redirect chains (apex + www)');
-if (!ORIGIN)
+if (!ORIGIN) {
+console.log('1) Redirect chains (apex + www)');
 for (const host of [APEX_HOST, CANONICAL_HOST]) {
   for (const path of ['/', '/auth']) {
     const start = `https://${host}${path}`;
@@ -79,6 +79,7 @@ for (const host of [APEX_HOST, CANONICAL_HOST]) {
       ok(`${start} -> 200 @ ${finalUrl} (${chain.length - 1} hop(s))`);
     }
   }
+}
 }
 
 console.log('\n2) Canonical + og:url tags');
