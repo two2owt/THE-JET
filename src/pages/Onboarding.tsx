@@ -61,6 +61,12 @@ const maxBirthdate = (() => {
 const Onboarding = () => {
   const navigate = useNavigate();
   const { session, isLoading: authLoading } = useAuth();
+  // Review mode: open /onboarding?preview=1 to walk the flow even when your
+  // account has already completed onboarding. Nothing is persisted and you
+  // are never redirected away.
+  const previewMode =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("preview") === "1";
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -72,6 +78,7 @@ const Onboarding = () => {
   // sessionStorage cache so already-known users never see the spinner.
   const initialChecking = (() => {
     if (authLoading) return true;
+    if (previewMode) return false;
     if (!session) return false; // we'll redirect to /auth synchronously
     const cached = readCachedOnboardingStatus(session.user.id);
     // If we know they've already finished, we'll redirect immediately
@@ -108,6 +115,13 @@ const Onboarding = () => {
   useEffect(() => {
     // Wait for AuthContext to finish bootstrapping its session.
     if (authLoading) return;
+
+    // Review mode never redirects and never reads/writes profile state.
+    if (previewMode) {
+      if (session) setUserId(session.user.id);
+      setIsCheckingAuth(false);
+      return;
+    }
 
     if (!session) {
       navigate("/auth", { replace: true });
