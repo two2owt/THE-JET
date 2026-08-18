@@ -17,8 +17,13 @@ import {
   RotateCcw,
   Eye,
   Send,
+  ClipboardList,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  PREVIEW_ONLY_USERS,
+  previewOnlyUsersAsText,
+} from "./previewOnlyUsers";
 import {
   DEFAULT_INVITE_TEMPLATE,
   INVITE_PLACEHOLDERS,
@@ -483,6 +488,27 @@ export function BulkUserProvisionPanel() {
             Or paste emails (one per line, optional{" "}
             <code>email | Display Name | invite</code>)
           </Label>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={running}
+              className="gap-1"
+              onClick={() => {
+                setManual(previewOnlyUsersAsText());
+                toast.success(
+                  `Loaded ${PREVIEW_ONLY_USERS.length} preview-only accounts — run this from the published site to add them to Live`,
+                );
+              }}
+            >
+              <ClipboardList className="h-3.5 w-3.5" />
+              Load preview-only accounts ({PREVIEW_ONLY_USERS.length})
+            </Button>
+            <span className="text-xs text-muted-foreground">
+              Accounts that exist in preview but are missing from Live.
+            </span>
+          </div>
           <Textarea
             id="manual-emails"
             value={manual}
