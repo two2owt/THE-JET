@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { isNativeApp } from "@/lib/platform";
 
+/** Non-standard Permissions API with one-tap request(), available in Chrome. */
+type PermissionsWithRequest = Permissions & {
+  request(permission: { name: PermissionName }): Promise<PermissionStatus>;
+};
+
 export type GeoPermissionState =
   | "unknown"
   | "unsupported"
@@ -93,10 +98,49 @@ export function useGeolocationPermission() {
     };
   }, [refresh]);
 
-  /** Triggers the native/browser permission prompt (user gesture required). */
+  /**
+   * Triggers the native/browser permission prompt (user gesture required).
+   *
+   * Uses the Permissions API `request()` one-tap flow when available (Chrome
+   * family on Android/desktop), otherwise falls back to the legacy
+   * `getCurrentPosition()` prompt. On native shells it routes through the
+   * Capacitor Geolocation plugin.
+   */
   const request = useCallback(async () => {
     if (typeof navigator === "undefined" || !("geolocation" in navigator))
       return "unsupported" as const;
+
+    if (isNativeApp()) {
+      try {
+        const { Geolocation } = await import("@capacitor/geolocation");
+        const res = await Geolocation.requestPermissions();
+        const loc = res.location ?? res.coarseLocation;
+        const next: GeoPermissionState =
+          loc === "granted" ? "granted" : loc === "denied" ? "denied" : "prompt";
+        setState(next);
+        return next;
+      } catch {
+        return refresh();
+      }
+    }
+
+    // One-tap Permissions API request, supported in Chrome/Android.
+    const permissionsApi = navigator.permissions as
+      | PermissionsWithRequest
+      | undefined;
+    if (typeof permissionsApi?.request === "function") {
+      try {
+        const status = (await permissionsApi.request({
+          name: "geolocation" as PermissionName,
+        })) as PermissionStatus;
+        const next = status.state as GeoPermissionState;
+        setState(next);
+        return next;
+      } catch {
+        // Fall through to legacy prompt if the API throws or is unsupported.
+      }
+    }
+
     await new Promise<void>((resolve) => {
       navigator.geolocation.getCurrentPosition(
         () => resolve(),
