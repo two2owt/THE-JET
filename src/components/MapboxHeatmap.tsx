@@ -5318,13 +5318,12 @@ export const MapboxHeatmap = ({
 
       {/* Live Stats — always rendered on the left side of the map, clear of the
           Layers container (bottom-right) and the map nav controls (top-right). */}
-      {showDensityLayer && !(isMobile && selectedVenue) && (
+      {showDensityLayer && inspectedCell && !(isMobile && selectedVenue) && (
         <div
           className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
           style={{
-            bottom: inspectedCell
-              ? "calc(var(--map-safe-bottom, calc(var(--bottom-nav-total-height, 60px) + 1rem)) + 128px)"
-              : "calc(var(--map-safe-bottom, calc(var(--bottom-nav-total-height, 60px) + 1rem)) + 8px)",
+            bottom:
+              "calc(var(--map-safe-bottom, calc(var(--bottom-nav-total-height, 60px) + 1rem)) + 152px)",
             zIndex: 34,
             transition: "bottom 220ms cubic-bezier(0.16,1,0.3,1)",
           }}
@@ -5333,7 +5332,6 @@ export const MapboxHeatmap = ({
             value={timeFilter}
             onChange={(next) => {
               setTimeFilter(next);
-              setInspectedCell(null);
               scheduleDensityRefresh();
             }}
             loading={densityLoading}
