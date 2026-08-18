@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { claimAlert, releaseAlert } from "@/lib/notificationIdempotency";
 
 /**
  * Marks an inbox notification as read when its push alert is tapped, so the
@@ -8,16 +9,16 @@ import { supabase } from "@/integrations/supabase/client";
  * row (legacy per-user log) or a `notification_deliveries` row (queue bus), so
  * we optimistically touch both and let RLS drop the one that doesn't apply.
  */
-const seen = new Set<string>();
-
 export async function syncNotificationRead(
   notificationId: string | null | undefined,
 ) {
-  if (!notificationId || seen.has(notificationId)) return;
-  seen.add(notificationId);
+  if (!notificationId) return;
+  // Durable claim: survives reloads, so the SW `?nid=` path and the deep-link
+  // queue can't both mark the same alert read.
+  if (!claimAlert("read", notificationId)) return;
 
   try {
-    await Promise.allSettled([
+    const results = await Promise.allSettled([
       supabase
         .from("notification_logs")
         .update({ read: true })
@@ -27,8 +28,13 @@ export async function syncNotificationRead(
         .update({ status: "opened", opened_at: new Date().toISOString() })
         .eq("id", notificationId),
     ]);
+    // If neither write landed (offline / transient), allow a later retry.
+    const anyOk = results.some(
+      (r) => r.status === "fulfilled" && !(r.value as { error?: unknown })?.error,
+    );
+    if (!anyOk) releaseAlert("read", notificationId);
   } catch {
-    /* best-effort */
+    releaseAlert("read", notificationId);
   }
 
   try {
