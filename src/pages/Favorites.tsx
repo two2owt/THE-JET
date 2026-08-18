@@ -474,6 +474,49 @@ function FavoriteVenueCard({
   onRemove: (venueId: string, dealId?: string | null) => Promise<void>;
   alertCount?: number;
 }) {
+  return <FavoriteVenueCardInner favorite={favorite} onOpen={onOpen} onRemove={onRemove} alertCount={alertCount} />;
+}
+
+/** Unread-alerts pill overlaid on a favorite card; opens that venue's JetCard. */
+function AlertBadgeButton({
+  count,
+  label,
+  onClick,
+}: {
+  count: number;
+  label?: string | null;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      aria-label={`${count} new alert${count === 1 ? "" : "s"} for ${label ?? "this favorite"}. Open JetCard.`}
+      className="absolute top-2 left-2 z-10 flex items-center gap-1.5 h-11 min-h-[44px] px-3 rounded-full bg-background/70 backdrop-blur-md border border-primary/40 text-primary text-xs font-semibold hover:bg-background/90 transition"
+    >
+      <span className="relative flex">
+        <Bell className="w-4 h-4" />
+        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-primary animate-pulse" />
+      </span>
+      {count > 9 ? "9+" : count} new
+    </button>
+  );
+}
+
+function FavoriteVenueCardInner({
+  favorite,
+  onOpen,
+  onRemove,
+  alertCount = 0,
+}: {
+  favorite: Favorite;
+  onOpen: () => void;
+  onRemove: (venueId: string, dealId?: string | null) => Promise<void>;
+  alertCount?: number;
+}) {
   const [removing, setRemoving] = useState(false);
   const [imgFailed, setImgFailed] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
