@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { isNativeApp } from "@/lib/platform";
 import { emitGeolocationGranted } from "@/lib/geolocationGrantEvent";
+import {
+  clearPromptSuppression,
+  isPromptSuppressed,
+  recordPromptAttempt,
+  subscribeToPromptSuppression,
+} from "@/lib/geolocationPromptSuppression";
 
 /** Non-standard Permissions API with one-tap request(), available in Chrome. */
 type PermissionsWithRequest = Permissions & {
@@ -23,6 +29,7 @@ export type GeoPermissionState =
  */
 export function useGeolocationPermission() {
   const [state, setRawState] = useState<GeoPermissionState>("unknown");
+  const [promptSuppressed, setPromptSuppressed] = useState(false);
   // Tracks the last observed state so we only announce real transitions
   // into "granted" (not repeated re-reads of an already-granted permission).
   const prevStateRef = useRef<GeoPermissionState>("unknown");
@@ -31,6 +38,11 @@ export function useGeolocationPermission() {
     const prev = prevStateRef.current;
     prevStateRef.current = next;
     setRawState(next);
+    if (next === "granted" || next === "denied") {
+      // A real decision exists — prompting is no longer the blocker.
+      clearPromptSuppression();
+      setPromptSuppressed(false);
+    }
     if (next === "granted" && prev !== "granted") emitGeolocationGranted();
   }, []);
 
@@ -109,6 +121,14 @@ export function useGeolocationPermission() {
     };
   }, [refresh, setState]);
 
+  // Hydrate + track suppression flag (client-only, avoids SSR mismatch).
+  useEffect(() => {
+    setPromptSuppressed(isPromptSuppressed());
+    return subscribeToPromptSuppression(() =>
+      setPromptSuppressed(isPromptSuppressed()),
+    );
+  }, []);
+
   /**
    * Triggers the native/browser permission prompt (user gesture required).
    *
@@ -135,6 +155,8 @@ export function useGeolocationPermission() {
       }
     }
 
+    const startedAt = Date.now();
+
     // One-tap Permissions API request, supported in Chrome/Android.
     const permissionsApi = navigator.permissions as
       | PermissionsWithRequest
@@ -146,27 +168,43 @@ export function useGeolocationPermission() {
         })) as PermissionStatus;
         const next = status.state as GeoPermissionState;
         setState(next);
+        recordPromptAttempt({
+          outcome: next,
+          durationMs: Date.now() - startedAt,
+        });
         return next;
       } catch {
         // Fall through to legacy prompt if the API throws or is unsupported.
       }
     }
 
-    await new Promise<void>((resolve) => {
+    const deniedError = await new Promise<boolean>((resolve) => {
       navigator.geolocation.getCurrentPosition(
-        () => resolve(),
-        () => resolve(),
+        () => resolve(false),
+        (err) => resolve(err?.code === 1),
         { enableHighAccuracy: false, timeout: 12000, maximumAge: 60000 },
       );
     });
-    return refresh();
+    const next = await refresh();
+    recordPromptAttempt({
+      outcome: next,
+      durationMs: Date.now() - startedAt,
+      deniedError,
+    });
+    return next;
   }, [refresh, setState]);
 
   return {
     permission: state,
     isGranted: state === "granted",
     isBlocked: state === "denied",
-    canPrompt: state === "prompt" || state === "unknown",
+    /** Browser will not surface the permission prompt again. */
+    promptSuppressed: promptSuppressed && state !== "granted",
+    /** True only when a prompt can still realistically appear. */
+    canPrompt:
+      !promptSuppressed && (state === "prompt" || state === "unknown"),
+    /** Retrying the prompt is pointless — send the user to settings. */
+    mustUseSettings: state === "denied" || (promptSuppressed && state !== "granted"),
     refresh,
     request,
   };

@@ -57,7 +57,7 @@ function getWebPlatform(): "ios" | "android" | "web" {
 export const LocationStatusBanner = ({ className }: { className?: string }) => {
   const { session } = useAuth();
   const { locationTrackingEnabled, isLoading } = useLocationPreferences();
-  const { permission, isGranted, isBlocked, request } =
+  const { permission, isGranted, isBlocked, promptSuppressed, mustUseSettings, request } =
     useGeolocationPermission();
   const [dismissed, setDismissed] = useState(false);
   const [requesting, setRequesting] = useState(false);
@@ -81,7 +81,7 @@ export const LocationStatusBanner = ({ className }: { className?: string }) => {
 
   const title = unsupported
     ? "Location unavailable on this device"
-    : isBlocked
+    : mustUseSettings
       ? "Location tracking is off — access blocked"
       : !locationTrackingEnabled
         ? "Location tracking is off"
@@ -89,10 +89,12 @@ export const LocationStatusBanner = ({ className }: { className?: string }) => {
 
   const description = unsupported
     ? "Your browser doesn't support location, so live activity near you can't be personalized."
-    : isBlocked
+    : mustUseSettings
       ? isNativeApp()
         ? "Allow location for JET in your device settings to see live activity near you."
-        : "Re-allow location for this site in your browser settings to see live activity near you."
+        : promptSuppressed && !isBlocked
+          ? "Your browser won't ask again — allow location for this site in your browser settings."
+          : "Re-allow location for this site in your browser settings to see live activity near you."
       : "Turn on location so your map shows live activity around you.";
 
   const stepsKey = isNativeApp() ? getPlatform() : getWebPlatform();
@@ -116,7 +118,7 @@ export const LocationStatusBanner = ({ className }: { className?: string }) => {
           {!unsupported && (
             <div className="mt-2 flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                {isBlocked ? (
+                {mustUseSettings ? (
                   <Button
                     size="sm"
                     className="h-8 text-xs"
@@ -127,7 +129,7 @@ export const LocationStatusBanner = ({ className }: { className?: string }) => {
                         setShowSteps((s) => !s);
                       }
                     }}
-                    aria-expanded={isBlocked && !isNativeApp() ? showSteps : undefined}
+                    aria-expanded={mustUseSettings && !isNativeApp() ? showSteps : undefined}
                   >
                     <Settings2 className="w-3.5 h-3.5 mr-1.5" />
                     {isNativeApp() ? "Open settings" : "How to enable"}
@@ -159,7 +161,7 @@ export const LocationStatusBanner = ({ className }: { className?: string }) => {
                 )}
               </div>
 
-              {isBlocked && !isNativeApp() && showSteps && (
+              {mustUseSettings && !isNativeApp() && showSteps && (
                 <div className="rounded-xl border border-border/50 bg-background/70 p-2.5">
                   <p className="text-[11px] font-semibold text-foreground mb-1.5">
                     {steps.label}

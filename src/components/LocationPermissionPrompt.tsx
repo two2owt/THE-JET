@@ -22,6 +22,10 @@ import {
   shouldPromptForLocation,
 } from "@/lib/locationPromptPolicy";
 import { recordPromptOutcome } from "@/lib/locationDiagnostics";
+import {
+  isPromptSuppressed,
+  recordPromptAttempt,
+} from "@/lib/geolocationPromptSuppression";
 
 /**
  * Module-level latch: guarantees only one prompt instance can ever open per
@@ -110,6 +114,10 @@ export const LocationPermissionPrompt = () => {
       }
 
       if (cancelled) return;
+      // The browser has stopped surfacing the prompt (auto-block after repeat
+      // dismissals, embedded webview, etc.). Asking again does nothing, so we
+      // stay quiet and let the map banner point at the settings flow instead.
+      if (isPromptSuppressed()) return;
       // Small delay so we don't compete with first paint / other prompts.
       // Signed-in users get asked promptly so tracking can start right away.
       const delay = userId ? 900 : 2500;
@@ -161,12 +169,22 @@ export const LocationPermissionPrompt = () => {
     setLoading(true);
     markLocationPromptShown(signature);
 
-    const granted = await new Promise<boolean>((resolve) => {
-      navigator.geolocation.getCurrentPosition(
-        () => resolve(true),
-        () => resolve(false),
-        { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
-      );
+    const startedAt = Date.now();
+    const result = await new Promise<{ granted: boolean; deniedError: boolean }>(
+      (resolve) => {
+        navigator.geolocation.getCurrentPosition(
+          () => resolve({ granted: true, deniedError: false }),
+          (err) => resolve({ granted: false, deniedError: err?.code === 1 }),
+          { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
+        );
+      },
+    );
+    const granted = result.granted;
+    // Detect a silently-suppressed prompt so the UI switches to "Open settings".
+    recordPromptAttempt({
+      outcome: granted ? "granted" : result.deniedError ? "denied" : "prompt",
+      durationMs: Date.now() - startedAt,
+      deniedError: result.deniedError,
     });
 
     // Only ever record a grant here. A browser-level block is not an explicit
