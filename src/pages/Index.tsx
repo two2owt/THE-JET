@@ -58,6 +58,7 @@ const JetCard = lazy(() =>
   import("@/components/JetCard").then((m) => ({ default: m.JetCard })),
 );
 import { JetCardSkeleton } from "@/components/skeletons/JetCardSkeleton";
+import { LocationStatusBanner } from "@/components/map/LocationStatusBanner";
 const ParkingCard = lazy(() =>
   import("@/components/ParkingCard").then((m) => ({ default: m.ParkingCard })),
 );
@@ -673,6 +674,16 @@ const Index = () => {
                   />
                 </Suspense>
               )}
+            </div>
+
+            {/* Effective location-tracking status (permission-aware) */}
+            <div
+              className="absolute left-1/2 -translate-x-1/2 z-30 pointer-events-none flex justify-center"
+              style={{
+                top: "calc(var(--map-ui-inset-top, 0.75rem) + 3.5rem)",
+              }}
+            >
+              <LocationStatusBanner />
             </div>
           </div>
         </>
