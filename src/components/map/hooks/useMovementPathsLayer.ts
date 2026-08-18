@@ -363,7 +363,11 @@ export const useMovementPathsLayer = ({
       type: "line",
       source: sourceId,
       filter: activeFilter(minFrequencyRef.current),
-      layout: { "line-join": "round", "line-cap": "round" },
+      layout: {
+        "line-join": "round",
+        "line-cap": "round",
+        ...FLOW_LINE_ELEVATION_LAYOUT,
+      } as any,
       paint: {
         // Zoom must be the top-level interpolate input (Mapbox v3 rule);
         // each zoom stop multiplies the frequency-based width by a scale.
@@ -548,6 +552,7 @@ export const useMovementPathsLayer = ({
         "line-dasharray": [0, 2, 2],
         "line-width-transition": { duration: 800, delay: 0 },
         "line-color-transition": { duration: 800, delay: 0 },
+        "line-occlusion-opacity": OCCLUSION_OPACITY * 0.6,
       } as any,
     });
 
