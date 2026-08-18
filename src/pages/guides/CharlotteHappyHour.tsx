@@ -51,7 +51,7 @@ const FAQ = [
   },
 ];
 
-const jsonLd = [
+export const guideJsonLd = [
   {
     "@context": "https://schema.org",
     "@type": "Article",

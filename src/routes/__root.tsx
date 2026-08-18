@@ -11,7 +11,6 @@ import {
 import type { QueryClient } from "@tanstack/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
-import { HelmetProvider } from "react-helmet-async";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -327,17 +326,15 @@ function RootComponent() {
       disableTransitionOnChange
     >
       <QueryClientProvider client={queryClient}>
-        <HelmetProvider>
-          <ErrorBoundary>
-            <AuthProvider>
-              <HeaderProvider>
-                <TooltipProvider>
-                  <AppLayout />
-                </TooltipProvider>
-              </HeaderProvider>
-            </AuthProvider>
-          </ErrorBoundary>
-        </HelmetProvider>
+        <ErrorBoundary>
+          <AuthProvider>
+            <HeaderProvider>
+              <TooltipProvider>
+                <AppLayout />
+              </TooltipProvider>
+            </HeaderProvider>
+          </AuthProvider>
+        </ErrorBoundary>
       </QueryClientProvider>
     </ThemeProvider>
   );
