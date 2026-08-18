@@ -35,6 +35,11 @@ import { useWebPushNotifications } from "@/hooks/useWebPushNotifications";
 import { PushEnablementGuide } from "@/components/settings/PushEnablementGuide";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { isMonetizationEnabled } from "@/lib/monetization";
+import { isNativeApp } from "@/lib/platform";
+import {
+  openLocationSettings,
+  requestBackgroundPermission,
+} from "@/lib/nativeBackgroundGeolocation";
 
 const preferencesSchema = z.object({
   notifications_enabled: z.boolean(),
