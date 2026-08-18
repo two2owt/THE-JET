@@ -57,6 +57,30 @@ export function HeaderSearch({
   onCollapse,
 }: HeaderSearchProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  /** Return focus to the search input after any panel close or selection. */
+  const focusInput = useCallback(() => {
+    // Defer slightly so any parent state updates (mobile collapse, etc.)
+    // settle before we attempt focus; if the input is unmounted the call
+    // simply no-ops.
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+  }, []);
+
+  const handleCloseResults = useCallback(() => {
+    onCloseResults();
+    focusInput();
+  }, [onCloseResults, focusInput]);
+
+  const handleVenueSelect = useCallback(
+    (venue: Parameters<typeof onVenueSelect>[0]) => {
+      onVenueSelect(venue);
+      focusInput();
+    },
+    [onVenueSelect, focusInput],
+  );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
