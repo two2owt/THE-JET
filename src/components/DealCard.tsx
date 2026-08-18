@@ -1,5 +1,15 @@
 import { memo, useState, useEffect } from "react";
 import { Clock, MapPin, Share2, Heart } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
 import { Button } from "./ui/button";
 import { OptimizedImage } from "./ui/optimized-image";
 import { glideHaptic } from "@/lib/haptics";
@@ -36,6 +46,8 @@ export const DealCard = memo(({ deal, index = 0, onOpen }: DealCardProps) => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
+  const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
+  const [removing, setRemoving] = useState(false);
   const { canAccessSocialFeatures } = useFeatureAccess();
 
   useEffect(() => {
@@ -103,7 +115,24 @@ export const DealCard = memo(({ deal, index = 0, onOpen }: DealCardProps) => {
 
   const handleFavoriteToggle = async () => {
     await glideHaptic();
+    // Removing is destructive — confirm first. Saving stays a single tap.
+    if (isFav) {
+      setConfirmRemoveOpen(true);
+      return;
+    }
     await toggleFavorite(deal.id);
+  };
+
+  const handleConfirmRemove = async () => {
+    if (removing) return;
+    setRemoving(true);
+    try {
+      await toggleFavorite(deal.id);
+      toast.success("Removed from favorites", { description: deal.title });
+    } finally {
+      setRemoving(false);
+      setConfirmRemoveOpen(false);
+    }
   };
 
   const getDealTypeColor = (type: string) => {
