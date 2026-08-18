@@ -32,6 +32,13 @@ import appCss from "../styles.css?url";
 // with the stylesheet instead of after the JS bundle executes — no FOUT flash.
 import jakartaLatin from "@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2?url";
 import syneLatin from "@fontsource-variable/syne/files/syne-latin-wght-normal.woff2?url";
+import { EXPECTED_MAPBOX_VERSION } from "@/lib/mapbox-version";
+
+// Single source of truth for the CDN bundle: script + stylesheet always come
+// from the same v{EXPECTED_MAPBOX_VERSION} directory as the npm pin.
+const MAPBOX_CDN_BASE = `https://api.mapbox.com/mapbox-gl-js/v${EXPECTED_MAPBOX_VERSION}`;
+const MAPBOX_CDN_SCRIPT = `${MAPBOX_CDN_BASE}/mapbox-gl.js`;
+const MAPBOX_CDN_STYLESHEET = `${MAPBOX_CDN_BASE}/mapbox-gl.css`;
 
 // ported from index.html — runs before paint so the theme class never flashes
 const themeInitScript = `(function(){var t='dark';try{var s=localStorage.getItem('theme');if(s==='light'||s==='dark'){t=s}}catch(e){}document.documentElement.classList.remove('light','dark');document.documentElement.classList.add(t);document.documentElement.style.colorScheme=t})();`;
@@ -40,7 +47,7 @@ const themeInitScript = `(function(){var t='dark';try{var s=localStorage.getItem
 const mapboxTokenPreloadScript = `!function(){var k="mapbox_token_cache_v2",c=localStorage.getItem(k);if(c){try{var d=JSON.parse(c);if(d.token&&d.token.startsWith("pk.")&&Date.now()-d.timestamp<864e5)return}catch(e){}}window.__mapboxTokenPromise=fetch("https://flvhduntedvorikonuvy.supabase.co/functions/v1/get-mapbox-token",{headers:{"apikey":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZsdmhkdW50ZWR2b3Jpa29udXZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2NTA0MTYsImV4cCI6MjA4NjIyNjQxNn0.7sAHhmXL_2c68FYDs27gd2dRP2V8ZvtTcovBKnU4FHw"}}).then(function(r){return r.json()}).then(function(d){if(d&&d.token){localStorage.setItem(k,JSON.stringify({token:d.token,timestamp:Date.now()}));sessionStorage.setItem(k,JSON.stringify({token:d.token,timestamp:Date.now()}));window.__mapboxToken=d.token}}).catch(function(){})}();`;
 
 // ported from index.html — defers the Mapbox GL JS bundle until idle/visible
-const mapboxLoaderScript = `!function(){var m=!1,l=function(){if(!m){m=!0;var s=document.createElement("script");s.src="https://api.mapbox.com/mapbox-gl-js/v3.28.1/mapbox-gl.js";s.async=!0;s.crossOrigin="anonymous";document.head.appendChild(s)}};var d=function(){typeof requestIdleCallback!=="undefined"?requestIdleCallback(l,{timeout:6e3}):setTimeout(l,5e3)};document.readyState==="complete"?d():window.addEventListener("load",function(){setTimeout(d,200)},{once:!0});if("IntersectionObserver"in window){var o=new IntersectionObserver(function(e){e[0].isIntersecting&&(l(),o.disconnect())},{rootMargin:"200px"}),b=function(){var e=document.querySelector("[data-map-container]");e&&o.observe(e)};document.readyState==="loading"?document.addEventListener("DOMContentLoaded",b):b()}}();`;
+const mapboxLoaderScript = `!function(){var m=!1,l=function(){if(!m){m=!0;var s=document.createElement("script");s.src="${MAPBOX_CDN_SCRIPT}";s.async=!0;s.crossOrigin="anonymous";document.head.appendChild(s)}};var d=function(){typeof requestIdleCallback!=="undefined"?requestIdleCallback(l,{timeout:6e3}):setTimeout(l,5e3)};document.readyState==="complete"?d():window.addEventListener("load",function(){setTimeout(d,200)},{once:!0});if("IntersectionObserver"in window){var o=new IntersectionObserver(function(e){e[0].isIntersecting&&(l(),o.disconnect())},{rootMargin:"200px"}),b=function(){var e=document.querySelector("[data-map-container]");e&&o.observe(e)};document.readyState==="loading"?document.addEventListener("DOMContentLoaded",b):b()}}();`;
 
 // ported from index.html — Organization + WebSite structured data
 const organizationJsonLd = JSON.stringify({
@@ -154,8 +161,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         { rel: "dns-prefetch", href: "https://events.mapbox.com" },
         { rel: "dns-prefetch", href: "https://maps.googleapis.com" },
         {
+          rel: "preload",
+          as: "script",
+          href: MAPBOX_CDN_SCRIPT,
+          crossOrigin: "anonymous",
+        },
+        {
           rel: "stylesheet",
-          href: "https://api.mapbox.com/mapbox-gl-js/v3.28.1/mapbox-gl.css",
+          href: MAPBOX_CDN_STYLESHEET,
         },
       ],
       scripts: [
