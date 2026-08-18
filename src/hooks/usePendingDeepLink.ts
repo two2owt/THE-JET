@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "@/lib/router-compat";
 import { consumeDeepLink } from "@/lib/pendingDeepLink";
+import { syncNotificationRead } from "@/lib/notificationRead";
 
 /**
  * Flushes any deep link parked during a cold start (notification tapped while
@@ -12,10 +13,12 @@ export function usePendingDeepLink() {
 
   useEffect(() => {
     const flush = () => {
-      const target = consumeDeepLink();
-      if (!target) return;
+      const entry = consumeDeepLink();
+      if (!entry) return;
+      // Opening the JetCard from a tap counts as reading the alert.
+      void syncNotificationRead(entry.notificationId);
       // Defer a tick so the route tree has finished its first commit.
-      setTimeout(() => navigate(target), 0);
+      setTimeout(() => navigate(entry.target), 0);
     };
 
     flush();
