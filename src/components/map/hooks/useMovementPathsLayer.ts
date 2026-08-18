@@ -73,20 +73,10 @@ const inactiveFilter = (min: number): any => [
  */
 export const FLOW_LINE_ELEVATION_LAYOUT = {
   "line-elevation-reference": "ground",
-  // Lift more as you zoom in (buildings get taller on screen).
-  "line-z-offset": [
-    "interpolate",
-    ["linear"],
-    ["zoom"],
-    9,
-    0,
-    13,
-    4,
-    16,
-    14,
-    18,
-    26,
-  ],
+  // NOTE: `line-z-offset` does NOT accept zoom-based ("interpolate")
+  // expressions — Mapbox rejects the whole layer with a validation error.
+  // A constant lift is enough to clear terrain/road z-fighting.
+  "line-z-offset": 6,
 } as any;
 
 /** Ghost-through-buildings opacity for elevated flow lines. */
