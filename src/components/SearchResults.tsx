@@ -80,6 +80,7 @@ export const SearchResults = ({
   // Used as a key on the panel so layout-affecting CSS variables are re-read.
   const [posVersion, setPosVersion] = useState(0);
   const panelRef = useRef<HTMLDivElement | null>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
   // Element state (not just the ref) so the lock re-binds when the panel remounts.
   const [panelEl, setPanelEl] = useState<HTMLDivElement | null>(null);
   useLockMapWhileInteracting(panelEl, isVisible);
@@ -124,12 +125,53 @@ export const SearchResults = ({
       document.removeEventListener("pointerdown", handlePointerDown, true);
   }, [isVisible, onClose]);
 
-  // Escape dismisses the overlay
+  // Keyboard support: Escape dismisses, Arrow keys / Home / End walk the
+  // result options, Tab out closes. Works whether focus is still in the
+  // search input or already inside the panel.
   useEffect(() => {
     if (!isVisible) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+
+    const options = (): HTMLElement[] =>
+      Array.from(
+        listRef.current?.querySelectorAll<HTMLElement>(
+          '[data-search-option="true"]',
+        ) ?? [],
+      );
+
+    const focusAt = (index: number) => {
+      const items = options();
+      if (items.length === 0) return;
+      const next = (index + items.length) % items.length;
+      const el = items[next];
+      el.focus();
+      el.scrollIntoView({ block: "nearest" });
     };
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+      if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) return;
+      const active = document.activeElement as HTMLElement | null;
+      const insidePanel = !!(active && panelRef.current?.contains(active));
+      const inSearchInput =
+        !!active &&
+        active.tagName === "INPUT" &&
+        active.getAttribute("aria-controls") === "jet-search-results";
+      if (!insidePanel && !inSearchInput) return;
+
+      const items = options();
+      if (items.length === 0) return;
+      e.preventDefault();
+      const current = active ? items.indexOf(active) : -1;
+      if (e.key === "Home") focusAt(0);
+      else if (e.key === "End") focusAt(items.length - 1);
+      else if (e.key === "ArrowDown") focusAt(current + 1);
+      else focusAt(current <= 0 ? items.length - 1 : current - 1);
+    };
+
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [isVisible, onClose]);
