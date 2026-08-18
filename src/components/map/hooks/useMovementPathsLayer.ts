@@ -64,10 +64,6 @@ const inactiveFilter = (min: number): any => [
 // Long dashes with short gaps: the stroke still reads as one continuous
 // route (legible when zoomed out) while the offset animation conveys
 // direction of travel.
-const DASH_SEQUENCE = [
-  [0, 6, 1.5],
-];
-
 /**
  * Elevated-line config (GL JS v3.19+): draws flow paths as ground-referenced
  * 3D lines lifted a few metres above the terrain/road surface so they are not
