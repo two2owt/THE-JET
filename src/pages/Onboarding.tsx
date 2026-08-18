@@ -31,6 +31,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   readCachedOnboardingStatus,
   writeCachedOnboardingStatus,
+  snoozeOnboarding,
+  clearOnboardingSnooze,
 } from "@/lib/onboardingStatus";
 
 const GENDER_OPTIONS = [
@@ -429,6 +431,7 @@ const Onboarding = () => {
       if (error) throw error;
 
       if (userId) writeCachedOnboardingStatus(userId, true);
+      if (userId) clearOnboardingSnooze(userId);
       toast.success("Welcome to JET Charlotte!", {
         description: "Let's discover what's hot",
       });
@@ -440,6 +443,18 @@ const Onboarding = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSkipForLater = () => {
+    if (previewMode) {
+      toast.info("Review mode — skipping is disabled");
+      return;
+    }
+    if (userId) snoozeOnboarding(userId);
+    toast("Onboarding skipped", {
+      description: "You can finish setting up any time from your profile.",
+    });
+    navigate(consumePostAuthRedirect("/"), { replace: true });
   };
 
   const STEPS = [
@@ -549,9 +564,18 @@ const Onboarding = () => {
             ) : (
               <span aria-hidden />
             )}
-            <span className="sr-only" aria-live="polite">
-              {progressPct}% complete
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="sr-only" aria-live="polite">
+                {progressPct}% complete
+              </span>
+              <button
+                type="button"
+                onClick={handleSkipForLater}
+                className="inline-flex items-center text-[11px] font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+              >
+                Skip for later
+              </button>
+            </div>
           </div>
 
           {/* Progress segments */}
