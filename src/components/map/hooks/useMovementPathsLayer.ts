@@ -66,6 +66,37 @@ const inactiveFilter = (min: number): any => [
 // direction of travel.
 const DASH_SEQUENCE = [
   [0, 6, 1.5],
+];
+
+/**
+ * Elevated-line config (GL JS v3.19+): draws flow paths as ground-referenced
+ * 3D lines lifted a few metres above the terrain/road surface so they are not
+ * z-fought by terrain or buried under extruded buildings. `line-occlusion-opacity`
+ * keeps a ghost of the route visible where a building still covers it.
+ */
+export const FLOW_LINE_ELEVATION_LAYOUT = {
+  "line-elevation-reference": "ground",
+  // Lift more as you zoom in (buildings get taller on screen).
+  "line-z-offset": [
+    "interpolate",
+    ["linear"],
+    ["zoom"],
+    9,
+    0,
+    13,
+    4,
+    16,
+    14,
+    18,
+    26,
+  ],
+} as any;
+
+/** Ghost-through-buildings opacity for elevated flow lines. */
+const OCCLUSION_OPACITY = 0.45;
+
+const LEGACY_DASH_SEQUENCE = [
+  [0, 6, 1.5],
   [0.25, 6, 1.25],
   [0.5, 6, 1],
   [0.75, 6, 0.75],
