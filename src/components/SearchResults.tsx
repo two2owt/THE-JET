@@ -8,7 +8,6 @@ import {
   Compass,
   LayoutGrid,
   Star,
-  ImageIcon,
 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -19,6 +18,7 @@ import type { Venue } from "./MapboxHeatmap";
 import type { Database } from "@/integrations/supabase/types";
 import { useLockMapWhileInteracting } from "@/lib/mapInteractionLock";
 import { activityTier } from "@/lib/activity-palette";
+import { categoryIconFor } from "@/lib/category-icon";
 
 type Deal = Database["public"]["Tables"]["deals"]["Row"];
 
@@ -43,11 +43,30 @@ const matchScore = (haystack: string | null | undefined, q: string): number => {
 
 const MAX_PER_SECTION = 6;
 
-/** Small square thumbnail with graceful fallback to an icon. */
-const ResultThumb = ({ src, alt }: { src?: string | null; alt: string }) => {
+/** Small square thumbnail; falls back to the venue category's icon. */
+const ResultThumb = ({
+  src,
+  alt,
+  category,
+}: {
+  src?: string | null;
+  alt: string;
+  category?: string | null;
+}) => {
   const [failed, setFailed] = useState(false);
+  const { Icon, accent } = categoryIconFor(category);
   return (
-    <div className="w-12 h-12 rounded-lg flex-shrink-0 overflow-hidden bg-muted/60 flex items-center justify-center">
+    <div
+      className="w-12 h-12 rounded-lg flex-shrink-0 overflow-hidden flex items-center justify-center"
+      style={
+        src && !failed
+          ? undefined
+          : {
+              background: `linear-gradient(150deg, ${accent}22, ${accent}0D)`,
+              border: `1px solid ${accent}33`,
+            }
+      }
+    >
       {src && !failed ? (
         <img
           src={src}
@@ -58,8 +77,9 @@ const ResultThumb = ({ src, alt }: { src?: string | null; alt: string }) => {
           onError={() => setFailed(true)}
         />
       ) : (
-        <ImageIcon
-          className="w-5 h-5 text-muted-foreground"
+        <Icon
+          className="w-5 h-5"
+          style={{ color: accent }}
           aria-hidden="true"
         />
       )}
@@ -534,6 +554,7 @@ export const SearchResults = ({
                         <ResultThumb
                           src={venue.imageUrl}
                           alt={`${venue.name} photo`}
+                          category={venue.category}
                         />
                         <div className="flex-1 min-w-0">
                           <h5 className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors">
@@ -669,6 +690,7 @@ export const SearchResults = ({
                         <ResultThumb
                           src={venue.imageUrl}
                           alt={`${venue.name} photo`}
+                          category={venue.category}
                         />
                         <div className="flex-1 min-w-0">
                           <h5 className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors">
@@ -725,6 +747,7 @@ export const SearchResults = ({
                         <ResultThumb
                           src={deal.image_url ?? venueImageFor(deal)}
                           alt={`${deal.title} photo`}
+                          category={deal.deal_type}
                         />
                         <div className="flex-1 min-w-0">
                           <h5 className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors">
