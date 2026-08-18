@@ -14,19 +14,23 @@ export function openExternalUrl(url: string): void {
 
   // Native shells: use the system/in-app browser so the app's own webview is
   // never replaced by the destination site (users can return with one tap).
-  void (async () => {
-    try {
-      const { Capacitor } = await import("@capacitor/core");
-      if (Capacitor.isNativePlatform()) {
+  // The platform check is synchronous so the web path keeps the user gesture
+  // and never trips popup blockers.
+  const cap = (globalThis as { Capacitor?: { isNativePlatform?: () => boolean } })
+    .Capacitor;
+  if (cap?.isNativePlatform?.()) {
+    void (async () => {
+      try {
         const { Browser } = await import("@capacitor/browser");
         await Browser.open({ url, presentationStyle: "popover" });
-        return;
+      } catch {
+        openInNewTab(url);
       }
-    } catch {
-      // fall through to the web path below
-    }
-    openInNewTab(url);
-  })();
+    })();
+    return;
+  }
+
+  openInNewTab(url);
 }
 
 function openInNewTab(url: string): void {
