@@ -1,5 +1,18 @@
 name: CI
 
+permissions:
+  statuses: write
+  contents: read
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+# ... rest of your workflow
+
+name: CI
+
 on:
   push:
     branches: [main]
