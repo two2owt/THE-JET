@@ -14,6 +14,18 @@ import { TabPageHeader } from "@/components/TabPageHeader";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { SEO } from "@/components/SEO";
 import { useVenuePhoto } from "@/hooks/useVenuePhoto";
+import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Deal {
   id: string;
@@ -259,6 +271,7 @@ function FavoriteVenueCard({
 }) {
   const [removing, setRemoving] = useState(false);
   const [imgFailed, setImgFailed] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   // Same Google Places photo resolution used by the JetCard hero image.
   const photoInput = useMemo(
@@ -285,14 +298,17 @@ function FavoriteVenueCard({
     ? (photoUrl ?? favorite.venue_image_url ?? null)
     : null;
 
-  const handleUnfavorite = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleUnfavorite = async () => {
     if (removing || !favorite.venue_id) return;
     setRemoving(true);
     try {
       await onRemove(favorite.venue_id, favorite.deal_id);
+      toast.success("Removed from favorites", {
+        description: favorite.venue_name ?? undefined,
+      });
     } finally {
       setRemoving(false);
+      setConfirmOpen(false);
     }
   };
 
@@ -343,7 +359,10 @@ function FavoriteVenueCard({
         )}
         <button
           type="button"
-          onClick={handleUnfavorite}
+          onClick={(e) => {
+            e.stopPropagation();
+            setConfirmOpen(true);
+          }}
           aria-label={`Remove ${favorite.venue_name ?? "venue"} from favorites`}
           disabled={removing}
           className="absolute top-2 right-2 w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-background/60 backdrop-blur-md flex items-center justify-center text-primary hover:bg-background/80 transition"
@@ -356,16 +375,57 @@ function FavoriteVenueCard({
         </button>
       </div>
       <div className="p-3">
-        <div className="font-semibold truncate">
-          {favorite.venue_name ?? "Saved venue"}
-        </div>
-        <div className="text-xs text-muted-foreground truncate mt-0.5">
-          {favorite.venue_neighborhood ??
-            favorite.venue_address ??
-            favorite.venue_category ??
-            ""}
+        <div className="flex items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="font-semibold truncate">
+              {favorite.venue_name ?? "Saved venue"}
+            </div>
+            <div className="text-xs text-muted-foreground truncate mt-0.5">
+              {favorite.venue_neighborhood ??
+                favorite.venue_address ??
+                favorite.venue_category ??
+                ""}
+            </div>
+          </div>
+          {/* Quick action: explicit remove, always visible next to the title. */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setConfirmOpen(true);
+            }}
+            disabled={removing}
+            aria-label={`Remove ${favorite.venue_name ?? "venue"} from favorites`}
+            className="shrink-0 w-11 h-11 min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
       </div>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove from favorites?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {favorite.venue_name ?? "This venue"} will no longer appear in
+              your saved list. You can save it again from the map anytime.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={removing}>Keep</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={removing}
+              onClick={(e) => {
+                e.preventDefault();
+                void handleUnfavorite();
+              }}
+            >
+              {removing ? "Removing…" : "Remove"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
