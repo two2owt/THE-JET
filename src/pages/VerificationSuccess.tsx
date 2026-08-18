@@ -194,7 +194,7 @@ export default function VerificationSuccess() {
       subscription.unsubscribe();
       document.removeEventListener("visibilitychange", handleVisibility);
     };
-  }, [navigate, location.search, location.hash]);
+  }, [navigate, goToApp, location.search, location.hash]);
 
   // Fire welcome email once verification is confirmed (signup flow only).
   useEffect(() => {
