@@ -64,6 +64,33 @@ const inactiveFilter = (min: number): any => [
 // Long dashes with short gaps: the stroke still reads as one continuous
 // route (legible when zoomed out) while the offset animation conveys
 // direction of travel.
+/**
+ * Elevated-line config (GL JS v3.19+): draws flow paths as ground-referenced
+ * 3D lines lifted a few metres above the terrain/road surface so they are not
+ * z-fought by terrain or buried under extruded buildings. `line-occlusion-opacity`
+ * keeps a ghost of the route visible where a building still covers it.
+ */
+export const FLOW_LINE_ELEVATION_LAYOUT = {
+  "line-elevation-reference": "ground",
+  // Lift more as you zoom in (buildings get taller on screen).
+  "line-z-offset": [
+    "interpolate",
+    ["linear"],
+    ["zoom"],
+    9,
+    0,
+    13,
+    4,
+    16,
+    14,
+    18,
+    26,
+  ],
+} as any;
+
+/** Ghost-through-buildings opacity for elevated flow lines. */
+const OCCLUSION_OPACITY = 0.45;
+
 const DASH_SEQUENCE = [
   [0, 6, 1.5],
   [0.25, 6, 1.25],
@@ -336,7 +363,11 @@ export const useMovementPathsLayer = ({
       type: "line",
       source: sourceId,
       filter: activeFilter(minFrequencyRef.current),
-      layout: { "line-join": "round", "line-cap": "round" },
+      layout: {
+        "line-join": "round",
+        "line-cap": "round",
+        ...FLOW_LINE_ELEVATION_LAYOUT,
+      } as any,
       paint: {
         // Zoom must be the top-level interpolate input (Mapbox v3 rule);
         // each zoom stop multiplies the frequency-based width by a scale.
@@ -402,6 +433,7 @@ export const useMovementPathsLayer = ({
         "line-width-transition": { duration: 800, delay: 0 },
         "line-color-transition": { duration: 800, delay: 0 },
         "line-opacity-transition": { duration: 600, delay: 0 },
+        "line-occlusion-opacity": OCCLUSION_OPACITY * 0.6,
       } as any,
     });
 
@@ -412,7 +444,11 @@ export const useMovementPathsLayer = ({
       type: "line",
       source: sourceId,
       filter: inactiveFilter(minFrequencyRef.current),
-      layout: { "line-join": "round", "line-cap": "round" },
+      layout: {
+        "line-join": "round",
+        "line-cap": "round",
+        ...FLOW_LINE_ELEVATION_LAYOUT,
+      } as any,
       paint: {
         "line-width": [
           "interpolate",
@@ -430,6 +466,7 @@ export const useMovementPathsLayer = ({
         "line-color": "rgba(196, 205, 255, 0.9)",
         "line-opacity": ["*", 0.55, ["coalesce", ["get", "recency"], 1]],
         "line-opacity-transition": { duration: 600, delay: 0 },
+        "line-occlusion-opacity": OCCLUSION_OPACITY * 0.5,
       } as any,
     });
 
@@ -441,7 +478,11 @@ export const useMovementPathsLayer = ({
       type: "line",
       source: sourceId,
       filter: activeFilter(minFrequencyRef.current),
-      layout: { "line-join": "round", "line-cap": "round" },
+      layout: {
+        "line-join": "round",
+        "line-cap": "round",
+        ...FLOW_LINE_ELEVATION_LAYOUT,
+      } as any,
       paint: {
         "line-width": [
           "interpolate",
@@ -460,6 +501,7 @@ export const useMovementPathsLayer = ({
         "line-blur": 0.5,
         "line-opacity": ["*", 0.8, ["coalesce", ["get", "recency"], 1]],
         "line-opacity-transition": { duration: 600, delay: 0 },
+        "line-occlusion-opacity": OCCLUSION_OPACITY * 0.4,
       } as any,
     });
 
@@ -468,7 +510,11 @@ export const useMovementPathsLayer = ({
       type: "line",
       source: sourceId,
       filter: activeFilter(minFrequencyRef.current),
-      layout: { "line-join": "round", "line-cap": "round" },
+      layout: {
+        "line-join": "round",
+        "line-cap": "round",
+        ...FLOW_LINE_ELEVATION_LAYOUT,
+      } as any,
       paint: {
         "line-width": [
           "interpolate",
@@ -521,6 +567,7 @@ export const useMovementPathsLayer = ({
         "line-dasharray": [0, 2, 2],
         "line-width-transition": { duration: 800, delay: 0 },
         "line-color-transition": { duration: 800, delay: 0 },
+        "line-occlusion-opacity": OCCLUSION_OPACITY,
       } as any,
     });
 
@@ -576,6 +623,8 @@ export const useMovementPathsLayer = ({
         "icon-rotation-alignment": "map",
         "icon-allow-overlap": true,
         "icon-ignore-placement": true,
+        // Lift arrows with the elevated route so they ride on top of 3D geometry.
+        "symbol-z-elevate": true,
       } as any,
       paint: {
         "icon-opacity": ["*", 0.85, ["coalesce", ["get", "recency"], 1]],
