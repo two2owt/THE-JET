@@ -464,6 +464,7 @@ export default function Favorites() {
 }
 
 function FavoriteVenueCard({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   favorite,
   onOpen,
   onRemove,
