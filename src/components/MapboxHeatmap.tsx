@@ -1,6 +1,7 @@
 import { devLog } from "@/lib/log";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { storeLastKnownLocation } from "@/lib/tile-prefetch";
+import { GEO_GRANTED_EVENT } from "@/lib/geolocationGrantEvent";
 import { subscribeMapInteractionLock } from "@/lib/mapInteractionLock";
 import type * as MapboxGL from "mapbox-gl";
 import type { FeatureCollection, Geometry } from "geojson";
@@ -974,6 +975,20 @@ export const MapboxHeatmap = ({
       clearPathsRefreshTimer();
     };
   }, [clearDensityRefreshTimer, clearPathsRefreshTimer]);
+
+  // As soon as the platform grants location permission (from the banner, the
+  // permission prompt, or OS settings), recenter on the user and reload the
+  // heat + flow layers so the map reflects their real position immediately.
+  useEffect(() => {
+    const onGranted = () => {
+      refreshCurrentLocation();
+      setIsLoadingStats(true);
+      scheduleDensityRefresh();
+      schedulePathsRefresh();
+    };
+    window.addEventListener(GEO_GRANTED_EVENT, onGranted);
+    return () => window.removeEventListener(GEO_GRANTED_EVENT, onGranted);
+  }, [refreshCurrentLocation, scheduleDensityRefresh, schedulePathsRefresh]);
 
   // Sync toggle-triggered loading states with hook loading so they stay visible
   // until the data fetch actually completes (including debounce / realtime).

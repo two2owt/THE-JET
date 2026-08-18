@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { isNativeApp } from "@/lib/platform";
+import { emitGeolocationGranted } from "@/lib/geolocationGrantEvent";
 
 /** Non-standard Permissions API with one-tap request(), available in Chrome. */
 type PermissionsWithRequest = Permissions & {
@@ -21,7 +22,17 @@ export type GeoPermissionState =
  * permission. UI should treat tracking as OFF whenever this is not "granted".
  */
 export function useGeolocationPermission() {
-  const [state, setState] = useState<GeoPermissionState>("unknown");
+  const [state, setRawState] = useState<GeoPermissionState>("unknown");
+  // Tracks the last observed state so we only announce real transitions
+  // into "granted" (not repeated re-reads of an already-granted permission).
+  const prevStateRef = useRef<GeoPermissionState>("unknown");
+
+  const setState = useCallback((next: GeoPermissionState) => {
+    const prev = prevStateRef.current;
+    prevStateRef.current = next;
+    setRawState(next);
+    if (next === "granted" && prev !== "granted") emitGeolocationGranted();
+  }, []);
 
   const refresh = useCallback(async () => {
     if (typeof navigator === "undefined" || !("geolocation" in navigator)) {
@@ -60,7 +71,7 @@ export function useGeolocationPermission() {
       setState("unknown");
       return "unknown" as const;
     }
-  }, []);
+  }, [setState]);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,7 +107,7 @@ export function useGeolocationPermission() {
       status?.removeEventListener("change", onChange);
       document.removeEventListener("visibilitychange", onVisible);
     };
-  }, [refresh]);
+  }, [refresh, setState]);
 
   /**
    * Triggers the native/browser permission prompt (user gesture required).
@@ -149,7 +160,7 @@ export function useGeolocationPermission() {
       );
     });
     return refresh();
-  }, [refresh]);
+  }, [refresh, setState]);
 
   return {
     permission: state,
