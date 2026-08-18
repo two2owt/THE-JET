@@ -467,10 +467,12 @@ function FavoriteVenueCard({
   favorite,
   onOpen,
   onRemove,
+  alertCount = 0,
 }: {
   favorite: Favorite;
   onOpen: () => void;
   onRemove: (venueId: string, dealId?: string | null) => Promise<void>;
+  alertCount?: number;
 }) {
   const [removing, setRemoving] = useState(false);
   const [imgFailed, setImgFailed] = useState(false);
@@ -576,6 +578,13 @@ function FavoriteVenueCard({
             <Heart className="w-4 h-4 fill-current" />
           )}
         </button>
+        {alertCount > 0 && (
+          <AlertBadgeButton
+            count={alertCount}
+            label={favorite.venue_name}
+            onClick={onOpen}
+          />
+        )}
       </div>
       <div className="p-3">
         <div className="flex items-center gap-2">
