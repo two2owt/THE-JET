@@ -29,6 +29,10 @@ export const NotificationCard = memo(
         onRead();
       }
     };
+
+    // Tapping any alert is meaningful: it either opens the JetCard or at least
+    // marks the alert read.
+    const interactive = Boolean(onVenueClick || (onRead && !notification.read));
     const getIcon = () => {
       switch (notification.type) {
         case "offer":
