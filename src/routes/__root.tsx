@@ -161,12 +161,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         { rel: "dns-prefetch", href: "https://events.mapbox.com" },
         { rel: "dns-prefetch", href: "https://maps.googleapis.com" },
         {
-          rel: "preload",
-          as: "script",
-          href: MAPBOX_CDN_SCRIPT,
-          crossOrigin: "anonymous",
-        },
-        {
           rel: "stylesheet",
           href: MAPBOX_CDN_STYLESHEET,
         },
