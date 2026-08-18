@@ -96,13 +96,6 @@ export const LocationStatusBanner = ({ className }: { className?: string }) => {
           ? "Your browser won't ask again — allow location for this site in your browser settings."
           : "Re-allow location for this site in your browser settings to see live activity near you."
       : "Turn on location so your map shows live activity around you.";
-  const legacyDescription = unsupported
-    ? ""
-    : isBlocked
-      ? isNativeApp()
-        ? "Allow location for JET in your device settings to see live activity near you."
-        : "Re-allow location for this site in your browser settings to see live activity near you."
-      : "Turn on location so your map shows live activity around you.";
 
   const stepsKey = isNativeApp() ? getPlatform() : getWebPlatform();
   const steps = platformSteps[stepsKey] ?? platformSteps.web;
