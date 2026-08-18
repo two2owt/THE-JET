@@ -14,7 +14,15 @@ import { TabPageHeader } from "@/components/TabPageHeader";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { SEO } from "@/components/SEO";
 import { useVenuePhoto } from "@/hooks/useVenuePhoto";
-import { Trash2 } from "lucide-react";
+import { Trash2, Search, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -45,6 +53,10 @@ export default function Favorites() {
   const { user, isLoading: authLoading } = useAuth();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loadError, setLoadError] = useState(false);
+  const [query, setQuery] = useState("");
+  const [sortBy, setSortBy] = useState<
+    "recent" | "name" | "venue" | "expiring"
+  >("recent");
   const headerConfig = useMemo(() => ({}), []);
 
   const {
@@ -141,6 +153,84 @@ export default function Favorites() {
 
   const totalCount = deals.length + venueOnlyFavorites.length;
 
+  // When a favorite was saved, keyed by deal id and venue id, so both lists
+  // can share the same "recently saved" ordering.
+  const savedAt = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const f of favorites) {
+      const t = new Date(f.created_at).getTime() || 0;
+      if (f.deal_id) map.set(`deal:${f.deal_id}`, t);
+      if (f.venue_id) map.set(`venue:${f.venue_id}`, t);
+    }
+    return map;
+  }, [favorites]);
+
+  const normalizedQuery = query.trim().toLowerCase();
+
+  const visibleDeals = useMemo(() => {
+    const filtered = normalizedQuery
+      ? deals.filter((d) =>
+          [d.title, d.venue_name, d.description, d.deal_type]
+            .filter(Boolean)
+            .some((v) => v!.toLowerCase().includes(normalizedQuery)),
+        )
+      : deals;
+    const sorted = [...filtered];
+    sorted.sort((a, b) => {
+      switch (sortBy) {
+        case "name":
+          return a.title.localeCompare(b.title);
+        case "venue":
+          return (a.venue_name || "").localeCompare(b.venue_name || "");
+        case "expiring":
+          return (
+            (new Date(a.expires_at).getTime() || Infinity) -
+            (new Date(b.expires_at).getTime() || Infinity)
+          );
+        default: {
+          const at =
+            savedAt.get(`deal:${a.id}`) ??
+            savedAt.get(`venue:${a.venue_id ?? ""}`) ??
+            0;
+          const bt =
+            savedAt.get(`deal:${b.id}`) ??
+            savedAt.get(`venue:${b.venue_id ?? ""}`) ??
+            0;
+          return bt - at;
+        }
+      }
+    });
+    return sorted;
+  }, [deals, normalizedQuery, sortBy, savedAt]);
+
+  const visibleVenues = useMemo(() => {
+    const filtered = normalizedQuery
+      ? venueOnlyFavorites.filter((f) =>
+          [f.venue_name, f.venue_address, f.venue_category, f.venue_neighborhood]
+            .filter(Boolean)
+            .some((v) => v!.toLowerCase().includes(normalizedQuery)),
+        )
+      : venueOnlyFavorites;
+    const sorted = [...filtered];
+    sorted.sort((a, b) => {
+      switch (sortBy) {
+        case "name":
+        case "venue":
+          return (a.venue_name || "").localeCompare(b.venue_name || "");
+        case "expiring":
+          // Venue favorites have no expiry; keep them stable by name.
+          return (a.venue_name || "").localeCompare(b.venue_name || "");
+        default:
+          return (
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+      }
+    });
+    return sorted;
+  }, [venueOnlyFavorites, normalizedQuery, sortBy]);
+
+  const visibleCount = visibleDeals.length + visibleVenues.length;
+
   if (authLoading) {
     return (
       <PageLayout defaultTab="favorites" headerConfig={headerConfig}>
@@ -216,13 +306,61 @@ export default function Favorites() {
           />
         ) : (
           <div className="space-y-8">
-            {deals.length > 0 && (
+            <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+              <div className="relative flex-1 min-w-0">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search saved venues and deals"
+                  aria-label="Search favorites"
+                  className="pl-9 pr-9 h-11"
+                />
+                {query && (
+                  <button
+                    type="button"
+                    onClick={() => setQuery("")}
+                    aria-label="Clear search"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 grid place-items-center rounded-full text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              <Select
+                value={sortBy}
+                onValueChange={(v) => setSortBy(v as typeof sortBy)}
+              >
+                <SelectTrigger
+                  className="h-11 w-full sm:w-[190px]"
+                  aria-label="Sort favorites"
+                >
+                  <SelectValue placeholder="Sort" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recent">Recently saved</SelectItem>
+                  <SelectItem value="name">Name (A–Z)</SelectItem>
+                  <SelectItem value="venue">Venue (A–Z)</SelectItem>
+                  <SelectItem value="expiring">Expiring soon</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {visibleCount === 0 && (
+              <EmptyState
+                icon={Search}
+                title="No matches"
+                description={`Nothing in your favorites matches "${query.trim()}".`}
+                actionLabel="Clear search"
+                onAction={() => setQuery("")}
+              />
+            )}
+            {visibleDeals.length > 0 && (
               <section>
                 <h2 className="text-sm uppercase tracking-wider text-muted-foreground mb-3 px-1">
                   Saved deals
                 </h2>
                 <VirtualGrid
-                  items={deals}
+                  items={visibleDeals}
                   estimateSize={280}
                   className="min-h-[20svh]"
                   columns={{ mobile: 1, tablet: 2, desktop: 3 }}
@@ -233,13 +371,13 @@ export default function Favorites() {
                 />
               </section>
             )}
-            {venueOnlyFavorites.length > 0 && (
+            {visibleVenues.length > 0 && (
               <section>
                 <h2 className="text-sm uppercase tracking-wider text-muted-foreground mb-3 px-1">
                   Saved venues
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {venueOnlyFavorites.map((f) => (
+                  {visibleVenues.map((f) => (
                     <FavoriteVenueCard
                       key={f.id}
                       favorite={f}
