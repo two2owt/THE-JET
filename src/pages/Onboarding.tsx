@@ -504,6 +504,11 @@ const Onboarding = () => {
       />
 
       <div className="relative z-10 mx-auto w-full max-w-[420px]">
+        {previewMode && (
+          <div className="mb-3 rounded-2xl border border-primary/30 bg-primary/10 px-4 py-2 text-center text-[11px] font-medium uppercase tracking-widest text-primary">
+            Review mode — nothing is saved
+          </div>
+        )}
         {/* Glassmorphic Card */}
         <div className="flex flex-col gap-8 rounded-[40px] border border-white/10 bg-card/60 p-7 sm:p-8 shadow-2xl backdrop-blur-3xl">
           {/* Top row: back affordance */}
