@@ -117,6 +117,8 @@ import { Button } from "./ui/button";
 import { LayerToggleRow } from "./map/LayerToggleRow";
 import { LayerSliderRow } from "./map/LayerSliderRow";
 import { HeatmapColorLegend } from "./map/HeatmapColorLegend";
+import { HeatCellInspector, type HeatCell } from "./map/HeatCellInspector";
+import { HeatFilterChips } from "./map/HeatFilterChips";
 import {
   activityColor,
   activityLegendTiers,
