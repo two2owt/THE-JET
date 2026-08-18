@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { getNetworkLocation } from "@/lib/networkGeolocation";
 import { logGeoPermissionEvent } from "@/lib/locationPermissionLog";
 import { logGeoEvent } from "@/lib/geoDiagnostics";
@@ -38,6 +39,20 @@ export function useColdStartLocationFallback() {
 
     void (async () => {
       try {
+        // The bearer attached to serverFn calls must be a currently valid JWT;
+        // a stale/expired token makes the auth middleware throw "Invalid token".
+        const { data: sessionData } = await supabase.auth.getSession();
+        let token = sessionData.session?.access_token ?? null;
+        const expiresAt = sessionData.session?.expires_at ?? 0;
+        if (token && expiresAt * 1000 - Date.now() < 60_000) {
+          const { data: refreshed } = await supabase.auth.refreshSession();
+          token = refreshed.session?.access_token ?? null;
+        }
+        if (cancelled || !token || token.split(".").length !== 3) {
+          attemptedForUser = null;
+          return;
+        }
+
         const freshness = await getLocationFreshness();
         if (cancelled || !freshness.stale) return;
 
