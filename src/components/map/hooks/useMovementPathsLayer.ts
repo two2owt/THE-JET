@@ -91,7 +91,7 @@ export const FLOW_LINE_ELEVATION_LAYOUT = {
 /** Ghost-through-buildings opacity for elevated flow lines. */
 const OCCLUSION_OPACITY = 0.45;
 
-const LEGACY_DASH_SEQUENCE = [
+const DASH_SEQUENCE = [
   [0, 6, 1.5],
   [0.25, 6, 1.25],
   [0.5, 6, 1],
