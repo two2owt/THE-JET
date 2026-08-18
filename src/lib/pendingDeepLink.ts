@@ -9,6 +9,7 @@
  * ready. sessionStorage keeps it alive across the launch reload.
  */
 const KEY = "jet:pending-deep-link";
+import { hasProcessedAlert } from "@/lib/notificationIdempotency";
 
 export type PendingDeepLink = {
   target: string;
@@ -36,6 +37,9 @@ export function queueDeepLink(
   notificationId?: string | null,
 ) {
   if (!target) return;
+  // The OS can replay the same tap (relaunch + resume). Once an alert has been
+  // navigated for, never re-queue it.
+  if (hasProcessedAlert("nav", notificationId)) return;
   memory = { target, notificationId: notificationId ?? null };
   try {
     sessionStorage.setItem(KEY, JSON.stringify(memory));
