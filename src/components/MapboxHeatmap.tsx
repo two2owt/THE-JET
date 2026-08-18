@@ -1242,23 +1242,33 @@ export const MapboxHeatmap = ({
         id: glowId,
         type: "line",
         source: srcId,
-        layout: { "line-join": "round", "line-cap": "round" },
+        layout: {
+          "line-join": "round",
+          "line-cap": "round",
+          ...FLOW_LINE_ELEVATION_LAYOUT,
+        } as any,
         paint: {
           "line-color": "hsl(45, 100%, 60%)",
           "line-width": 22,
           "line-blur": 8,
           "line-opacity": 0.55,
+          "line-occlusion-opacity": 0.3,
         } as any,
       });
       mapInstance.addLayer({
         id: layerId,
         type: "line",
         source: srcId,
-        layout: { "line-join": "round", "line-cap": "round" },
+        layout: {
+          "line-join": "round",
+          "line-cap": "round",
+          ...FLOW_LINE_ELEVATION_LAYOUT,
+        } as any,
         paint: {
           "line-color": "#FFD666",
           "line-width": 6,
           "line-opacity": 0.95,
+          "line-occlusion-opacity": 0.5,
         } as any,
       });
 
