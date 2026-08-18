@@ -1083,6 +1083,9 @@ export const MapboxHeatmap = ({
 
   // ── Tap-to-inspect: heat cell details ────────────────────────────────
   const [inspectedCell, setInspectedCell] = useState<HeatCell | null>(null);
+  // Measured height of the heat-cell inspector card; drives the chip offset so
+  // the two never overlap regardless of wrapped copy or device width.
+  const [inspectorHeight, setInspectorHeight] = useState(0);
 
   useEffect(() => {
     if (!showDensityLayer) setInspectedCell(null);
