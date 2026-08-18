@@ -747,7 +747,7 @@ export const SearchResults = ({
                         <ResultThumb
                           src={deal.image_url ?? venueImageFor(deal)}
                           alt={`${deal.title} photo`}
-                          category={deal.category ?? deal.deal_type}
+                          category={deal.deal_type}
                         />
                         <div className="flex-1 min-w-0">
                           <h5 className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors">
