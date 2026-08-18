@@ -1,5 +1,5 @@
 import { devLog } from "@/lib/log";
-import { useEffect, useState } from "react";
+import { useEffect, useState , useId } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -72,7 +72,7 @@ export const useAutoScrapeVenueImages = (enabled: boolean = true) => {
 
     // Set up realtime listener for new deals
     const channel = supabase
-      .channel("new-deals-scraper")
+      .channel(`new-deals-scraper-${rtId}`)
       .on(
         "postgres_changes",
         {

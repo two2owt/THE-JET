@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback , useId } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Conversation {
@@ -130,7 +130,7 @@ export const useConversations = (userId?: string) => {
 
     // Realtime: refresh list on any new/updated message involving this user
     const channel = supabase
-      .channel(`conversations:${userId}`)
+      .channel(`conversations:${userId}:${rtId}`)
       .on(
         "postgres_changes",
         {

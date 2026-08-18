@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback , useId } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -335,7 +335,7 @@ export const useDeals = (
 
     // Set up real-time subscription, scoped to active rows to reduce fan-out.
     const channel = supabase
-      .channel("deals-changes")
+      .channel(`deals-changes-${rtId}`)
       .on(
         "postgres_changes",
         {

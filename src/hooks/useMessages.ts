@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef , useId } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { generateThumbnail, thumbnailPathFor } from "@/lib/image-thumbnail";
 
@@ -168,7 +168,7 @@ export const useMessages = (userId?: string, friendId?: string) => {
     fetchMessages();
 
     channelRef.current = supabase
-      .channel(`messages:${conversationId}`)
+      .channel(`messages:${conversationId}:${rtId}`)
       .on(
         "postgres_changes",
         {
@@ -283,7 +283,7 @@ export const useUnreadCounts = (userId?: string) => {
     fetchCounts();
 
     const channel = supabase
-      .channel(`unread:${userId}`)
+      .channel(`unread:${userId}:${rtId}`)
       .on(
         "postgres_changes",
         {

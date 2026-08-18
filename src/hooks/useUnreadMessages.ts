@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState , useId } from "react";
 import { useNavigate, useLocation } from "@/lib/router-compat";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,7 +41,7 @@ export function useUnreadMessages() {
     refresh();
 
     const channel = supabase
-      .channel(`unread-messages:${userId}`)
+      .channel(`unread-messages:${userId}:${rtId}`)
       .on(
         "postgres_changes",
         {
