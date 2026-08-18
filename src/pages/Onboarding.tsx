@@ -526,7 +526,7 @@ const Onboarding = () => {
           </div>
         )}
         {/* Glassmorphic Card */}
-        <div className="flex flex-col gap-fluid-md rounded-[28px] xs:rounded-[32px] sm:rounded-[40px] border border-white/10 bg-card/60 p-fluid-md sm:p-fluid-lg shadow-2xl backdrop-blur-3xl">
+        <div className="flex flex-col gap-[clamp(1.25rem,4vw,2rem)] rounded-[28px] xs:rounded-[32px] sm:rounded-[40px] border border-white/10 bg-card/60 p-[clamp(1.25rem,5vw,2rem)] shadow-2xl backdrop-blur-3xl">
           {/* Top row: back affordance */}
           <div className="flex h-5 items-center justify-between">
             {step > 1 ? (
