@@ -17,6 +17,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "@/lib/router-compat";
 import { supabase } from "@/integrations/supabase/client";
 import { resolvePushDeepLink } from "@/lib/pushDeepLink";
+import { queueDeepLink } from "@/lib/pendingDeepLink";
 import { hasConsent, setConsent } from "@/lib/consent";
 import { toast } from "sonner";
 
@@ -97,7 +98,14 @@ export const usePushNotifications = () => {
       .eq("endpoint", current);
   }, []);
 
-  /** Attach the plugin listeners exactly once per app session. */
+  /**
+   * Attach the plugin listeners exactly once per app session.
+   *
+   * These are attached at boot on native — NOT gated on consent/permission —
+   * because a tap that cold-starts the app fires `pushNotificationActionPerformed`
+   * as soon as the WebView is alive. Waiting for the permission round-trip loses
+   * the event and the user lands on the map instead of their JetCard.
+   */
   const attachListeners = useCallback(async () => {
     if (listenersRef.current || !isNativeShell()) return;
     listenersRef.current = true;
@@ -136,7 +144,9 @@ export const usePushNotifications = () => {
       },
     );
 
-    // Tap → route into the matching heatmap / JetCard state.
+    // Tap → route into the matching heatmap / JetCard state. Background and
+    // cold-start taps go through here too; the target is queued so it survives
+    // the launch even if the router hasn't mounted yet.
     await PushNotifications.addListener(
       "pushNotificationActionPerformed",
       (action) => {
@@ -152,7 +162,10 @@ export const usePushNotifications = () => {
             .catch(() => {});
         }
         const target = resolvePushDeepLink(data);
-        if (target) navigate(target);
+        if (!target) return;
+        // Queue first (survives a not-yet-mounted router), then attempt an
+        // immediate navigate for the warm/background case.
+        queueDeepLink(target);
       },
     );
   }, [navigate, persistToken]);
@@ -241,6 +254,8 @@ export const usePushNotifications = () => {
   useEffect(() => {
     if (!isNativeShell()) return;
     void checkPermissions();
+    // Attach as early as possible so cold-start taps are captured.
+    void attachListeners();
 
     const { data: sub } = supabase.auth.onAuthStateChange((evt, session) => {
       if (evt === "SIGNED_OUT") {
@@ -259,7 +274,12 @@ export const usePushNotifications = () => {
     });
 
     return () => sub.subscription.unsubscribe();
-  }, [checkPermissions, deactivateToken, initializePushNotifications]);
+  }, [
+    attachListeners,
+    checkPermissions,
+    deactivateToken,
+    initializePushNotifications,
+  ]);
 
   return {
     isNative,
