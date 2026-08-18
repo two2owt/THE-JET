@@ -472,6 +472,19 @@ export function ProfileSettingsPanel({
                   className="flex-shrink-0"
                 />
               </div>
+              {nativePushPermission === "denied" && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-2 h-8 text-xs"
+                  onClick={() => {
+                    void openNotificationSettings();
+                  }}
+                >
+                  <Settings2 className="w-3.5 h-3.5 mr-1.5" />
+                  Open settings
+                </Button>
+              )}
             </>
           )}
           {!isNative && isWebPushSupported && (
