@@ -39,6 +39,13 @@ const MAPBOX_CDN_BASE = `https://api.mapbox.com/mapbox-gl-js/v${EXPECTED_MAPBOX_
 const MAPBOX_CDN_SCRIPT = `${MAPBOX_CDN_BASE}/mapbox-gl.js`;
 const MAPBOX_CDN_STYLESHEET = `${MAPBOX_CDN_BASE}/mapbox-gl.css`;
 
+// Backend origin/key come from the environment so preview (Test) and published
+// (Live) builds each warm their OWN backend — hardcoding a project ref here is
+// a classic source of test-to-live drift.
+const SUPABASE_URL: string = import.meta.env.VITE_SUPABASE_URL ?? "";
+const SUPABASE_PUBLISHABLE_KEY: string =
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "";
+
 // ported from index.html — runs before paint so the theme class never flashes
 const themeInitScript = `(function(){var t='dark';try{var s=localStorage.getItem('theme');if(s==='light'||s==='dark'){t=s}}catch(e){}document.documentElement.classList.remove('light','dark');document.documentElement.classList.add(t);document.documentElement.style.colorScheme=t})();`;
 
