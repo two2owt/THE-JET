@@ -281,7 +281,7 @@ export const useMovementPathsLayer = ({
 
     // Fast path: source already exists — just push new GeoJSON so Mapbox
     // smoothly transitions line-width/color instead of flashing on rebuild.
-    const existing = mapRef.current.getSource(sourceId) as any;
+    const existing = mapRef.current.getSource<GeoJSONSource>(sourceId);
     if (existing) {
       try {
         existing.setData(withDecay(pathData.geojson));
@@ -769,7 +769,7 @@ export const useMovementPathsLayer = ({
     if (!mapLoaded || !showMovementPaths || !debouncedPathData?.geojson) return;
     const id = window.setInterval(() => {
       if (document.hidden) return;
-      const src = mapRef.current?.getSource("movement-paths") as any;
+      const src = mapRef.current?.getSource<GeoJSONSource>("movement-paths");
       if (!src?.setData) return;
       try {
         src.setData(withDecay(debouncedPathData.geojson));

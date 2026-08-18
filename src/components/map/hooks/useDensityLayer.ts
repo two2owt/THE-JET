@@ -65,7 +65,7 @@ export const useDensityLayer = ({
 
     // Data update path — reuse existing source so Mapbox interpolates paint
     // transitions instead of hard-flashing on every realtime refetch.
-    const existingSource = mapRef.current.getSource(sourceId) as any;
+    const existingSource = mapRef.current.getSource<GeoJSONSource>(sourceId);
     const basemapChanged =
       paintedForLightRef.current !== null &&
       paintedForLightRef.current !== isLightBasemap;
