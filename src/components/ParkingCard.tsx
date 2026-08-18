@@ -12,6 +12,7 @@ import {
 import { glideHaptic } from "@/lib/haptics";
 import { supabase } from "@/integrations/supabase/client";
 import { buildDirectionsUrl } from "@/lib/directions-url";
+import { openExternalUrl } from "@/lib/open-external";
 
 export interface ParkingLot {
   name: string;
@@ -100,8 +101,7 @@ export const ParkingCard = memo(
         { placeId: parking?.placeId },
       );
       if (!url) return;
-      const opened = window.open(url, "_blank", "noopener,noreferrer");
-      if (!opened) window.location.href = url;
+      openExternalUrl(url);
     };
 
     const getPriceLevelLabel = (level: number | null) => {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Map as MapIcon, Navigation, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import type { Venue } from "@/types/venue";
 import { buildDirectionsUrl, type DirectionsApp } from "@/lib/directions-url";
+import { openExternalUrl } from "@/lib/open-external";
 import {
   getLastDirectionsApp,
   setLastDirectionsApp,
@@ -71,10 +72,16 @@ const DirectionsDialog = ({
   placeId,
 }: DirectionsDialogProps) => {
   const [lastApp, setLastApp] = useState<DirectionsApp | null>(null);
+  // Guards against double-fire (rapid taps, touch + click, re-render races)
+  // launching the maps app twice.
+  const launchingRef = useRef(false);
 
   // Re-read on each open so a pick made elsewhere in the session is reflected.
   useEffect(() => {
-    if (open) setLastApp(getLastDirectionsApp());
+    if (open) {
+      setLastApp(getLastDirectionsApp());
+      launchingRef.current = false;
+    }
   }, [open]);
 
   // Preferred app floats to the top of the list.
@@ -89,7 +96,8 @@ const DirectionsDialog = ({
   );
 
   const openDirections = async (app: DirectionsApp) => {
-    if (!venue) return;
+    if (!venue || launchingRef.current) return;
+    launchingRef.current = true;
 
     await triggerSoarHaptic();
 
@@ -103,15 +111,13 @@ const DirectionsDialog = ({
       toast.error("Unable to open directions", {
         description: "No location data available for this venue.",
       });
+      launchingRef.current = false;
       return;
     }
 
-    // `noopener,noreferrer` prevents the new tab from accessing window.opener.
-    const opened = window.open(url, "_blank", "noopener,noreferrer");
-    if (!opened) {
-      // Popup blocked — fall back to same-tab navigation so the user still gets there.
-      window.location.href = url;
-    }
+    // Single anchor-click navigation — never a new tab *and* a same-tab
+    // fallback, which is what produced duplicate directions pages.
+    openExternalUrl(url);
     onOpenChange(false);
 
     toast.success(
