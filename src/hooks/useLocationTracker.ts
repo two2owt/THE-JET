@@ -516,6 +516,11 @@ export const useLocationTracker = () => {
           .then(({ Geolocation }) => Geolocation.clearWatch({ id }))
           .catch(() => {});
       }
+      if (bgWatcherRef.current) {
+        const watcher = bgWatcherRef.current;
+        bgWatcherRef.current = null;
+        void stopBackgroundWatcher(watcher);
+      }
     };
 
     // Tear down the watchers the instant auth ends, without waiting for the
