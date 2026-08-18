@@ -368,6 +368,33 @@ export default function Favorites() {
                 </SelectContent>
               </Select>
             </div>
+            <div
+              role="group"
+              aria-label="Filter favorites by type"
+              className="flex flex-wrap gap-2"
+            >
+              {(
+                [
+                  { key: "all", label: `All (${visibleDeals.length + visibleVenues.length})` },
+                  { key: "venues", label: `Venues (${visibleVenues.length})` },
+                  { key: "deals", label: `Deals (${visibleDeals.length})` },
+                ] as const
+              ).map((chip) => (
+                <button
+                  key={chip.key}
+                  type="button"
+                  onClick={() => setFilter(chip.key)}
+                  aria-pressed={filter === chip.key}
+                  className={`min-h-[44px] px-4 rounded-full border text-sm font-medium transition ${
+                    filter === chip.key
+                      ? "border-primary bg-primary/15 text-primary"
+                      : "border-border bg-card/60 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {chip.label}
+                </button>
+              ))}
+            </div>
             {totalUnread > 0 && firstAlertTarget && (
               <button
                 type="button"
