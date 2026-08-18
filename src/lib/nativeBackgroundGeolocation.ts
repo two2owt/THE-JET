@@ -168,7 +168,7 @@ export const openLocationSettings = async () => {
 
     if (platform === "android") {
       const { App } = await import("@capacitor/app");
-      const info = await App.getAppInfo();
+      const info = await App.getInfo();
       // Application details settings for this package.
       window.location.href = `intent:#Intent;action=android.settings.APPLICATION_DETAILS_SETTINGS;scheme=package;package=${info.id};end`;
     }
