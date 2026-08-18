@@ -139,6 +139,11 @@ export function HeaderSearch({
         }}
         maxLength={MAX_QUERY_LENGTH}
         aria-label="Search venues and deals"
+        role="combobox"
+        aria-expanded={showResults}
+        aria-controls="jet-search-results"
+        aria-haspopup="dialog"
+        aria-autocomplete="list"
         enterKeyHint="search"
         autoComplete="off"
         autoCorrect="off"
