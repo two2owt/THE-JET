@@ -145,6 +145,7 @@ export function HeaderSearch({
       </div>
 
       <Input
+        ref={inputRef}
         type="text"
         placeholder="Search venues, deals, neighborhoods..."
         value={query}
