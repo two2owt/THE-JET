@@ -53,4 +53,4 @@ jobs:
       - name: Notify Vercel
         uses: vercel/repository-dispatch/actions/status@v1
         with:
-          name: Vercel - the-jet-main: Prod_Deploy_Check
+          name: 'Vercel - the-jet-main: Prod_Deploy_Check'
