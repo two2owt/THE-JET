@@ -29,41 +29,50 @@ export function usePendingDeepLink() {
   }, [searchParams, setSearchParams]);
 
   useEffect(() => {
-    const flush = () => {
+    let cancelled = false;
+    const wait = (ms: number) =>
+      new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+    /**
+     * Drains every tap parked during the cold start, oldest first, so a batch
+     * of alerts opens in the order they arrived and settles on the most recent
+     * JetCard. Each hop gets a short settle window so the route can commit.
+     */
+    const flush = async () => {
       if (flushing.current) return;
       flushing.current = true;
-      const entry = consumeDeepLink();
-      if (!entry) {
-        flushing.current = false;
-        return;
-      }
-      // One navigation per alert id, ever — the SW URL and the queue can both
-      // describe the same tap.
-      if (!claimAlert("nav", entry.notificationId)) {
-        flushing.current = false;
-        return;
-      }
-      // Opening the JetCard from a tap counts as reading the alert.
-      void syncNotificationRead(entry.notificationId);
-      // Defer a tick so the route tree has finished its first commit.
-      setTimeout(() => {
-        try {
+      try {
+        // Defer a tick so the route tree has finished its first commit.
+        await wait(0);
+        let opened = 0;
+        for (;;) {
+          if (cancelled) return;
+          const entry = consumeDeepLink();
+          if (!entry) return;
+          // One navigation per alert id, ever — the SW URL and the queue can
+          // both describe the same tap.
+          if (!claimAlert("nav", entry.notificationId)) continue;
+          // Opening the JetCard from a tap counts as reading the alert.
+          void syncNotificationRead(entry.notificationId);
+          if (opened > 0) await wait(700);
           navigate(entry.target);
-        } finally {
-          flushing.current = false;
+          opened += 1;
         }
-      }, 0);
+      } finally {
+        flushing.current = false;
+      }
     };
 
-    flush();
+    void flush();
 
-    const onQueued = () => flush();
+    const onQueued = () => void flush();
     const onVisible = () => {
-      if (document.visibilityState === "visible") flush();
+      if (document.visibilityState === "visible") void flush();
     };
     window.addEventListener("jet:deep-link-queued", onQueued);
     document.addEventListener("visibilitychange", onVisible);
     return () => {
+      cancelled = true;
       window.removeEventListener("jet:deep-link-queued", onQueued);
       document.removeEventListener("visibilitychange", onVisible);
     };
