@@ -72,6 +72,16 @@
 @utility shadow-ambient { box-shadow: var(--shadow-ambient); }
 @utility shadow-hairline { box-shadow: var(--shadow-hairline); }
 
+/* Clear the fixed footer nav with padding (scrollable content). */
+@utility pb-nav-safe {
+  padding-bottom: calc(var(--nav-clearance, 0px) + 1rem);
+}
+
+/* Sit above the fixed footer nav (fixed/absolute overlays). */
+@utility bottom-nav-offset {
+  bottom: calc(var(--nav-clearance, 0px) + 0.75rem);
+}
+
 @utility container {
   margin-inline: auto;
   padding-inline: 2rem;
@@ -112,6 +122,9 @@ All colors MUST be HSL.
     --bottom-nav-height: 60px;
     --header-total-height: calc(var(--header-height) + var(--safe-area-inset-top));
     --bottom-nav-total-height: calc(var(--bottom-nav-height) + var(--safe-area-inset-bottom));
+    /* Clearance applied by fixed/overlay UI so nothing hides behind the footer
+       nav. Resolves to 0 on screens that don't render the nav (auth, onboarding). */
+    --nav-clearance: 0px;
     /* Main content area height - MUST match index.html shell exactly */
     --main-height: calc(100dvh - var(--header-total-height) - var(--bottom-nav-total-height));
     
@@ -575,6 +588,10 @@ All colors MUST be HSL.
   }
 
   /* Page container with bottom nav clearance and scrolling */
+  body[data-bottom-nav="1"] {
+    --nav-clearance: var(--bottom-nav-total-height);
+  }
+
   .page-container {
     flex: 1;
     width: 100%;

@@ -44,6 +44,16 @@ export const BottomNav = ({
     }
   }, []);
 
+  // Flag the document while the footer nav is mounted so global
+  // `--nav-clearance` spacing only applies on screens that actually have it.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.body.dataset.bottomNav = "1";
+    return () => {
+      delete document.body.dataset.bottomNav;
+    };
+  }, []);
+
   const navItems = [
     { id: "map" as NavItem, icon: MapPinned, label: "Map" },
     { id: "explore" as NavItem, icon: Flame, label: "Hot" },
