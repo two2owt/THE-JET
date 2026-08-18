@@ -116,6 +116,25 @@ export const recordTrackerStart = async (opts: {
 }) => {
   const state = opts.permissionState ?? (await readPermissionState());
   const now = new Date().toISOString();
+
+  // Seed the counter from the stored value so a new session continues the
+  // lifetime count instead of resetting it to 1.
+  try {
+    const { data } = await supabase.auth.getSession();
+    const userId = data.session?.user?.id;
+    if (userId) {
+      const { data: row } = await supabase
+        .from("location_tracking_diagnostics")
+        .select("write_count")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (row?.write_count && row.write_count > writeCount)
+        writeCount = row.write_count;
+    }
+  } catch {
+    /* first run / offline — the counter simply starts at 0 */
+  }
+
   queue({
     platform: platformTag(),
     permission_state: state,
