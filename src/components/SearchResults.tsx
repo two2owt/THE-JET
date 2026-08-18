@@ -10,7 +10,7 @@ import {
   Star,
 } from "lucide-react";
 import { createPortal } from "react-dom";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@/lib/router-compat";
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -42,6 +42,13 @@ const matchScore = (haystack: string | null | undefined, q: string): number => {
 };
 
 const MAX_PER_SECTION = 6;
+
+/** Duration (ms) of the panel open/close transition — keep in sync with the CSS below. */
+const TRANSITION_MS = 190;
+
+/** useLayoutEffect on the client, useEffect during SSR (avoids the hydration warning). */
+const useIsoLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 /** Small square thumbnail; falls back to the venue category's icon. */
 const ResultThumb = ({
