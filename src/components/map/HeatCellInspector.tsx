@@ -71,6 +71,10 @@ export const HeatCellInspector = ({
       style={{
         bottom:
           "calc(var(--map-safe-bottom, calc(var(--bottom-nav-total-height, 60px) + 1rem)) + 12px)",
+        maxHeight:
+          "calc(100dvh - var(--header-total-height, 52px) - var(--map-safe-bottom, 72px) - 96px)",
+        overflowY: "auto",
+        overscrollBehavior: "contain",
         zIndex: 35,
         background: "hsl(var(--card) / 0.86)",
         border: "1px solid hsl(var(--border) / 0.6)",
