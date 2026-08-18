@@ -117,7 +117,33 @@ export const SearchResults = ({
   const [panelEl, setPanelEl] = useState<HTMLDivElement | null>(null);
   useLockMapWhileInteracting(panelEl, isVisible);
 
+  const q = query.trim().toLowerCase();
+  const shouldShow = isVisible && q.length > 0;
+
+  // Keep the panel mounted through its closing transition, and only flip the
+  // "entered" flag on the frame after mount so the browser has a start value
+  // to animate from (no first-frame jump).
+  const [mounted, setMounted] = useState(shouldShow);
+  const [entered, setEntered] = useState(false);
+
   useEffect(() => {
+    if (shouldShow) {
+      setMounted(true);
+      let inner = 0;
+      const outer = requestAnimationFrame(() => {
+        inner = requestAnimationFrame(() => setEntered(true));
+      });
+      return () => {
+        cancelAnimationFrame(outer);
+        cancelAnimationFrame(inner);
+      };
+    }
+    setEntered(false);
+    const t = window.setTimeout(() => setMounted(false), TRANSITION_MS);
+    return () => window.clearTimeout(t);
+  }, [shouldShow]);
+
+  useIsoLayoutEffect(() => {
     if (!isVisible || typeof window === "undefined") return;
 
     let frame = 0;
@@ -142,12 +168,16 @@ export const SearchResults = ({
 
       const GAP_TOP = 8;
       const GAP_BOTTOM = 12;
-      const top = headerBottom + GAP_TOP;
-      const bottom = navHeight + GAP_BOTTOM;
+      // Round to whole pixels: sub-pixel churn from rubber-band scrolling or
+      // safe-area settling would otherwise re-render the panel every frame.
+      const top = Math.round(headerBottom + GAP_TOP);
+      const bottom = Math.round(navHeight + GAP_BOTTOM);
       const available = Math.max(160, viewportH - top - bottom);
       // Keep the map visible around the panel on tall screens, but never
       // exceed the space actually left between header and footer nav.
-      const maxHeight = Math.min(available, Math.max(240, viewportH * 0.52), 480);
+      const maxHeight = Math.round(
+        Math.min(available, Math.max(240, viewportH * 0.52), 480),
+      );
 
       setBox((prev) =>
         prev &&
