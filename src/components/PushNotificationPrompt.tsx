@@ -18,6 +18,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useWebPushNotifications } from "@/hooks/useWebPushNotifications";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { setConsent } from "@/lib/consent";
 import { supabase } from "@/integrations/supabase/client";
 import { usePromptSlot, PROMPT_PRIORITY } from "@/hooks/usePromptSlot";
@@ -57,6 +58,12 @@ export const PushNotificationPrompt = ({
     subscribe: webSubscribe,
     permission: webPermission,
   } = useWebPushNotifications();
+  const {
+    isNative,
+    isRegistered: isNativeRegistered,
+    permission: nativePermission,
+    enable: enableNative,
+  } = usePushNotifications();
 
   // Subscriptions are stored per user, so only prompt signed-in visitors.
   useEffect(() => {
@@ -70,13 +77,20 @@ export const PushNotificationPrompt = ({
   }, [show]);
 
   // iOS Safari can't subscribe until the app is installed to the Home Screen.
-  const needsInstallFirst = useMemo(() => isIOS() && !isStandalone(), []);
-  const isBlocked = webPermission === "denied";
+  // Inside the native shell this never applies — the OS handles delivery.
+  const needsInstallFirst = useMemo(
+    () => !isNative && isIOS() && !isStandalone(),
+    [isNative],
+  );
+  const isBlocked = isNative
+    ? nativePermission === "denied"
+    : webPermission === "denied";
+  const alreadyOn = isNative ? isNativeRegistered : isWebSubscribed;
 
   useEffect(() => {
-    if (!show || isWebSubscribed || !signedIn) return;
-    // Browser-level block: nothing we can do in-app, so don't nag on load.
-    if (webPermission === "denied") return;
+    if (!show || alreadyOn || !signedIn) return;
+    // OS/browser-level block: nothing we can do in-app, so don't nag on load.
+    if (isBlocked) return;
 
     const dismissedAt = localStorage.getItem(DISMISS_KEY);
     if (dismissedAt) {
@@ -87,11 +101,22 @@ export const PushNotificationPrompt = ({
 
     const timer = setTimeout(() => setIsVisible(true), 1500);
     return () => clearTimeout(timer);
-  }, [show, isWebSubscribed, signedIn, webPermission]);
+  }, [show, alreadyOn, signedIn, isBlocked]);
 
   const handleEnable = async () => {
     setIsLoading(true);
     let success = false;
+
+    if (isNative) {
+      // enable() prompts the OS and records consent once granted.
+      success = await enableNative();
+      setIsLoading(false);
+      if (success) {
+        setIsVisible(false);
+        onDismiss();
+      }
+      return;
+    }
 
     // Record the opt-in before subscribing — the runtime consent guard inside
     // subscribe() rejects the call when `push_notifications` isn't granted,
