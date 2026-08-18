@@ -267,7 +267,9 @@ const Index = () => {
   const venueRestoredRef = useRef(false);
   useEffect(() => {
     if (venueRestoredRef.current) return;
-    if (!venues.length) return;
+    // Wait for the first venue load to settle, but don't require a non-empty
+    // set: favorites resolve from their own snapshot when the map list misses.
+    if (venuesLoading) return;
     const venueParam = searchParams.get("venue");
     if (!venueParam) {
       venueRestoredRef.current = true;
@@ -330,7 +332,7 @@ const Index = () => {
     return () => {
       cancelled = true;
     };
-  }, [venues, searchParams, setSearchParams, getVenueImage]);
+  }, [venues, venuesLoading, searchParams, setSearchParams, getVenueImage]);
 
   useEffect(() => {
     // Don't write the URL until the initial restoration pass has run, or we
