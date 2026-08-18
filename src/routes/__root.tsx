@@ -21,6 +21,7 @@ import { AppShell } from "@/components/AppShell";
 import NotFound from "@/pages/NotFound";
 import { useNativeDeepLinking } from "@/hooks/useNativeDeepLinking";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { usePendingDeepLink } from "@/hooks/usePendingDeepLink";
 import { useForegroundPushMessages } from "@/hooks/useForegroundPushMessages";
 import { usePushSubscriptionSync } from "@/hooks/usePushSubscriptionSync";
 import { useViewportReflow } from "@/hooks/useViewportReflow";
@@ -213,6 +214,7 @@ const PageTracker = memo(function PageTracker() {
 function AppLayout() {
   useNativeDeepLinking();
   usePushNotifications();
+  usePendingDeepLink();
   useForegroundPushMessages();
   usePushSubscriptionSync();
   useViewportReflow();
