@@ -412,7 +412,8 @@ export const SearchResults = ({
     };
   }, [q, venues, deals]);
 
-  if (!isVisible || !q) return null;
+  // Stay mounted while the closing transition plays out.
+  if (!mounted) return null;
 
   const filteredVenues = groups.venues
     .slice(0, MAX_PER_SECTION)
