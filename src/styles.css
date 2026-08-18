@@ -603,6 +603,7 @@ All colors MUST be HSL.
     max-width: 100vw;
     /* Use CSS variable for consistent bottom clearance */
     padding-bottom: var(--bottom-nav-total-height, 60px);
+    scroll-padding-bottom: calc(var(--bottom-nav-total-height, 60px) + 16px);
     overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
