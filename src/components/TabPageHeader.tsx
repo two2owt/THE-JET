@@ -11,13 +11,23 @@ interface TabPageHeaderProps {
 
 export function TabPageHeader({ title, subtitle, badge }: TabPageHeaderProps) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "12px",
+        flexWrap: "wrap",
+      }}
+    >
       <div>
-        <h1 className="heading-luxe-gradient" style={{ marginBottom: '6px' }}>
+        <h1 className="heading-luxe-gradient" style={{ marginBottom: "6px" }}>
           {title}
         </h1>
         {subtitle && (
-          <p style={{ fontSize: '14px', color: 'hsl(var(--muted-foreground))' }}>
+          <p
+            style={{ fontSize: "14px", color: "hsl(var(--muted-foreground))" }}
+          >
             {subtitle}
           </p>
         )}

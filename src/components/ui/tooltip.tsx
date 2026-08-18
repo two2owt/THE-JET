@@ -22,12 +22,12 @@ const TooltipContent = React.forwardRef<
         className,
       )}
       style={{
-        background: 'hsl(var(--popover))',
-        color: 'hsl(var(--popover-foreground))',
-        border: '1px solid hsl(var(--border) / 0.4)',
-        borderRadius: '6px',
-        padding: '6px 12px',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        background: "hsl(var(--popover))",
+        color: "hsl(var(--popover-foreground))",
+        border: "1px solid hsl(var(--border) / 0.4)",
+        borderRadius: "6px",
+        padding: "6px 12px",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
         zIndex: 50,
       }}
       {...props}

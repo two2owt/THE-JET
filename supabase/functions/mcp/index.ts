@@ -11,7 +11,12 @@ function env(name) {
   return runtime.Deno?.env?.get?.(name) ?? runtime.process?.env?.[name];
 }
 function environmentLabel() {
-  return env("LOVABLE_ENVIRONMENT") ?? env("SUPABASE_ENVIRONMENT") ?? env("ENVIRONMENT") ?? "unknown";
+  return (
+    env("LOVABLE_ENVIRONMENT") ??
+    env("SUPABASE_ENVIRONMENT") ??
+    env("ENVIRONMENT") ??
+    "unknown"
+  );
 }
 function emit(level, event, fields) {
   const line = JSON.stringify({
@@ -19,8 +24,8 @@ function emit(level, event, fields) {
     event,
     level,
     env: environmentLabel(),
-    at: (/* @__PURE__ */ new Date()).toISOString(),
-    ...fields
+    at: /* @__PURE__ */ new Date().toISOString(),
+    ...fields,
   });
   if (level === "error") console.error(line);
   else if (level === "warn") console.warn(line);
@@ -29,7 +34,11 @@ function emit(level, event, fields) {
 function authSummary(ctx) {
   const authenticated = ctx.isAuthenticated();
   if (!authenticated) {
-    return { authenticated: false, jwt_verified: false, reason: "no_verified_token" };
+    return {
+      authenticated: false,
+      jwt_verified: false,
+      reason: "no_verified_token",
+    };
   }
   const claims = ctx.getClaims();
   const exp = typeof claims?.exp === "number" ? claims.exp : void 0;
@@ -43,30 +52,32 @@ function authSummary(ctx) {
     scopes: ctx.getScopes() ?? null,
     token_role: claims?.role ?? null,
     expires_at: exp ? new Date(exp * 1e3).toISOString() : null,
-    seconds_to_expiry: exp ? exp - Math.floor(Date.now() / 1e3) : null
+    seconds_to_expiry: exp ? exp - Math.floor(Date.now() / 1e3) : null,
   };
 }
-var requestSeq = 0;
+let requestSeq = 0;
 function withLogging(tool) {
   const handler = tool.handler;
   return {
     ...tool,
-    handler: (async (input, ctx) => {
+    handler: async (input, ctx) => {
       const requestId = `${Date.now().toString(36)}-${(requestSeq = (requestSeq + 1) % 1e6).toString(36)}`;
       const auth2 = authSummary(ctx);
       const started = Date.now();
       emit(auth2.authenticated ? "info" : "warn", "mcp_tool_request", {
         request_id: requestId,
         tool: tool.name,
-        input_keys: input && typeof input === "object" ? Object.keys(input) : [],
-        ...auth2
+        input_keys:
+          input && typeof input === "object" ? Object.keys(input) : [],
+        ...auth2,
       });
       if (!auth2.authenticated) {
         emit("warn", "mcp_auth_rejected", {
           request_id: requestId,
           tool: tool.name,
           http_equivalent: 401,
-          detail: "Tool invoked without a verified OAuth bearer token (JWT missing, expired, or failed issuer/audience verification)."
+          detail:
+            "Tool invoked without a verified OAuth bearer token (JWT missing, expired, or failed issuer/audience verification).",
         });
       }
       try {
@@ -77,7 +88,7 @@ function withLogging(tool) {
           tool: tool.name,
           ok: !isError,
           authenticated: auth2.authenticated,
-          duration_ms: Date.now() - started
+          duration_ms: Date.now() - started,
         });
         return result;
       } catch (error) {
@@ -86,11 +97,11 @@ function withLogging(tool) {
           tool: tool.name,
           authenticated: auth2.authenticated,
           duration_ms: Date.now() - started,
-          error: error instanceof Error ? error.message : String(error)
+          error: error instanceof Error ? error.message : String(error),
         });
         throw error;
       }
-    })
+    },
   };
 }
 function logServerBoot(info) {
@@ -99,7 +110,9 @@ function logServerBoot(info) {
     version: info.version,
     issuer: info.issuer,
     tool_count: info.toolCount,
-    supabase_url_configured: Boolean(env("SUPABASE_URL") ?? env("VITE_SUPABASE_URL"))
+    supabase_url_configured: Boolean(
+      env("SUPABASE_URL") ?? env("VITE_SUPABASE_URL"),
+    ),
   });
 }
 
@@ -128,7 +141,7 @@ function supabaseProjectUrl() {
 function supabasePublishableKey() {
   const direct = configuredEnv([
     "SUPABASE_PUBLISHABLE_KEY",
-    "VITE_SUPABASE_PUBLISHABLE_KEY"
+    "VITE_SUPABASE_PUBLISHABLE_KEY",
   ]);
   if (direct) return direct;
   const keyset = runtimeEnv("SUPABASE_PUBLISHABLE_KEYS");
@@ -137,142 +150,271 @@ function supabasePublishableKey() {
       const parsed = JSON.parse(keyset);
       if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
         const keys = parsed;
-        const key = [keys.default, ...Object.values(keys)].find((v) => typeof v === "string" && v.trim().startsWith("sb_publishable_"))?.trim();
+        const key = [keys.default, ...Object.values(keys)]
+          .find(
+            (v) =>
+              typeof v === "string" && v.trim().startsWith("sb_publishable_"),
+          )
+          ?.trim();
         if (key) return key;
       }
     } catch {
+      // ignore and fall through to the legacy env lookup
     }
   }
   const legacy = configuredEnv(["SUPABASE_ANON_KEY", "VITE_SUPABASE_ANON_KEY"]);
   if (legacy) return legacy;
   throw new Error(
-    "SUPABASE_PUBLISHABLE_KEY, SUPABASE_PUBLISHABLE_KEYS, or SUPABASE_ANON_KEY is required"
+    "SUPABASE_PUBLISHABLE_KEY, SUPABASE_PUBLISHABLE_KEYS, or SUPABASE_ANON_KEY is required",
   );
 }
 function supabaseForUser(ctx) {
   const token = ctx.getToken();
-  if (!token) throw new Error("supabaseForUser requires a verified OAuth token");
+  if (!token)
+    throw new Error("supabaseForUser requires a verified OAuth token");
   return createClient(supabaseProjectUrl(), supabasePublishableKey(), {
     global: { headers: { Authorization: `Bearer ${token}` } },
-    auth: { persistSession: false, autoRefreshToken: false }
+    auth: { persistSession: false, autoRefreshToken: false },
   });
 }
 
 // src/lib/mcp/tools/list-deals.ts
-var list_deals_default = defineTool({
+const list_deals_default = defineTool({
   name: "list_deals",
   title: "List active deals",
-  description: "List currently active JET-Around deals in Charlotte, NC, optionally filtered by a text search over the title, description, or venue name.",
+  description:
+    "List currently active JET-Around deals in Charlotte, NC, optionally filtered by a text search over the title, description, or venue name.",
   inputSchema: {
-    search: z.string().trim().optional().describe("Optional text to match against deal title, description, or venue name."),
-    limit: z.number().int().min(1).max(50).optional().describe("Maximum number of deals to return (default 20).")
+    search: z
+      .string()
+      .trim()
+      .optional()
+      .describe(
+        "Optional text to match against deal title, description, or venue name.",
+      ),
+    limit: z
+      .number()
+      .int()
+      .min(1)
+      .max(50)
+      .optional()
+      .describe("Maximum number of deals to return (default 20)."),
   },
-  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  annotations: {
+    readOnlyHint: true,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
   handler: async ({ search, limit }, ctx) => {
     if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+      return {
+        content: [{ type: "text", text: "Not authenticated" }],
+        isError: true,
+      };
     }
     const supabase = supabaseForUser(ctx);
-    const nowIso = (/* @__PURE__ */ new Date()).toISOString();
-    let query = supabase.from("deals").select("id, title, description, deal_type, venue_name, venue_address, starts_at, expires_at, website_url").eq("active", true).lte("starts_at", nowIso).gte("expires_at", nowIso).order("expires_at", { ascending: true }).limit(limit ?? 20);
+    const nowIso = /* @__PURE__ */ new Date().toISOString();
+    let query = supabase
+      .from("deals")
+      .select(
+        "id, title, description, deal_type, venue_name, venue_address, starts_at, expires_at, website_url",
+      )
+      .eq("active", true)
+      .lte("starts_at", nowIso)
+      .gte("expires_at", nowIso)
+      .order("expires_at", { ascending: true })
+      .limit(limit ?? 20);
     if (search) {
       const term = search.replace(/[%,]/g, " ").trim();
       query = query.or(
-        `title.ilike.%${term}%,description.ilike.%${term}%,venue_name.ilike.%${term}%`
+        `title.ilike.%${term}%,description.ilike.%${term}%,venue_name.ilike.%${term}%`,
       );
     }
     const { data, error } = await query;
-    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    if (error)
+      return {
+        content: [{ type: "text", text: error.message }],
+        isError: true,
+      };
     return {
       content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],
-      structuredContent: { deals: data ?? [] }
+      structuredContent: { deals: data ?? [] },
     };
-  }
+  },
 });
 
 // src/lib/mcp/tools/list-favorites.ts
 import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z as z2 } from "npm:zod@^3.25.76";
-var list_favorites_default = defineTool2({
+const list_favorites_default = defineTool2({
   name: "list_favorites",
   title: "List my saved venues",
-  description: "List the venues and deals the signed-in user has saved to their JET-Around favorites.",
+  description:
+    "List the venues and deals the signed-in user has saved to their JET-Around favorites.",
   inputSchema: {
-    limit: z2.number().int().min(1).max(100).optional().describe("Maximum number of favorites to return (default 50).")
+    limit: z2
+      .number()
+      .int()
+      .min(1)
+      .max(100)
+      .optional()
+      .describe("Maximum number of favorites to return (default 50)."),
   },
-  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  annotations: {
+    readOnlyHint: true,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
   handler: async ({ limit }, ctx) => {
     if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+      return {
+        content: [{ type: "text", text: "Not authenticated" }],
+        isError: true,
+      };
     }
     const supabase = supabaseForUser(ctx);
-    const { data, error } = await supabase.from("user_favorites").select("id, venue_id, venue_name, venue_address, venue_category, venue_neighborhood, deal_id, created_at").eq("user_id", ctx.getUserId()).order("created_at", { ascending: false }).limit(limit ?? 50);
-    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    const { data, error } = await supabase
+      .from("user_favorites")
+      .select(
+        "id, venue_id, venue_name, venue_address, venue_category, venue_neighborhood, deal_id, created_at",
+      )
+      .eq("user_id", ctx.getUserId())
+      .order("created_at", { ascending: false })
+      .limit(limit ?? 50);
+    if (error)
+      return {
+        content: [{ type: "text", text: error.message }],
+        isError: true,
+      };
     return {
       content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],
-      structuredContent: { favorites: data ?? [] }
+      structuredContent: { favorites: data ?? [] },
     };
-  }
+  },
 });
 
 // src/lib/mcp/tools/save-favorite.ts
 import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z as z3 } from "npm:zod@^3.25.76";
-var save_favorite_default = defineTool3({
+const save_favorite_default = defineTool3({
   name: "save_favorite",
   title: "Save a venue to favorites",
-  description: "Save a venue (and optionally a specific deal) to the signed-in user's JET-Around favorites.",
+  description:
+    "Save a venue (and optionally a specific deal) to the signed-in user's JET-Around favorites.",
   inputSchema: {
     venue_id: z3.string().trim().describe("Identifier of the venue to save."),
     venue_name: z3.string().trim().describe("Display name of the venue."),
-    venue_address: z3.string().trim().optional().describe("Street address of the venue."),
-    venue_category: z3.string().trim().optional().describe("Category such as food, drink, nightlife, or events."),
-    deal_id: z3.string().uuid().optional().describe("Optional deal id to associate with this favorite.")
+    venue_address: z3
+      .string()
+      .trim()
+      .optional()
+      .describe("Street address of the venue."),
+    venue_category: z3
+      .string()
+      .trim()
+      .optional()
+      .describe("Category such as food, drink, nightlife, or events."),
+    deal_id: z3
+      .string()
+      .uuid()
+      .optional()
+      .describe("Optional deal id to associate with this favorite."),
   },
-  annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  annotations: {
+    readOnlyHint: false,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
   handler: async (input, ctx) => {
     if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+      return {
+        content: [{ type: "text", text: "Not authenticated" }],
+        isError: true,
+      };
     }
     const supabase = supabaseForUser(ctx);
-    const { data, error } = await supabase.from("user_favorites").insert({ ...input, user_id: ctx.getUserId() }).select().maybeSingle();
-    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    const { data, error } = await supabase
+      .from("user_favorites")
+      .insert({ ...input, user_id: ctx.getUserId() })
+      .select()
+      .maybeSingle();
+    if (error)
+      return {
+        content: [{ type: "text", text: error.message }],
+        isError: true,
+      };
     return {
-      content: [{ type: "text", text: `Saved ${input.venue_name} to favorites.` }],
-      structuredContent: { favorite: data }
+      content: [
+        { type: "text", text: `Saved ${input.venue_name} to favorites.` },
+      ],
+      structuredContent: { favorite: data },
     };
-  }
+  },
 });
 
 // src/lib/mcp/tools/remove-favorite.ts
 import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z as z4 } from "npm:zod@^3.25.76";
-var remove_favorite_default = defineTool4({
+const remove_favorite_default = defineTool4({
   name: "remove_favorite",
   title: "Remove a saved venue",
-  description: "Remove a saved venue from the signed-in user's JET-Around favorites by favorite id or venue id.",
+  description:
+    "Remove a saved venue from the signed-in user's JET-Around favorites by favorite id or venue id.",
   inputSchema: {
-    favorite_id: z4.string().uuid().optional().describe("Id of the favorite row to remove."),
-    venue_id: z4.string().trim().optional().describe("Venue id to remove from favorites when the favorite id is unknown.")
+    favorite_id: z4
+      .string()
+      .uuid()
+      .optional()
+      .describe("Id of the favorite row to remove."),
+    venue_id: z4
+      .string()
+      .trim()
+      .optional()
+      .describe(
+        "Venue id to remove from favorites when the favorite id is unknown.",
+      ),
   },
-  annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+  annotations: {
+    readOnlyHint: false,
+    destructiveHint: true,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
   handler: async ({ favorite_id, venue_id }, ctx) => {
     if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+      return {
+        content: [{ type: "text", text: "Not authenticated" }],
+        isError: true,
+      };
     }
     if (!favorite_id && !venue_id) {
-      return { content: [{ type: "text", text: "Provide favorite_id or venue_id." }], isError: true };
+      return {
+        content: [{ type: "text", text: "Provide favorite_id or venue_id." }],
+        isError: true,
+      };
     }
     const supabase = supabaseForUser(ctx);
-    let query = supabase.from("user_favorites").delete().eq("user_id", ctx.getUserId());
-    query = favorite_id ? query.eq("id", favorite_id) : query.eq("venue_id", venue_id);
+    let query = supabase
+      .from("user_favorites")
+      .delete()
+      .eq("user_id", ctx.getUserId());
+    query = favorite_id
+      ? query.eq("id", favorite_id)
+      : query.eq("venue_id", venue_id);
     const { data, error } = await query.select("id");
-    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    if (error)
+      return {
+        content: [{ type: "text", text: error.message }],
+        isError: true,
+      };
     return {
-      content: [{ type: "text", text: `Removed ${data?.length ?? 0} favorite(s).` }],
-      structuredContent: { removed: data?.length ?? 0 }
+      content: [
+        { type: "text", text: `Removed ${data?.length ?? 0} favorite(s).` },
+      ],
+      structuredContent: { removed: data?.length ?? 0 },
     };
-  }
+  },
 });
 
 // src/lib/mcp/tools/heatmap-density.ts
@@ -280,111 +422,219 @@ import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z as z5 } from "npm:zod@^3.25.76";
 function distanceKm(lat1, lng1, lat2, lng2) {
   const R = 6371;
-  const toRad = (d) => d * Math.PI / 180;
+  const toRad = (d) => (d * Math.PI) / 180;
   const dLat = toRad(lat2 - lat1);
   const dLng = toRad(lng2 - lng1);
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(a));
 }
-var heatmap_density_default = defineTool5({
+const heatmap_density_default = defineTool5({
   name: "get_heatmap_density",
   title: "Get heatmap density snapshot",
-  description: "Return the latest aggregated, anonymized crowd-density snapshot (grid cells with activity counts) for a time range, optionally limited to a radius around a location in Charlotte, NC.",
+  description:
+    "Return the latest aggregated, anonymized crowd-density snapshot (grid cells with activity counts) for a time range, optionally limited to a radius around a location in Charlotte, NC.",
   inputSchema: {
-    time_window_minutes: z5.number().int().min(1).max(10080).optional().describe("How far back to look, in minutes (1 to 10080). Default 60."),
-    latitude: z5.number().min(-90).max(90).optional().describe("Center latitude to filter around."),
-    longitude: z5.number().min(-180).max(180).optional().describe("Center longitude to filter around."),
-    radius_km: z5.number().min(0.1).max(100).optional().describe("Radius in kilometers around the center point (default 5, requires latitude/longitude)."),
-    limit: z5.number().int().min(1).max(200).optional().describe("Maximum number of density cells to return, busiest first (default 50).")
+    time_window_minutes: z5
+      .number()
+      .int()
+      .min(1)
+      .max(10080)
+      .optional()
+      .describe("How far back to look, in minutes (1 to 10080). Default 60."),
+    latitude: z5
+      .number()
+      .min(-90)
+      .max(90)
+      .optional()
+      .describe("Center latitude to filter around."),
+    longitude: z5
+      .number()
+      .min(-180)
+      .max(180)
+      .optional()
+      .describe("Center longitude to filter around."),
+    radius_km: z5
+      .number()
+      .min(0.1)
+      .max(100)
+      .optional()
+      .describe(
+        "Radius in kilometers around the center point (default 5, requires latitude/longitude).",
+      ),
+    limit: z5
+      .number()
+      .int()
+      .min(1)
+      .max(200)
+      .optional()
+      .describe(
+        "Maximum number of density cells to return, busiest first (default 50).",
+      ),
   },
-  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ time_window_minutes, latitude, longitude, radius_km, limit }, ctx) => {
+  annotations: {
+    readOnlyHint: true,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
+  handler: async (
+    { time_window_minutes, latitude, longitude, radius_km, limit },
+    ctx,
+  ) => {
     if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
-    }
-    if (latitude === void 0 !== (longitude === void 0)) {
       return {
-        content: [{ type: "text", text: "Provide both latitude and longitude, or neither." }],
-        isError: true
+        content: [{ type: "text", text: "Not authenticated" }],
+        isError: true,
+      };
+    }
+    if ((latitude === void 0) !== (longitude === void 0)) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: "Provide both latitude and longitude, or neither.",
+          },
+        ],
+        isError: true,
       };
     }
     const windowMinutes = time_window_minutes ?? 60;
     const supabase = supabaseForUser(ctx);
-    const { data, error } = await supabase.functions.invoke("get-location-density", {
-      body: { time_window_minutes: windowMinutes }
-    });
+    const { data, error } = await supabase.functions.invoke(
+      "get-location-density",
+      {
+        body: { time_window_minutes: windowMinutes },
+      },
+    );
     if (error) {
-      return { content: [{ type: "text", text: error.message }], isError: true };
+      return {
+        content: [{ type: "text", text: error.message }],
+        isError: true,
+      };
     }
     const features = data?.geojson?.features ?? [];
     const radius = radius_km ?? 5;
-    let cells = features.map((f) => {
-      const [lng, lat] = f.geometry?.coordinates ?? [NaN, NaN];
-      return {
-        latitude: lat,
-        longitude: lng,
-        density: f.properties?.density ?? 0,
-        intensity: f.properties?.intensity ?? 0
-      };
-    }).filter((c) => Number.isFinite(c.latitude) && Number.isFinite(c.longitude));
+    let cells = features
+      .map((f) => {
+        const [lng, lat] = f.geometry?.coordinates ?? [NaN, NaN];
+        return {
+          latitude: lat,
+          longitude: lng,
+          density: f.properties?.density ?? 0,
+          intensity: f.properties?.intensity ?? 0,
+        };
+      })
+      .filter(
+        (c) => Number.isFinite(c.latitude) && Number.isFinite(c.longitude),
+      );
     if (latitude !== void 0 && longitude !== void 0) {
-      cells = cells.map((c) => ({
-        ...c,
-        distance_km: Number(distanceKm(latitude, longitude, c.latitude, c.longitude).toFixed(3))
-      })).filter((c) => c.distance_km <= radius);
+      cells = cells
+        .map((c) => ({
+          ...c,
+          distance_km: Number(
+            distanceKm(latitude, longitude, c.latitude, c.longitude).toFixed(3),
+          ),
+        }))
+        .filter((c) => c.distance_km <= radius);
     }
     cells.sort((a, b) => b.density - a.density);
     cells = cells.slice(0, limit ?? 50);
     const snapshot = {
-      generated_at: (/* @__PURE__ */ new Date()).toISOString(),
+      generated_at: /* @__PURE__ */ new Date().toISOString(),
       time_window_minutes: windowMinutes,
-      center: latitude !== void 0 && longitude !== void 0 ? { latitude, longitude, radius_km: radius } : null,
+      center:
+        latitude !== void 0 && longitude !== void 0
+          ? { latitude, longitude, radius_km: radius }
+          : null,
       total_points: data?.stats?.total_points ?? null,
       cells_returned: cells.length,
-      cells
+      cells,
     };
     return {
       content: [{ type: "text", text: JSON.stringify(snapshot, null, 2) }],
-      structuredContent: snapshot
+      structuredContent: snapshot,
     };
-  }
+  },
 });
 
 // src/lib/mcp/tools/get-jetcard.ts
 import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.26.2";
-var get_jetcard_default = defineTool6({
+const get_jetcard_default = defineTool6({
   name: "get_jetcard",
   title: "Get my JetCard",
-  description: "Return the signed-in user's JetCard summary: membership status and tier, the associated merchant/venue, and the most recent account activity.",
+  description:
+    "Return the signed-in user's JetCard summary: membership status and tier, the associated merchant/venue, and the most recent account activity.",
   inputSchema: {},
-  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  annotations: {
+    readOnlyHint: true,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
   handler: async (_input, ctx) => {
     if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+      return {
+        content: [{ type: "text", text: "Not authenticated" }],
+        isError: true,
+      };
     }
     const supabase = supabaseForUser(ctx);
     const userId = ctx.getUserId();
     const [subRes, favRes, eventRes] = await Promise.all([
-      supabase.from("subscribers").select("tier, subscribed, subscription_end, cancel_at_period_end, product_id, updated_at").eq("user_id", userId).maybeSingle(),
-      supabase.from("user_favorites").select("venue_id, venue_name, venue_address, venue_category, venue_neighborhood, deal_id, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
-      supabase.from("analytics_events").select("event_name, page_path, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(1).maybeSingle()
+      supabase
+        .from("subscribers")
+        .select(
+          "tier, subscribed, subscription_end, cancel_at_period_end, product_id, updated_at",
+        )
+        .eq("user_id", userId)
+        .maybeSingle(),
+      supabase
+        .from("user_favorites")
+        .select(
+          "venue_id, venue_name, venue_address, venue_category, venue_neighborhood, deal_id, created_at",
+        )
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from("analytics_events")
+        .select("event_name, page_path, created_at")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
     ]);
     const firstError = subRes.error ?? favRes.error ?? eventRes.error;
     if (firstError) {
-      return { content: [{ type: "text", text: firstError.message }], isError: true };
+      return {
+        content: [{ type: "text", text: firstError.message }],
+        isError: true,
+      };
     }
     const sub = subRes.data;
     const fav = favRes.data;
     let merchant = null;
     if (fav?.deal_id) {
-      const { data: deal } = await supabase.from("deals").select("id, merchant_id, venue_id, venue_name, venue_address, title, active, expires_at").eq("id", fav.deal_id).maybeSingle();
+      const { data: deal } = await supabase
+        .from("deals")
+        .select(
+          "id, merchant_id, venue_id, venue_name, venue_address, title, active, expires_at",
+        )
+        .eq("id", fav.deal_id)
+        .maybeSingle();
       if (deal) {
         merchant = {
           merchant_id: deal.merchant_id,
           venue_id: deal.venue_id,
           venue_name: deal.venue_name,
           venue_address: deal.venue_address,
-          latest_deal: { id: deal.id, title: deal.title, active: deal.active, expires_at: deal.expires_at }
+          latest_deal: {
+            id: deal.id,
+            title: deal.title,
+            active: deal.active,
+            expires_at: deal.expires_at,
+          },
         };
       }
     }
@@ -394,14 +644,24 @@ var get_jetcard_default = defineTool6({
         venue_id: fav.venue_id,
         venue_name: fav.venue_name,
         venue_address: fav.venue_address,
-        latest_deal: null
+        latest_deal: null,
       };
     }
     const lastActivityCandidates = [
-      eventRes.data ? { type: eventRes.data.event_name, at: eventRes.data.created_at, page_path: eventRes.data.page_path } : null,
-      fav ? { type: "favorite_saved", at: fav.created_at, page_path: null } : null
+      eventRes.data
+        ? {
+            type: eventRes.data.event_name,
+            at: eventRes.data.created_at,
+            page_path: eventRes.data.page_path,
+          }
+        : null,
+      fav
+        ? { type: "favorite_saved", at: fav.created_at, page_path: null }
+        : null,
     ].filter(Boolean);
-    lastActivityCandidates.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
+    lastActivityCandidates.sort(
+      (a, b) => new Date(b.at).getTime() - new Date(a.at).getTime(),
+    );
     const jetcard = {
       user_id: userId,
       email: ctx.getUserEmail(),
@@ -410,59 +670,108 @@ var get_jetcard_default = defineTool6({
       renews_or_ends_at: sub?.subscription_end ?? null,
       cancel_at_period_end: sub?.cancel_at_period_end ?? false,
       merchant,
-      last_activity: lastActivityCandidates[0] ?? null
+      last_activity: lastActivityCandidates[0] ?? null,
     };
     return {
       content: [{ type: "text", text: JSON.stringify(jetcard, null, 2) }],
-      structuredContent: { jetcard }
+      structuredContent: { jetcard },
     };
-  }
+  },
 });
 
 // src/lib/mcp/tools/configure-notifications.ts
 import { defineTool as defineTool7 } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z as z6 } from "npm:zod@^3.25.76";
-var PREF_COLUMNS = "notifications_enabled, email_notifications_enabled, background_tracking_enabled, location_tracking_enabled, auto_reload_updates, updated_at";
-var configure_notifications_default = defineTool7({
+const PREF_COLUMNS =
+  "notifications_enabled, email_notifications_enabled, background_tracking_enabled, location_tracking_enabled, auto_reload_updates, updated_at";
+const configure_notifications_default = defineTool7({
   name: "configure_notifications",
   title: "Configure notifications",
-  description: "Read or change the signed-in user's notification settings. Call with no arguments to read current settings; pass any of push_enabled, email_enabled, background_location_alerts, location_tracking, or auto_reload_updates to enable/disable that type.",
+  description:
+    "Read or change the signed-in user's notification settings. Call with no arguments to read current settings; pass any of push_enabled, email_enabled, background_location_alerts, location_tracking, or auto_reload_updates to enable/disable that type.",
   inputSchema: {
-    push_enabled: z6.boolean().optional().describe("Master switch for in-app/device push notifications."),
-    email_enabled: z6.boolean().optional().describe("Email notifications (friend requests, direct messages, deal updates)."),
-    background_location_alerts: z6.boolean().optional().describe("Background geofence alerts when near favorite venues (requires location tracking)."),
-    location_tracking: z6.boolean().optional().describe("Foreground location tracking used for nearby deal alerts."),
-    auto_reload_updates: z6.boolean().optional().describe("Automatically apply app updates when a new version is available.")
+    push_enabled: z6
+      .boolean()
+      .optional()
+      .describe("Master switch for in-app/device push notifications."),
+    email_enabled: z6
+      .boolean()
+      .optional()
+      .describe(
+        "Email notifications (friend requests, direct messages, deal updates).",
+      ),
+    background_location_alerts: z6
+      .boolean()
+      .optional()
+      .describe(
+        "Background geofence alerts when near favorite venues (requires location tracking).",
+      ),
+    location_tracking: z6
+      .boolean()
+      .optional()
+      .describe("Foreground location tracking used for nearby deal alerts."),
+    auto_reload_updates: z6
+      .boolean()
+      .optional()
+      .describe(
+        "Automatically apply app updates when a new version is available.",
+      ),
   },
-  annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: false },
+  annotations: {
+    readOnlyHint: false,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
   handler: async (input, ctx) => {
     if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+      return {
+        content: [{ type: "text", text: "Not authenticated" }],
+        isError: true,
+      };
     }
     const supabase = supabaseForUser(ctx);
     const userId = ctx.getUserId();
     const updates = {};
-    if (input.push_enabled !== void 0) updates.notifications_enabled = input.push_enabled;
-    if (input.email_enabled !== void 0) updates.email_notifications_enabled = input.email_enabled;
+    if (input.push_enabled !== void 0)
+      updates.notifications_enabled = input.push_enabled;
+    if (input.email_enabled !== void 0)
+      updates.email_notifications_enabled = input.email_enabled;
     if (input.background_location_alerts !== void 0)
       updates.background_tracking_enabled = input.background_location_alerts;
-    if (input.location_tracking !== void 0) updates.location_tracking_enabled = input.location_tracking;
-    if (input.auto_reload_updates !== void 0) updates.auto_reload_updates = input.auto_reload_updates;
-    if (updates.background_tracking_enabled === true && updates.location_tracking_enabled === void 0) {
+    if (input.location_tracking !== void 0)
+      updates.location_tracking_enabled = input.location_tracking;
+    if (input.auto_reload_updates !== void 0)
+      updates.auto_reload_updates = input.auto_reload_updates;
+    if (
+      updates.background_tracking_enabled === true &&
+      updates.location_tracking_enabled === void 0
+    ) {
       updates.location_tracking_enabled = true;
     }
     if (updates.location_tracking_enabled === false) {
       updates.background_tracking_enabled = false;
     }
     if (Object.keys(updates).length > 0) {
-      const { error: error2 } = await supabase.from("user_preferences").upsert({ user_id: userId, ...updates }, { onConflict: "user_id" });
+      const { error: error2 } = await supabase
+        .from("user_preferences")
+        .upsert({ user_id: userId, ...updates }, { onConflict: "user_id" });
       if (error2) {
-        return { content: [{ type: "text", text: error2.message }], isError: true };
+        return {
+          content: [{ type: "text", text: error2.message }],
+          isError: true,
+        };
       }
     }
-    const { data, error } = await supabase.from("user_preferences").select(PREF_COLUMNS).eq("user_id", userId).maybeSingle();
+    const { data, error } = await supabase
+      .from("user_preferences")
+      .select(PREF_COLUMNS)
+      .eq("user_id", userId)
+      .maybeSingle();
     if (error) {
-      return { content: [{ type: "text", text: error.message }], isError: true };
+      return {
+        content: [{ type: "text", text: error.message }],
+        isError: true,
+      };
     }
     const settings = {
       push_enabled: data?.notifications_enabled ?? false,
@@ -471,52 +780,94 @@ var configure_notifications_default = defineTool7({
       location_tracking: data?.location_tracking_enabled ?? false,
       auto_reload_updates: data?.auto_reload_updates ?? false,
       updated_at: data?.updated_at ?? null,
-      changed: Object.keys(updates).length > 0
+      changed: Object.keys(updates).length > 0,
     };
     return {
       content: [{ type: "text", text: JSON.stringify(settings, null, 2) }],
-      structuredContent: { settings }
+      structuredContent: { settings },
     };
-  }
+  },
 });
 
 // src/lib/mcp/tools/list-activity.ts
 import { defineTool as defineTool8 } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z as z7 } from "npm:zod@^3.25.76";
-var list_activity_default = defineTool8({
+const list_activity_default = defineTool8({
   name: "list_activity",
   title: "List my recent JetCard activity",
-  description: "Return the signed-in user's recent JetCard activity \u2014 saved and removed favorites, shared deals, and venue reviews \u2014 each with a timestamp, venue, and action, newest first.",
+  description:
+    "Return the signed-in user's recent JetCard activity \u2014 saved and removed favorites, shared deals, and venue reviews \u2014 each with a timestamp, venue, and action, newest first.",
   inputSchema: {
-    limit: z7.number().int().min(1).max(100).default(20).describe("Maximum activities to return."),
-    since_hours: z7.number().int().min(1).max(24 * 90).optional().describe("Only include activity from the last N hours (default: no time limit).")
+    limit: z7
+      .number()
+      .int()
+      .min(1)
+      .max(100)
+      .default(20)
+      .describe("Maximum activities to return."),
+    since_hours: z7
+      .number()
+      .int()
+      .min(1)
+      .max(24 * 90)
+      .optional()
+      .describe(
+        "Only include activity from the last N hours (default: no time limit).",
+      ),
   },
-  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  annotations: {
+    readOnlyHint: true,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
   handler: async ({ limit, since_hours }, ctx) => {
     if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+      return {
+        content: [{ type: "text", text: "Not authenticated" }],
+        isError: true,
+      };
     }
     const supabase = supabaseForUser(ctx);
     const userId = ctx.getUserId();
-    const since = since_hours ? new Date(Date.now() - since_hours * 36e5).toISOString() : null;
-    const withSince = (q, col) => since ? q.gte(col, since) : q;
+    const since = since_hours
+      ? new Date(Date.now() - since_hours * 36e5).toISOString()
+      : null;
+    const withSince = (q, col) => (since ? q.gte(col, since) : q);
     const [favRes, shareRes, reviewRes] = await Promise.all([
       withSince(
-        supabase.from("user_favorites").select("created_at, venue_id, venue_name, deal_id").eq("user_id", userId).order("created_at", { ascending: false }).limit(limit),
-        "created_at"
+        supabase
+          .from("user_favorites")
+          .select("created_at, venue_id, venue_name, deal_id")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(limit),
+        "created_at",
       ),
       withSince(
-        supabase.from("deal_shares").select("shared_at, deal_id, deals(venue_id, venue_name, title)").eq("user_id", userId).order("shared_at", { ascending: false }).limit(limit),
-        "shared_at"
+        supabase
+          .from("deal_shares")
+          .select("shared_at, deal_id, deals(venue_id, venue_name, title)")
+          .eq("user_id", userId)
+          .order("shared_at", { ascending: false })
+          .limit(limit),
+        "shared_at",
       ),
       withSince(
-        supabase.from("venue_reviews").select("created_at, venue_id, venue_name, rating, review_text").eq("user_id", userId).order("created_at", { ascending: false }).limit(limit),
-        "created_at"
-      )
+        supabase
+          .from("venue_reviews")
+          .select("created_at, venue_id, venue_name, rating, review_text")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(limit),
+        "created_at",
+      ),
     ]);
     const firstError = favRes.error ?? shareRes.error ?? reviewRes.error;
     if (firstError) {
-      return { content: [{ type: "text", text: firstError.message }], isError: true };
+      return {
+        content: [{ type: "text", text: firstError.message }],
+        isError: true,
+      };
     }
     const activities = [];
     for (const row of favRes.data ?? []) {
@@ -525,7 +876,7 @@ var list_activity_default = defineTool8({
         action: "favorite_saved",
         venue_id: row.venue_id ?? null,
         venue_name: row.venue_name ?? null,
-        details: row.deal_id ? `Saved from deal ${row.deal_id}` : "Saved venue"
+        details: row.deal_id ? `Saved from deal ${row.deal_id}` : "Saved venue",
       });
     }
     for (const row of shareRes.data ?? []) {
@@ -535,7 +886,7 @@ var list_activity_default = defineTool8({
         action: "deal_shared",
         venue_id: deal?.venue_id ?? null,
         venue_name: deal?.venue_name ?? null,
-        details: deal?.title ? `Shared deal: ${deal.title}` : "Shared a deal"
+        details: deal?.title ? `Shared deal: ${deal.title}` : "Shared a deal",
       });
     }
     for (const row of reviewRes.data ?? []) {
@@ -544,54 +895,106 @@ var list_activity_default = defineTool8({
         action: "venue_reviewed",
         venue_id: row.venue_id ?? null,
         venue_name: row.venue_name ?? null,
-        details: `Rated ${row.rating}/5${row.review_text ? `: ${row.review_text}` : ""}`
+        details: `Rated ${row.rating}/5${row.review_text ? `: ${row.review_text}` : ""}`,
       });
     }
-    activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    activities.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+    );
     const results = activities.slice(0, limit);
     return {
       content: [
         {
           type: "text",
-          text: results.length ? JSON.stringify(results, null, 2) : "No recent activity found for this account."
-        }
+          text: results.length
+            ? JSON.stringify(results, null, 2)
+            : "No recent activity found for this account.",
+        },
       ],
-      structuredContent: { activities: results, count: results.length }
+      structuredContent: { activities: results, count: results.length },
     };
-  }
+  },
 });
 
 // src/lib/mcp/tools/list-my-venues.ts
 import { defineTool as defineTool9 } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z as z8 } from "npm:zod@^3.25.76";
-var list_my_venues_default = defineTool9({
+const list_my_venues_default = defineTool9({
   name: "list_my_venues",
   title: "List my venues and deals",
-  description: "Return every venue and deal associated with the signed-in user's account \u2014 saved favorites (venues and deals), reviewed venues, and shared deals \u2014 grouped by venue with the reason for each association.",
+  description:
+    "Return every venue and deal associated with the signed-in user's account \u2014 saved favorites (venues and deals), reviewed venues, and shared deals \u2014 grouped by venue with the reason for each association.",
   inputSchema: {
-    include: z8.enum(["all", "favorites", "reviews", "shares"]).default("all").describe("Which associations to include."),
-    active_deals_only: z8.boolean().default(false).describe("Only include deals that are currently active and not expired."),
-    limit: z8.number().int().min(1).max(200).default(50).describe("Maximum venues to return.")
+    include: z8
+      .enum(["all", "favorites", "reviews", "shares"])
+      .default("all")
+      .describe("Which associations to include."),
+    active_deals_only: z8
+      .boolean()
+      .default(false)
+      .describe(
+        "Only include deals that are currently active and not expired.",
+      ),
+    limit: z8
+      .number()
+      .int()
+      .min(1)
+      .max(200)
+      .default(50)
+      .describe("Maximum venues to return."),
   },
-  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  annotations: {
+    readOnlyHint: true,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
   handler: async ({ include, active_deals_only, limit }, ctx) => {
     if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+      return {
+        content: [{ type: "text", text: "Not authenticated" }],
+        isError: true,
+      };
     }
     const supabase = supabaseForUser(ctx);
     const userId = ctx.getUserId();
     const want = (kind) => include === "all" || include === kind;
-    const dealSelect = "id, venue_id, venue_name, venue_address, title, deal_type, active, starts_at, expires_at";
+    const dealSelect =
+      "id, venue_id, venue_name, venue_address, title, deal_type, active, starts_at, expires_at";
     const [favRes, reviewRes, shareRes] = await Promise.all([
-      want("favorites") ? supabase.from("user_favorites").select(
-        `created_at, venue_id, venue_name, venue_address, venue_category, venue_neighborhood, deal_id, deals(${dealSelect})`
-      ).eq("user_id", userId).order("created_at", { ascending: false }).limit(200) : Promise.resolve({ data: [], error: null }),
-      want("reviews") ? supabase.from("venue_reviews").select("created_at, venue_id, venue_name, rating").eq("user_id", userId).order("created_at", { ascending: false }).limit(200) : Promise.resolve({ data: [], error: null }),
-      want("shares") ? supabase.from("deal_shares").select(`shared_at, deal_id, deals(${dealSelect})`).eq("user_id", userId).order("shared_at", { ascending: false }).limit(200) : Promise.resolve({ data: [], error: null })
+      want("favorites")
+        ? supabase
+            .from("user_favorites")
+            .select(
+              `created_at, venue_id, venue_name, venue_address, venue_category, venue_neighborhood, deal_id, deals(${dealSelect})`,
+            )
+            .eq("user_id", userId)
+            .order("created_at", { ascending: false })
+            .limit(200)
+        : Promise.resolve({ data: [], error: null }),
+      want("reviews")
+        ? supabase
+            .from("venue_reviews")
+            .select("created_at, venue_id, venue_name, rating")
+            .eq("user_id", userId)
+            .order("created_at", { ascending: false })
+            .limit(200)
+        : Promise.resolve({ data: [], error: null }),
+      want("shares")
+        ? supabase
+            .from("deal_shares")
+            .select(`shared_at, deal_id, deals(${dealSelect})`)
+            .eq("user_id", userId)
+            .order("shared_at", { ascending: false })
+            .limit(200)
+        : Promise.resolve({ data: [], error: null }),
     ]);
     const firstError = favRes.error ?? reviewRes.error ?? shareRes.error;
     if (firstError) {
-      return { content: [{ type: "text", text: firstError.message }], isError: true };
+      return {
+        content: [{ type: "text", text: firstError.message }],
+        isError: true,
+      };
     }
     const now = Date.now();
     const byVenue = /* @__PURE__ */ new Map();
@@ -607,21 +1010,27 @@ var list_my_venues_default = defineTool9({
           neighborhood: null,
           associations: [],
           deals: [],
-          last_interaction_at: null
+          last_interaction_at: null,
         };
         byVenue.set(key, entry);
       }
       return entry;
     };
     const touch = (entry, association, at) => {
-      if (!entry.associations.includes(association)) entry.associations.push(association);
-      if (at && (!entry.last_interaction_at || at > entry.last_interaction_at)) {
+      if (!entry.associations.includes(association))
+        entry.associations.push(association);
+      if (
+        at &&
+        (!entry.last_interaction_at || at > entry.last_interaction_at)
+      ) {
         entry.last_interaction_at = at;
       }
     };
     const addDeal = (entry, deal, source) => {
       if (active_deals_only) {
-        const expired = deal.expires_at ? new Date(deal.expires_at).getTime() < now : false;
+        const expired = deal.expires_at
+          ? new Date(deal.expires_at).getTime() < now
+          : false;
         if (deal.active !== true || expired) return;
       }
       if (entry.deals.some((d) => d.id === deal.id)) return;
@@ -632,12 +1041,15 @@ var list_my_venues_default = defineTool9({
         active: deal.active,
         starts_at: deal.starts_at,
         expires_at: deal.expires_at,
-        source
+        source,
       });
     };
     for (const row of favRes.data ?? []) {
       const deal = row.deals;
-      const entry = entryFor(row.venue_id ?? deal?.venue_id ?? null, row.venue_name ?? deal?.venue_name ?? null);
+      const entry = entryFor(
+        row.venue_id ?? deal?.venue_id ?? null,
+        row.venue_name ?? deal?.venue_name ?? null,
+      );
       entry.venue_address ??= row.venue_address ?? deal?.venue_address ?? null;
       entry.category ??= row.venue_category ?? null;
       entry.neighborhood ??= row.venue_neighborhood ?? null;
@@ -656,57 +1068,103 @@ var list_my_venues_default = defineTool9({
       touch(entry, "shared_deal", row.shared_at);
       addDeal(entry, deal, "shared");
     }
-    const venues = Array.from(byVenue.values()).sort((a, b) => (b.last_interaction_at ?? "").localeCompare(a.last_interaction_at ?? "")).slice(0, limit);
+    const venues = Array.from(byVenue.values())
+      .sort((a, b) =>
+        (b.last_interaction_at ?? "").localeCompare(
+          a.last_interaction_at ?? "",
+        ),
+      )
+      .slice(0, limit);
     const dealCount = venues.reduce((sum, v) => sum + v.deals.length, 0);
     return {
       content: [
         {
           type: "text",
-          text: venues.length ? JSON.stringify(venues, null, 2) : "No venues or deals are associated with this account yet."
-        }
+          text: venues.length
+            ? JSON.stringify(venues, null, 2)
+            : "No venues or deals are associated with this account yet.",
+        },
       ],
-      structuredContent: { venues, venue_count: venues.length, deal_count: dealCount }
+      structuredContent: {
+        venues,
+        venue_count: venues.length,
+        deal_count: dealCount,
+      },
     };
-  }
+  },
 });
 
 // src/lib/mcp/tools/push-preferences.ts
 import { defineTool as defineTool10 } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z as z9 } from "npm:zod@^3.25.76";
-var DEFAULT_TOPICS = {
+const DEFAULT_TOPICS = {
   jetcard_updates: true,
   merchant_offers: true,
   favorite_venue_alerts: true,
   ending_soon_reminders: true,
-  direct_messages: true
+  direct_messages: true,
 };
-var topicFlag = (label) => z9.boolean().optional().describe(label);
-var push_preferences_default = defineTool10({
+const topicFlag = (label) => z9.boolean().optional().describe(label);
+const push_preferences_default = defineTool10({
   name: "push_preferences",
   title: "Push notification preferences",
-  description: "View or update the signed-in user's push notification preferences for JetCard updates and merchant offers. Call with no arguments to read current settings; pass any flag to change it.",
+  description:
+    "View or update the signed-in user's push notification preferences for JetCard updates and merchant offers. Call with no arguments to read current settings; pass any flag to change it.",
   inputSchema: {
-    push_enabled: topicFlag("Master device push switch. Turning this off silences all push topics."),
-    jetcard_updates: topicFlag("Push about JetCard membership/status changes and account updates."),
-    merchant_offers: topicFlag("Push when merchants activate new deals or offers."),
-    favorite_venue_alerts: topicFlag("Push when a saved/favorite venue posts or updates a deal."),
-    ending_soon_reminders: topicFlag("Push when a saved deal is about to expire."),
-    direct_messages: topicFlag("Push for direct messages from other users.")
+    push_enabled: topicFlag(
+      "Master device push switch. Turning this off silences all push topics.",
+    ),
+    jetcard_updates: topicFlag(
+      "Push about JetCard membership/status changes and account updates.",
+    ),
+    merchant_offers: topicFlag(
+      "Push when merchants activate new deals or offers.",
+    ),
+    favorite_venue_alerts: topicFlag(
+      "Push when a saved/favorite venue posts or updates a deal.",
+    ),
+    ending_soon_reminders: topicFlag(
+      "Push when a saved deal is about to expire.",
+    ),
+    direct_messages: topicFlag("Push for direct messages from other users."),
   },
-  annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: false },
+  annotations: {
+    readOnlyHint: false,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
   handler: async (input, ctx) => {
     if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+      return {
+        content: [{ type: "text", text: "Not authenticated" }],
+        isError: true,
+      };
     }
     const supabase = supabaseForUser(ctx);
     const userId = ctx.getUserId();
     if (input.push_enabled !== void 0) {
-      const { error } = await supabase.from("user_preferences").upsert({ user_id: userId, notifications_enabled: input.push_enabled }, { onConflict: "user_id" });
-      if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+      const { error } = await supabase
+        .from("user_preferences")
+        .upsert(
+          { user_id: userId, notifications_enabled: input.push_enabled },
+          { onConflict: "user_id" },
+        );
+      if (error)
+        return {
+          content: [{ type: "text", text: error.message }],
+          isError: true,
+        };
     }
-    const { data: profile, error: profileError } = await supabase.from("profiles").select("preferences").eq("id", userId).maybeSingle();
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("preferences")
+      .eq("id", userId)
+      .maybeSingle();
     if (profileError) {
-      return { content: [{ type: "text", text: profileError.message }], isError: true };
+      return {
+        content: [{ type: "text", text: profileError.message }],
+        isError: true,
+      };
     }
     const prefs = profile?.preferences ?? {};
     const stored = prefs.push_topics ?? {};
@@ -720,38 +1178,54 @@ var push_preferences_default = defineTool10({
       }
     }
     if (changedTopics.length > 0) {
-      const { error } = await supabase.from("profiles").update({ preferences: { ...prefs, push_topics: topics } }).eq("id", userId);
-      if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+      const { error } = await supabase
+        .from("profiles")
+        .update({ preferences: { ...prefs, push_topics: topics } })
+        .eq("id", userId);
+      if (error)
+        return {
+          content: [{ type: "text", text: error.message }],
+          isError: true,
+        };
     }
-    const { data: userPrefs, error: prefsError } = await supabase.from("user_preferences").select("notifications_enabled, updated_at").eq("user_id", userId).maybeSingle();
+    const { data: userPrefs, error: prefsError } = await supabase
+      .from("user_preferences")
+      .select("notifications_enabled, updated_at")
+      .eq("user_id", userId)
+      .maybeSingle();
     if (prefsError) {
-      return { content: [{ type: "text", text: prefsError.message }], isError: true };
+      return {
+        content: [{ type: "text", text: prefsError.message }],
+        isError: true,
+      };
     }
     const pushEnabled = userPrefs?.notifications_enabled ?? false;
     const result = {
       push_enabled: pushEnabled,
       topics,
       effective_topics: Object.fromEntries(
-        Object.entries(topics).map(([k, v]) => [k, pushEnabled && v])
+        Object.entries(topics).map(([k, v]) => [k, pushEnabled && v]),
       ),
       changed: [
-        ...input.push_enabled !== void 0 ? ["push_enabled"] : [],
-        ...changedTopics
+        ...(input.push_enabled !== void 0 ? ["push_enabled"] : []),
+        ...changedTopics,
       ],
       updated_at: userPrefs?.updated_at ?? null,
-      note: pushEnabled ? void 0 : "Device push is off, so no topics will deliver until push_enabled is set to true."
+      note: pushEnabled
+        ? void 0
+        : "Device push is off, so no topics will deliver until push_enabled is set to true.",
     };
     return {
       content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-      structuredContent: result
+      structuredContent: result,
     };
-  }
+  },
 });
 
 // src/lib/mcp/tools/get-tier-benefits.ts
 import { defineTool as defineTool11 } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z as z10 } from "npm:zod@^3.25.76";
-var TIERS = {
+const TIERS = {
   free: {
     name: "JET",
     price: 0,
@@ -759,8 +1233,8 @@ var TIERS = {
       "Deal discovery",
       "Favorites & bookmarks",
       "Search history",
-      "Location-based alerts"
-    ]
+      "Location-based alerts",
+    ],
   },
   jet_plus: {
     name: "JET+",
@@ -770,8 +1244,8 @@ var TIERS = {
       "Friend connections",
       "Social deal sharing",
       "Venue reviews",
-      "Priority support"
-    ]
+      "Priority support",
+    ],
   },
   jetx: {
     name: "JETx",
@@ -781,40 +1255,73 @@ var TIERS = {
       "VIP exclusive deals",
       "Concierge service",
       "Priority venue access",
-      "Early access to features"
-    ]
-  }
+      "Early access to features",
+    ],
+  },
 };
-var ORDER = ["free", "jet_plus", "jetx"];
-var normalizeTier = (raw, subscribed) => {
+const ORDER = ["free", "jet_plus", "jetx"];
+const normalizeTier = (raw, subscribed) => {
   if (!subscribed) return "free";
   const value = (raw ?? "").toLowerCase().replace(/[\s-]/g, "_");
   if (value === "jetx" || value === "jet_x") return "jetx";
-  if (value === "jet_plus" || value === "jetplus" || value === "plus") return "jet_plus";
+  if (value === "jet_plus" || value === "jetplus" || value === "plus")
+    return "jet_plus";
   return "free";
 };
-var get_tier_benefits_default = defineTool11({
+const get_tier_benefits_default = defineTool11({
   name: "get_tier_benefits",
   title: "Get my tier benefits and promotions",
-  description: "Return the benefits included with the signed-in user's current JetCard tier, plus the promotions/deals currently available to that tier and what upgrading would unlock.",
+  description:
+    "Return the benefits included with the signed-in user's current JetCard tier, plus the promotions/deals currently available to that tier and what upgrading would unlock.",
   inputSchema: {
-    promotions_limit: z10.number().int().min(1).max(50).default(10).describe("Maximum number of currently available promotions to return.")
+    promotions_limit: z10
+      .number()
+      .int()
+      .min(1)
+      .max(50)
+      .default(10)
+      .describe("Maximum number of currently available promotions to return."),
   },
-  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  annotations: {
+    readOnlyHint: true,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
   handler: async ({ promotions_limit }, ctx) => {
     if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+      return {
+        content: [{ type: "text", text: "Not authenticated" }],
+        isError: true,
+      };
     }
     const supabase = supabaseForUser(ctx);
     const userId = ctx.getUserId();
-    const nowIso = (/* @__PURE__ */ new Date()).toISOString();
+    const nowIso = /* @__PURE__ */ new Date().toISOString();
     const [subRes, dealsRes] = await Promise.all([
-      supabase.from("subscribers").select("tier, subscribed, subscription_end, cancel_at_period_end, updated_at").eq("user_id", userId).maybeSingle(),
-      supabase.from("deals").select("id, title, description, deal_type, venue_id, venue_name, venue_address, starts_at, expires_at").eq("active", true).lte("starts_at", nowIso).gt("expires_at", nowIso).order("expires_at", { ascending: true }).limit(promotions_limit)
+      supabase
+        .from("subscribers")
+        .select(
+          "tier, subscribed, subscription_end, cancel_at_period_end, updated_at",
+        )
+        .eq("user_id", userId)
+        .maybeSingle(),
+      supabase
+        .from("deals")
+        .select(
+          "id, title, description, deal_type, venue_id, venue_name, venue_address, starts_at, expires_at",
+        )
+        .eq("active", true)
+        .lte("starts_at", nowIso)
+        .gt("expires_at", nowIso)
+        .order("expires_at", { ascending: true })
+        .limit(promotions_limit),
     ]);
     const firstError = subRes.error ?? dealsRes.error;
     if (firstError) {
-      return { content: [{ type: "text", text: firstError.message }], isError: true };
+      return {
+        content: [{ type: "text", text: firstError.message }],
+        isError: true,
+      };
     }
     const sub = subRes.data;
     const tierKey = normalizeTier(sub?.tier, sub?.subscribed);
@@ -824,7 +1331,9 @@ var get_tier_benefits_default = defineTool11({
       tier: key,
       name: TIERS[key].name,
       monthly_price_usd: TIERS[key].price,
-      unlocks: TIERS[key].benefits.filter((b) => !b.startsWith("Everything in"))
+      unlocks: TIERS[key].benefits.filter(
+        (b) => !b.startsWith("Everything in"),
+      ),
     }));
     const promotions = (dealsRes.data ?? []).map((d) => ({
       id: d.id,
@@ -835,7 +1344,7 @@ var get_tier_benefits_default = defineTool11({
       venue_name: d.venue_name,
       venue_address: d.venue_address,
       starts_at: d.starts_at,
-      expires_at: d.expires_at
+      expires_at: d.expires_at,
     }));
     const result = {
       membership: {
@@ -845,91 +1354,162 @@ var get_tier_benefits_default = defineTool11({
         subscribed: sub?.subscribed ?? false,
         renews_or_ends: sub?.subscription_end ?? null,
         cancel_at_period_end: sub?.cancel_at_period_end ?? false,
-        last_synced: sub?.updated_at ?? null
+        last_synced: sub?.updated_at ?? null,
       },
       benefits: tier.benefits,
       promotions_available_now: promotions,
       promotion_count: promotions.length,
-      upgrade_options: upgrades
+      upgrade_options: upgrades,
     };
     return {
       content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-      structuredContent: result
+      structuredContent: result,
     };
-  }
+  },
 });
 
 // src/lib/mcp/tools/list-active-promotions.ts
 import { defineTool as defineTool12 } from "npm:@lovable.dev/mcp-js@0.26.2";
 import { z as z11 } from "npm:zod@^3.25.76";
-var DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-var TIER_LABEL = {
+const DAY_NAMES = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+const TIER_LABEL = {
   free: "JET",
   jet_plus: "JET+",
-  jetx: "JETx"
+  jetx: "JETx",
 };
-var normalizeTier2 = (raw, subscribed) => {
+const normalizeTier2 = (raw, subscribed) => {
   if (!subscribed) return "free";
   const value = (raw ?? "").toLowerCase().replace(/[\s-]/g, "_");
   if (value === "jetx" || value === "jet_x") return "jetx";
-  if (value === "jet_plus" || value === "jetplus" || value === "plus") return "jet_plus";
+  if (value === "jet_plus" || value === "jetplus" || value === "plus")
+    return "jet_plus";
   return "free";
 };
-var humanDuration = (ms) => {
+const humanDuration = (ms) => {
   if (ms <= 0) return "expired";
   const totalMinutes = Math.floor(ms / 6e4);
   const days = Math.floor(totalMinutes / 1440);
-  const hours = Math.floor(totalMinutes % 1440 / 60);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
   const minutes = totalMinutes % 60;
   if (days > 0) return `${days}d ${hours}h`;
   if (hours > 0) return `${hours}h ${minutes}m`;
   return `${minutes}m`;
 };
-var list_active_promotions_default = defineTool12({
+const list_active_promotions_default = defineTool12({
   name: "list_active_promotions",
   title: "List my active promotions",
-  description: "List the promotions/deals that are currently active and available to the signed-in user, including each promotion's expiration date, time remaining, and the eligibility conditions (active days of week, start/end window, membership tier, venue, and whether the user has saved it).",
+  description:
+    "List the promotions/deals that are currently active and available to the signed-in user, including each promotion's expiration date, time remaining, and the eligibility conditions (active days of week, start/end window, membership tier, venue, and whether the user has saved it).",
   inputSchema: {
-    only_favorites: z11.boolean().default(false).describe("When true, only return promotions for venues or deals the user has saved as favorites."),
-    venue_id: z11.string().trim().optional().describe("Optional venue id to restrict promotions to a single venue."),
-    expiring_within_hours: z11.number().int().min(1).max(720).optional().describe("Optional filter: only promotions expiring within this many hours."),
-    limit: z11.number().int().min(1).max(50).default(20).describe("Maximum number of promotions to return.")
+    only_favorites: z11
+      .boolean()
+      .default(false)
+      .describe(
+        "When true, only return promotions for venues or deals the user has saved as favorites.",
+      ),
+    venue_id: z11
+      .string()
+      .trim()
+      .optional()
+      .describe("Optional venue id to restrict promotions to a single venue."),
+    expiring_within_hours: z11
+      .number()
+      .int()
+      .min(1)
+      .max(720)
+      .optional()
+      .describe(
+        "Optional filter: only promotions expiring within this many hours.",
+      ),
+    limit: z11
+      .number()
+      .int()
+      .min(1)
+      .max(50)
+      .default(20)
+      .describe("Maximum number of promotions to return."),
   },
-  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ only_favorites, venue_id, expiring_within_hours, limit }, ctx) => {
+  annotations: {
+    readOnlyHint: true,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
+  handler: async (
+    { only_favorites, venue_id, expiring_within_hours, limit },
+    ctx,
+  ) => {
     if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+      return {
+        content: [{ type: "text", text: "Not authenticated" }],
+        isError: true,
+      };
     }
     const supabase = supabaseForUser(ctx);
     const userId = ctx.getUserId();
     const now = /* @__PURE__ */ new Date();
     const nowIso = now.toISOString();
     const todayIndex = now.getDay();
-    let dealsQuery = supabase.from("deals").select(
-      "id, title, description, deal_type, venue_id, venue_name, venue_address, starts_at, expires_at, active_days, website_url, image_url"
-    ).eq("active", true).lte("starts_at", nowIso).gt("expires_at", nowIso).order("expires_at", { ascending: true }).limit(limit);
+    let dealsQuery = supabase
+      .from("deals")
+      .select(
+        "id, title, description, deal_type, venue_id, venue_name, venue_address, starts_at, expires_at, active_days, website_url, image_url",
+      )
+      .eq("active", true)
+      .lte("starts_at", nowIso)
+      .gt("expires_at", nowIso)
+      .order("expires_at", { ascending: true })
+      .limit(limit);
     if (venue_id) dealsQuery = dealsQuery.eq("venue_id", venue_id);
     if (expiring_within_hours) {
-      const cutoff = new Date(now.getTime() + expiring_within_hours * 36e5).toISOString();
+      const cutoff = new Date(
+        now.getTime() + expiring_within_hours * 36e5,
+      ).toISOString();
       dealsQuery = dealsQuery.lte("expires_at", cutoff);
     }
     const [dealsRes, favRes, subRes] = await Promise.all([
       dealsQuery,
-      supabase.from("user_favorites").select("deal_id, venue_id").eq("user_id", userId),
-      supabase.from("subscribers").select("tier, subscribed, subscription_end").eq("user_id", userId).maybeSingle()
+      supabase
+        .from("user_favorites")
+        .select("deal_id, venue_id")
+        .eq("user_id", userId),
+      supabase
+        .from("subscribers")
+        .select("tier, subscribed, subscription_end")
+        .eq("user_id", userId)
+        .maybeSingle(),
     ]);
     const firstError = dealsRes.error ?? favRes.error ?? subRes.error;
     if (firstError) {
-      return { content: [{ type: "text", text: firstError.message }], isError: true };
+      return {
+        content: [{ type: "text", text: firstError.message }],
+        isError: true,
+      };
     }
-    const favoriteDealIds = new Set((favRes.data ?? []).map((f) => f.deal_id).filter(Boolean));
-    const favoriteVenueIds = new Set((favRes.data ?? []).map((f) => f.venue_id).filter(Boolean));
+    const favoriteDealIds = new Set(
+      (favRes.data ?? []).map((f) => f.deal_id).filter(Boolean),
+    );
+    const favoriteVenueIds = new Set(
+      (favRes.data ?? []).map((f) => f.venue_id).filter(Boolean),
+    );
     const tierKey = normalizeTier2(subRes.data?.tier, subRes.data?.subscribed);
     let promotions = (dealsRes.data ?? []).map((d) => {
       const expiresAt = new Date(d.expires_at);
-      const activeDays = Array.isArray(d.active_days) && d.active_days.length > 0 ? d.active_days : null;
+      const activeDays =
+        Array.isArray(d.active_days) && d.active_days.length > 0
+          ? d.active_days
+          : null;
       const runsToday = !activeDays || activeDays.includes(todayIndex);
-      const isFavorite = favoriteDealIds.has(d.id) || !!d.venue_id && favoriteVenueIds.has(d.venue_id);
+      const isFavorite =
+        favoriteDealIds.has(d.id) ||
+        (!!d.venue_id && favoriteVenueIds.has(d.venue_id));
       return {
         id: d.id,
         title: d.title,
@@ -938,7 +1518,7 @@ var list_active_promotions_default = defineTool12({
         venue: {
           id: d.venue_id,
           name: d.venue_name,
-          address: d.venue_address
+          address: d.venue_address,
         },
         website_url: d.website_url,
         image_url: d.image_url,
@@ -950,12 +1530,16 @@ var list_active_promotions_default = defineTool12({
           membership_tier_required: "JET (all tiers)",
           your_tier: TIER_LABEL[tierKey] ?? "JET",
           eligible_now: runsToday,
-          active_days: activeDays ? activeDays.map((n) => DAY_NAMES[n] ?? String(n)) : "Every day",
+          active_days: activeDays
+            ? activeDays.map((n) => DAY_NAMES[n] ?? String(n))
+            : "Every day",
           redeemable_window: `${d.starts_at} to ${d.expires_at}`,
           location: "In-person at the venue (Charlotte, NC)",
           saved_by_you: isFavorite,
-          notes: runsToday ? "Available today during the venue's operating hours." : "Not scheduled for today \u2014 check the active days above."
-        }
+          notes: runsToday
+            ? "Available today during the venue's operating hours."
+            : "Not scheduled for today \u2014 check the active days above.",
+        },
       };
     });
     if (only_favorites) {
@@ -966,49 +1550,66 @@ var list_active_promotions_default = defineTool12({
       your_tier: TIER_LABEL[tierKey] ?? "JET",
       subscription_ends: subRes.data?.subscription_end ?? null,
       promotion_count: promotions.length,
-      eligible_today_count: promotions.filter((p) => p.eligibility.eligible_now).length,
+      eligible_today_count: promotions.filter((p) => p.eligibility.eligible_now)
+        .length,
       filters: {
         only_favorites,
         venue_id: venue_id ?? null,
-        expiring_within_hours: expiring_within_hours ?? null
+        expiring_within_hours: expiring_within_hours ?? null,
       },
-      promotions
+      promotions,
     };
     return {
       content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-      structuredContent: result
+      structuredContent: result,
     };
-  }
+  },
 });
 
 // src/lib/mcp/tools/whoami.ts
 import { defineTool as defineTool13 } from "npm:@lovable.dev/mcp-js@0.26.2";
-var whoami_default = defineTool13({
+const whoami_default = defineTool13({
   name: "whoami",
   title: "Who am I",
-  description: "Return the signed-in JET-Around user's profile summary. Useful to verify the connection works.",
+  description:
+    "Return the signed-in JET-Around user's profile summary. Useful to verify the connection works.",
   inputSchema: {},
-  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  annotations: {
+    readOnlyHint: true,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
   handler: async (_input, ctx) => {
     if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+      return {
+        content: [{ type: "text", text: "Not authenticated" }],
+        isError: true,
+      };
     }
     const supabase = supabaseForUser(ctx);
-    const { data, error } = await supabase.from("profiles").select("id, display_name, bio, avatar_url").eq("id", ctx.getUserId()).maybeSingle();
-    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
-    const profile = { ...data ?? {}, email: ctx.getUserEmail() };
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id, display_name, bio, avatar_url")
+      .eq("id", ctx.getUserId())
+      .maybeSingle();
+    if (error)
+      return {
+        content: [{ type: "text", text: error.message }],
+        isError: true,
+      };
+    const profile = { ...(data ?? {}), email: ctx.getUserEmail() };
     return {
       content: [{ type: "text", text: JSON.stringify(profile, null, 2) }],
-      structuredContent: { profile }
+      structuredContent: { profile },
     };
-  }
+  },
 });
 
 // src/lib/mcp/index.ts
-var projectRef = "flvhduntedvorikonuvy";
-var issuerUrl = `https://${projectRef}.supabase.co/auth/v1`;
+const projectRef = "flvhduntedvorikonuvy";
+const issuerUrl = `https://${projectRef}.supabase.co/auth/v1`;
 setLogLevel("debug");
-var tools = [
+const tools = [
   list_deals_default,
   list_favorites_default,
   save_favorite_default,
@@ -1021,19 +1622,25 @@ var tools = [
   push_preferences_default,
   get_tier_benefits_default,
   list_active_promotions_default,
-  whoami_default
+  whoami_default,
 ].map(withLogging);
-logServerBoot({ name: "jet-around", version: "0.1.0", issuer: issuerUrl, toolCount: tools.length });
-var mcp_default = defineMcp({
+logServerBoot({
+  name: "jet-around",
+  version: "0.1.0",
+  issuer: issuerUrl,
+  toolCount: tools.length,
+});
+const mcp_default = defineMcp({
   name: "jet-around",
   title: "JET-Around",
   version: "0.1.0",
-  instructions: "Tools for JET-Around, a Charlotte, NC nightlife and deal discovery app. Use `list_deals` to find active deals, `list_active_promotions` for the promotions currently available to the signed-in user with expiration dates, time remaining, and eligibility conditions (active days, redemption window, tier, saved status), `list_favorites` / `save_favorite` / `remove_favorite` to manage the signed-in user's saved venues, `list_my_venues` for every venue and deal associated with the account (favorites, reviews, shares) grouped by venue, `get_heatmap_density` for the latest anonymized crowd-density snapshot by time range and location, `get_jetcard` for the signed-in user's JetCard (membership status, associated merchant, last activity), `get_tier_benefits` for the benefits and promotions available to the user's current JetCard tier plus upgrade options, `configure_notifications` to read or change the user's overall push/email notification settings, `push_preferences` to view or update per-topic push preferences (JetCard updates, merchant offers, favorite venue alerts, ending-soon reminders, direct messages), `list_activity` for the user's recent JetCard activity (timestamp, venue, action), and `whoami` to confirm the connected account.",
+  instructions:
+    "Tools for JET-Around, a Charlotte, NC nightlife and deal discovery app. Use `list_deals` to find active deals, `list_active_promotions` for the promotions currently available to the signed-in user with expiration dates, time remaining, and eligibility conditions (active days, redemption window, tier, saved status), `list_favorites` / `save_favorite` / `remove_favorite` to manage the signed-in user's saved venues, `list_my_venues` for every venue and deal associated with the account (favorites, reviews, shares) grouped by venue, `get_heatmap_density` for the latest anonymized crowd-density snapshot by time range and location, `get_jetcard` for the signed-in user's JetCard (membership status, associated merchant, last activity), `get_tier_benefits` for the benefits and promotions available to the user's current JetCard tier plus upgrade options, `configure_notifications` to read or change the user's overall push/email notification settings, `push_preferences` to view or update per-topic push preferences (JetCard updates, merchant offers, favorite venue alerts, ending-soon reminders, direct messages), `list_activity` for the user's recent JetCard activity (timestamp, venue, action), and `whoami` to confirm the connected account.",
   auth: auth.oauth.issuer({
     issuer: issuerUrl,
-    acceptedAudiences: "authenticated"
+    acceptedAudiences: "authenticated",
   }),
-  tools
+  tools,
 });
 
 // lovable-mcp-supabase-entry.ts

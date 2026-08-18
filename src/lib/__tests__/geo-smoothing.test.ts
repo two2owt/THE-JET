@@ -20,7 +20,12 @@ describe("createLocationSmoother", () => {
     const s = createLocationSmoother();
     s.push({ ...BASE, accuracy: 10, timestamp: 0 });
     // ~4m of jitter, well inside the noise floor
-    const jitter = s.push({ lat: BASE.lat + 0.00003, lng: BASE.lng, accuracy: 10, timestamp: 6000 });
+    const jitter = s.push({
+      lat: BASE.lat + 0.00003,
+      lng: BASE.lng,
+      accuracy: 10,
+      timestamp: 6000,
+    });
     expect(jitter).toBeNull();
   });
 
@@ -28,7 +33,14 @@ describe("createLocationSmoother", () => {
     const s = createLocationSmoother();
     s.push({ ...BASE, accuracy: 10, timestamp: 0 });
     // 5km in 10 seconds
-    expect(s.push({ lat: BASE.lat + 0.045, lng: BASE.lng, accuracy: 10, timestamp: 10_000 })).toBeNull();
+    expect(
+      s.push({
+        lat: BASE.lat + 0.045,
+        lng: BASE.lng,
+        accuracy: 10,
+        timestamp: 10_000,
+      }),
+    ).toBeNull();
   });
 
   it("tracks real movement but damps toward the estimate", () => {
@@ -44,8 +56,15 @@ describe("createLocationSmoother", () => {
 
   it("snaps output to the jitter grid", () => {
     const s = createLocationSmoother();
-    const fix = s.push({ lat: 35.22712345, lng: -80.84318765, accuracy: 5, timestamp: 0 })!;
-    expect(Math.abs(Math.round(fix.lat / 0.00005) * 0.00005 - fix.lat)).toBeLessThan(1e-9);
+    const fix = s.push({
+      lat: 35.22712345,
+      lng: -80.84318765,
+      accuracy: 5,
+      timestamp: 0,
+    })!;
+    expect(
+      Math.abs(Math.round(fix.lat / 0.00005) * 0.00005 - fix.lat),
+    ).toBeLessThan(1e-9);
   });
 
   it("resets cleanly", () => {

@@ -28,10 +28,26 @@ interface FunnelStep {
 }
 
 const STEPS: FunnelStep[] = [
-  { name: "Search Performed",   eventName: "Search Performed",              color: "hsl(var(--primary))" },
-  { name: "Deal Viewed",        eventName: "Deal Viewed",                   color: "hsl(var(--accent))" },
-  { name: "Deal Clicked",       eventName: "Deal Clicked",                  color: "hsl(var(--gold))" },
-  { name: "Checkout Started",   eventName: "Subscription Checkout Started", color: "hsl(var(--destructive))" },
+  {
+    name: "Search Performed",
+    eventName: "Search Performed",
+    color: "hsl(var(--primary))",
+  },
+  {
+    name: "Deal Viewed",
+    eventName: "Deal Viewed",
+    color: "hsl(var(--accent))",
+  },
+  {
+    name: "Deal Clicked",
+    eventName: "Deal Clicked",
+    color: "hsl(var(--gold))",
+  },
+  {
+    name: "Checkout Started",
+    eventName: "Subscription Checkout Started",
+    color: "hsl(var(--destructive))",
+  },
 ];
 
 interface StepCounts {
@@ -58,9 +74,18 @@ export function ConversionFunnel() {
         const client = supabase as unknown as {
           from: (t: string) => {
             select: (cols: string) => {
-              in: (col: string, vals: string[]) => {
-                gte: (col: string, v: string) => Promise<{
-                  data: Array<{ event_name: string; session_id: string | null }> | null;
+              in: (
+                col: string,
+                vals: string[],
+              ) => {
+                gte: (
+                  col: string,
+                  v: string,
+                ) => Promise<{
+                  data: Array<{
+                    event_name: string;
+                    session_id: string | null;
+                  }> | null;
                   error: { message: string } | null;
                 }>;
               };
@@ -71,15 +96,21 @@ export function ConversionFunnel() {
         const { data, error: qErr } = await client
           .from("analytics_events")
           .select("event_name, session_id")
-          .in("event_name", STEPS.map((s) => s.eventName))
+          .in(
+            "event_name",
+            STEPS.map((s) => s.eventName),
+          )
           .gte("created_at", since);
 
         if (qErr) throw new Error(qErr.message);
         if (cancelled) return;
 
         // Tally unique sessions and total events per step.
-        const acc: Record<string, { sessions: Set<string>; events: number }> = {};
-        STEPS.forEach((s) => { acc[s.eventName] = { sessions: new Set(), events: 0 }; });
+        const acc: Record<string, { sessions: Set<string>; events: number }> =
+          {};
+        STEPS.forEach((s) => {
+          acc[s.eventName] = { sessions: new Set(), events: 0 };
+        });
 
         for (const row of data ?? []) {
           const bucket = acc[row.event_name];
@@ -97,13 +128,18 @@ export function ConversionFunnel() {
         }
         setCounts(result);
       } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load funnel data");
+        if (!cancelled)
+          setError(
+            e instanceof Error ? e.message : "Failed to load funnel data",
+          );
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [range]);
 
   const rows = useMemo(() => {
@@ -113,10 +149,10 @@ export function ConversionFunnel() {
       const sessions = counts[s.eventName].sessions;
       const events = counts[s.eventName].events;
       const fromTop = topSessions > 0 ? (sessions / topSessions) * 100 : 0;
-      const prevSessions = i === 0 ? sessions : counts[STEPS[i - 1].eventName].sessions;
-      const stepConversion = i === 0
-        ? 100
-        : prevSessions > 0 ? (sessions / prevSessions) * 100 : 0;
+      const prevSessions =
+        i === 0 ? sessions : counts[STEPS[i - 1].eventName].sessions;
+      const stepConversion =
+        i === 0 ? 100 : prevSessions > 0 ? (sessions / prevSessions) * 100 : 0;
       const dropoff = i === 0 ? 0 : Math.max(prevSessions - sessions, 0);
       return { ...s, sessions, events, fromTop, stepConversion, dropoff };
     });
@@ -166,7 +202,8 @@ export function ConversionFunnel() {
               </span>
               {counts && (
                 <span className="text-sm text-muted-foreground">
-                  {counts[STEPS[STEPS.length - 1].eventName].sessions} of {counts[STEPS[0].eventName].sessions} sessions
+                  {counts[STEPS[STEPS.length - 1].eventName].sessions} of{" "}
+                  {counts[STEPS[0].eventName].sessions} sessions
                 </span>
               )}
             </div>
@@ -184,7 +221,9 @@ export function ConversionFunnel() {
             <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm">
               <AlertCircle className="h-4 w-4 mt-0.5 text-destructive shrink-0" />
               <div>
-                <p className="font-medium text-destructive">Couldn't load funnel data</p>
+                <p className="font-medium text-destructive">
+                  Couldn't load funnel data
+                </p>
                 <p className="text-muted-foreground">{error}</p>
               </div>
             </div>
@@ -192,7 +231,12 @@ export function ConversionFunnel() {
 
           {loading && !error && (
             <div className="flex flex-col gap-3">
-              {STEPS.map((s) => <Skeleton key={s.eventName} className="h-16 w-full rounded-xl" />)}
+              {STEPS.map((s) => (
+                <Skeleton
+                  key={s.eventName}
+                  className="h-16 w-full rounded-xl"
+                />
+              ))}
             </div>
           )}
 
@@ -211,7 +255,8 @@ export function ConversionFunnel() {
                     </div>
                     <div className="flex items-baseline gap-3 text-xs text-muted-foreground whitespace-nowrap">
                       <span className="font-mono tabular-nums text-foreground">
-                        {row.sessions.toLocaleString()} <span className="text-muted-foreground">sessions</span>
+                        {row.sessions.toLocaleString()}{" "}
+                        <span className="text-muted-foreground">sessions</span>
                       </span>
                       <span className="hidden sm:inline">·</span>
                       <span className="hidden sm:inline font-mono tabular-nums">
@@ -242,7 +287,8 @@ export function ConversionFunnel() {
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground pl-4">
                       <TrendingDown className="h-3 w-3" aria-hidden="true" />
                       <span>
-                        {row.dropoff.toLocaleString()} sessions dropped from previous step
+                        {row.dropoff.toLocaleString()} sessions dropped from
+                        previous step
                       </span>
                     </div>
                   )}

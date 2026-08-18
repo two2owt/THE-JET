@@ -1,5 +1,9 @@
 import { bundle } from "@remotion/bundler";
-import { renderMedia, selectComposition, openBrowser } from "@remotion/renderer";
+import {
+  renderMedia,
+  selectComposition,
+  openBrowser,
+} from "@remotion/renderer";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -14,7 +18,9 @@ const bundled = await bundle({
 
 const browser = await openBrowser("chrome", {
   browserExecutable: process.env.PUPPETEER_EXECUTABLE_PATH ?? "/bin/chromium",
-  chromiumOptions: { args: ["--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage"] },
+  chromiumOptions: {
+    args: ["--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage"],
+  },
   chromeMode: "chrome-for-testing",
 });
 

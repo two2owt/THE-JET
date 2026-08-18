@@ -14,9 +14,13 @@ const ADMIN_EMAILS = [
 const HIGH_SEVERITIES = new Set(["critical", "high", "error", "errr"]);
 
 function esc(text: string): string {
-  return String(text).replace(/[&<>"']/g, (c) => (
-    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!
-  ));
+  return String(text).replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ]!,
+  );
 }
 
 Deno.serve(async (req) => {
@@ -32,7 +36,9 @@ Deno.serve(async (req) => {
   try {
     const { data: findings, error } = await supabase
       .from("admin_security_findings")
-      .select("id, scanner_name, internal_id, title, severity, summary, status, updated_at");
+      .select(
+        "id, scanner_name, internal_id, title, severity, summary, status, updated_at",
+      );
 
     if (error) throw error;
 
@@ -41,7 +47,9 @@ Deno.serve(async (req) => {
       .select("finding_id, status, alert_type");
 
     const alertedSet = new Set(
-      (alerted ?? []).map((a: any) => `${a.finding_id}|${a.status}|${a.alert_type}`),
+      (alerted ?? []).map(
+        (a: any) => `${a.finding_id}|${a.status}|${a.alert_type}`,
+      ),
     );
 
     const toNotify: Array<{ f: any; alert_type: string }> = [];
@@ -59,7 +67,8 @@ Deno.serve(async (req) => {
       // Status change to fixed
       if (status === "fixed") {
         const key = `${f.id}|fixed|status_change`;
-        if (!alertedSet.has(key)) toNotify.push({ f, alert_type: "status_change" });
+        if (!alertedSet.has(key))
+          toNotify.push({ f, alert_type: "status_change" });
       }
     }
 
@@ -74,20 +83,25 @@ Deno.serve(async (req) => {
     if (!resendKey) {
       return new Response(
         JSON.stringify({ error: "RESEND_API_KEY not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
     const resend = new Resend(resendKey);
 
     const rows = toNotify
-      .map(({ f, alert_type }) => `
+      .map(
+        ({ f, alert_type }) => `
         <tr>
           <td style="padding:8px;border-bottom:1px solid #eee"><strong>${esc(f.severity)}</strong></td>
           <td style="padding:8px;border-bottom:1px solid #eee">${esc(alert_type)}</td>
           <td style="padding:8px;border-bottom:1px solid #eee">${esc(f.title ?? f.internal_id)}</td>
           <td style="padding:8px;border-bottom:1px solid #eee"><code>${esc(f.internal_id)}</code></td>
           <td style="padding:8px;border-bottom:1px solid #eee">${esc(f.status)}</td>
-        </tr>`)
+        </tr>`,
+      )
       .join("");
 
     const html = `
@@ -116,8 +130,14 @@ Deno.serve(async (req) => {
     if ((emailResp as any).error) {
       console.error("Resend error:", (emailResp as any).error);
       return new Response(
-        JSON.stringify({ error: "email_failed", details: (emailResp as any).error }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        JSON.stringify({
+          error: "email_failed",
+          details: (emailResp as any).error,
+        }),
+        {
+          status: 502,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -142,7 +162,10 @@ Deno.serve(async (req) => {
     console.error(`${FUNCTION_NAME} error:`, e);
     return new Response(
       JSON.stringify({ error: e?.message ?? "internal_error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 });

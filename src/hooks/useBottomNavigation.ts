@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useLocation } from "@/lib/router-compat";
 
-export type NavTab = "map" | "explore" | "notifications" | "favorites" | "social";
+export type NavTab =
+  "map" | "explore" | "notifications" | "favorites" | "social";
 
 interface UseBottomNavigationOptions {
   /** The default tab when on this page */
@@ -24,13 +25,13 @@ export function useBottomNavigation(options: UseBottomNavigationOptions = {}) {
     // If we're on a dedicated page, use that as the tab
     if (location.pathname === "/favorites") return "favorites";
     if (location.pathname === "/social") return "social";
-    
+
     // Otherwise check URL params for Index page tabs
     const searchParams = new URLSearchParams(location.search);
     const tabParam = searchParams.get("tab");
     if (tabParam === "explore") return "explore";
     if (tabParam === "notifications") return "notifications";
-    
+
     return defaultTab;
   }, [location.pathname, location.search, defaultTab]);
 
@@ -44,40 +45,47 @@ export function useBottomNavigation(options: UseBottomNavigationOptions = {}) {
     }
   }, [location.pathname, location.search, getTabFromLocation]);
 
-  const handleTabChange = useCallback((tab: NavTab) => {
-    // Allow parent to intercept navigation
-    if (onBeforeNavigate && onBeforeNavigate(tab) === false) {
-      return;
-    }
-
-    setActiveTab(tab);
-
-    // Preserve other query params (q, venue, layers, etc.) so search query,
-    // open JetCard, and map filters survive tab changes and remain shareable.
-    const params = new URLSearchParams(location.search);
-    switch (tab) {
-      case "map":
-        params.delete("tab");
-        break;
-      case "explore":
-        params.set("tab", "explore");
-        break;
-      case "notifications":
-        params.set("tab", "notifications");
-        break;
-      case "favorites":
-        // `tab` only addresses Index sub-tabs — don't drag it onto other pages.
-        params.delete("tab");
-        navigate(`/favorites${params.toString() ? `?${params.toString()}` : ""}`);
+  const handleTabChange = useCallback(
+    (tab: NavTab) => {
+      // Allow parent to intercept navigation
+      if (onBeforeNavigate && onBeforeNavigate(tab) === false) {
         return;
-      case "social":
-        params.delete("tab");
-        navigate(`/social${params.toString() ? `?${params.toString()}` : ""}`);
-        return;
-    }
-    const search = params.toString();
-    navigate(`/${search ? `?${search}` : ""}`, { replace: true });
-  }, [navigate, onBeforeNavigate, location.search]);
+      }
+
+      setActiveTab(tab);
+
+      // Preserve other query params (q, venue, layers, etc.) so search query,
+      // open JetCard, and map filters survive tab changes and remain shareable.
+      const params = new URLSearchParams(location.search);
+      switch (tab) {
+        case "map":
+          params.delete("tab");
+          break;
+        case "explore":
+          params.set("tab", "explore");
+          break;
+        case "notifications":
+          params.set("tab", "notifications");
+          break;
+        case "favorites":
+          // `tab` only addresses Index sub-tabs — don't drag it onto other pages.
+          params.delete("tab");
+          navigate(
+            `/favorites${params.toString() ? `?${params.toString()}` : ""}`,
+          );
+          return;
+        case "social":
+          params.delete("tab");
+          navigate(
+            `/social${params.toString() ? `?${params.toString()}` : ""}`,
+          );
+          return;
+      }
+      const search = params.toString();
+      navigate(`/${search ? `?${search}` : ""}`, { replace: true });
+    },
+    [navigate, onBeforeNavigate, location.search],
+  );
 
   return {
     activeTab,

@@ -13,7 +13,7 @@ interface MovementPathData {
 }
 
 interface MovementPathFilters {
-  timeFilter?: 'all' | 'today' | 'this_week' | 'this_hour';
+  timeFilter?: "all" | "today" | "this_week" | "this_hour";
   minFrequency?: number;
   /** When set, takes precedence over `timeFilter`. Filters user_locations to
    *  rows whose `created_at` is within the last N minutes on the server. */
@@ -44,42 +44,52 @@ export const useMovementPaths = (filters: MovementPathFilters = {}) => {
 
       // Endpoint requires an authenticated user — skip the call (and the 401)
       // entirely when there is no session.
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) {
         setPathData(null);
         setUnauthorized(true);
-        setError('unauthorized');
+        setError("unauthorized");
         return;
       }
 
       const params = new URLSearchParams();
       if (filters.windowMinutes && filters.windowMinutes > 0) {
-        params.append('time_window_minutes', String(Math.floor(filters.windowMinutes)));
+        params.append(
+          "time_window_minutes",
+          String(Math.floor(filters.windowMinutes)),
+        );
       } else if (filters.timeFilter) {
-        params.append('time_filter', filters.timeFilter);
+        params.append("time_filter", filters.timeFilter);
       }
-      if (filters.minFrequency !== undefined) params.append('min_frequency', filters.minFrequency.toString());
+      if (filters.minFrequency !== undefined)
+        params.append("min_frequency", filters.minFrequency.toString());
 
       const queryString = params.toString();
-      const path = queryString ? `get-movement-paths?${queryString}` : 'get-movement-paths';
+      const path = queryString
+        ? `get-movement-paths?${queryString}`
+        : "get-movement-paths";
 
-      const { data, error: functionError } = await supabase.functions.invoke(path);
+      const { data, error: functionError } =
+        await supabase.functions.invoke(path);
 
       if (functionError) throw functionError;
-      
+
       setPathData(data);
       setError(null);
       setUnauthorized(false);
     } catch (err) {
-      const status = (err as { context?: { status?: number } })?.context?.status;
+      const status = (err as { context?: { status?: number } })?.context
+        ?.status;
       if (status === 401 || status === 403) {
-        console.info('Movement paths unavailable (admin-only endpoint).');
+        console.info("Movement paths unavailable (admin-only endpoint).");
         setUnauthorized(true);
-        setError('unauthorized');
+        setError("unauthorized");
       } else {
-        console.error('Error loading movement path data:', err);
+        console.error("Error loading movement path data:", err);
         setUnauthorized(false);
-        setError('Failed to load movement paths');
+        setError("Failed to load movement paths");
       }
     } finally {
       setLoading(false);
@@ -103,7 +113,7 @@ export const useMovementPaths = (filters: MovementPathFilters = {}) => {
     // `user_locations` is intentionally NOT published to realtime (precise
     // coordinates must not be broadcast), so refresh on an interval instead.
     const poll = setInterval(() => {
-      if (typeof document !== 'undefined' && document.hidden) return;
+      if (typeof document !== "undefined" && document.hidden) return;
       loadPathDataRef.current?.();
     }, 30000);
 
@@ -113,7 +123,11 @@ export const useMovementPaths = (filters: MovementPathFilters = {}) => {
   // Re-fetch once the user signs in / token refreshes.
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+      if (
+        event === "SIGNED_IN" ||
+        event === "SIGNED_OUT" ||
+        event === "TOKEN_REFRESHED"
+      ) {
         loadPathData();
       }
     });

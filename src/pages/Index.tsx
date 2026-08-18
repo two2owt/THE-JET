@@ -1,4 +1,12 @@
-import { useState, useEffect, useRef, lazy, Suspense, useCallback, useMemo } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  lazy,
+  Suspense,
+  useCallback,
+  useMemo,
+} from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, useSearchParams } from "@/lib/router-compat";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +16,6 @@ import { CITIES, type City } from "@/types/cities";
 // Critical path: BottomNav is always visible
 import { BottomNav } from "@/components/BottomNav";
 import { useHeaderConfig } from "@/contexts/HeaderContext";
-
 
 // Hooks must be imported synchronously (React rules)
 import { useMapboxToken } from "@/hooks/useMapboxToken";
@@ -25,7 +32,10 @@ import { useVenueActivity } from "@/hooks/useVenueActivity";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useBottomNavigation } from "@/hooks/useBottomNavigation";
 import { useMapPanelInset } from "@/hooks/useMapPanelInset";
-import { NotificationsTabSkeleton, ExploreTabSkeleton } from "@/components/skeletons/PageSkeletons";
+import {
+  NotificationsTabSkeleton,
+  ExploreTabSkeleton,
+} from "@/components/skeletons/PageSkeletons";
 import { TabPageHeader } from "@/components/TabPageHeader";
 import { EnablePushButton } from "@/components/EnablePushButton";
 import { PageShell } from "@/components/PageShell";
@@ -37,23 +47,53 @@ import {
 } from "@/lib/onboardingStatus";
 
 // Lazy load heavy components - deferred until needed
-const MapboxHeatmap = lazy(() => import("@/components/MapboxHeatmap").then(m => ({ default: m.MapboxHeatmap })));
+const MapboxHeatmap = lazy(() =>
+  import("@/components/MapboxHeatmap").then((m) => ({
+    default: m.MapboxHeatmap,
+  })),
+);
 
 // Lazy load interaction-triggered components - not needed for first paint
-const JetCard = lazy(() => import("@/components/JetCard").then(m => ({ default: m.JetCard })));
+const JetCard = lazy(() =>
+  import("@/components/JetCard").then((m) => ({ default: m.JetCard })),
+);
 import { JetCardSkeleton } from "@/components/skeletons/JetCardSkeleton";
-const ParkingCard = lazy(() => import("@/components/ParkingCard").then(m => ({ default: m.ParkingCard })));
-const NotificationCard = lazy(() => import("@/components/NotificationCard").then(m => ({ default: m.NotificationCard })));
+const ParkingCard = lazy(() =>
+  import("@/components/ParkingCard").then((m) => ({ default: m.ParkingCard })),
+);
+const NotificationCard = lazy(() =>
+  import("@/components/NotificationCard").then((m) => ({
+    default: m.NotificationCard,
+  })),
+);
 
 // Lazy load tab content and dialogs - user-triggered
-const ExploreTab = lazy(() => import("@/components/ExploreTab").then(m => ({ default: m.ExploreTab })));
+const ExploreTab = lazy(() =>
+  import("@/components/ExploreTab").then((m) => ({ default: m.ExploreTab })),
+);
 const DirectionsDialog = lazy(() => import("@/components/DirectionsDialog"));
-const ShareToFriendDialog = lazy(() => import("@/components/ShareToFriendDialog").then(m => ({ default: m.ShareToFriendDialog })));
+const ShareToFriendDialog = lazy(() =>
+  import("@/components/ShareToFriendDialog").then((m) => ({
+    default: m.ShareToFriendDialog,
+  })),
+);
 
 // Lazy load non-critical UI - deferred until after FCP
-const OfflineBanner = lazy(() => import("@/components/OfflineBanner").then(m => ({ default: m.OfflineBanner })));
-const AuthPWAInstallPromptWrapper = lazy(() => import("@/components/AuthPWAInstallPromptWrapper").then(m => ({ default: m.AuthPWAInstallPromptWrapper })));
-const PushNotificationPrompt = lazy(() => import("@/components/PushNotificationPrompt").then(m => ({ default: m.PushNotificationPrompt })));
+const OfflineBanner = lazy(() =>
+  import("@/components/OfflineBanner").then((m) => ({
+    default: m.OfflineBanner,
+  })),
+);
+const AuthPWAInstallPromptWrapper = lazy(() =>
+  import("@/components/AuthPWAInstallPromptWrapper").then((m) => ({
+    default: m.AuthPWAInstallPromptWrapper,
+  })),
+);
+const PushNotificationPrompt = lazy(() =>
+  import("@/components/PushNotificationPrompt").then((m) => ({
+    default: m.PushNotificationPrompt,
+  })),
+);
 
 // Minimal critical imports
 import { Map as MapIcon, Bell } from "lucide-react";
@@ -64,9 +104,11 @@ const Index = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { session, isLoading: authLoading } = useAuth();
-  
+
   // Use shared navigation hook for consistent tab handling
-  const { activeTab, setActiveTab, handleTabChange } = useBottomNavigation({ defaultTab: "map" });
+  const { activeTab, setActiveTab, handleTabChange } = useBottomNavigation({
+    defaultTab: "map",
+  });
   const { unreadCount: unreadMessages } = useUnreadMessages();
   // Location streaming is mounted once app-wide in `AppShell` so background
   // tracking (when enabled in preferences) survives tab/route changes.
@@ -92,14 +134,19 @@ const Index = () => {
       })
       .catch(() => {});
   }, [selectedVenue]);
-  const [selectedParking, setSelectedParking] = useState<{ lat: number; lng: number; name?: string } | null>(null);
+  const [selectedParking, setSelectedParking] = useState<{
+    lat: number;
+    lng: number;
+    name?: string;
+  } | null>(null);
   // Persisted city — initialized synchronously from localStorage so the first
   // paint already shows the user's last city (no flash of Charlotte default).
   const [selectedCity, setSelectedCity] = useState<City>(() => {
     try {
-      const savedId = typeof window !== 'undefined'
-        ? window.localStorage.getItem('jet-map-selected-city')
-        : null;
+      const savedId =
+        typeof window !== "undefined"
+          ? window.localStorage.getItem("jet-map-selected-city")
+          : null;
       const match = savedId ? CITIES.find((c) => c.id === savedId) : undefined;
       return match ?? CITIES[0]; // Default to Charlotte
     } catch {
@@ -110,12 +157,14 @@ const Index = () => {
   // Persist selectedCity changes for the next session.
   useEffect(() => {
     try {
-      window.localStorage.setItem('jet-map-selected-city', selectedCity.id);
+      window.localStorage.setItem("jet-map-selected-city", selectedCity.id);
     } catch {
       /* storage disabled — ignore */
     }
   }, [selectedCity]);
-  const [detectedLocationName, setDetectedLocationName] = useState<string | null>(null); // Actual city from reverse geocoding
+  const [detectedLocationName, setDetectedLocationName] = useState<
+    string | null
+  >(null); // Actual city from reverse geocoding
   // Increments every time the user (or geolocation) picks a city, so the
   // CityTransitionOverlay replays its takeoff/landing animation.
   const [cityTransitionNonce, setCityTransitionNonce] = useState(0);
@@ -123,7 +172,11 @@ const Index = () => {
   const [showSendDialog, setShowSendDialog] = useState(false);
   const [sendDialogUserId, setSendDialogUserId] = useState<string | null>(null);
   const [, setDeepLinkedDeal] = useState<any>(null);
-  const { token: mapboxToken, loading: mapboxLoading, error: mapboxError } = useMapboxToken();
+  const {
+    token: mapboxToken,
+    loading: mapboxLoading,
+    error: mapboxError,
+  } = useMapboxToken();
   // Gate the map on hydration: the token can already be warm in cache on the
   // client, so rendering it during hydration diverged from the empty SSR tree.
   const hydrated = useHydrated();
@@ -135,10 +188,11 @@ const Index = () => {
   const [dataReady, setDataReady] = useState(false);
   useEffect(() => {
     let cancelled = false;
-    const trigger = () => { if (!cancelled) setDataReady(true); };
+    const trigger = () => {
+      if (!cancelled) setDataReady(true);
+    };
     const ric = (window as any).requestIdleCallback as
-      | ((cb: () => void, opts?: { timeout: number }) => number)
-      | undefined;
+      ((cb: () => void, opts?: { timeout: number }) => number) | undefined;
     const id = ric
       ? ric(trigger, { timeout: 1500 })
       : (window.setTimeout(trigger, 600) as unknown as number);
@@ -152,11 +206,22 @@ const Index = () => {
     };
   }, []);
 
-  const { notifications, markAsRead, markAllAsRead } = useNotifications(dataReady);
-  const unreadNotifications = notifications.filter(n => !n.read).length;
+  const { notifications, markAsRead, markAllAsRead } =
+    useNotifications(dataReady);
+  const unreadNotifications = notifications.filter((n) => !n.read).length;
   useAutoScrapeVenueImages(dataReady);
-  const { deals, refresh: refreshDeals, loading: dealsLoading, lastUpdated: dealsLastUpdated } = useDeals(false, dataReady);
-  const { venues: realVenues, loading: venuesLoading, refresh: refreshVenues, lastUpdated: venuesLastUpdated } = useVenueActivity(dataReady, selectedCity);
+  const {
+    deals,
+    refresh: refreshDeals,
+    loading: dealsLoading,
+    lastUpdated: dealsLastUpdated,
+  } = useDeals(false, dataReady);
+  const {
+    venues: realVenues,
+    loading: venuesLoading,
+    refresh: refreshVenues,
+    lastUpdated: venuesLastUpdated,
+  } = useVenueActivity(dataReady, selectedCity);
   const { justInstalled, clearJustInstalled } = usePWAInstall();
   const [showPushPrompt, setShowPushPrompt] = useState(false);
   const jetCardRef = useRef<HTMLDivElement>(null);
@@ -168,12 +233,12 @@ const Index = () => {
   // no dead space is reserved when a card is closed.
   useMapPanelInset(jetCardRef, !!selectedVenue && activeTab === "map");
   useMapPanelInset(parkingCardRef, !!selectedParking && activeTab === "map");
-  
+
   // Swipe to dismiss for JetCard on mobile
   const { handlers: swipeHandlers, style: swipeStyle } = useSwipeToDismiss({
     onDismiss: () => setSelectedVenue(null),
     threshold: 80,
-    direction: 'down'
+    direction: "down",
   });
 
   // Venues come exclusively from the live merchant-driven dataset. Hardcoded
@@ -230,7 +295,9 @@ const Index = () => {
     // could blow away a deep-linked `?venue=` before it's read.
     if (!venueRestoredRef.current) return;
     const currentParam = searchParams.get("venue");
-    const nextParam = selectedVenue ? encodeURIComponent(selectedVenue.id) : null;
+    const nextParam = selectedVenue
+      ? encodeURIComponent(selectedVenue.id)
+      : null;
     if (currentParam === nextParam) return;
     const next = new URLSearchParams(searchParams);
     if (nextParam) next.set("venue", nextParam);
@@ -244,79 +311,86 @@ const Index = () => {
   }, [selectedVenue, searchParams, setSearchParams]);
 
   // Handle deep linked deal - select the venue associated with the deal
-  const handleDeepLinkDeal = useCallback(async (_dealId: string, dealData: any) => {
-    setDeepLinkedDeal(dealData);
-    setActiveTab("map");
-    
-    // Find or create venue data from the deal
-    const venueFromDeal: Venue = {
-      id: dealData.venue_id,
-      name: dealData.venue_name,
-      lat: selectedCity.lat, // Default to city center if no coords
-      lng: selectedCity.lng,
-      activity: 80,
-      category: dealData.deal_type || "Deal",
-      neighborhood: "",
-      address: dealData.venue_address,
-      imageUrl: dealData.image_url || getVenueImage(dealData.venue_name),
-    };
+  const handleDeepLinkDeal = useCallback(
+    async (_dealId: string, dealData: any) => {
+      setDeepLinkedDeal(dealData);
+      setActiveTab("map");
 
-    // Try to find the venue in our venue list for better coordinates
-    const existingVenue = venues.find(v => 
-      v.name.toLowerCase() === dealData.venue_name.toLowerCase()
-    );
+      // Find or create venue data from the deal
+      const venueFromDeal: Venue = {
+        id: dealData.venue_id,
+        name: dealData.venue_name,
+        lat: selectedCity.lat, // Default to city center if no coords
+        lng: selectedCity.lng,
+        activity: 80,
+        category: dealData.deal_type || "Deal",
+        neighborhood: "",
+        address: dealData.venue_address,
+        imageUrl: dealData.image_url || getVenueImage(dealData.venue_name),
+      };
 
-    if (existingVenue) {
-      setSelectedVenue({
-        ...existingVenue,
-        imageUrl: dealData.image_url || getVenueImage(existingVenue.name) || existingVenue.imageUrl,
-        address: dealData.venue_address || existingVenue.address
-      });
-    } else {
-      setSelectedVenue(venueFromDeal);
-    }
+      // Try to find the venue in our venue list for better coordinates
+      const existingVenue = venues.find(
+        (v) => v.name.toLowerCase() === dealData.venue_name.toLowerCase(),
+      );
 
-    // Scroll to JetCard
-    setTimeout(() => {
-      jetCardRef.current?.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'start' 
-      });
-    }, 300);
-  }, [venues, selectedCity, getVenueImage]);
+      if (existingVenue) {
+        setSelectedVenue({
+          ...existingVenue,
+          imageUrl:
+            dealData.image_url ||
+            getVenueImage(existingVenue.name) ||
+            existingVenue.imageUrl,
+          address: dealData.venue_address || existingVenue.address,
+        });
+      } else {
+        setSelectedVenue(venueFromDeal);
+      }
+
+      // Scroll to JetCard
+      setTimeout(() => {
+        jetCardRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 300);
+    },
+    [venues, selectedCity, getVenueImage],
+  );
 
   // Handle deep linked venue. Accepts a stable venue id (preferred) or a
   // legacy venue name for backward compatibility with old shared links.
-  const handleDeepLinkVenue = useCallback((venueIdOrName: string) => {
-    setActiveTab("map");
-    const lower = venueIdOrName.toLowerCase();
-    const venue =
-      venues.find((v) => v.id === venueIdOrName) ??
-      venues.find((v) => v.name.toLowerCase() === lower);
-    
-    if (venue) {
-      const venueWithImage = {
-        ...venue,
-        imageUrl: getVenueImage(venue.name) || venue.imageUrl,
-      };
-      setSelectedVenue(venueWithImage);
-      
-      setTimeout(() => {
-        jetCardRef.current?.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'start' 
-        });
-      }, 300);
-    }
-  }, [venues, getVenueImage]);
+  const handleDeepLinkVenue = useCallback(
+    (venueIdOrName: string) => {
+      setActiveTab("map");
+      const lower = venueIdOrName.toLowerCase();
+      const venue =
+        venues.find((v) => v.id === venueIdOrName) ??
+        venues.find((v) => v.name.toLowerCase() === lower);
+
+      if (venue) {
+        const venueWithImage = {
+          ...venue,
+          imageUrl: getVenueImage(venue.name) || venue.imageUrl,
+        };
+        setSelectedVenue(venueWithImage);
+
+        setTimeout(() => {
+          jetCardRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }, 300);
+      }
+    },
+    [venues, getVenueImage],
+  );
 
   // Initialize deep linking
   useDeepLinking({
     onDealOpen: handleDeepLinkDeal,
     onVenueOpen: handleDeepLinkVenue,
   });
-
-
 
   // Check onboarding status — only redirect when we *know* the user
   // hasn't completed it. Uses AuthContext's already-resolved session
@@ -359,7 +433,7 @@ const Index = () => {
   // Reset map UI collapsed state when switching to map tab
   useEffect(() => {
     if (activeTab === "map") {
-      setMapUIResetKey(prev => prev + 1);
+      setMapUIResetKey((prev) => prev + 1);
     }
   }, [activeTab]);
 
@@ -370,7 +444,7 @@ const Index = () => {
     setSelectedCity(city);
     setCityTransitionNonce((n) => n + 1);
     toast.success(`Switched to ${city.name}, ${city.state}`, {
-      description: "Finding deals in your area"
+      description: "Finding deals in your area",
     });
   }, []);
 
@@ -381,43 +455,52 @@ const Index = () => {
   }, []);
 
   // Handle detected location name from reverse geocoding
-  const handleDetectedLocationNameChange = useCallback((name: string | null) => {
-    setDetectedLocationName(name);
-  }, []);
+  const handleDetectedLocationNameChange = useCallback(
+    (name: string | null) => {
+      setDetectedLocationName(name);
+    },
+    [],
+  );
 
-  const handleVenueSelect = useCallback((venue: Venue | string) => {
-    if (typeof venue === 'string') {
-      const foundVenue = venues.find(v => v.name === venue);
-      if (foundVenue) {
+  const handleVenueSelect = useCallback(
+    (venue: Venue | string) => {
+      if (typeof venue === "string") {
+        const foundVenue = venues.find((v) => v.name === venue);
+        if (foundVenue) {
+          const venueWithImage = {
+            ...foundVenue,
+            imageUrl: getVenueImage(foundVenue.name) || foundVenue.imageUrl,
+          };
+          setSelectedVenue(venueWithImage);
+          setActiveTab("map");
+          toast.success(`Selected ${foundVenue.name}`, {
+            description: `${foundVenue.activity}% active in ${foundVenue.neighborhood}`,
+          });
+        }
+      } else {
         const venueWithImage = {
-          ...foundVenue,
-          imageUrl: getVenueImage(foundVenue.name) || foundVenue.imageUrl,
+          ...venue,
+          imageUrl: getVenueImage(venue.name) || venue.imageUrl,
         };
         setSelectedVenue(venueWithImage);
-        setActiveTab('map');
-        toast.success(`Selected ${foundVenue.name}`, {
-          description: `${foundVenue.activity}% active in ${foundVenue.neighborhood}`
+        // Always surface the JetCard on the map so the marker context lines up
+        // with the card (and the card isn't obscured by other tabs' chrome).
+        setActiveTab("map");
+        toast.success(`Selected ${venue.name}`, {
+          description: `${venue.activity}% active in ${venue.neighborhood}`,
         });
       }
-    } else {
-      const venueWithImage = {
-        ...venue,
-        imageUrl: getVenueImage(venue.name) || venue.imageUrl,
-      };
-      setSelectedVenue(venueWithImage);
-      // Always surface the JetCard on the map so the marker context lines up
-      // with the card (and the card isn't obscured by other tabs' chrome).
-      setActiveTab('map');
-      toast.success(`Selected ${venue.name}`, {
-        description: `${venue.activity}% active in ${venue.neighborhood}`
-      });
-    }
-  }, [venues, getVenueImage, setActiveTab]);
+    },
+    [venues, getVenueImage, setActiveTab],
+  );
 
-  const handleParkingSelect = useCallback((parking: { lat: number; lng: number; name?: string }) => {
-    setSelectedVenue(null); // Close venue card if open
-    setSelectedParking(parking);
-  }, []);
+  const handleParkingSelect = useCallback(
+    (parking: { lat: number; lng: number; name?: string }) => {
+      setSelectedVenue(null); // Close venue card if open
+      setSelectedParking(parking);
+    },
+    [],
+  );
 
   const handleGetDirections = useCallback(async () => {
     if (!selectedVenue) return;
@@ -437,7 +520,8 @@ const Index = () => {
     refreshDeals();
     refreshVenues();
   }, [refreshDeals, refreshVenues]);
-  const cityName = detectedLocationName || `${selectedCity.name}, ${selectedCity.state}`;
+  const cityName =
+    detectedLocationName || `${selectedCity.name}, ${selectedCity.state}`;
 
   // Use refs for callbacks to avoid infinite loop: setHeaderConfig detects
   // new function references as "changes", triggering re-render, which creates
@@ -448,8 +532,14 @@ const Index = () => {
   refreshBothRef.current = refreshBoth;
 
   // Stable wrappers that never change identity
-  const stableOnVenueSelect = useMemo(() => ((v: Venue | string) => handleVenueSelectRef.current(v)) as (v: Venue | string) => void, []);
-  const stableOnRefresh = useMemo(() => (() => refreshBothRef.current()), []);
+  const stableOnVenueSelect = useMemo(
+    () =>
+      ((v: Venue | string) => handleVenueSelectRef.current(v)) as (
+        v: Venue | string,
+      ) => void,
+    [],
+  );
+  const stableOnRefresh = useMemo(() => () => refreshBothRef.current(), []);
 
   useEffect(() => {
     setHeaderConfig({
@@ -462,69 +552,113 @@ const Index = () => {
       cityName,
       hideSearch: false,
     });
-  }, [setHeaderConfig, venues, deals, stableOnVenueSelect, dealsLoading, venuesLoading, dealsLastUpdated, venuesLastUpdated, stableOnRefresh, cityName]);
+  }, [
+    setHeaderConfig,
+    venues,
+    deals,
+    stableOnVenueSelect,
+    dealsLoading,
+    venuesLoading,
+    dealsLastUpdated,
+    venuesLastUpdated,
+    stableOnRefresh,
+    cityName,
+  ]);
 
   return (
-    <div 
+    <div
       className="relative w-full"
       style={{
-        flex: '1 1 0%',
+        flex: "1 1 0%",
         minHeight: 0,
-        isolation: 'isolate',
-        position: 'relative',
+        isolation: "isolate",
+        position: "relative",
       }}
     >
       {/* FULL-SCREEN MAP LAYER - only on map tab */}
       {activeTab === "map" && (
         <>
-          <div 
-            className="absolute inset-0 w-full h-full"
-            style={{ zIndex: 0 }}
-          >
+          <div className="absolute inset-0 w-full h-full" style={{ zIndex: 0 }}>
             {mapboxError && !mapboxLoading && (
-              <div style={{
-                position: 'absolute', inset: 0, zIndex: 10,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'hsl(var(--background))',
-              }}>
-                <div style={{ textAlign: 'center', padding: '24px' }}>
-                  <div style={{
-                    width: '56px', height: '56px', margin: '0 auto',
-                    borderRadius: '50%', background: 'hsl(var(--destructive) / 0.1)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    <MapIcon style={{ width: '28px', height: '28px', color: 'hsl(var(--destructive))' }} />
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  zIndex: 10,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "hsl(var(--background))",
+                }}
+              >
+                <div style={{ textAlign: "center", padding: "24px" }}>
+                  <div
+                    style={{
+                      width: "56px",
+                      height: "56px",
+                      margin: "0 auto",
+                      borderRadius: "50%",
+                      background: "hsl(var(--destructive) / 0.1)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <MapIcon
+                      style={{
+                        width: "28px",
+                        height: "28px",
+                        color: "hsl(var(--destructive))",
+                      }}
+                    />
                   </div>
-                  <div style={{ marginTop: '12px' }}>
-                    <p style={{ fontSize: '14px', fontWeight: 500, color: 'hsl(var(--foreground))' }}>Unable to load map</p>
-                    <p style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))', maxWidth: '280px', margin: '4px auto 0' }}>{mapboxError}</p>
+                  <div style={{ marginTop: "12px" }}>
+                    <p
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: 500,
+                        color: "hsl(var(--foreground))",
+                      }}
+                    >
+                      Unable to load map
+                    </p>
+                    <p
+                      style={{
+                        fontSize: "12px",
+                        color: "hsl(var(--muted-foreground))",
+                        maxWidth: "280px",
+                        margin: "4px auto 0",
+                      }}
+                    >
+                      {mapboxError}
+                    </p>
                   </div>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="default"
                     onClick={() => window.location.reload()}
-                    style={{ marginTop: '12px' }}
+                    style={{ marginTop: "12px" }}
                   >
                     Try Again
                   </Button>
                 </div>
               </div>
             )}
-            
-            <div 
-              className="absolute inset-0 w-full h-full"
-            >
+
+            <div className="absolute inset-0 w-full h-full">
               {hydrated && mapboxToken && (
                 <Suspense fallback={null}>
                   <MapboxHeatmap
                     onVenueSelect={handleVenueSelect}
                     onParkingSelect={handleParkingSelect}
-                    venues={venues} 
+                    venues={venues}
                     mapboxToken={mapboxToken}
                     selectedCity={selectedCity}
                     onCityChange={handleCityChange}
                     onNearestCityDetected={handleNearestCityDetected}
-                    onDetectedLocationNameChange={handleDetectedLocationNameChange}
+                    onDetectedLocationNameChange={
+                      handleDetectedLocationNameChange
+                    }
                     isLoadingVenues={venuesLoading}
                     selectedVenue={selectedVenue}
                     resetUIKey={mapUIResetKey}
@@ -534,114 +668,128 @@ const Index = () => {
               )}
             </div>
           </div>
-
         </>
       )}
 
       {/* Plane takeoff/landing animation triggered by city changes */}
       {typeof document !== "undefined" &&
         createPortal(
-          <CityTransitionOverlay city={selectedCity} nonce={cityTransitionNonce} />,
-          document.body
+          <CityTransitionOverlay
+            city={selectedCity}
+            nonce={cityTransitionNonce}
+          />,
+          document.body,
         )}
 
       {/* JetCard - portaled to body to bypass stacking contexts */}
-      {selectedVenue && activeTab === "map" && createPortal(
-        <div 
-          ref={jetCardRef} 
-          className="animate-fade-in"
-          style={{
-            position: 'fixed',
-            bottom: 'calc(var(--bottom-nav-total-height, 60px) + 8px)',
-            left: '0',
-            width: '100vw',
-            zIndex: 9999,
-            padding: '0 12px',
-            boxSizing: 'border-box',
-            pointerEvents: 'none',
-            ...(isMobile ? swipeStyle : {}),
-          }}
-          {...(isMobile ? swipeHandlers : {})}
-        >
-          <div style={{
-            pointerEvents: 'auto',
-            width: '100%',
-            maxWidth: '480px',
-            margin: '0 auto',
-            boxSizing: 'border-box',
-            maxHeight: 'calc(100dvh - var(--header-total-height, 56px) - var(--bottom-nav-total-height, 60px) - 1.5rem)',
-            overflowY: 'auto',
-            overscrollBehavior: 'contain',
-          }}>
-            {isMobile && (
-              <div className="flex justify-center pb-2 sm:pb-2.5">
-                <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
-              </div>
-            )}
-            <Suspense fallback={<JetCardSkeleton />}>
-              <JetCard 
-                venue={selectedVenue} 
-                onGetDirections={handleGetDirections}
-                onClose={() => setSelectedVenue(null)}
-                onSendToFriend={async () => {
-                  const { data: { session } } = await supabase.auth.getSession();
-                  if (!session?.user) {
-                    toast.error("Sign in to send venues to friends");
-                    return;
-                  }
-                  setSendDialogUserId(session.user.id);
-                  setShowSendDialog(true);
-                }}
-              />
-            </Suspense>
-          </div>
-        </div>,
-        document.body
-      )}
+      {selectedVenue &&
+        activeTab === "map" &&
+        createPortal(
+          <div
+            ref={jetCardRef}
+            className="animate-fade-in"
+            style={{
+              position: "fixed",
+              bottom: "calc(var(--bottom-nav-total-height, 60px) + 8px)",
+              left: "0",
+              width: "100vw",
+              zIndex: 9999,
+              padding: "0 12px",
+              boxSizing: "border-box",
+              pointerEvents: "none",
+              ...(isMobile ? swipeStyle : {}),
+            }}
+            {...(isMobile ? swipeHandlers : {})}
+          >
+            <div
+              style={{
+                pointerEvents: "auto",
+                width: "100%",
+                maxWidth: "480px",
+                margin: "0 auto",
+                boxSizing: "border-box",
+                maxHeight:
+                  "calc(100dvh - var(--header-total-height, 56px) - var(--bottom-nav-total-height, 60px) - 1.5rem)",
+                overflowY: "auto",
+                overscrollBehavior: "contain",
+              }}
+            >
+              {isMobile && (
+                <div className="flex justify-center pb-2 sm:pb-2.5">
+                  <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
+                </div>
+              )}
+              <Suspense fallback={<JetCardSkeleton />}>
+                <JetCard
+                  venue={selectedVenue}
+                  onGetDirections={handleGetDirections}
+                  onClose={() => setSelectedVenue(null)}
+                  onSendToFriend={async () => {
+                    const {
+                      data: { session },
+                    } = await supabase.auth.getSession();
+                    if (!session?.user) {
+                      toast.error("Sign in to send venues to friends");
+                      return;
+                    }
+                    setSendDialogUserId(session.user.id);
+                    setShowSendDialog(true);
+                  }}
+                />
+              </Suspense>
+            </div>
+          </div>,
+          document.body,
+        )}
 
       {/* ParkingCard - portaled to body like JetCard */}
-      {selectedParking && activeTab === "map" && createPortal(
-        <div 
-          ref={parkingCardRef}
-          className="animate-fade-in"
-          style={{
-            position: 'fixed',
-            bottom: 'calc(var(--bottom-nav-total-height, 60px) + 8px)',
-            left: '0',
-            width: '100vw',
-            zIndex: 9999,
-            padding: '0 12px',
-            boxSizing: 'border-box',
-            pointerEvents: 'none',
-          }}
-        >
-          <div style={{
-            pointerEvents: 'auto',
-            width: '100%',
-            maxWidth: '480px',
-            margin: '0 auto',
-            boxSizing: 'border-box',
-            maxHeight: 'calc(100dvh - var(--header-total-height, 56px) - var(--bottom-nav-total-height, 60px) - 1.5rem)',
-            overflowY: 'auto',
-            overscrollBehavior: 'contain',
-          }}>
-            {isMobile && (
-              <div className="flex justify-center pb-2 sm:pb-2.5">
-                <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
-              </div>
-            )}
-            <Suspense fallback={null}>
-              <ParkingCard
-                lat={selectedParking.lat}
-                lng={selectedParking.lng}
-                name={selectedParking.name}
-                onClose={() => setSelectedParking(null)}
-              />
-            </Suspense>
-          </div>
-        </div>,
-        document.body
-      )}
+      {selectedParking &&
+        activeTab === "map" &&
+        createPortal(
+          <div
+            ref={parkingCardRef}
+            className="animate-fade-in"
+            style={{
+              position: "fixed",
+              bottom: "calc(var(--bottom-nav-total-height, 60px) + 8px)",
+              left: "0",
+              width: "100vw",
+              zIndex: 9999,
+              padding: "0 12px",
+              boxSizing: "border-box",
+              pointerEvents: "none",
+            }}
+          >
+            <div
+              style={{
+                pointerEvents: "auto",
+                width: "100%",
+                maxWidth: "480px",
+                margin: "0 auto",
+                boxSizing: "border-box",
+                maxHeight:
+                  "calc(100dvh - var(--header-total-height, 56px) - var(--bottom-nav-total-height, 60px) - 1.5rem)",
+                overflowY: "auto",
+                overscrollBehavior: "contain",
+              }}
+            >
+              {isMobile && (
+                <div className="flex justify-center pb-2 sm:pb-2.5">
+                  <div className="w-10 h-1 bg-muted-foreground/40 rounded-full" />
+                </div>
+              )}
+              <Suspense fallback={null}>
+                <ParkingCard
+                  lat={selectedParking.lat}
+                  lng={selectedParking.lng}
+                  name={selectedParking.name}
+                  onClose={() => setSelectedParking(null)}
+                />
+              </Suspense>
+            </div>
+          </div>,
+          document.body,
+        )}
 
       {/* Header config is set via context (useEffect below) */}
 
@@ -652,105 +800,147 @@ const Index = () => {
 
       {/* Main Content Area - For non-map tabs, overlaid on map background */}
       {activeTab !== "map" && (
-        <main 
+        <main
           role="main"
           id="main-content"
           className="page-fade-in page-container max-w-7xl mx-auto bg-gradient-to-b from-background via-background to-muted/30 dot-grid-pattern"
-          style={{ 
+          style={{
             /* No marginTop needed - App.tsx spacer already reserves header space */
-            height: 'var(--main-height)',
-            minHeight: 'var(--main-height)',
-            maxHeight: 'var(--main-height)',
-            contain: 'style',
-            boxSizing: 'border-box',
-            width: '100%',
+            height: "var(--main-height)",
+            minHeight: "var(--main-height)",
+            maxHeight: "var(--main-height)",
+            contain: "style",
+            boxSizing: "border-box",
+            width: "100%",
             zIndex: 1,
-            position: 'relative',
-            overflow: 'auto',
+            position: "relative",
+            overflow: "auto",
           }}
         >
           {activeTab === "notifications" && (
             <Suspense fallback={<NotificationsTabSkeleton />}>
-            <PageShell>
-              <TabPageHeader
-                title="Notifications"
-                subtitle="Stay updated with nearby deals and events"
-                badge={
-                  unreadNotifications > 0 ? (
-                    <span
-                      className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold leading-none"
-                      style={{
-                        background: 'hsl(var(--destructive) / 0.15)',
-                        border: '1px solid hsl(var(--destructive) / 0.4)',
-                        color: 'hsl(var(--destructive))',
-                        boxShadow: '0 0 8px hsl(var(--destructive) / 0.2)',
-                      }}
-                      aria-label={`${unreadNotifications} unread notifications`}
-                    >
+              <PageShell>
+                <TabPageHeader
+                  title="Notifications"
+                  subtitle="Stay updated with nearby deals and events"
+                  badge={
+                    unreadNotifications > 0 ? (
                       <span
-                        className="inline-block rounded-full"
+                        className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold leading-none"
                         style={{
-                          width: '6px',
-                          height: '6px',
-                          background: 'hsl(var(--destructive))',
-                          boxShadow: '0 0 6px hsl(var(--destructive))',
+                          background: "hsl(var(--destructive) / 0.15)",
+                          border: "1px solid hsl(var(--destructive) / 0.4)",
+                          color: "hsl(var(--destructive))",
+                          boxShadow: "0 0 8px hsl(var(--destructive) / 0.2)",
                         }}
-                        aria-hidden="true"
-                      />
-                      {unreadNotifications} unread
-                    </span>
-                  ) : null
-                }
-              />
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
-                <EnablePushButton />
-                {unreadNotifications > 0 && (
-                  <button
-                    type="button"
-                    onClick={markAllAsRead}
-                    className="text-xs font-semibold text-primary hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 rounded-md px-2 py-1"
-                    aria-label="Mark all notifications as read"
-                  >
-                    Mark all as read
-                  </button>
-                )}
-              </div>
-
-              {notifications.length === 0 ? (
-                <div style={{
-                  textAlign: 'center', padding: '48px 16px',
-                  borderRadius: '16px',
-                  background: 'hsl(var(--card) / 0.9)',
-                  border: '1px solid hsl(var(--border) / 0.5)',
-                }}>
-                  <div style={{
-                    width: '56px', height: '56px', margin: '0 auto 16px',
-                    borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--accent) / 0.15))',
-                    border: '1px solid hsl(var(--primary) / 0.2)',
-                  }}>
-                    <Bell style={{ width: '24px', height: '24px', color: 'hsl(var(--primary))' }} />
-                  </div>
-                  <p style={{ fontSize: '16px', fontWeight: 600, color: 'hsl(var(--foreground))', marginBottom: '6px' }}>No notifications yet</p>
-                  <p style={{ fontSize: '13px', color: 'hsl(var(--muted-foreground))' }}>Enable location tracking to receive deal alerts</p>
-                </div>
-              ) : (
-                <>
-                  {notifications.map((notification) => (
-                    <div key={notification.id}>
-                      <Suspense fallback={null}>
-                        <NotificationCard 
-                          notification={notification} 
-                          onVenueClick={handleVenueSelect}
-                          onRead={() => markAsRead(notification.id)}
+                        aria-label={`${unreadNotifications} unread notifications`}
+                      >
+                        <span
+                          className="inline-block rounded-full"
+                          style={{
+                            width: "6px",
+                            height: "6px",
+                            background: "hsl(var(--destructive))",
+                            boxShadow: "0 0 6px hsl(var(--destructive))",
+                          }}
+                          aria-hidden="true"
                         />
-                      </Suspense>
+                        {unreadNotifications} unread
+                      </span>
+                    ) : null
+                  }
+                />
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: "8px",
+                    marginBottom: "8px",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <EnablePushButton />
+                  {unreadNotifications > 0 && (
+                    <button
+                      type="button"
+                      onClick={markAllAsRead}
+                      className="text-xs font-semibold text-primary hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 rounded-md px-2 py-1"
+                      aria-label="Mark all notifications as read"
+                    >
+                      Mark all as read
+                    </button>
+                  )}
+                </div>
+
+                {notifications.length === 0 ? (
+                  <div
+                    style={{
+                      textAlign: "center",
+                      padding: "48px 16px",
+                      borderRadius: "16px",
+                      background: "hsl(var(--card) / 0.9)",
+                      border: "1px solid hsl(var(--border) / 0.5)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "56px",
+                        height: "56px",
+                        margin: "0 auto 16px",
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background:
+                          "linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--accent) / 0.15))",
+                        border: "1px solid hsl(var(--primary) / 0.2)",
+                      }}
+                    >
+                      <Bell
+                        style={{
+                          width: "24px",
+                          height: "24px",
+                          color: "hsl(var(--primary))",
+                        }}
+                      />
                     </div>
-                  ))}
-                </>
-              )}
-            </PageShell>
+                    <p
+                      style={{
+                        fontSize: "16px",
+                        fontWeight: 600,
+                        color: "hsl(var(--foreground))",
+                        marginBottom: "6px",
+                      }}
+                    >
+                      No notifications yet
+                    </p>
+                    <p
+                      style={{
+                        fontSize: "13px",
+                        color: "hsl(var(--muted-foreground))",
+                      }}
+                    >
+                      Enable location tracking to receive deal alerts
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {notifications.map((notification) => (
+                      <div key={notification.id}>
+                        <Suspense fallback={null}>
+                          <NotificationCard
+                            notification={notification}
+                            onVenueClick={handleVenueSelect}
+                            onRead={() => markAsRead(notification.id)}
+                          />
+                        </Suspense>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </PageShell>
             </Suspense>
           )}
 
@@ -765,8 +955,8 @@ const Index = () => {
       )}
 
       {/* Bottom Navigation - Fixed on bottom, overlays map with glass effect */}
-      <BottomNav 
-        activeTab={activeTab} 
+      <BottomNav
+        activeTab={activeTab}
         onTabChange={handleTabChange}
         onPrefetch={(tab) => {
           // Prefetch Mapbox chunk on hover/touch of map tab
@@ -774,7 +964,7 @@ const Index = () => {
             import("@/components/MapboxHeatmap");
           }
         }}
-        notificationCount={notifications.filter(n => !n.read).length}
+        notificationCount={notifications.filter((n) => !n.read).length}
         messageCount={unreadMessages}
       />
 
@@ -817,7 +1007,7 @@ const Index = () => {
           signed-in visitor who hasn't subscribed yet (the prompt handles its
           own dismissal/permission/platform checks internally). */}
       <Suspense fallback={null}>
-        <PushNotificationPrompt 
+        <PushNotificationPrompt
           show={justInstalled || showPushPrompt || !!session?.user}
           onDismiss={() => {
             clearJustInstalled();
@@ -825,7 +1015,6 @@ const Index = () => {
           }}
         />
       </Suspense>
-
     </div>
   );
 };

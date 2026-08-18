@@ -6,7 +6,12 @@ export type InviteTemplate = {
 
 export const INVITE_TEMPLATE_STORAGE_KEY = "jet-admin-invite-template";
 
-export const INVITE_PLACEHOLDERS = ["display_name", "email", "invite_url", "site_name"] as const;
+export const INVITE_PLACEHOLDERS = [
+  "display_name",
+  "email",
+  "invite_url",
+  "site_name",
+] as const;
 
 export const DEFAULT_INVITE_TEMPLATE: InviteTemplate = {
   subject: "You're invited to {{site_name}}",
@@ -51,5 +56,8 @@ export function saveInviteTemplate(tpl: InviteTemplate) {
 
 /** Mirrors the edge function's `{{var}}` substitution for the preview pane. */
 export function renderInvitePreview(tpl: string, vars: Record<string, string>) {
-  return tpl.replace(/\{\{\s*(\w+)\s*\}\}/g, (_m, key: string) => vars[key] ?? "");
+  return tpl.replace(
+    /\{\{\s*(\w+)\s*\}\}/g,
+    (_m, key: string) => vars[key] ?? "",
+  );
 }

@@ -80,17 +80,20 @@ function DiscoverPeopleStrip({
     <section
       aria-label="Discover people on JET"
       className="border-b border-border/60"
-      style={{ padding: 'clamp(10px, 2.8vw, 14px) 0' }}
+      style={{ padding: "clamp(10px, 2.8vw, 14px) 0" }}
     >
       <h2
         className="heading-luxe-eyebrow"
-        style={{ padding: '0 clamp(12px, 3.2vw, 16px) 8px' }}
+        style={{ padding: "0 clamp(12px, 3.2vw, 16px) 8px" }}
       >
         Discover People
       </h2>
       <div
         className="flex gap-3 overflow-x-auto no-scrollbar"
-        style={{ padding: '0 clamp(12px, 3.2vw, 16px) 4px', scrollbarWidth: 'none' }}
+        style={{
+          padding: "0 clamp(12px, 3.2vw, 16px) 4px",
+          scrollbarWidth: "none",
+        }}
       >
         {loading
           ? Array.from({ length: 6 }).map((_, i) => (
@@ -112,29 +115,29 @@ function DiscoverPeopleStrip({
                 onClick={() => onSelect(p.id)}
                 className="flex flex-col items-center gap-1 shrink-0 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/60 rounded-lg p-1"
                 style={{ width: 72 }}
-                aria-label={`View ${p.display_name || 'user'}'s profile`}
+                aria-label={`View ${p.display_name || "user"}'s profile`}
               >
                 <Avatar className="h-14 w-14 ring-1 ring-border/60">
                   <AvatarImage
                     src={p.avatar_url || DEFAULT_AVATAR_SRC}
-                    alt={p.display_name || 'User'}
+                    alt={p.display_name || "User"}
                     className={avatarImageClass}
                   />
                   <AvatarFallback className={avatarFallbackClass} delayMs={400}>
-                    {(p.display_name || 'U').charAt(0).toUpperCase()}
+                    {(p.display_name || "U").charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <span
                   className="text-[11px] leading-tight text-foreground/80 text-center w-full"
                   style={{
-                    display: '-webkit-box',
+                    display: "-webkit-box",
                     WebkitLineClamp: 1,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
                   }}
-                  title={p.display_name || 'User'}
+                  title={p.display_name || "User"}
                 >
-                  {p.display_name || 'User'}
+                  {p.display_name || "User"}
                 </span>
               </button>
             ))}
@@ -147,37 +150,37 @@ function DiscoverPeopleStrip({
 const DEFAULT_AVATAR_SRC = "/jet-email-logo.png";
 
 const convoCardStyle: React.CSSProperties = {
-  gap: 'clamp(10px, 3vw, 14px)',
-  padding: 'clamp(10px, 2.8vw, 14px) clamp(12px, 3.2vw, 16px)',
+  gap: "clamp(10px, 3vw, 14px)",
+  padding: "clamp(10px, 2.8vw, 14px) clamp(12px, 3.2vw, 16px)",
 };
 
 const nameStyle: React.CSSProperties = {
-  display: '-webkit-box',
+  display: "-webkit-box",
   WebkitLineClamp: 1,
-  WebkitBoxOrient: 'vertical',
-  overflow: 'hidden',
-  overflowWrap: 'anywhere',
-  wordBreak: 'break-word',
-  minHeight: 'calc(1.3em)',
-  textAlign: 'left',
-  background: 'transparent',
-  border: 'none',
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+  overflowWrap: "anywhere",
+  wordBreak: "break-word",
+  minHeight: "calc(1.3em)",
+  textAlign: "left",
+  background: "transparent",
+  border: "none",
   padding: 0,
   margin: 0,
-  font: 'inherit',
-  color: 'inherit',
-  cursor: 'pointer',
-  width: '100%',
+  font: "inherit",
+  color: "inherit",
+  cursor: "pointer",
+  width: "100%",
 };
 
 const subtitleStyle: React.CSSProperties = {
-  display: '-webkit-box',
+  display: "-webkit-box",
   WebkitLineClamp: 1,
-  WebkitBoxOrient: 'vertical',
-  overflow: 'hidden',
-  overflowWrap: 'anywhere',
-  wordBreak: 'break-word',
-  minHeight: 'calc(1.3em)',
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+  overflowWrap: "anywhere",
+  wordBreak: "break-word",
+  minHeight: "calc(1.3em)",
 };
 
 // Consistent, fluid avatar sizing — keeps the JET mark legible from 320px to desktop
@@ -204,10 +207,10 @@ function DisplayName({
     ? {
         ...nameStyle,
         ...style,
-        WebkitLineClamp: 'unset' as any,
-        display: 'block',
-        whiteSpace: 'normal',
-        overflow: 'visible',
+        WebkitLineClamp: "unset" as any,
+        display: "block",
+        whiteSpace: "normal",
+        overflow: "visible",
       }
     : { ...nameStyle, ...style };
   return (
@@ -239,13 +242,17 @@ export default function Messages() {
   const activeFriendId = searchParams.get("chat");
 
   const [user, setUser] = useState<any>(null);
-  const [discoverProfileId, setDiscoverProfileId] = useState<string | null>(null);
+  const [discoverProfileId, setDiscoverProfileId] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null);
     });
     return () => subscription.unsubscribe();
@@ -270,7 +277,10 @@ export default function Messages() {
             title="Sign in to message"
             description="Create an account to chat with your friends"
             actionLabel="Sign In"
-            onAction={() => { rememberPostAuthRedirect(); navigate("/auth"); }}
+            onAction={() => {
+              rememberPostAuthRedirect();
+              navigate("/auth");
+            }}
           />
         </div>
       </PageLayout>
@@ -346,58 +356,63 @@ function ConversationList({
         </div>
       ) : (
         <ScrollArea className="flex-1">
-        <div className="divide-y divide-border">
-          {conversations.map((c) => (
-            <button
-              key={c.friendId}
-              onClick={() => onSelect(c.friendId)}
-              className="w-full flex items-center hover:bg-muted/50 transition-colors text-left"
-              style={convoCardStyle}
-            >
-              <div className="relative shrink-0">
-                <Avatar className={avatarClass}>
-                  <AvatarImage
-                    src={c.friendAvatar || DEFAULT_AVATAR_SRC}
-                    alt={c.friendName}
-                    className={avatarImageClass}
-                  />
-                  <AvatarFallback className={avatarFallbackClass} delayMs={400}>
-                    {c.friendName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                {c.unreadCount > 0 && (
-                  <Badge
-                    className="absolute -top-1 -right-1 h-5 min-w-[20px] px-1 text-[10px] bg-destructive text-destructive-foreground ring-2 ring-background"
-                    aria-label={`${c.unreadCount} unread message${c.unreadCount === 1 ? '' : 's'}`}
-                  >
-                    {c.unreadCount}
-                  </Badge>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2 min-w-0">
-                  <div className="flex-1 min-w-0">
-                    <DisplayName
-                      name={c.friendName}
-                      className={`heading-luxe-card ${c.unreadCount > 0 ? "font-bold" : "font-medium"}`}
+          <div className="divide-y divide-border">
+            {conversations.map((c) => (
+              <button
+                key={c.friendId}
+                onClick={() => onSelect(c.friendId)}
+                className="w-full flex items-center hover:bg-muted/50 transition-colors text-left"
+                style={convoCardStyle}
+              >
+                <div className="relative shrink-0">
+                  <Avatar className={avatarClass}>
+                    <AvatarImage
+                      src={c.friendAvatar || DEFAULT_AVATAR_SRC}
+                      alt={c.friendName}
+                      className={avatarImageClass}
                     />
-                  </div>
-                  {c.lastMessageAt && (
-                    <span className={`heading-luxe-eyebrow flex-shrink-0 ${c.unreadCount > 0 ? "!text-primary" : ""}`}>
-                      {formatConvoTime(c.lastMessageAt)}
-                    </span>
+                    <AvatarFallback
+                      className={avatarFallbackClass}
+                      delayMs={400}
+                    >
+                      {c.friendName.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  {c.unreadCount > 0 && (
+                    <Badge
+                      className="absolute -top-1 -right-1 h-5 min-w-[20px] px-1 text-[10px] bg-destructive text-destructive-foreground ring-2 ring-background"
+                      aria-label={`${c.unreadCount} unread message${c.unreadCount === 1 ? "" : "s"}`}
+                    >
+                      {c.unreadCount}
+                    </Badge>
                   )}
                 </div>
-                <p
-                  className={`body-luxe-muted mt-0.5 ${c.unreadCount > 0 ? "!text-foreground font-medium" : ""}`}
-                  style={subtitleStyle}
-                >
-                  {c.lastMessage || "Start a conversation"}
-                </p>
-              </div>
-            </button>
-          ))}
-        </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 min-w-0">
+                    <div className="flex-1 min-w-0">
+                      <DisplayName
+                        name={c.friendName}
+                        className={`heading-luxe-card ${c.unreadCount > 0 ? "font-bold" : "font-medium"}`}
+                      />
+                    </div>
+                    {c.lastMessageAt && (
+                      <span
+                        className={`heading-luxe-eyebrow flex-shrink-0 ${c.unreadCount > 0 ? "!text-primary" : ""}`}
+                      >
+                        {formatConvoTime(c.lastMessageAt)}
+                      </span>
+                    )}
+                  </div>
+                  <p
+                    className={`body-luxe-muted mt-0.5 ${c.unreadCount > 0 ? "!text-foreground font-medium" : ""}`}
+                    style={subtitleStyle}
+                  >
+                    {c.lastMessage || "Start a conversation"}
+                  </p>
+                </div>
+              </button>
+            ))}
+          </div>
         </ScrollArea>
       )}
     </div>
@@ -423,8 +438,15 @@ function ChatView({
 
   const friend = conversations.find((c) => c.friendId === friendId);
 
-  const { messages, loading, sendMessage, sendImage, markAsRead, isFriendTyping, sendTyping } =
-    useMessages(userId, friendId);
+  const {
+    messages,
+    loading,
+    sendMessage,
+    sendImage,
+    markAsRead,
+    isFriendTyping,
+    sendTyping,
+  } = useMessages(userId, friendId);
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -463,7 +485,7 @@ function ChatView({
       {/* Chat header */}
       <div
         className="flex items-center border-b border-border/60 bg-card/60 backdrop-blur-sm"
-        style={{ ...convoCardStyle, gap: 'clamp(8px, 2.4vw, 12px)' }}
+        style={{ ...convoCardStyle, gap: "clamp(8px, 2.4vw, 12px)" }}
       >
         <Button
           variant="ghost"
@@ -493,89 +515,116 @@ function ChatView({
       </div>
 
       {/* Messages area */}
-      <ScrollArea className="flex-1 w-full overflow-x-hidden" >
+      <ScrollArea className="flex-1 w-full overflow-x-hidden">
         <div
           className="w-full"
-          style={{ padding: 'clamp(10px, 2.8vw, 14px) clamp(12px, 3.2vw, 16px)' }}
+          style={{
+            padding: "clamp(10px, 2.8vw, 14px) clamp(12px, 3.2vw, 16px)",
+          }}
         >
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <p className="body-luxe-muted">Loading messages…</p>
-          </div>
-        ) : messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 gap-2">
-            <Users className="w-10 h-10 text-muted-foreground/40" />
-            <p className="body-luxe-muted text-center">
-              No messages yet. Say hi!
-            </p>
-          </div>
-        ) : (
-          <div
-            className="w-full overflow-hidden"
-            style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(8px, 2.2vw, 12px)' }}
-          >
-            {messages.map((msg) => {
-              const isMine = msg.sender_id === userId;
-              return (
-                <div
-                  key={msg.id}
-                  className={`flex ${isMine ? "justify-end" : "justify-start"}`}
-                >
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <p className="body-luxe-muted">Loading messages…</p>
+            </div>
+          ) : messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-2">
+              <Users className="w-10 h-10 text-muted-foreground/40" />
+              <p className="body-luxe-muted text-center">
+                No messages yet. Say hi!
+              </p>
+            </div>
+          ) : (
+            <div
+              className="w-full overflow-hidden"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "clamp(8px, 2.2vw, 12px)",
+              }}
+            >
+              {messages.map((msg) => {
+                const isMine = msg.sender_id === userId;
+                return (
                   <div
-                    className={`min-w-0 overflow-hidden rounded-2xl ${
-                      isMine
-                        ? "bg-primary text-primary-foreground rounded-br-md"
-                        : "bg-muted text-foreground rounded-bl-md"
-                    }`}
-                    style={{
-                      maxWidth: 'min(78%, 520px)',
-                      padding: 'clamp(6px, 1.6vw, 10px) clamp(10px, 2.6vw, 14px)',
-                    }}
+                    key={msg.id}
+                    className={`flex ${isMine ? "justify-end" : "justify-start"}`}
                   >
-                    {msg.image_url && <ChatImage value={msg.image_url} cacheBust={msg.created_at} />}
-                    {msg.content && (
-                      <MessageContent content={msg.content} isMine={isMine} />
-                    )}
                     <div
-                      className={`flex items-center gap-1 mt-1 ${
-                        isMine ? "justify-end" : "justify-start"
+                      className={`min-w-0 overflow-hidden rounded-2xl ${
+                        isMine
+                          ? "bg-primary text-primary-foreground rounded-br-md"
+                          : "bg-muted text-foreground rounded-bl-md"
                       }`}
+                      style={{
+                        maxWidth: "min(78%, 520px)",
+                        padding:
+                          "clamp(6px, 1.6vw, 10px) clamp(10px, 2.6vw, 14px)",
+                      }}
                     >
-                      <span
-                        className={`text-[10px] ${
-                          isMine
-                            ? "text-primary-foreground/60"
-                            : "text-muted-foreground"
+                      {msg.image_url && (
+                        <ChatImage
+                          value={msg.image_url}
+                          cacheBust={msg.created_at}
+                        />
+                      )}
+                      {msg.content && (
+                        <MessageContent content={msg.content} isMine={isMine} />
+                      )}
+                      <div
+                        className={`flex items-center gap-1 mt-1 ${
+                          isMine ? "justify-end" : "justify-start"
                         }`}
                       >
-                        {format(new Date(msg.created_at), "h:mm a")}
-                      </span>
-                      {isMine &&
-                        (msg.read_at ? (
-                          <CheckCheck className="w-3.5 h-3.5 text-primary-foreground/80" />
-                        ) : (
-                          <Check className="w-3.5 h-3.5 text-primary-foreground/50" />
-                        ))}
+                        <span
+                          className={`text-[10px] ${
+                            isMine
+                              ? "text-primary-foreground/60"
+                              : "text-muted-foreground"
+                          }`}
+                        >
+                          {format(new Date(msg.created_at), "h:mm a")}
+                        </span>
+                        {isMine &&
+                          (msg.read_at ? (
+                            <CheckCheck className="w-3.5 h-3.5 text-primary-foreground/80" />
+                          ) : (
+                            <Check className="w-3.5 h-3.5 text-primary-foreground/50" />
+                          ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-            {isFriendTyping && (
-              <div className="flex justify-start" aria-live="polite" aria-label={`${friend?.friendName || 'Friend'} is typing`}>
+                );
+              })}
+              {isFriendTyping && (
                 <div
-                  className="bg-muted text-foreground rounded-2xl rounded-bl-md inline-flex items-center gap-1"
-                  style={{ padding: 'clamp(8px, 2vw, 12px) clamp(12px, 2.6vw, 16px)' }}
+                  className="flex justify-start"
+                  aria-live="polite"
+                  aria-label={`${friend?.friendName || "Friend"} is typing`}
                 >
-                  <span className="typing-dot" style={{ animationDelay: '0ms' }} />
-                  <span className="typing-dot" style={{ animationDelay: '150ms' }} />
-                  <span className="typing-dot" style={{ animationDelay: '300ms' }} />
+                  <div
+                    className="bg-muted text-foreground rounded-2xl rounded-bl-md inline-flex items-center gap-1"
+                    style={{
+                      padding: "clamp(8px, 2vw, 12px) clamp(12px, 2.6vw, 16px)",
+                    }}
+                  >
+                    <span
+                      className="typing-dot"
+                      style={{ animationDelay: "0ms" }}
+                    />
+                    <span
+                      className="typing-dot"
+                      style={{ animationDelay: "150ms" }}
+                    />
+                    <span
+                      className="typing-dot"
+                      style={{ animationDelay: "300ms" }}
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
-            <div ref={bottomRef} />
-          </div>
-        )}
+              )}
+              <div ref={bottomRef} />
+            </div>
+          )}
         </div>
       </ScrollArea>
 
@@ -583,9 +632,9 @@ function ChatView({
       <div
         className="border-t border-border/60 bg-card/60 backdrop-blur-sm flex items-center"
         style={{
-          gap: 'clamp(6px, 1.8vw, 10px)',
-          padding: 'clamp(8px, 2.2vw, 12px) clamp(12px, 3.2vw, 16px)',
-          paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 12px)',
+          gap: "clamp(6px, 1.8vw, 10px)",
+          padding: "clamp(8px, 2.2vw, 12px) clamp(12px, 3.2vw, 16px)",
+          paddingBottom: "max(env(safe-area-inset-bottom, 0px), 12px)",
         }}
       >
         <input

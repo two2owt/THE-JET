@@ -17,11 +17,7 @@
 export type GeoSource = "gps" | "network";
 
 export type GeoEventKind =
-  | "fix"
-  | "rejected"
-  | "write"
-  | "write-failed"
-  | "skipped";
+  "fix" | "rejected" | "write" | "write-failed" | "skipped";
 
 export interface GeoLogEntry {
   at: string;
@@ -62,7 +58,9 @@ function persist() {
 
 /** Round coordinates so the diagnostics log never stores a precise position. */
 function coarse(value: number | undefined) {
-  return typeof value === "number" ? Math.round(value * 1000) / 1000 : undefined;
+  return typeof value === "number"
+    ? Math.round(value * 1000) / 1000
+    : undefined;
 }
 
 export function logGeoEvent(entry: Omit<GeoLogEntry, "at">) {
@@ -71,10 +69,12 @@ export function logGeoEvent(entry: Omit<GeoLogEntry, "at">) {
     lat: coarse(entry.lat),
     lng: coarse(entry.lng),
     movedMeters:
-      typeof entry.movedMeters === "number" && Number.isFinite(entry.movedMeters)
+      typeof entry.movedMeters === "number" &&
+      Number.isFinite(entry.movedMeters)
         ? Math.round(entry.movedMeters)
         : undefined,
-    accuracy: typeof entry.accuracy === "number" ? Math.round(entry.accuracy) : null,
+    accuracy:
+      typeof entry.accuracy === "number" ? Math.round(entry.accuracy) : null,
     at: new Date().toISOString(),
   };
 
@@ -86,7 +86,9 @@ export function logGeoEvent(entry: Omit<GeoLogEntry, "at">) {
     const tag = record.fallbackUsed ? "network-fallback" : record.source;
     console.info(
       `[geo:${record.kind}] ${tag} acc=${record.accuracy ?? "n/a"}m` +
-        (record.movedMeters !== undefined ? ` moved=${record.movedMeters}m` : "") +
+        (record.movedMeters !== undefined
+          ? ` moved=${record.movedMeters}m`
+          : "") +
         (record.reason ? ` (${record.reason})` : ""),
     );
   }

@@ -60,9 +60,13 @@ export function useUnreadMessages() {
           };
 
           // Don't toast if user is actively in /messages with this friend open.
-          const onMessagesPage = locationRef.current.pathname.startsWith("/messages");
-          const openFriend = new URLSearchParams(locationRef.current.search).get("chat");
-          const isViewingThisChat = onMessagesPage && openFriend === msg.sender_id;
+          const onMessagesPage =
+            locationRef.current.pathname.startsWith("/messages");
+          const openFriend = new URLSearchParams(
+            locationRef.current.search,
+          ).get("chat");
+          const isViewingThisChat =
+            onMessagesPage && openFriend === msg.sender_id;
 
           if (!isViewingThisChat) {
             // Look up sender display name for the toast
@@ -81,14 +85,13 @@ export function useUnreadMessages() {
               description: preview,
               action: {
                 label: "Open",
-                onClick: () =>
-                  navigate(`/messages?chat=${msg.sender_id}`),
+                onClick: () => navigate(`/messages?chat=${msg.sender_id}`),
               },
             });
           }
 
           refresh();
-        }
+        },
       )
       .on(
         "postgres_changes",
@@ -98,7 +101,7 @@ export function useUnreadMessages() {
           table: "messages",
           filter: `recipient_id=eq.${userId}`,
         },
-        () => refresh()
+        () => refresh(),
       )
       .subscribe();
 

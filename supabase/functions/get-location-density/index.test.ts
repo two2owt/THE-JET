@@ -1,7 +1,11 @@
 // Smoke test for the get-location-density edge function.
 // Run with: deno test --allow-env --allow-net --allow-read supabase/functions/get-location-density/index.test.ts
 import "https://deno.land/std@0.224.0/dotenv/load.ts";
-import { assert, assertEquals, assertStringIncludes } from "https://deno.land/std@0.224.0/assert/mod.ts";
+import {
+  assert,
+  assertEquals,
+  assertStringIncludes,
+} from "https://deno.land/std@0.224.0/assert/mod.ts";
 
 const SUPABASE_URL = Deno.env.get("VITE_SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("VITE_SUPABASE_PUBLISHABLE_KEY")!;
@@ -19,15 +23,25 @@ Deno.test("env points at the expected Supabase project", () => {
   assertStringIncludes(SUPABASE_URL, EXPECTED_PROJECT_ID);
 });
 
-Deno.test("get-location-density is deployed and rejects anonymous callers", async () => {
-  const res = await fetch(FUNCTION_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY },
-    body: JSON.stringify({ timeFilter: "today" }),
-  });
-  const text = await res.text(); // always consume the body
-  assertEquals(res.status, 401, `expected 401 for anonymous call, got ${res.status}: ${text}`);
-});
+Deno.test(
+  "get-location-density is deployed and rejects anonymous callers",
+  async () => {
+    const res = await fetch(FUNCTION_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({ timeFilter: "today" }),
+    });
+    const text = await res.text(); // always consume the body
+    assertEquals(
+      res.status,
+      401,
+      `expected 401 for anonymous call, got ${res.status}: ${text}`,
+    );
+  },
+);
 
 async function signIn(): Promise<string> {
   const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
@@ -36,7 +50,10 @@ async function signIn(): Promise<string> {
     body: JSON.stringify({ email: TEST_EMAIL, password: TEST_PASSWORD }),
   });
   const json = await res.json();
-  assert(res.ok && json.access_token, `sign-in failed: ${JSON.stringify(json)}`);
+  assert(
+    res.ok && json.access_token,
+    `sign-in failed: ${JSON.stringify(json)}`,
+  );
   return json.access_token as string;
 }
 
@@ -55,10 +72,21 @@ Deno.test({
       body: JSON.stringify({ timeFilter: "today" }),
     });
     const body = await res.json();
-    assertEquals(res.status, 200, `expected 200, got ${res.status}: ${JSON.stringify(body)}`);
-    assert(Array.isArray(body.densityPoints), "densityPoints array missing from response");
+    assertEquals(
+      res.status,
+      200,
+      `expected 200, got ${res.status}: ${JSON.stringify(body)}`,
+    );
+    assert(
+      Array.isArray(body.densityPoints),
+      "densityPoints array missing from response",
+    );
     // The k-anonymity floor may legitimately empty the grid; the contract is
     // that the shape is present and no raw user identifiers leak.
-    assertEquals(JSON.stringify(body).includes("user_id"), false, "response must not expose user_id");
+    assertEquals(
+      JSON.stringify(body).includes("user_id"),
+      false,
+      "response must not expose user_id",
+    );
   },
 });

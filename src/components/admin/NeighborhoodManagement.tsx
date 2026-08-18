@@ -2,27 +2,34 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Plus, Edit, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { NeighborhoodForm } from "./NeighborhoodForm";
 import type { Database } from "@/integrations/supabase/types";
 
-type Neighborhood = Database['public']['Tables']['neighborhoods']['Row'];
+type Neighborhood = Database["public"]["Tables"]["neighborhoods"]["Row"];
 
 export const NeighborhoodManagement = () => {
   const [isCreating, setIsCreating] = useState(false);
-  const [editingNeighborhood, setEditingNeighborhood] = useState<Neighborhood | null>(null);
+  const [editingNeighborhood, setEditingNeighborhood] =
+    useState<Neighborhood | null>(null);
   const queryClient = useQueryClient();
 
   const { data: neighborhoods, isLoading } = useQuery({
-    queryKey: ['admin-neighborhoods'],
+    queryKey: ["admin-neighborhoods"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('neighborhoods')
-        .select('*')
-        .order('name');
-      
+        .from("neighborhoods")
+        .select("*")
+        .order("name");
+
       if (error) throw error;
       return data;
     },
@@ -31,19 +38,19 @@ export const NeighborhoodManagement = () => {
   const deleteMutation = useMutation({
     mutationFn: async (neighborhoodId: string) => {
       const { error } = await supabase
-        .from('neighborhoods')
+        .from("neighborhoods")
         .delete()
-        .eq('id', neighborhoodId);
-      
+        .eq("id", neighborhoodId);
+
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-neighborhoods'] });
-      toast.success('Neighborhood deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ["admin-neighborhoods"] });
+      toast.success("Neighborhood deleted successfully");
     },
     onError: (error) => {
-      toast.error('Failed to delete neighborhood');
-      console.error('Delete error:', error);
+      toast.error("Failed to delete neighborhood");
+      console.error("Delete error:", error);
     },
   });
 
@@ -64,7 +71,7 @@ export const NeighborhoodManagement = () => {
           setEditingNeighborhood(null);
         }}
         onSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: ['admin-neighborhoods'] });
+          queryClient.invalidateQueries({ queryKey: ["admin-neighborhoods"] });
           setIsCreating(false);
           setEditingNeighborhood(null);
         }}
@@ -114,20 +121,28 @@ export const NeighborhoodManagement = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">{neighborhood.description}</p>
+              <p className="text-sm text-muted-foreground">
+                {neighborhood.description}
+              </p>
               <div className="mt-2 text-sm">
-                <span className="font-medium">Center:</span> {Number(neighborhood.center_lat).toFixed(4)}, {Number(neighborhood.center_lng).toFixed(4)}
+                <span className="font-medium">Center:</span>{" "}
+                {Number(neighborhood.center_lat).toFixed(4)},{" "}
+                {Number(neighborhood.center_lng).toFixed(4)}
               </div>
               <div className="mt-1 text-sm">
-                <span className="font-medium">Status:</span>{' '}
-                <span className={neighborhood.active ? 'text-green-600' : 'text-red-600'}>
-                  {neighborhood.active ? 'Active' : 'Inactive'}
+                <span className="font-medium">Status:</span>{" "}
+                <span
+                  className={
+                    neighborhood.active ? "text-green-600" : "text-red-600"
+                  }
+                >
+                  {neighborhood.active ? "Active" : "Inactive"}
                 </span>
               </div>
             </CardContent>
           </Card>
         ))}
-        
+
         {neighborhoods?.length === 0 && (
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">

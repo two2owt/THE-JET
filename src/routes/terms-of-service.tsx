@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import TermsOfService from "@/pages/TermsOfService";
 
 const title = "Terms of Service — JET";
-const description = "The terms that govern your use of the JET real-time deal and venue discovery app.";
+const description =
+  "The terms that govern your use of the JET real-time deal and venue discovery app.";
 
 export const Route = createFileRoute("/terms-of-service")({
   head: () => ({

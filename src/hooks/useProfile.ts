@@ -33,7 +33,8 @@ export interface UpdateProfileInput {
   tiktok_url: string | null;
 }
 
-export const profileQueryKey = (userId?: string) => ["profile", userId] as const;
+export const profileQueryKey = (userId?: string) =>
+  ["profile", userId] as const;
 
 /**
  * Single source of truth for the authenticated user's profile.
@@ -115,12 +116,18 @@ export function useProfile(userId: string | undefined) {
       }
 
       const ext =
-        contentType === "image/png" ? "png" : contentType === "image/webp" ? "webp" : "jpg";
+        contentType === "image/png"
+          ? "png"
+          : contentType === "image/webp"
+            ? "webp"
+            : "jpg";
       // Stable per-user path so re-uploads overwrite cleanly.
       const fileName = `${userId}/avatar.${ext}`;
 
       // Clean up any other avatar variants (different extensions) the user may have.
-      const { data: existing } = await supabase.storage.from("avatars").list(userId);
+      const { data: existing } = await supabase.storage
+        .from("avatars")
+        .list(userId);
       if (existing?.length) {
         const stale = existing
           .map((f) => `${userId}/${f.name}`)
@@ -130,12 +137,18 @@ export function useProfile(userId: string | undefined) {
 
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(fileName, blob, { upsert: true, contentType, cacheControl: "3600" });
+        .upload(fileName, blob, {
+          upsert: true,
+          contentType,
+          cacheControl: "3600",
+        });
       if (uploadError) throw uploadError;
 
       // Public bucket — derive the public URL and append a cache-buster so the
       // <img> reloads immediately after an upsert overwrite.
-      const { data: pub } = supabase.storage.from("avatars").getPublicUrl(fileName);
+      const { data: pub } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(fileName);
       const bustedUrl = `${pub.publicUrl}?t=${Date.now()}`;
 
       const { error: updateError } = await supabase

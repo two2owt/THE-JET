@@ -42,10 +42,17 @@ async function getVapidPublicKey(): Promise<string> {
 
 async function syncSubscription(): Promise<void> {
   if (typeof window === "undefined") return;
-  if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) return;
+  if (
+    !("serviceWorker" in navigator) ||
+    !("PushManager" in window) ||
+    !("Notification" in window)
+  )
+    return;
   if (Notification.permission !== "granted") return;
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return;
 
   // Respect the user's own opt-out. Browser permission staying "granted" is
@@ -67,7 +74,9 @@ async function syncSubscription(): Promise<void> {
   try {
     const registration =
       (await navigator.serviceWorker.getRegistration(PUSH_SW_SCOPE)) ??
-      (await navigator.serviceWorker.register(PUSH_SW_URL, { scope: PUSH_SW_SCOPE }));
+      (await navigator.serviceWorker.register(PUSH_SW_URL, {
+        scope: PUSH_SW_SCOPE,
+      }));
 
     await navigator.serviceWorker.ready.catch(() => undefined);
 
@@ -101,8 +110,14 @@ export function usePushSubscriptionSync() {
   useEffect(() => {
     void syncSubscription();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (
+        event === "SIGNED_IN" ||
+        event === "TOKEN_REFRESHED" ||
+        event === "USER_UPDATED"
+      ) {
         // Defer so the Supabase client finishes updating its session first.
         setTimeout(() => void syncSubscription(), 0);
       }

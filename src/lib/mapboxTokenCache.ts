@@ -21,8 +21,7 @@ export const readMapboxTokenCache = (): string | null => {
       sessionStorage.getItem(MAPBOX_TOKEN_CACHE_KEY);
     if (!raw) return null;
     const { token, timestamp } = JSON.parse(raw) as CachedMapboxToken;
-    const isExpired =
-      Date.now() - timestamp > MAPBOX_TOKEN_CACHE_DURATION_MS;
+    const isExpired = Date.now() - timestamp > MAPBOX_TOKEN_CACHE_DURATION_MS;
     if (isExpired || typeof token !== "string" || !token.startsWith("pk.")) {
       clearMapboxTokenCache();
       return null;

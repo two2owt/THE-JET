@@ -46,23 +46,33 @@ export interface TimelineProps {
 
 const STATUS_RING: Record<TimelineStatus, string> = {
   completed: "border-primary/60 bg-primary text-primary-foreground",
-  current: "border-primary bg-gradient-to-br from-primary to-primary-glow text-primary-foreground",
+  current:
+    "border-primary bg-gradient-to-br from-primary to-primary-glow text-primary-foreground",
   upcoming: "border-border bg-background/70 text-muted-foreground",
   error: "border-destructive bg-destructive text-destructive-foreground",
 };
 
 const STATUS_GLOW: Record<TimelineStatus, string> = {
   completed: "shadow-[0_0_0_3px_hsl(var(--primary)/0.12)]",
-  current: "shadow-[0_0_0_5px_hsl(var(--primary)/0.18),0_6px_18px_-6px_hsl(var(--primary)/0.7)]",
+  current:
+    "shadow-[0_0_0_5px_hsl(var(--primary)/0.18),0_6px_18px_-6px_hsl(var(--primary)/0.7)]",
   upcoming: "",
   error: "shadow-[0_0_0_3px_hsl(var(--destructive)/0.15)]",
 };
 
-function StatusIcon({ status, Icon }: { status: TimelineStatus; Icon?: LucideIcon }) {
+function StatusIcon({
+  status,
+  Icon,
+}: {
+  status: TimelineStatus;
+  Icon?: LucideIcon;
+}) {
   if (Icon) return <Icon className="h-2.5 w-2.5" strokeWidth={2.5} />;
-  if (status === "completed") return <Check className="h-2.5 w-2.5" strokeWidth={3} />;
+  if (status === "completed")
+    return <Check className="h-2.5 w-2.5" strokeWidth={3} />;
   if (status === "error") return <X className="h-2.5 w-2.5" strokeWidth={3} />;
-  if (status === "current") return <CircleDot className="h-2.5 w-2.5" strokeWidth={2.5} />;
+  if (status === "current")
+    return <CircleDot className="h-2.5 w-2.5" strokeWidth={2.5} />;
   return null;
 }
 
@@ -105,13 +115,23 @@ function Reveal({
   }, [enabled, shown]);
 
   const hidden =
-    from === "left" ? "opacity-0 -translate-x-3" : from === "right" ? "opacity-0 translate-x-3" : "opacity-0 translate-y-3";
+    from === "left"
+      ? "opacity-0 -translate-x-3"
+      : from === "right"
+        ? "opacity-0 translate-x-3"
+        : "opacity-0 translate-y-3";
 
   return (
     <div
       ref={ref}
-      className={cn("transition-[opacity,transform] duration-500 ease-out will-change-transform", shown ? "opacity-100 translate-x-0 translate-y-0" : hidden, className)}
-      style={{ transitionDelay: shown ? `${Math.min(index, 8) * 60}ms` : "0ms" }}
+      className={cn(
+        "transition-[opacity,transform] duration-500 ease-out will-change-transform",
+        shown ? "opacity-100 translate-x-0 translate-y-0" : hidden,
+        className,
+      )}
+      style={{
+        transitionDelay: shown ? `${Math.min(index, 8) * 60}ms` : "0ms",
+      }}
     >
       {children}
     </div>
@@ -154,8 +174,18 @@ function TimelineCard({
         status === "upcoming" && !active && "opacity-70",
       )}
     >
-      <div className={cn("flex items-baseline gap-2", align === "right" && "flex-row-reverse")}>
-        <span className={cn("font-display font-bold leading-tight text-foreground", compact ? "text-[11px]" : "text-xs")}>
+      <div
+        className={cn(
+          "flex items-baseline gap-2",
+          align === "right" && "flex-row-reverse",
+        )}
+      >
+        <span
+          className={cn(
+            "font-display font-bold leading-tight text-foreground",
+            compact ? "text-[11px]" : "text-xs",
+          )}
+        >
           {item.title}
         </span>
         {item.timestamp && (
@@ -165,9 +195,18 @@ function TimelineCard({
         )}
       </div>
       {(!expandable || expanded) && item.description && (
-        <p className={cn("mt-1 text-[10px] leading-relaxed text-muted-foreground", compact && "mt-0.5")}>{item.description}</p>
+        <p
+          className={cn(
+            "mt-1 text-[10px] leading-relaxed text-muted-foreground",
+            compact && "mt-0.5",
+          )}
+        >
+          {item.description}
+        </p>
       )}
-      {(!expandable || expanded) && item.media && <div className="mt-2">{item.media}</div>}
+      {(!expandable || expanded) && item.media && (
+        <div className="mt-2">{item.media}</div>
+      )}
     </button>
   );
 }
@@ -189,13 +228,17 @@ const TimelineImpl = ({
   const isNarrow = bp === "xs" || bp === "sm";
   // Alternating layout collapses to single-side on narrow viewports so cards
   // stay readable instead of squeezing into two columns.
-  const effectiveLayout = orientation === "vertical" && layout === "alternating" && !isNarrow ? "alternating" : "single";
+  const effectiveLayout =
+    orientation === "vertical" && layout === "alternating" && !isNarrow
+      ? "alternating"
+      : "single";
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
 
   const types = useMemo(
-    () => Array.from(new Set(items.map((i) => i.type).filter(Boolean))) as string[],
+    () =>
+      Array.from(new Set(items.map((i) => i.type).filter(Boolean))) as string[],
     [items],
   );
   const visible = useMemo(
@@ -244,7 +287,10 @@ const TimelineImpl = ({
             const status = item.status ?? "upcoming";
             const active = activeId === item.id;
             return (
-              <li key={item.id} className="relative flex min-w-[52px] flex-1 shrink-0 snap-start flex-col items-center">
+              <li
+                key={item.id}
+                className="relative flex min-w-[52px] flex-1 shrink-0 snap-start flex-col items-center"
+              >
                 {/* Connecting line segment */}
                 {i > 0 && (
                   <span
@@ -260,7 +306,9 @@ const TimelineImpl = ({
                     aria-hidden="true"
                     className={cn(
                       "absolute right-0 top-[9px] h-[2px] w-1/2 translate-x-1/2",
-                      (visible[i + 1].status ?? "upcoming") === "upcoming" ? "bg-border/60" : "bg-primary/50",
+                      (visible[i + 1].status ?? "upcoming") === "upcoming"
+                        ? "bg-border/60"
+                        : "bg-primary/50",
                     )}
                   />
                 )}
@@ -272,7 +320,9 @@ const TimelineImpl = ({
                     aria-current={active ? "step" : undefined}
                     className={cn(
                       "relative z-[1] flex items-center justify-center rounded-full border-2 transition-transform duration-200",
-                      active || status === "current" ? "h-4 w-4 scale-110" : "h-3 w-3",
+                      active || status === "current"
+                        ? "h-4 w-4 scale-110"
+                        : "h-3 w-3",
                       STATUS_RING[status],
                       STATUS_GLOW[status],
                     )}
@@ -283,13 +333,17 @@ const TimelineImpl = ({
                 <span
                   className={cn(
                     "mt-1.5 max-w-full truncate px-0.5 text-center text-[9px] font-semibold",
-                    active || status === "current" ? "text-foreground" : "text-muted-foreground",
+                    active || status === "current"
+                      ? "text-foreground"
+                      : "text-muted-foreground",
                   )}
                 >
                   {item.title}
                 </span>
                 {item.timestamp && (
-                  <span className="max-w-full truncate text-[8px] text-muted-foreground/70">{item.timestamp}</span>
+                  <span className="max-w-full truncate text-[8px] text-muted-foreground/70">
+                    {item.timestamp}
+                  </span>
                 )}
               </li>
             );
@@ -304,7 +358,10 @@ const TimelineImpl = ({
   return (
     <div className={cn("w-full min-w-0", className)}>
       {filters}
-      <ol aria-label={ariaLabel} className={cn("relative", alternating ? "px-0" : "pl-6")}>
+      <ol
+        aria-label={ariaLabel}
+        className={cn("relative", alternating ? "px-0" : "pl-6")}
+      >
         {/* Track: 2px line, centered when alternating, left edge otherwise. */}
         <span
           aria-hidden="true"
@@ -316,7 +373,8 @@ const TimelineImpl = ({
         {visible.map((item, i) => {
           const status = item.status ?? "upcoming";
           const active = activeId === item.id;
-          const side: "left" | "right" = alternating && i % 2 === 1 ? "right" : "left";
+          const side: "left" | "right" =
+            alternating && i % 2 === 1 ? "right" : "left";
           const node = (
             <button
               type="button"
@@ -324,7 +382,9 @@ const TimelineImpl = ({
               aria-label={`${item.title}${item.timestamp ? ` — ${item.timestamp}` : ""}`}
               className={cn(
                 "flex items-center justify-center rounded-full border-2 transition-transform duration-200",
-                active || status === "current" ? "h-4 w-4 scale-110" : "h-3 w-3",
+                active || status === "current"
+                  ? "h-4 w-4 scale-110"
+                  : "h-3 w-3",
                 STATUS_RING[status],
                 STATUS_GLOW[status],
               )}
@@ -335,8 +395,15 @@ const TimelineImpl = ({
 
           if (alternating) {
             return (
-              <li key={item.id} className="relative grid grid-cols-[1fr_auto_1fr] items-start gap-3 pb-3">
-                <div className={cn(side === "left" ? "" : "opacity-0 pointer-events-none")}>
+              <li
+                key={item.id}
+                className="relative grid grid-cols-[1fr_auto_1fr] items-start gap-3 pb-3"
+              >
+                <div
+                  className={cn(
+                    side === "left" ? "" : "opacity-0 pointer-events-none",
+                  )}
+                >
                   {side === "left" && (
                     <Reveal index={i} enabled={animate} from="left">
                       <TimelineCard
@@ -353,7 +420,11 @@ const TimelineImpl = ({
                   )}
                 </div>
                 <div className="relative z-[1] pt-2">{node}</div>
-                <div className={cn(side === "right" ? "" : "opacity-0 pointer-events-none")}>
+                <div
+                  className={cn(
+                    side === "right" ? "" : "opacity-0 pointer-events-none",
+                  )}
+                >
                   {side === "right" && (
                     <Reveal index={i} enabled={animate} from="right">
                       <TimelineCard

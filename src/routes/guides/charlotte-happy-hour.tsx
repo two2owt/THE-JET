@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import CharlotteHappyHour from "@/pages/guides/CharlotteHappyHour";
 
 const title = "Best Happy Hours in Charlotte, NC (2026 Guide)";
-const description = "A local guide to the best happy hour deals in Charlotte — Uptown, South End, NoDa, and Plaza Midwood, updated in real time.";
+const description =
+  "A local guide to the best happy hour deals in Charlotte — Uptown, South End, NoDa, and Plaza Midwood, updated in real time.";
 
 export const Route = createFileRoute("/guides/charlotte-happy-hour")({
   head: () => ({

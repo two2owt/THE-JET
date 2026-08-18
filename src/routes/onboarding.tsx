@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import Onboarding from "@/pages/Onboarding";
 
 const title = "Set Up Your JET Profile";
-const description = "Tell JET what you like so your map shows the food, drink, and nightlife you care about.";
+const description =
+  "Tell JET what you like so your map shows the food, drink, and nightlife you care about.";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({

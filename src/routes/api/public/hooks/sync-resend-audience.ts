@@ -45,7 +45,8 @@ async function resolveAudienceId(apiKey: string): Promise<string> {
 
   const list = await resendFetch(apiKey, "/audiences");
   if (list.ok) {
-    const rows = ((list.body as { data?: { id: string; name: string }[] })?.data ?? []);
+    const rows =
+      (list.body as { data?: { id: string; name: string }[] })?.data ?? [];
     const existing = rows.find((a) => a.name === AUDIENCE_NAME);
     if (existing) return existing.id;
   }
@@ -54,7 +55,9 @@ async function resolveAudienceId(apiKey: string): Promise<string> {
     body: JSON.stringify({ name: AUDIENCE_NAME }),
   });
   if (!created.ok) {
-    throw new Error(`Resend audience create failed [${created.status}]: ${JSON.stringify(created.body)}`);
+    throw new Error(
+      `Resend audience create failed [${created.status}]: ${JSON.stringify(created.body)}`,
+    );
   }
   return (created.body as { id: string }).id;
 }
@@ -68,20 +71,30 @@ export const Route = createFileRoute("/api/public/hooks/sync-resend-audience")({
         const hookSecret = process.env["NOTIFY_ADMIN_HOOK_SECRET"];
         const resendKey = process.env["RESEND_API_KEY"];
         if (!supabaseUrl || !serviceKey) {
-          return Response.json({ error: "Server configuration error" }, { status: 500 });
+          return Response.json(
+            { error: "Server configuration error" },
+            { status: 500 },
+          );
         }
         if (!resendKey) {
-          return Response.json({ error: "RESEND_API_KEY is not configured" }, { status: 500 });
+          return Response.json(
+            { error: "RESEND_API_KEY is not configured" },
+            { status: 500 },
+          );
         }
 
-        const token = (request.headers.get("authorization") ?? "").replace("Bearer ", "").trim();
-        if (!token) return Response.json({ error: "Unauthorized" }, { status: 401 });
+        const token = (request.headers.get("authorization") ?? "")
+          .replace("Bearer ", "")
+          .trim();
+        if (!token)
+          return Response.json({ error: "Unauthorized" }, { status: 401 });
 
         const admin = createClient(supabaseUrl, serviceKey, {
           auth: { persistSession: false, autoRefreshToken: false },
         });
 
-        let authorized = (!!hookSecret && token === hookSecret) || token === serviceKey;
+        let authorized =
+          (!!hookSecret && token === hookSecret) || token === serviceKey;
         if (!authorized) {
           const { data: userData } = await admin.auth.getUser(token);
           const callerId = userData?.user?.id;
@@ -93,7 +106,8 @@ export const Route = createFileRoute("/api/public/hooks/sync-resend-audience")({
             authorized = isAdmin === true;
           }
         }
-        if (!authorized) return Response.json({ error: "Unauthorized" }, { status: 401 });
+        if (!authorized)
+          return Response.json({ error: "Unauthorized" }, { status: 401 });
 
         let audienceId: string;
         try {
@@ -113,7 +127,9 @@ export const Route = createFileRoute("/api/public/hooks/sync-resend-audience")({
           return Response.json({ error: prefsError.message }, { status: 500 });
         }
 
-        const optedIn = (prefs ?? []).filter((p) => p.marketing_emails_enabled === true);
+        const optedIn = (prefs ?? []).filter(
+          (p) => p.marketing_emails_enabled === true,
+        );
         const optedInIds = optedIn.map((p) => p.user_id);
 
         const profileNames = new Map<string, string | null>();
@@ -122,12 +138,17 @@ export const Route = createFileRoute("/api/public/hooks/sync-resend-audience")({
             .from("profiles")
             .select("id, display_name")
             .in("id", optedInIds);
-          for (const p of profiles ?? []) profileNames.set(p.id, p.display_name);
+          for (const p of profiles ?? [])
+            profileNames.set(p.id, p.display_name);
         }
 
-        const { data: suppressed } = await admin.from("suppressed_emails").select("email");
+        const { data: suppressed } = await admin
+          .from("suppressed_emails")
+          .select("email");
         const suppressedSet = new Set(
-          (suppressed ?? []).map((s: { email: string }) => s.email.toLowerCase()),
+          (suppressed ?? []).map((s: { email: string }) =>
+            s.email.toLowerCase(),
+          ),
         );
 
         // Resolve verified email addresses for opted-in users.
@@ -141,7 +162,10 @@ export const Route = createFileRoute("/api/public/hooks/sync-resend-audience")({
         }
 
         // --- Current audience state ---------------------------------------
-        const current = await resendFetch(resendKey, `/audiences/${audienceId}/contacts`);
+        const current = await resendFetch(
+          resendKey,
+          `/audiences/${audienceId}/contacts`,
+        );
         const existingContacts: ResendContact[] = current.ok
           ? ((current.body as { data?: ResendContact[] })?.data ?? [])
           : [];
@@ -163,14 +187,25 @@ export const Route = createFileRoute("/api/public/hooks/sync-resend-audience")({
             unsubscribed: false,
           };
           const res = existing
-            ? await resendFetch(resendKey, `/audiences/${audienceId}/contacts/${existing.id}`, {
-                method: "PATCH",
-                body: JSON.stringify({ unsubscribed: false, first_name: meta.firstName ?? undefined }),
-              })
-            : await resendFetch(resendKey, `/audiences/${audienceId}/contacts`, {
-                method: "POST",
-                body: JSON.stringify(payload),
-              });
+            ? await resendFetch(
+                resendKey,
+                `/audiences/${audienceId}/contacts/${existing.id}`,
+                {
+                  method: "PATCH",
+                  body: JSON.stringify({
+                    unsubscribed: false,
+                    first_name: meta.firstName ?? undefined,
+                  }),
+                },
+              )
+            : await resendFetch(
+                resendKey,
+                `/audiences/${audienceId}/contacts`,
+                {
+                  method: "POST",
+                  body: JSON.stringify(payload),
+                },
+              );
           if (res.ok) synced++;
           else failures.push(`${email}: ${res.status}`);
         }

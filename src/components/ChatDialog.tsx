@@ -1,12 +1,23 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageContent } from "@/components/chat/MessageContent";
 import { ChatImage } from "@/components/chat/ChatImage";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Image as ImageIcon, Check, CheckCheck, Users } from "lucide-react";
+import {
+  Send,
+  Image as ImageIcon,
+  Check,
+  CheckCheck,
+  Users,
+} from "lucide-react";
 import { useMessages, type Message } from "@/hooks/useMessages";
 import { format } from "date-fns";
 
@@ -33,7 +44,7 @@ export function ChatDialog({
 
   const { messages, loading, sendMessage, sendImage, markAsRead } = useMessages(
     userId,
-    friendId
+    friendId,
   );
 
   // Auto-scroll to bottom on new messages
@@ -120,7 +131,12 @@ export function ChatDialog({
                           : "bg-muted text-foreground rounded-bl-md"
                       }`}
                     >
-                      {msg.image_url && <ChatImage value={msg.image_url} cacheBust={msg.created_at} />}
+                      {msg.image_url && (
+                        <ChatImage
+                          value={msg.image_url}
+                          cacheBust={msg.created_at}
+                        />
+                      )}
                       {msg.content && (
                         <MessageContent content={msg.content} isMine={isMine} />
                       )}

@@ -6,7 +6,10 @@ type TierKey = "free" | "jet_plus" | "jetx";
 
 // Kept in sync with SUBSCRIPTION_TIERS in src/hooks/useSubscription.ts.
 // Duplicated intentionally so the MCP bundle stays free of React/browser imports.
-const TIERS: Record<TierKey, { name: string; price: number; benefits: string[] }> = {
+const TIERS: Record<
+  TierKey,
+  { name: string; price: number; benefits: string[] }
+> = {
   free: {
     name: "JET",
     price: 0,
@@ -43,11 +46,15 @@ const TIERS: Record<TierKey, { name: string; price: number; benefits: string[] }
 
 const ORDER: TierKey[] = ["free", "jet_plus", "jetx"];
 
-const normalizeTier = (raw: string | null | undefined, subscribed: boolean | null | undefined): TierKey => {
+const normalizeTier = (
+  raw: string | null | undefined,
+  subscribed: boolean | null | undefined,
+): TierKey => {
   if (!subscribed) return "free";
   const value = (raw ?? "").toLowerCase().replace(/[\s-]/g, "_");
   if (value === "jetx" || value === "jet_x") return "jetx";
-  if (value === "jet_plus" || value === "jetplus" || value === "plus") return "jet_plus";
+  if (value === "jet_plus" || value === "jetplus" || value === "plus")
+    return "jet_plus";
   return "free";
 };
 
@@ -65,10 +72,17 @@ export default defineTool({
       .default(10)
       .describe("Maximum number of currently available promotions to return."),
   },
-  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  annotations: {
+    readOnlyHint: true,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
   handler: async ({ promotions_limit }, ctx) => {
     if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+      return {
+        content: [{ type: "text", text: "Not authenticated" }],
+        isError: true,
+      };
     }
     const supabase = supabaseForUser(ctx);
     const userId = ctx.getUserId();
@@ -77,12 +91,16 @@ export default defineTool({
     const [subRes, dealsRes] = await Promise.all([
       supabase
         .from("subscribers")
-        .select("tier, subscribed, subscription_end, cancel_at_period_end, updated_at")
+        .select(
+          "tier, subscribed, subscription_end, cancel_at_period_end, updated_at",
+        )
         .eq("user_id", userId)
         .maybeSingle(),
       supabase
         .from("deals")
-        .select("id, title, description, deal_type, venue_id, venue_name, venue_address, starts_at, expires_at")
+        .select(
+          "id, title, description, deal_type, venue_id, venue_name, venue_address, starts_at, expires_at",
+        )
         .eq("active", true)
         .lte("starts_at", nowIso)
         .gt("expires_at", nowIso)
@@ -92,7 +110,10 @@ export default defineTool({
 
     const firstError = subRes.error ?? dealsRes.error;
     if (firstError) {
-      return { content: [{ type: "text", text: firstError.message }], isError: true };
+      return {
+        content: [{ type: "text", text: firstError.message }],
+        isError: true,
+      };
     }
 
     const sub = subRes.data;
@@ -104,7 +125,9 @@ export default defineTool({
       tier: key,
       name: TIERS[key].name,
       monthly_price_usd: TIERS[key].price,
-      unlocks: TIERS[key].benefits.filter((b) => !b.startsWith("Everything in")),
+      unlocks: TIERS[key].benefits.filter(
+        (b) => !b.startsWith("Everything in"),
+      ),
     }));
 
     const promotions = (dealsRes.data ?? []).map((d) => ({

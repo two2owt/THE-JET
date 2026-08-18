@@ -15,17 +15,15 @@ export function MessageContent({ content, isMine }: MessageContentProps) {
 
   // Match deep link URLs in the message
   const deepLinkRegex = new RegExp(
-    `(${window.location.origin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/\\?(?:venue|deal)=[^\\s]+)`,
-    'g'
+    `(${window.location.origin.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/\\?(?:venue|deal)=[^\\s]+)`,
+    "g",
   );
 
   const parts = content.split(deepLinkRegex);
 
   if (parts.length === 1) {
     // No deep links found, render plain text
-    return (
-      <p className="text-sm whitespace-pre-wrap break-words">{content}</p>
-    );
+    return <p className="text-sm whitespace-pre-wrap break-words">{content}</p>;
   }
 
   return (
@@ -60,8 +58,8 @@ export function MessageContent({ content, isMine }: MessageContentProps) {
                 {venueParam
                   ? "Open venue on map"
                   : dealId
-                  ? "View deal on map"
-                  : "Open link"}
+                    ? "View deal on map"
+                    : "Open link"}
               </button>
             );
           } catch {

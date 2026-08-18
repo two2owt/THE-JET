@@ -8,7 +8,9 @@ export const useIsAdmin = () => {
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (!user) {
           setIsAdmin(false);
           setLoading(false);
@@ -18,15 +20,15 @@ export const useIsAdmin = () => {
         // Check admin role from database
         // maybeSingle avoids PostgREST throwing "no rows" for every non-admin.
         const { data: roles } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .eq('role', 'admin')
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .eq("role", "admin")
           .maybeSingle();
 
         setIsAdmin(!!roles);
       } catch (error) {
-        console.error('Error checking admin status:', error);
+        console.error("Error checking admin status:", error);
         setIsAdmin(false);
       } finally {
         setLoading(false);

@@ -16,7 +16,15 @@ export const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [urlSearchParams, setUrlSearchParams] = useSearchParams();
-  const { venues, deals, onVenueSelect, hideSearch, lastUpdated, onRefresh, isLoading } = useHeaderContext();
+  const {
+    venues,
+    deals,
+    onVenueSelect,
+    hideSearch,
+    lastUpdated,
+    onRefresh,
+    isLoading,
+  } = useHeaderContext();
   // "Mobile" header chrome = anything narrower than the `md` breakpoint
   // (phones + small foldables). Tablets in portrait already get the full
   // search pill.
@@ -30,7 +38,8 @@ export const Header = () => {
   useEffect(() => {
     try {
       const url = new URLSearchParams(window.location.search).get("q");
-      const restored = url || window.sessionStorage.getItem(SEARCH_QUERY_KEY) || "";
+      const restored =
+        url || window.sessionStorage.getItem(SEARCH_QUERY_KEY) || "";
       if (restored) {
         setSearchQuery(restored);
         setShowResults(restored.trim().length > 0);
@@ -38,7 +47,6 @@ export const Header = () => {
     } catch {
       /* storage disabled — ignore */
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [showResults, setShowResults] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -54,7 +62,6 @@ export const Header = () => {
     } catch {
       /* storage disabled — ignore */
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const [userEmail, setUserEmail] = useState<string | undefined>(undefined);
@@ -92,7 +99,8 @@ export const Header = () => {
   // (?q=) so the query is shareable / restorable via reload.
   useEffect(() => {
     try {
-      if (searchQuery) window.sessionStorage.setItem(SEARCH_QUERY_KEY, searchQuery);
+      if (searchQuery)
+        window.sessionStorage.setItem(SEARCH_QUERY_KEY, searchQuery);
       else window.sessionStorage.removeItem(SEARCH_QUERY_KEY);
     } catch {
       /* storage disabled — ignore */
@@ -123,7 +131,8 @@ export const Header = () => {
 
   useEffect(() => {
     try {
-      if (searchExpanded) window.sessionStorage.setItem(SEARCH_EXPANDED_KEY, "1");
+      if (searchExpanded)
+        window.sessionStorage.setItem(SEARCH_EXPANDED_KEY, "1");
       else window.sessionStorage.removeItem(SEARCH_EXPANDED_KEY);
     } catch {
       /* storage disabled — ignore */
@@ -177,9 +186,7 @@ export const Header = () => {
   const avatarUrl = profile?.avatar_url ?? null;
   const displayName = useMemo(
     () =>
-      profile?.display_name ||
-      userEmail?.substring(0, 2).toUpperCase() ||
-      "JT",
+      profile?.display_name || userEmail?.substring(0, 2).toUpperCase() || "JT",
     [profile?.display_name, userEmail],
   );
 
@@ -198,14 +205,15 @@ export const Header = () => {
         }, 1000);
       }
     },
-    [addToSearchHistory]
+    [addToSearchHistory],
   );
 
   useEffect(
     () => () => {
-      if (historyDebounceRef.current) window.clearTimeout(historyDebounceRef.current);
+      if (historyDebounceRef.current)
+        window.clearTimeout(historyDebounceRef.current);
     },
-    []
+    [],
   );
 
   const handleCloseResults = useCallback(() => setShowResults(false), []);
@@ -230,7 +238,7 @@ export const Header = () => {
       setShowResults(false);
       setSearchExpanded(false);
     },
-    [onVenueSelect]
+    [onVenueSelect],
   );
 
   const showSearchBar = !hideSearch && (!isMobile || searchExpanded);
@@ -241,12 +249,12 @@ export const Header = () => {
       className="fixed top-0 left-0 right-0 z-[60]"
       role="banner"
       style={{
-        paddingTop: 'var(--safe-area-inset-top)',
-        height: 'var(--header-total-height)',
-        minHeight: 'var(--header-total-height)',
-        maxHeight: 'var(--header-total-height)',
+        paddingTop: "var(--safe-area-inset-top)",
+        height: "var(--header-total-height)",
+        minHeight: "var(--header-total-height)",
+        maxHeight: "var(--header-total-height)",
         flexShrink: 0,
-        contain: 'layout style',
+        contain: "layout style",
       }}
     >
       {/* Glass background */}
@@ -255,9 +263,9 @@ export const Header = () => {
         style={{
           // Deeper near-black glass for the dark luxe header
           background:
-            'linear-gradient(180deg, hsl(var(--background) / 0.92), hsl(var(--background) / 0.78))',
-          backdropFilter: 'blur(20px) saturate(1.6)',
-          WebkitBackdropFilter: 'blur(20px) saturate(1.6)',
+            "linear-gradient(180deg, hsl(var(--background) / 0.92), hsl(var(--background) / 0.78))",
+          backdropFilter: "blur(20px) saturate(1.6)",
+          WebkitBackdropFilter: "blur(20px) saturate(1.6)",
         }}
       />
       {/* Subtle gradient sheen */}
@@ -266,31 +274,31 @@ export const Header = () => {
         style={{
           // Brand-led sheen kept faint; gold corner light adds the luxe note
           background:
-            'linear-gradient(135deg, hsl(var(--primary) / 0.05) 0%, transparent 45%, hsl(var(--gold) / 0.04) 100%)',
+            "linear-gradient(135deg, hsl(var(--primary) / 0.05) 0%, transparent 45%, hsl(var(--gold) / 0.04) 100%)",
         }}
       />
       {/* Bottom divider — hairline gold luxe accent */}
       <div
         className="absolute bottom-0 left-0 right-0"
         style={{
-          height: '1px',
+          height: "1px",
           background:
-            'linear-gradient(90deg, transparent 0%, hsl(var(--gold) / 0.35) 50%, transparent 100%)',
+            "linear-gradient(90deg, transparent 0%, hsl(var(--gold) / 0.35) 50%, transparent 100%)",
         }}
       />
 
       <div
         style={{
-          display: 'flex',
-          flexDirection: 'row',
-          flexWrap: 'nowrap',
-          alignItems: 'center',
-          height: '100%',
-          maxWidth: '1280px',
-          margin: '0 auto',
-          padding: '0 clamp(12px, 2vw, 32px)',
-          gap: 'clamp(8px, 1.5vw, 16px)',
-          overflow: 'hidden',
+          display: "flex",
+          flexDirection: "row",
+          flexWrap: "nowrap",
+          alignItems: "center",
+          height: "100%",
+          maxWidth: "1280px",
+          margin: "0 auto",
+          padding: "0 clamp(12px, 2vw, 32px)",
+          gap: "clamp(8px, 1.5vw, 16px)",
+          overflow: "hidden",
         }}
       >
         {/* Logo — always visible unless mobile search is expanded */}
@@ -298,34 +306,35 @@ export const Header = () => {
           <div
             role="link"
             aria-label="JET — go home"
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             style={{
-              display: 'flex',
-              alignItems: 'center',
+              display: "flex",
+              alignItems: "center",
               flexShrink: 0,
-              height: 'var(--touch-target-min, 44px)',
-              paddingLeft: '2px',
-              paddingRight: 'clamp(8px, 1.5vw, 14px)',
-              marginRight: 'clamp(4px, 1vw, 8px)',
-              cursor: 'pointer',
-              userSelect: 'none',
+              height: "var(--touch-target-min, 44px)",
+              paddingLeft: "2px",
+              paddingRight: "clamp(8px, 1.5vw, 14px)",
+              marginRight: "clamp(4px, 1vw, 8px)",
+              cursor: "pointer",
+              userSelect: "none",
               opacity: mounted ? 1 : 0,
-              transform: mounted ? 'translateX(0)' : 'translateX(-8px)',
-              transition: 'opacity 0.4s ease-out, transform 0.4s ease-out',
+              transform: mounted ? "translateX(0)" : "translateX(-8px)",
+              transition: "opacity 0.4s ease-out, transform 0.4s ease-out",
             }}
           >
             <span
               style={{
-                fontSize: 'clamp(16px, 2.6vw, 22px)',
+                fontSize: "clamp(16px, 2.6vw, 22px)",
                 lineHeight: 1,
                 fontWeight: 800,
-                letterSpacing: '-0.025em',
-                backgroundImage: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))',
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                color: 'transparent',
-                whiteSpace: 'nowrap',
+                letterSpacing: "-0.025em",
+                backgroundImage:
+                  "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                color: "transparent",
+                whiteSpace: "nowrap",
               }}
             >
               JET
@@ -340,34 +349,42 @@ export const Header = () => {
             aria-label="Open search"
             onClick={() => setSearchExpanded(true)}
             style={{
-              flex: '1 1 0%',
+              flex: "1 1 0%",
               minWidth: 0,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              height: 'clamp(34px, 5vw, 40px)',
-              padding: '0 16px',
-              borderRadius: '9999px',
-              border: '1.5px solid hsl(var(--border) / 0.5)',
-              background: 'hsl(var(--muted) / 0.35)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              color: 'hsl(var(--muted-foreground))',
-              fontSize: '14px',
-              textAlign: 'left',
-              cursor: 'pointer',
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              height: "clamp(34px, 5vw, 40px)",
+              padding: "0 16px",
+              borderRadius: "9999px",
+              border: "1.5px solid hsl(var(--border) / 0.5)",
+              background: "hsl(var(--muted) / 0.35)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              color: "hsl(var(--muted-foreground))",
+              fontSize: "14px",
+              textAlign: "left",
+              cursor: "pointer",
               opacity: mounted ? 1 : 0,
-              transform: mounted ? 'translateY(0)' : 'translateY(-6px)',
-              transition: 'opacity 0.3s ease-out 0.15s, transform 0.3s ease-out 0.15s, background 0.2s, border-color 0.2s',
+              transform: mounted ? "translateY(0)" : "translateY(-6px)",
+              transition:
+                "opacity 0.3s ease-out 0.15s, transform 0.3s ease-out 0.15s, background 0.2s, border-color 0.2s",
             }}
           >
-            <Search style={{ width: 16, height: 16, color: 'hsl(var(--muted-foreground) / 0.7)', flexShrink: 0 }} />
+            <Search
+              style={{
+                width: 16,
+                height: 16,
+                color: "hsl(var(--muted-foreground) / 0.7)",
+                flexShrink: 0,
+              }}
+            />
             <span
               style={{
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                color: 'hsl(var(--muted-foreground) / 0.7)',
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                color: "hsl(var(--muted-foreground) / 0.7)",
               }}
             >
               Search venues, deals…
@@ -393,12 +410,11 @@ export const Header = () => {
           />
         )}
 
-
         {/* Spacer only when no search element is present — otherwise the
             search pill already absorbs the free space (two flex:1 siblings
             would split the row and shrink the pill to half width). */}
         {(!isMobile || (!showSearchBar && !showSearchIcon)) && (
-          <div style={{ flex: '1 1 0%', minWidth: 0 }} />
+          <div style={{ flex: "1 1 0%", minWidth: 0 }} />
         )}
 
         {/* Sync indicator — between search and avatar */}

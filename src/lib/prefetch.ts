@@ -31,7 +31,8 @@ export const prefetchMapboxToken = async () => {
     if (!error && data?.token) {
       writeMapboxTokenCache(data.token);
       if (import.meta.env.DEV) {
-        if (import.meta.env.DEV) console.log("Prefetch: Mapbox token cached successfully");
+        if (import.meta.env.DEV)
+          console.log("Prefetch: Mapbox token cached successfully");
       }
     }
   } catch {
@@ -46,20 +47,24 @@ export const prefetchMapboxToken = async () => {
 export const prefetchMapbox = () => {
   if (mapboxPrefetched) return;
   mapboxPrefetched = true;
-  
+
   // In production, mapbox-gl is loaded from CDN via script tag
   // Check if it's already available globally
-  if (typeof window !== 'undefined' && (window as any).mapboxgl) {
-    if (import.meta.env.DEV) console.log('Prefetch: Mapbox already loaded from CDN');
+  if (typeof window !== "undefined" && (window as any).mapboxgl) {
+    if (import.meta.env.DEV)
+      console.log("Prefetch: Mapbox already loaded from CDN");
     return;
   }
-  
+
   // Fallback: trigger the chunk download by importing the module (dev mode)
-  import('mapbox-gl').then(() => {
-    if (import.meta.env.DEV) console.log('Prefetch: Mapbox chunk loaded and cached');
-  }).catch(() => {
-    mapboxPrefetched = false;
-  });
+  import("mapbox-gl")
+    .then(() => {
+      if (import.meta.env.DEV)
+        console.log("Prefetch: Mapbox chunk loaded and cached");
+    })
+    .catch(() => {
+      mapboxPrefetched = false;
+    });
 };
 
 // ========================================
@@ -78,9 +83,7 @@ const ROUTE_IMPORTS = {
     () => import("@/pages/Profile"),
   ],
   // Medium priority: auth (Settings is now embedded inside Profile)
-  medium: [
-    () => import("@/pages/Auth"),
-  ],
+  medium: [() => import("@/pages/Auth")],
   // Low priority: less frequently accessed
   low: [
     () => import("@/pages/Onboarding"),
@@ -112,8 +115,10 @@ export const prefetchRoutes = () => {
 
   // High priority: after 2s (user likely exploring the map)
   setTimeout(() => {
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(() => prefetchBatch(ROUTE_IMPORTS.high), { timeout: 3000 });
+    if ("requestIdleCallback" in window) {
+      requestIdleCallback(() => prefetchBatch(ROUTE_IMPORTS.high), {
+        timeout: 3000,
+      });
     } else {
       prefetchBatch(ROUTE_IMPORTS.high);
     }
@@ -121,8 +126,10 @@ export const prefetchRoutes = () => {
 
   // Medium priority: after 5s
   setTimeout(() => {
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(() => prefetchBatch(ROUTE_IMPORTS.medium), { timeout: 3000 });
+    if ("requestIdleCallback" in window) {
+      requestIdleCallback(() => prefetchBatch(ROUTE_IMPORTS.medium), {
+        timeout: 3000,
+      });
     } else {
       prefetchBatch(ROUTE_IMPORTS.medium);
     }
@@ -130,8 +137,10 @@ export const prefetchRoutes = () => {
 
   // Low priority: after 10s
   setTimeout(() => {
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(() => prefetchBatch(ROUTE_IMPORTS.low), { timeout: 5000 });
+    if ("requestIdleCallback" in window) {
+      requestIdleCallback(() => prefetchBatch(ROUTE_IMPORTS.low), {
+        timeout: 5000,
+      });
     } else {
       prefetchBatch(ROUTE_IMPORTS.low);
     }
@@ -168,9 +177,11 @@ export const createPrefetchHandlers = (routeImport: () => Promise<unknown>) => {
 let tabChunksPrefetched = false;
 export const prefetchHomeTabChunks = () => {
   if (tabChunksPrefetched || typeof window === "undefined") return;
-  const connection = (navigator as Navigator & {
-    connection?: { saveData?: boolean; effectiveType?: string };
-  }).connection;
+  const connection = (
+    navigator as Navigator & {
+      connection?: { saveData?: boolean; effectiveType?: string };
+    }
+  ).connection;
   if (connection?.saveData) return;
   tabChunksPrefetched = true;
 
@@ -194,9 +205,16 @@ export const prefetchHomeTabChunks = () => {
  */
 export const initPrefetching = () => {
   // Check if we should defer prefetching based on connection
-  const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
-  const shouldDefer = connection?.saveData || connection?.effectiveType === '2g' || connection?.effectiveType === 'slow-2g';
-  
+  const connection = (
+    navigator as Navigator & {
+      connection?: { saveData?: boolean; effectiveType?: string };
+    }
+  ).connection;
+  const shouldDefer =
+    connection?.saveData ||
+    connection?.effectiveType === "2g" ||
+    connection?.effectiveType === "slow-2g";
+
   // Prefetch Mapbox token - defer on slow connections
   if (shouldDefer) {
     // On slow connections, wait until after LCP
@@ -205,22 +223,22 @@ export const initPrefetching = () => {
     // On fast connections, start after a short delay to not block critical path
     setTimeout(prefetchMapboxToken, 1000);
   }
-  
+
   // Wait for initial render to complete, then prefetch JS chunks during idle
   const startPrefetching = () => {
     // Use requestIdleCallback for non-critical prefetching
     const scheduleMapboxPrefetch = () => {
-      if ('requestIdleCallback' in window) {
+      if ("requestIdleCallback" in window) {
         requestIdleCallback(() => prefetchMapbox(), { timeout: 10000 });
       } else {
         setTimeout(prefetchMapbox, 5000);
       }
     };
-    
+
     // Delay based on connection speed
     const delay = shouldDefer ? 8000 : 4000;
     setTimeout(scheduleMapboxPrefetch, delay);
-    
+
     // Route prefetching with longer delays on slow connections
     if (!shouldDefer) {
       prefetchRoutes();
@@ -228,10 +246,10 @@ export const initPrefetching = () => {
       setTimeout(prefetchRoutes, 10000);
     }
   };
-  
-  if (document.readyState === 'complete') {
+
+  if (document.readyState === "complete") {
     startPrefetching();
   } else {
-    window.addEventListener('load', startPrefetching, { once: true });
+    window.addEventListener("load", startPrefetching, { once: true });
   }
 };

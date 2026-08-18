@@ -22,10 +22,10 @@ logVersion(FUNCTION_NAME);
 
 // Keep in sync with check-subscription/index.ts.
 const TIER_MAP: Record<string, string> = {
-  "prod_TZO4ZimXhwOsHJ": "jet_plus",
-  "prod_TZO4046HaI8g2t": "jetx",
-  "prod_TUHQC9j6XgrHOV": "jet_plus",
-  "prod_TUHQzyndNlfBAr": "jetx",
+  prod_TZO4ZimXhwOsHJ: "jet_plus",
+  prod_TZO4046HaI8g2t: "jetx",
+  prod_TUHQC9j6XgrHOV: "jet_plus",
+  prod_TUHQzyndNlfBAr: "jetx",
 };
 
 const log = (step: string, details?: unknown) => {
@@ -54,7 +54,8 @@ async function resolveUserIdForCustomer(
     .select("user_id, email")
     .eq("stripe_customer_id", customerId)
     .maybeSingle();
-  if (existing?.user_id) return { userId: existing.user_id, email: existing.email };
+  if (existing?.user_id)
+    return { userId: existing.user_id, email: existing.email };
 
   // 2) Fall back to matching the Stripe customer email against auth.users.
   let email = fallbackEmail;
@@ -79,7 +80,8 @@ async function resolveUserIdForCustomer(
 }
 
 async function upsertFromSubscription(sub: Stripe.Subscription) {
-  const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
+  const customerId =
+    typeof sub.customer === "string" ? sub.customer : sub.customer.id;
   const { userId, email } = await resolveUserIdForCustomer(customerId, null);
   if (!userId || !email) {
     log("skip_unresolved_user", { customerId, subscriptionId: sub.id });
@@ -110,12 +112,14 @@ async function upsertFromSubscription(sub: Stripe.Subscription) {
 }
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
-  const customerId = typeof session.customer === "string"
-    ? session.customer
-    : session.customer?.id ?? null;
-  const subscriptionId = typeof session.subscription === "string"
-    ? session.subscription
-    : session.subscription?.id ?? null;
+  const customerId =
+    typeof session.customer === "string"
+      ? session.customer
+      : (session.customer?.id ?? null);
+  const subscriptionId =
+    typeof session.subscription === "string"
+      ? session.subscription
+      : (session.subscription?.id ?? null);
   if (!customerId || !subscriptionId) {
     log("checkout_missing_ids", { customerId, subscriptionId });
     return;
@@ -155,7 +159,9 @@ Deno.serve(async (req) => {
   try {
     switch (event.type) {
       case "checkout.session.completed":
-        await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
+        await handleCheckoutCompleted(
+          event.data.object as Stripe.Checkout.Session,
+        );
         break;
       case "customer.subscription.created":
       case "customer.subscription.updated":

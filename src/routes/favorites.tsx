@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import Favorites from "@/pages/Favorites";
 
 const title = "Your Saved Venues — JET";
-const description = "Every venue and deal you have saved on JET, with live open/closed status.";
+const description =
+  "Every venue and deal you have saved on JET, with live open/closed status.";
 
 export const Route = createFileRoute("/favorites")({
   head: () => ({

@@ -59,9 +59,10 @@ export function useLocationPreferences(): LocationPreferences {
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          const row = payload.new as
-            | { location_tracking_enabled?: boolean; background_tracking_enabled?: boolean }
-            | null;
+          const row = payload.new as {
+            location_tracking_enabled?: boolean;
+            background_tracking_enabled?: boolean;
+          } | null;
           if (!row) return;
           setPrefs({
             location: Boolean(row.location_tracking_enabled),

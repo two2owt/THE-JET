@@ -25,9 +25,24 @@ export function ProfileStatsPills({
 }: ProfileStatsPillsProps) {
   const navigate = useNavigate();
   const pills: StatPill[] = [
-    { icon: Heart, label: "Favorites", value: favoritesCount, to: "/favorites" },
-    { icon: Users, label: "Connections", value: connectionsCount, to: "/social" },
-    { icon: Bell, label: "Alerts", value: unreadAlertsCount, to: "/?tab=notifications" },
+    {
+      icon: Heart,
+      label: "Favorites",
+      value: favoritesCount,
+      to: "/favorites",
+    },
+    {
+      icon: Users,
+      label: "Connections",
+      value: connectionsCount,
+      to: "/social",
+    },
+    {
+      icon: Bell,
+      label: "Alerts",
+      value: unreadAlertsCount,
+      to: "/?tab=notifications",
+    },
   ];
 
   return (

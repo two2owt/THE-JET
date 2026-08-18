@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
     const apiKey = Deno.env.get("GOOGLE_PLACES_API_KEY");
     if (!apiKey) return json({ location: null, error: "not_configured" });
 
-    const body = await req.json().catch(() => ({} as Record<string, unknown>));
+    const body = await req.json().catch(() => ({}) as Record<string, unknown>);
 
     // Only forward the fields Google accepts, and cap array sizes.
     const payload: Record<string, unknown> = { considerIp: true };
@@ -53,7 +53,8 @@ Deno.serve(async (req) => {
     const data = await res.json().catch(() => null);
 
     if (!res.ok) {
-      const reason = data?.error?.errors?.[0]?.reason ?? data?.error?.status ?? "unknown";
+      const reason =
+        data?.error?.errors?.[0]?.reason ?? data?.error?.status ?? "unknown";
       console.error(`[${FUNCTION_NAME}] google error ${res.status}: ${reason}`);
       if (res.status === 403) {
         return json(

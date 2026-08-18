@@ -27,20 +27,22 @@ const CDN_LOAD_TIMEOUT = 8000; // 8 seconds
 const waitForCDNMapbox = (): Promise<MapboxGLModule | null> => {
   return new Promise((resolve) => {
     // Check immediately
-    if (typeof window !== 'undefined' && (window as any).mapboxgl) {
+    if (typeof window !== "undefined" && (window as any).mapboxgl) {
       resolve((window as any).mapboxgl);
       return;
     }
-    
+
     // Poll every 100ms for up to CDN_LOAD_TIMEOUT
     const startTime = Date.now();
     const checkInterval = setInterval(() => {
-      if (typeof window !== 'undefined' && (window as any).mapboxgl) {
+      if (typeof window !== "undefined" && (window as any).mapboxgl) {
         clearInterval(checkInterval);
         resolve((window as any).mapboxgl);
       } else if (Date.now() - startTime > CDN_LOAD_TIMEOUT) {
         clearInterval(checkInterval);
-        console.warn('MapboxHeatmap: CDN load timeout, falling back to bundled version');
+        console.warn(
+          "MapboxHeatmap: CDN load timeout, falling back to bundled version",
+        );
         resolve(null);
       }
     }, 100);
@@ -49,19 +51,19 @@ const waitForCDNMapbox = (): Promise<MapboxGLModule | null> => {
 
 const loadMapboxGL = async (): Promise<MapboxGLModule> => {
   if (mapboxglModule) return mapboxglModule;
-  
+
   if (!mapboxLoadPromise) {
     mapboxLoadPromise = (async () => {
       // First, try to use CDN version (production)
       const cdnMapbox = await waitForCDNMapbox();
       if (cdnMapbox) {
-        devLog('MapboxHeatmap: Using CDN mapbox-gl');
+        devLog("MapboxHeatmap: Using CDN mapbox-gl");
         mapboxglModule = cdnMapbox;
         return mapboxglModule;
       }
-      
+
       // Fallback to dynamic import (development or if CDN fails)
-      devLog('MapboxHeatmap: Loading mapbox-gl via import');
+      devLog("MapboxHeatmap: Loading mapbox-gl via import");
       try {
         const m = await import("mapbox-gl");
         // Also load the CSS in dev
@@ -69,14 +71,38 @@ const loadMapboxGL = async (): Promise<MapboxGLModule> => {
         mapboxglModule = m.default;
         return m.default;
       } catch (importError) {
-        console.error('MapboxHeatmap: Failed to import mapbox-gl:', importError);
-        throw new Error('Failed to load map library. Please check your connection and refresh.');
+        console.error(
+          "MapboxHeatmap: Failed to import mapbox-gl:",
+          importError,
+        );
+        throw new Error(
+          "Failed to load map library. Please check your connection and refresh.",
+        );
       }
     })();
   }
   return mapboxLoadPromise;
 };
-import { MapPin, Layers, Palette, X, AlertCircle, Route, Play, Pause, SkipBack, SkipForward, Clock, ChevronDown, ChevronUp, Car, BarChart3, RotateCcw, Calendar, Loader2 } from "lucide-react";
+import {
+  MapPin,
+  Layers,
+  Palette,
+  X,
+  AlertCircle,
+  Route,
+  Play,
+  Pause,
+  SkipBack,
+  SkipForward,
+  Clock,
+  ChevronDown,
+  ChevronUp,
+  Car,
+  BarChart3,
+  RotateCcw,
+  Calendar,
+  Loader2,
+} from "lucide-react";
 import { HeatmapSkeleton } from "@/components/skeletons/HeatmapSkeleton";
 import { useLocationDensity } from "@/hooks/useLocationDensity";
 import { useMovementPaths } from "@/hooks/useMovementPaths";
@@ -91,7 +117,12 @@ import { Button } from "./ui/button";
 import { LayerToggleRow } from "./map/LayerToggleRow";
 import { LayerSliderRow } from "./map/LayerSliderRow";
 import { HeatmapColorLegend } from "./map/HeatmapColorLegend";
-import { activityColor, activityLegendTiers, activityTier, casingFor } from "@/lib/activity-palette";
+import {
+  activityColor,
+  activityLegendTiers,
+  activityTier,
+  casingFor,
+} from "@/lib/activity-palette";
 import {
   LiveStatsPanel,
   liveStatsRangeToTimeFilter,
@@ -102,12 +133,22 @@ import { useMovementPathsLayer } from "./map/hooks/useMovementPathsLayer";
 import { useLayerPersistence } from "./map/hooks/useLayerPersistence";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "./ui/select";
 import { Slider } from "./ui/slider";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "./ui/collapsible";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "./ui/sheet";
 import { Input } from "./ui/input";
 import { Search } from "lucide-react";
 
-import { CITIES, type City, getNearestCity, getCitiesSortedByDistance, kmToMiles } from "@/types/cities";
+import {
+  CITIES,
+  type City,
+  getNearestCity,
+  getCitiesSortedByDistance,
+  kmToMiles,
+} from "@/types/cities";
 import { getCachedReverseGeocode } from "@/utils/reverseGeocode";
 import locationPuckIcon from "@/assets/location-puck.png";
 
@@ -117,7 +158,11 @@ import type { Venue } from "@/types/venue";
 
 interface MapboxHeatmapProps {
   onVenueSelect: (venue: Venue) => void;
-  onParkingSelect?: (parking: { lat: number; lng: number; name?: string }) => void;
+  onParkingSelect?: (parking: {
+    lat: number;
+    lng: number;
+    name?: string;
+  }) => void;
   venues: Venue[];
   mapboxToken: string;
   selectedCity: City;
@@ -143,19 +188,25 @@ const getActivityColor = (activity: number, isLightBasemap: boolean) =>
 const getPlatformSettings = (isMobile: boolean) => {
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   const isAndroid = /Android/.test(navigator.userAgent);
-  const isPWA = window.matchMedia('(display-mode: standalone)').matches;
-  const isLowPowerMode = 'connection' in navigator && (navigator as any).connection?.saveData;
-  const hasReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const isSlowConnection = 'connection' in navigator && 
-    ['slow-2g', '2g', '3g'].includes((navigator as any).connection?.effectiveType);
-  
+  const isPWA = window.matchMedia("(display-mode: standalone)").matches;
+  const isLowPowerMode =
+    "connection" in navigator && (navigator as any).connection?.saveData;
+  const hasReducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
+  const isSlowConnection =
+    "connection" in navigator &&
+    ["slow-2g", "2g", "3g"].includes(
+      (navigator as any).connection?.effectiveType,
+    );
+
   return {
     // Reduce pitch on mobile for better performance
     pitch: isMobile ? (isLowPowerMode ? 0 : 30) : 50,
     // Disable antialiasing on mobile for performance
     antialias: !isMobile && !isLowPowerMode,
     // Fade duration - instant on mobile/low power
-    fadeDuration: (isMobile || isLowPowerMode || hasReducedMotion) ? 0 : 100,
+    fadeDuration: isMobile || isLowPowerMode || hasReducedMotion ? 0 : 100,
     // Tile cache - smaller on mobile, larger on desktop for better caching
     maxTileCacheSize: isMobile ? 25 : 150,
     // Cooperative gestures disabled - allow single finger pan on all devices
@@ -165,7 +216,7 @@ const getPlatformSettings = (isMobile: boolean) => {
     touchPitch: !isMobile,
     dragRotate: !isMobile,
     // Animation durations
-    flyToDuration: hasReducedMotion ? 0 : (isMobile ? 1000 : 1500),
+    flyToDuration: hasReducedMotion ? 0 : isMobile ? 1000 : 1500,
     // Marker animation
     markerAnimation: !hasReducedMotion && !isLowPowerMode,
     // Platform flags
@@ -184,7 +235,19 @@ const getPlatformSettings = (isMobile: boolean) => {
   };
 };
 
-export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenues, mapboxToken, selectedCity, onCityChange, onNearestCityDetected, onDetectedLocationNameChange, isLoadingVenues = false, selectedVenue, resetUIKey }: MapboxHeatmapProps) => {
+export const MapboxHeatmap = ({
+  onVenueSelect,
+  onParkingSelect,
+  venues: allVenues,
+  mapboxToken,
+  selectedCity,
+  onCityChange,
+  onNearestCityDetected,
+  onDetectedLocationNameChange,
+  isLoadingVenues = false,
+  selectedVenue,
+  resetUIKey,
+}: MapboxHeatmapProps) => {
   // Filter venues by Google Places opening hours against the device's local
   // time. Markers (and the underlying heatmap source) automatically refresh
   // every minute as venues open/close. Venues without parseable hours stay
@@ -199,7 +262,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Drives the single crossfade from HeatmapSkeleton -> interactive map.
   // Stays true until the opacity transition completes after mapLoaded flips.
   const [skeletonMounted, setSkeletonMounted] = useState(true);
-  const [loadingStage, setLoadingStage] = useState<'module' | 'init' | 'style' | 'ready'>('module');
+  const [loadingStage, setLoadingStage] = useState<
+    "module" | "init" | "style" | "ready"
+  >("module");
   const [mapError, setMapError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const userMarker = useRef<MapboxGL.Marker | null>(null);
@@ -207,12 +272,20 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const dealMarkersRef = useRef<MapboxGL.Marker[]>([]);
   // Tracks the currently-open marker chip so we can close prior chips cleanly
   // when selection changes or the user taps elsewhere on the map.
-  const activeChipRef = useRef<{ el: HTMLElement; venueId: string; hide: () => void } | null>(null);
-  const [venueDealCounts, setVenueDealCounts] = useState<Record<string, number>>({});
+  const activeChipRef = useRef<{
+    el: HTMLElement;
+    venueId: string;
+    hide: () => void;
+  } | null>(null);
+  const [venueDealCounts, setVenueDealCounts] = useState<
+    Record<string, number>
+  >({});
   const geolocateControlRef = useRef<MapboxGL.GeolocateControl | null>(null);
   // Applies a raw geolocation fix (city sync, marker, label) — set once the map
   // and geolocate handler are wired, so UI controls can refresh location too.
-  const applyGeolocationRef = useRef<((coords: { latitude: number; longitude: number }) => void) | null>(null);
+  const applyGeolocationRef = useRef<
+    ((coords: { latitude: number; longitude: number }) => void) | null
+  >(null);
   const onVenueSelectRef = useRef(onVenueSelect);
   onVenueSelectRef.current = onVenueSelect;
   const onParkingSelectRef = useRef(onParkingSelect);
@@ -238,39 +311,56 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Tablet has ample horizontal room, so it gets a desktop-class width —
   // the previous 244px forced label truncation ("Time r…") and 3-row chip
   // wrapping. Widths stay below 92vw so nothing overflows on small screens.
-  const panelWidth = isDesktopXL ? 340 : isDesktopWide ? 312 : isTablet ? 304 : 240;
+  const panelWidth = isDesktopXL
+    ? 340
+    : isDesktopWide
+      ? 312
+      : isTablet
+        ? 304
+        : 240;
   const panelPad = isDesktopXL ? 14 : isDesktopWide ? 13 : isTablet ? 12 : 10;
   const panelGap = isDesktopXL ? 10 : isDesktopWide ? 9 : 8;
   const panelMaxH = isDesktopXL ? 760 : isDesktopWide ? 700 : 640;
   const initStartTime = useRef<number>(0);
   const platformSettings = useRef(getPlatformSettings(isMobile));
-  
+
   // Load mapbox-gl module on mount (deferred to reduce TBT)
   useEffect(() => {
     let mounted = true;
-    loadMapboxGL().then((mapboxgl) => {
-      if (mounted) {
-        mapboxglRef.current = mapboxgl;
-        setMapboxLoaded(true);
-        setLoadingStage('init');
-        devLog('MapboxHeatmap: mapbox-gl module loaded');
-      }
-    }).catch((err) => {
-      console.error('MapboxHeatmap: Failed to load mapbox-gl:', err);
-      // Provide user-friendly error messages
-      const errorMessage = err?.message || 'Unknown error';
-      if (errorMessage.includes('Failed to load map library')) {
-        setMapError('Unable to load map. Please check your internet connection.');
-      } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
-        setMapError('Network error. Please check your connection and try again.');
-      } else {
-        setMapError('Failed to load map. Please refresh the page.');
-      }
-      setMapInitializing(false);
-    });
-    return () => { mounted = false; };
+    loadMapboxGL()
+      .then((mapboxgl) => {
+        if (mounted) {
+          mapboxglRef.current = mapboxgl;
+          setMapboxLoaded(true);
+          setLoadingStage("init");
+          devLog("MapboxHeatmap: mapbox-gl module loaded");
+        }
+      })
+      .catch((err) => {
+        console.error("MapboxHeatmap: Failed to load mapbox-gl:", err);
+        // Provide user-friendly error messages
+        const errorMessage = err?.message || "Unknown error";
+        if (errorMessage.includes("Failed to load map library")) {
+          setMapError(
+            "Unable to load map. Please check your internet connection.",
+          );
+        } else if (
+          errorMessage.includes("network") ||
+          errorMessage.includes("fetch")
+        ) {
+          setMapError(
+            "Network error. Please check your connection and try again.",
+          );
+        } else {
+          setMapError("Failed to load map. Please refresh the page.");
+        }
+        setMapInitializing(false);
+      });
+    return () => {
+      mounted = false;
+    };
   }, [retryCount]); // Re-run when retryCount changes
-  
+
   // Layer persistence helpers (URL params take priority, localStorage fallback).
   // Unknown keys in the URL are ignored; any layer missing from the URL falls
   // back to localStorage, then to the hard-coded default below.
@@ -286,7 +376,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     timelapseSpeed: "jet-map-timelapse-speed",
     pathsWindow: "jet-map-paths-window",
   } as const;
-  const VALID_TIME_FILTERS = new Set<'all' | 'today' | 'this_week' | 'this_hour'>(['all', 'today', 'this_week', 'this_hour']);
+  const VALID_TIME_FILTERS = new Set<
+    "all" | "today" | "this_week" | "this_hour"
+  >(["all", "today", "this_week", "this_hour"]);
   // Kept for backwards-compat with legacy persisted values.
   const LEGACY_SPEEDS = new Set<number>([0.5, 1, 2]);
 
@@ -295,44 +387,54 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
   const getPersistedTimeFilter = (
     key: string,
-    fallback: 'all' | 'today' | 'this_week' | 'this_hour',
-    urlKey?: string
-  ): 'all' | 'today' | 'this_week' | 'this_hour' => {
+    fallback: "all" | "today" | "this_week" | "this_hour",
+    urlKey?: string,
+  ): "all" | "today" | "this_week" | "this_hour" => {
     try {
       if (urlKey) {
         const params = new URLSearchParams(window.location.search);
         const raw = params.get(urlKey);
-        if (raw && VALID_TIME_FILTERS.has(raw as any)) return raw as 'all' | 'today' | 'this_week' | 'this_hour';
+        if (raw && VALID_TIME_FILTERS.has(raw as any))
+          return raw as "all" | "today" | "this_week" | "this_hour";
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     try {
       const raw = localStorage.getItem(key);
-      if (raw && VALID_TIME_FILTERS.has(raw as any)) return raw as 'all' | 'today' | 'this_week' | 'this_hour';
-    } catch { /* ignore */ }
+      if (raw && VALID_TIME_FILTERS.has(raw as any))
+        return raw as "all" | "today" | "this_week" | "this_hour";
+    } catch {
+      /* ignore */
+    }
     return fallback;
   };
 
   const getPersistedDayFilter = (): number | undefined => {
     try {
       const params = new URLSearchParams(window.location.search);
-      const raw = params.get('day');
+      const raw = params.get("day");
       if (raw !== null) {
-        if (raw === 'all') return undefined;
+        if (raw === "all") return undefined;
         const n = parseInt(raw, 10);
         if (!Number.isNaN(n) && n >= 0 && n <= 6) return n;
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     // No `?day=` in the URL: fall back to the current tab session so a
     // refresh (or a router navigation that rewrote the query) keeps the
     // user's selection. Deliberately sessionStorage, not localStorage —
     // a brand new session still defaults to "All Days".
     try {
       const raw = sessionStorage.getItem(FILTER_KEYS.dayFilter);
-      if (raw !== null && raw !== 'all') {
+      if (raw !== null && raw !== "all") {
         const n = parseInt(raw, 10);
         if (!Number.isNaN(n) && n >= 0 && n <= 6) return n;
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return undefined;
   };
 
@@ -340,7 +442,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     try {
       const raw = localStorage.getItem(FILTER_KEYS.timelapseMode);
       return raw === "true";
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return false;
   };
 
@@ -354,7 +458,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         if (Number.isFinite(n) && n >= 0.25 && n <= 4) return n;
         if (LEGACY_SPEEDS.has(n)) return n;
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return 1;
   };
 
@@ -366,39 +472,54 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       if (raw === null || raw === "" || raw === "off") return null;
       const n = parseInt(raw, 10);
       if (Number.isFinite(n) && n >= 1 && n <= 10080) return n;
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return null;
   };
 
   // Density heatmap state
-  const [showDensityLayer, setShowDensityLayer] = useState(() => getLayerState("density", false));
-  const [showParking, setShowParking] = useState(() => getLayerState("parking", false));
+  const [showDensityLayer, setShowDensityLayer] = useState(() =>
+    getLayerState("density", false),
+  );
+  const [showParking, setShowParking] = useState(() =>
+    getLayerState("parking", false),
+  );
   // Keep a ref so style reloads can restore the parking layer with the latest visibility
   const showParkingRef = useRef(showParking);
   showParkingRef.current = showParking;
   // Live Stats panel — hidden by default, opt-in via layers toggle
-  const [showLiveStats, setShowLiveStats] = useState(() => getLayerState("stats", false));
-  const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.timeFilter, 'all', 'time'));
+  const [showLiveStats, setShowLiveStats] = useState(() =>
+    getLayerState("stats", false),
+  );
+  const [timeFilter, setTimeFilter] = useState<
+    "all" | "today" | "this_week" | "this_hour"
+  >(() => getPersistedTimeFilter(FILTER_KEYS.timeFilter, "all", "time"));
   const [hourFilter, setHourFilter] = useState<number | undefined>();
-  const [dayFilter, setDayFilter] = useState<number | undefined>(() => getPersistedDayFilter());
+  const [dayFilter, setDayFilter] = useState<number | undefined>(() =>
+    getPersistedDayFilter(),
+  );
   // Auto-detect time of day based on local time
-  const getTimeOfDayPreset = (): 'dawn' | 'day' | 'dusk' | 'night' => {
+  const getTimeOfDayPreset = (): "dawn" | "day" | "dusk" | "night" => {
     const hour = new Date().getHours();
-    if (hour >= 5 && hour < 8) return 'dawn';
-    if (hour >= 8 && hour < 17) return 'day';
-    if (hour >= 17 && hour < 20) return 'dusk';
-    return 'night';
+    if (hour >= 5 && hour < 8) return "dawn";
+    if (hour >= 8 && hour < 17) return "day";
+    if (hour >= 17 && hour < 20) return "dusk";
+    return "night";
   };
 
   // Light base style during dawn/day hours, dark base style at dusk/night.
   const styleForTimeOfDay = (
-    preset: 'dawn' | 'day' | 'dusk' | 'night'
-  ): 'light' | 'dark' => (preset === 'dawn' || preset === 'day' ? 'light' : 'dark');
+    preset: "dawn" | "day" | "dusk" | "night",
+  ): "light" | "dark" =>
+    preset === "dawn" || preset === "day" ? "light" : "dark";
 
-  const [mapStyle, setMapStyle] = useState<'light' | 'dark' | 'streets' | 'satellite'>(
-    () => styleForTimeOfDay(getTimeOfDayPreset())
-  );
-  const [lightPreset, setLightPreset] = useState<'dawn' | 'day' | 'dusk' | 'night'>(getTimeOfDayPreset);
+  const [mapStyle, setMapStyle] = useState<
+    "light" | "dark" | "streets" | "satellite"
+  >(() => styleForTimeOfDay(getTimeOfDayPreset()));
+  const [lightPreset, setLightPreset] = useState<
+    "dawn" | "day" | "dusk" | "night"
+  >(getTimeOfDayPreset);
   // Once the user picks a style manually, stop auto-switching for the session.
   const manualStyleOverride = useRef(false);
 
@@ -421,10 +542,13 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   const [show3DTerrain, setShow3DTerrain] = useState(false);
 
   // Time-lapse mode state
-  const [timelapseMode, setTimelapseMode] = useState(() => getPersistedTimelapseMode());
+  const [timelapseMode, setTimelapseMode] = useState(() =>
+    getPersistedTimelapseMode(),
+  );
 
   // Live Stats range selector (Current / Hourly / Daily / Weekly).
-  const [liveStatsRange, setLiveStatsRange] = useState<LiveStatsRange>("current");
+  const [liveStatsRange, setLiveStatsRange] =
+    useState<LiveStatsRange>("current");
   const handleLiveStatsRangeChange = useCallback((next: LiveStatsRange) => {
     setLiveStatsRange(next);
     const tf = liveStatsRangeToTimeFilter(next);
@@ -433,13 +557,21 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   }, []);
 
   // Movement paths state
-  const [showMovementPaths, setShowMovementPaths] = useState(() => getLayerState("paths", false));
-  const [pathTimeFilter, setPathTimeFilter] = useState<'all' | 'today' | 'this_week' | 'this_hour'>(() => getPersistedTimeFilter(FILTER_KEYS.pathTimeFilter, 'all', 'pathTime'));
+  const [showMovementPaths, setShowMovementPaths] = useState(() =>
+    getLayerState("paths", false),
+  );
+  const [pathTimeFilter, setPathTimeFilter] = useState<
+    "all" | "today" | "this_week" | "this_hour"
+  >(() =>
+    getPersistedTimeFilter(FILTER_KEYS.pathTimeFilter, "all", "pathTime"),
+  );
 
   // Time-window override for Flow Paths only (last N minutes). null → use
   // coarse time_filter. The heatmap intentionally has no window: it relies
   // solely on time range + time-lapse settings.
-  const [pathsWindowMinutes, setPathsWindowMinutes] = useState<number | null>(() => getPersistedWindowMinutes(FILTER_KEYS.pathsWindow));
+  const [pathsWindowMinutes, setPathsWindowMinutes] = useState<number | null>(
+    () => getPersistedWindowMinutes(FILTER_KEYS.pathsWindow),
+  );
 
   // Sync active layer toggles and filter selections to URL query params for shareability
   const syncUrlParams = useCallback(() => {
@@ -461,19 +593,29 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     if (nextLayers) params.set("layers", nextLayers);
 
     // Filters
-    if (timeFilter !== 'all') params.set("time", timeFilter);
+    if (timeFilter !== "all") params.set("time", timeFilter);
     else params.delete("time");
 
     if (dayFilter !== undefined) params.set("day", String(dayFilter));
     else params.delete("day");
 
-    if (pathTimeFilter !== 'all') params.set("pathTime", pathTimeFilter);
+    if (pathTimeFilter !== "all") params.set("pathTime", pathTimeFilter);
     else params.delete("pathTime");
 
     const search = params.toString();
-    const newUrl = search ? `${window.location.pathname}?${search}` : window.location.pathname;
+    const newUrl = search
+      ? `${window.location.pathname}?${search}`
+      : window.location.pathname;
     window.history.replaceState(null, "", newUrl);
-  }, [showDensityLayer, showMovementPaths, showParking, showLiveStats, timeFilter, dayFilter, pathTimeFilter]);
+  }, [
+    showDensityLayer,
+    showMovementPaths,
+    showParking,
+    showLiveStats,
+    timeFilter,
+    dayFilter,
+    pathTimeFilter,
+  ]);
 
   useEffect(() => {
     syncUrlParams();
@@ -487,7 +629,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         FILTER_KEYS.dayFilter,
         dayFilter === undefined ? "all" : String(dayFilter),
       );
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, [dayFilter]);
 
   // Sync state FROM URL on browser back/forward navigation
@@ -495,13 +639,21 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     const handlePopState = () => {
       const params = new URLSearchParams(window.location.search);
 
-      const timeRaw = params.get('time');
-      setTimeFilter(timeRaw && VALID_TIME_FILTERS.has(timeRaw as any) ? (timeRaw as any) : 'all');
+      const timeRaw = params.get("time");
+      setTimeFilter(
+        timeRaw && VALID_TIME_FILTERS.has(timeRaw as any)
+          ? (timeRaw as any)
+          : "all",
+      );
 
-      const pathTimeRaw = params.get('pathTime');
-      setPathTimeFilter(pathTimeRaw && VALID_TIME_FILTERS.has(pathTimeRaw as any) ? (pathTimeRaw as any) : 'all');
+      const pathTimeRaw = params.get("pathTime");
+      setPathTimeFilter(
+        pathTimeRaw && VALID_TIME_FILTERS.has(pathTimeRaw as any)
+          ? (pathTimeRaw as any)
+          : "all",
+      );
 
-      const dayRaw = params.get('day');
+      const dayRaw = params.get("day");
       if (dayRaw === null) {
         setDayFilter(undefined);
       } else {
@@ -509,8 +661,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         setDayFilter(!Number.isNaN(n) && n >= 0 && n <= 6 ? n : undefined);
       }
     };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
   // Tick once a minute (aligned to the wall-clock boundary, and refreshed on
@@ -541,7 +693,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     timelapseMode,
     pathsWindowMinutes,
   });
-  
+
   // CLS fix: Defer layer controls render until map is loaded
   // This ensures controls appear immediately after map is ready, not a fixed delay
   const [controlsReady, setControlsReady] = useState(false);
@@ -566,30 +718,42 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     }
   }, [isMobile, selectedVenue, controlsCollapsed]);
   const [legendCollapsed, setLegendCollapsed] = useState(true);
-  
+
   // User location state
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [userLocation, setUserLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
   const [detectedCity, setDetectedCity] = useState<City | null>(null); // Nearest predefined city for filtering
-  const [detectedLocationName, setDetectedLocationName] = useState<string | null>(null); // Actual city name from reverse geocoding
+  const [detectedLocationName, setDetectedLocationName] = useState<
+    string | null
+  >(null); // Actual city name from reverse geocoding
   // Persisted across sessions so a returning user lands in the same mode
   // (selected city vs. current-location) without a brief flash.
-  const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState<boolean>(() => {
-    try {
-      const raw = typeof window !== 'undefined'
-        ? window.localStorage.getItem('jet-map-use-current-location')
-        : null;
-      if (raw === 'true') return true;
-      if (raw === 'false') return false;
-    } catch { /* ignore */ }
-    return true; // Default: use current location
-  });
+  const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState<boolean>(
+    () => {
+      try {
+        const raw =
+          typeof window !== "undefined"
+            ? window.localStorage.getItem("jet-map-use-current-location")
+            : null;
+        if (raw === "true") return true;
+        if (raw === "false") return false;
+      } catch {
+        /* ignore */
+      }
+      return true; // Default: use current location
+    },
+  );
   useEffect(() => {
     try {
       window.localStorage.setItem(
-        'jet-map-use-current-location',
+        "jet-map-use-current-location",
         String(isUsingCurrentLocation),
       );
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, [isUsingCurrentLocation]);
   // Ref mirror so the (one-time-bound) geolocate event handler always sees the
   // latest value without needing to re-subscribe.
@@ -601,8 +765,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // can sync the parent without re-subscribing on every prop change.
   const selectedCityRef = useRef(selectedCity);
   const onCityChangeRef = useRef(onCityChange);
-  useEffect(() => { selectedCityRef.current = selectedCity; }, [selectedCity]);
-  useEffect(() => { onCityChangeRef.current = onCityChange; }, [onCityChange]);
+  useEffect(() => {
+    selectedCityRef.current = selectedCity;
+  }, [selectedCity]);
+  useEffect(() => {
+    onCityChangeRef.current = onCityChange;
+  }, [onCityChange]);
 
   /**
    * Always resolves a *fresh* position and pushes it through the shared
@@ -625,7 +793,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       setUserLocation({ lat: latitude, lng: longitude });
       setDetectedCity(nearest);
       setDetectedLocationName(`${nearest.name}, ${nearest.state}`);
-      if (nearest.id !== selectedCityRef.current.id) onCityChangeRef.current(nearest);
+      if (nearest.id !== selectedCityRef.current.id)
+        onCityChangeRef.current(nearest);
     };
 
     const networkFallback = () => {
@@ -634,14 +803,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         .then((fix) => {
           if (fix) apply(fix.lat, fix.lng);
         })
-        .catch(() => { /* no location available */ });
+        .catch(() => {
+          /* no location available */
+        });
     };
 
-    if (typeof navigator !== 'undefined' && navigator.geolocation) {
+    if (typeof navigator !== "undefined" && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => apply(pos.coords.latitude, pos.coords.longitude),
         (err) => {
-          console.warn('MapboxHeatmap: location refresh failed', err?.message);
+          console.warn("MapboxHeatmap: location refresh failed", err?.message);
           networkFallback();
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
@@ -653,14 +824,21 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     // Also start/refresh the built-in puck when tracking is off.
     const control = geolocateControlRef.current as any;
     const watchState = control?._watchState;
-    if (control && (!watchState || watchState === 'OFF' || watchState === 'ACTIVE_ERROR')) {
-      try { control.trigger(); } catch { /* control not ready */ }
+    if (
+      control &&
+      (!watchState || watchState === "OFF" || watchState === "ACTIVE_ERROR")
+    ) {
+      try {
+        control.trigger();
+      } catch {
+        /* control not ready */
+      }
     }
   }, []);
 
   // City selector search query
   const [citySearchQuery, setCitySearchQuery] = useState("");
-  
+
   // Notify parent when detected location name changes
   useEffect(() => {
     if (onDetectedLocationNameChange) {
@@ -671,23 +849,30 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         onDetectedLocationNameChange(null);
       }
     }
-  }, [detectedLocationName, isUsingCurrentLocation, onDetectedLocationNameChange]);
-  
+  }, [
+    detectedLocationName,
+    isUsingCurrentLocation,
+    onDetectedLocationNameChange,
+  ]);
+
   // Sync map style with theme changes
   useEffect(() => {
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
-        if (mutation.attributeName === 'class') {
-          const isDark = document.documentElement.classList.contains('dark');
-          setMapStyle(prev => {
+        if (mutation.attributeName === "class") {
+          const isDark = document.documentElement.classList.contains("dark");
+          setMapStyle((prev) => {
             // Only auto-switch if user hasn't manually picked satellite
-            if (prev === 'satellite') return prev;
-            return isDark ? 'dark' : 'streets';
+            if (prev === "satellite") return prev;
+            return isDark ? "dark" : "streets";
           });
         }
       }
     });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
     return () => observer.disconnect();
   }, []);
 
@@ -704,17 +889,30 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     const handleVisibilityChange = () => {
       setIsTabVisible(!document.hidden);
     };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, []);
-  
-  const { densityData, loading: densityLoading, error: densityError, unauthorized: densityUnauthorized, refresh: refreshDensity } = useLocationDensity({
+
+  const {
+    densityData,
+    loading: densityLoading,
+    error: densityError,
+    unauthorized: densityUnauthorized,
+    refresh: refreshDensity,
+  } = useLocationDensity({
     timeFilter,
     hourOfDay: timelapseMode ? undefined : hourFilter,
     dayOfWeek: dayFilter,
   });
 
-  const { pathData, loading: pathsLoading, error: pathsError, unauthorized: pathsUnauthorized, refresh: refreshPaths } = useMovementPaths({
+  const {
+    pathData,
+    loading: pathsLoading,
+    error: pathsError,
+    unauthorized: pathsUnauthorized,
+    refresh: refreshPaths,
+  } = useMovementPaths({
     timeFilter: pathTimeFilter,
     minFrequency: minPathFrequency,
     windowMinutes: pathsWindowMinutes ?? undefined,
@@ -728,8 +926,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
   // Coalesce rapid toggle-triggered refreshes so consecutive on/off/on taps
   // don't cause a chain of loader flashes or redundant network requests.
-  const densityRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pathsRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const densityRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const pathsRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   const clearDensityRefreshTimer = useCallback(() => {
     if (densityRefreshTimerRef.current) {
@@ -785,7 +987,10 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
   // Time-lapse hook (restore persisted speed)
   const initialTimelapseSpeed = useRef(getPersistedTimelapseSpeed());
-  const timelapse = useHeatmapTimelapse(dayFilter, initialTimelapseSpeed.current);
+  const timelapse = useHeatmapTimelapse(
+    dayFilter,
+    initialTimelapseSpeed.current,
+  );
 
   // Persist timelapse playback speed
   useEffect(() => {
@@ -801,7 +1006,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
   // Reset to defaults — clears localStorage and restores factory settings
   const handleResetToDefaults = useCallback(() => {
-    triggerHaptic('medium');
+    triggerHaptic("medium");
 
     // Order matters: wipe every source of persisted state BEFORE resetting
     // React state. If we reset state first, the persistence effects fire
@@ -817,7 +1022,11 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
     // 3. Persisted filter / time-lapse settings.
     Object.values(FILTER_KEYS).forEach((key) => {
-      try { localStorage.removeItem(key); } catch { /* ignore */ }
+      try {
+        localStorage.removeItem(key);
+      } catch {
+        /* ignore */
+      }
     });
 
     // Reset all state to defaults
@@ -825,8 +1034,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     setShowParking(false);
     setShowLiveStats(false);
     setShowMovementPaths(false);
-    setTimeFilter('all');
-    setPathTimeFilter('all');
+    setTimeFilter("all");
+    setPathTimeFilter("all");
     setDayFilter(undefined);
     setHourFilter(undefined);
     setTimelapseMode(false);
@@ -856,7 +1065,11 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     let bestDensity = -1;
     for (const f of feats) {
       const d = Number(f?.properties?.density ?? 0);
-      if (d > bestDensity && f?.geometry?.type === 'Point' && Array.isArray(f.geometry.coordinates)) {
+      if (
+        d > bestDensity &&
+        f?.geometry?.type === "Point" &&
+        Array.isArray(f.geometry.coordinates)
+      ) {
         best = f;
         bestDensity = d;
       }
@@ -873,7 +1086,11 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     let bestFreq = -1;
     for (const f of feats) {
       const freq = Number(f?.properties?.frequency ?? 0);
-      if (freq > bestFreq && f?.geometry?.type === 'LineString' && Array.isArray(f.geometry.coordinates)) {
+      if (
+        freq > bestFreq &&
+        f?.geometry?.type === "LineString" &&
+        Array.isArray(f.geometry.coordinates)
+      ) {
         best = f;
         bestFreq = freq;
       }
@@ -887,7 +1104,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
   const handleJumpToHotspot = useCallback(() => {
     if (!topHotspot || !map.current) return;
-    triggerHaptic('medium');
+    triggerHaptic("medium");
     try {
       map.current.flyTo({
         center: [topHotspot.lng, topHotspot.lat],
@@ -895,86 +1112,114 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         duration: 1200,
         essential: true,
       });
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, [topHotspot]);
 
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleHighlightTopRoute = useCallback(() => {
     if (!topRoute || !map.current) return;
-    triggerHaptic('medium');
+    triggerHaptic("medium");
     const mapInstance = map.current;
-    const srcId = 'top-route-highlight-src';
-    const layerId = 'top-route-highlight-line';
-    const glowId = 'top-route-highlight-glow';
+    const srcId = "top-route-highlight-src";
+    const layerId = "top-route-highlight-line";
+    const glowId = "top-route-highlight-glow";
 
     const cleanup = () => {
-      try { if (mapInstance.getLayer(layerId)) mapInstance.removeLayer(layerId); } catch {/*noop*/}
-      try { if (mapInstance.getLayer(glowId)) mapInstance.removeLayer(glowId); } catch {/*noop*/}
-      try { if (mapInstance.getSource(srcId)) mapInstance.removeSource(srcId); } catch {/*noop*/}
+      try {
+        if (mapInstance.getLayer(layerId)) mapInstance.removeLayer(layerId);
+      } catch {
+        /*noop*/
+      }
+      try {
+        if (mapInstance.getLayer(glowId)) mapInstance.removeLayer(glowId);
+      } catch {
+        /*noop*/
+      }
+      try {
+        if (mapInstance.getSource(srcId)) mapInstance.removeSource(srcId);
+      } catch {
+        /*noop*/
+      }
     };
     cleanup();
 
     try {
       mapInstance.addSource(srcId, {
-        type: 'geojson',
+        type: "geojson",
         data: {
-          type: 'Feature',
+          type: "Feature",
           properties: { frequency: topRoute.frequency },
-          geometry: { type: 'LineString', coordinates: topRoute.coordinates },
+          geometry: { type: "LineString", coordinates: topRoute.coordinates },
         } as any,
       });
       mapInstance.addLayer({
         id: glowId,
-        type: 'line',
+        type: "line",
         source: srcId,
-        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        layout: { "line-join": "round", "line-cap": "round" },
         paint: {
-          'line-color': 'hsl(45, 100%, 60%)',
-          'line-width': 22,
-          'line-blur': 8,
-          'line-opacity': 0.55,
+          "line-color": "hsl(45, 100%, 60%)",
+          "line-width": 22,
+          "line-blur": 8,
+          "line-opacity": 0.55,
         } as any,
       });
       mapInstance.addLayer({
         id: layerId,
-        type: 'line',
+        type: "line",
         source: srcId,
-        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        layout: { "line-join": "round", "line-cap": "round" },
         paint: {
-          'line-color': '#FFD666',
-          'line-width': 6,
-          'line-opacity': 0.95,
+          "line-color": "#FFD666",
+          "line-width": 6,
+          "line-opacity": 0.95,
         } as any,
       });
 
       // Fit the map to the route bounds.
       const coords = topRoute.coordinates;
-      let minLng = coords[0][0], maxLng = coords[0][0];
-      let minLat = coords[0][1], maxLat = coords[0][1];
+      let minLng = coords[0][0],
+        maxLng = coords[0][0];
+      let minLat = coords[0][1],
+        maxLat = coords[0][1];
       for (const [lng, lat] of coords) {
-        if (lng < minLng) minLng = lng; if (lng > maxLng) maxLng = lng;
-        if (lat < minLat) minLat = lat; if (lat > maxLat) maxLat = lat;
+        if (lng < minLng) minLng = lng;
+        if (lng > maxLng) maxLng = lng;
+        if (lat < minLat) minLat = lat;
+        if (lat > maxLat) maxLat = lat;
       }
       try {
         mapInstance.fitBounds(
-          [[minLng, minLat], [maxLng, maxLat]],
+          [
+            [minLng, minLat],
+            [maxLng, maxLat],
+          ],
           { padding: 80, duration: 1000, maxZoom: 15.5 },
         );
-      } catch { /* ignore */ }
-    } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
+    } catch {
+      /* ignore */
+    }
 
     if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
     highlightTimerRef.current = setTimeout(cleanup, 6000);
   }, [topRoute]);
 
-  useEffect(() => () => {
-    if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
+    },
+    [],
+  );
 
   // Handle map resize on viewport changes - optimized for all mobile devices
   useEffect(() => {
     let resizeTimeout: ReturnType<typeof setTimeout>;
-    
+
     const handleResize = () => {
       // Debounce resize to prevent excessive calls during orientation changes
       clearTimeout(resizeTimeout);
@@ -995,21 +1240,24 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       }
     };
 
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleResize);
-    
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("orientationchange", handleResize);
+
     // Visual viewport API for iOS Safari dynamic viewport
     if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', handleVisualViewportResize);
+      window.visualViewport.addEventListener(
+        "resize",
+        handleVisualViewportResize,
+      );
     }
-    
+
     // Handle visibility changes (e.g., when switching tabs)
     const handleVisibilityChange = () => {
       if (!document.hidden && map.current) {
         setTimeout(() => map.current?.resize(), 100);
       }
     };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     // Handle page focus for PWA and native apps
     const handleFocus = () => {
@@ -1017,16 +1265,19 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         setTimeout(() => map.current?.resize(), 150);
       }
     };
-    window.addEventListener('focus', handleFocus);
+    window.addEventListener("focus", handleFocus);
 
     return () => {
       clearTimeout(resizeTimeout);
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleResize);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleFocus);
       if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', handleVisualViewportResize);
+        window.visualViewport.removeEventListener(
+          "resize",
+          handleVisualViewportResize,
+        );
       }
     };
   }, []);
@@ -1037,21 +1288,26 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     const root = document.documentElement;
     const panelOpen = !!(isMobile && selectedVenue);
     const focus =
-      panelOpen && Number.isFinite(selectedVenue?.lng) && Number.isFinite(selectedVenue?.lat)
+      panelOpen &&
+      Number.isFinite(selectedVenue?.lng) &&
+      Number.isFinite(selectedVenue?.lat)
         ? ([selectedVenue!.lng, selectedVenue!.lat] as [number, number])
         : null;
 
     // Height reserved at the bottom by an open panel (JetCard / ParkingCard).
     // The page measures the real card via useMapPanelInset; this only supplies a
     // first-frame estimate before that measurement lands, and resets on close.
-    const current = root.style.getPropertyValue('--map-panel-bottom').trim();
-    const alreadyMeasured = panelOpen && current !== '' && current !== '0px';
+    const current = root.style.getPropertyValue("--map-panel-bottom").trim();
+    const alreadyMeasured = panelOpen && current !== "" && current !== "0px";
     if (!alreadyMeasured) {
-      root.style.setProperty('--map-panel-bottom', panelOpen ? 'min(46svh, 420px)' : '0px');
+      root.style.setProperty(
+        "--map-panel-bottom",
+        panelOpen ? "min(46svh, 420px)" : "0px",
+      );
     }
 
     const readPx = (expr: string) => {
-      const probe = document.createElement('div');
+      const probe = document.createElement("div");
       probe.style.cssText = `position:absolute;visibility:hidden;pointer-events:none;height:${expr}`;
       document.body.appendChild(probe);
       const px = probe.getBoundingClientRect().height;
@@ -1059,16 +1315,18 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       return Number.isFinite(px) ? px : 0;
     };
 
-    let lastSignature = '';
+    let lastSignature = "";
 
     const applyPadding = (animate = true) => {
       if (!map.current) return;
       // Orientation flips change both the safe-area insets and the svh basis
       // used by --map-panel-bottom, so everything is re-measured from the DOM.
-      const top = readPx('var(--map-safe-top-controls, var(--map-safe-top))');
-      const bottom = readPx('var(--map-safe-bottom-panels, var(--map-safe-bottom))');
-      const left = readPx('var(--map-ui-inset-left)');
-      const right = readPx('var(--map-ui-inset-right)');
+      const top = readPx("var(--map-safe-top-controls, var(--map-safe-top))");
+      const bottom = readPx(
+        "var(--map-safe-bottom-panels, var(--map-safe-bottom))",
+      );
+      const left = readPx("var(--map-ui-inset-left)");
+      const right = readPx("var(--map-ui-inset-right)");
       const padding = {
         top: Math.round(top),
         bottom: Math.round(bottom),
@@ -1134,37 +1392,43 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     const onRotate = () => schedule(false);
     const onResize = () => schedule(true);
     const onResume = () => {
-      if (document.visibilityState === 'visible') schedule(false);
+      if (document.visibilityState === "visible") schedule(false);
     };
 
     // First paint snaps; later panel open/close reflows animate smoothly.
     schedule(paddingInitialisedRef.current);
     paddingInitialisedRef.current = true;
-    window.addEventListener('resize', onResize);
+    window.addEventListener("resize", onResize);
     // The page re-publishes --map-panel-bottom whenever a card resizes.
-    window.addEventListener('jet:panel-metrics', onResize);
-    window.addEventListener('orientationchange', onRotate);
-    window.visualViewport?.addEventListener('resize', onResize);
-    window.addEventListener('pageshow', onResume);
-    document.addEventListener('visibilitychange', onResume);
+    window.addEventListener("jet:panel-metrics", onResize);
+    window.addEventListener("orientationchange", onRotate);
+    window.visualViewport?.addEventListener("resize", onResize);
+    window.addEventListener("pageshow", onResume);
+    document.addEventListener("visibilitychange", onResume);
     const screenOrientation = window.screen?.orientation;
-    screenOrientation?.addEventListener?.('change', onRotate);
+    screenOrientation?.addEventListener?.("change", onRotate);
 
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
       clearTimers();
-      window.removeEventListener('resize', onResize);
-      window.removeEventListener('jet:panel-metrics', onResize);
-      window.removeEventListener('orientationchange', onRotate);
-      window.visualViewport?.removeEventListener('resize', onResize);
-      window.removeEventListener('pageshow', onResume);
-      document.removeEventListener('visibilitychange', onResume);
-      screenOrientation?.removeEventListener?.('change', onRotate);
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("jet:panel-metrics", onResize);
+      window.removeEventListener("orientationchange", onRotate);
+      window.visualViewport?.removeEventListener("resize", onResize);
+      window.removeEventListener("pageshow", onResume);
+      document.removeEventListener("visibilitychange", onResume);
+      screenOrientation?.removeEventListener?.("change", onRotate);
     };
     // Depend on the panel's identity/state, not the venue object reference, so
     // unrelated re-renders never retrigger a camera move.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMobile, selectedVenue?.id, selectedVenue?.lat, selectedVenue?.lng, mapLoaded]);
+  }, [
+    isMobile,
+    selectedVenue?.id,
+    selectedVenue?.lat,
+    selectedVenue?.lng,
+    mapLoaded,
+  ]);
 
   // Suspend map drag / scroll-zoom while the user interacts with an overlay
   // panel (JetCard, search results), and restore it when they leave/close it.
@@ -1193,45 +1457,52 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     });
   }, [mapLoaded]);
 
-  useEffect(() => () => {
-    document.documentElement.style.removeProperty('--map-panel-bottom');
-  }, []);
+  useEffect(
+    () => () => {
+      document.documentElement.style.removeProperty("--map-panel-bottom");
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
-    
+
     // Wait for mapbox-gl module to be loaded
     if (!mapboxLoaded || !mapboxglRef.current) return;
-    
+
     // Validate token before initialization
-    if (!mapboxToken || mapboxToken.trim() === '') {
-      console.error('MapboxHeatmap: Invalid or missing Mapbox token');
+    if (!mapboxToken || mapboxToken.trim() === "") {
+      console.error("MapboxHeatmap: Invalid or missing Mapbox token");
       setMapInitializing(false);
       return;
     }
-    
+
     const mapboxgl = mapboxglRef.current;
 
     // Defer map initialization to reduce main thread blocking during initial load
     const initializeMap = () => {
       if (!mapContainer.current || map.current || !mapboxglRef.current) return;
-      
+
       try {
         initStartTime.current = performance.now();
         setMapInitializing(true);
         mapboxgl.accessToken = mapboxToken;
-        devLog('MapboxHeatmap: Initializing map for', selectedCity.name);
+        devLog("MapboxHeatmap: Initializing map for", selectedCity.name);
 
         const settings = platformSettings.current;
-        
+
         // Initialize map centered on selected city with platform-specific optimizations
         // Using Mapbox Standard Style for enhanced 3D buildings, dynamic lighting, and performance
         map.current = new mapboxgl.Map({
           container: mapContainer.current,
-          style: mapStyle === 'dark' ? 'mapbox://styles/mapbox/dark-v11' 
-                 : mapStyle === 'light' ? 'mapbox://styles/mapbox/light-v11'
-                 : mapStyle === 'satellite' ? 'mapbox://styles/mapbox/satellite-streets-v12'
-                 : 'mapbox://styles/mapbox/streets-v12',
+          style:
+            mapStyle === "dark"
+              ? "mapbox://styles/mapbox/dark-v11"
+              : mapStyle === "light"
+                ? "mapbox://styles/mapbox/light-v11"
+                : mapStyle === "satellite"
+                  ? "mapbox://styles/mapbox/satellite-streets-v12"
+                  : "mapbox://styles/mapbox/streets-v12",
           center: [selectedCity.lng, selectedCity.lat],
           zoom: selectedCity.zoom,
           pitch: settings.pitch,
@@ -1243,7 +1514,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           touchPitch: settings.touchPitch,
           dragRotate: settings.dragRotate,
           doubleClickZoom: true,
-          projection: 'globe' as any,
+          projection: "globe" as any,
           // Performance optimizations - reduce tile loading
           fadeDuration: settings.fadeDuration,
           refreshExpiredTiles: false,
@@ -1257,10 +1528,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           collectResourceTiming: false,
           // Font optimization: Use system fonts for CJK/ideograph characters
           // This reduces font glyph requests by ~100KB+
-          localIdeographFontFamily: "'Noto Sans', 'Noto Sans CJK SC', sans-serif",
+          localIdeographFontFamily:
+            "'Noto Sans', 'Noto Sans CJK SC', sans-serif",
           // Reduce font loading by using local font stack for labels
           // This saves loading DIN Pro fonts from Mapbox CDN
-          localFontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          localFontFamily:
+            "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         });
 
         // No attribution/logo control is added: the map keeps a clean bottom
@@ -1272,131 +1545,151 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         const ensureParkingLayer = () => {
           if (!map.current) return;
           try {
-            if (!map.current.hasImage('jet-parking-p')) {
+            if (!map.current.hasImage("jet-parking-p")) {
               const size = 64;
-              const canvas = document.createElement('canvas');
+              const canvas = document.createElement("canvas");
               canvas.width = size;
               canvas.height = size;
-              const ctx = canvas.getContext('2d');
+              const ctx = canvas.getContext("2d");
               if (ctx) {
                 ctx.beginPath();
                 ctx.arc(size / 2, size / 2, size / 2 - 1, 0, Math.PI * 2);
-                ctx.fillStyle = '#39ff14';
+                ctx.fillStyle = "#39ff14";
                 ctx.fill();
                 ctx.beginPath();
                 ctx.arc(size / 2, size / 2, size / 2 - 6, 0, Math.PI * 2);
-                ctx.fillStyle = '#0a0a0a';
+                ctx.fillStyle = "#0a0a0a";
                 ctx.fill();
-                ctx.fillStyle = '#39ff14';
-                ctx.font = 'bold 48px system-ui, -apple-system, Arial, sans-serif';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText('P', size / 2, size / 2 + 2);
-                map.current.addImage('jet-parking-p', {
-                  width: size,
-                  height: size,
-                  data: ctx.getImageData(0, 0, size, size).data,
-                } as any, { pixelRatio: 2 });
+                ctx.fillStyle = "#39ff14";
+                ctx.font =
+                  "bold 48px system-ui, -apple-system, Arial, sans-serif";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("P", size / 2, size / 2 + 2);
+                map.current.addImage(
+                  "jet-parking-p",
+                  {
+                    width: size,
+                    height: size,
+                    data: ctx.getImageData(0, 0, size, size).data,
+                  } as any,
+                  { pixelRatio: 2 },
+                );
               }
             }
 
-            if (map.current.getLayer('parking-icons')) {
+            if (map.current.getLayer("parking-icons")) {
               map.current.setLayoutProperty(
-                'parking-icons',
-                'visibility',
-                showParkingRef.current ? 'visible' : 'none'
+                "parking-icons",
+                "visibility",
+                showParkingRef.current ? "visible" : "none",
               );
               return;
             }
 
             // Some styles (satellite) may not expose the composite POI source
-            if (!map.current.getSource('composite')) return;
+            if (!map.current.getSource("composite")) return;
 
             map.current.addLayer({
-              id: 'parking-icons',
-              type: 'symbol',
-              source: 'composite',
-              'source-layer': 'poi_label',
+              id: "parking-icons",
+              type: "symbol",
+              source: "composite",
+              "source-layer": "poi_label",
               filter: [
-                'any',
-                ['==', ['get', 'maki'], 'parking'],
-                ['==', ['get', 'maki'], 'parking-garage'],
+                "any",
+                ["==", ["get", "maki"], "parking"],
+                ["==", ["get", "maki"], "parking-garage"],
               ],
               layout: {
-                'icon-image': 'jet-parking-p',
-                'icon-size': [
-                  'interpolate', ['linear'], ['zoom'],
-                  12, 0.45,
-                  14, 0.6,
-                  16, 0.9,
-                  18, 1.3,
+                "icon-image": "jet-parking-p",
+                "icon-size": [
+                  "interpolate",
+                  ["linear"],
+                  ["zoom"],
+                  12,
+                  0.45,
+                  14,
+                  0.6,
+                  16,
+                  0.9,
+                  18,
+                  1.3,
                 ],
-                'icon-allow-overlap': true,
-                'icon-ignore-placement': false,
-                'text-field': ['step', ['zoom'], '', 14, ['get', 'name']],
-                'text-font': ['DIN Pro Medium', 'Arial Unicode MS Regular'],
-                'text-size': 11,
-                'text-offset': [0, 1.3],
-                'text-anchor': 'top',
-                'text-optional': true,
-                'visibility': showParkingRef.current ? 'visible' : 'none',
+                "icon-allow-overlap": true,
+                "icon-ignore-placement": false,
+                "text-field": ["step", ["zoom"], "", 14, ["get", "name"]],
+                "text-font": ["DIN Pro Medium", "Arial Unicode MS Regular"],
+                "text-size": 11,
+                "text-offset": [0, 1.3],
+                "text-anchor": "top",
+                "text-optional": true,
+                visibility: showParkingRef.current ? "visible" : "none",
               },
               paint: {
-                'icon-opacity': [
-                  'interpolate', ['linear'], ['zoom'],
-                  12, 0.7,
-                  13, 0.85,
-                  14, 1,
+                "icon-opacity": [
+                  "interpolate",
+                  ["linear"],
+                  ["zoom"],
+                  12,
+                  0.7,
+                  13,
+                  0.85,
+                  14,
+                  1,
                 ],
-                'text-color': '#39ff14',
-                'text-halo-color': '#0a0a0a',
-                'text-halo-width': 2,
+                "text-color": "#39ff14",
+                "text-halo-color": "#0a0a0a",
+                "text-halo-width": 2,
               },
               minzoom: 12,
             });
-            devLog('MapboxHeatmap: Parking icons layer added');
+            devLog("MapboxHeatmap: Parking icons layer added");
           } catch (e) {
-            console.warn('MapboxHeatmap: Could not add parking layer:', e);
+            console.warn("MapboxHeatmap: Could not add parking layer:", e);
           }
         };
 
         // Add atmospheric effects and configure Standard style when loaded
-        map.current.on('style.load', () => {
+        map.current.on("style.load", () => {
           if (!map.current) return;
           // Re-apply the custom parking layer after any basemap style swap
           ensureParkingLayer();
-          
+
           // Configure Standard style with dynamic lighting and native POI markers
           // Standard style includes built-in 3D buildings, landmarks, POI icons, and dynamic lighting
           try {
             // Set the light preset for dynamic lighting (dawn, day, dusk, night)
-            map.current.setConfigProperty('basemap', 'lightPreset', 'night');
-            
+            map.current.setConfigProperty("basemap", "lightPreset", "night");
+
             // Enable native POI markers and labels (Standard style feature)
-            map.current.setConfigProperty('basemap', 'showPointOfInterestLabels', true);
-            map.current.setConfigProperty('basemap', 'showTransitLabels', true);
-            map.current.setConfigProperty('basemap', 'showPlaceLabels', true);
-            map.current.setConfigProperty('basemap', 'showRoadLabels', true);
-            
+            map.current.setConfigProperty(
+              "basemap",
+              "showPointOfInterestLabels",
+              true,
+            );
+            map.current.setConfigProperty("basemap", "showTransitLabels", true);
+            map.current.setConfigProperty("basemap", "showPlaceLabels", true);
+            map.current.setConfigProperty("basemap", "showRoadLabels", true);
+
             // Enable 3D landmark icons for enhanced visual experience
-            map.current.setConfigProperty('basemap', 'showLandmarkIcons', true);
-            
+            map.current.setConfigProperty("basemap", "showLandmarkIcons", true);
+
             // Configure POI density and styling
-            map.current.setConfigProperty('basemap', 'theme', 'default');
+            map.current.setConfigProperty("basemap", "theme", "default");
           } catch (e) {
             // Config properties may not be available in all style versions
-            devLog('Standard style config not fully available:', e);
+            devLog("Standard style config not fully available:", e);
           }
-          
+
           // Dynamic fog based on light preset for atmospheric depth
           const fogConfig = {
-            color: 'rgb(10, 10, 15)',
-            'high-color': 'rgb(30, 20, 40)',
-            'horizon-blend': 0.05,
-            'space-color': 'rgb(5, 5, 10)',
-            'star-intensity': 0.2,
+            color: "rgb(10, 10, 15)",
+            "high-color": "rgb(30, 20, 40)",
+            "horizon-blend": 0.05,
+            "space-color": "rgb(5, 5, 10)",
+            "star-intensity": 0.2,
           };
-          
+
           map.current.setFog(fogConfig);
 
           // Note: 3D terrain source removed - requires Mapbox account with terrain access
@@ -1417,7 +1710,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           new mapboxgl.NavigationControl({
             visualizePitch: true,
           }),
-          "top-right"
+          "top-right",
         );
 
         // Configure touchZoomRotate handler for smoother pinch-to-zoom on mobile
@@ -1455,133 +1748,153 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           map.current.addControl(geolocateControl, "top-right");
           // Swallow the Mapbox "Geolocation support is not available" warning
           // in iframe/permission-limited environments without breaking the map.
-          geolocateControl.on('error', (e: any) => {
-            console.warn('MapboxHeatmap: Geolocation control error (non-fatal):', e?.message || e);
+          geolocateControl.on("error", (e: any) => {
+            console.warn(
+              "MapboxHeatmap: Geolocation control error (non-fatal):",
+              e?.message || e,
+            );
           });
         }
 
-        
         // Create custom marker element for user location
         const createUserMarker = () => {
-          const el = document.createElement('div');
-          el.className = 'user-location-marker';
-          el.style.width = '64px';
-          el.style.height = '64px';
-          el.style.display = 'flex';
-          el.style.alignItems = 'center';
-          el.style.justifyContent = 'center';
-          el.style.position = 'relative';
+          const el = document.createElement("div");
+          el.className = "user-location-marker";
+          el.style.width = "64px";
+          el.style.height = "64px";
+          el.style.display = "flex";
+          el.style.alignItems = "center";
+          el.style.justifyContent = "center";
+          el.style.position = "relative";
           // Note: No CSS transition on transform - Mapbox handles marker positioning
           // and transitions would cause visual lag during map pan/zoom
-          
+
           // Glassmorphic puck container - visible frosted glass circle
-          const glassPuck = document.createElement('div');
-          glassPuck.style.position = 'absolute';
-          glassPuck.style.width = '100%';
-          glassPuck.style.height = '100%';
-          glassPuck.style.borderRadius = '50%';
-          glassPuck.style.overflow = 'hidden';
-          glassPuck.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%)';
-          glassPuck.style.backdropFilter = 'blur(12px) saturate(180%)';
-          (glassPuck.style as any).WebkitBackdropFilter = 'blur(12px) saturate(180%)';
-          glassPuck.style.border = '1px solid rgba(255, 255, 255, 0.2)';
-          glassPuck.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 20px rgba(255, 69, 58, 0.3)';
-          glassPuck.style.display = 'flex';
-          glassPuck.style.alignItems = 'center';
-          glassPuck.style.justifyContent = 'center';
-          
-          const img = document.createElement('img');
+          const glassPuck = document.createElement("div");
+          glassPuck.style.position = "absolute";
+          glassPuck.style.width = "100%";
+          glassPuck.style.height = "100%";
+          glassPuck.style.borderRadius = "50%";
+          glassPuck.style.overflow = "hidden";
+          glassPuck.style.background =
+            "linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%)";
+          glassPuck.style.backdropFilter = "blur(12px) saturate(180%)";
+          (glassPuck.style as any).WebkitBackdropFilter =
+            "blur(12px) saturate(180%)";
+          glassPuck.style.border = "1px solid rgba(255, 255, 255, 0.2)";
+          glassPuck.style.boxShadow =
+            "0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 20px rgba(255, 69, 58, 0.3)";
+          glassPuck.style.display = "flex";
+          glassPuck.style.alignItems = "center";
+          glassPuck.style.justifyContent = "center";
+
+          const img = document.createElement("img");
           img.src = locationPuckIcon;
           img.width = 32;
           img.height = 32;
-          img.style.width = '70%';
-          img.style.height = '70%';
-          img.style.objectFit = 'contain';
-          img.style.filter = 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5))';
-          
+          img.style.width = "70%";
+          img.style.height = "70%";
+          img.style.objectFit = "contain";
+          img.style.filter = "drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5))";
+
           glassPuck.appendChild(img);
           el.appendChild(glassPuck);
           return el;
         };
-        
+
         // Track if this is the initial geolocate (for auto-centering on load)
         let isInitialGeolocate = true;
-        
+
         // Store current marker position for smooth interpolation
         let currentMarkerPos: { lng: number; lat: number } | null = null;
         let animationFrameId: number | null = null;
-        
+
         // Smooth position interpolation function
-        const animateMarkerTo = (targetLng: number, targetLat: number, duration: number = 300) => {
+        const animateMarkerTo = (
+          targetLng: number,
+          targetLat: number,
+          duration: number = 300,
+        ) => {
           if (!userMarker.current || !currentMarkerPos) {
             // First position - set immediately
             currentMarkerPos = { lng: targetLng, lat: targetLat };
             userMarker.current?.setLngLat([targetLng, targetLat]);
             return;
           }
-          
+
           // Cancel any existing animation
           if (animationFrameId) {
             cancelAnimationFrame(animationFrameId);
           }
-          
+
           const startPos = { ...currentMarkerPos };
           const startTime = performance.now();
-          
+
           const animate = (currentTime: number) => {
             const elapsed = currentTime - startTime;
             const progress = Math.min(elapsed / duration, 1);
-            
+
             // Ease-out cubic for smooth deceleration
             const easeOut = 1 - Math.pow(1 - progress, 3);
-            
+
             const lng = startPos.lng + (targetLng - startPos.lng) * easeOut;
             const lat = startPos.lat + (targetLat - startPos.lat) * easeOut;
-            
+
             userMarker.current?.setLngLat([lng, lat]);
             currentMarkerPos = { lng, lat };
-            
+
             if (progress < 1) {
               animationFrameId = requestAnimationFrame(animate);
             } else {
               animationFrameId = null;
             }
           };
-          
+
           animationFrameId = requestAnimationFrame(animate);
         };
-        
+
         // Listen for geolocate events to update city and marker.
         // The control may not exist in environments without Geolocation
         // (handled above), so guard the listener wiring.
-        const handleGeolocation = (coords: { latitude: number; longitude: number }) => {
+        const handleGeolocation = (coords: {
+          latitude: number;
+          longitude: number;
+        }) => {
           const { longitude, latitude } = coords;
-          
+
           // Update user location state
           setUserLocation({ lat: latitude, lng: longitude });
-          
+
           // Find the nearest predefined city using proper Haversine distance (for filtering)
           const nearestCity = getNearestCity(latitude, longitude);
-          
+
           // Store last known location for tile prefetching on next visit
           storeLastKnownLocation(latitude, longitude, nearestCity.name);
-          
+
           // Set detected city based on location (used for data filtering)
           setDetectedCity(nearestCity);
-          
+
           // Perform reverse geocoding to get actual city/metro name
-          getCachedReverseGeocode(latitude, longitude, mapboxToken).then((geocoded) => {
-            if (geocoded) {
-              setDetectedLocationName(geocoded.fullName);
-            } else {
-              // Fall back to nearest predefined city name
-              setDetectedLocationName(`${nearestCity.name}, ${nearestCity.state}`);
-            }
-          });
-          
+          getCachedReverseGeocode(latitude, longitude, mapboxToken).then(
+            (geocoded) => {
+              if (geocoded) {
+                setDetectedLocationName(geocoded.fullName);
+              } else {
+                // Fall back to nearest predefined city name
+                setDetectedLocationName(
+                  `${nearestCity.name}, ${nearestCity.state}`,
+                );
+              }
+            },
+          );
+
           // Notify parent of detected city on initial geolocate (auto-select nearest city),
           // but never override a city the user explicitly picked.
-          if (isInitialGeolocate && isUsingCurrentLocationRef.current && onNearestCityDetected) {
+          if (
+            isInitialGeolocate &&
+            isUsingCurrentLocationRef.current &&
+            onNearestCityDetected
+          ) {
             onNearestCityDetected(nearestCity);
           }
 
@@ -1602,7 +1915,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           ) {
             onCityChangeRef.current(nearestCity);
           }
-          
+
           // Only fly to user location on initial load (default behavior)
           // After that, users can pan/zoom freely without being pulled back
           if (isInitialGeolocate && map.current) {
@@ -1610,16 +1923,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               center: [longitude, latitude],
               zoom: Math.max(map.current.getZoom(), 13),
               duration: 1500,
-              essential: true
+              essential: true,
             });
             isInitialGeolocate = false;
           }
-          
+
           // Create or update user marker with smooth interpolation
           if (!userMarker.current && map.current && mapboxglRef.current) {
             userMarker.current = new mapboxglRef.current.Marker({
               element: createUserMarker(),
-              anchor: 'bottom'
+              anchor: "bottom",
             })
               .setLngLat([longitude, latitude])
               .addTo(map.current);
@@ -1631,10 +1944,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         };
 
         applyGeolocationRef.current = handleGeolocation;
-        geolocateControl?.on('geolocate', (e: any) => handleGeolocation(e.coords));
-        
+        geolocateControl?.on("geolocate", (e: any) =>
+          handleGeolocation(e.coords),
+        );
+
         // Remove marker when tracking stops
-        geolocateControl?.on('trackuserlocationend', () => {
+        geolocateControl?.on("trackuserlocationend", () => {
           if (userMarker.current) {
             userMarker.current.remove();
             userMarker.current = null;
@@ -1647,36 +1962,39 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             map.current.resize();
             setMapLoaded(true);
             setMapInitializing(false);
-            setLoadingStage('ready');
+            setLoadingStage("ready");
           }
         };
 
         // Ensure map resizes to container after initialization
-        map.current.on('load', () => {
+        map.current.on("load", () => {
           const loadTime = performance.now() - initStartTime.current;
-          devLog(`MapboxHeatmap: Map loaded successfully in ${loadTime.toFixed(2)}ms`);
-          
+          devLog(
+            `MapboxHeatmap: Map loaded successfully in ${loadTime.toFixed(2)}ms`,
+          );
+
           // Finalize immediately for fastest LCP
           finalizeMapLoad();
 
           // Close any open venue chip on off-map taps (background click).
           // Marker clicks call stopPropagation, so this only fires for empty map taps.
-          map.current?.on('click', () => {
+          map.current?.on("click", () => {
             activeChipRef.current?.hide();
           });
-          
+
           // Ensure parking icons exist (also re-applied on every style change)
           if (map.current) {
             ensureParkingLayer();
 
             // One-time interactions for the parking layer (persist across style swaps)
-            map.current.on('click', 'parking-icons', (e) => {
+            map.current.on("click", "parking-icons", (e) => {
               if (!e.features || e.features.length === 0) return;
               const feature = e.features[0] as MapboxGL.MapboxGeoJSONFeature;
               const coords = ((feature as any).geometry as any).coordinates;
-              const parkingName = (feature as any).properties?.name || 'Parking';
+              const parkingName =
+                (feature as any).properties?.name || "Parking";
 
-              triggerHaptic('medium');
+              triggerHaptic("medium");
               onParkingSelectRef.current?.({
                 lat: coords[1],
                 lng: coords[0],
@@ -1684,14 +2002,14 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               });
             });
 
-            map.current.on('mouseenter', 'parking-icons', () => {
-              if (map.current) map.current.getCanvas().style.cursor = 'pointer';
+            map.current.on("mouseenter", "parking-icons", () => {
+              if (map.current) map.current.getCanvas().style.cursor = "pointer";
             });
-            map.current.on('mouseleave', 'parking-icons', () => {
-              if (map.current) map.current.getCanvas().style.cursor = '';
+            map.current.on("mouseleave", "parking-icons", () => {
+              if (map.current) map.current.getCanvas().style.cursor = "";
             });
           }
-          
+
           // Trigger geolocation quickly after load
           if (geolocateControlRef.current) {
             setTimeout(() => {
@@ -1699,48 +2017,52 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
             }, 100);
           }
         });
-        
+
         // Fallback: style.load fires earlier and more reliably on some browsers
         // Use this for early LCP - finalize immediately when style is ready
-        map.current.once('style.load', () => {
-          devLog('MapboxHeatmap: Style loaded');
+        map.current.once("style.load", () => {
+          devLog("MapboxHeatmap: Style loaded");
           // Finalize quickly if main load hasn't fired yet
           setTimeout(() => {
             if (mapInitializing && map.current) {
-              devLog('MapboxHeatmap: Finalizing via style.load fallback');
+              devLog("MapboxHeatmap: Finalizing via style.load fallback");
               finalizeMapLoad();
             }
           }, 100);
         });
-        
+
         // Fallback: idle event fires when map is completely ready
-        map.current.once('idle', () => {
+        map.current.once("idle", () => {
           if (mapInitializing && map.current) {
-            devLog('MapboxHeatmap: Finalizing via idle fallback');
+            devLog("MapboxHeatmap: Finalizing via idle fallback");
             finalizeMapLoad();
           }
         });
 
         // Track tile loading (stage indicator only)
-        map.current.on('dataloading', () => {
-          setLoadingStage(prev => prev === 'init' ? 'style' : prev);
+        map.current.on("dataloading", () => {
+          setLoadingStage((prev) => (prev === "init" ? "style" : prev));
         });
 
         // Add error handler with retry tracking
         let errorCount = 0;
         const maxErrors = 5;
 
-        map.current.on('error', (e) => {
+        map.current.on("error", (e) => {
           const err: any = (e as any)?.error;
           const status = err?.status ?? err?.statusCode;
           const url = err?.url ?? err?.resource ?? err?.request?.url;
 
-          console.error('MapboxHeatmap: Map error', err);
+          console.error("MapboxHeatmap: Map error", err);
 
           // If the Mapbox token is URL-restricted, production domains often get 401/403 for api.mapbox.com
-          if ((status === 401 || status === 403) && typeof url === 'string' && url.includes('api.mapbox.com')) {
+          if (
+            (status === 401 || status === 403) &&
+            typeof url === "string" &&
+            url.includes("api.mapbox.com")
+          ) {
             setMapError(
-              'Mapbox token is not authorized for this domain. Update your Mapbox token URL restrictions to include this site.'
+              "Mapbox token is not authorized for this domain. Update your Mapbox token URL restrictions to include this site.",
             );
             setMapInitializing(false);
             return;
@@ -1750,7 +2072,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
           // If too many errors occur during loading, show error state
           if (errorCount >= maxErrors && !mapLoaded) {
-            setMapError('Failed to load map tiles. Please check your connection.');
+            setMapError(
+              "Failed to load map tiles. Please check your connection.",
+            );
             setMapInitializing(false);
           }
         });
@@ -1765,46 +2089,54 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
               const isActuallyLoaded =
                 (map.current as any).loaded?.() === true ||
-                (typeof (map.current as any).isStyleLoaded === 'function' && map.current.isStyleLoaded());
+                (typeof (map.current as any).isStyleLoaded === "function" &&
+                  map.current.isStyleLoaded());
 
               if (isActuallyLoaded) {
-                devLog('MapboxHeatmap: Map was actually loaded, finalizing');
+                devLog("MapboxHeatmap: Map was actually loaded, finalizing");
                 finalizeMapLoad();
               } else {
-                console.warn('MapboxHeatmap: Map load timeout - silently retrying');
+                console.warn(
+                  "MapboxHeatmap: Map load timeout - silently retrying",
+                );
                 // Check for WebGL support - only show error for hard failures
-                const canvas = document.createElement('canvas');
-                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                const canvas = document.createElement("canvas");
+                const gl =
+                  canvas.getContext("webgl") ||
+                  canvas.getContext("experimental-webgl");
                 if (!gl) {
-                  setMapError('WebGL is not supported or disabled. Please enable it in your browser settings.');
+                  setMapError(
+                    "WebGL is not supported or disabled. Please enable it in your browser settings.",
+                  );
                   setMapInitializing(false);
                 } else {
                   // Silent retry instead of showing error overlay
-                  devLog('MapboxHeatmap: Auto-retrying map load...');
+                  devLog("MapboxHeatmap: Auto-retrying map load...");
                   setMapInitializing(false);
                   setTimeout(() => {
                     setMapError(null);
                     setMapInitializing(true);
-                    setLoadingStage('module');
+                    setLoadingStage("module");
                     mapboxLoadPromise = null;
-                    setRetryCount(c => c + 1);
+                    setRetryCount((c) => c + 1);
                   }, 1000);
                 }
               }
             } else {
-              setMapError('Map failed to initialize. Please refresh and try again.');
+              setMapError(
+                "Map failed to initialize. Please refresh and try again.",
+              );
               setMapInitializing(false);
             }
           }
         }, 15000);
-        
-        map.current.once('load', () => {
+
+        map.current.once("load", () => {
           clearTimeout(loadTimeout);
         });
-        
       } catch (error) {
-        console.error('MapboxHeatmap: Failed to initialize map', error);
-        setMapError('Failed to initialize map. Please try again.');
+        console.error("MapboxHeatmap: Failed to initialize map", error);
+        setMapError("Failed to initialize map. Please try again.");
         setMapInitializing(false);
       }
     };
@@ -1824,10 +2156,17 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     const scheduleInit = () => {
       if (cancelled) return;
       const ric: any = (window as any).requestIdleCallback;
-      if (typeof ric === 'function') {
-        idleHandle = ric(() => { if (!cancelled) initializeMap(); }, { timeout: 800 });
+      if (typeof ric === "function") {
+        idleHandle = ric(
+          () => {
+            if (!cancelled) initializeMap();
+          },
+          { timeout: 800 },
+        );
       } else {
-        timeoutHandle = setTimeout(() => { if (!cancelled) initializeMap(); }, 120);
+        timeoutHandle = setTimeout(() => {
+          if (!cancelled) initializeMap();
+        }, 120);
       }
     };
     rafHandle1 = requestAnimationFrame(() => {
@@ -1844,7 +2183,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       if (timeoutHandle) clearTimeout(timeoutHandle);
       cleanupMap();
     };
-    
+
     function cleanupMap() {
       setMapLoaded(false);
       setMapError(null);
@@ -1863,67 +2202,76 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   }, [mapboxToken, mapboxLoaded, retryCount]);
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
-    
+
     map.current.flyTo({
       center: [selectedCity.lng, selectedCity.lat],
       zoom: selectedCity.zoom,
       duration: 2000,
-      essential: true
+      essential: true,
     });
   }, [selectedCity, mapLoaded]);
 
   // Handle map style changes
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
-    
+
     const styleUrls: Record<string, string> = {
-      'light': 'mapbox://styles/mapbox/light-v11',
-      'dark': 'mapbox://styles/mapbox/dark-v11',
-      'streets': 'mapbox://styles/mapbox/streets-v12',
-      'satellite': 'mapbox://styles/mapbox/satellite-streets-v12'
+      light: "mapbox://styles/mapbox/light-v11",
+      dark: "mapbox://styles/mapbox/dark-v11",
+      streets: "mapbox://styles/mapbox/streets-v12",
+      satellite: "mapbox://styles/mapbox/satellite-streets-v12",
     };
-    
+
     map.current.setStyle(styleUrls[mapStyle]);
   }, [mapStyle, mapLoaded]);
 
   // Handle dynamic lighting preset changes with smooth animated transitions
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
-    
+
     const mapInstance = map.current;
-    
+
     // Fog configurations for each light preset
-    const fogConfigs: Record<string, { color: string; highColor: string; horizonBlend: number; spaceColor: string; starIntensity: number }> = {
+    const fogConfigs: Record<
+      string,
+      {
+        color: string;
+        highColor: string;
+        horizonBlend: number;
+        spaceColor: string;
+        starIntensity: number;
+      }
+    > = {
       dawn: {
-        color: 'rgb(255, 200, 150)',
-        highColor: 'rgb(200, 150, 120)',
+        color: "rgb(255, 200, 150)",
+        highColor: "rgb(200, 150, 120)",
         horizonBlend: 0.08,
-        spaceColor: 'rgb(50, 30, 40)',
+        spaceColor: "rgb(50, 30, 40)",
         starIntensity: 0.05,
       },
       day: {
-        color: 'rgb(220, 230, 240)',
-        highColor: 'rgb(180, 200, 230)',
+        color: "rgb(220, 230, 240)",
+        highColor: "rgb(180, 200, 230)",
         horizonBlend: 0.1,
-        spaceColor: 'rgb(100, 150, 200)',
+        spaceColor: "rgb(100, 150, 200)",
         starIntensity: 0,
       },
       dusk: {
-        color: 'rgb(180, 100, 80)',
-        highColor: 'rgb(120, 80, 100)',
+        color: "rgb(180, 100, 80)",
+        highColor: "rgb(120, 80, 100)",
         horizonBlend: 0.08,
-        spaceColor: 'rgb(30, 20, 40)',
+        spaceColor: "rgb(30, 20, 40)",
         starIntensity: 0.1,
       },
       night: {
-        color: 'rgb(10, 10, 15)',
-        highColor: 'rgb(30, 20, 40)',
+        color: "rgb(10, 10, 15)",
+        highColor: "rgb(30, 20, 40)",
         horizonBlend: 0.05,
-        spaceColor: 'rgb(5, 5, 10)',
+        spaceColor: "rgb(5, 5, 10)",
         starIntensity: 0.2,
       },
     };
-    
+
     // Helper to parse RGB string to array
     const parseRgb = (rgb: string): [number, number, number] => {
       const match = rgb.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
@@ -1932,63 +2280,85 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       }
       return [0, 0, 0];
     };
-    
+
     // Helper to interpolate between two RGB colors
-    const lerpRgb = (from: [number, number, number], to: [number, number, number], t: number): string => {
+    const lerpRgb = (
+      from: [number, number, number],
+      to: [number, number, number],
+      t: number,
+    ): string => {
       const r = Math.round(from[0] + (to[0] - from[0]) * t);
       const g = Math.round(from[1] + (to[1] - from[1]) * t);
       const b = Math.round(from[2] + (to[2] - from[2]) * t);
       return `rgb(${r}, ${g}, ${b})`;
     };
-    
+
     // Helper to interpolate between two numbers
     const lerp = (from: number, to: number, t: number): number => {
       return from + (to - from) * t;
     };
-    
+
     // Easing function for smooth animation
     const easeInOutCubic = (t: number): number => {
       return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
     };
-    
+
     try {
       // Apply the light preset for dynamic lighting (instant, handled by Mapbox)
       if (!mapInstance.isStyleLoaded?.()) return;
-      mapInstance.setConfigProperty('basemap', 'lightPreset', lightPreset);
-      
+      mapInstance.setConfigProperty("basemap", "lightPreset", lightPreset);
+
       // Get current fog state (approximate from previous preset or default to night)
       const targetConfig = fogConfigs[lightPreset];
-      
+
       // Animate fog transition over 1.5 seconds
       const duration = 1500;
       const startTime = performance.now();
       let animationFrame: number;
-      
+
       // Get starting values (we'll interpolate from current state)
       const currentFog = mapInstance.getFog();
-      const startColor = currentFog?.color ? parseRgb(currentFog.color as string) : parseRgb(fogConfigs.night.color);
-      const startHighColor = currentFog?.['high-color'] ? parseRgb(currentFog['high-color'] as string) : parseRgb(fogConfigs.night.highColor);
-      const startSpaceColor = currentFog?.['space-color'] ? parseRgb(currentFog['space-color'] as string) : parseRgb(fogConfigs.night.spaceColor);
-      const startHorizonBlend = (currentFog?.['horizon-blend'] as number) ?? fogConfigs.night.horizonBlend;
-      const startStarIntensity = (currentFog?.['star-intensity'] as number) ?? fogConfigs.night.starIntensity;
-      
+      const startColor = currentFog?.color
+        ? parseRgb(currentFog.color as string)
+        : parseRgb(fogConfigs.night.color);
+      const startHighColor = currentFog?.["high-color"]
+        ? parseRgb(currentFog["high-color"] as string)
+        : parseRgb(fogConfigs.night.highColor);
+      const startSpaceColor = currentFog?.["space-color"]
+        ? parseRgb(currentFog["space-color"] as string)
+        : parseRgb(fogConfigs.night.spaceColor);
+      const startHorizonBlend =
+        (currentFog?.["horizon-blend"] as number) ??
+        fogConfigs.night.horizonBlend;
+      const startStarIntensity =
+        (currentFog?.["star-intensity"] as number) ??
+        fogConfigs.night.starIntensity;
+
       const targetColor = parseRgb(targetConfig.color);
       const targetHighColor = parseRgb(targetConfig.highColor);
       const targetSpaceColor = parseRgb(targetConfig.spaceColor);
-      
+
       const animate = (currentTime: number) => {
         const elapsed = currentTime - startTime;
         const rawProgress = Math.min(elapsed / duration, 1);
         const progress = easeInOutCubic(rawProgress);
-        
+
         const interpolatedFog = {
           color: lerpRgb(startColor, targetColor, progress),
-          'high-color': lerpRgb(startHighColor, targetHighColor, progress),
-          'horizon-blend': lerp(startHorizonBlend, targetConfig.horizonBlend, progress),
-          'space-color': lerpRgb(startSpaceColor, targetSpaceColor, progress),
-          'star-intensity': lerp(startStarIntensity, targetConfig.starIntensity, progress),
+          "high-color": lerpRgb(startHighColor, targetHighColor, progress),
+          "horizon-blend": lerp(
+            startHorizonBlend,
+            targetConfig.horizonBlend,
+            progress,
+          ),
+          "space-color": lerpRgb(startSpaceColor, targetSpaceColor, progress),
+          "star-intensity": lerp(
+            startStarIntensity,
+            targetConfig.starIntensity,
+            progress,
+          ),
         };
-        
+
         if (!mapInstance.isStyleLoaded?.()) return;
         mapInstance.setFog(interpolatedFog);
 
@@ -1996,16 +2366,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           animationFrame = requestAnimationFrame(animate);
         }
       };
-      
+
       animationFrame = requestAnimationFrame(animate);
-      
+
       return () => {
         if (animationFrame) {
           cancelAnimationFrame(animationFrame);
         }
       };
     } catch (e) {
-      devLog('Light preset configuration not available:', e);
+      devLog("Light preset configuration not available:", e);
     }
   }, [lightPreset, mapLoaded]);
 
@@ -2015,24 +2385,24 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
     if (show3DTerrain) {
       // Enable 3D terrain with exaggeration
-      map.current.setTerrain({ 
-        source: 'mapbox-dem', 
-        exaggeration: 1.5 
+      map.current.setTerrain({
+        source: "mapbox-dem",
+        exaggeration: 1.5,
       });
-      
+
       // Animate to a better viewing angle for terrain
       map.current.easeTo({
         pitch: 60,
-        duration: 1000
+        duration: 1000,
       });
     } else {
       // Disable terrain
       map.current.setTerrain(null);
-      
+
       // Return to normal viewing angle
       map.current.easeTo({
         pitch: isMobile ? 30 : 50,
-        duration: 1000
+        duration: 1000,
       });
     }
   }, [show3DTerrain, mapLoaded, isMobile]);
@@ -2045,8 +2415,11 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     showDensityLayer,
     densityData,
     timelapseMode,
-    timelapse: { currentData: timelapse.currentData, currentHour: timelapse.currentHour },
-    isLightBasemap: mapStyle === 'light' || mapStyle === 'streets',
+    timelapse: {
+      currentData: timelapse.currentData,
+      currentHour: timelapse.currentHour,
+    },
+    isLightBasemap: mapStyle === "light" || mapStyle === "streets",
   });
 
   // Movement paths + animated flow — extracted hook.
@@ -2061,8 +2434,6 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     minFrequency: minPathFrequency,
   });
 
-
-
   // Skeleton markers removed - direct rendering architecture
   // Venues render immediately when available, no loading placeholders
 
@@ -2074,32 +2445,34 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
     // Marker chrome adapts to the *map style*, not the app theme (app is dark-only).
     // Light/streets basemaps get light glass + deeper ink; dark/satellite get dark glass.
-    const isDarkTheme = !(mapStyle === 'light' || mapStyle === 'streets');
+    const isDarkTheme = !(mapStyle === "light" || mapStyle === "streets");
 
     // Floral palette — each category maps to a botanical hue with a light-map and
     // dark-map variant so glyphs stay legible on either basemap.
-    const getCategoryFloral = (category: string): { light: string; dark: string } => {
-      const c = (category || '').toLowerCase();
+    const getCategoryFloral = (
+      category: string,
+    ): { light: string; dark: string } => {
+      const c = (category || "").toLowerCase();
       if (/(bar|cocktail|lounge|pub|brew|beer|wine|spirits)/.test(c))
-        return { light: '#7C4DBE', dark: '#C6A0F5' }; // wisteria
+        return { light: "#7C4DBE", dark: "#C6A0F5" }; // wisteria
       if (/(coffee|cafe|tea|bakery|dessert)/.test(c))
-        return { light: '#B4682E', dark: '#F0B27A' }; // marigold / calendula
+        return { light: "#B4682E", dark: "#F0B27A" }; // marigold / calendula
       if (/(music|concert|live|venue|night|club|dj)/.test(c))
-        return { light: '#A8286B', dark: '#F58BC0' }; // orchid
+        return { light: "#A8286B", dark: "#F58BC0" }; // orchid
       if (/(event|festival|theater|theatre|show|comedy)/.test(c))
-        return { light: '#B8860B', dark: '#F5D06F' }; // sunflower
+        return { light: "#B8860B", dark: "#F5D06F" }; // sunflower
       if (/(gym|fitness|yoga|sport|run|spa)/.test(c))
-        return { light: '#2E7D6B', dark: '#7FDCC2' }; // fern / eucalyptus
+        return { light: "#2E7D6B", dark: "#7FDCC2" }; // fern / eucalyptus
       if (/(shop|retail|store|market|boutique)/.test(c))
-        return { light: '#1E6FA8', dark: '#7FC4F2' }; // hydrangea
+        return { light: "#1E6FA8", dark: "#7FC4F2" }; // hydrangea
       if (/(hotel|stay|lodging|resort)/.test(c))
-        return { light: '#6B5BA8', dark: '#B3AAF0' }; // lavender
-      return { light: '#C13B5A', dark: '#FF8FA3' }; // camellia / rose (food default)
+        return { light: "#6B5BA8", dark: "#B3AAF0" }; // lavender
+      return { light: "#C13B5A", dark: "#FF8FA3" }; // camellia / rose (food default)
     };
 
     // Category → Lucide SVG path map (24x24 viewBox)
     const getCategoryIcon = (category: string): string => {
-      const c = (category || '').toLowerCase();
+      const c = (category || "").toLowerCase();
       // Lucide path d-strings
       if (/(bar|cocktail|lounge|pub|brew|beer|wine|spirits)/.test(c))
         // wine / martini-ish (martini glass)
@@ -2119,7 +2492,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       // default: utensils (food / restaurant)
       return '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>';
     };
-    
+
     // Use requestAnimationFrame for smoother updates
     requestAnimationFrame(() => {
       // Clear existing markers
@@ -2128,75 +2501,91 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
       // Get current zoom level for dynamic sizing
       const currentZoom = mapInstance.getZoom();
-    
-    // Improved zoom scaling formula - larger markers for better visibility
-    let zoomFactor: number;
-    if (currentZoom < 8) {
-      // Very zoomed out - moderate size
-      zoomFactor = Math.max(0.5, currentZoom / 16);
-    } else if (currentZoom < 12) {
-      // Medium zoom - good visibility
-      zoomFactor = 0.6 + ((currentZoom - 8) / 4) * 0.4; // 0.6 to 1.0
-    } else {
-      // Zoomed in - larger markers
-      zoomFactor = 1.0 + Math.min(0.4, (currentZoom - 12) / 10); // 1.0 to 1.4
-    }
-    
-    // Increased base size for better visibility on dark map
-    const baseSize = 42 * zoomFactor;
 
-    // Direct rendering - no skeleton markers (removed per direct-rendering architecture)
+      // Improved zoom scaling formula - larger markers for better visibility
+      let zoomFactor: number;
+      if (currentZoom < 8) {
+        // Very zoomed out - moderate size
+        zoomFactor = Math.max(0.5, currentZoom / 16);
+      } else if (currentZoom < 12) {
+        // Medium zoom - good visibility
+        zoomFactor = 0.6 + ((currentZoom - 8) / 4) * 0.4; // 0.6 to 1.0
+      } else {
+        // Zoomed in - larger markers
+        zoomFactor = 1.0 + Math.min(0.4, (currentZoom - 12) / 10); // 1.0 to 1.4
+      }
 
-    // Calculate distances between venues to detect clusters
-    const getDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
-      return Math.sqrt(Math.pow(lat2 - lat1, 2) + Math.pow(lng2 - lng1, 2));
-    };
+      // Increased base size for better visibility on dark map
+      const baseSize = 42 * zoomFactor;
 
-    // All venues are visible; the previous Open-Now filter was removed from
-    // the Layers panel — users can still see venue hours via the JetCard.
-    const visibleVenues = venues;
+      // Direct rendering - no skeleton markers (removed per direct-rendering architecture)
 
-    // Add venue markers
-    visibleVenues.forEach((venue, index) => {
-      // Guard against map becoming null during iteration
-      if (!mapInstance) return;
-      
-      // `isDarkTheme` here tracks the basemap, not the app theme.
-      const color = getActivityColor(venue.activity, !isDarkTheme);
-      const casing = casingFor(!isDarkTheme);
-      const floral = getCategoryFloral(venue.category);
-      const floralColor = isDarkTheme ? floral.dark : floral.light;
-      const isSelected = !!selectedVenue && selectedVenue.id === venue.id;
-      const hasSelection = !!selectedVenue;
-      // Tier drives every activity-derived visual (fill, size, pulse) so the
-      // marker, the legend and the JetCard always agree on the same venue.
-      const tier = activityTier(venue.activity);
-      const isHighActivity = tier.id === 'peak';
-      const GOLD = '#C9A961';
+      // Calculate distances between venues to detect clusters
+      const getDistance = (
+        lat1: number,
+        lng1: number,
+        lat2: number,
+        lng2: number,
+      ) => {
+        return Math.sqrt(Math.pow(lat2 - lat1, 2) + Math.pow(lng2 - lng1, 2));
+      };
 
-      // Check proximity to other venues
-      let nearbyCount = 0;
-      visibleVenues.forEach((otherVenue, otherIndex) => {
-        if (index !== otherIndex) {
-          const distance = getDistance(venue.lat, venue.lng, otherVenue.lat, otherVenue.lng);
-          if (distance < 0.001) nearbyCount++; // Very close proximity
-        }
-      });
+      // All venues are visible; the previous Open-Now filter was removed from
+      // the Layers panel — users can still see venue hours via the JetCard.
+      const visibleVenues = venues;
 
-      // Adjust size based on proximity - slightly smaller for clustered areas
-      const proximityFactor = nearbyCount > 0 ? Math.max(0.85, 1 - (nearbyCount * 0.04)) : 1;
-      const activitySizeFactor = tier.id === 'peak' ? 1.15 : tier.id === 'busy' ? 1.08 : 1;
-      const selectionFactor = isSelected ? 1.25 : 1;
-      // Increased minimum size for better visibility
-      const markerSize = Math.max(32, Math.min(38, baseSize * 0.8)) * proximityFactor * activitySizeFactor * selectionFactor;
-      const markerHeight = markerSize * 1.35;
-      // Create teardrop marker element with entrance animation
-      const staggerDelay = (index % 30) * 30;
-      const el = document.createElement("div");
-      el.className = "venue-marker";
-      // Dim non-selected markers when a venue is selected
-      const dimOpacity = hasSelection && !isSelected ? '0.45' : '1';
-      el.style.cssText = `
+      // Add venue markers
+      visibleVenues.forEach((venue, index) => {
+        // Guard against map becoming null during iteration
+        if (!mapInstance) return;
+
+        // `isDarkTheme` here tracks the basemap, not the app theme.
+        const color = getActivityColor(venue.activity, !isDarkTheme);
+        const casing = casingFor(!isDarkTheme);
+        const floral = getCategoryFloral(venue.category);
+        const floralColor = isDarkTheme ? floral.dark : floral.light;
+        const isSelected = !!selectedVenue && selectedVenue.id === venue.id;
+        const hasSelection = !!selectedVenue;
+        // Tier drives every activity-derived visual (fill, size, pulse) so the
+        // marker, the legend and the JetCard always agree on the same venue.
+        const tier = activityTier(venue.activity);
+        const isHighActivity = tier.id === "peak";
+        const GOLD = "#C9A961";
+
+        // Check proximity to other venues
+        let nearbyCount = 0;
+        visibleVenues.forEach((otherVenue, otherIndex) => {
+          if (index !== otherIndex) {
+            const distance = getDistance(
+              venue.lat,
+              venue.lng,
+              otherVenue.lat,
+              otherVenue.lng,
+            );
+            if (distance < 0.001) nearbyCount++; // Very close proximity
+          }
+        });
+
+        // Adjust size based on proximity - slightly smaller for clustered areas
+        const proximityFactor =
+          nearbyCount > 0 ? Math.max(0.85, 1 - nearbyCount * 0.04) : 1;
+        const activitySizeFactor =
+          tier.id === "peak" ? 1.15 : tier.id === "busy" ? 1.08 : 1;
+        const selectionFactor = isSelected ? 1.25 : 1;
+        // Increased minimum size for better visibility
+        const markerSize =
+          Math.max(32, Math.min(38, baseSize * 0.8)) *
+          proximityFactor *
+          activitySizeFactor *
+          selectionFactor;
+        const markerHeight = markerSize * 1.35;
+        // Create teardrop marker element with entrance animation
+        const staggerDelay = (index % 30) * 30;
+        const el = document.createElement("div");
+        el.className = "venue-marker";
+        // Dim non-selected markers when a venue is selected
+        const dimOpacity = hasSelection && !isSelected ? "0.45" : "1";
+        el.style.cssText = `
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -2207,31 +2596,46 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         background: transparent;
         --target-opacity: ${dimOpacity};
         transition: opacity 0.25s ease;
-        z-index: ${isSelected ? '200' : isHighActivity ? '50' : '10'};
+        z-index: ${isSelected ? "200" : isHighActivity ? "50" : "10"};
       `;
 
-      // Determine pulse animation speed based on activity level
-      // Disable pulse for reduced motion/low power mode
-      const shouldAnimate = platformSettings.current.markerAnimation && isTabVisible;
-      const pulseSpeed = tier.id === 'peak' ? '1.5s' : tier.id === 'busy' ? '2.5s' : tier.id === 'steady' ? '3.2s' : '4s';
-      const pulseOpacity = tier.id === 'peak' ? '0.8' : tier.id === 'busy' ? '0.5' : tier.id === 'steady' ? '0.38' : '0.3';
-      
-      // Create teardrop pin container
-      const pinEl = document.createElement('div');
-      pinEl.style.cssText = `
+        // Determine pulse animation speed based on activity level
+        // Disable pulse for reduced motion/low power mode
+        const shouldAnimate =
+          platformSettings.current.markerAnimation && isTabVisible;
+        const pulseSpeed =
+          tier.id === "peak"
+            ? "1.5s"
+            : tier.id === "busy"
+              ? "2.5s"
+              : tier.id === "steady"
+                ? "3.2s"
+                : "4s";
+        const pulseOpacity =
+          tier.id === "peak"
+            ? "0.8"
+            : tier.id === "busy"
+              ? "0.5"
+              : tier.id === "steady"
+                ? "0.38"
+                : "0.3";
+
+        // Create teardrop pin container
+        const pinEl = document.createElement("div");
+        pinEl.style.cssText = `
         width: ${markerSize}px;
         height: ${markerHeight}px;
         position: relative;
         transition: transform 0.2s ease;
         background: transparent;
-        transform: ${isSelected ? 'scale(1.05)' : 'scale(1)'};
+        transform: ${isSelected ? "scale(1.05)" : "scale(1)"};
       `;
 
-      // Layered depth: soft outer halo (blurred glow)
-      const haloEl = document.createElement('div');
-      const haloSize = markerSize + 22;
-      const haloColor = isSelected ? GOLD : floralColor;
-      haloEl.style.cssText = `
+        // Layered depth: soft outer halo (blurred glow)
+        const haloEl = document.createElement("div");
+        const haloSize = markerSize + 22;
+        const haloColor = isSelected ? GOLD : floralColor;
+        haloEl.style.cssText = `
         position: absolute;
         top: ${(markerSize - haloSize) / 2}px;
         left: ${(markerSize - haloSize) / 2}px;
@@ -2241,16 +2645,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         background: radial-gradient(circle, ${haloColor}55 0%, ${haloColor}22 45%, transparent 70%);
         filter: blur(6px);
         pointer-events: none;
-        opacity: ${isSelected ? '0.95' : isHighActivity ? '0.7' : '0.45'};
+        opacity: ${isSelected ? "0.95" : isHighActivity ? "0.7" : "0.45"};
       `;
 
-      // Create animated gradient ring (behind teardrop) - with activity-based color
-      // Only animate if not in low power/reduced motion mode
-      const ringEl = document.createElement('div');
-      const ringSize = markerSize + 10;
-      const ringColor = isSelected || isHighActivity ? GOLD : color;
-      const ringWidth = isSelected ? 2.5 : 2;
-      ringEl.style.cssText = `
+        // Create animated gradient ring (behind teardrop) - with activity-based color
+        // Only animate if not in low power/reduced motion mode
+        const ringEl = document.createElement("div");
+        const ringSize = markerSize + 10;
+        const ringColor = isSelected || isHighActivity ? GOLD : color;
+        const ringWidth = isSelected ? 2.5 : 2;
+        ringEl.style.cssText = `
         position: absolute;
         top: ${(markerSize - ringSize) / 2}px;
         left: ${(markerSize - ringSize) / 2}px;
@@ -2261,14 +2665,14 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         transform-origin: center center;
         background: transparent;
         border: ${ringWidth}px solid ${ringColor};
-        opacity: ${isSelected ? '1' : pulseOpacity};
-        box-shadow: ${isSelected || isHighActivity ? `0 0 12px ${GOLD}80` : 'none'};
-        ${shouldAnimate ? `animation: markerRingPulse ${pulseSpeed} ease-in-out infinite;` : ''}
+        opacity: ${isSelected ? "1" : pulseOpacity};
+        box-shadow: ${isSelected || isHighActivity ? `0 0 12px ${GOLD}80` : "none"};
+        ${shouldAnimate ? `animation: markerRingPulse ${pulseSpeed} ease-in-out infinite;` : ""}
       `;
 
-      // Create teardrop shape - glassmorphic design with frosted glass effect
-      const teardropEl = document.createElement('div');
-      teardropEl.style.cssText = `
+        // Create teardrop shape - glassmorphic design with frosted glass effect
+        const teardropEl = document.createElement("div");
+        teardropEl.style.cssText = `
         position: absolute;
         top: 0;
         left: 0;
@@ -2276,9 +2680,9 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         height: ${markerSize}px;
         /* Near-opaque core: letting the basemap show through the fill is what
            made markers wash out over satellite and busy street tiles. */
-        background: ${isDarkTheme 
-          ? 'rgba(30, 30, 35, 0.94)' 
-          : 'rgba(255, 255, 255, 0.95)'};
+        background: ${
+          isDarkTheme ? "rgba(30, 30, 35, 0.94)" : "rgba(255, 255, 255, 0.95)"
+        };
         backdrop-filter: blur(12px) saturate(180%);
         -webkit-backdrop-filter: blur(12px) saturate(180%);
         border-radius: 50% 50% 50% 0;
@@ -2287,22 +2691,26 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 1.5px solid ${isSelected ? GOLD : (isDarkTheme 
-          ? `rgba(255, 255, 255, 0.15)` 
-          : `rgba(0, 0, 0, 0.08)`)};
+        border: 1.5px solid ${
+          isSelected
+            ? GOLD
+            : isDarkTheme
+              ? `rgba(255, 255, 255, 0.15)`
+              : `rgba(0, 0, 0, 0.08)`
+        };
         box-shadow: 
-          0 4px 16px rgba(0, 0, 0, ${isDarkTheme ? '0.4' : '0.15'}),
-          inset 0 1px 0 rgba(255, 255, 255, ${isDarkTheme ? '0.1' : '0.5'}),
-          0 0 0 1px ${isSelected ? GOLD : color}${isSelected ? '99' : '40'},
+          0 4px 16px rgba(0, 0, 0, ${isDarkTheme ? "0.4" : "0.15"}),
+          inset 0 1px 0 rgba(255, 255, 255, ${isDarkTheme ? "0.1" : "0.5"}),
+          0 0 0 1px ${isSelected ? GOLD : color}${isSelected ? "99" : "40"},
           /* Contrast casing: drawn outside the fill so the marker stays
              readable over arbitrary basemap pixels (satellite especially). */
           0 0 0 3px ${casing};
       `;
-      
-      // Category-aware iconography (counter-rotated to stay upright)
-      const iconWrap = document.createElement('div');
-      const iconSize = Math.round(markerSize * 0.5);
-      iconWrap.style.cssText = `
+
+        // Category-aware iconography (counter-rotated to stay upright)
+        const iconWrap = document.createElement("div");
+        const iconSize = Math.round(markerSize * 0.5);
+        iconWrap.style.cssText = `
         position: absolute;
         top: 50%;
         left: 50%;
@@ -2313,21 +2721,21 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         align-items: center;
         justify-content: center;
         color: ${floralColor};
-        filter: drop-shadow(0 1px 2px rgba(0,0,0,${isDarkTheme ? '0.45' : '0.2'}));
+        filter: drop-shadow(0 1px 2px rgba(0,0,0,${isDarkTheme ? "0.45" : "0.2"}));
       `;
-      iconWrap.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">${getCategoryIcon(venue.category)}</svg>`;
-      teardropEl.appendChild(iconWrap);
+        iconWrap.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">${getCategoryIcon(venue.category)}</svg>`;
+        teardropEl.appendChild(iconWrap);
 
-      pinEl.appendChild(haloEl);
-      pinEl.appendChild(ringEl);
-      pinEl.appendChild(teardropEl);
-      el.appendChild(pinEl);
+        pinEl.appendChild(haloEl);
+        pinEl.appendChild(ringEl);
+        pinEl.appendChild(teardropEl);
+        el.appendChild(pinEl);
 
-      // Glassmorphic label chip (slides up on hover/selection)
-      const dealCount = venueDealCounts[venue.id] || 0;
-      const chipEl = document.createElement('div');
-      chipEl.className = 'venue-marker-chip';
-      chipEl.style.cssText = `
+        // Glassmorphic label chip (slides up on hover/selection)
+        const dealCount = venueDealCounts[venue.id] || 0;
+        const chipEl = document.createElement("div");
+        chipEl.className = "venue-marker-chip";
+        chipEl.style.cssText = `
         position: absolute;
         bottom: ${markerHeight + 8}px;
         left: 50%;
@@ -2337,12 +2745,12 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         gap: 8px;
         padding: 6px 10px;
         border-radius: 999px;
-        background: ${isDarkTheme ? 'rgba(20, 20, 24, 0.78)' : 'rgba(255, 255, 255, 0.85)'};
+        background: ${isDarkTheme ? "rgba(20, 20, 24, 0.78)" : "rgba(255, 255, 255, 0.85)"};
         backdrop-filter: blur(14px) saturate(180%);
         -webkit-backdrop-filter: blur(14px) saturate(180%);
-        border: 1px solid ${isDarkTheme ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.08)'};
-        box-shadow: 0 6px 20px rgba(0,0,0,${isDarkTheme ? '0.5' : '0.18'}), 0 0 0 1px ${(isSelected ? GOLD : color)}40;
-        color: ${isDarkTheme ? '#fff' : '#0a0a0a'};
+        border: 1px solid ${isDarkTheme ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.08)"};
+        box-shadow: 0 6px 20px rgba(0,0,0,${isDarkTheme ? "0.5" : "0.18"}), 0 0 0 1px ${isSelected ? GOLD : color}40;
+        color: ${isDarkTheme ? "#fff" : "#0a0a0a"};
         font-size: 11.5px;
         font-weight: 600;
         letter-spacing: 0.01em;
@@ -2353,47 +2761,55 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         transition: opacity 0.18s ease, transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
         z-index: 2;
       `;
-      const nameSpan = document.createElement('span');
-      nameSpan.textContent = venue.name;
-      nameSpan.style.cssText = 'overflow:hidden;text-overflow:ellipsis;max-width:130px;';
-      chipEl.appendChild(nameSpan);
-      // Open / Closed status pill — mirrors JetCard logic so the marker chip
-      // reflects the same business-hours signal as the detail card.
-      const venueIsOpen: boolean | null = venueOpenStatus.get(venue.id) ?? null;
-      if (venueIsOpen !== null) {
-        const statusPill = document.createElement('span');
-        statusPill.textContent = venueIsOpen ? 'Open' : 'Closed';
-        statusPill.setAttribute(
-          'aria-label',
-          venueIsOpen ? `${venue.name} is open now` : `${venue.name} is closed`,
-        );
-        const openBg = isDarkTheme ? 'rgba(34, 197, 94, 0.18)' : 'rgba(34, 197, 94, 0.16)';
-        const closedBg = isDarkTheme ? 'rgba(239, 68, 68, 0.18)' : 'rgba(239, 68, 68, 0.14)';
-        statusPill.style.cssText = `
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = venue.name;
+        nameSpan.style.cssText =
+          "overflow:hidden;text-overflow:ellipsis;max-width:130px;";
+        chipEl.appendChild(nameSpan);
+        // Open / Closed status pill — mirrors JetCard logic so the marker chip
+        // reflects the same business-hours signal as the detail card.
+        const venueIsOpen: boolean | null =
+          venueOpenStatus.get(venue.id) ?? null;
+        if (venueIsOpen !== null) {
+          const statusPill = document.createElement("span");
+          statusPill.textContent = venueIsOpen ? "Open" : "Closed";
+          statusPill.setAttribute(
+            "aria-label",
+            venueIsOpen
+              ? `${venue.name} is open now`
+              : `${venue.name} is closed`,
+          );
+          const openBg = isDarkTheme
+            ? "rgba(34, 197, 94, 0.18)"
+            : "rgba(34, 197, 94, 0.16)";
+          const closedBg = isDarkTheme
+            ? "rgba(239, 68, 68, 0.18)"
+            : "rgba(239, 68, 68, 0.14)";
+          statusPill.style.cssText = `
           display:inline-flex;align-items:center;gap:4px;
           padding: 2px 7px;
           border-radius: 999px;
           background: ${venueIsOpen ? openBg : closedBg};
-          color: ${venueIsOpen ? 'hsl(var(--cool))' : 'hsl(var(--hot))'};
+          color: ${venueIsOpen ? "hsl(var(--cool))" : "hsl(var(--hot))"};
           border: 1px solid currentColor;
           font-size: 10px;
           font-weight: 700;
           letter-spacing: 0.04em;
           text-transform: uppercase;
         `;
-        const dot = document.createElement('span');
-        dot.style.cssText = `
+          const dot = document.createElement("span");
+          dot.style.cssText = `
           width:6px;height:6px;border-radius:999px;
           background: currentColor;
           box-shadow: 0 0 6px currentColor;
         `;
-        statusPill.prepend(dot);
-        chipEl.appendChild(statusPill);
-      }
-      if (dealCount > 0) {
-        const dealPill = document.createElement('span');
-        dealPill.textContent = `${dealCount} deal${dealCount > 1 ? 's' : ''}`;
-        dealPill.style.cssText = `
+          statusPill.prepend(dot);
+          chipEl.appendChild(statusPill);
+        }
+        if (dealCount > 0) {
+          const dealPill = document.createElement("span");
+          dealPill.textContent = `${dealCount} deal${dealCount > 1 ? "s" : ""}`;
+          dealPill.style.cssText = `
           display:inline-flex;align-items:center;
           padding: 2px 7px;
           border-radius: 999px;
@@ -2403,11 +2819,11 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           font-weight: 700;
           letter-spacing: 0.02em;
         `;
-        chipEl.appendChild(dealPill);
-      }
-      // Little caret/arrow under the chip
-      const caretEl = document.createElement('div');
-      caretEl.style.cssText = `
+          chipEl.appendChild(dealPill);
+        }
+        // Little caret/arrow under the chip
+        const caretEl = document.createElement("div");
+        caretEl.style.cssText = `
         position: absolute;
         bottom: -4px;
         left: 50%;
@@ -2415,125 +2831,152 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         width: 8px;
         height: 8px;
         background: inherit;
-        border-right: 1px solid ${isDarkTheme ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.08)'};
-        border-bottom: 1px solid ${isDarkTheme ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.08)'};
+        border-right: 1px solid ${isDarkTheme ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.08)"};
+        border-bottom: 1px solid ${isDarkTheme ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.08)"};
       `;
-      chipEl.appendChild(caretEl);
-      el.appendChild(chipEl);
+        chipEl.appendChild(caretEl);
+        el.appendChild(chipEl);
 
-      // Debounce hide so a brief pointerleave→pointerenter (or quick tap)
-      // doesn't cause the chip to flicker closed.
-      let hideTimer: number | null = null;
-      const clearHideTimer = () => {
-        if (hideTimer !== null) {
-          window.clearTimeout(hideTimer);
-          hideTimer = null;
-        }
-      };
-      const hideChipNow = () => {
-        clearHideTimer();
-        chipEl.style.opacity = '0';
-        chipEl.style.transform = 'translateX(-50%) translateY(6px)';
-        if (activeChipRef.current?.el === chipEl) {
-          activeChipRef.current = null;
-        }
-      };
-      const hideChip = () => {
-        clearHideTimer();
-        hideTimer = window.setTimeout(hideChipNow, 120);
-      };
-      const hideChipUnlessSelected = () => {
-        if (isSelected) return;
-        hideChip();
-      };
-      const showChip = () => {
-        clearHideTimer();
-        // Close any previously-open chip on a different marker
-        const prev = activeChipRef.current;
-        if (prev && prev.el !== chipEl) prev.hide();
-        chipEl.style.opacity = '1';
-        chipEl.style.transform = 'translateX(-50%) translateY(0)';
-        activeChipRef.current = { el: chipEl, venueId: venue.id, hide: hideChipNow };
-      };
-      if (isSelected) showChip();
+        // Debounce hide so a brief pointerleave→pointerenter (or quick tap)
+        // doesn't cause the chip to flicker closed.
+        let hideTimer: number | null = null;
+        const clearHideTimer = () => {
+          if (hideTimer !== null) {
+            window.clearTimeout(hideTimer);
+            hideTimer = null;
+          }
+        };
+        const hideChipNow = () => {
+          clearHideTimer();
+          chipEl.style.opacity = "0";
+          chipEl.style.transform = "translateX(-50%) translateY(6px)";
+          if (activeChipRef.current?.el === chipEl) {
+            activeChipRef.current = null;
+          }
+        };
+        const hideChip = () => {
+          clearHideTimer();
+          hideTimer = window.setTimeout(hideChipNow, 120);
+        };
+        const hideChipUnlessSelected = () => {
+          if (isSelected) return;
+          hideChip();
+        };
+        const showChip = () => {
+          clearHideTimer();
+          // Close any previously-open chip on a different marker
+          const prev = activeChipRef.current;
+          if (prev && prev.el !== chipEl) prev.hide();
+          chipEl.style.opacity = "1";
+          chipEl.style.transform = "translateX(-50%) translateY(0)";
+          activeChipRef.current = {
+            el: chipEl,
+            venueId: venue.id,
+            hide: hideChipNow,
+          };
+        };
+        if (isSelected) showChip();
 
-      // Hover effects - scale and enhanced glassmorphic shadow.
-      // Use pointer events + gate on pointerType so touch devices don't fire
-      // synthetic mouseenter/mouseleave that would compete with touchstart.
-      el.addEventListener("pointerenter", (e) => {
-        if ((e as PointerEvent).pointerType !== "mouse") return;
-        el.style.zIndex = "300";
-        pinEl.style.transform = isSelected ? "scale(1.2)" : "scale(1.15)";
-        teardropEl.style.boxShadow = `
-          0 8px 24px rgba(0, 0, 0, ${isDarkTheme ? '0.5' : '0.2'}),
-          inset 0 1px 0 rgba(255, 255, 255, ${isDarkTheme ? '0.15' : '0.6'}),
+        // Hover effects - scale and enhanced glassmorphic shadow.
+        // Use pointer events + gate on pointerType so touch devices don't fire
+        // synthetic mouseenter/mouseleave that would compete with touchstart.
+        el.addEventListener("pointerenter", (e) => {
+          if ((e as PointerEvent).pointerType !== "mouse") return;
+          el.style.zIndex = "300";
+          pinEl.style.transform = isSelected ? "scale(1.2)" : "scale(1.15)";
+          teardropEl.style.boxShadow = `
+          0 8px 24px rgba(0, 0, 0, ${isDarkTheme ? "0.5" : "0.2"}),
+          inset 0 1px 0 rgba(255, 255, 255, ${isDarkTheme ? "0.15" : "0.6"}),
           0 0 0 2px ${isSelected ? GOLD : color}90
         `;
-        ringEl.style.opacity = '1';
-        haloEl.style.opacity = '1';
-        showChip();
-      });
+          ringEl.style.opacity = "1";
+          haloEl.style.opacity = "1";
+          showChip();
+        });
 
-      el.addEventListener("pointerleave", (e) => {
-        if ((e as PointerEvent).pointerType !== "mouse") return;
-        el.style.zIndex = isSelected ? "200" : isHighActivity ? "50" : "10";
-        pinEl.style.transform = isSelected ? "scale(1.05)" : "scale(1)";
-        teardropEl.style.boxShadow = `
-          0 4px 16px rgba(0, 0, 0, ${isDarkTheme ? '0.4' : '0.15'}),
-          inset 0 1px 0 rgba(255, 255, 255, ${isDarkTheme ? '0.1' : '0.5'}),
-          0 0 0 1px ${isSelected ? GOLD : color}${isSelected ? '99' : '40'}
+        el.addEventListener("pointerleave", (e) => {
+          if ((e as PointerEvent).pointerType !== "mouse") return;
+          el.style.zIndex = isSelected ? "200" : isHighActivity ? "50" : "10";
+          pinEl.style.transform = isSelected ? "scale(1.05)" : "scale(1)";
+          teardropEl.style.boxShadow = `
+          0 4px 16px rgba(0, 0, 0, ${isDarkTheme ? "0.4" : "0.15"}),
+          inset 0 1px 0 rgba(255, 255, 255, ${isDarkTheme ? "0.1" : "0.5"}),
+          0 0 0 1px ${isSelected ? GOLD : color}${isSelected ? "99" : "40"}
         `;
-        ringEl.style.opacity = isSelected ? '1' : pulseOpacity;
-        haloEl.style.opacity = isSelected ? '0.95' : isHighActivity ? '0.7' : '0.45';
-        hideChipUnlessSelected();
+          ringEl.style.opacity = isSelected ? "1" : pulseOpacity;
+          haloEl.style.opacity = isSelected
+            ? "0.95"
+            : isHighActivity
+              ? "0.7"
+              : "0.45";
+          hideChipUnlessSelected();
+        });
+        // Touch: open immediately on tap. The subsequent click promotes the
+        // marker to selected, so the chip stays open via React re-render.
+        // No auto-hide timer — avoids flicker on quick taps. Off-map taps and
+        // selecting a different marker close it cleanly.
+        el.addEventListener(
+          "touchstart",
+          () => {
+            showChip();
+          },
+          { passive: true },
+        );
+
+        // Create marker with bottom anchor for teardrop (pin point at GPS location)
+        // Bail if the map was removed mid-render — addTo() would throw on a
+        // torn-down container.
+        if (
+          !mapboxglRef.current ||
+          !mapInstance ||
+          typeof mapInstance.getContainer !== "function"
+        )
+          return;
+        try {
+          if (!mapInstance.getContainer()) return;
+        } catch {
+          return;
+        }
+        const marker = new mapboxglRef.current.Marker({
+          element: el,
+          anchor: "bottom",
+        })
+          .setLngLat([venue.lng, venue.lat])
+          .addTo(mapInstance);
+
+        // Handle click on the marker element — only trigger JetCard, no Mapbox popup
+        el.addEventListener("click", (e) => {
+          e.stopPropagation();
+
+          // A click promotes this marker to selected — cancel any pending hide
+          // so the chip stays open through the re-render.
+          clearHideTimer();
+
+          // Haptic feedback for venue selection
+          triggerHaptic("medium");
+
+          // Open venue card (use ref to avoid stale closure)
+          onVenueSelectRef.current(venue);
+        });
+
+        markersRef.current.push(marker);
       });
-      // Touch: open immediately on tap. The subsequent click promotes the
-      // marker to selected, so the chip stays open via React re-render.
-      // No auto-hide timer — avoids flicker on quick taps. Off-map taps and
-      // selecting a different marker close it cleanly.
-      el.addEventListener("touchstart", () => {
-        showChip();
-      }, { passive: true });
-
-      // Create marker with bottom anchor for teardrop (pin point at GPS location)
-      // Bail if the map was removed mid-render — addTo() would throw on a
-      // torn-down container.
-      if (!mapboxglRef.current || !mapInstance || typeof mapInstance.getContainer !== 'function') return;
-      try {
-        if (!mapInstance.getContainer()) return;
-      } catch { return; }
-      const marker = new mapboxglRef.current.Marker({
-        element: el,
-        anchor: 'bottom'
-      })
-        .setLngLat([venue.lng, venue.lat])
-        .addTo(mapInstance);
-
-      // Handle click on the marker element — only trigger JetCard, no Mapbox popup
-      el.addEventListener("click", (e) => {
-        e.stopPropagation();
-
-        // A click promotes this marker to selected — cancel any pending hide
-        // so the chip stays open through the re-render.
-        clearHideTimer();
-
-        // Haptic feedback for venue selection
-        triggerHaptic('medium');
-        
-        // Open venue card (use ref to avoid stale closure)
-        onVenueSelectRef.current(venue);
-      });
-
-      markersRef.current.push(marker);
-    });
-    
     }); // Close requestAnimationFrame
   };
 
   // Call updateMarkers on initial load and when venues change
   useEffect(() => {
     updateMarkers();
-  }, [venues, mapLoaded, isLoadingVenues, selectedCity, selectedVenue, venueDealCounts, venueOpenStatus, mapStyle]);
+  }, [
+    venues,
+    mapLoaded,
+    isLoadingVenues,
+    selectedCity,
+    selectedVenue,
+    venueDealCounts,
+    venueOpenStatus,
+    mapStyle,
+  ]);
 
   // Fetch active-deal counts for currently displayed venues
   useEffect(() => {
@@ -2552,11 +2995,14 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       if (cancelled || error || !data) return;
       const counts: Record<string, number> = {};
       for (const row of data as Array<{ venue_id: string | null }>) {
-        if (row.venue_id) counts[row.venue_id] = (counts[row.venue_id] || 0) + 1;
+        if (row.venue_id)
+          counts[row.venue_id] = (counts[row.venue_id] || 0) + 1;
       }
       setVenueDealCounts(counts);
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [venues]);
 
   // Add heatmap blend layer for clustering visualization at low zoom levels
@@ -2564,8 +3010,8 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     if (!map.current || !mapLoaded || venues.length === 0) return;
 
     const mapInstance = map.current;
-    const sourceId = 'venue-heatmap-source';
-    const heatmapLayerId = 'venue-heatmap-layer';
+    const sourceId = "venue-heatmap-source";
+    const heatmapLayerId = "venue-heatmap-layer";
 
     // Wait for style to be loaded before modifying sources/layers
     if (!mapInstance.isStyleLoaded()) {
@@ -2581,113 +3027,142 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         mapInstance.removeSource(sourceId);
       }
     } catch (e) {
-      console.warn('[Heatmap] Error cleaning up existing source/layer:', e);
+      console.warn("[Heatmap] Error cleaning up existing source/layer:", e);
     }
 
     // Create GeoJSON data from venues with activity as weight
     const geojsonData: FeatureCollection<Geometry> = {
-      type: 'FeatureCollection',
-      features: venues.map(venue => ({
-        type: 'Feature',
+      type: "FeatureCollection",
+      features: venues.map((venue) => ({
+        type: "Feature",
         properties: {
           activity: venue.activity,
-          name: venue.name
+          name: venue.name,
         },
         geometry: {
-          type: 'Point',
-          coordinates: [venue.lng, venue.lat]
-        }
-      }))
+          type: "Point",
+          coordinates: [venue.lng, venue.lat],
+        },
+      })),
     };
 
     // Add source - check again that it doesn't exist
     try {
       if (!mapInstance.getSource(sourceId)) {
         mapInstance.addSource(sourceId, {
-          type: 'geojson',
-          data: geojsonData
+          type: "geojson",
+          data: geojsonData,
         });
       } else {
         // Update existing source data
-        const source = mapInstance.getSource(sourceId) as mapboxgl.GeoJSONSource;
+        const source = mapInstance.getSource(
+          sourceId,
+        ) as mapboxgl.GeoJSONSource;
         source.setData(geojsonData);
       }
     } catch (e) {
-      console.warn('[Heatmap] Error adding source:', e);
+      console.warn("[Heatmap] Error adding source:", e);
       return;
     }
 
     // Add heatmap layer that fades out at higher zoom levels
     try {
       if (!mapInstance.getLayer(heatmapLayerId)) {
-        mapInstance.addLayer({
-          id: heatmapLayerId,
-          type: 'heatmap',
-          source: sourceId,
-          maxzoom: 15,
-          paint: {
-            // Weight based on activity level
-            'heatmap-weight': [
-              'interpolate',
-              ['linear'],
-              ['get', 'activity'],
-              0, 0.1,
-              50, 0.5,
-              80, 0.8,
-              100, 1
-            ],
-            // Intensity increases with zoom
-            'heatmap-intensity': [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              8, isMobile ? 0.75 : 0.6,
-              12, isMobile ? 0.9 : 1,
-              15, isMobile ? 1.25 : 1.5
-            ],
-            // Color gradient - matches app theme (orange/red primary)
-            'heatmap-color': [
-              'interpolate',
-              ['linear'],
-              ['heatmap-density'],
-              0, 'rgba(0, 0, 0, 0)',
-              0.1, 'rgba(255, 140, 0, 0.15)',
-              0.3, 'rgba(255, 100, 50, 0.3)',
-              0.5, 'rgba(255, 69, 58, 0.45)',
-              0.7, 'rgba(255, 45, 85, 0.6)',
-              0.9, 'rgba(200, 50, 120, 0.75)',
-              1, 'rgba(150, 50, 150, 0.9)'
-            ],
-            // Radius increases at lower zoom, decreases when zoomed in
-            'heatmap-radius': [
-              'interpolate',
-              ['cubic-bezier', 0.4, 0, 0.2, 1],
-              ['zoom'],
-              8, isMobile ? 40 : 30,
-              10, isMobile ? 34 : 25,
-              12, isMobile ? 28 : 20,
-              13, isMobile ? 22 : 16,
-              15, isMobile ? 14 : 10
-            ],
-            // Fade out opacity as zoom increases (individual markers take over)
-            'heatmap-opacity': [
-              'interpolate',
-              ['cubic-bezier', 0.4, 0, 0.2, 1],
-              ['zoom'],
-              10, isMobile ? 0.7 : 0.8,
-              11.5, isMobile ? 0.58 : 0.65,
-              13, isMobile ? 0.32 : 0.4,
-              14, isMobile ? 0.15 : 0.2,
-              15, 0
-            ],
-            // Smooth tween between paint updates (city switch, viewport flip)
-            'heatmap-radius-transition': { duration: 400, delay: 0 },
-            'heatmap-opacity-transition': { duration: 500, delay: 0 }
-          }
-        }, 'waterway-label'); // Insert below labels
+        mapInstance.addLayer(
+          {
+            id: heatmapLayerId,
+            type: "heatmap",
+            source: sourceId,
+            maxzoom: 15,
+            paint: {
+              // Weight based on activity level
+              "heatmap-weight": [
+                "interpolate",
+                ["linear"],
+                ["get", "activity"],
+                0,
+                0.1,
+                50,
+                0.5,
+                80,
+                0.8,
+                100,
+                1,
+              ],
+              // Intensity increases with zoom
+              "heatmap-intensity": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                8,
+                isMobile ? 0.75 : 0.6,
+                12,
+                isMobile ? 0.9 : 1,
+                15,
+                isMobile ? 1.25 : 1.5,
+              ],
+              // Color gradient - matches app theme (orange/red primary)
+              "heatmap-color": [
+                "interpolate",
+                ["linear"],
+                ["heatmap-density"],
+                0,
+                "rgba(0, 0, 0, 0)",
+                0.1,
+                "rgba(255, 140, 0, 0.15)",
+                0.3,
+                "rgba(255, 100, 50, 0.3)",
+                0.5,
+                "rgba(255, 69, 58, 0.45)",
+                0.7,
+                "rgba(255, 45, 85, 0.6)",
+                0.9,
+                "rgba(200, 50, 120, 0.75)",
+                1,
+                "rgba(150, 50, 150, 0.9)",
+              ],
+              // Radius increases at lower zoom, decreases when zoomed in
+              "heatmap-radius": [
+                "interpolate",
+                ["cubic-bezier", 0.4, 0, 0.2, 1],
+                ["zoom"],
+                8,
+                isMobile ? 40 : 30,
+                10,
+                isMobile ? 34 : 25,
+                12,
+                isMobile ? 28 : 20,
+                13,
+                isMobile ? 22 : 16,
+                15,
+                isMobile ? 14 : 10,
+              ],
+              // Fade out opacity as zoom increases (individual markers take over)
+              "heatmap-opacity": [
+                "interpolate",
+                ["cubic-bezier", 0.4, 0, 0.2, 1],
+                ["zoom"],
+                10,
+                isMobile ? 0.7 : 0.8,
+                11.5,
+                isMobile ? 0.58 : 0.65,
+                13,
+                isMobile ? 0.32 : 0.4,
+                14,
+                isMobile ? 0.15 : 0.2,
+                15,
+                0,
+              ],
+              // Smooth tween between paint updates (city switch, viewport flip)
+              "heatmap-radius-transition": { duration: 400, delay: 0 },
+              "heatmap-opacity-transition": { duration: 500, delay: 0 },
+            },
+          },
+          "waterway-label",
+        ); // Insert below labels
       }
     } catch (e) {
-      console.warn('[Heatmap] Error adding layer:', e);
+      console.warn("[Heatmap] Error adding layer:", e);
     }
 
     return () => {
@@ -2708,11 +3183,11 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
     if (!map.current || !mapLoaded) return;
 
     const mapInstance = map.current;
-    
+
     // Smooth resize during zoom with staggered animation
     const handleZoom = () => {
       const currentZoom = mapInstance.getZoom();
-      
+
       let zoomFactor: number;
       if (currentZoom < 8) {
         zoomFactor = Math.max(0.3, currentZoom / 20);
@@ -2721,32 +3196,34 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
       } else {
         zoomFactor = 0.8 + Math.min(0.5, (currentZoom - 12) / 8);
       }
-      
+
       const newBaseSize = 36 * zoomFactor;
-      
+
       markersRef.current.forEach((marker, index) => {
         const el = marker.getElement();
         if (el) {
           // Add staggered delay for smoother animation
           const delay = (index % 20) * 10; // Stagger in groups
           setTimeout(() => {
-            const orbEl = el.querySelector('div') as HTMLElement;
+            const orbEl = el.querySelector("div") as HTMLElement;
             if (orbEl) {
               // Update orb size
               orbEl.style.width = `${newBaseSize}px`;
               orbEl.style.height = `${newBaseSize}px`;
-              
+
               // Update core size
-              const coreEl = orbEl.querySelector('div:not([style*="position: absolute"])') as HTMLElement;
-              if (coreEl && !coreEl.style.position?.includes('absolute')) {
+              const coreEl = orbEl.querySelector(
+                'div:not([style*="position: absolute"])',
+              ) as HTMLElement;
+              if (coreEl && !coreEl.style.position?.includes("absolute")) {
                 const coreSize = newBaseSize * 0.55;
                 coreEl.style.width = `${coreSize}px`;
                 coreEl.style.height = `${coreSize}px`;
-                
-                const svg = coreEl.querySelector('svg');
+
+                const svg = coreEl.querySelector("svg");
                 if (svg) {
-                  svg.setAttribute('width', `${coreSize * 0.55}`);
-                  svg.setAttribute('height', `${coreSize * 0.55}`);
+                  svg.setAttribute("width", `${coreSize * 0.55}`);
+                  svg.setAttribute("height", `${coreSize * 0.55}`);
                 }
               }
             }
@@ -2757,25 +3234,25 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
     // Removed fade effect during panning - markers now stay fully visible and anchored
 
-    mapInstance.on('zoom', handleZoom);
-    
+    mapInstance.on("zoom", handleZoom);
+
     return () => {
-      mapInstance.off('zoom', handleZoom);
+      mapInstance.off("zoom", handleZoom);
     };
   }, [mapLoaded, venues]);
 
   // Update map view when selected city changes
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
-    
+
     map.current.flyTo({
       center: [selectedCity.lng, selectedCity.lat],
       zoom: selectedCity.zoom,
       pitch: isMobile ? 30 : 50,
       duration: 2000,
-      essential: true
+      essential: true,
     });
-    
+
     // Update markers after city change animation completes
     setTimeout(() => {
       updateMarkers();
@@ -2785,19 +3262,19 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
   // Deal markers removed - no longer displaying colored circles on map
 
   return (
-    <div 
+    <div
       className="relative"
       style={{
-        position: 'absolute',
+        position: "absolute",
         inset: 0,
-        width: '100%',
-        height: '100%',
-        minHeight: '100%',
+        width: "100%",
+        height: "100%",
+        minHeight: "100%",
         // DO NOT use contain: layout — it creates a containing block for fixed children,
         // breaking fixed positioning of overlay controls.
         // DO NOT use transform or will-change: transform — breaks backdrop-filter rendering.
-        contain: 'style',
-        isolation: 'isolate',
+        contain: "style",
+        isolation: "isolate",
       }}
     >
       {/* Single crossfade source of truth: HeatmapSkeleton -> interactive map.
@@ -2808,41 +3285,75 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
         <div
           aria-hidden={mapLoaded}
           onTransitionEnd={(e) => {
-            if (e.propertyName === 'opacity' && mapLoaded) {
+            if (e.propertyName === "opacity" && mapLoaded) {
               setSkeletonMounted(false);
             }
           }}
           style={{
-            position: 'absolute',
+            position: "absolute",
             inset: 0,
             zIndex: 40,
-            transition: 'opacity 400ms ease-out',
+            transition: "opacity 400ms ease-out",
             opacity: mapLoaded ? 0 : 1,
-            pointerEvents: mapLoaded ? 'none' : 'auto',
-            willChange: 'opacity',
+            pointerEvents: mapLoaded ? "none" : "auto",
+            willChange: "opacity",
           }}
         >
           {/* Opaque while the GL module loads, then translucent so tiles
               bleed through during the single crossfade. */}
-          <HeatmapSkeleton translucent={loadingStage !== 'module'} />
+          <HeatmapSkeleton translucent={loadingStage !== "module"} />
         </div>
       )}
 
       {/* Map Error State with Retry - deferred to not become LCP element */}
       {mapError && !mapInitializing && (
-        <div 
+        <div
           className="bg-background/95 backdrop-blur-sm"
-          style={{ position: 'absolute', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', contentVisibility: 'auto' }}
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 50,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            contentVisibility: "auto",
+          }}
         >
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', padding: '24px', maxWidth: '24rem', textAlign: 'center' }}>
-            <div className="rounded-full bg-destructive/10" style={{ width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <AlertCircle className="w-7 h-7 text-destructive" aria-hidden="true" />
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "16px",
+              padding: "24px",
+              maxWidth: "24rem",
+              textAlign: "center",
+            }}
+          >
+            <div
+              className="rounded-full bg-destructive/10"
+              style={{
+                width: "56px",
+                height: "56px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <AlertCircle
+                className="w-7 h-7 text-destructive"
+                aria-hidden="true"
+              />
             </div>
             <div className="space-y-2">
               {/* h3 is larger - should be LCP if error shows, not the p tag */}
-              <h3 className="text-lg font-semibold text-foreground">Map Loading Failed</h3>
+              <h3 className="text-lg font-semibold text-foreground">
+                Map Loading Failed
+              </h3>
               {/* Small text won't be LCP candidate due to smaller size */}
-              <p className="text-xs text-muted-foreground leading-relaxed">{mapError}</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {mapError}
+              </p>
               {retryCount > 0 && (
                 <p className="text-xs text-muted-foreground/70">
                   Attempt {retryCount + 1} failed. Try refreshing the page.
@@ -2850,15 +3361,15 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
               )}
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full">
-              <Button 
+              <Button
                 onClick={() => {
                   setMapError(null);
                   setMapInitializing(true);
                   setSkeletonMounted(true);
-                  setLoadingStage('module');
+                  setLoadingStage("module");
                   // Reset the module promise to force a fresh load attempt
                   mapboxLoadPromise = null;
-                  setRetryCount(c => c + 1);
+                  setRetryCount((c) => c + 1);
                 }}
                 className="gap-2 flex-1"
                 variant={retryCount > 1 ? "outline" : "default"}
@@ -2867,7 +3378,7 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                 Try Again
               </Button>
               {retryCount > 1 && (
-                <Button 
+                <Button
                   onClick={() => window.location.reload()}
                   className="gap-2 flex-1"
                 >
@@ -2878,16 +3389,16 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
           </div>
         </div>
       )}
-      <div 
-        ref={mapContainer} 
+      <div
+        ref={mapContainer}
         className="absolute inset-0 overflow-hidden map-container"
-        style={{ 
-          width: '100%', 
-          height: '100%',
-          minWidth: '100%',
-          minHeight: '100%',
-          touchAction: isMobile ? 'manipulation' : 'none',
-          WebkitOverflowScrolling: 'touch',
+        style={{
+          width: "100%",
+          height: "100%",
+          minWidth: "100%",
+          minHeight: "100%",
+          touchAction: isMobile ? "manipulation" : "none",
+          WebkitOverflowScrolling: "touch",
           // DO NOT use transform or will-change here — breaks backdrop-filter on sibling overlays
           // and creates a containing block that traps fixed-position children
         }}
@@ -2895,1211 +3406,1777 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
       {/* Unified Top-Left Controls: Location + Map Style in one compact row */}
       {controlsReady && (
-      <div 
-        style={{
-          position: 'absolute',
-          display: 'flex',
-          alignItems: 'center',
-          top: 'var(--map-ui-inset-top, 0.75rem)',
-          left: 'var(--map-ui-inset-left, 0.75rem)',
-          gap: 'clamp(4px, 0.8vw, 8px)',
-          zIndex: 30,
-        }}
-      >
-        <Select
-          value={isUsingCurrentLocation ? "current-location" : selectedCity.id}
-          onOpenChange={(open) => {
-            if (!open) setCitySearchQuery("");
-            // Notify floating panels (e.g. SearchResults) to recalc position
-            if (typeof window !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('jet:floating-ui-toggle', { detail: { source: 'city-select', open } }));
-            }
-          }}
-          onValueChange={(value) => {
-            // Haptic feedback for city selection
-            triggerHaptic('light');
-            
-            if (value === "current-location") {
-              // Immediately sync the parent's selectedCity to the already-known
-              // nearest city so data filters update without waiting for a fresh
-              // geolocate event, then always resolve a fresh fix.
-              if (detectedCity && detectedCity.id !== selectedCity.id) {
-                onCityChange(detectedCity);
-              }
-              refreshCurrentLocation();
-              // Optimistically fly to the last known location while the fresh
-              // fix resolves.
-              if (userLocation && map.current) {
-                map.current.flyTo({
-                  center: [userLocation.lng, userLocation.lat],
-                  zoom: Math.max(map.current.getZoom(), 13),
-                  duration: 1500,
-                  essential: true
-                });
-              }
-            } else {
-              setIsUsingCurrentLocation(false);
-              isUsingCurrentLocationRef.current = false;
-              const city = CITIES.find(c => c.id === value);
-              if (city) {
-                onCityChange(city);
-                // Fly to selected city
-                if (map.current) {
-                  map.current.flyTo({
-                    center: [city.lng, city.lat],
-                    zoom: city.zoom,
-                    duration: 1500,
-                    essential: true
-                  });
-                }
-              }
-            }
+        <div
+          style={{
+            position: "absolute",
+            display: "flex",
+            alignItems: "center",
+            top: "var(--map-ui-inset-top, 0.75rem)",
+            left: "var(--map-ui-inset-left, 0.75rem)",
+            gap: "clamp(4px, 0.8vw, 8px)",
+            zIndex: 30,
           }}
         >
-          <SelectTrigger 
-            className="text-[11px] sm:text-xs shadow-xl"
-            aria-label="Select city location"
-            aria-haspopup="listbox"
-            style={{
-              height: 'clamp(36px, 5.5vw, 44px)',
-              paddingLeft: 'clamp(12px, 1.75vw, 16px)',
-              paddingRight: 'clamp(12px, 1.75vw, 16px)',
-              // Fixed width prevents trigger from resizing when selecting cities of different name lengths
-              width: 'clamp(176px, 22vw, 240px)',
-              minWidth: 'clamp(176px, 22vw, 240px)',
-              maxWidth: 'var(--map-control-max-width, 240px)',
-              contain: 'layout style',
-              background: 'hsl(var(--card) / 0.78)',
-              backdropFilter: 'blur(24px) saturate(1.6)',
-              WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
-              borderRadius: '9999px',
-              border: '1.5px solid transparent',
-              backgroundClip: 'padding-box',
-              boxShadow: '0 0 0 1.5px hsl(var(--primary) / 0.28), 0 10px 28px -6px rgba(0,0,0,0.22)',
-            }}
-          >
-            <div className="flex items-center gap-2.5 w-full">
-              <MapPin className="w-4 h-4 text-primary flex-shrink-0 self-center" aria-hidden="true" />
-              <span
-                className="font-display font-bold truncate flex-1 text-left text-foreground text-[12px] sm:text-[13px] leading-tight self-center"
-                style={{ letterSpacing: '-0.015em' }}
-              >
-                {isUsingCurrentLocation
-                  ? (detectedLocationName || (detectedCity ? `${detectedCity.name}, ${detectedCity.state}` : "Locating..."))
-                  : `${selectedCity.name}, ${selectedCity.state}`}
-              </span>
-              {isUsingCurrentLocation && (detectedLocationName || detectedCity) && (
-                <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse flex-shrink-0 self-center" aria-hidden="true" />
-              )}
-            </div>
-          </SelectTrigger>
-          <SelectContent className="min-w-[240px] py-2">
-            {/* Search input — stops keystrokes from Select's typeahead */}
-            <div
-              className="px-2 pb-2 sticky top-0 z-10 bg-popover"
-              onKeyDown={(e) => {
-                // Let arrow keys, Enter, and Escape reach Radix Select for keyboard navigation;
-                // stop letter/number/Backspace so they only edit the search field (no typeahead jump).
-                const navKeys = ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'Enter', 'Escape', 'Tab', 'PageUp', 'PageDown'];
-                if (!navKeys.includes(e.key)) {
-                  e.stopPropagation();
-                }
-              }}
-              onPointerDown={(e) => e.stopPropagation()}
-              onPointerMove={(e) => e.stopPropagation()}
-            >
-              <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
-                <Input
-                  type="text"
-                  inputMode="search"
-                  autoComplete="off"
-                  spellCheck={false}
-                  value={citySearchQuery}
-                  onChange={(e) => setCitySearchQuery(e.target.value)}
-                  placeholder="Search cities..."
-                  className="h-9 pl-8 pr-8 text-sm rounded-lg bg-card/60 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-primary/50"
-                  aria-label="Search cities"
-                />
-                {citySearchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setCitySearchQuery("")}
-                    aria-label="Clear search"
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                )}
-              </div>
-            </div>
-            {!citySearchQuery && (
-            <SelectItem
-              value="current-location"
-              className="py-3 px-2.5 my-0.5 rounded-lg focus:bg-primary/10"
-              onPointerUp={() => {
-                // Radix skips onValueChange when the current value is picked
-                // again — re-tapping must still re-detect the user's location.
-                if (isUsingCurrentLocation) refreshCurrentLocation();
-              }}
-            >
-              <div className="flex items-center gap-3 w-full min-w-0">
-                <span className="w-2 h-2 bg-primary rounded-full animate-pulse flex-shrink-0" aria-hidden="true" />
-                <div className="flex flex-col min-w-0 flex-1">
-                  <span className="font-display font-bold text-sm text-foreground truncate" style={{ letterSpacing: '-0.01em', lineHeight: 1.2 }}>
-                    {detectedLocationName
-                      ? detectedLocationName
-                      : (detectedCity ? `${detectedCity.name}, ${detectedCity.state}` : "Use my location")}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground truncate" style={{ lineHeight: 1.2 }}>
-                    {userLocation ? "Current Location" : "Tap to detect your spot"}
-                  </span>
-                </div>
-                <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-primary/90 flex-shrink-0 px-1.5 py-0.5 rounded-full border border-primary/30 bg-primary/10">
-                  Live
-                </span>
-              </div>
-            </SelectItem>
-            )}
-            {!citySearchQuery && <div className="h-px bg-border/60 my-1.5 mx-2" />}
-            {(() => {
-              const baseList = userLocation
-                ? getCitiesSortedByDistance(userLocation.lat, userLocation.lng)
-                : CITIES.map(c => ({ ...c, distanceKm: 0 }));
-              const q = citySearchQuery.trim().toLowerCase();
-              const filtered = q
-                ? baseList.filter(c =>
-                    c.name.toLowerCase().includes(q) ||
-                    c.state.toLowerCase().includes(q) ||
-                    `${c.name}, ${c.state}`.toLowerCase().includes(q)
-                  )
-                : baseList;
-              if (filtered.length === 0) {
-                return (
-                  <div className="px-3 py-6 text-center text-xs text-muted-foreground">
-                    No cities match “{citySearchQuery}”
-                  </div>
+          <Select
+            value={
+              isUsingCurrentLocation ? "current-location" : selectedCity.id
+            }
+            onOpenChange={(open) => {
+              if (!open) setCitySearchQuery("");
+              // Notify floating panels (e.g. SearchResults) to recalc position
+              if (typeof window !== "undefined") {
+                window.dispatchEvent(
+                  new CustomEvent("jet:floating-ui-toggle", {
+                    detail: { source: "city-select", open },
+                  }),
                 );
               }
-              return filtered.map((city) => {
-              const distanceMiles = userLocation ? kmToMiles(city.distanceKm) : null;
-              return (
-                <SelectItem
-                  key={city.id}
-                  value={city.id}
-                  className="py-2.5 px-2.5 my-0.5 rounded-lg focus:bg-primary/10"
-                >
-                  <div
-                    className="flex items-center w-full min-w-0"
-                    style={{ gap: 'clamp(6px, 1.5vw, 12px)' }}
-                  >
-                    {/* City name — flexes and truncates so it never wraps */}
-                    <span
-                      className="font-display font-bold text-[13px] sm:text-sm text-foreground truncate min-w-0 flex-1"
-                      style={{ letterSpacing: '-0.005em', lineHeight: 1.3 }}
-                    >
-                      {city.name}
-                    </span>
+            }}
+            onValueChange={(value) => {
+              // Haptic feedback for city selection
+              triggerHaptic("light");
 
-                    {/* State code — fixed-width chip, never shrinks */}
-                    <span
-                      className="text-[10px] sm:text-[11px] font-semibold uppercase text-muted-foreground tabular-nums flex-shrink-0"
-                      style={{ letterSpacing: '0.1em', minWidth: '1.75rem', textAlign: 'center', paddingLeft: 'clamp(2px, 0.5vw, 6px)', paddingRight: 'clamp(2px, 0.5vw, 6px)' }}
-                    >
-                      {city.state}
-                    </span>
-
-                    {/* Distance — right-aligned, fixed width, never wraps */}
-                    {distanceMiles !== null && (
-                      <span
-                        className="text-[10px] sm:text-[11px] font-medium text-muted-foreground/80 tabular-nums flex-shrink-0 text-right whitespace-nowrap"
-                        style={{ letterSpacing: '0.02em', minWidth: '5.5rem', marginLeft: 'clamp(2px, 0.5vw, 6px)' }}
-                      >
-                        {distanceMiles < 1 ? 'Nearby' : `${Math.round(distanceMiles)} mi away`}
-                      </span>
-                    )}
-                  </div>
-                </SelectItem>
-              );
-              });
-            })()}
-          </SelectContent>
-        </Select>
-
-        {/* Map Style - compact icon button */}
-        <Collapsible defaultOpen={false}>
-          <CollapsibleTrigger asChild>
-            <button
-              aria-label="Map style options"
+              if (value === "current-location") {
+                // Immediately sync the parent's selectedCity to the already-known
+                // nearest city so data filters update without waiting for a fresh
+                // geolocate event, then always resolve a fresh fix.
+                if (detectedCity && detectedCity.id !== selectedCity.id) {
+                  onCityChange(detectedCity);
+                }
+                refreshCurrentLocation();
+                // Optimistically fly to the last known location while the fresh
+                // fix resolves.
+                if (userLocation && map.current) {
+                  map.current.flyTo({
+                    center: [userLocation.lng, userLocation.lat],
+                    zoom: Math.max(map.current.getZoom(), 13),
+                    duration: 1500,
+                    essential: true,
+                  });
+                }
+              } else {
+                setIsUsingCurrentLocation(false);
+                isUsingCurrentLocationRef.current = false;
+                const city = CITIES.find((c) => c.id === value);
+                if (city) {
+                  onCityChange(city);
+                  // Fly to selected city
+                  if (map.current) {
+                    map.current.flyTo({
+                      center: [city.lng, city.lat],
+                      zoom: city.zoom,
+                      duration: 1500,
+                      essential: true,
+                    });
+                  }
+                }
+              }
+            }}
+          >
+            <SelectTrigger
+              className="text-[11px] sm:text-xs shadow-xl"
+              aria-label="Select city location"
+              aria-haspopup="listbox"
               style={{
-                width: 'clamp(32px, 5vw, 40px)',
-                height: 'clamp(32px, 5vw, 40px)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '12px',
-                background: 'hsl(var(--card) / 0.7)',
-                border: '1px solid hsl(var(--border) / 0.4)',
-                boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.05)',
-                backdropFilter: 'blur(24px)',
-                WebkitBackdropFilter: 'blur(24px)',
-                cursor: 'pointer',
-                color: 'hsl(var(--foreground))',
+                height: "clamp(36px, 5.5vw, 44px)",
+                paddingLeft: "clamp(12px, 1.75vw, 16px)",
+                paddingRight: "clamp(12px, 1.75vw, 16px)",
+                // Fixed width prevents trigger from resizing when selecting cities of different name lengths
+                width: "clamp(176px, 22vw, 240px)",
+                minWidth: "clamp(176px, 22vw, 240px)",
+                maxWidth: "var(--map-control-max-width, 240px)",
+                contain: "layout style",
+                background: "hsl(var(--card) / 0.78)",
+                backdropFilter: "blur(24px) saturate(1.6)",
+                WebkitBackdropFilter: "blur(24px) saturate(1.6)",
+                borderRadius: "9999px",
+                border: "1.5px solid transparent",
+                backgroundClip: "padding-box",
+                boxShadow:
+                  "0 0 0 1.5px hsl(var(--primary) / 0.28), 0 10px 28px -6px rgba(0,0,0,0.22)",
               }}
             >
-              <Palette style={{ width: '16px', height: '16px' }} aria-hidden="true" />
-            </button>
-          </CollapsibleTrigger>
-          <CollapsibleContent style={{
-            position: 'absolute',
-            top: '100%',
-            left: 0,
-            marginTop: '6px',
-            zIndex: 20,
-            overflow: 'hidden',
-          }}>
-            <div style={{
-              background: 'hsl(var(--card) / 0.8)',
-              backdropFilter: 'blur(24px)',
-              WebkitBackdropFilter: 'blur(24px)',
-              borderRadius: '12px',
-              border: '1px solid hsl(var(--border) / 0.4)',
-              padding: '8px',
-              boxShadow: '0 10px 25px -5px rgba(0,0,0,0.15)',
-              minWidth: '200px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-            }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }} role="group" aria-label="Map base style">
-                <span style={{ fontSize: '9px', color: 'hsl(var(--muted-foreground))', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Style</span>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px' }} role="radiogroup">
-                  {(['light', 'dark', 'streets', 'satellite'] as const).map((style) => (
-                    <button
-                      key={style}
-                      onClick={() => { triggerHaptic('light'); manualStyleOverride.current = true; setMapStyle(style); }}
-                      aria-pressed={mapStyle === style}
-                      style={{
-                        height: '28px',
-                        fontSize: '9px',
-                        padding: '0 6px',
-                        textTransform: 'capitalize',
-                        borderRadius: '8px',
-                        border: mapStyle === style ? '1px solid hsl(var(--primary))' : '1px solid hsl(var(--border))',
-                        background: mapStyle === style ? 'hsl(var(--primary))' : 'transparent',
-                        color: mapStyle === style ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
-                        cursor: 'pointer',
-                        fontWeight: 600,
-                        transition: 'all 0.2s',
-                      }}
-                    >
-                      {style}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <button
-                onClick={() => { triggerHaptic('medium'); setShow3DTerrain(!show3DTerrain); }}
-                aria-pressed={show3DTerrain}
-                style={{
-                  width: '100%',
-                  height: '28px',
-                  fontSize: '10px',
-                  fontWeight: 600,
-                  borderRadius: '8px',
-                  border: show3DTerrain ? '1px solid hsl(var(--primary))' : '1px solid hsl(var(--border))',
-                  background: show3DTerrain ? 'hsl(var(--primary))' : 'transparent',
-                  color: show3DTerrain ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                }}
-              >
-                {show3DTerrain ? "3D On" : "3D Off"}
-              </button>
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
-      </div>
-      )}
-
-      {/* Layers Panel - Unified FAB + expandable panel */}
-      {controlsReady && (
-      <div 
-        style={{
-          position: 'absolute',
-          // Anchored to the fixed nav-footer inset only: opening a JetCard must
-          // not shift the FAB. On mobile the card covers this area, so the FAB
-          // fades out instead of moving.
-          bottom: 'var(--map-safe-bottom, var(--map-fixed-bottom, calc(60px + 0.75rem)))',
-          right: 'var(--map-ui-inset-right, 0.75rem)',
-          zIndex: 30,
-          opacity: isMobile && selectedVenue ? 0 : 1,
-          visibility: isMobile && selectedVenue ? 'hidden' : 'visible',
-          pointerEvents: isMobile && selectedVenue ? 'none' : 'auto',
-          transition: 'opacity 200ms ease',
-        }}
-      >
-        {/* Expanded panel - slides up from FAB */}
-        {(() => {
-          const panelBody = (
-            <>
-            {/* Panel header */}
-            {!isMobile && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, background: 'hsl(var(--card) / 0.95)', backdropFilter: 'blur(24px) saturate(1.6)', WebkitBackdropFilter: 'blur(24px) saturate(1.6)', zIndex: 1, paddingBottom: '4px', marginTop: '-2px' }}>
-                <span style={{ fontSize: '10px', fontWeight: 600, color: 'hsl(var(--muted-foreground))', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Layers</span>
-                <button
-                  onClick={() => { triggerHaptic('light'); setControlsCollapsed(true); }}
-                  style={{ width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '6px', transition: 'background 0.2s', cursor: 'pointer', background: 'transparent', border: 'none' }}
+              <div className="flex items-center gap-2.5 w-full">
+                <MapPin
+                  className="w-4 h-4 text-primary flex-shrink-0 self-center"
+                  aria-hidden="true"
+                />
+                <span
+                  className="font-display font-bold truncate flex-1 text-left text-foreground text-[12px] sm:text-[13px] leading-tight self-center"
+                  style={{ letterSpacing: "-0.015em" }}
                 >
-                  <X style={{ width: '12px', height: '12px', color: 'hsl(var(--muted-foreground))' }} />
-                </button>
-              </div>
-            )}
-
-            {/* Compact live activity summary — always shows live status of
-                Density and Movement Paths regardless of toggle state */}
-            <div
-              className="chip-summary"
-              role="status"
-              aria-live="polite"
-            >
-              {[
-                {
-                  key: 'density',
-                  label: 'Density',
-                  loading: densityLoading,
-                  count: densityData?.stats.grid_cells ?? 0,
-                  active: showDensityLayer,
-                },
-                {
-                  key: 'paths',
-                  label: 'Paths',
-                  loading: pathsLoading,
-                  count: pathData?.stats.total_paths ?? 0,
-                  active: showMovementPaths,
-                },
-              ].map((chip) => (
-                <div
-                  key={chip.key}
-                  className="chip-summary-item"
-                  title={`${chip.label}: ${chip.loading ? 'updating' : chip.count.toLocaleString()}${chip.active ? ' (layer on)' : ''}`}
-                >
-                  {chip.loading ? (
-                    <Loader2 aria-hidden className="animate-spin" style={{ width: '10px', height: '10px', color: 'hsl(var(--primary))', flexShrink: 0 }} />
-                  ) : (
+                  {isUsingCurrentLocation
+                    ? detectedLocationName ||
+                      (detectedCity
+                        ? `${detectedCity.name}, ${detectedCity.state}`
+                        : "Locating...")
+                    : `${selectedCity.name}, ${selectedCity.state}`}
+                </span>
+                {isUsingCurrentLocation &&
+                  (detectedLocationName || detectedCity) && (
                     <span
-                      aria-hidden
-                      style={{
-                        width: '6px',
-                        height: '6px',
-                        borderRadius: '9999px',
-                        flexShrink: 0,
-                        background: chip.count > 0 ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground) / 0.4)',
-                        boxShadow: chip.count > 0 ? '0 0 6px hsl(var(--primary) / 0.7)' : 'none',
-                      }}
+                      className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse flex-shrink-0 self-center"
+                      aria-hidden="true"
                     />
                   )}
-                  <span className="chip-summary-label" style={{ color: chip.active ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))' }}>
-                    {chip.label}
-                  </span>
-                  <span
-                    className="chip-summary-value"
-                    style={{ opacity: chip.loading ? 0.5 : 1 }}
-                  >
-                    {chip.loading ? '…' : chip.count.toLocaleString()}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* Heat toggle row */}
-            <LayerToggleRow
-              label="Heatmap"
-              Icon={Layers}
-              active={showDensityLayer}
-              loading={isLoadingHeatmap}
-              ariaLabel="Toggle heatmap layer"
-              tooltip="Shows live crowd density across Charlotte. Red zones are the busiest right now; blue zones are calmer."
-              onToggle={() => {
-                triggerHaptic('medium');
-                const newState = !showDensityLayer;
-                setShowDensityLayer(newState);
-                if (newState) {
-                  setTimeFilter('all');
-                  setHourFilter(undefined);
-                  setDayFilter(undefined);
-                  scheduleDensityRefresh();
-                } else {
-                  clearDensityRefreshTimer();
-                  setIsLoadingHeatmap(false);
-                  // Time-lapse and Live Stats both consume the density
-                  // layer's data pipeline. Turning heatmap off must cascade
-                  // so users don't end up with orphaned modes running
-                  // against a hidden layer.
-                  if (timelapseMode) setTimelapseMode(false);
-                  if (showLiveStats) {
-                    setShowLiveStats(false);
-                    setIsLoadingStats(false);
+              </div>
+            </SelectTrigger>
+            <SelectContent className="min-w-[240px] py-2">
+              {/* Search input — stops keystrokes from Select's typeahead */}
+              <div
+                className="px-2 pb-2 sticky top-0 z-10 bg-popover"
+                onKeyDown={(e) => {
+                  // Let arrow keys, Enter, and Escape reach Radix Select for keyboard navigation;
+                  // stop letter/number/Backspace so they only edit the search field (no typeahead jump).
+                  const navKeys = [
+                    "ArrowDown",
+                    "ArrowUp",
+                    "ArrowLeft",
+                    "ArrowRight",
+                    "Home",
+                    "End",
+                    "Enter",
+                    "Escape",
+                    "Tab",
+                    "PageUp",
+                    "PageDown",
+                  ];
+                  if (!navKeys.includes(e.key)) {
+                    e.stopPropagation();
                   }
-                }
-              }}
-            />
-
-            {/* Heat filters - shown when heat is on.
-                Overflow flips to `visible` once expanded so the sticky
-                time-lapse controls can pin against the panel's scroll
-                container instead of being clipped by this collapse wrapper. */}
-            <div style={{ overflow: showDensityLayer ? 'visible' : 'hidden', transition: 'max-height 0.3s', maxHeight: showDensityLayer ? '1200px' : '0px' }}>
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 'clamp(6px, 1.8vw, 12px)',
-                paddingLeft: 'clamp(2px, 1.4vw, 10px)',
-                paddingRight: 'clamp(2px, 1vw, 6px)',
-                paddingTop: 'clamp(6px, 1.6vw, 10px)',
-                paddingBottom: '4px',
-                minWidth: 0,
-              }}>
-                {/* Time-lapse toggle — glassmorphic pill matching LayerToggleRow */}
-                <button
-                  type="button"
-                  aria-pressed={timelapseMode}
-                  onClick={() => {
-                    triggerHaptic('medium');
-                    const newMode = !timelapseMode;
-                    setTimelapseMode(newMode);
-                    if (newMode) {
-                      // Time-lapse renders through the density heatmap
-                      // pipeline; make sure it's on before we start
-                      // hydrating hourly buckets.
-                      if (!showDensityLayer) {
-                        setShowDensityLayer(true);
-                        scheduleDensityRefresh();
-                      }
-                      // Movement Paths animate continuously and visually
-                      // fight the time-lapse playback, so pause them while
-                      // the scrubber owns the map.
-                      if (showMovementPaths) {
-                        setShowMovementPaths(false);
-                        clearPathsRefreshTimer();
-                        setIsLoadingPaths(false);
-                      }
-                      timelapse.loadHourlyData();
-                    }
-                  }}
-                  style={{
-                    width: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '7px 10px',
-                    borderRadius: '10px',
-                    cursor: 'pointer',
-                    border: timelapseMode
-                      ? '1px solid hsl(var(--primary) / 0.45)'
-                      : '1px solid hsl(var(--border) / 0.5)',
-                    background: timelapseMode
-                      ? 'linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--primary-glow) / 0.14))'
-                      : 'hsl(var(--card) / 0.5)',
-                    backdropFilter: 'blur(12px) saturate(1.4)',
-                    WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
-                    boxShadow: timelapseMode
-                      ? '0 8px 24px -10px hsl(var(--primary) / 0.55), inset 0 0 0 1px hsl(var(--primary-glow) / 0.18)'
-                      : 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
-                    transition: 'background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms ease, box-shadow 220ms ease',
+                }}
+                onPointerDown={(e) => e.stopPropagation()}
+                onPointerMove={(e) => e.stopPropagation()}
+              >
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+                  <Input
+                    type="text"
+                    inputMode="search"
+                    autoComplete="off"
+                    spellCheck={false}
+                    value={citySearchQuery}
+                    onChange={(e) => setCitySearchQuery(e.target.value)}
+                    placeholder="Search cities..."
+                    className="h-9 pl-8 pr-8 text-sm rounded-lg bg-card/60 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-primary/50"
+                    aria-label="Search cities"
+                  />
+                  {citySearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setCitySearchQuery("")}
+                      aria-label="Clear search"
+                      className="absolute right-1.5 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              </div>
+              {!citySearchQuery && (
+                <SelectItem
+                  value="current-location"
+                  className="py-3 px-2.5 my-0.5 rounded-lg focus:bg-primary/10"
+                  onPointerUp={() => {
+                    // Radix skips onValueChange when the current value is picked
+                    // again — re-tapping must still re-detect the user's location.
+                    if (isUsingCurrentLocation) refreshCurrentLocation();
                   }}
                 >
-                  <span
-                    style={{
-                      width: '22px', height: '22px', borderRadius: '7px',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                      background: timelapseMode
-                        ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
-                        : 'hsl(var(--background) / 0.6)',
-                      color: timelapseMode ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
-                      border: timelapseMode ? '1px solid transparent' : '1px solid hsl(var(--border) / 0.6)',
-                      boxShadow: timelapseMode ? '0 4px 12px -4px hsl(var(--primary) / 0.6)' : 'none',
-                    }}
-                  >
-                    <Clock style={{ width: '12px', height: '12px' }} strokeWidth={2.25} />
-                  </span>
-                  <span className="font-display" style={{ flex: 1, textAlign: 'left', fontSize: '11px', fontWeight: 700, letterSpacing: '-0.005em', color: timelapseMode ? 'hsl(var(--foreground))' : 'hsl(var(--foreground) / 0.75)' }}>
-                    {timelapseMode ? 'Time-lapse On' : 'Time-lapse'}
-                  </span>
-                  <span aria-hidden="true" style={{
-                    width: '7px', height: '7px', borderRadius: '9999px', flexShrink: 0,
-                    background: timelapseMode
-                      ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
-                      : 'hsl(var(--muted-foreground) / 0.25)',
-                    boxShadow: timelapseMode
-                      ? '0 0 10px hsl(var(--primary) / 0.7), 0 0 2px hsl(var(--primary-glow) / 0.6)'
-                      : 'inset 0 0 0 1px hsl(var(--border))',
-                  }} />
-                </button>
-
-                {/* Time-lapse controls — glassmorphic card, sticky so playback
-                    stays reachable while the layers panel scrolls (mobile
-                    sheet + desktop panel). */}
-                {timelapseMode && (
-                  <div style={{
-                    display: 'flex', flexDirection: 'column', gap: '8px',
-                    padding: '10px',
-                    borderRadius: '10px',
-                    position: 'sticky',
-                    top: isMobile ? '0px' : '26px',
-                    zIndex: 2,
-                    background: 'hsl(var(--card) / 0.92)',
-                    border: '1px solid hsl(var(--border) / 0.5)',
-                    backdropFilter: 'blur(12px) saturate(1.4)',
-                    WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
-                    boxShadow: 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
-                    // Card fades in when time-lapse is enabled so the mode
-                    // switch reads as a transition, not a layout jump.
-                    animation: 'content-fade-in 240ms cubic-bezier(0.16,1,0.3,1)',
-                  }} className={timelapse.loading ? 'layer-pending' : undefined}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <button type="button" onClick={() => { triggerHaptic('light'); timelapse.stepBackward(); }} disabled={timelapse.isPlaying}
-                        style={{ width: '26px', height: '26px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', border: '1px solid hsl(var(--border) / 0.6)', background: 'hsl(var(--background) / 0.6)', color: 'hsl(var(--foreground) / 0.8)', cursor: timelapse.isPlaying ? 'not-allowed' : 'pointer', opacity: timelapse.isPlaying ? 0.5 : 1 }}>
-                        <SkipBack style={{ width: '12px', height: '12px' }} />
-                      </button>
-                      <button type="button" onClick={() => { triggerHaptic('medium'); timelapse.isPlaying ? timelapse.pause() : timelapse.play(); }}
-                        style={{
-                          flex: 1, height: '26px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
-                          borderRadius: '8px',
-                          border: timelapse.isPlaying ? '1px solid transparent' : '1px solid hsl(var(--border) / 0.6)',
-                          background: timelapse.isPlaying
-                            ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
-                            : 'hsl(var(--background) / 0.6)',
-                          color: timelapse.isPlaying ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
-                          fontSize: '10px', fontWeight: 700, cursor: 'pointer',
-                          boxShadow: timelapse.isPlaying ? '0 4px 12px -4px hsl(var(--primary) / 0.6)' : 'none',
-                        }}>
-                        {timelapse.isPlaying ? <Pause style={{ width: '12px', height: '12px' }} /> : <Play style={{ width: '12px', height: '12px' }} />}
-                      </button>
-                      <button type="button" onClick={() => { triggerHaptic('light'); timelapse.stepForward(); }} disabled={timelapse.isPlaying}
-                        style={{ width: '26px', height: '26px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', border: '1px solid hsl(var(--border) / 0.6)', background: 'hsl(var(--background) / 0.6)', color: 'hsl(var(--foreground) / 0.8)', cursor: timelapse.isPlaying ? 'not-allowed' : 'pointer', opacity: timelapse.isPlaying ? 0.5 : 1 }}>
-                        <SkipForward style={{ width: '12px', height: '12px' }} />
-                      </button>
-                    </div>
-                    <div
-                      key={timelapse.currentHour}
-                      className="font-display layer-value-transition"
-                      aria-live="polite"
-                      style={{ textAlign: 'center', fontSize: '11px', fontWeight: 700, letterSpacing: '0.02em', background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
-                    >
-                      {timelapse.formatHour(timelapse.currentHour)}
-                    </div>
-                    <Slider value={[timelapse.currentHour]} onValueChange={([v]) => timelapse.setHour(v)} min={0} max={23} step={1} className="w-full" disabled={timelapse.isPlaying} />
-                    {/* Hour ticks — lightweight scale under the scrubber so the
-                        panel stays compact on narrow viewports. */}
-                    <div
-                      aria-hidden
-                      className="flex justify-between px-0.5 text-[8px] tabular-nums text-muted-foreground/70"
-                    >
-                      {[0, 6, 12, 18, 23].map((h) => (
-                        <span key={h}>{h % 12 || 12}{h < 12 ? 'a' : 'p'}</span>
-                      ))}
-                    </div>
-                    {/* Speed slider — internal `speed` is seconds-per-hour
-                        (higher = slower). We expose it as a playback multiplier
-                        (higher = faster) via `1 / speed`. */}
-                    <LayerSliderRow
-                      label="Speed"
-                      Icon={Play}
-                      ariaLabel="Time-lapse playback speed"
-                      min={0.25}
-                      max={4}
-                      step={0.25}
-                      value={Number((1 / timelapse.speed).toFixed(2))}
-                      onChange={(mult) => timelapse.setSpeed(1 / mult)}
-                      defaultValue={1}
-                      format={(mult) => `${mult}x`}
-                      ticks={[
-                        { value: 0.5, label: '0.5x' },
-                        { value: 1, label: '1x' },
-                        { value: 2, label: '2x' },
-                        { value: 4, label: '4x' },
-                      ]}
+                  <div className="flex items-center gap-3 w-full min-w-0">
+                    <span
+                      className="w-2 h-2 bg-primary rounded-full animate-pulse flex-shrink-0"
+                      aria-hidden="true"
                     />
-                  </div>
-                )}
-
-                {/* Day-of-week dropdown — density by weekday. "all" = All Days,
-                    0..6 = Sun..Sat. Works in both regular and time-lapse mode
-                    (useHeatmapTimelapse reuses `dayFilter`). */}
-                {(() => {
-                  const fullLabels = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                  const current = dayFilter === undefined ? 'all' : String(dayFilter);
-                  const dayLoading = densityLoading || (timelapseMode && timelapse.loading);
-                  return (
-                    <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 backdrop-blur-md">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />
-                        <span className="truncate text-sm font-medium">Day of week</span>
-                        {dayLoading && <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />}
-                      </div>
-                      <Select
-                        value={current}
-                        onValueChange={(v) => setDayFilter(v === 'all' ? undefined : Number(v))}
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span
+                        className="font-display font-bold text-sm text-foreground truncate"
+                        style={{ letterSpacing: "-0.01em", lineHeight: 1.2 }}
                       >
-                        <SelectTrigger
-                          aria-label="Density day-of-week filter"
-                          className="h-9 w-[130px] shrink-0 border-white/10 bg-white/5 text-sm"
-                        >
-                          <span className="truncate">
-                            {dayFilter === undefined ? 'All Days' : fullLabels[dayFilter]}
-                          </span>
-                        </SelectTrigger>
-                        <SelectContent className="z-[10000]">
-                          <SelectItem value="all">All Days</SelectItem>
-                          {fullLabels.map((label, i) => (
-                            <SelectItem key={label} value={String(i)}>{label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        {detectedLocationName
+                          ? detectedLocationName
+                          : detectedCity
+                            ? `${detectedCity.name}, ${detectedCity.state}`
+                            : "Use my location"}
+                      </span>
+                      <span
+                        className="text-[10px] text-muted-foreground truncate"
+                        style={{ lineHeight: 1.2 }}
+                      >
+                        {userLocation
+                          ? "Current Location"
+                          : "Tap to detect your spot"}
+                      </span>
+                    </div>
+                    <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-primary/90 flex-shrink-0 px-1.5 py-0.5 rounded-full border border-primary/30 bg-primary/10">
+                      Live
+                    </span>
+                  </div>
+                </SelectItem>
+              )}
+              {!citySearchQuery && (
+                <div className="h-px bg-border/60 my-1.5 mx-2" />
+              )}
+              {(() => {
+                const baseList = userLocation
+                  ? getCitiesSortedByDistance(
+                      userLocation.lat,
+                      userLocation.lng,
+                    )
+                  : CITIES.map((c) => ({ ...c, distanceKm: 0 }));
+                const q = citySearchQuery.trim().toLowerCase();
+                const filtered = q
+                  ? baseList.filter(
+                      (c) =>
+                        c.name.toLowerCase().includes(q) ||
+                        c.state.toLowerCase().includes(q) ||
+                        `${c.name}, ${c.state}`.toLowerCase().includes(q),
+                    )
+                  : baseList;
+                if (filtered.length === 0) {
+                  return (
+                    <div className="px-3 py-6 text-center text-xs text-muted-foreground">
+                      No cities match “{citySearchQuery}”
                     </div>
                   );
-                })()}
-
-                {/* Compact color-scale legend — explains the heat ramp now that
-                    the intensity/radius/opacity sliders are gone. */}
-                <HeatmapColorLegend
-                  loading={isLoadingHeatmap || densityLoading}
-                  isLightBasemap={mapStyle === 'light' || mapStyle === 'streets'}
-                />
-
-                {/* Density status — loading / error */}
-                {(isLoadingHeatmap || densityError) && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', borderRadius: '8px', fontSize: '10px', background: densityError ? (densityUnauthorized ? 'hsl(var(--muted) / 0.5)' : 'hsl(var(--destructive) / 0.1)') : 'hsl(var(--primary) / 0.08)' }}>
-                    {isLoadingHeatmap ? (
-                      <>
-                        <Loader2 className="animate-spin" style={{ width: '12px', height: '12px', color: 'hsl(var(--primary))', flexShrink: 0 }} />
-                        <span style={{ color: 'hsl(var(--foreground))' }}>Refreshing heatmap...</span>
-                      </>
-                    ) : densityUnauthorized ? (
-                      <>
-                        <AlertCircle style={{ width: '12px', height: '12px', color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
-                        <span style={{ color: 'hsl(var(--muted-foreground))' }}>Sign in to see live heatmap data</span>
-                      </>
-                    ) : (
-                      <>
-                        <AlertCircle style={{ width: '12px', height: '12px', color: 'hsl(var(--destructive))', flexShrink: 0 }} />
-                        <span style={{ color: 'hsl(var(--destructive))' }}>Failed</span>
-                        <Button onClick={refreshDensity} variant="ghost" size="sm" className="h-5 text-[9px] px-1.5 ml-auto">Retry</Button>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div style={{ height: '1px', background: 'hsl(var(--border) / 0.5)' }} />
-
-            {/* Paths toggle row */}
-            <LayerToggleRow
-              label="Flow Paths"
-              Icon={Route}
-              active={showMovementPaths}
-              loading={isLoadingPaths}
-              ariaLabel="Toggle flow paths layer"
-              tooltip="Real user movement between venues. Line thickness and glow scale with motion frequency and user frequency — brighter, thicker paths mean more people actively moving that route right now."
-              onToggle={() => {
-                triggerHaptic('medium');
-                const next = !showMovementPaths;
-                setShowMovementPaths(next);
-                if (next) {
-                  // Flow Paths and Time-lapse compete for the same visual
-                  // channel (animated motion). If Time-lapse is running,
-                  // stop it so the paths can breathe.
-                  if (timelapseMode) setTimelapseMode(false);
-                  schedulePathsRefresh();
-                } else {
-                  clearPathsRefreshTimer();
-                  setIsLoadingPaths(false);
                 }
-              }}
-            />
+                return filtered.map((city) => {
+                  const distanceMiles = userLocation
+                    ? kmToMiles(city.distanceKm)
+                    : null;
+                  return (
+                    <SelectItem
+                      key={city.id}
+                      value={city.id}
+                      className="py-2.5 px-2.5 my-0.5 rounded-lg focus:bg-primary/10"
+                    >
+                      <div
+                        className="flex items-center w-full min-w-0"
+                        style={{ gap: "clamp(6px, 1.5vw, 12px)" }}
+                      >
+                        {/* City name — flexes and truncates so it never wraps */}
+                        <span
+                          className="font-display font-bold text-[13px] sm:text-sm text-foreground truncate min-w-0 flex-1"
+                          style={{ letterSpacing: "-0.005em", lineHeight: 1.3 }}
+                        >
+                          {city.name}
+                        </span>
 
-            {/* Path filters — container-query driven so the section adapts to
-                the layers panel width (sheet on mobile, narrow/wide desktop)
-                rather than to the viewport. */}
-            <div
-              style={{
-                overflow: showMovementPaths ? 'visible' : 'hidden',
-                transition: 'max-height 0.3s ease, opacity 0.2s ease',
-                maxHeight: showMovementPaths ? '1200px' : '0px',
-                opacity: showMovementPaths ? 1 : 0,
-                containerType: 'inline-size',
-              }}
-            >
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 'clamp(6px, 2.5cqi, 12px)',
-                paddingLeft: 'clamp(2px, 3cqi, 10px)',
-                paddingRight: 'clamp(2px, 2cqi, 8px)',
-                paddingTop: 'clamp(6px, 2.5cqi, 10px)',
-                paddingBottom: '4px',
-                minWidth: 0,
-              }}>
-                {(isLoadingPaths || pathsError) && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', background: pathsError ? (pathsUnauthorized ? 'hsl(var(--muted) / 0.5)' : 'hsl(var(--destructive) / 0.1)') : 'hsl(var(--primary) / 0.08)', borderRadius: '8px', fontSize: '10px' }}>
-                    {isLoadingPaths ? (
-                      <>
-                        <Loader2 className="animate-spin" style={{ width: '12px', height: '12px', color: 'hsl(var(--primary))', flexShrink: 0 }} />
-                        <span style={{ color: 'hsl(var(--foreground))' }}>Refreshing flow paths...</span>
-                      </>
-                    ) : pathsUnauthorized ? (
-                      <>
-                        <AlertCircle style={{ width: '12px', height: '12px', color: 'hsl(var(--muted-foreground))', flexShrink: 0 }} />
-                        <span style={{ color: 'hsl(var(--muted-foreground))' }}>Sign in to see live flow paths</span>
-                      </>
-                    ) : (
-                      <>
-                        <AlertCircle style={{ width: '12px', height: '12px', color: 'hsl(var(--destructive))', flexShrink: 0 }} />
-                        <span style={{ color: 'hsl(var(--destructive))' }}>Failed</span>
-                        <Button onClick={refreshPaths} variant="ghost" size="sm" className="h-5 text-[9px] px-1.5 ml-auto">Retry</Button>
-                      </>
-                    )}
-                  </div>
-                )}
-                {/* Explainer lives in the Flow Paths toggle tooltip only. */}
-                {/* Min-frequency slider — brought into the LayerSliderRow
-                    system so it matches the rest of the panel visually and
-                    inherits the reset/tick/adaptive-spacing behavior. */}
-                <LayerSliderRow
-                  label="User flow paths by frequency"
-                  Icon={Route}
-                  ariaLabel="User flow paths by frequency (1-10 users)"
-                  min={1}
-                  max={10}
-                  step={1}
-                  value={minPathFrequency}
-                  onChange={setMinPathFrequency}
-                  format={(v) => `${v}+ users`}
-                  ticks={[
-                    { value: 1, label: '1' },
-                    { value: 3, label: '3' },
-                    { value: 5, label: '5' },
-                    { value: 10, label: '10' },
-                  ]}
-                  defaultValue={2}
-                  loading={pathsLoading}
-                />
-                {/* Compact movement summary — wraps cleanly at any width. */}
-                {pathData?.stats && (
-                  <div
-                    style={{
-                      paddingTop: '6px',
-                      borderTop: '1px solid hsl(var(--border) / 0.3)',
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fit, minmax(64px, 1fr))',
-                      gap: 'clamp(2px, 1.5cqi, 8px)',
-                      fontSize: 'clamp(8px, 2.4cqi, 10px)',
-                    }}
-                    className="text-muted-foreground"
-                  >
-                    <span className="truncate">{pathData.stats.total_paths} routes</span>
-                    <span className="truncate">{pathData.stats.unique_users} users</span>
-                    <span className="truncate">peak {pathData.stats.max_frequency}x</span>
-                  </div>
-                )}
-              </div>
-            </div>
+                        {/* State code — fixed-width chip, never shrinks */}
+                        <span
+                          className="text-[10px] sm:text-[11px] font-semibold uppercase text-muted-foreground tabular-nums flex-shrink-0"
+                          style={{
+                            letterSpacing: "0.1em",
+                            minWidth: "1.75rem",
+                            textAlign: "center",
+                            paddingLeft: "clamp(2px, 0.5vw, 6px)",
+                            paddingRight: "clamp(2px, 0.5vw, 6px)",
+                          }}
+                        >
+                          {city.state}
+                        </span>
 
-            {/* Divider */}
-            <div style={{ height: '1px', background: 'hsl(var(--border) / 0.5)' }} />
+                        {/* Distance — right-aligned, fixed width, never wraps */}
+                        {distanceMiles !== null && (
+                          <span
+                            className="text-[10px] sm:text-[11px] font-medium text-muted-foreground/80 tabular-nums flex-shrink-0 text-right whitespace-nowrap"
+                            style={{
+                              letterSpacing: "0.02em",
+                              minWidth: "5.5rem",
+                              marginLeft: "clamp(2px, 0.5vw, 6px)",
+                            }}
+                          >
+                            {distanceMiles < 1
+                              ? "Nearby"
+                              : `${Math.round(distanceMiles)} mi away`}
+                          </span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  );
+                });
+              })()}
+            </SelectContent>
+          </Select>
 
-            {/* Parking toggle row */}
-            <LayerToggleRow
-              label="Parking"
-              Icon={Car}
-              active={showParking}
-              ariaLabel="Toggle parking layer"
-              tooltip="Displays nearby parking options around venues so you can plan your arrival."
-              onToggle={() => {
-                triggerHaptic('medium');
-                const newState = !showParking;
-                setShowParking(newState);
-                if (map.current) {
-                  try {
-                    if (map.current.getLayer('parking-icons')) {
-                      map.current.setLayoutProperty('parking-icons', 'visibility', newState ? 'visible' : 'none');
-                    }
-                  } catch (e) { /* layer may not exist yet */ }
-                }
-              }}
-            />
-
-            {/* Divider */}
-            <div style={{ height: '1px', background: 'hsl(var(--border) / 0.5)' }} />
-
-            {/* Live Stats toggle row */}
-            <LayerToggleRow
-              label="Live Stats"
-              Icon={BarChart3}
-              active={showLiveStats}
-              loading={isLoadingStats}
-              ariaLabel="Toggle live stats panel"
-              tooltip="Actionable insights from live activity: busiest hotspots right now, momentum trend vs. the last hour, top movement routes, and recent check-ins to help you decide where to go next."
-              onToggle={() => {
-                triggerHaptic('medium');
-                const next = !showLiveStats;
-                setShowLiveStats(next);
-                if (next) {
-                  setIsLoadingStats(true);
-                  // Live Stats derives its numbers from the density and
-                  // movement-paths data pipelines. Enable both so the
-                  // panel isn't populated by stale/zero series.
-                  if (!showDensityLayer) {
-                    setShowDensityLayer(true);
-                    setTimeFilter('all');
-                    setHourFilter(undefined);
-                    setDayFilter(undefined);
-                    scheduleDensityRefresh();
-                  }
-                  if (!showMovementPaths) {
-                    setShowMovementPaths(true);
-                    schedulePathsRefresh();
-                  }
-                } else {
-                  setIsLoadingStats(false);
-                }
-              }}
-            />
-
-            {/* Live Stats renders on the left side of the map (see the floating
-                panel below) so it never obstructs this Layers container. */}
-
-            {/* Reset to defaults */}
-            <button
-              type="button"
-              onClick={handleResetToDefaults}
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                padding: '6px 8px',
-                borderRadius: '8px',
-                border: '1px solid hsl(var(--border) / 0.4)',
-                background: 'transparent',
-                color: 'hsl(var(--muted-foreground))',
-                fontSize: '10px',
-                fontWeight: 600,
-                letterSpacing: '0.02em',
-                cursor: 'pointer',
-                transition: 'color 200ms ease, border-color 200ms ease, background 200ms ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = 'hsl(var(--foreground))';
-                e.currentTarget.style.borderColor = 'hsl(var(--border) / 0.7)';
-                e.currentTarget.style.background = 'hsl(var(--card) / 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = 'hsl(var(--muted-foreground))';
-                e.currentTarget.style.borderColor = 'hsl(var(--border) / 0.4)';
-                e.currentTarget.style.background = 'transparent';
-              }}
-            >
-              <RotateCcw style={{ width: '12px', height: '12px' }} />
-              Reset to defaults
-            </button>
-            </>
-          );
-          if (isMobile) {
-            return (
-              <Sheet
-                open={!controlsCollapsed}
-                onOpenChange={(o) => setControlsCollapsed(!o)}
+          {/* Map Style - compact icon button */}
+          <Collapsible defaultOpen={false}>
+            <CollapsibleTrigger asChild>
+              <button
+                aria-label="Map style options"
+                style={{
+                  width: "clamp(32px, 5vw, 40px)",
+                  height: "clamp(32px, 5vw, 40px)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: "12px",
+                  background: "hsl(var(--card) / 0.7)",
+                  border: "1px solid hsl(var(--border) / 0.4)",
+                  boxShadow:
+                    "0 20px 25px -5px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.05)",
+                  backdropFilter: "blur(24px)",
+                  WebkitBackdropFilter: "blur(24px)",
+                  cursor: "pointer",
+                  color: "hsl(var(--foreground))",
+                }}
               >
-                <SheetContent
-                  side="bottom"
-                  className="p-0 rounded-t-2xl border-t bg-card/95 backdrop-blur-xl"
-                  style={{
-                    maxHeight: '85dvh',
-                    paddingBottom: 'env(safe-area-inset-bottom)',
-                  }}
-                >
-                  <SheetHeader className="px-4 pt-3 pb-2">
-                    <SheetTitle className="font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground text-left">
-                      Map Layers
-                    </SheetTitle>
-                  </SheetHeader>
-                   <div
-                    style={{
-                      padding: 'clamp(4px, 1.2vw, 6px) clamp(12px, 3.6vw, 16px) clamp(14px, 3.6vw, 20px)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 'clamp(8px, 2.2vw, 12px)',
-                      overflowY: 'auto',
-                      maxHeight:
-                        'calc(85dvh - 56px - env(safe-area-inset-bottom))',
-                      overscrollBehavior: 'contain',
-                    }}
-                  >
-                    {panelBody}
-                  </div>
-                </SheetContent>
-              </Sheet>
-            );
-          }
-          return (
-            <div
+                <Palette
+                  style={{ width: "16px", height: "16px" }}
+                  aria-hidden="true"
+                />
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent
               style={{
-                width: `${panelWidth}px`,
-                contain: 'layout style',
-                overflow: 'hidden',
-                transition:
-                  'max-height 300ms ease-out, opacity 300ms ease-out, margin-bottom 300ms ease-out',
-                maxHeight: !controlsCollapsed ? `${panelMaxH}px` : '0px',
-                opacity: !controlsCollapsed ? 1 : 0,
-                marginBottom: !controlsCollapsed ? '8px' : '0px',
+                position: "absolute",
+                top: "100%",
+                left: 0,
+                marginTop: "6px",
+                zIndex: 20,
+                overflow: "hidden",
               }}
             >
               <div
                 style={{
-                  background: 'hsl(var(--card) / 0.95)',
-                  backdropFilter: 'blur(24px) saturate(1.6)',
-                  WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
-                  borderRadius: '12px',
-                  border: '1px solid hsl(var(--border))',
-                  boxShadow:
-                    '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
-                  padding: `${panelPad}px`,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: `${panelGap}px`,
-                  maxHeight:
-                    'calc(100dvh - var(--map-fixed-bottom, 72px) - 252px)',
-                  overflowY: 'auto',
-                  overscrollBehavior: 'contain',
+                  background: "hsl(var(--card) / 0.8)",
+                  backdropFilter: "blur(24px)",
+                  WebkitBackdropFilter: "blur(24px)",
+                  borderRadius: "12px",
+                  border: "1px solid hsl(var(--border) / 0.4)",
+                  padding: "8px",
+                  boxShadow: "0 10px 25px -5px rgba(0,0,0,0.15)",
+                  minWidth: "200px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "8px",
                 }}
               >
-                {panelBody}
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "6px",
+                  }}
+                  role="group"
+                  aria-label="Map base style"
+                >
+                  <span
+                    style={{
+                      fontSize: "9px",
+                      color: "hsl(var(--muted-foreground))",
+                      fontWeight: 500,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                    }}
+                  >
+                    Style
+                  </span>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(4, 1fr)",
+                      gap: "4px",
+                    }}
+                    role="radiogroup"
+                  >
+                    {(["light", "dark", "streets", "satellite"] as const).map(
+                      (style) => (
+                        <button
+                          key={style}
+                          onClick={() => {
+                            triggerHaptic("light");
+                            manualStyleOverride.current = true;
+                            setMapStyle(style);
+                          }}
+                          aria-pressed={mapStyle === style}
+                          style={{
+                            height: "28px",
+                            fontSize: "9px",
+                            padding: "0 6px",
+                            textTransform: "capitalize",
+                            borderRadius: "8px",
+                            border:
+                              mapStyle === style
+                                ? "1px solid hsl(var(--primary))"
+                                : "1px solid hsl(var(--border))",
+                            background:
+                              mapStyle === style
+                                ? "hsl(var(--primary))"
+                                : "transparent",
+                            color:
+                              mapStyle === style
+                                ? "hsl(var(--primary-foreground))"
+                                : "hsl(var(--foreground))",
+                            cursor: "pointer",
+                            fontWeight: 600,
+                            transition: "all 0.2s",
+                          }}
+                        >
+                          {style}
+                        </button>
+                      ),
+                    )}
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    triggerHaptic("medium");
+                    setShow3DTerrain(!show3DTerrain);
+                  }}
+                  aria-pressed={show3DTerrain}
+                  style={{
+                    width: "100%",
+                    height: "28px",
+                    fontSize: "10px",
+                    fontWeight: 600,
+                    borderRadius: "8px",
+                    border: show3DTerrain
+                      ? "1px solid hsl(var(--primary))"
+                      : "1px solid hsl(var(--border))",
+                    background: show3DTerrain
+                      ? "hsl(var(--primary))"
+                      : "transparent",
+                    color: show3DTerrain
+                      ? "hsl(var(--primary-foreground))"
+                      : "hsl(var(--foreground))",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  {show3DTerrain ? "3D On" : "3D Off"}
+                </button>
               </div>
-            </div>
-          );
-        })()}
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+      )}
 
-        {/* Quick-toggle chips — visible when panel is collapsed. Heatmap &
+      {/* Layers Panel - Unified FAB + expandable panel */}
+      {controlsReady && (
+        <div
+          style={{
+            position: "absolute",
+            // Anchored to the fixed nav-footer inset only: opening a JetCard must
+            // not shift the FAB. On mobile the card covers this area, so the FAB
+            // fades out instead of moving.
+            bottom:
+              "var(--map-safe-bottom, var(--map-fixed-bottom, calc(60px + 0.75rem)))",
+            right: "var(--map-ui-inset-right, 0.75rem)",
+            zIndex: 30,
+            opacity: isMobile && selectedVenue ? 0 : 1,
+            visibility: isMobile && selectedVenue ? "hidden" : "visible",
+            pointerEvents: isMobile && selectedVenue ? "none" : "auto",
+            transition: "opacity 200ms ease",
+          }}
+        >
+          {/* Expanded panel - slides up from FAB */}
+          {(() => {
+            const panelBody = (
+              <>
+                {/* Panel header */}
+                {!isMobile && (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      position: "sticky",
+                      top: 0,
+                      background: "hsl(var(--card) / 0.95)",
+                      backdropFilter: "blur(24px) saturate(1.6)",
+                      WebkitBackdropFilter: "blur(24px) saturate(1.6)",
+                      zIndex: 1,
+                      paddingBottom: "4px",
+                      marginTop: "-2px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "10px",
+                        fontWeight: 600,
+                        color: "hsl(var(--muted-foreground))",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                      }}
+                    >
+                      Layers
+                    </span>
+                    <button
+                      onClick={() => {
+                        triggerHaptic("light");
+                        setControlsCollapsed(true);
+                      }}
+                      style={{
+                        width: "20px",
+                        height: "20px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        borderRadius: "6px",
+                        transition: "background 0.2s",
+                        cursor: "pointer",
+                        background: "transparent",
+                        border: "none",
+                      }}
+                    >
+                      <X
+                        style={{
+                          width: "12px",
+                          height: "12px",
+                          color: "hsl(var(--muted-foreground))",
+                        }}
+                      />
+                    </button>
+                  </div>
+                )}
+
+                {/* Compact live activity summary — always shows live status of
+                Density and Movement Paths regardless of toggle state */}
+                <div className="chip-summary" role="status" aria-live="polite">
+                  {[
+                    {
+                      key: "density",
+                      label: "Density",
+                      loading: densityLoading,
+                      count: densityData?.stats.grid_cells ?? 0,
+                      active: showDensityLayer,
+                    },
+                    {
+                      key: "paths",
+                      label: "Paths",
+                      loading: pathsLoading,
+                      count: pathData?.stats.total_paths ?? 0,
+                      active: showMovementPaths,
+                    },
+                  ].map((chip) => (
+                    <div
+                      key={chip.key}
+                      className="chip-summary-item"
+                      title={`${chip.label}: ${chip.loading ? "updating" : chip.count.toLocaleString()}${chip.active ? " (layer on)" : ""}`}
+                    >
+                      {chip.loading ? (
+                        <Loader2
+                          aria-hidden
+                          className="animate-spin"
+                          style={{
+                            width: "10px",
+                            height: "10px",
+                            color: "hsl(var(--primary))",
+                            flexShrink: 0,
+                          }}
+                        />
+                      ) : (
+                        <span
+                          aria-hidden
+                          style={{
+                            width: "6px",
+                            height: "6px",
+                            borderRadius: "9999px",
+                            flexShrink: 0,
+                            background:
+                              chip.count > 0
+                                ? "hsl(var(--primary))"
+                                : "hsl(var(--muted-foreground) / 0.4)",
+                            boxShadow:
+                              chip.count > 0
+                                ? "0 0 6px hsl(var(--primary) / 0.7)"
+                                : "none",
+                          }}
+                        />
+                      )}
+                      <span
+                        className="chip-summary-label"
+                        style={{
+                          color: chip.active
+                            ? "hsl(var(--foreground))"
+                            : "hsl(var(--muted-foreground))",
+                        }}
+                      >
+                        {chip.label}
+                      </span>
+                      <span
+                        className="chip-summary-value"
+                        style={{ opacity: chip.loading ? 0.5 : 1 }}
+                      >
+                        {chip.loading ? "…" : chip.count.toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Heat toggle row */}
+                <LayerToggleRow
+                  label="Heatmap"
+                  Icon={Layers}
+                  active={showDensityLayer}
+                  loading={isLoadingHeatmap}
+                  ariaLabel="Toggle heatmap layer"
+                  tooltip="Shows live crowd density across Charlotte. Red zones are the busiest right now; blue zones are calmer."
+                  onToggle={() => {
+                    triggerHaptic("medium");
+                    const newState = !showDensityLayer;
+                    setShowDensityLayer(newState);
+                    if (newState) {
+                      setTimeFilter("all");
+                      setHourFilter(undefined);
+                      setDayFilter(undefined);
+                      scheduleDensityRefresh();
+                    } else {
+                      clearDensityRefreshTimer();
+                      setIsLoadingHeatmap(false);
+                      // Time-lapse and Live Stats both consume the density
+                      // layer's data pipeline. Turning heatmap off must cascade
+                      // so users don't end up with orphaned modes running
+                      // against a hidden layer.
+                      if (timelapseMode) setTimelapseMode(false);
+                      if (showLiveStats) {
+                        setShowLiveStats(false);
+                        setIsLoadingStats(false);
+                      }
+                    }
+                  }}
+                />
+
+                {/* Heat filters - shown when heat is on.
+                Overflow flips to `visible` once expanded so the sticky
+                time-lapse controls can pin against the panel's scroll
+                container instead of being clipped by this collapse wrapper. */}
+                <div
+                  style={{
+                    overflow: showDensityLayer ? "visible" : "hidden",
+                    transition: "max-height 0.3s",
+                    maxHeight: showDensityLayer ? "1200px" : "0px",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "clamp(6px, 1.8vw, 12px)",
+                      paddingLeft: "clamp(2px, 1.4vw, 10px)",
+                      paddingRight: "clamp(2px, 1vw, 6px)",
+                      paddingTop: "clamp(6px, 1.6vw, 10px)",
+                      paddingBottom: "4px",
+                      minWidth: 0,
+                    }}
+                  >
+                    {/* Time-lapse toggle — glassmorphic pill matching LayerToggleRow */}
+                    <button
+                      type="button"
+                      aria-pressed={timelapseMode}
+                      onClick={() => {
+                        triggerHaptic("medium");
+                        const newMode = !timelapseMode;
+                        setTimelapseMode(newMode);
+                        if (newMode) {
+                          // Time-lapse renders through the density heatmap
+                          // pipeline; make sure it's on before we start
+                          // hydrating hourly buckets.
+                          if (!showDensityLayer) {
+                            setShowDensityLayer(true);
+                            scheduleDensityRefresh();
+                          }
+                          // Movement Paths animate continuously and visually
+                          // fight the time-lapse playback, so pause them while
+                          // the scrubber owns the map.
+                          if (showMovementPaths) {
+                            setShowMovementPaths(false);
+                            clearPathsRefreshTimer();
+                            setIsLoadingPaths(false);
+                          }
+                          timelapse.loadHourlyData();
+                        }
+                      }}
+                      style={{
+                        width: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        padding: "7px 10px",
+                        borderRadius: "10px",
+                        cursor: "pointer",
+                        border: timelapseMode
+                          ? "1px solid hsl(var(--primary) / 0.45)"
+                          : "1px solid hsl(var(--border) / 0.5)",
+                        background: timelapseMode
+                          ? "linear-gradient(135deg, hsl(var(--primary) / 0.18), hsl(var(--primary-glow) / 0.14))"
+                          : "hsl(var(--card) / 0.5)",
+                        backdropFilter: "blur(12px) saturate(1.4)",
+                        WebkitBackdropFilter: "blur(12px) saturate(1.4)",
+                        boxShadow: timelapseMode
+                          ? "0 8px 24px -10px hsl(var(--primary) / 0.55), inset 0 0 0 1px hsl(var(--primary-glow) / 0.18)"
+                          : "inset 0 0 0 1px hsl(0 0% 100% / 0.03)",
+                        transition:
+                          "background 220ms cubic-bezier(0.16,1,0.3,1), border-color 220ms ease, box-shadow 220ms ease",
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: "22px",
+                          height: "22px",
+                          borderRadius: "7px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                          background: timelapseMode
+                            ? "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))"
+                            : "hsl(var(--background) / 0.6)",
+                          color: timelapseMode
+                            ? "hsl(var(--primary-foreground))"
+                            : "hsl(var(--muted-foreground))",
+                          border: timelapseMode
+                            ? "1px solid transparent"
+                            : "1px solid hsl(var(--border) / 0.6)",
+                          boxShadow: timelapseMode
+                            ? "0 4px 12px -4px hsl(var(--primary) / 0.6)"
+                            : "none",
+                        }}
+                      >
+                        <Clock
+                          style={{ width: "12px", height: "12px" }}
+                          strokeWidth={2.25}
+                        />
+                      </span>
+                      <span
+                        className="font-display"
+                        style={{
+                          flex: 1,
+                          textAlign: "left",
+                          fontSize: "11px",
+                          fontWeight: 700,
+                          letterSpacing: "-0.005em",
+                          color: timelapseMode
+                            ? "hsl(var(--foreground))"
+                            : "hsl(var(--foreground) / 0.75)",
+                        }}
+                      >
+                        {timelapseMode ? "Time-lapse On" : "Time-lapse"}
+                      </span>
+                      <span
+                        aria-hidden="true"
+                        style={{
+                          width: "7px",
+                          height: "7px",
+                          borderRadius: "9999px",
+                          flexShrink: 0,
+                          background: timelapseMode
+                            ? "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))"
+                            : "hsl(var(--muted-foreground) / 0.25)",
+                          boxShadow: timelapseMode
+                            ? "0 0 10px hsl(var(--primary) / 0.7), 0 0 2px hsl(var(--primary-glow) / 0.6)"
+                            : "inset 0 0 0 1px hsl(var(--border))",
+                        }}
+                      />
+                    </button>
+
+                    {/* Time-lapse controls — glassmorphic card, sticky so playback
+                    stays reachable while the layers panel scrolls (mobile
+                    sheet + desktop panel). */}
+                    {timelapseMode && (
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "8px",
+                          padding: "10px",
+                          borderRadius: "10px",
+                          position: "sticky",
+                          top: isMobile ? "0px" : "26px",
+                          zIndex: 2,
+                          background: "hsl(var(--card) / 0.92)",
+                          border: "1px solid hsl(var(--border) / 0.5)",
+                          backdropFilter: "blur(12px) saturate(1.4)",
+                          WebkitBackdropFilter: "blur(12px) saturate(1.4)",
+                          boxShadow: "inset 0 0 0 1px hsl(0 0% 100% / 0.03)",
+                          // Card fades in when time-lapse is enabled so the mode
+                          // switch reads as a transition, not a layout jump.
+                          animation:
+                            "content-fade-in 240ms cubic-bezier(0.16,1,0.3,1)",
+                        }}
+                        className={
+                          timelapse.loading ? "layer-pending" : undefined
+                        }
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => {
+                              triggerHaptic("light");
+                              timelapse.stepBackward();
+                            }}
+                            disabled={timelapse.isPlaying}
+                            style={{
+                              width: "26px",
+                              height: "26px",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              borderRadius: "8px",
+                              border: "1px solid hsl(var(--border) / 0.6)",
+                              background: "hsl(var(--background) / 0.6)",
+                              color: "hsl(var(--foreground) / 0.8)",
+                              cursor: timelapse.isPlaying
+                                ? "not-allowed"
+                                : "pointer",
+                              opacity: timelapse.isPlaying ? 0.5 : 1,
+                            }}
+                          >
+                            <SkipBack
+                              style={{ width: "12px", height: "12px" }}
+                            />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              triggerHaptic("medium");
+                              if (timelapse.isPlaying) {
+                                timelapse.pause();
+                              } else {
+                                timelapse.play();
+                              }
+                            }}
+                            style={{
+                              flex: 1,
+                              height: "26px",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: "4px",
+                              borderRadius: "8px",
+                              border: timelapse.isPlaying
+                                ? "1px solid transparent"
+                                : "1px solid hsl(var(--border) / 0.6)",
+                              background: timelapse.isPlaying
+                                ? "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))"
+                                : "hsl(var(--background) / 0.6)",
+                              color: timelapse.isPlaying
+                                ? "hsl(var(--primary-foreground))"
+                                : "hsl(var(--foreground))",
+                              fontSize: "10px",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              boxShadow: timelapse.isPlaying
+                                ? "0 4px 12px -4px hsl(var(--primary) / 0.6)"
+                                : "none",
+                            }}
+                          >
+                            {timelapse.isPlaying ? (
+                              <Pause
+                                style={{ width: "12px", height: "12px" }}
+                              />
+                            ) : (
+                              <Play style={{ width: "12px", height: "12px" }} />
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              triggerHaptic("light");
+                              timelapse.stepForward();
+                            }}
+                            disabled={timelapse.isPlaying}
+                            style={{
+                              width: "26px",
+                              height: "26px",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              borderRadius: "8px",
+                              border: "1px solid hsl(var(--border) / 0.6)",
+                              background: "hsl(var(--background) / 0.6)",
+                              color: "hsl(var(--foreground) / 0.8)",
+                              cursor: timelapse.isPlaying
+                                ? "not-allowed"
+                                : "pointer",
+                              opacity: timelapse.isPlaying ? 0.5 : 1,
+                            }}
+                          >
+                            <SkipForward
+                              style={{ width: "12px", height: "12px" }}
+                            />
+                          </button>
+                        </div>
+                        <div
+                          key={timelapse.currentHour}
+                          className="font-display layer-value-transition"
+                          aria-live="polite"
+                          style={{
+                            textAlign: "center",
+                            fontSize: "11px",
+                            fontWeight: 700,
+                            letterSpacing: "0.02em",
+                            background:
+                              "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))",
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent",
+                            backgroundClip: "text",
+                          }}
+                        >
+                          {timelapse.formatHour(timelapse.currentHour)}
+                        </div>
+                        <Slider
+                          value={[timelapse.currentHour]}
+                          onValueChange={([v]) => timelapse.setHour(v)}
+                          min={0}
+                          max={23}
+                          step={1}
+                          className="w-full"
+                          disabled={timelapse.isPlaying}
+                        />
+                        {/* Hour ticks — lightweight scale under the scrubber so the
+                        panel stays compact on narrow viewports. */}
+                        <div
+                          aria-hidden
+                          className="flex justify-between px-0.5 text-[8px] tabular-nums text-muted-foreground/70"
+                        >
+                          {[0, 6, 12, 18, 23].map((h) => (
+                            <span key={h}>
+                              {h % 12 || 12}
+                              {h < 12 ? "a" : "p"}
+                            </span>
+                          ))}
+                        </div>
+                        {/* Speed slider — internal `speed` is seconds-per-hour
+                        (higher = slower). We expose it as a playback multiplier
+                        (higher = faster) via `1 / speed`. */}
+                        <LayerSliderRow
+                          label="Speed"
+                          Icon={Play}
+                          ariaLabel="Time-lapse playback speed"
+                          min={0.25}
+                          max={4}
+                          step={0.25}
+                          value={Number((1 / timelapse.speed).toFixed(2))}
+                          onChange={(mult) => timelapse.setSpeed(1 / mult)}
+                          defaultValue={1}
+                          format={(mult) => `${mult}x`}
+                          ticks={[
+                            { value: 0.5, label: "0.5x" },
+                            { value: 1, label: "1x" },
+                            { value: 2, label: "2x" },
+                            { value: 4, label: "4x" },
+                          ]}
+                        />
+                      </div>
+                    )}
+
+                    {/* Day-of-week dropdown — density by weekday. "all" = All Days,
+                    0..6 = Sun..Sat. Works in both regular and time-lapse mode
+                    (useHeatmapTimelapse reuses `dayFilter`). */}
+                    {(() => {
+                      const fullLabels = [
+                        "Sunday",
+                        "Monday",
+                        "Tuesday",
+                        "Wednesday",
+                        "Thursday",
+                        "Friday",
+                        "Saturday",
+                      ];
+                      const current =
+                        dayFilter === undefined ? "all" : String(dayFilter);
+                      const dayLoading =
+                        densityLoading || (timelapseMode && timelapse.loading);
+                      return (
+                        <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 backdrop-blur-md">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />
+                            <span className="truncate text-sm font-medium">
+                              Day of week
+                            </span>
+                            {dayLoading && (
+                              <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />
+                            )}
+                          </div>
+                          <Select
+                            value={current}
+                            onValueChange={(v) =>
+                              setDayFilter(v === "all" ? undefined : Number(v))
+                            }
+                          >
+                            <SelectTrigger
+                              aria-label="Density day-of-week filter"
+                              className="h-9 w-[130px] shrink-0 border-white/10 bg-white/5 text-sm"
+                            >
+                              <span className="truncate">
+                                {dayFilter === undefined
+                                  ? "All Days"
+                                  : fullLabels[dayFilter]}
+                              </span>
+                            </SelectTrigger>
+                            <SelectContent className="z-[10000]">
+                              <SelectItem value="all">All Days</SelectItem>
+                              {fullLabels.map((label, i) => (
+                                <SelectItem key={label} value={String(i)}>
+                                  {label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Compact color-scale legend — explains the heat ramp now that
+                    the intensity/radius/opacity sliders are gone. */}
+                    <HeatmapColorLegend
+                      loading={isLoadingHeatmap || densityLoading}
+                      isLightBasemap={
+                        mapStyle === "light" || mapStyle === "streets"
+                      }
+                    />
+
+                    {/* Density status — loading / error */}
+                    {(isLoadingHeatmap || densityError) && (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          padding: "6px",
+                          borderRadius: "8px",
+                          fontSize: "10px",
+                          background: densityError
+                            ? densityUnauthorized
+                              ? "hsl(var(--muted) / 0.5)"
+                              : "hsl(var(--destructive) / 0.1)"
+                            : "hsl(var(--primary) / 0.08)",
+                        }}
+                      >
+                        {isLoadingHeatmap ? (
+                          <>
+                            <Loader2
+                              className="animate-spin"
+                              style={{
+                                width: "12px",
+                                height: "12px",
+                                color: "hsl(var(--primary))",
+                                flexShrink: 0,
+                              }}
+                            />
+                            <span style={{ color: "hsl(var(--foreground))" }}>
+                              Refreshing heatmap...
+                            </span>
+                          </>
+                        ) : densityUnauthorized ? (
+                          <>
+                            <AlertCircle
+                              style={{
+                                width: "12px",
+                                height: "12px",
+                                color: "hsl(var(--muted-foreground))",
+                                flexShrink: 0,
+                              }}
+                            />
+                            <span
+                              style={{ color: "hsl(var(--muted-foreground))" }}
+                            >
+                              Sign in to see live heatmap data
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <AlertCircle
+                              style={{
+                                width: "12px",
+                                height: "12px",
+                                color: "hsl(var(--destructive))",
+                                flexShrink: 0,
+                              }}
+                            />
+                            <span style={{ color: "hsl(var(--destructive))" }}>
+                              Failed
+                            </span>
+                            <Button
+                              onClick={refreshDensity}
+                              variant="ghost"
+                              size="sm"
+                              className="h-5 text-[9px] px-1.5 ml-auto"
+                            >
+                              Retry
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div
+                  style={{
+                    height: "1px",
+                    background: "hsl(var(--border) / 0.5)",
+                  }}
+                />
+
+                {/* Paths toggle row */}
+                <LayerToggleRow
+                  label="Flow Paths"
+                  Icon={Route}
+                  active={showMovementPaths}
+                  loading={isLoadingPaths}
+                  ariaLabel="Toggle flow paths layer"
+                  tooltip="Real user movement between venues. Line thickness and glow scale with motion frequency and user frequency — brighter, thicker paths mean more people actively moving that route right now."
+                  onToggle={() => {
+                    triggerHaptic("medium");
+                    const next = !showMovementPaths;
+                    setShowMovementPaths(next);
+                    if (next) {
+                      // Flow Paths and Time-lapse compete for the same visual
+                      // channel (animated motion). If Time-lapse is running,
+                      // stop it so the paths can breathe.
+                      if (timelapseMode) setTimelapseMode(false);
+                      schedulePathsRefresh();
+                    } else {
+                      clearPathsRefreshTimer();
+                      setIsLoadingPaths(false);
+                    }
+                  }}
+                />
+
+                {/* Path filters — container-query driven so the section adapts to
+                the layers panel width (sheet on mobile, narrow/wide desktop)
+                rather than to the viewport. */}
+                <div
+                  style={{
+                    overflow: showMovementPaths ? "visible" : "hidden",
+                    transition: "max-height 0.3s ease, opacity 0.2s ease",
+                    maxHeight: showMovementPaths ? "1200px" : "0px",
+                    opacity: showMovementPaths ? 1 : 0,
+                    containerType: "inline-size",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "clamp(6px, 2.5cqi, 12px)",
+                      paddingLeft: "clamp(2px, 3cqi, 10px)",
+                      paddingRight: "clamp(2px, 2cqi, 8px)",
+                      paddingTop: "clamp(6px, 2.5cqi, 10px)",
+                      paddingBottom: "4px",
+                      minWidth: 0,
+                    }}
+                  >
+                    {(isLoadingPaths || pathsError) && (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          padding: "6px",
+                          background: pathsError
+                            ? pathsUnauthorized
+                              ? "hsl(var(--muted) / 0.5)"
+                              : "hsl(var(--destructive) / 0.1)"
+                            : "hsl(var(--primary) / 0.08)",
+                          borderRadius: "8px",
+                          fontSize: "10px",
+                        }}
+                      >
+                        {isLoadingPaths ? (
+                          <>
+                            <Loader2
+                              className="animate-spin"
+                              style={{
+                                width: "12px",
+                                height: "12px",
+                                color: "hsl(var(--primary))",
+                                flexShrink: 0,
+                              }}
+                            />
+                            <span style={{ color: "hsl(var(--foreground))" }}>
+                              Refreshing flow paths...
+                            </span>
+                          </>
+                        ) : pathsUnauthorized ? (
+                          <>
+                            <AlertCircle
+                              style={{
+                                width: "12px",
+                                height: "12px",
+                                color: "hsl(var(--muted-foreground))",
+                                flexShrink: 0,
+                              }}
+                            />
+                            <span
+                              style={{ color: "hsl(var(--muted-foreground))" }}
+                            >
+                              Sign in to see live flow paths
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <AlertCircle
+                              style={{
+                                width: "12px",
+                                height: "12px",
+                                color: "hsl(var(--destructive))",
+                                flexShrink: 0,
+                              }}
+                            />
+                            <span style={{ color: "hsl(var(--destructive))" }}>
+                              Failed
+                            </span>
+                            <Button
+                              onClick={refreshPaths}
+                              variant="ghost"
+                              size="sm"
+                              className="h-5 text-[9px] px-1.5 ml-auto"
+                            >
+                              Retry
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                    {/* Explainer lives in the Flow Paths toggle tooltip only. */}
+                    {/* Min-frequency slider — brought into the LayerSliderRow
+                    system so it matches the rest of the panel visually and
+                    inherits the reset/tick/adaptive-spacing behavior. */}
+                    <LayerSliderRow
+                      label="User flow paths by frequency"
+                      Icon={Route}
+                      ariaLabel="User flow paths by frequency (1-10 users)"
+                      min={1}
+                      max={10}
+                      step={1}
+                      value={minPathFrequency}
+                      onChange={setMinPathFrequency}
+                      format={(v) => `${v}+ users`}
+                      ticks={[
+                        { value: 1, label: "1" },
+                        { value: 3, label: "3" },
+                        { value: 5, label: "5" },
+                        { value: 10, label: "10" },
+                      ]}
+                      defaultValue={2}
+                      loading={pathsLoading}
+                    />
+                    {/* Compact movement summary — wraps cleanly at any width. */}
+                    {pathData?.stats && (
+                      <div
+                        style={{
+                          paddingTop: "6px",
+                          borderTop: "1px solid hsl(var(--border) / 0.3)",
+                          display: "grid",
+                          gridTemplateColumns:
+                            "repeat(auto-fit, minmax(64px, 1fr))",
+                          gap: "clamp(2px, 1.5cqi, 8px)",
+                          fontSize: "clamp(8px, 2.4cqi, 10px)",
+                        }}
+                        className="text-muted-foreground"
+                      >
+                        <span className="truncate">
+                          {pathData.stats.total_paths} routes
+                        </span>
+                        <span className="truncate">
+                          {pathData.stats.unique_users} users
+                        </span>
+                        <span className="truncate">
+                          peak {pathData.stats.max_frequency}x
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div
+                  style={{
+                    height: "1px",
+                    background: "hsl(var(--border) / 0.5)",
+                  }}
+                />
+
+                {/* Parking toggle row */}
+                <LayerToggleRow
+                  label="Parking"
+                  Icon={Car}
+                  active={showParking}
+                  ariaLabel="Toggle parking layer"
+                  tooltip="Displays nearby parking options around venues so you can plan your arrival."
+                  onToggle={() => {
+                    triggerHaptic("medium");
+                    const newState = !showParking;
+                    setShowParking(newState);
+                    if (map.current) {
+                      try {
+                        if (map.current.getLayer("parking-icons")) {
+                          map.current.setLayoutProperty(
+                            "parking-icons",
+                            "visibility",
+                            newState ? "visible" : "none",
+                          );
+                        }
+                      } catch (e) {
+                        /* layer may not exist yet */
+                      }
+                    }
+                  }}
+                />
+
+                {/* Divider */}
+                <div
+                  style={{
+                    height: "1px",
+                    background: "hsl(var(--border) / 0.5)",
+                  }}
+                />
+
+                {/* Live Stats toggle row */}
+                <LayerToggleRow
+                  label="Live Stats"
+                  Icon={BarChart3}
+                  active={showLiveStats}
+                  loading={isLoadingStats}
+                  ariaLabel="Toggle live stats panel"
+                  tooltip="Actionable insights from live activity: busiest hotspots right now, momentum trend vs. the last hour, top movement routes, and recent check-ins to help you decide where to go next."
+                  onToggle={() => {
+                    triggerHaptic("medium");
+                    const next = !showLiveStats;
+                    setShowLiveStats(next);
+                    if (next) {
+                      setIsLoadingStats(true);
+                      // Live Stats derives its numbers from the density and
+                      // movement-paths data pipelines. Enable both so the
+                      // panel isn't populated by stale/zero series.
+                      if (!showDensityLayer) {
+                        setShowDensityLayer(true);
+                        setTimeFilter("all");
+                        setHourFilter(undefined);
+                        setDayFilter(undefined);
+                        scheduleDensityRefresh();
+                      }
+                      if (!showMovementPaths) {
+                        setShowMovementPaths(true);
+                        schedulePathsRefresh();
+                      }
+                    } else {
+                      setIsLoadingStats(false);
+                    }
+                  }}
+                />
+
+                {/* Live Stats renders on the left side of the map (see the floating
+                panel below) so it never obstructs this Layers container. */}
+
+                {/* Reset to defaults */}
+                <button
+                  type="button"
+                  onClick={handleResetToDefaults}
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "6px",
+                    padding: "6px 8px",
+                    borderRadius: "8px",
+                    border: "1px solid hsl(var(--border) / 0.4)",
+                    background: "transparent",
+                    color: "hsl(var(--muted-foreground))",
+                    fontSize: "10px",
+                    fontWeight: 600,
+                    letterSpacing: "0.02em",
+                    cursor: "pointer",
+                    transition:
+                      "color 200ms ease, border-color 200ms ease, background 200ms ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = "hsl(var(--foreground))";
+                    e.currentTarget.style.borderColor =
+                      "hsl(var(--border) / 0.7)";
+                    e.currentTarget.style.background = "hsl(var(--card) / 0.4)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color =
+                      "hsl(var(--muted-foreground))";
+                    e.currentTarget.style.borderColor =
+                      "hsl(var(--border) / 0.4)";
+                    e.currentTarget.style.background = "transparent";
+                  }}
+                >
+                  <RotateCcw style={{ width: "12px", height: "12px" }} />
+                  Reset to defaults
+                </button>
+              </>
+            );
+            if (isMobile) {
+              return (
+                <Sheet
+                  open={!controlsCollapsed}
+                  onOpenChange={(o) => setControlsCollapsed(!o)}
+                >
+                  <SheetContent
+                    side="bottom"
+                    className="p-0 rounded-t-2xl border-t bg-card/95 backdrop-blur-xl"
+                    style={{
+                      maxHeight: "85dvh",
+                      paddingBottom: "env(safe-area-inset-bottom)",
+                    }}
+                  >
+                    <SheetHeader className="px-4 pt-3 pb-2">
+                      <SheetTitle className="font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground text-left">
+                        Map Layers
+                      </SheetTitle>
+                    </SheetHeader>
+                    <div
+                      style={{
+                        padding:
+                          "clamp(4px, 1.2vw, 6px) clamp(12px, 3.6vw, 16px) clamp(14px, 3.6vw, 20px)",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "clamp(8px, 2.2vw, 12px)",
+                        overflowY: "auto",
+                        maxHeight:
+                          "calc(85dvh - 56px - env(safe-area-inset-bottom))",
+                        overscrollBehavior: "contain",
+                      }}
+                    >
+                      {panelBody}
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              );
+            }
+            return (
+              <div
+                style={{
+                  width: `${panelWidth}px`,
+                  contain: "layout style",
+                  overflow: "hidden",
+                  transition:
+                    "max-height 300ms ease-out, opacity 300ms ease-out, margin-bottom 300ms ease-out",
+                  maxHeight: !controlsCollapsed ? `${panelMaxH}px` : "0px",
+                  opacity: !controlsCollapsed ? 1 : 0,
+                  marginBottom: !controlsCollapsed ? "8px" : "0px",
+                }}
+              >
+                <div
+                  style={{
+                    background: "hsl(var(--card) / 0.95)",
+                    backdropFilter: "blur(24px) saturate(1.6)",
+                    WebkitBackdropFilter: "blur(24px) saturate(1.6)",
+                    borderRadius: "12px",
+                    border: "1px solid hsl(var(--border))",
+                    boxShadow:
+                      "0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+                    padding: `${panelPad}px`,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: `${panelGap}px`,
+                    maxHeight:
+                      "calc(100dvh - var(--map-fixed-bottom, 72px) - 252px)",
+                    overflowY: "auto",
+                    overscrollBehavior: "contain",
+                  }}
+                >
+                  {panelBody}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Quick-toggle chips — visible when panel is collapsed. Heatmap &
             Flow Paths are interactive so users can flip the two primary
             layers without opening the full panel. Parking / Live Stats stay
             as read-only status pills to avoid crowding the FAB row. */}
-        {controlsCollapsed && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            marginBottom: '8px',
-            justifyContent: 'flex-end',
-          }}>
-            <button
-              type="button"
-              aria-label={`${showDensityLayer ? 'Hide' : 'Show'} heatmap layer`}
-              aria-pressed={showDensityLayer}
-              onClick={(e) => {
-                e.stopPropagation();
-                triggerHaptic('medium');
-                const newState = !showDensityLayer;
-                setShowDensityLayer(newState);
-                if (newState) {
-                  setTimeFilter('all');
-                  setHourFilter(undefined);
-                  setDayFilter(undefined);
-                  scheduleDensityRefresh();
-                } else {
-                  clearDensityRefreshTimer();
-                  setIsLoadingHeatmap(false);
-                }
-              }}
+          {controlsCollapsed && (
+            <div
               style={{
-                width: '32px', height: '32px',
-                borderRadius: '9px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer',
-                border: showDensityLayer ? '1px solid transparent' : '1px solid hsl(var(--border))',
-                background: showDensityLayer
-                  ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
-                  : 'hsl(var(--card) / 0.85)',
-                color: showDensityLayer ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
-                boxShadow: showDensityLayer
-                  ? '0 4px 12px -2px hsl(var(--primary) / 0.5)'
-                  : 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
-                backdropFilter: 'blur(12px) saturate(1.4)',
-                WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
-                transition: 'background 200ms ease, color 200ms ease, box-shadow 200ms ease, transform 200ms ease',
-                padding: 0,
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                marginBottom: "8px",
+                justifyContent: "flex-end",
               }}
             >
-              <Layers style={{ width: '15px', height: '15px' }} strokeWidth={2.25} />
-            </button>
-            <button
-              type="button"
-              aria-label={`${showMovementPaths ? 'Hide' : 'Show'} flow paths layer`}
-              aria-pressed={showMovementPaths}
-              onClick={(e) => {
-                e.stopPropagation();
-                triggerHaptic('medium');
-                const next = !showMovementPaths;
-                setShowMovementPaths(next);
-                if (next) {
-                  schedulePathsRefresh();
-                } else {
-                  clearPathsRefreshTimer();
-                  setIsLoadingPaths(false);
-                }
-              }}
-              style={{
-                width: '32px', height: '32px',
-                borderRadius: '9px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer',
-                border: showMovementPaths ? '1px solid transparent' : '1px solid hsl(var(--border))',
-                background: showMovementPaths
-                  ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
-                  : 'hsl(var(--card) / 0.85)',
-                color: showMovementPaths ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
-                boxShadow: showMovementPaths
-                  ? '0 4px 12px -2px hsl(var(--primary) / 0.5)'
-                  : 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
-                backdropFilter: 'blur(12px) saturate(1.4)',
-                WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
-                transition: 'background 200ms ease, color 200ms ease, box-shadow 200ms ease, transform 200ms ease',
-                padding: 0,
-              }}
-            >
-              <Route style={{ width: '15px', height: '15px' }} strokeWidth={2.25} />
-            </button>
-            <button
-              type="button"
-              aria-label={`${showParking ? 'Hide' : 'Show'} parking layer`}
-              aria-pressed={showParking}
-              onClick={(e) => {
-                e.stopPropagation();
-                triggerHaptic('medium');
-                const newState = !showParking;
-                setShowParking(newState);
-                if (map.current) {
-                  try {
-                    if (map.current.getLayer('parking-icons')) {
-                      map.current.setLayoutProperty('parking-icons', 'visibility', newState ? 'visible' : 'none');
-                    }
-                  } catch (e) { /* layer may not exist yet */ }
-                }
-              }}
-              style={{
-                width: '32px', height: '32px',
-                borderRadius: '9px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer',
-                border: showParking ? '1px solid transparent' : '1px solid hsl(var(--border))',
-                background: showParking
-                  ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
-                  : 'hsl(var(--card) / 0.85)',
-                color: showParking ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
-                boxShadow: showParking
-                  ? '0 4px 12px -2px hsl(var(--primary) / 0.5)'
-                  : 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
-                backdropFilter: 'blur(12px) saturate(1.4)',
-                WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
-                transition: 'background 200ms ease, color 200ms ease, box-shadow 200ms ease, transform 200ms ease',
-                padding: 0,
-              }}
-            >
-              <Car style={{ width: '15px', height: '15px' }} strokeWidth={2.25} />
-            </button>
-            <button
-              type="button"
-              aria-label={`${showLiveStats ? 'Hide' : 'Show'} live stats`}
-              aria-pressed={showLiveStats}
-              onClick={(e) => {
-                e.stopPropagation();
-                triggerHaptic('medium');
-                const next = !showLiveStats;
-                setShowLiveStats(next);
-                if (next) {
-                  setIsLoadingStats(true);
-                  if (!showDensityLayer) {
-                    setShowDensityLayer(true);
-                    setTimeFilter('all');
+              <button
+                type="button"
+                aria-label={`${showDensityLayer ? "Hide" : "Show"} heatmap layer`}
+                aria-pressed={showDensityLayer}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  triggerHaptic("medium");
+                  const newState = !showDensityLayer;
+                  setShowDensityLayer(newState);
+                  if (newState) {
+                    setTimeFilter("all");
                     setHourFilter(undefined);
                     setDayFilter(undefined);
                     scheduleDensityRefresh();
+                  } else {
+                    clearDensityRefreshTimer();
+                    setIsLoadingHeatmap(false);
                   }
-                  if (!showMovementPaths) {
-                    setShowMovementPaths(true);
+                }}
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "9px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  border: showDensityLayer
+                    ? "1px solid transparent"
+                    : "1px solid hsl(var(--border))",
+                  background: showDensityLayer
+                    ? "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))"
+                    : "hsl(var(--card) / 0.85)",
+                  color: showDensityLayer
+                    ? "hsl(var(--primary-foreground))"
+                    : "hsl(var(--muted-foreground))",
+                  boxShadow: showDensityLayer
+                    ? "0 4px 12px -2px hsl(var(--primary) / 0.5)"
+                    : "inset 0 0 0 1px hsl(0 0% 100% / 0.03)",
+                  backdropFilter: "blur(12px) saturate(1.4)",
+                  WebkitBackdropFilter: "blur(12px) saturate(1.4)",
+                  transition:
+                    "background 200ms ease, color 200ms ease, box-shadow 200ms ease, transform 200ms ease",
+                  padding: 0,
+                }}
+              >
+                <Layers
+                  style={{ width: "15px", height: "15px" }}
+                  strokeWidth={2.25}
+                />
+              </button>
+              <button
+                type="button"
+                aria-label={`${showMovementPaths ? "Hide" : "Show"} flow paths layer`}
+                aria-pressed={showMovementPaths}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  triggerHaptic("medium");
+                  const next = !showMovementPaths;
+                  setShowMovementPaths(next);
+                  if (next) {
                     schedulePathsRefresh();
+                  } else {
+                    clearPathsRefreshTimer();
+                    setIsLoadingPaths(false);
                   }
-                } else {
-                  setIsLoadingStats(false);
-                }
-              }}
-              style={{
-                width: '32px', height: '32px',
-                borderRadius: '9px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer',
-                border: showLiveStats ? '1px solid transparent' : '1px solid hsl(var(--border))',
-                background: showLiveStats
-                  ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
-                  : 'hsl(var(--card) / 0.85)',
-                color: showLiveStats ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
-                boxShadow: showLiveStats
-                  ? '0 4px 12px -2px hsl(var(--primary) / 0.5)'
-                  : 'inset 0 0 0 1px hsl(0 0% 100% / 0.03)',
-                backdropFilter: 'blur(12px) saturate(1.4)',
-                WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
-                transition: 'background 200ms ease, color 200ms ease, box-shadow 200ms ease, transform 200ms ease',
-                padding: 0,
-              }}
-            >
-              {isLoadingStats ? (
-                <Loader2 className="animate-spin" style={{ width: '15px', height: '15px' }} />
-              ) : (
-                <BarChart3 style={{ width: '15px', height: '15px' }} strokeWidth={2.25} />
-              )}
-            </button>
-          </div>
-        )}
-
-        {/* Layers FAB */}
-        <button
-          onClick={() => { triggerHaptic('light'); setControlsCollapsed(!controlsCollapsed); }}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: '12px',
-            boxShadow: (showDensityLayer || showMovementPaths || showParking)
-              ? '0 20px 25px -5px hsl(var(--primary) / 0.4)'
-              : '0 20px 25px -5px rgba(0,0,0,0.1)',
-            transition: 'all 0.2s',
-            width: 'var(--touch-target-min, 44px)',
-            height: 'var(--touch-target-min, 44px)',
-            marginLeft: 'auto',
-            cursor: 'pointer',
-            position: 'relative',
-            border: (showDensityLayer || showMovementPaths || showParking) ? 'none' : '1px solid hsl(var(--border))',
-            background: (showDensityLayer || showMovementPaths || showParking) ? 'hsl(var(--primary))' : 'hsl(var(--card))',
-            color: (showDensityLayer || showMovementPaths || showParking) ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
-            backdropFilter: (showDensityLayer || showMovementPaths || showParking) ? 'none' : 'blur(24px) saturate(1.6)',
-            WebkitBackdropFilter: (showDensityLayer || showMovementPaths || showParking) ? 'none' : 'blur(24px) saturate(1.6)',
-          }}
-          aria-label={controlsCollapsed ? "Open layers panel" : "Close layers panel"}
-        >
-          {controlsCollapsed ? (
-            <Layers style={{ width: '20px', height: '20px' }} />
-          ) : (
-            <X style={{ width: '20px', height: '20px' }} />
+                }}
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "9px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  border: showMovementPaths
+                    ? "1px solid transparent"
+                    : "1px solid hsl(var(--border))",
+                  background: showMovementPaths
+                    ? "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))"
+                    : "hsl(var(--card) / 0.85)",
+                  color: showMovementPaths
+                    ? "hsl(var(--primary-foreground))"
+                    : "hsl(var(--muted-foreground))",
+                  boxShadow: showMovementPaths
+                    ? "0 4px 12px -2px hsl(var(--primary) / 0.5)"
+                    : "inset 0 0 0 1px hsl(0 0% 100% / 0.03)",
+                  backdropFilter: "blur(12px) saturate(1.4)",
+                  WebkitBackdropFilter: "blur(12px) saturate(1.4)",
+                  transition:
+                    "background 200ms ease, color 200ms ease, box-shadow 200ms ease, transform 200ms ease",
+                  padding: 0,
+                }}
+              >
+                <Route
+                  style={{ width: "15px", height: "15px" }}
+                  strokeWidth={2.25}
+                />
+              </button>
+              <button
+                type="button"
+                aria-label={`${showParking ? "Hide" : "Show"} parking layer`}
+                aria-pressed={showParking}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  triggerHaptic("medium");
+                  const newState = !showParking;
+                  setShowParking(newState);
+                  if (map.current) {
+                    try {
+                      if (map.current.getLayer("parking-icons")) {
+                        map.current.setLayoutProperty(
+                          "parking-icons",
+                          "visibility",
+                          newState ? "visible" : "none",
+                        );
+                      }
+                    } catch (e) {
+                      /* layer may not exist yet */
+                    }
+                  }
+                }}
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "9px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  border: showParking
+                    ? "1px solid transparent"
+                    : "1px solid hsl(var(--border))",
+                  background: showParking
+                    ? "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))"
+                    : "hsl(var(--card) / 0.85)",
+                  color: showParking
+                    ? "hsl(var(--primary-foreground))"
+                    : "hsl(var(--muted-foreground))",
+                  boxShadow: showParking
+                    ? "0 4px 12px -2px hsl(var(--primary) / 0.5)"
+                    : "inset 0 0 0 1px hsl(0 0% 100% / 0.03)",
+                  backdropFilter: "blur(12px) saturate(1.4)",
+                  WebkitBackdropFilter: "blur(12px) saturate(1.4)",
+                  transition:
+                    "background 200ms ease, color 200ms ease, box-shadow 200ms ease, transform 200ms ease",
+                  padding: 0,
+                }}
+              >
+                <Car
+                  style={{ width: "15px", height: "15px" }}
+                  strokeWidth={2.25}
+                />
+              </button>
+              <button
+                type="button"
+                aria-label={`${showLiveStats ? "Hide" : "Show"} live stats`}
+                aria-pressed={showLiveStats}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  triggerHaptic("medium");
+                  const next = !showLiveStats;
+                  setShowLiveStats(next);
+                  if (next) {
+                    setIsLoadingStats(true);
+                    if (!showDensityLayer) {
+                      setShowDensityLayer(true);
+                      setTimeFilter("all");
+                      setHourFilter(undefined);
+                      setDayFilter(undefined);
+                      scheduleDensityRefresh();
+                    }
+                    if (!showMovementPaths) {
+                      setShowMovementPaths(true);
+                      schedulePathsRefresh();
+                    }
+                  } else {
+                    setIsLoadingStats(false);
+                  }
+                }}
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "9px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  border: showLiveStats
+                    ? "1px solid transparent"
+                    : "1px solid hsl(var(--border))",
+                  background: showLiveStats
+                    ? "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))"
+                    : "hsl(var(--card) / 0.85)",
+                  color: showLiveStats
+                    ? "hsl(var(--primary-foreground))"
+                    : "hsl(var(--muted-foreground))",
+                  boxShadow: showLiveStats
+                    ? "0 4px 12px -2px hsl(var(--primary) / 0.5)"
+                    : "inset 0 0 0 1px hsl(0 0% 100% / 0.03)",
+                  backdropFilter: "blur(12px) saturate(1.4)",
+                  WebkitBackdropFilter: "blur(12px) saturate(1.4)",
+                  transition:
+                    "background 200ms ease, color 200ms ease, box-shadow 200ms ease, transform 200ms ease",
+                  padding: 0,
+                }}
+              >
+                {isLoadingStats ? (
+                  <Loader2
+                    className="animate-spin"
+                    style={{ width: "15px", height: "15px" }}
+                  />
+                ) : (
+                  <BarChart3
+                    style={{ width: "15px", height: "15px" }}
+                    strokeWidth={2.25}
+                  />
+                )}
+              </button>
+            </div>
           )}
-        </button>
-      </div>
+
+          {/* Layers FAB */}
+          <button
+            onClick={() => {
+              triggerHaptic("light");
+              setControlsCollapsed(!controlsCollapsed);
+            }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: "12px",
+              boxShadow:
+                showDensityLayer || showMovementPaths || showParking
+                  ? "0 20px 25px -5px hsl(var(--primary) / 0.4)"
+                  : "0 20px 25px -5px rgba(0,0,0,0.1)",
+              transition: "all 0.2s",
+              width: "var(--touch-target-min, 44px)",
+              height: "var(--touch-target-min, 44px)",
+              marginLeft: "auto",
+              cursor: "pointer",
+              position: "relative",
+              border:
+                showDensityLayer || showMovementPaths || showParking
+                  ? "none"
+                  : "1px solid hsl(var(--border))",
+              background:
+                showDensityLayer || showMovementPaths || showParking
+                  ? "hsl(var(--primary))"
+                  : "hsl(var(--card))",
+              color:
+                showDensityLayer || showMovementPaths || showParking
+                  ? "hsl(var(--primary-foreground))"
+                  : "hsl(var(--foreground))",
+              backdropFilter:
+                showDensityLayer || showMovementPaths || showParking
+                  ? "none"
+                  : "blur(24px) saturate(1.6)",
+              WebkitBackdropFilter:
+                showDensityLayer || showMovementPaths || showParking
+                  ? "none"
+                  : "blur(24px) saturate(1.6)",
+            }}
+            aria-label={
+              controlsCollapsed ? "Open layers panel" : "Close layers panel"
+            }
+          >
+            {controlsCollapsed ? (
+              <Layers style={{ width: "20px", height: "20px" }} />
+            ) : (
+              <X style={{ width: "20px", height: "20px" }} />
+            )}
+          </button>
+        </div>
       )}
-
-
 
       {/* Live Stats — always rendered on the left side of the map, clear of the
           Layers container (bottom-right) and the map nav controls (top-right). */}
@@ -4125,157 +5202,273 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
 
       {/* Enhanced Legend - Bottom left, responsive for all devices, collapsible on mobile */}
       {/* CRITICAL: Uses only opacity transition to avoid CLS - no translate animations */}
-      <div 
+      <div
         style={{
-          position: 'absolute',
+          position: "absolute",
           // The attribution/logo row is hidden, so the legend uses the same
           // uniform nav-footer padding as every other bottom overlay.
-          bottom: 'var(--map-safe-bottom, var(--map-fixed-bottom))',
-          left: 'var(--map-ui-inset-left)',
-          maxWidth: 'var(--map-control-max-width)',
-          width: 'clamp(160px, 38vw, 240px)',
+          bottom: "var(--map-safe-bottom, var(--map-fixed-bottom))",
+          left: "var(--map-ui-inset-left)",
+          maxWidth: "var(--map-control-max-width)",
+          width: "clamp(160px, 38vw, 240px)",
           zIndex: 30,
           // Dark luxe legend — vertical gradient surface, hairline border,
           // soft ambient gold glow, inset highlight for refined depth.
           background:
-            'linear-gradient(180deg, hsl(var(--card) / 0.95), hsl(var(--card) / 0.82))',
-          backdropFilter: 'blur(24px) saturate(1.6)',
-          WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
-          borderRadius: '12px',
-          border: '1px solid hsl(0 0% 100% / 0.06)',
+            "linear-gradient(180deg, hsl(var(--card) / 0.95), hsl(var(--card) / 0.82))",
+          backdropFilter: "blur(24px) saturate(1.6)",
+          WebkitBackdropFilter: "blur(24px) saturate(1.6)",
+          borderRadius: "12px",
+          border: "1px solid hsl(0 0% 100% / 0.06)",
           boxShadow:
-            '0 0 60px hsl(var(--gold) / 0.06), 0 14px 30px -12px rgba(0,0,0,0.7), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
-          padding: isMobile ? '6px 8px' : '8px 12px',
+            "0 0 60px hsl(var(--gold) / 0.06), 0 14px 30px -12px rgba(0,0,0,0.7), inset 0 1px 0 hsl(0 0% 100% / 0.05)",
+          padding: isMobile ? "6px 8px" : "8px 12px",
           opacity: mapLoaded && (isMobile ? !selectedVenue : true) ? 1 : 0,
-          visibility: mapLoaded && (isMobile ? !selectedVenue : true) ? 'visible' : 'hidden',
-          transition: 'opacity 300ms ease-out, visibility 300ms ease-out',
-          transform: 'translateZ(0)',
-          willChange: 'opacity',
-          pointerEvents: mapLoaded && (isMobile ? !selectedVenue : true) ? 'auto' : 'none',
-          cursor: isMobile ? 'pointer' : undefined,
+          visibility:
+            mapLoaded && (isMobile ? !selectedVenue : true)
+              ? "visible"
+              : "hidden",
+          transition: "opacity 300ms ease-out, visibility 300ms ease-out",
+          transform: "translateZ(0)",
+          willChange: "opacity",
+          pointerEvents:
+            mapLoaded && (isMobile ? !selectedVenue : true) ? "auto" : "none",
+          cursor: isMobile ? "pointer" : undefined,
         }}
-        onClick={isMobile ? () => { triggerHaptic('light'); setLegendCollapsed(!legendCollapsed); } : undefined}
+        onClick={
+          isMobile
+            ? () => {
+                triggerHaptic("light");
+                setLegendCollapsed(!legendCollapsed);
+              }
+            : undefined
+        }
       >
         {isMobile && legendCollapsed ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              cursor: "pointer",
+            }}
+          >
             <span
               style={{
-                fontSize: '9px',
+                fontSize: "9px",
                 fontWeight: 500,
-                color: 'hsl(var(--gold))',
-                textTransform: 'uppercase',
-                letterSpacing: '0.12em',
+                color: "hsl(var(--gold))",
+                textTransform: "uppercase",
+                letterSpacing: "0.12em",
               }}
             >
               Legend
             </span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               {/* Same palette the venue markers use, resolved for this basemap. */}
-              {activityLegendTiers(mapStyle === 'light' || mapStyle === 'streets').map((tier) => (
+              {activityLegendTiers(
+                mapStyle === "light" || mapStyle === "streets",
+              ).map((tier) => (
                 <div
                   key={tier.id}
                   style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
+                    width: "8px",
+                    height: "8px",
+                    borderRadius: "50%",
                     background: tier.color,
-                    boxShadow: `0 0 0 1.5px ${casingFor(mapStyle === 'light' || mapStyle === 'streets')}`,
+                    boxShadow: `0 0 0 1.5px ${casingFor(mapStyle === "light" || mapStyle === "streets")}`,
                   }}
                 />
               ))}
             </div>
-            <ChevronUp style={{ width: '12px', height: '12px', color: 'hsl(var(--silver))' }} />
+            <ChevronUp
+              style={{
+                width: "12px",
+                height: "12px",
+                color: "hsl(var(--silver))",
+              }}
+            />
           </div>
         ) : (
           <>
             {isMobile && (
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '4px', cursor: 'pointer' }}>
-                <ChevronDown style={{ width: '12px', height: '12px', color: 'hsl(var(--silver))' }} />
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  marginBottom: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                <ChevronDown
+                  style={{
+                    width: "12px",
+                    height: "12px",
+                    color: "hsl(var(--silver))",
+                  }}
+                />
               </div>
             )}
-            
+
             {showMovementPaths ? (
               <>
                 <p
                   style={{
-                    fontSize: 'clamp(9px, 2.4vw, 11px)',
+                    fontSize: "clamp(9px, 2.4vw, 11px)",
                     fontWeight: 600,
-                    color: 'hsl(var(--gold))',
-                    marginBottom: '6px',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
-                    textAlign: 'center',
-                    width: '100%',
+                    color: "hsl(var(--gold))",
+                    marginBottom: "6px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    textAlign: "center",
+                    width: "100%",
                   }}
                 >
                   User Flow Paths
                 </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
-                  <div style={{
-                    width: '100%', minWidth: 0,
-                    height: 'clamp(12px, 3.2vw, 16px)', borderRadius: '6px',
-                    // Mirrors the flow-path line ramp exactly.
-                    background: 'linear-gradient(to right, rgb(178, 196, 255), rgb(150, 138, 255), rgb(196, 112, 255), rgb(255, 106, 178), rgb(255, 178, 74))',
-                    border: '1px solid hsl(0 0% 100% / 0.14)',
-                    boxShadow:
-                      'inset 0 1px 3px rgba(0,0,0,0.35), 0 0 14px rgba(196,112,255,0.22)',
-                  }} />
-                  <div style={{ display: 'flex', width: '100%', fontSize: 'clamp(8px, 2.2vw, 10px)', color: 'hsl(var(--muted-foreground))', fontWeight: 500 }}>
-                    <span style={{ flex: 1, textAlign: 'left' }}>Occasional</span>
-                    <span style={{ flex: 1, textAlign: 'center' }}>Frequent</span>
-                    <span style={{ flex: 1, textAlign: 'right' }}>Busiest</span>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "6px",
+                    width: "100%",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "100%",
+                      minWidth: 0,
+                      height: "clamp(12px, 3.2vw, 16px)",
+                      borderRadius: "6px",
+                      // Mirrors the flow-path line ramp exactly.
+                      background:
+                        "linear-gradient(to right, rgb(178, 196, 255), rgb(150, 138, 255), rgb(196, 112, 255), rgb(255, 106, 178), rgb(255, 178, 74))",
+                      border: "1px solid hsl(0 0% 100% / 0.14)",
+                      boxShadow:
+                        "inset 0 1px 3px rgba(0,0,0,0.35), 0 0 14px rgba(196,112,255,0.22)",
+                    }}
+                  />
+                  <div
+                    style={{
+                      display: "flex",
+                      width: "100%",
+                      fontSize: "clamp(8px, 2.2vw, 10px)",
+                      color: "hsl(var(--muted-foreground))",
+                      fontWeight: 500,
+                    }}
+                  >
+                    <span style={{ flex: 1, textAlign: "left" }}>
+                      Occasional
+                    </span>
+                    <span style={{ flex: 1, textAlign: "center" }}>
+                      Frequent
+                    </span>
+                    <span style={{ flex: 1, textAlign: "right" }}>Busiest</span>
                   </div>
                 </div>
               </>
             ) : showDensityLayer ? (
               <>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '6px' }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "6px",
+                    marginBottom: "6px",
+                  }}
+                >
                   <p
                     style={{
-                      fontSize: '10px',
+                      fontSize: "10px",
                       fontWeight: 600,
-                      color: 'hsl(var(--gold))',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.1em',
-                      textAlign: 'center',
+                      color: "hsl(var(--gold))",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.1em",
+                      textAlign: "center",
                     }}
                   >
-                    {timelapseMode ? 'Time-lapse' : 'User Density Heatmap'}
+                    {timelapseMode ? "Time-lapse" : "User Density Heatmap"}
                   </p>
                   {timelapseMode && timelapse.isPlaying && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <div className="animate-pulse" style={{ width: '6px', height: '6px', background: 'hsl(var(--primary))', borderRadius: '50%' }} />
-                      <span style={{ fontSize: '9px', color: 'hsl(var(--primary))', fontWeight: 500 }}>{timelapse.formatHour(timelapse.currentHour)}</span>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
+                      }}
+                    >
+                      <div
+                        className="animate-pulse"
+                        style={{
+                          width: "6px",
+                          height: "6px",
+                          background: "hsl(var(--primary))",
+                          borderRadius: "50%",
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontSize: "9px",
+                          color: "hsl(var(--primary))",
+                          fontWeight: 500,
+                        }}
+                      >
+                        {timelapse.formatHour(timelapse.currentHour)}
+                      </span>
                     </div>
                   )}
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
-                  <div style={{
-                    width: '100%', minWidth: 0, height: '14px', borderRadius: '6px',
-                    background: 'linear-gradient(to right, rgba(65, 105, 225, 0.8), rgb(0, 255, 127), rgb(255, 255, 0), rgb(255, 165, 0), rgb(255, 0, 0), rgb(139, 0, 0))',
-                    border: '1px solid hsl(var(--gold) / 0.35)',
-                    boxShadow:
-                      'inset 0 1px 3px rgba(0,0,0,0.3), 0 0 12px hsl(var(--gold) / 0.15)',
-                  }} />
-                  <div style={{ display: 'flex', width: '100%', fontSize: '9px', color: 'hsl(var(--muted-foreground))', fontWeight: 500 }}>
-                    <span style={{ flex: 1, textAlign: 'center' }}>Low</span>
-                    <span style={{ flex: 1, textAlign: 'center' }}>Medium</span>
-                    <span style={{ flex: 1, textAlign: 'center' }}>High</span>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "6px",
+                    width: "100%",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "100%",
+                      minWidth: 0,
+                      height: "14px",
+                      borderRadius: "6px",
+                      background:
+                        "linear-gradient(to right, rgba(65, 105, 225, 0.8), rgb(0, 255, 127), rgb(255, 255, 0), rgb(255, 165, 0), rgb(255, 0, 0), rgb(139, 0, 0))",
+                      border: "1px solid hsl(var(--gold) / 0.35)",
+                      boxShadow:
+                        "inset 0 1px 3px rgba(0,0,0,0.3), 0 0 12px hsl(var(--gold) / 0.15)",
+                    }}
+                  />
+                  <div
+                    style={{
+                      display: "flex",
+                      width: "100%",
+                      fontSize: "9px",
+                      color: "hsl(var(--muted-foreground))",
+                      fontWeight: 500,
+                    }}
+                  >
+                    <span style={{ flex: 1, textAlign: "center" }}>Low</span>
+                    <span style={{ flex: 1, textAlign: "center" }}>Medium</span>
+                    <span style={{ flex: 1, textAlign: "center" }}>High</span>
                   </div>
                 </div>
               </>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: "4px" }}
+              >
                 <p
                   style={{
-                    fontSize: '9px',
+                    fontSize: "9px",
                     fontWeight: 600,
-                    color: 'hsl(var(--gold))',
-                    marginBottom: '4px',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.12em',
-                    textAlign: 'center',
-                    width: '100%',
+                    color: "hsl(var(--gold))",
+                    marginBottom: "4px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.12em",
+                    textAlign: "center",
+                    width: "100%",
                   }}
                 >
                   Activity
@@ -4284,27 +5477,45 @@ export const MapboxHeatmap = ({ onVenueSelect, onParkingSelect, venues: allVenue
                     Two columns on mobile so the extra tier costs no height. */}
                 <div
                   style={{
-                    display: 'grid',
-                    gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, auto)',
-                    gap: isMobile ? '4px 8px' : '8px',
-                    width: '100%',
-                    justifyContent: 'center',
-                    alignItems: 'center',
+                    display: "grid",
+                    gridTemplateColumns: isMobile
+                      ? "1fr 1fr"
+                      : "repeat(4, auto)",
+                    gap: isMobile ? "4px 8px" : "8px",
+                    width: "100%",
+                    justifyContent: "center",
+                    alignItems: "center",
                   }}
                 >
-                  {activityLegendTiers(mapStyle === 'light' || mapStyle === 'streets').map((tier) => (
-                    <div key={tier.id} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  {activityLegendTiers(
+                    mapStyle === "light" || mapStyle === "streets",
+                  ).map((tier) => (
+                    <div
+                      key={tier.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                    >
                       <div
                         style={{
-                          width: '8px',
-                          height: '8px',
+                          width: "8px",
+                          height: "8px",
                           flexShrink: 0,
-                          borderRadius: '50%',
+                          borderRadius: "50%",
                           background: tier.color,
-                          boxShadow: `0 0 0 1.5px ${casingFor(mapStyle === 'light' || mapStyle === 'streets')}`,
+                          boxShadow: `0 0 0 1.5px ${casingFor(mapStyle === "light" || mapStyle === "streets")}`,
                         }}
                       />
-                      <span style={{ fontSize: '9px', color: 'hsl(var(--foreground))' }}>{tier.label}</span>
+                      <span
+                        style={{
+                          fontSize: "9px",
+                          color: "hsl(var(--foreground))",
+                        }}
+                      >
+                        {tier.label}
+                      </span>
                     </div>
                   ))}
                 </div>

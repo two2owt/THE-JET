@@ -4,7 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { RefreshCw, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -63,12 +69,19 @@ export function ManualDealSyncPanel() {
         action,
         deal: { ...extraFields, id },
       };
-      const { data, error } = await supabase.functions.invoke("admin-sync-merchant-deal", {
-        body: payload,
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "admin-sync-merchant-deal",
+        {
+          body: payload,
+        },
+      );
       if (error) throw error;
 
-      const result = data as { ok?: boolean; status?: number; result?: unknown } | null;
+      const result = data as {
+        ok?: boolean;
+        status?: number;
+        result?: unknown;
+      } | null;
       setLastResult(JSON.stringify(result?.result ?? result, null, 2));
       if (result?.ok) {
         toast.success(`Sync succeeded (${action})`);
@@ -87,10 +100,14 @@ export function ManualDealSyncPanel() {
   return (
     <div className="rounded-2xl border border-border/60 bg-card/60 backdrop-blur-xl p-5 sm:p-6 flex flex-col gap-5">
       <div>
-        <h2 className="text-lg font-display font-semibold">Manual merchant deal sync</h2>
+        <h2 className="text-lg font-display font-semibold">
+          Manual merchant deal sync
+        </h2>
         <p className="text-sm text-muted-foreground">
-          Force-trigger the <code className="text-xs">sync-merchant-deals</code> webhook for a specific deal ID.
-          Useful when JET Bridge didn&apos;t fire (or fired with a bad secret) and the deal is missing from the Hot tab.
+          Force-trigger the <code className="text-xs">sync-merchant-deals</code>{" "}
+          webhook for a specific deal ID. Useful when JET Bridge didn&apos;t
+          fire (or fired with a bad secret) and the deal is missing from the Hot
+          tab.
         </p>
       </div>
 
@@ -98,7 +115,9 @@ export function ManualDealSyncPanel() {
         <div className="flex flex-col gap-2">
           <Label>Action</Label>
           <Select value={action} onValueChange={(v) => setAction(v as Action)}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="create">create (upsert)</SelectItem>
               <SelectItem value="update">update</SelectItem>
@@ -131,14 +150,19 @@ export function ManualDealSyncPanel() {
             className="font-mono text-xs"
           />
           <p className="text-xs text-muted-foreground">
-            Paste the deal record from JET Bridge. The <code>id</code> field above will be merged in automatically.
+            Paste the deal record from JET Bridge. The <code>id</code> field
+            above will be merged in automatically.
           </p>
         </div>
       )}
 
       <div className="flex justify-end">
         <Button onClick={handleRun} disabled={running} className="gap-2">
-          {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+          {running ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="h-4 w-4" />
+          )}
           {running ? "Syncing…" : `Trigger ${action}`}
         </Button>
       </div>

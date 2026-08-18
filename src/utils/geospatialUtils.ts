@@ -10,7 +10,7 @@ export function calculateDistance(
   lat1: number,
   lon1: number,
   lat2: number,
-  lon2: number
+  lon2: number,
 ): number {
   const R = 6371; // Earth's radius in kilometers
   const dLat = toRadians(lat2 - lat1);
@@ -43,13 +43,13 @@ function toRadians(degrees: number): number {
 export function getDynamicRadius(neighborhoodName?: string): number {
   // Default radius in kilometers
   const DEFAULT_RADIUS = 10;
-  
+
   // Urban areas (smaller radius)
   const URBAN_RADIUS = 5;
-  
+
   // Suburban areas (medium radius)
   const SUBURBAN_RADIUS = 15;
-  
+
   // Rural areas (larger radius)
   const RURAL_RADIUS = 25;
 
@@ -58,14 +58,14 @@ export function getDynamicRadius(neighborhoodName?: string): number {
   const name = neighborhoodName.toLowerCase();
 
   // Urban keywords
-  const urbanKeywords = ['downtown', 'uptown', 'center', 'plaza', 'district'];
-  if (urbanKeywords.some(keyword => name.includes(keyword))) {
+  const urbanKeywords = ["downtown", "uptown", "center", "plaza", "district"];
+  if (urbanKeywords.some((keyword) => name.includes(keyword))) {
     return URBAN_RADIUS;
   }
 
   // Suburban keywords
-  const suburbanKeywords = ['south', 'north', 'east', 'west', 'hills', 'park'];
-  if (suburbanKeywords.some(keyword => name.includes(keyword))) {
+  const suburbanKeywords = ["south", "north", "east", "west", "hills", "park"];
+  if (suburbanKeywords.some((keyword) => name.includes(keyword))) {
     return SUBURBAN_RADIUS;
   }
 

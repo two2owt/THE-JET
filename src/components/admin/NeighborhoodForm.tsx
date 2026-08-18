@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
 
-type Neighborhood = Database['public']['Tables']['neighborhoods']['Row'];
+type Neighborhood = Database["public"]["Tables"]["neighborhoods"]["Row"];
 
 const neighborhoodSchema = z.object({
   name: z.string().min(1).max(200),
@@ -27,11 +27,15 @@ interface NeighborhoodFormProps {
   onSuccess: () => void;
 }
 
-export const NeighborhoodForm = ({ neighborhood, onClose, onSuccess }: NeighborhoodFormProps) => {
+export const NeighborhoodForm = ({
+  neighborhood,
+  onClose,
+  onSuccess,
+}: NeighborhoodFormProps) => {
   const [formData, setFormData] = useState({
-    name: neighborhood?.name || '',
-    slug: neighborhood?.slug || '',
-    description: neighborhood?.description || '',
+    name: neighborhood?.name || "",
+    slug: neighborhood?.slug || "",
+    description: neighborhood?.description || "",
     center_lat: neighborhood ? Number(neighborhood.center_lat) : 0,
     center_lng: neighborhood ? Number(neighborhood.center_lng) : 0,
     active: neighborhood?.active ?? true,
@@ -41,10 +45,10 @@ export const NeighborhoodForm = ({ neighborhood, onClose, onSuccess }: Neighborh
   const saveMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       const validatedData = neighborhoodSchema.parse(data);
-      
+
       if (neighborhood) {
         const { error } = await supabase
-          .from('neighborhoods')
+          .from("neighborhoods")
           .update({
             name: validatedData.name,
             slug: validatedData.slug,
@@ -54,13 +58,12 @@ export const NeighborhoodForm = ({ neighborhood, onClose, onSuccess }: Neighborh
             boundary_points: data.boundary_points,
             active: data.active,
           })
-          .eq('id', neighborhood.id);
-        
+          .eq("id", neighborhood.id);
+
         if (error) throw error;
       } else {
-        const { error } = await supabase
-          .from('neighborhoods')
-          .insert([{
+        const { error } = await supabase.from("neighborhoods").insert([
+          {
             name: validatedData.name,
             slug: validatedData.slug,
             description: validatedData.description || null,
@@ -68,18 +71,21 @@ export const NeighborhoodForm = ({ neighborhood, onClose, onSuccess }: Neighborh
             center_lng: validatedData.center_lng,
             boundary_points: data.boundary_points,
             active: data.active,
-          }]);
-        
+          },
+        ]);
+
         if (error) throw error;
       }
     },
     onSuccess: () => {
-      toast.success(neighborhood ? 'Neighborhood updated' : 'Neighborhood created');
+      toast.success(
+        neighborhood ? "Neighborhood updated" : "Neighborhood created",
+      );
       onSuccess();
     },
     onError: (error) => {
-      toast.error('Failed to save neighborhood');
-      console.error('Save error:', error);
+      toast.error("Failed to save neighborhood");
+      console.error("Save error:", error);
     },
   });
 
@@ -91,7 +97,9 @@ export const NeighborhoodForm = ({ neighborhood, onClose, onSuccess }: Neighborh
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{neighborhood ? 'Edit Neighborhood' : 'Create Neighborhood'}</CardTitle>
+        <CardTitle>
+          {neighborhood ? "Edit Neighborhood" : "Create Neighborhood"}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -100,7 +108,9 @@ export const NeighborhoodForm = ({ neighborhood, onClose, onSuccess }: Neighborh
             <Input
               id="name"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
               maxLength={200}
               required
             />
@@ -111,7 +121,9 @@ export const NeighborhoodForm = ({ neighborhood, onClose, onSuccess }: Neighborh
             <Input
               id="slug"
               value={formData.slug}
-              onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, slug: e.target.value })
+              }
               maxLength={200}
               placeholder="lowercase-with-dashes"
               required
@@ -123,7 +135,9 @@ export const NeighborhoodForm = ({ neighborhood, onClose, onSuccess }: Neighborh
             <Textarea
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
               maxLength={1000}
             />
           </div>
@@ -136,7 +150,12 @@ export const NeighborhoodForm = ({ neighborhood, onClose, onSuccess }: Neighborh
                 type="number"
                 step="0.000001"
                 value={formData.center_lat}
-                onChange={(e) => setFormData({ ...formData, center_lat: parseFloat(e.target.value) })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    center_lat: parseFloat(e.target.value),
+                  })
+                }
                 required
               />
             </div>
@@ -148,7 +167,12 @@ export const NeighborhoodForm = ({ neighborhood, onClose, onSuccess }: Neighborh
                 type="number"
                 step="0.000001"
                 value={formData.center_lng}
-                onChange={(e) => setFormData({ ...formData, center_lng: parseFloat(e.target.value) })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    center_lng: parseFloat(e.target.value),
+                  })
+                }
                 required
               />
             </div>
@@ -158,14 +182,16 @@ export const NeighborhoodForm = ({ neighborhood, onClose, onSuccess }: Neighborh
             <Switch
               id="active"
               checked={formData.active}
-              onCheckedChange={(checked) => setFormData({ ...formData, active: checked })}
+              onCheckedChange={(checked) =>
+                setFormData({ ...formData, active: checked })
+              }
             />
             <Label htmlFor="active">Active</Label>
           </div>
 
           <div className="flex gap-2 pt-4">
             <Button type="submit" disabled={saveMutation.isPending}>
-              {saveMutation.isPending ? 'Saving...' : 'Save'}
+              {saveMutation.isPending ? "Saving..." : "Save"}
             </Button>
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel

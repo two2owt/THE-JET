@@ -21,14 +21,14 @@ const PopoverContent = React.forwardRef<
         className,
       )}
       style={{
-        background: 'hsl(var(--popover))',
-        color: 'hsl(var(--popover-foreground))',
-        border: '1px solid hsl(var(--border) / 0.4)',
-        borderRadius: '8px',
-        padding: '16px',
-        boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
-        backdropFilter: 'blur(24px)',
-        WebkitBackdropFilter: 'blur(24px)',
+        background: "hsl(var(--popover))",
+        color: "hsl(var(--popover-foreground))",
+        border: "1px solid hsl(var(--border) / 0.4)",
+        borderRadius: "8px",
+        padding: "16px",
+        boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
         zIndex: 50,
       }}
       {...props}

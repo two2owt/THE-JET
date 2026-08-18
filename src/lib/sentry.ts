@@ -7,7 +7,7 @@ export const initSentry = async () => {
 
   // Dynamic import ensures Sentry is in its own chunk and only loaded when called
   const Sentry = await import("@sentry/react");
-  
+
   Sentry.init({
     dsn: import.meta.env.VITE_SENTRY_DSN,
     integrations: [

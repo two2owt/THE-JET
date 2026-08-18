@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, MailWarning, Send } from "lucide-react";
@@ -34,7 +40,9 @@ export const UnverifiedNudgePanel = () => {
     queryFn: async (): Promise<DirectoryRow[]> => {
       const { data, error } = await supabase.rpc("admin_user_directory");
       if (error) throw error;
-      return ((data ?? []) as DirectoryRow[]).filter((u) => !u.email_confirmed_at && u.email);
+      return ((data ?? []) as DirectoryRow[]).filter(
+        (u) => !u.email_confirmed_at && u.email,
+      );
     },
   });
 
@@ -45,24 +53,35 @@ export const UnverifiedNudgePanel = () => {
     setBusy(label);
     try {
       const redirectTo = `${window.location.origin}/verification-success`;
-      const { data: res, error } = await supabase.functions.invoke("admin-bulk-provision-users", {
-        body: {
-          users: emails.map((email) => ({ email, method: "reverify" })),
-          inviteTemplate: { redirectTo },
+      const { data: res, error } = await supabase.functions.invoke(
+        "admin-bulk-provision-users",
+        {
+          body: {
+            users: emails.map((email) => ({ email, method: "reverify" })),
+            inviteTemplate: { redirectTo },
+          },
         },
-      });
+      );
       if (error) throw error;
       const results = (res?.results ?? []) as NudgeResult[];
       const sent = results.filter((r) => r.status === "resent").length;
       const failed = results.filter((r) => r.status === "error");
-      if (sent) toast.success(`Verification email sent to ${sent} account${sent === 1 ? "" : "s"}`);
+      if (sent)
+        toast.success(
+          `Verification email sent to ${sent} account${sent === 1 ? "" : "s"}`,
+        );
       if (failed.length) {
-        toast.error(failed[0]?.error ?? `Could not send to ${failed.length} account(s)`);
+        toast.error(
+          failed[0]?.error ?? `Could not send to ${failed.length} account(s)`,
+        );
       }
-      if (!sent && !failed.length) toast.info("Nothing to send — those addresses are already confirmed");
+      if (!sent && !failed.length)
+        toast.info("Nothing to send — those addresses are already confirmed");
       refetch();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not send verification emails");
+      toast.error(
+        e instanceof Error ? e.message : "Could not send verification emails",
+      );
     } finally {
       setBusy(null);
     }
@@ -78,13 +97,19 @@ export const UnverifiedNudgePanel = () => {
               Unverified accounts
             </CardTitle>
             <CardDescription>
-              Accounts created but never email-confirmed — re-send the verification email
+              Accounts created but never email-confirmed — re-send the
+              verification email
             </CardDescription>
           </div>
           <Button
             size="sm"
             disabled={!unverified.length || busy !== null}
-            onClick={() => sendNudge(unverified.map((u) => u.email!), "__all__")}
+            onClick={() =>
+              sendNudge(
+                unverified.map((u) => u.email!),
+                "__all__",
+              )
+            }
           >
             {busy === "__all__" ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -119,7 +144,10 @@ export const UnverifiedNudgePanel = () => {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="border-amber-500/40 text-amber-400">
+                  <Badge
+                    variant="outline"
+                    className="border-amber-500/40 text-amber-400"
+                  >
                     Unverified
                   </Badge>
                   <Button

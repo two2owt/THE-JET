@@ -24,7 +24,7 @@ export const ReportIssueDialog = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!subject.trim() || !description.trim()) {
       toast.error("Please fill in all fields");
       return;
@@ -33,8 +33,10 @@ export const ReportIssueDialog = () => {
     setIsSubmitting(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       const { error } = await supabase.functions.invoke(
         "send-admin-notification",
         {
@@ -45,10 +47,10 @@ export const ReportIssueDialog = () => {
             details: {
               "Reported by": user?.email || "Anonymous",
               "User ID": user?.id || "N/A",
-              "Timestamp": new Date().toLocaleString(),
+              Timestamp: new Date().toLocaleString(),
             },
           },
-        }
+        },
       );
 
       if (error) throw error;
@@ -68,7 +70,10 @@ export const ReportIssueDialog = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2 rounded-full border-primary/40 bg-transparent text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary">
+        <Button
+          variant="outline"
+          className="gap-2 rounded-full border-primary/40 bg-transparent text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary"
+        >
           <AlertCircle className="h-4 w-4" />
           Report Issue
         </Button>
@@ -78,7 +83,8 @@ export const ReportIssueDialog = () => {
           <DialogHeader>
             <DialogTitle>Report an Issue</DialogTitle>
             <DialogDescription>
-              Let us know about any problems you're experiencing. We'll get back to you as soon as possible.
+              Let us know about any problems you're experiencing. We'll get back
+              to you as soon as possible.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -105,7 +111,11 @@ export const ReportIssueDialog = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" disabled={isSubmitting} className="rounded-full shadow-lg shadow-primary/20 font-semibold tracking-wide">
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="rounded-full shadow-lg shadow-primary/20 font-semibold tracking-wide"
+            >
               {isSubmitting ? "Sending..." : "Submit Report"}
             </Button>
           </DialogFooter>

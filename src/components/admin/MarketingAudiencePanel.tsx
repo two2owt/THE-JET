@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Megaphone, RefreshCw, ExternalLink } from "lucide-react";
@@ -24,7 +30,11 @@ type SyncLogRow = {
 export const MarketingAudiencePanel = () => {
   const [syncing, setSyncing] = useState(false);
 
-  const { data: optedIn, isLoading: loadingCount, refetch: refetchCount } = useQuery({
+  const {
+    data: optedIn,
+    isLoading: loadingCount,
+    refetch: refetchCount,
+  } = useQuery({
     queryKey: ["admin", "marketing-optin-count"],
     staleTime: 30_000,
     queryFn: async () => {
@@ -43,7 +53,9 @@ export const MarketingAudiencePanel = () => {
     queryFn: async (): Promise<SyncLogRow[]> => {
       const { data, error } = await supabase
         .from("marketing_audience_sync_log")
-        .select("id, audience_id, synced_count, removed_count, failed_count, created_at")
+        .select(
+          "id, audience_id, synced_count, removed_count, failed_count, created_at",
+        )
         .order("created_at", { ascending: false })
         .limit(5);
       if (error) throw error;
@@ -60,7 +72,10 @@ export const MarketingAudiencePanel = () => {
 
       const res = await fetch("/api/public/hooks/sync-resend-audience", {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
         body: "{}",
       });
       const payload = (await res.json()) as {
@@ -70,13 +85,16 @@ export const MarketingAudiencePanel = () => {
         unsubscribed?: number;
         failures?: string[];
       };
-      if (!res.ok) throw new Error(payload.error ?? `Sync failed (${res.status})`);
+      if (!res.ok)
+        throw new Error(payload.error ?? `Sync failed (${res.status})`);
 
       toast.success(
         `Audience synced — ${payload.synced ?? 0} contacts up to date, ${payload.unsubscribed ?? 0} opted out`,
       );
       if (payload.failures?.length) {
-        toast.error(`${payload.failures.length} contact(s) failed: ${payload.failures[0]}`);
+        toast.error(
+          `${payload.failures.length} contact(s) failed: ${payload.failures[0]}`,
+        );
       }
       refetchCount();
       refetchHistory();
@@ -97,9 +115,9 @@ export const MarketingAudiencePanel = () => {
           Newsletter audience
         </CardTitle>
         <CardDescription>
-          Syncs everyone who opted into the JET newsletter into your Resend audience. Write
-          and send the campaign from Resend Broadcasts — opt-outs and bounces flow back here
-          automatically.
+          Syncs everyone who opted into the JET newsletter into your Resend
+          audience. Write and send the campaign from Resend Broadcasts —
+          opt-outs and bounces flow back here automatically.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -109,8 +127,8 @@ export const MarketingAudiencePanel = () => {
           </Badge>
           {last && (
             <Badge variant="outline">
-              Last sync {new Date(last.created_at).toLocaleString()} · {last.synced_count} synced ·{" "}
-              {last.removed_count} removed
+              Last sync {new Date(last.created_at).toLocaleString()} ·{" "}
+              {last.synced_count} synced · {last.removed_count} removed
               {last.failed_count ? ` · ${last.failed_count} failed` : ""}
             </Badge>
           )}
@@ -126,7 +144,11 @@ export const MarketingAudiencePanel = () => {
             Sync audience to Resend
           </Button>
           <Button variant="outline" asChild>
-            <a href="https://resend.com/broadcasts" target="_blank" rel="noreferrer">
+            <a
+              href="https://resend.com/broadcasts"
+              target="_blank"
+              rel="noreferrer"
+            >
               <ExternalLink className="w-4 h-4 mr-2" />
               Open Resend Broadcasts
             </a>
@@ -134,9 +156,9 @@ export const MarketingAudiencePanel = () => {
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Only email-verified users who turned on “JET Newsletter” in settings are included.
-          Suppressed, bounced and unsubscribed addresses are marked unsubscribed in Resend and
-          never re-added.
+          Only email-verified users who turned on “JET Newsletter” in settings
+          are included. Suppressed, bounced and unsubscribed addresses are
+          marked unsubscribed in Resend and never re-added.
         </p>
       </CardContent>
     </Card>

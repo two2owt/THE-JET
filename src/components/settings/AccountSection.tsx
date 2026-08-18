@@ -7,7 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DeleteAccountDialog } from "@/components/settings/DeleteAccountDialog";
-import { Mail, Loader2, ShieldAlert, Save, AtSign, AlertTriangle, KeyRound } from "lucide-react";
+import {
+  Mail,
+  Loader2,
+  ShieldAlert,
+  Save,
+  AtSign,
+  AlertTriangle,
+  KeyRound,
+} from "lucide-react";
 import { buildAuthRedirectUrl } from "@/lib/utils";
 
 /**
@@ -77,7 +85,9 @@ export function AccountSection({ userId, currentEmail }: AccountSectionProps) {
       return;
     }
 
-    if (parsed.data.email.toLowerCase() === (currentEmail || "").toLowerCase()) {
+    if (
+      parsed.data.email.toLowerCase() === (currentEmail || "").toLowerCase()
+    ) {
       setEmailErrors({ email: "This is already your current email" });
       return;
     }
@@ -86,7 +96,7 @@ export function AccountSection({ userId, currentEmail }: AccountSectionProps) {
     try {
       const { error } = await supabase.auth.updateUser(
         { email: parsed.data.email },
-        { emailRedirectTo: buildAuthRedirectUrl("/verification-success") }
+        { emailRedirectTo: buildAuthRedirectUrl("/verification-success") },
       );
       if (error) throw error;
 
@@ -95,7 +105,8 @@ export function AccountSection({ userId, currentEmail }: AccountSectionProps) {
       });
       setNewEmail("");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to update email";
+      const message =
+        err instanceof Error ? err.message : "Failed to update email";
       setEmailErrors({ email: message });
       toast.error("Couldn't update email", { description: message });
     } finally {
@@ -128,7 +139,8 @@ export function AccountSection({ userId, currentEmail }: AccountSectionProps) {
       setPassword("");
       setConfirm("");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to update password";
+      const message =
+        err instanceof Error ? err.message : "Failed to update password";
       setPwErrors({ password: message });
       toast.error("Couldn't update password", { description: message });
     } finally {
@@ -156,147 +168,210 @@ export function AccountSection({ userId, currentEmail }: AccountSectionProps) {
       </header>
 
       <div className="p-5 sm:p-7 space-y-7">
-      {/* Change email */}
-      <form onSubmit={handleChangeEmail} className="space-y-3" noValidate>
-        <div className="space-y-2">
-          <Label htmlFor="account-email" className="flex items-center gap-1.5 text-sm font-semibold">
-            <AtSign className="w-3.5 h-3.5 text-primary/80" />
-            Email address
-          </Label>
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg border-hairline bg-popover/40 text-xs">
-            <Mail className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-            <span className="text-muted-foreground">Current:</span>
-            <span className="font-medium text-foreground truncate">{currentEmail ?? "—"}</span>
+        {/* Change email */}
+        <form onSubmit={handleChangeEmail} className="space-y-3" noValidate>
+          <div className="space-y-2">
+            <Label
+              htmlFor="account-email"
+              className="flex items-center gap-1.5 text-sm font-semibold"
+            >
+              <AtSign className="w-3.5 h-3.5 text-primary/80" />
+              Email address
+            </Label>
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg border-hairline bg-popover/40 text-xs">
+              <Mail className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+              <span className="text-muted-foreground">Current:</span>
+              <span className="font-medium text-foreground truncate">
+                {currentEmail ?? "—"}
+              </span>
+            </div>
+            <Input
+              id="account-email"
+              type="email"
+              autoComplete="email"
+              inputMode="email"
+              placeholder="new@example.com"
+              value={newEmail}
+              onChange={(e) => {
+                setNewEmail(e.target.value);
+                if (emailErrors.email) setEmailErrors({});
+              }}
+              aria-invalid={!!emailErrors.email}
+              aria-describedby={
+                emailErrors.email ? "account-email-error" : undefined
+              }
+              disabled={isSavingEmail}
+              className={
+                emailErrors.email
+                  ? "border-destructive/60 focus-visible:ring-destructive/40"
+                  : ""
+              }
+            />
+            {emailErrors.email && (
+              <p
+                id="account-email-error"
+                role="alert"
+                className="flex items-center gap-1.5 text-xs font-medium text-destructive"
+              >
+                <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+                {emailErrors.email}
+              </p>
+            )}
           </div>
-          <Input
-            id="account-email"
-            type="email"
-            autoComplete="email"
-            inputMode="email"
-            placeholder="new@example.com"
-            value={newEmail}
-            onChange={(e) => {
-              setNewEmail(e.target.value);
-              if (emailErrors.email) setEmailErrors({});
-            }}
-            aria-invalid={!!emailErrors.email}
-            aria-describedby={emailErrors.email ? "account-email-error" : undefined}
-            disabled={isSavingEmail}
-            className={emailErrors.email ? "border-destructive/60 focus-visible:ring-destructive/40" : ""}
-          />
-          {emailErrors.email && (
-            <p id="account-email-error" role="alert" className="flex items-center gap-1.5 text-xs font-medium text-destructive">
-              <AlertTriangle className="w-3 h-3 flex-shrink-0" />
-              {emailErrors.email}
-            </p>
-          )}
-        </div>
-        <Button type="submit" variant="jet" disabled={isSavingEmail || !newEmail.trim()} className="rounded-full shadow-lg shadow-primary/20 font-semibold tracking-wide">
-          {isSavingEmail ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Sending confirmation…
-            </>
-          ) : (
-            <>
-              <Mail className="w-4 h-4 mr-2" />
-              Change email
-            </>
-          )}
-        </Button>
-      </form>
+          <Button
+            type="submit"
+            variant="jet"
+            disabled={isSavingEmail || !newEmail.trim()}
+            className="rounded-full shadow-lg shadow-primary/20 font-semibold tracking-wide"
+          >
+            {isSavingEmail ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Sending confirmation…
+              </>
+            ) : (
+              <>
+                <Mail className="w-4 h-4 mr-2" />
+                Change email
+              </>
+            )}
+          </Button>
+        </form>
 
-      <div className="divider-luxe" />
+        <div className="divider-luxe" />
 
-      {/* Change password */}
-      <form onSubmit={handleChangePassword} className="space-y-3" noValidate>
-        <div className="space-y-2">
-          <Label htmlFor="account-password" className="flex items-center gap-1.5 text-sm font-semibold">
-            <KeyRound className="w-3.5 h-3.5 text-primary/80" />
-            New password
-          </Label>
-          <Input
-            id="account-password"
-            type="password"
-            autoComplete="new-password"
-            placeholder="At least 8 characters"
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              if (pwErrors.password) setPwErrors((prev) => ({ ...prev, password: undefined }));
-            }}
-            aria-invalid={!!pwErrors.password}
-            aria-describedby={pwErrors.password ? "account-password-error" : "account-password-hint"}
-            disabled={isSavingPw}
-            className={pwErrors.password ? "border-destructive/60 focus-visible:ring-destructive/40" : ""}
-          />
-          {pwErrors.password ? (
-            <p id="account-password-error" role="alert" className="flex items-center gap-1.5 text-xs font-medium text-destructive">
-              <AlertTriangle className="w-3 h-3 flex-shrink-0" />
-              {pwErrors.password}
-            </p>
-          ) : (
-            <p id="account-password-hint" className="text-xs text-muted-foreground">
-              Use 8+ characters with uppercase, lowercase, and a number.
-            </p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="account-password-confirm" className="text-sm font-semibold">Confirm new password</Label>
-          <Input
-            id="account-password-confirm"
-            type="password"
-            autoComplete="new-password"
-            placeholder="Re-enter password"
-            value={confirm}
-            onChange={(e) => {
-              setConfirm(e.target.value);
-              if (pwErrors.confirm) setPwErrors((prev) => ({ ...prev, confirm: undefined }));
-            }}
-            aria-invalid={!!pwErrors.confirm}
-            aria-describedby={pwErrors.confirm ? "account-password-confirm-error" : undefined}
-            disabled={isSavingPw}
-            className={pwErrors.confirm ? "border-destructive/60 focus-visible:ring-destructive/40" : ""}
-          />
-          {pwErrors.confirm && (
-            <p id="account-password-confirm-error" role="alert" className="flex items-center gap-1.5 text-xs font-medium text-destructive">
-              <AlertTriangle className="w-3 h-3 flex-shrink-0" />
-              {pwErrors.confirm}
-            </p>
-          )}
-        </div>
-
-        <Button type="submit" variant="jet" disabled={isSavingPw || !password || !confirm} className="rounded-full shadow-lg shadow-primary/20 font-semibold tracking-wide">
-          {isSavingPw ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Updating…
-            </>
-          ) : (
-            <>
-              <Save className="w-4 h-4 mr-2" />
-              Update password
-            </>
-          )}
-        </Button>
-      </form>
-
-      {/* Danger zone */}
-      <div className="relative rounded-xl border border-destructive/30 bg-destructive/5 p-4 sm:p-5 space-y-3">
-        <div className="flex items-start gap-3">
-          <div className="shrink-0 w-8 h-8 rounded-full bg-destructive/15 ring-1 ring-destructive/30 flex items-center justify-center">
-            <AlertTriangle className="w-4 h-4 text-destructive" />
+        {/* Change password */}
+        <form onSubmit={handleChangePassword} className="space-y-3" noValidate>
+          <div className="space-y-2">
+            <Label
+              htmlFor="account-password"
+              className="flex items-center gap-1.5 text-sm font-semibold"
+            >
+              <KeyRound className="w-3.5 h-3.5 text-primary/80" />
+              New password
+            </Label>
+            <Input
+              id="account-password"
+              type="password"
+              autoComplete="new-password"
+              placeholder="At least 8 characters"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (pwErrors.password)
+                  setPwErrors((prev) => ({ ...prev, password: undefined }));
+              }}
+              aria-invalid={!!pwErrors.password}
+              aria-describedby={
+                pwErrors.password
+                  ? "account-password-error"
+                  : "account-password-hint"
+              }
+              disabled={isSavingPw}
+              className={
+                pwErrors.password
+                  ? "border-destructive/60 focus-visible:ring-destructive/40"
+                  : ""
+              }
+            />
+            {pwErrors.password ? (
+              <p
+                id="account-password-error"
+                role="alert"
+                className="flex items-center gap-1.5 text-xs font-medium text-destructive"
+              >
+                <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+                {pwErrors.password}
+              </p>
+            ) : (
+              <p
+                id="account-password-hint"
+                className="text-xs text-muted-foreground"
+              >
+                Use 8+ characters with uppercase, lowercase, and a number.
+              </p>
+            )}
           </div>
-          <div className="flex-1 min-w-0 space-y-0.5">
-            <h3 className="text-sm font-bold text-destructive tracking-tight">Danger zone</h3>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Permanently delete your account and all associated data. This action cannot be undone.
-            </p>
+
+          <div className="space-y-2">
+            <Label
+              htmlFor="account-password-confirm"
+              className="text-sm font-semibold"
+            >
+              Confirm new password
+            </Label>
+            <Input
+              id="account-password-confirm"
+              type="password"
+              autoComplete="new-password"
+              placeholder="Re-enter password"
+              value={confirm}
+              onChange={(e) => {
+                setConfirm(e.target.value);
+                if (pwErrors.confirm)
+                  setPwErrors((prev) => ({ ...prev, confirm: undefined }));
+              }}
+              aria-invalid={!!pwErrors.confirm}
+              aria-describedby={
+                pwErrors.confirm ? "account-password-confirm-error" : undefined
+              }
+              disabled={isSavingPw}
+              className={
+                pwErrors.confirm
+                  ? "border-destructive/60 focus-visible:ring-destructive/40"
+                  : ""
+              }
+            />
+            {pwErrors.confirm && (
+              <p
+                id="account-password-confirm-error"
+                role="alert"
+                className="flex items-center gap-1.5 text-xs font-medium text-destructive"
+              >
+                <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+                {pwErrors.confirm}
+              </p>
+            )}
           </div>
+
+          <Button
+            type="submit"
+            variant="jet"
+            disabled={isSavingPw || !password || !confirm}
+            className="rounded-full shadow-lg shadow-primary/20 font-semibold tracking-wide"
+          >
+            {isSavingPw ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Updating…
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4 mr-2" />
+                Update password
+              </>
+            )}
+          </Button>
+        </form>
+
+        {/* Danger zone */}
+        <div className="relative rounded-xl border border-destructive/30 bg-destructive/5 p-4 sm:p-5 space-y-3">
+          <div className="flex items-start gap-3">
+            <div className="shrink-0 w-8 h-8 rounded-full bg-destructive/15 ring-1 ring-destructive/30 flex items-center justify-center">
+              <AlertTriangle className="w-4 h-4 text-destructive" />
+            </div>
+            <div className="flex-1 min-w-0 space-y-0.5">
+              <h3 className="text-sm font-bold text-destructive tracking-tight">
+                Danger zone
+              </h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Permanently delete your account and all associated data. This
+                action cannot be undone.
+              </p>
+            </div>
+          </div>
+          <DeleteAccountDialog userId={userId} />
         </div>
-        <DeleteAccountDialog userId={userId} />
-      </div>
       </div>
     </Card>
   );

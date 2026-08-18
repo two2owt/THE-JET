@@ -16,7 +16,10 @@ export const readCachedOnboardingStatus = (userId: string): boolean | null => {
   }
 };
 
-export const writeCachedOnboardingStatus = (userId: string, completed: boolean): void => {
+export const writeCachedOnboardingStatus = (
+  userId: string,
+  completed: boolean,
+): void => {
   try {
     sessionStorage.setItem(KEY_PREFIX + userId, completed ? "1" : "0");
   } catch {

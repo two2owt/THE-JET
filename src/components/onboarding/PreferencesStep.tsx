@@ -2,7 +2,19 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { MapPin, Sparkles, ChevronDown, ChevronUp, Check, AlertCircle, UtensilsCrossed, Wine, Moon, CalendarDays, LucideIcon } from "lucide-react";
+import {
+  MapPin,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
+  Check,
+  AlertCircle,
+  UtensilsCrossed,
+  Wine,
+  Moon,
+  CalendarDays,
+  LucideIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PreferencesStepProps {
@@ -47,66 +59,149 @@ interface EventsPreferences {
 }
 
 const FOOD_OPTIONS = {
-  cuisineType: ["American", "Italian", "Mexican", "Asian Fusion", "Mediterranean"],
+  cuisineType: [
+    "American",
+    "Italian",
+    "Mexican",
+    "Asian Fusion",
+    "Mediterranean",
+  ],
   dietaryPreference: ["Vegetarian", "Vegan", "Gluten-Free", "Keto", "Halal"],
   mealOccasion: ["Breakfast", "Brunch", "Lunch", "Dinner", "Late Night Bites"],
 };
 
 const DRINK_OPTIONS = {
-  coffeeTea: ["Espresso-based", "Cold brew", "Specialty teas", "Matcha", "Flavored lattes"],
-  barCocktail: ["Craft cocktails", "Classic cocktails", "Wine bar", "Craft beer", "Whiskey bar"],
-  atmosphere: ["Quiet & cozy", "Modern & upscale", "Casual & social", "Outdoor seating", "Live music friendly"],
+  coffeeTea: [
+    "Espresso-based",
+    "Cold brew",
+    "Specialty teas",
+    "Matcha",
+    "Flavored lattes",
+  ],
+  barCocktail: [
+    "Craft cocktails",
+    "Classic cocktails",
+    "Wine bar",
+    "Craft beer",
+    "Whiskey bar",
+  ],
+  atmosphere: [
+    "Quiet & cozy",
+    "Modern & upscale",
+    "Casual & social",
+    "Outdoor seating",
+    "Live music friendly",
+  ],
 };
 
 const NIGHTLIFE_OPTIONS = {
   venueType: ["Clubs", "Lounges", "Bars", "Rooftop venues", "Speakeasies"],
   musicPreference: ["Hip-Hop", "EDM", "Pop/Top 40", "Latin", "Live bands"],
-  crowdVibe: ["High-energy", "Chill/lounge", "Young professional", "Mixed crowd", "Exclusive/VIP"],
+  crowdVibe: [
+    "High-energy",
+    "Chill/lounge",
+    "Young professional",
+    "Mixed crowd",
+    "Exclusive/VIP",
+  ],
 };
 
 const EVENTS_OPTIONS = {
-  eventType: ["Concerts", "Festivals", "Sports events", "Comedy shows", "Cultural events"],
-  groupType: ["Solo", "Date night", "Friends/group outing", "Family-friendly", "Networking/meetups"],
-  timeSetting: ["Daytime events", "Evening events", "Outdoor", "Indoor", "Seasonal/holiday"],
+  eventType: [
+    "Concerts",
+    "Festivals",
+    "Sports events",
+    "Comedy shows",
+    "Cultural events",
+  ],
+  groupType: [
+    "Solo",
+    "Date night",
+    "Friends/group outing",
+    "Family-friendly",
+    "Networking/meetups",
+  ],
+  timeSetting: [
+    "Daytime events",
+    "Evening events",
+    "Outdoor",
+    "Indoor",
+    "Seasonal/holiday",
+  ],
 };
 
 const MAX_CATEGORIES = 3;
 const MAX_OPTIONS = 5;
 
-const PreferencesStep = ({ onBack, onNext, isLoading, initialPreferences }: PreferencesStepProps) => {
+const PreferencesStep = ({
+  onBack,
+  onNext,
+  isLoading,
+  initialPreferences,
+}: PreferencesStepProps) => {
   const init = initialPreferences ?? null;
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(init?.categories ?? []);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    init?.categories ?? [],
+  );
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [categoryError, setCategoryError] = useState<string | null>(null);
 
   // Food preferences
-  const [foodCuisine, setFoodCuisine] = useState<string[]>(init?.food?.cuisineType ?? []);
-  const [foodDietary, setFoodDietary] = useState<string[]>(init?.food?.dietaryPreference ?? []);
-  const [foodMeal, setFoodMeal] = useState<string[]>(init?.food?.mealOccasion ?? []);
+  const [foodCuisine, setFoodCuisine] = useState<string[]>(
+    init?.food?.cuisineType ?? [],
+  );
+  const [foodDietary, setFoodDietary] = useState<string[]>(
+    init?.food?.dietaryPreference ?? [],
+  );
+  const [foodMeal, setFoodMeal] = useState<string[]>(
+    init?.food?.mealOccasion ?? [],
+  );
 
   // Drink preferences
-  const [drinkCoffee, setDrinkCoffee] = useState<string[]>(init?.drink?.coffeeTea ?? []);
-  const [drinkBar, setDrinkBar] = useState<string[]>(init?.drink?.barCocktail ?? []);
-  const [drinkAtmosphere, setDrinkAtmosphere] = useState<string[]>(init?.drink?.atmosphere ?? []);
+  const [drinkCoffee, setDrinkCoffee] = useState<string[]>(
+    init?.drink?.coffeeTea ?? [],
+  );
+  const [drinkBar, setDrinkBar] = useState<string[]>(
+    init?.drink?.barCocktail ?? [],
+  );
+  const [drinkAtmosphere, setDrinkAtmosphere] = useState<string[]>(
+    init?.drink?.atmosphere ?? [],
+  );
 
   // Nightlife preferences
-  const [nightlifeVenue, setNightlifeVenue] = useState<string[]>(init?.nightlife?.venueType ?? []);
-  const [nightlifeMusic, setNightlifeMusic] = useState<string[]>(init?.nightlife?.musicPreference ?? []);
-  const [nightlifeCrowd, setNightlifeCrowd] = useState<string[]>(init?.nightlife?.crowdVibe ?? []);
+  const [nightlifeVenue, setNightlifeVenue] = useState<string[]>(
+    init?.nightlife?.venueType ?? [],
+  );
+  const [nightlifeMusic, setNightlifeMusic] = useState<string[]>(
+    init?.nightlife?.musicPreference ?? [],
+  );
+  const [nightlifeCrowd, setNightlifeCrowd] = useState<string[]>(
+    init?.nightlife?.crowdVibe ?? [],
+  );
 
   // Events preferences
-  const [eventsType, setEventsType] = useState<string[]>(init?.events?.eventType ?? []);
-  const [eventsGroup, setEventsGroup] = useState<string[]>(init?.events?.groupType ?? []);
-  const [eventsTime, setEventsTime] = useState<string[]>(init?.events?.timeSetting ?? []);
+  const [eventsType, setEventsType] = useState<string[]>(
+    init?.events?.eventType ?? [],
+  );
+  const [eventsGroup, setEventsGroup] = useState<string[]>(
+    init?.events?.groupType ?? [],
+  );
+  const [eventsTime, setEventsTime] = useState<string[]>(
+    init?.events?.timeSetting ?? [],
+  );
 
   // Live discovery
-  const [trendingVenues, setTrendingVenues] = useState(init?.trendingVenues ?? true);
-  const [activityInArea, setActivityInArea] = useState(init?.activityInArea ?? false);
+  const [trendingVenues, setTrendingVenues] = useState(
+    init?.trendingVenues ?? true,
+  );
+  const [activityInArea, setActivityInArea] = useState(
+    init?.activityInArea ?? false,
+  );
 
   const atCategoryCap = selectedCategories.length >= MAX_CATEGORIES;
 
   const toggleCategory = (category: string) => {
-    setSelectedCategories(prev => {
+    setSelectedCategories((prev) => {
       if (prev.includes(category)) {
         // Clear subcategory selections when deselecting
         if (category === "Food") {
@@ -126,7 +221,7 @@ const PreferencesStep = ({ onBack, onNext, isLoading, initialPreferences }: Pref
           setEventsGroup([]);
           setEventsTime([]);
         }
-        return prev.filter(c => c !== category);
+        return prev.filter((c) => c !== category);
       }
       if (prev.length >= MAX_CATEGORIES) {
         return prev;
@@ -137,18 +232,18 @@ const PreferencesStep = ({ onBack, onNext, isLoading, initialPreferences }: Pref
 
   const toggleExpanded = (category: string) => {
     if (!selectedCategories.includes(category)) return;
-    setExpandedCategory(prev => prev === category ? null : category);
+    setExpandedCategory((prev) => (prev === category ? null : category));
   };
 
   const toggleOption = (
     option: string,
     _currentSelection: string[],
     setter: React.Dispatch<React.SetStateAction<string[]>>,
-    maxSelections: number = MAX_OPTIONS
+    maxSelections: number = MAX_OPTIONS,
   ) => {
-    setter(prev => {
+    setter((prev) => {
       if (prev.includes(option)) {
-        return prev.filter(o => o !== option);
+        return prev.filter((o) => o !== option);
       }
       if (prev.length >= maxSelections) {
         return prev;
@@ -192,14 +287,14 @@ const PreferencesStep = ({ onBack, onNext, isLoading, initialPreferences }: Pref
     onNext(preferences);
   };
 
-  const OptionChip = ({ 
-    label, 
-    selected, 
+  const OptionChip = ({
+    label,
+    selected,
     onClick,
     disabled,
-  }: { 
-    label: string; 
-    selected: boolean; 
+  }: {
+    label: string;
+    selected: boolean;
     onClick: () => void;
     disabled?: boolean;
   }) => (
@@ -213,7 +308,9 @@ const PreferencesStep = ({ onBack, onNext, isLoading, initialPreferences }: Pref
         selected
           ? "bg-primary text-primary-foreground border-primary"
           : "bg-muted/50 text-muted-foreground border-border hover:border-primary/50 hover:bg-muted",
-        disabled && !selected && "opacity-40 cursor-not-allowed hover:border-border hover:bg-muted/50"
+        disabled &&
+          !selected &&
+          "opacity-40 cursor-not-allowed hover:border-border hover:bg-muted/50",
       )}
     >
       {label}
@@ -234,17 +331,25 @@ const PreferencesStep = ({ onBack, onNext, isLoading, initialPreferences }: Pref
     <div className="space-y-2">
       <p className="text-xs font-medium text-muted-foreground">
         {title}{" "}
-        <span className={cn(selected.length >= MAX_OPTIONS ? "text-primary" : "text-muted-foreground")}>
+        <span
+          className={cn(
+            selected.length >= MAX_OPTIONS
+              ? "text-primary"
+              : "text-muted-foreground",
+          )}
+        >
           ({selected.length}/{MAX_OPTIONS})
         </span>
       </p>
       <div className="flex flex-wrap gap-1.5">
-        {options.map(option => (
+        {options.map((option) => (
           <OptionChip
             key={option}
             label={option}
             selected={selected.includes(option)}
-            disabled={selected.length >= MAX_OPTIONS && !selected.includes(option)}
+            disabled={
+              selected.length >= MAX_OPTIONS && !selected.includes(option)
+            }
             onClick={() => onToggle(option)}
           />
         ))}
@@ -268,7 +373,7 @@ const PreferencesStep = ({ onBack, onNext, isLoading, initialPreferences }: Pref
     <div
       className={cn(
         "border rounded-xl transition-all overflow-hidden",
-        isSelected ? "border-primary bg-primary/5" : "border-border bg-card"
+        isSelected ? "border-primary bg-primary/5" : "border-border bg-card",
       )}
     >
       <div className="flex items-center pr-2">
@@ -279,15 +384,22 @@ const PreferencesStep = ({ onBack, onNext, isLoading, initialPreferences }: Pref
           aria-pressed={isSelected}
           className={cn(
             "flex min-h-11 flex-1 items-center justify-between gap-3 p-3 text-left",
-            !isSelected && atCategoryCap && "opacity-40 cursor-not-allowed"
+            !isSelected && atCategoryCap && "opacity-40 cursor-not-allowed",
           )}
         >
           <span className="flex items-center gap-3">
-            <Icon className={cn("w-5 h-5", isSelected ? "text-primary" : "text-muted-foreground")} />
-            <span className={cn(
-              "font-medium text-sm",
-              isSelected ? "text-foreground" : "text-muted-foreground"
-            )}>
+            <Icon
+              className={cn(
+                "w-5 h-5",
+                isSelected ? "text-primary" : "text-muted-foreground",
+              )}
+            />
+            <span
+              className={cn(
+                "font-medium text-sm",
+                isSelected ? "text-foreground" : "text-muted-foreground",
+              )}
+            >
               {category}
             </span>
           </span>
@@ -322,9 +434,14 @@ const PreferencesStep = ({ onBack, onNext, isLoading, initialPreferences }: Pref
       <div className="space-y-3">
         <div>
           <div className="mb-1 flex items-center justify-between gap-2">
-            <Label className="heading-luxe-eyebrow text-left">Select up to 3 categories</Label>
+            <Label className="heading-luxe-eyebrow text-left">
+              Select up to 3 categories
+            </Label>
             <span
-              className={cn("text-[11px] font-semibold", atCategoryCap ? "text-primary" : "text-muted-foreground")}
+              className={cn(
+                "text-[11px] font-semibold",
+                atCategoryCap ? "text-primary" : "text-muted-foreground",
+              )}
               aria-live="polite"
             >
               {selectedCategories.length}/{MAX_CATEGORIES}
@@ -335,7 +452,7 @@ const PreferencesStep = ({ onBack, onNext, isLoading, initialPreferences }: Pref
               ? "Max reached — deselect one to swap in another."
               : "Tap a category to select, then expand to set preferences"}
           </p>
-          
+
           <div className="space-y-2">
             <CategoryCard
               category="Food"
@@ -385,7 +502,9 @@ const PreferencesStep = ({ onBack, onNext, isLoading, initialPreferences }: Pref
                 title="Atmosphere"
                 options={DRINK_OPTIONS.atmosphere}
                 selected={drinkAtmosphere}
-                onToggle={(o) => toggleOption(o, drinkAtmosphere, setDrinkAtmosphere)}
+                onToggle={(o) =>
+                  toggleOption(o, drinkAtmosphere, setDrinkAtmosphere)
+                }
               />
             </CategoryCard>
 
@@ -399,19 +518,25 @@ const PreferencesStep = ({ onBack, onNext, isLoading, initialPreferences }: Pref
                 title="Venue Type"
                 options={NIGHTLIFE_OPTIONS.venueType}
                 selected={nightlifeVenue}
-                onToggle={(o) => toggleOption(o, nightlifeVenue, setNightlifeVenue)}
+                onToggle={(o) =>
+                  toggleOption(o, nightlifeVenue, setNightlifeVenue)
+                }
               />
               <SubcategorySection
                 title="Music Preference"
                 options={NIGHTLIFE_OPTIONS.musicPreference}
                 selected={nightlifeMusic}
-                onToggle={(o) => toggleOption(o, nightlifeMusic, setNightlifeMusic)}
+                onToggle={(o) =>
+                  toggleOption(o, nightlifeMusic, setNightlifeMusic)
+                }
               />
               <SubcategorySection
                 title="Crowd & Vibe"
                 options={NIGHTLIFE_OPTIONS.crowdVibe}
                 selected={nightlifeCrowd}
-                onToggle={(o) => toggleOption(o, nightlifeCrowd, setNightlifeCrowd)}
+                onToggle={(o) =>
+                  toggleOption(o, nightlifeCrowd, setNightlifeCrowd)
+                }
               />
             </CategoryCard>
 
@@ -444,14 +569,18 @@ const PreferencesStep = ({ onBack, onNext, isLoading, initialPreferences }: Pref
         </div>
 
         <div className="space-y-3 pt-3 border-t border-border/40">
-          <Label className="heading-luxe-eyebrow text-left">Live Discovery</Label>
-          
+          <Label className="heading-luxe-eyebrow text-left">
+            Live Discovery
+          </Label>
+
           <div className="flex items-center justify-between p-3 bg-card/40 border border-border/40 rounded-xl backdrop-blur-sm">
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-primary" />
               <div>
                 <p className="font-medium text-xs">Trending Venues</p>
-                <p className="text-[10px] text-muted-foreground">See what's popular now</p>
+                <p className="text-[10px] text-muted-foreground">
+                  See what's popular now
+                </p>
               </div>
             </div>
             <Switch
@@ -465,7 +594,9 @@ const PreferencesStep = ({ onBack, onNext, isLoading, initialPreferences }: Pref
               <Sparkles className="w-4 h-4 text-primary" />
               <div>
                 <p className="font-medium text-xs">Activity in Your Area</p>
-                <p className="text-[10px] text-muted-foreground">Get location-based alerts</p>
+                <p className="text-[10px] text-muted-foreground">
+                  Get location-based alerts
+                </p>
               </div>
             </div>
             <Switch

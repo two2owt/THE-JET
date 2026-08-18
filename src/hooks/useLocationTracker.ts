@@ -63,7 +63,8 @@ const NETWORK_MIN_MOVE_METERS = 150;
 
 export const useLocationTracker = () => {
   const { session } = useAuth();
-  const { locationTrackingEnabled, backgroundTrackingEnabled } = useLocationPreferences();
+  const { locationTrackingEnabled, backgroundTrackingEnabled } =
+    useLocationPreferences();
   const watchIdRef = useRef<number | null>(null);
   const nativeWatchIdRef = useRef<string | null>(null);
   const lastWriteAtRef = useRef<number>(0);
@@ -72,7 +73,9 @@ export const useLocationTracker = () => {
   const lastSampleAtRef = useRef(0);
   // Smoothed speed (m/s) derived from consecutive accepted fixes.
   const speedMpsRef = useRef(0);
-  const lastFixRef = useRef<{ lat: number; lng: number; at: number } | null>(null);
+  const lastFixRef = useRef<{ lat: number; lng: number; at: number } | null>(
+    null,
+  );
   const smootherRef = useRef(createLocationSmoother());
   // True until the first accepted write of this tracking session lands.
   const primingRef = useRef(true);
@@ -82,7 +85,8 @@ export const useLocationTracker = () => {
   const [permissionTick, setPermissionTick] = useState(0);
 
   useEffect(() => {
-    if (typeof navigator === "undefined" || !navigator.permissions?.query) return;
+    if (typeof navigator === "undefined" || !navigator.permissions?.query)
+      return;
     let status: PermissionStatus | null = null;
     const onChange = () => setPermissionTick((n) => n + 1);
     navigator.permissions
@@ -95,14 +99,16 @@ export const useLocationTracker = () => {
     return () => status?.removeEventListener("change", onChange);
   }, []);
 
-  const backgroundEnabled = locationTrackingEnabled && backgroundTrackingEnabled;
+  const backgroundEnabled =
+    locationTrackingEnabled && backgroundTrackingEnabled;
   // Signed in + tracking allowed is enough — no route/foreground gate.
   const enabled = locationTrackingEnabled;
 
   useEffect(() => {
     const userId = session?.user?.id;
     if (!enabled || !userId) return;
-    if (typeof navigator === "undefined" || !("geolocation" in navigator)) return;
+    if (typeof navigator === "undefined" || !("geolocation" in navigator))
+      return;
 
     let cancelled = false;
     let resumeHandler: (() => void) | null = null;
@@ -117,14 +123,19 @@ export const useLocationTracker = () => {
     speedMpsRef.current = 0;
     lastFixRef.current = null;
 
-    const maybeWrite = async (rawLat: number, rawLng: number, rawAccuracy: number | null) => {
+    const maybeWrite = async (
+      rawLat: number,
+      rawLng: number,
+      rawAccuracy: number | null,
+    ) => {
       if (cancelled || inFlightRef.current) return;
       const now = Date.now();
       const priming = primingRef.current;
 
       // Throttle raw sampling before doing any work — some devices fire
       // watchPosition several times per second.
-      if (!priming && now - lastSampleAtRef.current < MIN_SAMPLE_INTERVAL_MS) return;
+      if (!priming && now - lastSampleAtRef.current < MIN_SAMPLE_INTERVAL_MS)
+        return;
       lastSampleAtRef.current = now;
 
       logGeoEvent({
@@ -170,7 +181,9 @@ export const useLocationTracker = () => {
       lastFixRef.current = { lat, lng, at: now };
 
       const moving = speedMpsRef.current > MOVING_SPEED_MPS;
-      const writeInterval = moving ? MOVING_WRITE_INTERVAL_MS : MIN_WRITE_INTERVAL_MS;
+      const writeInterval = moving
+        ? MOVING_WRITE_INTERVAL_MS
+        : MIN_WRITE_INTERVAL_MS;
       const moveGate = moving ? MOVING_MIN_MOVE_METERS : MIN_MOVE_METERS;
 
       const sinceLast = now - lastWriteAtRef.current;
@@ -267,7 +280,10 @@ export const useLocationTracker = () => {
 
       const prev = lastCoordsRef.current;
       const moved = prev ? haversineMeters(prev, fix) : Infinity;
-      if (moved < NETWORK_MIN_MOVE_METERS && now - lastWriteAtRef.current < MAX_WRITE_INTERVAL_MS) {
+      if (
+        moved < NETWORK_MIN_MOVE_METERS &&
+        now - lastWriteAtRef.current < MAX_WRITE_INTERVAL_MS
+      ) {
         logGeoEvent({
           kind: "skipped",
           source: "network",
@@ -322,7 +338,8 @@ export const useLocationTracker = () => {
         // Background tracking needs the coarse/fine "location" grant; we never
         // prompt from here — the permission prompt stays user-initiated.
         const granted =
-          perms.location === "granted" || (backgroundEnabled && perms.coarseLocation === "granted");
+          perms.location === "granted" ||
+          (backgroundEnabled && perms.coarseLocation === "granted");
         if (!granted || cancelled) return;
 
         // Instant first point — don't wait for the watcher's first callback.
@@ -346,11 +363,16 @@ export const useLocationTracker = () => {
           { enableHighAccuracy: false, timeout: 20_000, maximumAge: 30_000 },
           (pos, err) => {
             if (err || !pos) return;
-            void maybeWrite(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy ?? null);
+            void maybeWrite(
+              pos.coords.latitude,
+              pos.coords.longitude,
+              pos.coords.accuracy ?? null,
+            );
           },
         );
       } catch (err) {
-        if (import.meta.env.DEV) console.warn("[location-tracker] native watch failed", err);
+        if (import.meta.env.DEV)
+          console.warn("[location-tracker] native watch failed", err);
       }
     };
 
@@ -370,12 +392,17 @@ export const useLocationTracker = () => {
 
       watchIdRef.current = navigator.geolocation.watchPosition(
         (pos) => {
-          void maybeWrite(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+          void maybeWrite(
+            pos.coords.latitude,
+            pos.coords.longitude,
+            pos.coords.accuracy,
+          );
         },
         (err) => {
-          if (import.meta.env.DEV) console.warn("[location-tracker] watch error", err.message);
+          if (import.meta.env.DEV)
+            console.warn("[location-tracker] watch error", err.message);
         },
-        { enableHighAccuracy: false, maximumAge: 30_000, timeout: 20_000 }
+        { enableHighAccuracy: false, maximumAge: 30_000, timeout: 20_000 },
       );
 
       // Browsers throttle (or freeze) `watchPosition` callbacks for hidden
@@ -386,7 +413,11 @@ export const useLocationTracker = () => {
         if (cancelled) return;
         navigator.geolocation.getCurrentPosition(
           (pos) => {
-            void maybeWrite(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+            void maybeWrite(
+              pos.coords.latitude,
+              pos.coords.longitude,
+              pos.coords.accuracy,
+            );
           },
           () => {},
           { enableHighAccuracy: false, maximumAge: 60_000, timeout: 20_000 },
@@ -403,7 +434,11 @@ export const useLocationTracker = () => {
       // heatmap/flow layers reflect the user right away.
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          void maybeWrite(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+          void maybeWrite(
+            pos.coords.latitude,
+            pos.coords.longitude,
+            pos.coords.accuracy,
+          );
         },
         () => {},
         { enableHighAccuracy: true, maximumAge: 0, timeout: 15_000 },
@@ -438,7 +473,8 @@ export const useLocationTracker = () => {
       networkPoll = null;
       if (networkGrace) clearTimeout(networkGrace);
       networkGrace = null;
-      if (resumeHandler) document.removeEventListener("visibilitychange", resumeHandler);
+      if (resumeHandler)
+        document.removeEventListener("visibilitychange", resumeHandler);
       resumeHandler = null;
       if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
@@ -455,13 +491,19 @@ export const useLocationTracker = () => {
 
     // Tear down the watchers the instant auth ends, without waiting for the
     // React re-render that clears `session` — no points after sign-out.
-    const { data: authSub } = supabase.auth.onAuthStateChange((event, nextSession) => {
-      if (event === "SIGNED_OUT" || !nextSession || nextSession.user?.id !== userId) {
-        lastCoordsRef.current = null;
-        lastWriteAtRef.current = 0;
-        stopAll();
-      }
-    });
+    const { data: authSub } = supabase.auth.onAuthStateChange(
+      (event, nextSession) => {
+        if (
+          event === "SIGNED_OUT" ||
+          !nextSession ||
+          nextSession.user?.id !== userId
+        ) {
+          lastCoordsRef.current = null;
+          lastWriteAtRef.current = 0;
+          stopAll();
+        }
+      },
+    );
 
     return () => {
       authSub.subscription.unsubscribe();

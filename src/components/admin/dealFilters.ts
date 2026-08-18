@@ -18,18 +18,32 @@ export const FILTER_KEYS = [
 export type Priority = "high" | "medium" | "low";
 export const PRIORITY_OPTIONS: Priority[] = ["high", "medium", "low"];
 
-export const STATUS_VALUES = ["all", "active", "inactive", "expired", "upcoming"] as const;
+export const STATUS_VALUES = [
+  "all",
+  "active",
+  "inactive",
+  "expired",
+  "upcoming",
+] as const;
 export type Status = (typeof STATUS_VALUES)[number];
 
 export const NONE_KEY = "__none__";
-export const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+export const DAY_LABELS = [
+  "Sun",
+  "Mon",
+  "Tue",
+  "Wed",
+  "Thu",
+  "Fri",
+  "Sat",
+] as const;
 
 export interface Filters {
   q: string;
   types: string[];
   status: Status;
   from: string; // YYYY-MM-DD
-  to: string;   // YYYY-MM-DD
+  to: string; // YYYY-MM-DD
   priority: Priority[];
   merchants: string[];
   neighborhoods: string[];
@@ -81,8 +95,8 @@ export function readFilters(params: URLSearchParams): Filters {
       ? (rawStatus as Status)
       : "all";
 
-  const priority = csvList(params.get("priority")).filter(
-    (p): p is Priority => (PRIORITY_OPTIONS as string[]).includes(p),
+  const priority = csvList(params.get("priority")).filter((p): p is Priority =>
+    (PRIORITY_OPTIONS as string[]).includes(p),
   );
 
   const days: number[] = [];
@@ -117,7 +131,10 @@ export function readFilters(params: URLSearchParams): Filters {
  * unrelated params already present in `base` (e.g. `?section=deals`).
  * Default / empty values are omitted so URLs stay clean and shareable.
  */
-export function writeFilters(base: URLSearchParams, filters: Filters): URLSearchParams {
+export function writeFilters(
+  base: URLSearchParams,
+  filters: Filters,
+): URLSearchParams {
   const params = new URLSearchParams(base);
   FILTER_KEYS.forEach((k) => params.delete(k));
   if (filters.q) params.set("q", filters.q);
@@ -125,9 +142,12 @@ export function writeFilters(base: URLSearchParams, filters: Filters): URLSearch
   if (filters.status !== "all") params.set("status", filters.status);
   if (filters.from) params.set("from", filters.from);
   if (filters.to) params.set("to", filters.to);
-  if (filters.priority.length) params.set("priority", filters.priority.join(","));
-  if (filters.merchants.length) params.set("merchants", filters.merchants.join(","));
-  if (filters.neighborhoods.length) params.set("neighborhoods", filters.neighborhoods.join(","));
+  if (filters.priority.length)
+    params.set("priority", filters.priority.join(","));
+  if (filters.merchants.length)
+    params.set("merchants", filters.merchants.join(","));
+  if (filters.neighborhoods.length)
+    params.set("neighborhoods", filters.neighborhoods.join(","));
   if (filters.days.length) params.set("days", filters.days.join(","));
   return params;
 }
@@ -144,10 +164,15 @@ export function dealPriority(deal: Deal, now = new Date()): Priority | null {
   return "low";
 }
 
-export function matchesFilters(deal: Deal, f: Filters, now = new Date()): boolean {
+export function matchesFilters(
+  deal: Deal,
+  f: Filters,
+  now = new Date(),
+): boolean {
   if (f.q) {
     const q = f.q.toLowerCase();
-    const hay = `${deal.title} ${deal.venue_name} ${deal.description}`.toLowerCase();
+    const hay =
+      `${deal.title} ${deal.venue_name} ${deal.description}`.toLowerCase();
     if (!hay.includes(q)) return false;
   }
   if (f.types.length && !f.types.includes(deal.deal_type)) return false;

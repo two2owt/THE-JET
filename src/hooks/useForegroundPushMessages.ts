@@ -24,10 +24,12 @@ export const useForegroundPushMessages = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
+    if (typeof navigator === "undefined" || !("serviceWorker" in navigator))
+      return;
 
     const onMessage = (event: MessageEvent) => {
-      const msg = event.data as { type?: string; payload?: PushPayload } | undefined;
+      const msg = event.data as
+        { type?: string; payload?: PushPayload } | undefined;
       if (!msg || msg.type !== "PUSH_RECEIVED") return;
 
       const payload = msg.payload ?? {};
@@ -45,6 +47,7 @@ export const useForegroundPushMessages = () => {
     };
 
     navigator.serviceWorker.addEventListener("message", onMessage);
-    return () => navigator.serviceWorker.removeEventListener("message", onMessage);
+    return () =>
+      navigator.serviceWorker.removeEventListener("message", onMessage);
   }, [navigate]);
 };

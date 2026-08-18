@@ -1,10 +1,23 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Users, Loader2, Calendar, Instagram, Twitter, Facebook, Linkedin } from "lucide-react";
+import {
+  Users,
+  Loader2,
+  Calendar,
+  Instagram,
+  Twitter,
+  Facebook,
+  Linkedin,
+} from "lucide-react";
 
 interface ConnectionProfileDialogProps {
   connectionId: string | null;
@@ -34,7 +47,11 @@ interface SecureProfile {
   tiktok_url: string | null;
 }
 
-export function ConnectionProfileDialog({ connectionId, isOpen, onClose }: ConnectionProfileDialogProps) {
+export function ConnectionProfileDialog({
+  connectionId,
+  isOpen,
+  onClose,
+}: ConnectionProfileDialogProps) {
   const [profile, setProfile] = useState<SecureProfile | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -46,13 +63,15 @@ export function ConnectionProfileDialog({ connectionId, isOpen, onClose }: Conne
 
   const fetchProfile = async () => {
     if (!connectionId) return;
-    
+
     setLoading(true);
     try {
       // Use profiles_secure view - privacy settings are already applied at database level
       const { data, error } = await supabase
         .from("profiles_secure")
-        .select("id, display_name, avatar_url, bio, birthdate, gender, pronouns, instagram_url, twitter_url, facebook_url, linkedin_url, tiktok_url")
+        .select(
+          "id, display_name, avatar_url, bio, birthdate, gender, pronouns, instagram_url, twitter_url, facebook_url, linkedin_url, tiktok_url",
+        )
         .eq("id", connectionId)
         .maybeSingle();
 
@@ -68,13 +87,27 @@ export function ConnectionProfileDialog({ connectionId, isOpen, onClose }: Conne
   // profiles_secure view already applies privacy filters, no client-side filtering needed
   const filteredProfile = profile;
 
-  const socialLinks = filteredProfile ? [
-    { url: filteredProfile.instagram_url, icon: Instagram, label: "Instagram" },
-    { url: filteredProfile.twitter_url, icon: Twitter, label: "Twitter" },
-    { url: filteredProfile.facebook_url, icon: Facebook, label: "Facebook" },
-    { url: filteredProfile.linkedin_url, icon: Linkedin, label: "LinkedIn" },
-    { url: filteredProfile.tiktok_url, icon: TikTokIcon, label: "TikTok" },
-  ].filter(link => link.url) : [];
+  const socialLinks = filteredProfile
+    ? [
+        {
+          url: filteredProfile.instagram_url,
+          icon: Instagram,
+          label: "Instagram",
+        },
+        { url: filteredProfile.twitter_url, icon: Twitter, label: "Twitter" },
+        {
+          url: filteredProfile.facebook_url,
+          icon: Facebook,
+          label: "Facebook",
+        },
+        {
+          url: filteredProfile.linkedin_url,
+          icon: Linkedin,
+          label: "LinkedIn",
+        },
+        { url: filteredProfile.tiktok_url, icon: TikTokIcon, label: "TikTok" },
+      ].filter((link) => link.url)
+    : [];
 
   const formatBirthdate = (dateStr: string | null) => {
     if (!dateStr) return null;
@@ -100,7 +133,9 @@ export function ConnectionProfileDialog({ connectionId, isOpen, onClose }: Conne
               <Avatar className="w-16 h-16 sm:w-20 sm:h-20">
                 <AvatarImage src={filteredProfile.avatar_url || undefined} />
                 <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                  {filteredProfile.display_name?.charAt(0)?.toUpperCase() || <Users style={{ width: '50%', height: '50%' }} />}
+                  {filteredProfile.display_name?.charAt(0)?.toUpperCase() || (
+                    <Users style={{ width: "50%", height: "50%" }} />
+                  )}
                 </AvatarFallback>
               </Avatar>
               <div>
@@ -109,7 +144,9 @@ export function ConnectionProfileDialog({ connectionId, isOpen, onClose }: Conne
                 </h3>
                 {(filteredProfile.gender || filteredProfile.pronouns) && (
                   <p className="text-sm text-muted-foreground">
-                    {[filteredProfile.gender, filteredProfile.pronouns].filter(Boolean).join(" · ")}
+                    {[filteredProfile.gender, filteredProfile.pronouns]
+                      .filter(Boolean)
+                      .join(" · ")}
                   </p>
                 )}
               </div>
@@ -121,7 +158,9 @@ export function ConnectionProfileDialog({ connectionId, isOpen, onClose }: Conne
                 <Separator />
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">About</p>
-                  <p className="text-sm text-foreground">{filteredProfile.bio}</p>
+                  <p className="text-sm text-foreground">
+                    {filteredProfile.bio}
+                  </p>
                 </div>
               </>
             )}
@@ -144,7 +183,9 @@ export function ConnectionProfileDialog({ connectionId, isOpen, onClose }: Conne
               <>
                 <Separator />
                 <div>
-                  <p className="text-sm text-muted-foreground mb-2">Social Links</p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Social Links
+                  </p>
                   <div className="flex flex-wrap gap-2">
                     {socialLinks.map((link) => (
                       <Button
@@ -153,7 +194,11 @@ export function ConnectionProfileDialog({ connectionId, isOpen, onClose }: Conne
                         size="sm"
                         asChild
                       >
-                        <a href={link.url!} target="_blank" rel="noopener noreferrer">
+                        <a
+                          href={link.url!}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
                           <link.icon className="w-4 h-4 mr-1" />
                           {link.label}
                         </a>
@@ -165,15 +210,16 @@ export function ConnectionProfileDialog({ connectionId, isOpen, onClose }: Conne
             )}
 
             {/* No visible info message */}
-            {!filteredProfile.bio && 
-             !filteredProfile.birthdate && 
-             !filteredProfile.gender && 
-             !filteredProfile.pronouns && 
-             socialLinks.length === 0 && (
-              <div className="text-center py-4 text-muted-foreground text-sm">
-                This user has chosen to keep their profile information private.
-              </div>
-            )}
+            {!filteredProfile.bio &&
+              !filteredProfile.birthdate &&
+              !filteredProfile.gender &&
+              !filteredProfile.pronouns &&
+              socialLinks.length === 0 && (
+                <div className="text-center py-4 text-muted-foreground text-sm">
+                  This user has chosen to keep their profile information
+                  private.
+                </div>
+              )}
           </div>
         ) : (
           <div className="text-center py-8 text-muted-foreground">

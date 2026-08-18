@@ -1,11 +1,8 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { getPublishableKey } from './supabase-keys.ts';
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getPublishableKey } from "./supabase-keys.ts";
 
 function authClient() {
-  return createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    getPublishableKey()
-  );
+  return createClient(Deno.env.get("SUPABASE_URL") ?? "", getPublishableKey());
 }
 
 /**
@@ -37,9 +34,9 @@ export async function verifyToken(token: string): Promise<string | null> {
 
 /** Extracts the bearer token from the request, if present. */
 export function getBearerToken(req: Request): string | null {
-  const authHeader = req.headers.get('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) return null;
-  const token = authHeader.slice('Bearer '.length).trim();
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) return null;
+  const token = authHeader.slice("Bearer ".length).trim();
   return token || null;
 }
 
@@ -48,7 +45,9 @@ export function getBearerToken(req: Request): string | null {
  * Returns the user id when authenticated, or null when the caller is anonymous
  * or the token is invalid.
  */
-export async function getAuthenticatedUserId(req: Request): Promise<string | null> {
+export async function getAuthenticatedUserId(
+  req: Request,
+): Promise<string | null> {
   const token = getBearerToken(req);
   if (!token) return null;
   return await verifyToken(token);

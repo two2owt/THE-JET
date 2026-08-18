@@ -83,7 +83,8 @@ export function HeaderSyncIndicator({
         background: "hsl(var(--muted) / 0.3)",
         backdropFilter: "blur(10px)",
         WebkitBackdropFilter: "blur(10px)",
-        color: lastUpdated && !isLoading ? neon : "hsl(var(--muted-foreground))",
+        color:
+          lastUpdated && !isLoading ? neon : "hsl(var(--muted-foreground))",
         fontSize: 12,
         lineHeight: 1,
         whiteSpace: "nowrap",
@@ -115,7 +116,9 @@ export function HeaderSyncIndicator({
         style={{
           fontWeight: lastUpdated && !isLoading ? 700 : 500,
           textShadow:
-            lastUpdated && !isLoading ? `0 0 8px hsl(140 100% 55% / 0.55)` : undefined,
+            lastUpdated && !isLoading
+              ? `0 0 8px hsl(140 100% 55% / 0.55)`
+              : undefined,
         }}
       >
         {label}

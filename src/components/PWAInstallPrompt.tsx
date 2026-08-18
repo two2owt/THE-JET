@@ -1,5 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
-import { Download, X, Share, Plus, Zap, WifiOff, BellRing, UserPlus } from "lucide-react";
+import {
+  Download,
+  X,
+  Share,
+  Plus,
+  Zap,
+  WifiOff,
+  BellRing,
+  UserPlus,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useMultiDirectionSwipe } from "@/hooks/useMultiDirectionSwipe";
@@ -24,7 +33,14 @@ export interface PWAInstallPromptProps {
 const DISMISS_KEY = "pwa-install-dismissed";
 
 export const PWAInstallPrompt = ({ signUpCta }: PWAInstallPromptProps = {}) => {
-  const { isInstallable, isInstalled, isIOS, showPrompt, installApp, dismissPrompt } = usePWAInstall();
+  const {
+    isInstallable,
+    isInstalled,
+    isIOS,
+    showPrompt,
+    installApp,
+    dismissPrompt,
+  } = usePWAInstall();
 
   // Local dismissed flag guarantees the prompt hides immediately regardless
   // of which path opened it (installable event, iOS timer, or sign-up mode
@@ -38,7 +54,7 @@ export const PWAInstallPrompt = ({ signUpCta }: PWAInstallPromptProps = {}) => {
 
   const { handlers, style } = useMultiDirectionSwipe({
     onDismiss: handleDismiss,
-    threshold: 80
+    threshold: 80,
   });
 
   const isSignUpMode = !!signUpCta;
@@ -115,11 +131,14 @@ export const PWAInstallPrompt = ({ signUpCta }: PWAInstallPromptProps = {}) => {
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="font-display text-xl font-bold tracking-tight text-foreground leading-tight">
-                {isSignUpMode ? (signUpCta!.headline ?? "Join JET") : "Install JET"}
+                {isSignUpMode
+                  ? (signUpCta!.headline ?? "Join JET")
+                  : "Install JET"}
               </h2>
               <p className="text-sm text-muted-foreground">
                 {isSignUpMode
-                  ? (signUpCta!.subtext ?? "Create your free profile, then install the app")
+                  ? (signUpCta!.subtext ??
+                    "Create your free profile, then install the app")
                   : "Get the full app experience"}
               </p>
             </div>
@@ -156,8 +175,12 @@ export const PWAInstallPrompt = ({ signUpCta }: PWAInstallPromptProps = {}) => {
                 className="bg-muted/30 border border-border/40 rounded-xl p-2.5 text-center flex flex-col items-center gap-1"
               >
                 <Icon className="w-4 h-4 text-accent" />
-                <p className="text-xs font-semibold text-foreground leading-none">{label}</p>
-                <p className="text-[10px] text-muted-foreground leading-tight">{sub}</p>
+                <p className="text-xs font-semibold text-foreground leading-none">
+                  {label}
+                </p>
+                <p className="text-[10px] text-muted-foreground leading-tight">
+                  {sub}
+                </p>
               </div>
             ))}
           </div>
@@ -166,21 +189,29 @@ export const PWAInstallPrompt = ({ signUpCta }: PWAInstallPromptProps = {}) => {
           {isIOS ? (
             <div className="space-y-3">
               <p className="text-xs text-muted-foreground text-center">
-                {isSignUpMode ? "Then install on iPhone/iPad:" : "To install on iPhone/iPad:"}
+                {isSignUpMode
+                  ? "Then install on iPhone/iPad:"
+                  : "To install on iPhone/iPad:"}
               </p>
               <div className="flex items-center justify-center gap-6 py-2">
                 <div className="flex flex-col items-center gap-1">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                     <Share className="w-5 h-5 text-primary" />
                   </div>
-                  <span className="text-[10px] text-muted-foreground">Tap Share</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    Tap Share
+                  </span>
                 </div>
                 <div className="text-muted-foreground">→</div>
                 <div className="flex flex-col items-center gap-1">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                     <Plus className="w-5 h-5 text-primary" />
                   </div>
-                  <span className="text-[10px] text-muted-foreground text-center leading-tight">Add to<br/>Home Screen</span>
+                  <span className="text-[10px] text-muted-foreground text-center leading-tight">
+                    Add to
+                    <br />
+                    Home Screen
+                  </span>
                 </div>
               </div>
               <Button
@@ -203,11 +234,7 @@ export const PWAInstallPrompt = ({ signUpCta }: PWAInstallPromptProps = {}) => {
                 Maybe later
               </Button>
               {isInstallable && (
-                <Button
-                  size="sm"
-                  className="flex-1 gap-2"
-                  onClick={installApp}
-                >
+                <Button size="sm" className="flex-1 gap-2" onClick={installApp}>
                   <Download className="w-4 h-4" />
                   Install
                 </Button>

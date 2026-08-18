@@ -31,7 +31,11 @@ export function ProfileActions({
   onSignOut,
 }: ProfileActionsProps) {
   return (
-    <div className="profile-actions profile-actions-bottom" role="group" aria-label="Profile actions">
+    <div
+      className="profile-actions profile-actions-bottom"
+      role="group"
+      aria-label="Profile actions"
+    >
       {!isEditing ? (
         <button
           type="button"
@@ -61,7 +65,10 @@ export function ProfileActions({
       </button>
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <button type="button" className="profile-action-btn profile-action-danger">
+          <button
+            type="button"
+            className="profile-action-btn profile-action-danger"
+          >
             <LogOut className="w-4 h-4" />
             Sign Out
           </button>

@@ -34,19 +34,35 @@ export default defineTool({
     active_deals_only: z
       .boolean()
       .default(false)
-      .describe("Only include deals that are currently active and not expired."),
-    limit: z.number().int().min(1).max(200).default(50).describe("Maximum venues to return."),
+      .describe(
+        "Only include deals that are currently active and not expired.",
+      ),
+    limit: z
+      .number()
+      .int()
+      .min(1)
+      .max(200)
+      .default(50)
+      .describe("Maximum venues to return."),
   },
-  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  annotations: {
+    readOnlyHint: true,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
   handler: async ({ include, active_deals_only, limit }, ctx) => {
     if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+      return {
+        content: [{ type: "text", text: "Not authenticated" }],
+        isError: true,
+      };
     }
     const supabase = supabaseForUser(ctx);
     const userId = ctx.getUserId();
     const want = (kind: string) => include === "all" || include === kind;
 
-    const dealSelect = "id, venue_id, venue_name, venue_address, title, deal_type, active, starts_at, expires_at";
+    const dealSelect =
+      "id, venue_id, venue_name, venue_address, title, deal_type, active, starts_at, expires_at";
 
     const [favRes, reviewRes, shareRes] = await Promise.all([
       want("favorites")
@@ -79,13 +95,19 @@ export default defineTool({
 
     const firstError = favRes.error ?? reviewRes.error ?? shareRes.error;
     if (firstError) {
-      return { content: [{ type: "text", text: firstError.message }], isError: true };
+      return {
+        content: [{ type: "text", text: firstError.message }],
+        isError: true,
+      };
     }
 
     const now = Date.now();
     const byVenue = new Map<string, VenueEntry>();
 
-    const entryFor = (venueId: string | null, venueName: string | null): VenueEntry => {
+    const entryFor = (
+      venueId: string | null,
+      venueName: string | null,
+    ): VenueEntry => {
       const key = venueId ?? venueName ?? "unknown";
       let entry = byVenue.get(key);
       if (!entry) {
@@ -104,9 +126,17 @@ export default defineTool({
       return entry;
     };
 
-    const touch = (entry: VenueEntry, association: string, at: string | null) => {
-      if (!entry.associations.includes(association)) entry.associations.push(association);
-      if (at && (!entry.last_interaction_at || at > entry.last_interaction_at)) {
+    const touch = (
+      entry: VenueEntry,
+      association: string,
+      at: string | null,
+    ) => {
+      if (!entry.associations.includes(association))
+        entry.associations.push(association);
+      if (
+        at &&
+        (!entry.last_interaction_at || at > entry.last_interaction_at)
+      ) {
         entry.last_interaction_at = at;
       }
     };
@@ -125,7 +155,9 @@ export default defineTool({
 
     const addDeal = (entry: VenueEntry, deal: DealRow, source: string) => {
       if (active_deals_only) {
-        const expired = deal.expires_at ? new Date(deal.expires_at).getTime() < now : false;
+        const expired = deal.expires_at
+          ? new Date(deal.expires_at).getTime() < now
+          : false;
         if (deal.active !== true || expired) return;
       }
       if (entry.deals.some((d) => d.id === deal.id)) return;
@@ -142,7 +174,10 @@ export default defineTool({
 
     for (const row of (favRes.data ?? []) as any[]) {
       const deal = row.deals as DealRow | null;
-      const entry = entryFor(row.venue_id ?? deal?.venue_id ?? null, row.venue_name ?? deal?.venue_name ?? null);
+      const entry = entryFor(
+        row.venue_id ?? deal?.venue_id ?? null,
+        row.venue_name ?? deal?.venue_name ?? null,
+      );
       entry.venue_address ??= row.venue_address ?? deal?.venue_address ?? null;
       entry.category ??= row.venue_category ?? null;
       entry.neighborhood ??= row.venue_neighborhood ?? null;
@@ -165,7 +200,11 @@ export default defineTool({
     }
 
     const venues = Array.from(byVenue.values())
-      .sort((a, b) => (b.last_interaction_at ?? "").localeCompare(a.last_interaction_at ?? ""))
+      .sort((a, b) =>
+        (b.last_interaction_at ?? "").localeCompare(
+          a.last_interaction_at ?? "",
+        ),
+      )
       .slice(0, limit);
 
     const dealCount = venues.reduce((sum, v) => sum + v.deals.length, 0);
@@ -179,7 +218,11 @@ export default defineTool({
             : "No venues or deals are associated with this account yet.",
         },
       ],
-      structuredContent: { venues, venue_count: venues.length, deal_count: dealCount },
+      structuredContent: {
+        venues,
+        venue_count: venues.length,
+        deal_count: dealCount,
+      },
     };
   },
 });

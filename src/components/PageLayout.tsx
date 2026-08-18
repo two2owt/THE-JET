@@ -7,7 +7,7 @@ import { useHeaderConfig } from "@/contexts/HeaderContext";
 import type { Venue } from "@/types/venue";
 import type { Database } from "@/integrations/supabase/types";
 
-type Deal = Database['public']['Tables']['deals']['Row'];
+type Deal = Database["public"]["Tables"]["deals"]["Row"];
 
 interface HeaderConfig {
   /** Venues for search - pass empty array for shell pages */
@@ -51,7 +51,7 @@ interface PageLayoutProps {
  * - Configures the global Header via context
  * - Main content area (with proper CSS variable sizing for CLS prevention)
  * - BottomNav (with consistent navigation handling)
- * 
+ *
  * Uses CSS variables from index.css for fixed dimensions to prevent layout shifts.
  */
 // Stable default references to prevent re-render loops from new refs each render
@@ -75,7 +75,8 @@ export function PageLayout({
   const setHeaderConfig = useHeaderConfig();
 
   // Use provided notification count or calculate from notifications
-  const unreadCount = notificationCount ?? notifications.filter(n => !n.read).length;
+  const unreadCount =
+    notificationCount ?? notifications.filter((n) => !n.read).length;
   const msgBadge = messageCount ?? unreadMessages;
 
   // Sync header config to context whenever it changes
@@ -84,14 +85,17 @@ export function PageLayout({
     setHeaderConfig({
       venues: headerConfig.venues ?? defaultVenues,
       deals: headerConfig.deals ?? defaultDeals,
-      onVenueSelect: (headerConfig.onVenueSelect as ((venue: string | Venue) => void) | undefined) ?? defaultOnVenueSelect,
+      onVenueSelect:
+        (headerConfig.onVenueSelect as
+          ((venue: string | Venue) => void) | undefined) ??
+        defaultOnVenueSelect,
       isLoading: headerConfig.isLoading,
       lastUpdated: headerConfig.lastUpdated,
       onRefresh: headerConfig.onRefresh,
       cityName: headerConfig.cityName,
       hideSearch: headerConfig.hideSearch ?? false,
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     headerConfig.venues,
     headerConfig.deals,
@@ -107,28 +111,28 @@ export function PageLayout({
     <div
       className="relative w-full h-full"
       style={{
-        flex: '1 1 0%',
+        flex: "1 1 0%",
         minHeight: 0,
-        overflow: 'hidden',
+        overflow: "hidden",
       }}
     >
       <main
         role="main"
-        className={`main-content ${fullBleed ? '' : 'page-container'} ${mainClassName}`}
+        className={`main-content ${fullBleed ? "" : "page-container"} ${mainClassName}`}
         style={{
           // FIXED dimensions using centralized CSS variables
-          flex: '1 1 auto',
-          height: 'var(--main-height, calc(100dvh - 52px - 60px))',
-          minHeight: 'var(--main-height, calc(100dvh - 52px - 60px))',
-          maxHeight: 'var(--main-height, calc(100dvh - 52px - 60px))',
+          flex: "1 1 auto",
+          height: "var(--main-height, calc(100dvh - 52px - 60px))",
+          minHeight: "var(--main-height, calc(100dvh - 52px - 60px))",
+          maxHeight: "var(--main-height, calc(100dvh - 52px - 60px))",
           // CSS containment for performance - layout removed as it breaks overflow-hidden on descendants
-          contain: 'paint style',
+          contain: "paint style",
           // GPU layer for smooth transitions
-          transform: 'translateZ(0)',
-          boxSizing: 'border-box',
-          width: '100%',
-          isolation: 'isolate',
-          overflow: fullBleed ? 'hidden' : 'auto',
+          transform: "translateZ(0)",
+          boxSizing: "border-box",
+          width: "100%",
+          isolation: "isolate",
+          overflow: fullBleed ? "hidden" : "auto",
         }}
       >
         {children}

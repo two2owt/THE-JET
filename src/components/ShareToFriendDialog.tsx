@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -49,7 +54,9 @@ export function ShareToFriendDialog({
       if (error) throw error;
 
       setSentTo((prev) => new Set(prev).add(friendId));
-      toast.success("Sent!", { description: `Shared ${venue.name} with your friend` });
+      toast.success("Sent!", {
+        description: `Shared ${venue.name} with your friend`,
+      });
     } catch (err) {
       console.error("Error sending venue share:", err);
       toast.error("Couldn't send", { description: "Please try again" });
@@ -66,15 +73,12 @@ export function ShareToFriendDialog({
   const handleShareExternal = async () => {
     const result = await shareVenue({ id: venue.id, name: venue.name });
     if (result.success) {
-      toast.success(
-        result.method === "native" ? "Shared!" : "Link copied",
-        {
-          description:
-            result.method === "native"
-              ? `${venue.name} shared`
-              : "Paste it anywhere to share",
-        },
-      );
+      toast.success(result.method === "native" ? "Shared!" : "Link copied", {
+        description:
+          result.method === "native"
+            ? `${venue.name} shared`
+            : "Paste it anywhere to share",
+      });
       handleClose();
     } else if (result.method !== "native") {
       toast.error("Couldn't share", { description: "Please try again" });
@@ -98,9 +102,13 @@ export function ShareToFriendDialog({
               <MapPin className="w-4 h-4 text-primary" />
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-foreground truncate">{venue.name}</p>
+              <p className="text-sm font-semibold text-foreground truncate">
+                {venue.name}
+              </p>
               {venue.neighborhood && (
-                <p className="text-xs text-muted-foreground truncate">{venue.neighborhood}</p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {venue.neighborhood}
+                </p>
               )}
             </div>
           </div>
@@ -120,7 +128,8 @@ export function ShareToFriendDialog({
           ) : (
             <div className="p-2 space-y-1">
               {connections.map((conn) => {
-                const friendId = conn.user_id === userId ? conn.friend_id : conn.user_id;
+                const friendId =
+                  conn.user_id === userId ? conn.friend_id : conn.user_id;
                 const profile = conn.profile;
                 const isSent = sentTo.has(friendId);
                 const isSending = sending === friendId;

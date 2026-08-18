@@ -65,17 +65,17 @@ export const AuthPWAInstallPromptWrapper = ({
       setArmed(true);
     }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event) => {
-        if (event === "SIGNED_IN" || event === "USER_UPDATED") {
-          sessionStorage.setItem(ARM_KEY, "1");
-          setArmed(true);
-        } else if (event === "SIGNED_OUT") {
-          sessionStorage.removeItem(ARM_KEY);
-          setArmed(false);
-        }
-      },
-    );
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "USER_UPDATED") {
+        sessionStorage.setItem(ARM_KEY, "1");
+        setArmed(true);
+      } else if (event === "SIGNED_OUT") {
+        sessionStorage.removeItem(ARM_KEY);
+        setArmed(false);
+      }
+    });
 
     return () => {
       subscription.unsubscribe();

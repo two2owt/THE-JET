@@ -7,7 +7,9 @@ const VALID: DirectionsApp[] = ["google", "apple", "waze"];
 export function getLastDirectionsApp(): DirectionsApp | null {
   try {
     const value = localStorage.getItem(STORAGE_KEY);
-    return VALID.includes(value as DirectionsApp) ? (value as DirectionsApp) : null;
+    return VALID.includes(value as DirectionsApp)
+      ? (value as DirectionsApp)
+      : null;
   } catch {
     return null;
   }

@@ -97,7 +97,9 @@ export default function VerificationSuccess() {
       } catch {
         // ignore — fall back to whatever session we have
       }
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (cancelled) return;
       if (user?.email && !emailFromQuery && !emailFromStorage) {
         setResendEmail(user.email);
@@ -109,17 +111,17 @@ export default function VerificationSuccess() {
     checkVerification();
 
     // Listen for auth changes (USER_UPDATED / SIGNED_IN after email link)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        const user = session?.user;
-        if (user?.email && !emailFromQuery && !emailFromStorage) {
-          setResendEmail(user.email);
-        }
-        if (user?.email_confirmed_at || (user as any)?.confirmed_at) {
-          setIsVerified(true);
-        }
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      const user = session?.user;
+      if (user?.email && !emailFromQuery && !emailFromStorage) {
+        setResendEmail(user.email);
       }
-    );
+      if (user?.email_confirmed_at || (user as any)?.confirmed_at) {
+        setIsVerified(true);
+      }
+    });
 
     // Re-check when tab regains focus (user returning from email client)
     const handleVisibility = () => {
@@ -153,7 +155,9 @@ export default function VerificationSuccess() {
     if (!isVerified || flow !== "signup") return;
     let cancelled = false;
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       const email = user?.email || resendEmail.trim().toLowerCase();
       const userId = user?.id;
       if (!email || !userId || cancelled) return;
@@ -215,7 +219,7 @@ export default function VerificationSuccess() {
         setResendStatus("error");
         setResendMessage(
           error.message ||
-            "We couldn't resend the verification email. Please try again later."
+            "We couldn't resend the verification email. Please try again later.",
         );
         toast.error("Resend failed");
         return;
@@ -223,7 +227,7 @@ export default function VerificationSuccess() {
 
       setResendStatus("sent");
       setResendMessage(
-        `Verification link sent to ${email}. Check your inbox (and spam folder).`
+        `Verification link sent to ${email}. Check your inbox (and spam folder).`,
       );
       // Clear stored email since verification was resent
       localStorage.removeItem(RESEND_EMAIL_KEY);
@@ -244,7 +248,7 @@ export default function VerificationSuccess() {
       }
       setResendStatus("error");
       setResendMessage(
-        "Something went wrong while resending the email. Please try again."
+        "Something went wrong while resending the email. Please try again.",
       );
       toast.error("Resend failed");
     }
@@ -258,7 +262,10 @@ export default function VerificationSuccess() {
   }, [setHeaderConfig]);
 
   return (
-    <div className="flex-1 flex items-center justify-center bg-background overflow-y-auto px-4 sm:px-6 md:px-8 lg:px-10" style={{ WebkitOverflowScrolling: 'touch' }}>
+    <div
+      className="flex-1 flex items-center justify-center bg-background overflow-y-auto px-4 sm:px-6 md:px-8 lg:px-10"
+      style={{ WebkitOverflowScrolling: "touch" }}
+    >
       <SEO
         title="Email verified — JET"
         description="Your JET email is verified. Sign in to start discovering trending venues and deals."
@@ -277,15 +284,15 @@ export default function VerificationSuccess() {
             {linkExpired
               ? "Link Expired"
               : flow === "email_change"
-              ? "Email Updated!"
-              : "Email Verified!"}
+                ? "Email Updated!"
+                : "Email Verified!"}
           </h1>
           <p className="text-muted-foreground">
             {linkExpired
               ? "Your verification link has expired. Request a new one below — links are valid for 1 hour."
               : flow === "email_change"
-              ? "Your account email has been successfully changed. Use your new address the next time you sign in."
-              : "Welcome to JET! Your email has been successfully verified."}
+                ? "Your account email has been successfully changed. Use your new address the next time you sign in."
+                : "Welcome to JET! Your email has been successfully verified."}
           </p>
         </div>
 
@@ -334,8 +341,8 @@ export default function VerificationSuccess() {
           </div>
         </div>
 
-        <Button 
-          onClick={() => navigate("/auth?mode=signin", { replace: true })} 
+        <Button
+          onClick={() => navigate("/auth?mode=signin", { replace: true })}
           variant="jet"
           className="w-full"
           size="lg"

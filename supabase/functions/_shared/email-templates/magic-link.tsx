@@ -1,6 +1,6 @@
 /// <reference types="npm:@types/react@18.3.1" />
 
-import * as React from 'npm:react@18.3.1'
+import * as React from "npm:react@18.3.1";
 
 import {
   Body,
@@ -11,11 +11,11 @@ import {
   Html,
   Preview,
   Text,
-} from 'npm:@react-email/components@0.0.22'
+} from "npm:@react-email/components@0.0.22";
 
 interface MagicLinkEmailProps {
-  siteName: string
-  confirmationUrl: string
+  siteName: string;
+  confirmationUrl: string;
 }
 
 export const MagicLinkEmail = ({
@@ -41,30 +41,38 @@ export const MagicLinkEmail = ({
       </Container>
     </Body>
   </Html>
-)
+);
 
-export default MagicLinkEmail
+export default MagicLinkEmail;
 
-const main = { backgroundColor: '#ffffff', fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif", color: '#0A0A0A' }
-const container = { padding: '20px 25px' }
+const main = {
+  backgroundColor: "#ffffff",
+  fontFamily:
+    "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif",
+  color: "#0A0A0A",
+};
+const container = { padding: "20px 25px" };
 const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#0A0A0A', fontFamily: "'Syne', Georgia, serif",
-  margin: '0 0 20px',
-}
+  fontSize: "22px",
+  fontWeight: "bold" as const,
+  color: "#0A0A0A",
+  fontFamily: "'Syne', Georgia, serif",
+  margin: "0 0 20px",
+};
 const text = {
-  fontSize: '14px',
-  color: '#404040',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
+  fontSize: "14px",
+  color: "#404040",
+  lineHeight: "1.5",
+  margin: "0 0 25px",
+};
 const button = {
-  background: 'linear-gradient(135deg, hsl(24, 100%, 60%), hsl(320, 80%, 65%))',
-  color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '12px', fontWeight: 600, display: 'inline-block',
-  padding: '14px 28px',
-  textDecoration: 'none',
-}
-const footer = { fontSize: '12px', color: '#737373', margin: '30px 0 0' }
+  background: "linear-gradient(135deg, hsl(24, 100%, 60%), hsl(320, 80%, 65%))",
+  color: "#ffffff",
+  fontSize: "14px",
+  borderRadius: "12px",
+  fontWeight: 600,
+  display: "inline-block",
+  padding: "14px 28px",
+  textDecoration: "none",
+};
+const footer = { fontSize: "12px", color: "#737373", margin: "30px 0 0" };

@@ -40,12 +40,20 @@ export const ACTIVITY_TIERS: readonly ActivityTier[] = [
 
 /** The tier an activity score falls into. Scores are clamped to 0-100. */
 export function activityTier(activity: number): ActivityTier {
-  const score = Number.isFinite(activity) ? Math.min(100, Math.max(0, activity)) : 0;
-  return ACTIVITY_TIERS.find((tier) => score >= tier.min) ?? ACTIVITY_TIERS[ACTIVITY_TIERS.length - 1];
+  const score = Number.isFinite(activity)
+    ? Math.min(100, Math.max(0, activity))
+    : 0;
+  return (
+    ACTIVITY_TIERS.find((tier) => score >= tier.min) ??
+    ACTIVITY_TIERS[ACTIVITY_TIERS.length - 1]
+  );
 }
 
 /** Tier fill colour for the current basemap. */
-export function activityColor(activity: number, isLightBasemap: boolean): string {
+export function activityColor(
+  activity: number,
+  isLightBasemap: boolean,
+): string {
   const tier = activityTier(activity);
   return isLightBasemap ? tier.light : tier.dark;
 }
@@ -60,7 +68,9 @@ export function casingFor(isLightBasemap: boolean): string {
 }
 
 /** Legend swatches, ordered high -> low, resolved for the current basemap. */
-export function activityLegendTiers(isLightBasemap: boolean): Array<{ id: ActivityTierId; label: string; color: string }> {
+export function activityLegendTiers(
+  isLightBasemap: boolean,
+): Array<{ id: ActivityTierId; label: string; color: string }> {
   return ACTIVITY_TIERS.map((tier) => ({
     id: tier.id,
     label: tier.label,

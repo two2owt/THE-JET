@@ -8,7 +8,8 @@ interface BeforeInstallPromptEvent extends Event {
 const DISMISS_KEY = "pwa-install-dismissed";
 
 export const usePWAInstall = () => {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
   const [isInstallable, setIsInstallable] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
@@ -18,17 +19,22 @@ export const usePWAInstall = () => {
 
   useEffect(() => {
     // Detect iOS
-    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    const iOS =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
     setIsIOS(iOS);
-    
+
     // Detect mobile
-    const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const mobile =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent,
+      );
     setIsMobile(mobile);
 
     // Check if already installed (standalone mode)
-    const isStandalone = window.matchMedia("(display-mode: standalone)").matches || 
-                         (navigator as any).standalone === true;
-    
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (navigator as any).standalone === true;
+
     if (isStandalone) {
       setIsInstalled(true);
       return;
@@ -56,7 +62,7 @@ export const usePWAInstall = () => {
       // The browser warning is expected - we'll call prompt() from our custom UI
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      
+
       // Delay showing the prompt for better UX
       setTimeout(() => {
         setIsInstallable(true);
@@ -76,7 +82,10 @@ export const usePWAInstall = () => {
     window.addEventListener("appinstalled", handleAppInstalled);
 
     return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt,
+      );
       window.removeEventListener("appinstalled", handleAppInstalled);
     };
   }, []);
@@ -87,14 +96,14 @@ export const usePWAInstall = () => {
     try {
       await deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
-      
+
       if (outcome === "accepted") {
         setIsInstalled(true);
         setIsInstallable(false);
         setShowPrompt(false);
         setJustInstalled(true);
       }
-      
+
       setDeferredPrompt(null);
       return outcome === "accepted";
     } catch (error) {

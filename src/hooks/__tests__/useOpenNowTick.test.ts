@@ -100,7 +100,10 @@ describe("useOpenNowTick — staleness defenses", () => {
 
     expect(clearTimeoutSpy).toHaveBeenCalled();
     expect(clearIntervalSpy).toHaveBeenCalled();
-    expect(docRemove).toHaveBeenCalledWith("visibilitychange", expect.any(Function));
+    expect(docRemove).toHaveBeenCalledWith(
+      "visibilitychange",
+      expect.any(Function),
+    );
     expect(winRemove).toHaveBeenCalledWith("focus", expect.any(Function));
 
     // No further ticks after unmount, even if listeners somehow fired.

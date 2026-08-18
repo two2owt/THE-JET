@@ -50,7 +50,9 @@ export function subscribeConsent(l: (s: State) => void): () => void {
 
 export async function loadConsents(userId: string | null): Promise<void> {
   currentUserId = userId;
-  (Object.keys(state) as ConsentType[]).forEach((k) => (state[k] = DEFAULTS[k]));
+  (Object.keys(state) as ConsentType[]).forEach(
+    (k) => (state[k] = DEFAULTS[k]),
+  );
   if (!userId) {
     loaded = true;
     emit();
@@ -92,7 +94,9 @@ export async function setConsent(
   granted: boolean,
   source: string,
 ): Promise<boolean> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return false;
   const nowIso = new Date().toISOString();
   const { error } = await supabase.from("user_consents").insert({
@@ -129,7 +133,10 @@ const recentToasts = new Map<ConsentType, number>();
  * user (debounced) and returns false. Use at every entry point of a gated
  * feature so it cannot run when the toggle is off.
  */
-export function requireConsent(type: ConsentType, opts?: { silent?: boolean }): boolean {
+export function requireConsent(
+  type: ConsentType,
+  opts?: { silent?: boolean },
+): boolean {
   if (hasConsent(type)) return true;
   if (!opts?.silent) {
     const now = Date.now();

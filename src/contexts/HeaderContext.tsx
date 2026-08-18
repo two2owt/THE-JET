@@ -1,8 +1,15 @@
-import { createContext, useContext, useState, useCallback, useMemo, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useMemo,
+  ReactNode,
+} from "react";
 import type { Venue } from "@/types/venue";
 import type { Database } from "@/integrations/supabase/types";
 
-type Deal = Database['public']['Tables']['deals']['Row'];
+type Deal = Database["public"]["Tables"]["deals"]["Row"];
 
 interface HeaderConfig {
   venues: Venue[];
@@ -54,10 +61,10 @@ export const HeaderProvider = ({ children }: HeaderProviderProps) => {
   const [config, setConfig] = useState<HeaderConfig>(defaultConfig);
 
   const setHeaderConfig = useCallback((partial: Partial<HeaderConfig>) => {
-    setConfig(prev => {
+    setConfig((prev) => {
       // Shallow-compare each key to avoid unnecessary state updates (and infinite loops)
       const keys = Object.keys(partial) as (keyof HeaderConfig)[];
-      const hasChange = keys.some(k => prev[k] !== partial[k]);
+      const hasChange = keys.some((k) => prev[k] !== partial[k]);
       return hasChange ? { ...prev, ...partial } : prev;
     });
   }, []);
@@ -67,8 +74,8 @@ export const HeaderProvider = ({ children }: HeaderProviderProps) => {
   // `{ ...config, setHeaderConfig }` creating a new object reference each render.
   const contextValue = useMemo(
     () => ({ ...config, setHeaderConfig }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [config, setHeaderConfig]
+
+    [config, setHeaderConfig],
   );
 
   return (

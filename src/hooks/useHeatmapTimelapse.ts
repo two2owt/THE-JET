@@ -30,7 +30,7 @@ export const useHeatmapTimelapse = (dayFilter?: number, initialSpeed = 1) => {
     loading: false,
     error: null,
   });
-  
+
   const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -42,26 +42,28 @@ export const useHeatmapTimelapse = (dayFilter?: number, initialSpeed = 1) => {
     }
     abortControllerRef.current = new AbortController();
 
-    setState(prev => ({ ...prev, loading: true, error: null }));
+    setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
       // The density endpoint requires an authenticated caller and is IP rate
       // limited. Bail out early when signed out instead of firing 24 requests
       // that all come back 401.
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session?.access_token) {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           loading: false,
           hourlyData: [],
-          error: 'unauthorized',
+          error: "unauthorized",
         }));
         return;
       }
 
       const fetchHour = async (hour: number) => {
         const body: Record<string, string | number> = {
-          time_filter: 'all',
+          time_filter: "all",
           hour_of_day: hour,
         };
         if (dayFilter !== undefined) {
@@ -69,11 +71,11 @@ export const useHeatmapTimelapse = (dayFilter?: number, initialSpeed = 1) => {
         }
 
         const { data, error } = await supabase.functions.invoke(
-          'get-location-density',
+          "get-location-density",
           {
             body: JSON.stringify(body),
             headers: { Authorization: `Bearer ${session.access_token}` },
-          }
+          },
         );
 
         if (error) throw error;
@@ -91,62 +93,68 @@ export const useHeatmapTimelapse = (dayFilter?: number, initialSpeed = 1) => {
       const results: HourlyDensityData[] = [];
       for (let i = 0; i < 24; i += BATCH_SIZE) {
         if (abortControllerRef.current?.signal.aborted) return;
-        const batch = Array.from({ length: Math.min(BATCH_SIZE, 24 - i) }, (_, k) => i + k);
+        const batch = Array.from(
+          { length: Math.min(BATCH_SIZE, 24 - i) },
+          (_, k) => i + k,
+        );
         results.push(...(await Promise.all(batch.map(fetchHour))));
       }
-      
-      setState(prev => ({
+
+      setState((prev) => ({
         ...prev,
         hourlyData: results,
         loading: false,
         currentHour: new Date().getHours(), // Start at current hour
       }));
     } catch (err) {
-      if ((err as Error).name === 'AbortError') return;
-      
-      console.error('Error loading hourly data:', err);
-      setState(prev => ({
+      if ((err as Error).name === "AbortError") return;
+
+      console.error("Error loading hourly data:", err);
+      setState((prev) => ({
         ...prev,
         loading: false,
-        error: 'Failed to load time-lapse data',
+        error: "Failed to load time-lapse data",
       }));
     }
   }, [dayFilter]);
 
   // Play/pause animation
   const togglePlay = useCallback(() => {
-    setState(prev => ({ ...prev, isPlaying: !prev.isPlaying }));
+    setState((prev) => ({ ...prev, isPlaying: !prev.isPlaying }));
   }, []);
 
   const play = useCallback(() => {
-    setState(prev => ({ ...prev, isPlaying: true }));
+    setState((prev) => ({ ...prev, isPlaying: true }));
   }, []);
 
   const pause = useCallback(() => {
-    setState(prev => ({ ...prev, isPlaying: false }));
+    setState((prev) => ({ ...prev, isPlaying: false }));
   }, []);
 
   const setHour = useCallback((hour: number) => {
-    setState(prev => ({ ...prev, currentHour: hour % 24 }));
+    setState((prev) => ({ ...prev, currentHour: hour % 24 }));
   }, []);
 
   const setSpeed = useCallback((speed: number) => {
-    setState(prev => ({ ...prev, speed }));
+    setState((prev) => ({ ...prev, speed }));
   }, []);
 
   const stepForward = useCallback(() => {
-    setState(prev => ({ ...prev, currentHour: (prev.currentHour + 1) % 24 }));
+    setState((prev) => ({ ...prev, currentHour: (prev.currentHour + 1) % 24 }));
   }, []);
 
   const stepBackward = useCallback(() => {
-    setState(prev => ({ ...prev, currentHour: (prev.currentHour - 1 + 24) % 24 }));
+    setState((prev) => ({
+      ...prev,
+      currentHour: (prev.currentHour - 1 + 24) % 24,
+    }));
   }, []);
 
   // Animation loop
   useEffect(() => {
     if (state.isPlaying && state.hourlyData.length > 0) {
       intervalRef.current = setInterval(() => {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           currentHour: (prev.currentHour + 1) % 24,
         }));
@@ -162,11 +170,13 @@ export const useHeatmapTimelapse = (dayFilter?: number, initialSpeed = 1) => {
   }, [state.isPlaying, state.speed, state.hourlyData.length]);
 
   // Get current hour's data
-  const currentData = state.hourlyData.find(d => d.hour === state.currentHour);
+  const currentData = state.hourlyData.find(
+    (d) => d.hour === state.currentHour,
+  );
 
   // Format hour for display
   const formatHour = (hour: number) => {
-    const period = hour >= 12 ? 'PM' : 'AM';
+    const period = hour >= 12 ? "PM" : "AM";
     const displayHour = hour % 12 || 12;
     return `${displayHour}:00 ${period}`;
   };

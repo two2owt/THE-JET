@@ -23,17 +23,17 @@ export function ChatImage({ value, cacheBust }: ChatImageProps) {
   const placeholderSrc = thumbUrl ?? fullUrl ?? undefined;
 
   const baseStyle: React.CSSProperties = {
-        display: "block",
-        // Fluid width: min 140, ideal 60% of bubble, max 240 (project rule)
-        width: "clamp(140px, 60vw, 240px)",
-        maxWidth: "100%",
-        maxHeight: "280px",
-        height: "auto",
-        aspectRatio: "auto",
-        objectFit: "cover",
-        objectPosition: "center",
-        borderRadius: "12px",
-        backgroundColor: "hsl(var(--muted))",
+    display: "block",
+    // Fluid width: min 140, ideal 60% of bubble, max 240 (project rule)
+    width: "clamp(140px, 60vw, 240px)",
+    maxWidth: "100%",
+    maxHeight: "280px",
+    height: "auto",
+    aspectRatio: "auto",
+    objectFit: "cover",
+    objectPosition: "center",
+    borderRadius: "12px",
+    backgroundColor: "hsl(var(--muted))",
   };
 
   return (

@@ -1,6 +1,6 @@
 /// <reference types="npm:@types/react@18.3.1" />
 
-import * as React from 'npm:react@18.3.1'
+import * as React from "npm:react@18.3.1";
 
 import {
   Body,
@@ -12,12 +12,12 @@ import {
   Link,
   Preview,
   Text,
-} from 'npm:@react-email/components@0.0.22'
+} from "npm:@react-email/components@0.0.22";
 
 interface InviteEmailProps {
-  siteName: string
-  siteUrl: string
-  confirmationUrl: string
+  siteName: string;
+  siteUrl: string;
+  confirmationUrl: string;
 }
 
 export const InviteEmail = ({
@@ -32,7 +32,7 @@ export const InviteEmail = ({
       <Container style={container}>
         <Heading style={h1}>You've been invited</Heading>
         <Text style={text}>
-          You've been invited to join{' '}
+          You've been invited to join{" "}
           <Link href={siteUrl} style={link}>
             <strong>{siteName}</strong>
           </Link>
@@ -49,31 +49,39 @@ export const InviteEmail = ({
       </Container>
     </Body>
   </Html>
-)
+);
 
-export default InviteEmail
+export default InviteEmail;
 
-const main = { backgroundColor: '#ffffff', fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif", color: '#0A0A0A' }
-const container = { padding: '20px 25px' }
+const main = {
+  backgroundColor: "#ffffff",
+  fontFamily:
+    "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif",
+  color: "#0A0A0A",
+};
+const container = { padding: "20px 25px" };
 const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#0A0A0A', fontFamily: "'Syne', Georgia, serif",
-  margin: '0 0 20px',
-}
+  fontSize: "22px",
+  fontWeight: "bold" as const,
+  color: "#0A0A0A",
+  fontFamily: "'Syne', Georgia, serif",
+  margin: "0 0 20px",
+};
 const text = {
-  fontSize: '14px',
-  color: '#404040',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
-const link = { color: 'inherit', textDecoration: 'underline' }
+  fontSize: "14px",
+  color: "#404040",
+  lineHeight: "1.5",
+  margin: "0 0 25px",
+};
+const link = { color: "inherit", textDecoration: "underline" };
 const button = {
-  background: 'linear-gradient(135deg, hsl(24, 100%, 60%), hsl(320, 80%, 65%))',
-  color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '12px', fontWeight: 600, display: 'inline-block',
-  padding: '14px 28px',
-  textDecoration: 'none',
-}
-const footer = { fontSize: '12px', color: '#737373', margin: '30px 0 0' }
+  background: "linear-gradient(135deg, hsl(24, 100%, 60%), hsl(320, 80%, 65%))",
+  color: "#ffffff",
+  fontSize: "14px",
+  borderRadius: "12px",
+  fontWeight: 600,
+  display: "inline-block",
+  padding: "14px 28px",
+  textDecoration: "none",
+};
+const footer = { fontSize: "12px", color: "#737373", margin: "30px 0 0" };

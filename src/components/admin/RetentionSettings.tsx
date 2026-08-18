@@ -3,7 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 // Types are regenerated after migration approval; use a loose client cast in the meantime.
 const db = supabase as unknown as {
   from: (t: string) => any;
-  rpc: (fn: string, args?: Record<string, unknown>) => Promise<{ error: { message: string } | null }>;
+  rpc: (
+    fn: string,
+    args?: Record<string, unknown>,
+  ) => Promise<{ error: { message: string } | null }>;
 };
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,7 +26,7 @@ interface RetentionSettings {
 /** Simple 5-field cron shape check (minute hour dom month dow). */
 function isValidCron(expr: string): boolean {
   const parts = expr.trim().split(/\s+/);
-  return parts.length === 5 && parts.every((p) => /^[\d*/,\-]+$/.test(p));
+  return parts.length === 5 && parts.every((p) => /^[\d*/,-]+$/.test(p));
 }
 
 export function RetentionSettings() {
@@ -38,7 +41,9 @@ export function RetentionSettings() {
     (async () => {
       const { data, error } = await db
         .from("retention_settings")
-        .select("live_retention_days, obfuscate_after_days, cron_schedule, updated_at")
+        .select(
+          "live_retention_days, obfuscate_after_days, cron_schedule, updated_at",
+        )
         .eq("id", true)
         .maybeSingle();
       if (error) {
@@ -57,8 +62,12 @@ export function RetentionSettings() {
   const live = Number(liveDays);
   const obf = Number(obfDays);
   const validNums =
-    Number.isInteger(live) && live >= 1 && live <= 3650 &&
-    Number.isInteger(obf) && obf >= 0 && obf < live;
+    Number.isInteger(live) &&
+    live >= 1 &&
+    live <= 3650 &&
+    Number.isInteger(obf) &&
+    obf >= 0 &&
+    obf < live;
   const validCron = isValidCron(cron);
   const canSave = validNums && validCron && !saving;
 
@@ -100,7 +109,9 @@ export function RetentionSettings() {
     // Currently only service_role can execute; surface a clean toast either way.
     const { error } = await db.rpc("process_location_data_retention");
     if (error) {
-      toast.info("Manual run isn't available from the client (service-role only). Job will run on the next cron tick.");
+      toast.info(
+        "Manual run isn't available from the client (service-role only). Job will run on the next cron tick.",
+      );
     } else {
       toast.success("Retention job triggered.");
     }
@@ -132,7 +143,8 @@ export function RetentionSettings() {
                   onChange={(e) => setLiveDays(e.target.value)}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Rows older than this are moved from <code>user_locations</code> to the archive.
+                  Rows older than this are moved from{" "}
+                  <code>user_locations</code> to the archive.
                 </p>
               </div>
               <div className="flex flex-col gap-1.5">
@@ -146,7 +158,8 @@ export function RetentionSettings() {
                   onChange={(e) => setObfDays(e.target.value)}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Must be less than live retention. Coordinates are rounded to ~110m precision.
+                  Must be less than live retention. Coordinates are rounded to
+                  ~110m precision.
                 </p>
               </div>
             </div>
@@ -161,16 +174,20 @@ export function RetentionSettings() {
                 spellCheck={false}
               />
               <p className="text-xs text-muted-foreground">
-                Standard 5-field cron. Default <code>15 3 * * *</code> runs daily at 03:15 UTC.
+                Standard 5-field cron. Default <code>15 3 * * *</code> runs
+                daily at 03:15 UTC.
               </p>
               {!validCron && cron.length > 0 && (
-                <p className="text-xs text-destructive">Invalid cron expression.</p>
+                <p className="text-xs text-destructive">
+                  Invalid cron expression.
+                </p>
               )}
             </div>
 
             {!validNums && (
               <p className="text-xs text-destructive">
-                Days must be integers with obfuscate &lt; live retention (1–3650).
+                Days must be integers with obfuscate &lt; live retention
+                (1–3650).
               </p>
             )}
 
@@ -179,7 +196,9 @@ export function RetentionSettings() {
                 {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save settings
               </Button>
-              <Button variant="outline" onClick={runNow}>Run now</Button>
+              <Button variant="outline" onClick={runNow}>
+                Run now
+              </Button>
               {settings?.updated_at && (
                 <span className="text-xs text-muted-foreground ml-auto">
                   Last updated {new Date(settings.updated_at).toLocaleString()}

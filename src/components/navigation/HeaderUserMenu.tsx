@@ -70,13 +70,18 @@ export function HeaderUserMenu({
           // Center the JET mark inside the circular frame with a touch of
           // breathing room. `object-contain` prevents the logo from being
           // cropped to a square edge like a photo avatar would be.
-          className={hasUpload ? "object-cover" : "object-contain p-1 bg-background"}
+          className={
+            hasUpload ? "object-cover" : "object-contain p-1 bg-background"
+          }
         />
         {/* Initials are a last resort: only when there is no uploaded image
             (or it genuinely failed to load). While an upload is loading we
             render a neutral placeholder instead of flashing initials. */}
         {hasUpload ? (
-          <AvatarFallback style={{ background: "hsl(var(--muted))" }} delayMs={0} />
+          <AvatarFallback
+            style={{ background: "hsl(var(--muted))" }}
+            delayMs={0}
+          />
         ) : (
           <AvatarFallback
             className="text-primary-foreground font-bold tracking-wide flex items-center justify-center"
@@ -130,7 +135,10 @@ function getInitials(name: string): string {
 }
 
 /** Avatar trigger button styling (gradient ring, mount transition, active glow). */
-function triggerStyle(mounted: boolean, isActive: boolean): React.CSSProperties {
+function triggerStyle(
+  mounted: boolean,
+  isActive: boolean,
+): React.CSSProperties {
   return {
     position: "relative",
     flexShrink: 0,
@@ -166,6 +174,7 @@ const avatarInnerStyle: React.CSSProperties = {
 
 const avatarFallbackStyle: React.CSSProperties = {
   fontSize: "clamp(11px, 1.5vw, 14px)",
-  background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))",
+  background:
+    "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))",
   letterSpacing: "0.02em",
 };

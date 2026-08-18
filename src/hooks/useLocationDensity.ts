@@ -12,7 +12,7 @@ interface DensityData {
 }
 
 interface DensityFilters {
-  timeFilter?: 'all' | 'today' | 'this_week' | 'this_hour';
+  timeFilter?: "all" | "today" | "this_week" | "this_hour";
   hourOfDay?: number;
   dayOfWeek?: number;
   /** When set, takes precedence over `timeFilter`. Filters user_locations to
@@ -25,7 +25,7 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [unauthorized, setUnauthorized] = useState(false);
-  const lastDataHashRef = useRef<string>('');
+  const lastDataHashRef = useRef<string>("");
   const isLoadingRef = useRef(false);
   const pendingRefetchRef = useRef(false);
   // Per-instance channel name prevents the Supabase client from silently
@@ -41,28 +41,34 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
     }
     isLoadingRef.current = true;
     pendingRefetchRef.current = false;
-    
+
     try {
       setLoading(true);
 
       // Revalidate the identity with Auth before calling the protected endpoint.
       // getSession() alone only reads local storage and can briefly return a
       // stale token while OAuth hydration or a token refresh is completing.
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
       if (userError || !user) {
         setUnauthorized(true);
-        setError('unauthorized');
+        setError("unauthorized");
         setDensityData(null);
-        lastDataHashRef.current = '';
+        lastDataHashRef.current = "";
         return;
       }
 
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
       if (sessionError || !session?.access_token) {
         setUnauthorized(true);
-        setError('unauthorized');
+        setError("unauthorized");
         setDensityData(null);
-        lastDataHashRef.current = '';
+        lastDataHashRef.current = "";
         return;
       }
 
@@ -75,15 +81,18 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
       if (filters.hourOfDay !== undefined) body.hour_of_day = filters.hourOfDay;
       if (filters.dayOfWeek !== undefined) body.day_of_week = filters.dayOfWeek;
 
-      const { data, error: functionError } = await supabase.functions.invoke('get-location-density', {
-        body: JSON.stringify(body),
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
+      const { data, error: functionError } = await supabase.functions.invoke(
+        "get-location-density",
+        {
+          body: JSON.stringify(body),
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
         },
-      });
+      );
 
       if (functionError) throw functionError;
-      
+
       // Only update state if data actually changed
       const dataHash = JSON.stringify(data?.stats);
       if (dataHash !== lastDataHashRef.current) {
@@ -93,15 +102,16 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
       setError(null);
       setUnauthorized(false);
     } catch (err) {
-      const status = (err as { context?: { status?: number } })?.context?.status;
+      const status = (err as { context?: { status?: number } })?.context
+        ?.status;
       if (status === 401 || status === 403) {
-        console.info('Density data unavailable (admin-only endpoint).');
+        console.info("Density data unavailable (admin-only endpoint).");
         setUnauthorized(true);
-        setError('unauthorized');
+        setError("unauthorized");
       } else {
-        console.error('Error loading density data:', err);
+        console.error("Error loading density data:", err);
         setUnauthorized(false);
-        setError('Failed to load density data');
+        setError("Failed to load density data");
       }
     } finally {
       setLoading(false);
@@ -111,7 +121,12 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
         void loadDensityData();
       }
     }
-  }, [filters.timeFilter, filters.hourOfDay, filters.dayOfWeek, filters.windowMinutes]);
+  }, [
+    filters.timeFilter,
+    filters.hourOfDay,
+    filters.dayOfWeek,
+    filters.windowMinutes,
+  ]);
 
   useEffect(() => {
     loadDensityData();
@@ -119,7 +134,7 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
     // `user_locations` is not published to realtime (precise coordinates must
     // never be broadcast), so poll while the tab is visible instead.
     const poll = setInterval(() => {
-      if (typeof document !== 'undefined' && document.hidden) return;
+      if (typeof document !== "undefined" && document.hidden) return;
       void loadDensityData();
     }, 30000);
 
@@ -130,21 +145,36 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
   // The callback must not await Supabase calls inline — defer to a microtask
   // so we never re-enter the auth lock from inside the listener.
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT' || !session) {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT" || !session) {
         setUnauthorized(true);
-        setError('unauthorized');
+        setError("unauthorized");
         setDensityData(null);
-        lastDataHashRef.current = '';
+        lastDataHashRef.current = "";
         return;
       }
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED') {
+      if (
+        event === "SIGNED_IN" ||
+        event === "TOKEN_REFRESHED" ||
+        event === "INITIAL_SESSION" ||
+        event === "USER_UPDATED"
+      ) {
         // Force a fresh fetch on sign-in even if the payload hash is unchanged.
-        setTimeout(() => { void loadDensityData(); }, 0);
+        setTimeout(() => {
+          void loadDensityData();
+        }, 0);
       }
     });
     return () => subscription.unsubscribe();
   }, [loadDensityData]);
 
-  return { densityData, loading, error, unauthorized, refresh: loadDensityData };
+  return {
+    densityData,
+    loading,
+    error,
+    unauthorized,
+    refresh: loadDensityData,
+  };
 };

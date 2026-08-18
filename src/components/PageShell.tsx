@@ -9,8 +9,11 @@ import type { CSSProperties, ReactNode } from "react";
  */
 export type PageShellVariant = "dense" | "default" | "relaxed";
 
-const VARIANT_PRESETS: Record<PageShellVariant, { padding: string; gap: string }> = {
-  dense:   { padding: "12px", gap: "12px" },
+const VARIANT_PRESETS: Record<
+  PageShellVariant,
+  { padding: string; gap: string }
+> = {
+  dense: { padding: "12px", gap: "12px" },
   default: { padding: "16px", gap: "16px" },
   relaxed: { padding: "24px", gap: "24px" },
 };

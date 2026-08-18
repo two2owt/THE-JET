@@ -26,7 +26,11 @@ import { execFileSync } from "node:child_process";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const MIGRATIONS_DIR = join(ROOT, "supabase", "migrations");
-const EXPECTED_PATH = join(ROOT, "scripts", "realtime-publication-expected.txt");
+const EXPECTED_PATH = join(
+  ROOT,
+  "scripts",
+  "realtime-publication-expected.txt",
+);
 
 // Tables that must never be published, regardless of the expected list.
 const DENY_LIST = new Set([
@@ -42,8 +46,9 @@ const DENY_LIST = new Set([
 // Migrations already applied to Test. They must not be rewritten; later
 // guarded migrations supersede their unguarded statements.
 const LEGACY_ALLOWLIST = new Set(
-  readdirSync(MIGRATIONS_DIR)
-    .filter((f) => f.endsWith(".sql") && f < "20260814000000"),
+  readdirSync(MIGRATIONS_DIR).filter(
+    (f) => f.endsWith(".sql") && f < "20260814000000",
+  ),
 );
 
 const expected = new Set(
@@ -66,7 +71,9 @@ const strip = (sql) =>
 
 const members = new Set();
 
-for (const file of readdirSync(MIGRATIONS_DIR).filter((f) => f.endsWith(".sql")).sort()) {
+for (const file of readdirSync(MIGRATIONS_DIR)
+  .filter((f) => f.endsWith(".sql"))
+  .sort()) {
   const sql = strip(readFileSync(join(MIGRATIONS_DIR, file), "utf8"));
   const guarded = /pg_publication_tables/i.test(sql);
   const isLegacy = LEGACY_ALLOWLIST.has(file);
@@ -74,7 +81,11 @@ for (const file of readdirSync(MIGRATIONS_DIR).filter((f) => f.endsWith(".sql"))
   // A reconciliation migration rebuilds membership from the expected list via
   // dynamic EXECUTE format(), which the static replay cannot resolve. Treat it
   // as a reset point so the advisory diff below stays meaningful.
-  if (/RECONCILE_REALTIME_PUBLICATION|Deny-listed table public\.% is still published/i.test(sql)) {
+  if (
+    /RECONCILE_REALTIME_PUBLICATION|Deny-listed table public\.% is still published/i.test(
+      sql,
+    )
+  ) {
     members.clear();
     for (const t of expected) members.add(t);
   }
@@ -91,7 +102,9 @@ for (const file of readdirSync(MIGRATIONS_DIR).filter((f) => f.endsWith(".sql"))
     if (t === "%i") continue; // dynamic EXECUTE format() — resolved at runtime
     members.add(t);
     if (DENY_LIST.has(t) && !isLegacy) {
-      errors.push(`${file}: adds deny-listed table public.${t} to supabase_realtime.`);
+      errors.push(
+        `${file}: adds deny-listed table public.${t} to supabase_realtime.`,
+      );
     }
     if (!guarded && !isLegacy) {
       errors.push(
@@ -117,8 +130,14 @@ for (const file of readdirSync(MIGRATIONS_DIR).filter((f) => f.endsWith(".sql"))
 const diff = (label, actual, sink = errors) => {
   const missing = [...expected].filter((t) => !actual.has(t)).sort();
   const extra = [...actual].filter((t) => !expected.has(t)).sort();
-  for (const t of missing) sink.push(`${label}: public.${t} is expected in supabase_realtime but absent.`);
-  for (const t of extra) sink.push(`${label}: public.${t} is published to supabase_realtime but not in the expected list.`);
+  for (const t of missing)
+    sink.push(
+      `${label}: public.${t} is expected in supabase_realtime but absent.`,
+    );
+  for (const t of extra)
+    sink.push(
+      `${label}: public.${t} is published to supabase_realtime but not in the expected list.`,
+    );
   return missing.length + extra.length === 0;
 };
 
@@ -142,13 +161,22 @@ if (process.env.PGHOST) {
       ],
       { encoding: "utf8" },
     );
-    const live = new Set(out.split("\n").map((l) => l.trim()).filter(Boolean));
+    const live = new Set(
+      out
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean),
+    );
     diff("database", live);
   } catch (e) {
-    console.warn(`Skipping live publication check: ${e.message.split("\n")[0]}`);
+    console.warn(
+      `Skipping live publication check: ${e.message.split("\n")[0]}`,
+    );
   }
 } else {
-  console.log("PGHOST not set — skipping live publication check (static replay only).");
+  console.log(
+    "PGHOST not set — skipping live publication check (static replay only).",
+  );
 }
 
 if (errors.length) {

@@ -48,10 +48,15 @@ export function resolveDisplayName(
 }
 
 /** True when the profile still needs the user to choose a real name. */
-export function needsDisplayNameClaim(profile: {
-  display_name?: string | null;
-  display_name_claimed?: boolean | null;
-} | null | undefined): boolean {
+export function needsDisplayNameClaim(
+  profile:
+    | {
+        display_name?: string | null;
+        display_name_claimed?: boolean | null;
+      }
+    | null
+    | undefined,
+): boolean {
   if (!profile) return false;
   if (profile.display_name_claimed) return false;
   return (

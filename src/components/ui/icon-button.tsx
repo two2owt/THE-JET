@@ -8,9 +8,12 @@ const iconButtonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-transparent text-muted-foreground hover:bg-primary/10 hover:text-primary",
-        ghost: "bg-transparent text-muted-foreground hover:bg-accent/10 hover:text-foreground",
-        muted: "bg-transparent text-muted-foreground/60 hover:bg-muted hover:text-muted-foreground",
+        default:
+          "bg-transparent text-muted-foreground hover:bg-primary/10 hover:text-primary",
+        ghost:
+          "bg-transparent text-muted-foreground hover:bg-accent/10 hover:text-foreground",
+        muted:
+          "bg-transparent text-muted-foreground/60 hover:bg-muted hover:text-muted-foreground",
       },
       size: {
         default: "h-11 w-11 min-h-[44px] min-w-[44px] [&_svg]:h-4 [&_svg]:w-4",
@@ -30,7 +33,8 @@ const iconButtonVariants = cva(
 );
 
 export interface IconButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof iconButtonVariants> {
   asChild?: boolean;
   ariaLabel: string;
@@ -38,7 +42,18 @@ export interface IconButtonProps
 }
 
 const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
-  ({ className, variant, size, asChild = false, ariaLabel, ariaPressed, ...props }, ref) => {
+  (
+    {
+      className,
+      variant,
+      size,
+      asChild = false,
+      ariaLabel,
+      ariaPressed,
+      ...props
+    },
+    ref,
+  ) => {
     const Comp = asChild ? Slot : "button";
     return (
       <Comp

@@ -169,10 +169,22 @@ group("matchesFilters — invalid filter shapes are safe", () => {
   // Empty filters → always match
   eq("empty filters match", matchesFilters(deal, defaultFilters), true);
   // Mismatched merchant
-  eq("merchant mismatch excludes", matchesFilters(deal, { ...defaultFilters, merchants: ["other"] }), false);
+  eq(
+    "merchant mismatch excludes",
+    matchesFilters(deal, { ...defaultFilters, merchants: ["other"] }),
+    false,
+  );
   // Day overlap
-  eq("any-day overlap includes", matchesFilters(deal, { ...defaultFilters, days: [2, 4] }), true);
-  eq("no-day overlap excludes", matchesFilters(deal, { ...defaultFilters, days: [0, 4] }), false);
+  eq(
+    "any-day overlap includes",
+    matchesFilters(deal, { ...defaultFilters, days: [2, 4] }),
+    true,
+  );
+  eq(
+    "no-day overlap excludes",
+    matchesFilters(deal, { ...defaultFilters, days: [0, 4] }),
+    false,
+  );
 });
 
 console.log(`\n${passed} passed, ${failed} failed`);

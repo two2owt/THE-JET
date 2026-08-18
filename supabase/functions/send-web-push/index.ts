@@ -1,6 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import webpush from "https://esm.sh/web-push@3.6.7";
-import { corsHeaders, logVersion, EDGE_FUNCTION_VERSION } from "../_shared/cors.ts";
+import {
+  corsHeaders,
+  logVersion,
+  EDGE_FUNCTION_VERSION,
+} from "../_shared/cors.ts";
 
 const FUNCTION_NAME = "send-web-push";
 logVersion(FUNCTION_NAME);
@@ -28,10 +32,10 @@ interface PushSubscription {
 }
 
 async function sendVapidPushNotification(
-  subscription: PushSubscription, 
+  subscription: PushSubscription,
   payload: WebPushPayload,
   vapidPublicKey: string,
-  vapidPrivateKey: string
+  vapidPrivateKey: string,
 ): Promise<boolean> {
   const pushSubscription = {
     endpoint: subscription.endpoint,
@@ -59,7 +63,7 @@ async function sendVapidPushNotification(
     webpush.setVapidDetails(
       "mailto:support@jet-around.com",
       vapidPublicKey,
-      vapidPrivateKey
+      vapidPrivateKey,
     );
 
     await webpush.sendNotification(pushSubscription, notificationPayload);
@@ -67,13 +71,13 @@ async function sendVapidPushNotification(
     return true;
   } catch (error: any) {
     console.error("VAPID push error:", error.message || error);
-    
+
     // Check for expired/invalid subscriptions
     if (error.statusCode === 404 || error.statusCode === 410) {
       console.log("Subscription is no longer valid");
       return false;
     }
-    
+
     throw error;
   }
 }
@@ -92,8 +96,14 @@ Deno.serve(async (req) => {
     if (!vapidPublicKey || !vapidPrivateKey) {
       console.error("VAPID keys not configured");
       return new Response(
-        JSON.stringify({ error: "Push notification service not configured - VAPID keys missing" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({
+          error:
+            "Push notification service not configured - VAPID keys missing",
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -104,18 +114,24 @@ Deno.serve(async (req) => {
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: "No authorization header" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser(token);
 
     if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Invalid token" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Invalid token" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Check admin role
@@ -127,10 +143,10 @@ Deno.serve(async (req) => {
       .single();
 
     if (!roleData) {
-      return new Response(
-        JSON.stringify({ error: "Admin access required" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Admin access required" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const payload: WebPushPayload = await req.json();
@@ -167,7 +183,10 @@ Deno.serve(async (req) => {
       console.log("No active subscriptions found");
       return new Response(
         JSON.stringify({ message: "No active subscriptions found", sent: 0 }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -181,10 +200,10 @@ Deno.serve(async (req) => {
     for (const sub of subscriptions) {
       try {
         const success = await sendVapidPushNotification(
-          sub, 
-          payload, 
-          vapidPublicKey, 
-          vapidPrivateKey
+          sub,
+          payload,
+          vapidPublicKey,
+          vapidPrivateKey,
         );
 
         if (success) {
@@ -202,10 +221,13 @@ Deno.serve(async (req) => {
         } else {
           // Mark subscription as inactive if token is invalid
           invalidSubscriptions.push(sub.id);
-          errors.push(`Failed to send to ${sub.user_id}: Invalid or expired subscription`);
+          errors.push(
+            `Failed to send to ${sub.user_id}: Invalid or expired subscription`,
+          );
         }
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        const errorMessage =
+          err instanceof Error ? err.message : "Unknown error";
         errors.push(`Failed to send to ${sub.user_id}: ${errorMessage}`);
         console.error(`Error sending to ${sub.user_id}:`, errorMessage);
       }
@@ -217,7 +239,9 @@ Deno.serve(async (req) => {
         .from("push_subscriptions")
         .update({ active: false })
         .in("id", invalidSubscriptions);
-      console.log(`Marked ${invalidSubscriptions.length} subscriptions as inactive`);
+      console.log(
+        `Marked ${invalidSubscriptions.length} subscriptions as inactive`,
+      );
     }
 
     return new Response(
@@ -227,15 +251,17 @@ Deno.serve(async (req) => {
         total: subscriptions.length,
         errors: errors.length > 0 ? errors : undefined,
       }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
-
   } catch (err) {
     console.error("Error in send-web-push:", err);
-    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });

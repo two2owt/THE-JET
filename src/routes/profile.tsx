@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import Profile from "@/pages/Profile";
 
 const title = "Your Profile — JET";
-const description = "Manage your JET profile, preferences, notifications, and privacy settings.";
+const description =
+  "Manage your JET profile, preferences, notifications, and privacy settings.";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({

@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import VerificationSuccess from "@/pages/VerificationSuccess";
 
 const title = "Email Verified — JET";
-const description = "Your JET email address is confirmed. Jump back in and start exploring the map.";
+const description =
+  "Your JET email address is confirmed. Jump back in and start exploring the map.";
 
 export const Route = createFileRoute("/verification-success")({
   head: () => ({

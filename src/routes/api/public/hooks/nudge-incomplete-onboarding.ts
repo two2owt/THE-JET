@@ -25,7 +25,9 @@ const MAX_NUDGES = 2;
 const CHANNEL_KEY = "finish-onboarding";
 const BATCH_LIMIT = 200;
 
-export const Route = createFileRoute("/api/public/hooks/nudge-incomplete-onboarding")({
+export const Route = createFileRoute(
+  "/api/public/hooks/nudge-incomplete-onboarding",
+)({
   server: {
     handlers: {
       POST: async ({ request }) => {
@@ -33,18 +35,25 @@ export const Route = createFileRoute("/api/public/hooks/nudge-incomplete-onboard
         const serviceKey = process.env["SUPABASE_SERVICE_ROLE_KEY"];
         const hookSecret = process.env["NOTIFY_ADMIN_HOOK_SECRET"];
         if (!supabaseUrl || !serviceKey) {
-          return Response.json({ error: "Server configuration error" }, { status: 500 });
+          return Response.json(
+            { error: "Server configuration error" },
+            { status: 500 },
+          );
         }
 
-        const token = (request.headers.get("authorization") ?? "").replace("Bearer ", "").trim();
-        if (!token) return Response.json({ error: "Unauthorized" }, { status: 401 });
+        const token = (request.headers.get("authorization") ?? "")
+          .replace("Bearer ", "")
+          .trim();
+        if (!token)
+          return Response.json({ error: "Unauthorized" }, { status: 401 });
 
         const admin = createClient(supabaseUrl, serviceKey, {
           auth: { persistSession: false, autoRefreshToken: false },
         });
 
         // Cron secret, service role, or a signed-in admin may trigger a run.
-        let authorized = (!!hookSecret && token === hookSecret) || token === serviceKey;
+        let authorized =
+          (!!hookSecret && token === hookSecret) || token === serviceKey;
         if (!authorized) {
           const { data: userData } = await admin.auth.getUser(token);
           const callerId = userData?.user?.id;
@@ -56,7 +65,8 @@ export const Route = createFileRoute("/api/public/hooks/nudge-incomplete-onboard
             authorized = isAdmin === true;
           }
         }
-        if (!authorized) return Response.json({ error: "Unauthorized" }, { status: 401 });
+        if (!authorized)
+          return Response.json({ error: "Unauthorized" }, { status: 401 });
 
         const now = Date.now();
         const minAge = new Date(now - MIN_AGE_HOURS * 3_600_000).toISOString();
@@ -71,13 +81,21 @@ export const Route = createFileRoute("/api/public/hooks/nudge-incomplete-onboard
           .limit(BATCH_LIMIT);
 
         if (profileError) {
-          return Response.json({ error: profileError.message }, { status: 500 });
+          return Response.json(
+            { error: profileError.message },
+            { status: 500 },
+          );
         }
 
         const candidates = profiles ?? [];
         const candidateIds = candidates.map((p) => p.id);
         if (candidateIds.length === 0) {
-          return Response.json({ candidates: 0, sent: 0, skipped: 0, failures: [] });
+          return Response.json({
+            candidates: 0,
+            sent: 0,
+            skipped: 0,
+            failures: [],
+          });
         }
 
         const { data: prefs } = await admin
@@ -108,7 +126,9 @@ export const Route = createFileRoute("/api/public/hooks/nudge-incomplete-onboard
             continue;
           }
 
-          const history = (throttleRows ?? []).filter((r) => r.user_id === userId);
+          const history = (throttleRows ?? []).filter(
+            (r) => r.user_id === userId,
+          );
           if (history.length >= MAX_NUDGES) {
             skipped++;
             continue;
@@ -148,19 +168,25 @@ export const Route = createFileRoute("/api/public/hooks/nudge-incomplete-onboard
           }
 
           try {
-            const response = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${serviceKey}`,
+            const response = await fetch(
+              `${supabaseUrl}/functions/v1/send-transactional-email`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${serviceKey}`,
+                },
+                body: JSON.stringify({
+                  templateName: "finish-onboarding",
+                  recipientEmail: email,
+                  idempotencyKey,
+                  templateData: {
+                    name: profile.display_name ?? undefined,
+                    attempt,
+                  },
+                }),
               },
-              body: JSON.stringify({
-                templateName: "finish-onboarding",
-                recipientEmail: email,
-                idempotencyKey,
-                templateData: { name: profile.display_name ?? undefined, attempt },
-              }),
-            });
+            );
 
             if (!response.ok) {
               const details = (await response.text()).slice(0, 300);
@@ -170,18 +196,29 @@ export const Route = createFileRoute("/api/public/hooks/nudge-incomplete-onboard
                 template_name: "finish-onboarding",
                 recipient_email: email,
                 status: "failed",
-                error_message: `send-transactional-email ${response.status}: ${details}`.slice(0, 500),
+                error_message:
+                  `send-transactional-email ${response.status}: ${details}`.slice(
+                    0,
+                    500,
+                  ),
                 metadata: { source: "nudge-incomplete-onboarding", attempt },
               });
               continue;
             }
             sent++;
           } catch (err) {
-            failures.push(`${email}: ${err instanceof Error ? err.message : String(err)}`);
+            failures.push(
+              `${email}: ${err instanceof Error ? err.message : String(err)}`,
+            );
           }
         }
 
-        return Response.json({ candidates: candidateIds.length, sent, skipped, failures });
+        return Response.json({
+          candidates: candidateIds.length,
+          sent,
+          skipped,
+          failures,
+        });
       },
     },
   },

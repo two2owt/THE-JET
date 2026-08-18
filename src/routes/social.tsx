@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import Social from "@/pages/Social";
 
 const title = "Your Crew — JET";
-const description = "Find friends on JET, share deals, and see where your crew is going out.";
+const description =
+  "Find friends on JET, share deals, and see where your crew is going out.";
 
 export const Route = createFileRoute("/social")({
   head: () => ({

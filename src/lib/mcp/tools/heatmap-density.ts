@@ -31,44 +31,76 @@ export default defineTool({
       .max(10080)
       .optional()
       .describe("How far back to look, in minutes (1 to 10080). Default 60."),
-    latitude: z.number().min(-90).max(90).optional().describe("Center latitude to filter around."),
-    longitude: z.number().min(-180).max(180).optional().describe("Center longitude to filter around."),
+    latitude: z
+      .number()
+      .min(-90)
+      .max(90)
+      .optional()
+      .describe("Center latitude to filter around."),
+    longitude: z
+      .number()
+      .min(-180)
+      .max(180)
+      .optional()
+      .describe("Center longitude to filter around."),
     radius_km: z
       .number()
       .min(0.1)
       .max(100)
       .optional()
-      .describe("Radius in kilometers around the center point (default 5, requires latitude/longitude)."),
+      .describe(
+        "Radius in kilometers around the center point (default 5, requires latitude/longitude).",
+      ),
     limit: z
       .number()
       .int()
       .min(1)
       .max(200)
       .optional()
-      .describe("Maximum number of density cells to return, busiest first (default 50)."),
+      .describe(
+        "Maximum number of density cells to return, busiest first (default 50).",
+      ),
   },
-  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  annotations: {
+    readOnlyHint: true,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
   handler: async (
     { time_window_minutes, latitude, longitude, radius_km, limit },
     ctx,
   ) => {
     if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+      return {
+        content: [{ type: "text", text: "Not authenticated" }],
+        isError: true,
+      };
     }
     if ((latitude === undefined) !== (longitude === undefined)) {
       return {
-        content: [{ type: "text", text: "Provide both latitude and longitude, or neither." }],
+        content: [
+          {
+            type: "text",
+            text: "Provide both latitude and longitude, or neither.",
+          },
+        ],
         isError: true,
       };
     }
 
     const windowMinutes = time_window_minutes ?? 60;
     const supabase = supabaseForUser(ctx);
-    const { data, error } = await supabase.functions.invoke("get-location-density", {
-      body: { time_window_minutes: windowMinutes },
-    });
+    const { data, error } = await supabase.functions.invoke(
+      "get-location-density",
+      {
+        body: { time_window_minutes: windowMinutes },
+      },
+    );
     if (error) {
-      return { content: [{ type: "text", text: error.message }], isError: true };
+      return {
+        content: [{ type: "text", text: error.message }],
+        isError: true,
+      };
     }
 
     const features: DensityFeature[] = data?.geojson?.features ?? [];
@@ -83,13 +115,17 @@ export default defineTool({
           intensity: f.properties?.intensity ?? 0,
         };
       })
-      .filter((c) => Number.isFinite(c.latitude) && Number.isFinite(c.longitude));
+      .filter(
+        (c) => Number.isFinite(c.latitude) && Number.isFinite(c.longitude),
+      );
 
     if (latitude !== undefined && longitude !== undefined) {
       cells = cells
         .map((c) => ({
           ...c,
-          distance_km: Number(distanceKm(latitude, longitude, c.latitude, c.longitude).toFixed(3)),
+          distance_km: Number(
+            distanceKm(latitude, longitude, c.latitude, c.longitude).toFixed(3),
+          ),
         }))
         .filter((c) => c.distance_km <= radius);
     }

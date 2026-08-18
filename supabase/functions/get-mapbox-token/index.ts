@@ -60,79 +60,73 @@ function overLimit(ip: string): boolean {
 }
 
 // Best-effort cleanup so the map doesn't grow unbounded on long-lived instances.
-setInterval(() => {
-  const now = Date.now();
-  for (const [ip, entry] of rateLimitMap) {
-    if (now >= entry.resetAt) rateLimitMap.delete(ip);
-  }
-}, 5 * 60 * 1000);
+setInterval(
+  () => {
+    const now = Date.now();
+    for (const [ip, entry] of rateLimitMap) {
+      if (now >= entry.resetAt) rateLimitMap.delete(ip);
+    }
+  },
+  5 * 60 * 1000,
+);
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   const ip = clientIp(req);
   if (!originAllowed(req)) {
-    return new Response(
-      JSON.stringify({ error: "Forbidden" }),
-      {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      },
-    );
+    return new Response(JSON.stringify({ error: "Forbidden" }), {
+      status: 403,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   if (overLimit(ip)) {
-    return new Response(
-      JSON.stringify({ error: "Too many requests" }),
-      {
-        status: 429,
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
-          "Retry-After": "60",
-        },
+    return new Response(JSON.stringify({ error: "Too many requests" }), {
+      status: 429,
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json",
+        "Retry-After": "60",
       },
-    );
+    });
   }
 
   try {
-    const mapboxToken = Deno.env.get('MAPBOX_PUBLIC_TOKEN');
-    
+    const mapboxToken = Deno.env.get("MAPBOX_PUBLIC_TOKEN");
+
     if (!mapboxToken) {
-      throw new Error('MAPBOX_PUBLIC_TOKEN not configured');
+      throw new Error("MAPBOX_PUBLIC_TOKEN not configured");
     }
 
     // Mapbox GL JS requires a public token (pk.*). Never expose secret tokens (sk.*) to clients.
-    if (!mapboxToken.startsWith('pk.')) {
-      throw new Error('MAPBOX_PUBLIC_TOKEN must be a public token starting with "pk."');
+    if (!mapboxToken.startsWith("pk.")) {
+      throw new Error(
+        'MAPBOX_PUBLIC_TOKEN must be a public token starting with "pk."',
+      );
     }
 
-    return new Response(
-      JSON.stringify({ token: mapboxToken }),
-      { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json' 
-        } 
-      }
-    );
+    return new Response(JSON.stringify({ token: mapboxToken }), {
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json",
+      },
+    });
   } catch (error) {
-    console.error('Error fetching Mapbox token:', error);
-    
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { 
-        status: 500,
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json' 
-        } 
-      }
-    );
+    console.error("Error fetching Mapbox token:", error);
+
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json",
+      },
+    });
   }
 });

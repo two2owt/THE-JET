@@ -12,7 +12,7 @@ export const getMapboxTokenFromCache = (): string | null => {
 
 // Check for preloaded token from HTML shell (set before React hydration)
 const getPreloadedToken = (): string | null => {
-  if (typeof window !== 'undefined' && (window as any).__mapboxToken) {
+  if (typeof window !== "undefined" && (window as any).__mapboxToken) {
     return (window as any).__mapboxToken;
   }
   return null;
@@ -45,7 +45,7 @@ interface UseMapboxTokenOptions {
 
 export const useMapboxToken = (options: UseMapboxTokenOptions = {}) => {
   const { enabled = true } = options;
-  
+
   // Initialize synchronously from cache
   const initialCachedToken = getCachedToken();
   const [token, setToken] = useState<string>(initialCachedToken || "");
@@ -58,20 +58,24 @@ export const useMapboxToken = (options: UseMapboxTokenOptions = {}) => {
     // Check cache first (includes preloaded token from HTML shell)
     const cachedToken = getCachedToken();
     if (cachedToken) {
-      if (import.meta.env.DEV) console.log('useMapboxToken: Using cached/preloaded token');
+      if (import.meta.env.DEV)
+        console.log("useMapboxToken: Using cached/preloaded token");
       setToken(cachedToken);
       setLoading(false);
       setError(null);
       return;
     }
-    
+
     // Check if HTML shell started a fetch we can await
-    if (typeof window !== 'undefined' && (window as any).__mapboxTokenPromise) {
+    if (typeof window !== "undefined" && (window as any).__mapboxTokenPromise) {
       try {
         await (window as any).__mapboxTokenPromise;
         const preloaded = getPreloadedToken();
         if (preloaded) {
-          if (import.meta.env.DEV) console.log('useMapboxToken: Using preloaded token from HTML shell');
+          if (import.meta.env.DEV)
+            console.log(
+              "useMapboxToken: Using preloaded token from HTML shell",
+            );
           setToken(preloaded);
           setLoading(false);
           setError(null);
@@ -81,49 +85,55 @@ export const useMapboxToken = (options: UseMapboxTokenOptions = {}) => {
         // Continue to normal fetch
       }
     }
-    
-    if (import.meta.env.DEV) console.log('useMapboxToken: No cached token, fetching from edge function...');
+
+    if (import.meta.env.DEV)
+      console.log(
+        "useMapboxToken: No cached token, fetching from edge function...",
+      );
     setLoading(true);
     setError(null);
-    
+
     // Create a race between the fetch and a timeout
     const fetchWithTimeout = async () => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-      
+
       try {
-        const { data, error: fetchError } = await supabase.functions.invoke("get-mapbox-token", {
-          // @ts-ignore - abort signal is supported but not in types
-          signal: controller.signal,
-        });
-        
+        const { data, error: fetchError } = await supabase.functions.invoke(
+          "get-mapbox-token",
+          {
+            signal: controller.signal,
+          },
+        );
+
         clearTimeout(timeoutId);
 
         if (fetchError) {
-          console.error('useMapboxToken: Error fetching token:', fetchError);
+          console.error("useMapboxToken: Error fetching token:", fetchError);
           throw fetchError;
         }
-        
+
         if (!data || !data.token) {
-          console.error('useMapboxToken: No token received from edge function');
-          throw new Error('No token received from server');
+          console.error("useMapboxToken: No token received from edge function");
+          throw new Error("No token received from server");
         }
 
-        if (typeof data.token !== 'string' || !data.token.startsWith('pk.')) {
-          console.error('useMapboxToken: Invalid token received');
-          throw new Error('Invalid Mapbox public token');
+        if (typeof data.token !== "string" || !data.token.startsWith("pk.")) {
+          console.error("useMapboxToken: Invalid token received");
+          throw new Error("Invalid Mapbox public token");
         }
-        
-        if (import.meta.env.DEV) console.log('useMapboxToken: Successfully fetched token');
+
+        if (import.meta.env.DEV)
+          console.log("useMapboxToken: Successfully fetched token");
         setCachedToken(data.token);
         setToken(data.token);
         setError(null);
       } catch (err: any) {
         clearTimeout(timeoutId);
-        
-        if (err?.name === 'AbortError') {
-          console.error('useMapboxToken: Request timed out');
-          throw new Error('Request timed out');
+
+        if (err?.name === "AbortError") {
+          console.error("useMapboxToken: Request timed out");
+          throw new Error("Request timed out");
         }
         throw err;
       }
@@ -132,11 +142,11 @@ export const useMapboxToken = (options: UseMapboxTokenOptions = {}) => {
     try {
       await fetchWithTimeout();
     } catch (err: any) {
-      console.error('useMapboxToken: Fetch failed:', err);
-      const message = err?.message || 'Unknown error';
-      if (message.includes('timed out')) {
+      console.error("useMapboxToken: Fetch failed:", err);
+      const message = err?.message || "Unknown error";
+      if (message.includes("timed out")) {
         setError("Map service is taking too long. Please refresh the page.");
-      } else if (message.includes('MAPBOX_PUBLIC_TOKEN not configured')) {
+      } else if (message.includes("MAPBOX_PUBLIC_TOKEN not configured")) {
         setError("Map is not configured. Please contact support.");
       } else {
         setError("Failed to load map. Please check your connection.");
@@ -151,25 +161,28 @@ export const useMapboxToken = (options: UseMapboxTokenOptions = {}) => {
     if (!enabled) return;
     if (token) return; // Already have a token
     if (fetchStartedRef.current) return; // Already started fetching
-    
+
     fetchStartedRef.current = true;
-    
+
     // Set a backup timeout - if fetch takes too long, show an error instead of infinite loading
     // This is a safety net in case the fetch promise never resolves
     timeoutRef.current = setTimeout(() => {
       if (loading && !token) {
-        if (import.meta.env.DEV) console.warn('useMapboxToken: Backup timeout triggered after 12 seconds, retrying silently');
+        if (import.meta.env.DEV)
+          console.warn(
+            "useMapboxToken: Backup timeout triggered after 12 seconds, retrying silently",
+          );
         fetchStartedRef.current = false;
         fetchToken();
       }
     }, 12000);
-    
+
     fetchToken().finally(() => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
     });
-    
+
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
@@ -177,5 +190,10 @@ export const useMapboxToken = (options: UseMapboxTokenOptions = {}) => {
     };
   }, [enabled, token, fetchToken, loading]);
 
-  return { token, loading: enabled ? loading : false, error, refetch: fetchToken };
+  return {
+    token,
+    loading: enabled ? loading : false,
+    error,
+    refetch: fetchToken,
+  };
 };

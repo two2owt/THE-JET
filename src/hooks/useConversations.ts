@@ -41,7 +41,7 @@ export const useConversations = (userId?: string) => {
       }
 
       const friendIds = connections.map((c) =>
-        c.user_id === userId ? c.friend_id : c.user_id
+        c.user_id === userId ? c.friend_id : c.user_id,
       );
 
       // 2. Get profiles
@@ -55,7 +55,14 @@ export const useConversations = (userId?: string) => {
           acc[p.id!] = p;
           return acc;
         },
-        {} as Record<string, { id: string | null; display_name: string | null; avatar_url: string | null }>
+        {} as Record<
+          string,
+          {
+            id: string | null;
+            display_name: string | null;
+            avatar_url: string | null;
+          }
+        >,
       );
 
       // 3. For each friend, get latest message and unread count
@@ -99,7 +106,10 @@ export const useConversations = (userId?: string) => {
       // Sort: conversations with messages first (most recent on top), then alphabetical
       convos.sort((a, b) => {
         if (a.lastMessageAt && b.lastMessageAt)
-          return new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime();
+          return (
+            new Date(b.lastMessageAt).getTime() -
+            new Date(a.lastMessageAt).getTime()
+          );
         if (a.lastMessageAt) return -1;
         if (b.lastMessageAt) return 1;
         return a.friendName.localeCompare(b.friendName);
@@ -129,11 +139,14 @@ export const useConversations = (userId?: string) => {
           table: "messages",
         },
         (payload) => {
-          const msg = (payload.new || payload.old) as { sender_id?: string; recipient_id?: string };
+          const msg = (payload.new || payload.old) as {
+            sender_id?: string;
+            recipient_id?: string;
+          };
           if (msg?.sender_id === userId || msg?.recipient_id === userId) {
             fetchConversations();
           }
-        }
+        },
       )
       .subscribe();
 

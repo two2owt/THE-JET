@@ -32,7 +32,7 @@ export const DealCard = memo(({ deal, index = 0 }: DealCardProps) => {
   const [user, setUser] = useState<any>(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const { canAccessSocialFeatures } = useFeatureAccess();
-  
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
@@ -58,9 +58,9 @@ export const DealCard = memo(({ deal, index = 0 }: DealCardProps) => {
     }
 
     await glideHaptic();
-    
+
     const result = await shareDeal(deal, user?.id);
-    
+
     if (result.success) {
       if (result.method === "native") {
         toast.success("Shared successfully!", {
@@ -147,7 +147,7 @@ export const DealCard = memo(({ deal, index = 0 }: DealCardProps) => {
           <Heart
             className={cn(
               "w-4 h-4 sm:w-5 sm:h-5 transition-colors",
-              isFav ? "fill-red-500 text-red-500" : "text-foreground"
+              isFav ? "fill-red-500 text-red-500" : "text-foreground",
             )}
           />
         </button>
@@ -156,7 +156,7 @@ export const DealCard = memo(({ deal, index = 0 }: DealCardProps) => {
         <div
           className={cn(
             "absolute top-2 left-2 sm:top-3 sm:left-3 backdrop-blur-md px-2 py-1 sm:px-3 sm:py-1.5 rounded-full border",
-            getDealTypeColor(deal.deal_type)
+            getDealTypeColor(deal.deal_type),
           )}
         >
           <span className="text-[10px] sm:text-xs font-semibold capitalize">
@@ -212,10 +212,7 @@ export const DealCard = memo(({ deal, index = 0 }: DealCardProps) => {
             <Share2 className="w-4 h-4 mr-2" />
             Share
           </Button>
-          <Button
-            variant="jet"
-            className="w-full py-6 rounded-xl"
-          >
+          <Button variant="jet" className="w-full py-6 rounded-xl">
             View Details
           </Button>
         </div>

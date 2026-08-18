@@ -19,7 +19,14 @@ const DEFAULT_OG = "https://jet-around.com/pwa-512x512.png";
  * for the route. Falls back to sitewide defaults in index.html for crawlers
  * that don't execute JS.
  */
-export function SEO({ title, description, path, ogImage = DEFAULT_OG, noindex, jsonLd }: SEOProps) {
+export function SEO({
+  title,
+  description,
+  path,
+  ogImage = DEFAULT_OG,
+  noindex,
+  jsonLd,
+}: SEOProps) {
   const url = `${SITE_URL}${path}`;
   const jsonLdArray = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
   return (
@@ -36,7 +43,9 @@ export function SEO({ title, description, path, ogImage = DEFAULT_OG, noindex, j
       <meta name="twitter:image" content={ogImage} />
       {noindex && <meta name="robots" content="noindex, nofollow" />}
       {jsonLdArray.map((data, i) => (
-        <script key={i} type="application/ld+json">{JSON.stringify(data)}</script>
+        <script key={i} type="application/ld+json">
+          {JSON.stringify(data)}
+        </script>
       ))}
     </Helmet>
   );

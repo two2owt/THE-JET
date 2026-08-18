@@ -1,9 +1,24 @@
-import { 
-  LineChart, Line, BarChart, Bar, XAxis, YAxis, 
-  CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell 
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts";
 
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))'];
+const COLORS = [
+  "hsl(var(--primary))",
+  "hsl(var(--secondary))",
+  "hsl(var(--accent))",
+  "hsl(var(--muted))",
+];
 
 interface UserGrowthChartProps {
   data: Array<{ date: string; users: number }>;
@@ -15,19 +30,19 @@ export const UserGrowthChart = ({ data }: UserGrowthChartProps) => (
       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
       <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
       <YAxis stroke="hsl(var(--muted-foreground))" />
-      <Tooltip 
-        contentStyle={{ 
-          backgroundColor: 'hsl(var(--card))',
-          border: '1px solid hsl(var(--border))',
-          borderRadius: '8px'
+      <Tooltip
+        contentStyle={{
+          backgroundColor: "hsl(var(--card))",
+          border: "1px solid hsl(var(--border))",
+          borderRadius: "8px",
         }}
       />
-      <Line 
-        type="monotone" 
-        dataKey="users" 
-        stroke="hsl(var(--primary))" 
+      <Line
+        type="monotone"
+        dataKey="users"
+        stroke="hsl(var(--primary))"
         strokeWidth={2}
-        dot={{ fill: 'hsl(var(--primary))' }}
+        dot={{ fill: "hsl(var(--primary))" }}
       />
     </LineChart>
   </ResponsiveContainer>
@@ -43,15 +58,27 @@ export const EngagementChart = ({ data }: EngagementChartProps) => (
       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
       <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
       <YAxis stroke="hsl(var(--muted-foreground))" />
-      <Tooltip 
-        contentStyle={{ 
-          backgroundColor: 'hsl(var(--card))',
-          border: '1px solid hsl(var(--border))',
-          borderRadius: '8px'
+      <Tooltip
+        contentStyle={{
+          backgroundColor: "hsl(var(--card))",
+          border: "1px solid hsl(var(--border))",
+          borderRadius: "8px",
         }}
       />
-      <Line type="monotone" dataKey="shares" stroke="hsl(var(--primary))" name="Shares" strokeWidth={2} />
-      <Line type="monotone" dataKey="reviews" stroke="hsl(var(--secondary))" name="Reviews" strokeWidth={2} />
+      <Line
+        type="monotone"
+        dataKey="shares"
+        stroke="hsl(var(--primary))"
+        name="Shares"
+        strokeWidth={2}
+      />
+      <Line
+        type="monotone"
+        dataKey="reviews"
+        stroke="hsl(var(--secondary))"
+        name="Reviews"
+        strokeWidth={2}
+      />
     </LineChart>
   </ResponsiveContainer>
 );
@@ -76,11 +103,11 @@ export const DealTypePieChart = ({ data }: DealTypePieChartProps) => (
           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
         ))}
       </Pie>
-      <Tooltip 
-        contentStyle={{ 
-          backgroundColor: 'hsl(var(--card))',
-          border: '1px solid hsl(var(--border))',
-          borderRadius: '8px'
+      <Tooltip
+        contentStyle={{
+          backgroundColor: "hsl(var(--card))",
+          border: "1px solid hsl(var(--border))",
+          borderRadius: "8px",
         }}
       />
     </PieChart>
@@ -97,14 +124,18 @@ export const LocationActivityChart = ({ data }: LocationActivityChartProps) => (
       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
       <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
       <YAxis stroke="hsl(var(--muted-foreground))" />
-      <Tooltip 
-        contentStyle={{ 
-          backgroundColor: 'hsl(var(--card))',
-          border: '1px solid hsl(var(--border))',
-          borderRadius: '8px'
+      <Tooltip
+        contentStyle={{
+          backgroundColor: "hsl(var(--card))",
+          border: "1px solid hsl(var(--border))",
+          borderRadius: "8px",
         }}
       />
-      <Bar dataKey="locations" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
+      <Bar
+        dataKey="locations"
+        fill="hsl(var(--primary))"
+        radius={[8, 8, 0, 0]}
+      />
     </BarChart>
   </ResponsiveContainer>
 );

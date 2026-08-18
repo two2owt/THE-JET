@@ -6,9 +6,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Sparkles, Loader2, Upload, ArrowLeft, AlertCircle } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import PreferencesStep, { PreferencesData } from "@/components/onboarding/PreferencesStep";
+import {
+  Sparkles,
+  Loader2,
+  Upload,
+  ArrowLeft,
+  AlertCircle,
+} from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import PreferencesStep, {
+  PreferencesData,
+} from "@/components/onboarding/PreferencesStep";
 import { Json } from "@/integrations/supabase/types";
 import jetLogo from "@/assets/jet-auth-logo-48.webp";
 import { consumePostAuthRedirect } from "@/lib/postAuthRedirect";
@@ -65,7 +79,7 @@ const Onboarding = () => {
     return cached === null;
   })();
   const [isCheckingAuth, setIsCheckingAuth] = useState(initialChecking);
-  
+
   // Step 1: Profile
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
@@ -73,21 +87,23 @@ const Onboarding = () => {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   // Avatar already stored on the profile — preserved when the user resumes
   // Step 1 without picking a new file.
-  const [existingAvatarUrl, setExistingAvatarUrl] = useState<string | null>(null);
+  const [existingAvatarUrl, setExistingAvatarUrl] = useState<string | null>(
+    null,
+  );
   const [birthdate, setBirthdate] = useState("");
   const [gender, setGender] = useState("");
   const [pronouns, setPronouns] = useState("");
-  
+
   // Step 1 validation errors
   const [step1Errors, setStep1Errors] = useState<{
     displayName?: string;
     birthdate?: string;
     gender?: string;
   }>({});
-  
-  
+
   // Step 2: Preferences
-  const [savedPreferences, setSavedPreferences] = useState<PreferencesData | null>(null);
+  const [savedPreferences, setSavedPreferences] =
+    useState<PreferencesData | null>(null);
 
   useEffect(() => {
     // Wait for AuthContext to finish bootstrapping its session.
@@ -115,7 +131,7 @@ const Onboarding = () => {
         const { data: profile } = await supabase
           .from("profiles")
           .select(
-            "onboarding_completed, display_name, bio, avatar_url, birthdate, gender, pronouns, preferences"
+            "onboarding_completed, display_name, bio, avatar_url, birthdate, gender, pronouns, preferences",
           )
           .eq("id", uid)
           .single();
@@ -141,10 +157,16 @@ const Onboarding = () => {
           if (profile.gender) setGender(profile.gender);
           if (profile.pronouns) setPronouns(profile.pronouns);
 
-          const hasStep1 = !!(profile.display_name && profile.birthdate && profile.gender);
+          const hasStep1 = !!(
+            profile.display_name &&
+            profile.birthdate &&
+            profile.gender
+          );
           const hasStep2 = !!profile.preferences;
           if (hasStep2) {
-            setSavedPreferences(profile.preferences as unknown as PreferencesData);
+            setSavedPreferences(
+              profile.preferences as unknown as PreferencesData,
+            );
           }
           if (hasStep2) setStep(3);
           else if (hasStep1) setStep(2);
@@ -163,7 +185,9 @@ const Onboarding = () => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image too large", { description: "Please select an image under 5MB" });
+        toast.error("Image too large", {
+          description: "Please select an image under 5MB",
+        });
         return;
       }
       setAvatarFile(file);
@@ -180,7 +204,10 @@ const Onboarding = () => {
     const birth = new Date(birthdate);
     let age = today.getFullYear() - birth.getFullYear();
     const monthDiff = today.getMonth() - birth.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birth.getDate())
+    ) {
       age--;
     }
     return age;
@@ -193,13 +220,17 @@ const Onboarding = () => {
       .eq("display_name", name)
       .neq("id", userId || "")
       .limit(1);
-    
+
     if (error) return true; // Allow on error to not block user
     return !data || data.length === 0;
   };
 
   const handleStep1Next = async () => {
-    const errors: { displayName?: string; birthdate?: string; gender?: string } = {};
+    const errors: {
+      displayName?: string;
+      birthdate?: string;
+      gender?: string;
+    } = {};
 
     if (!displayName.trim()) {
       errors.displayName = "Display name is required";
@@ -224,13 +255,16 @@ const Onboarding = () => {
     }
 
     setStep1Errors({});
-    
+
     setIsLoading(true);
     try {
       // Check if display name is unique
       const isUnique = await checkDisplayNameUnique(displayName.trim());
       if (!isUnique) {
-        toast.error("Display name taken", { description: "This display name is already in use. Please choose another." });
+        toast.error("Display name taken", {
+          description:
+            "This display name is already in use. Please choose another.",
+        });
         setIsLoading(false);
         return;
       }
@@ -238,30 +272,29 @@ const Onboarding = () => {
       // Default to whatever is already on the profile so resuming Step 1
       // without re-uploading never wipes an existing (or OAuth) avatar.
       let avatarUrl = existingAvatarUrl;
-      
+
       // Upload avatar if provided
       if (avatarFile && userId) {
-        const fileExt = avatarFile.name.split('.').pop();
+        const fileExt = avatarFile.name.split(".").pop();
         const fileName = `${userId}/avatar.${fileExt}`;
-        
+
         const { error: uploadError } = await supabase.storage
-          .from('avatars')
+          .from("avatars")
           .upload(fileName, avatarFile, { upsert: true });
-        
+
         if (uploadError) throw uploadError;
-        
-        const { data: { publicUrl } } = supabase.storage
-          .from('avatars')
-          .getPublicUrl(fileName);
-        
+
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("avatars").getPublicUrl(fileName);
+
         avatarUrl = publicUrl;
         setExistingAvatarUrl(publicUrl);
       }
-      
+
       // Use upsert to handle cases where profile might not exist yet
-      const { error } = await supabase
-        .from("profiles")
-        .upsert({
+      const { error } = await supabase.from("profiles").upsert(
+        {
           id: userId as string,
           display_name: displayName.trim(),
           display_name_claimed: true,
@@ -270,18 +303,23 @@ const Onboarding = () => {
           birthdate: birthdate,
           gender: gender,
           pronouns: pronouns || null,
-        }, {
-          onConflict: 'id'
-        });
-      
+        },
+        {
+          onConflict: "id",
+        },
+      );
+
       if (error) {
-        if (error.code === '23505') {
-          toast.error("Display name taken", { description: "This display name is already in use. Please choose another." });
+        if (error.code === "23505") {
+          toast.error("Display name taken", {
+            description:
+              "This display name is already in use. Please choose another.",
+          });
           return;
         }
         throw error;
       }
-      
+
       setDirection("forward");
       setStep(2);
     } catch (error: any) {
@@ -304,16 +342,16 @@ const Onboarding = () => {
         trendingVenues: preferences.trendingVenues,
         activityInArea: preferences.activityInArea,
       };
-      
+
       const { error } = await supabase
         .from("profiles")
         .update({
           preferences: preferencesJson as unknown as Json,
         })
-        .eq('id', userId as string);
-      
+        .eq("id", userId as string);
+
       if (error) throw error;
-      
+
       setDirection("forward");
       setStep(3);
     } catch (error: any) {
@@ -326,27 +364,31 @@ const Onboarding = () => {
   const handleComplete = async () => {
     setIsLoading(true);
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .upsert({
+      const { error } = await supabase.from("profiles").upsert(
+        {
           id: userId as string,
-          onboarding_completed: true
-        }, {
-          onConflict: 'id'
-        });
-      
+          onboarding_completed: true,
+        },
+        {
+          onConflict: "id",
+        },
+      );
+
       if (error) throw error;
 
       if (userId) writeCachedOnboardingStatus(userId, true);
-      toast.success("Welcome to JET Charlotte!", { description: "Let's discover what's hot" });
+      toast.success("Welcome to JET Charlotte!", {
+        description: "Let's discover what's hot",
+      });
       navigate(consumePostAuthRedirect("/"), { replace: true });
     } catch (error: any) {
-      toast.error("Failed to complete onboarding", { description: error.message });
+      toast.error("Failed to complete onboarding", {
+        description: error.message,
+      });
     } finally {
       setIsLoading(false);
     }
   };
-
 
   const STEPS = [
     {
@@ -361,7 +403,8 @@ const Onboarding = () => {
       label: "Preferences",
       title: "Tune your",
       titleAccent: "Taste",
-      description: "Pick the categories you love so we can curate Charlotte for you.",
+      description:
+        "Pick the categories you love so we can curate Charlotte for you.",
     },
     {
       num: 3,
@@ -403,21 +446,31 @@ const Onboarding = () => {
         aria-live="polite"
         aria-busy="true"
       >
-        <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden="true" />
+        <Loader2
+          className="h-6 w-6 animate-spin text-primary"
+          aria-hidden="true"
+        />
         <span className="sr-only">Loading onboarding…</span>
       </div>
     );
   }
 
   return (
-    <div
-      className="relative flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto bg-background px-fluid-sm sm:px-fluid-md pt-[max(env(safe-area-inset-top,0px),var(--space-lg))] pb-[max(env(safe-area-inset-bottom,0px),var(--space-lg))]"
-    >
+    <div className="relative flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto bg-background px-fluid-sm sm:px-fluid-md pt-[max(env(safe-area-inset-top,0px),var(--space-lg))] pb-[max(env(safe-area-inset-bottom,0px),var(--space-lg))]">
       {/* Ambient corner glow accents */}
-      <div className="pointer-events-none absolute -top-32 -left-32 h-80 w-80 rounded-full bg-primary/10 blur-[140px]" aria-hidden />
-      <div className="pointer-events-none absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-primary-glow/10 blur-[140px]" aria-hidden />
+      <div
+        className="pointer-events-none absolute -top-32 -left-32 h-80 w-80 rounded-full bg-primary/10 blur-[140px]"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-primary-glow/10 blur-[140px]"
+        aria-hidden
+      />
       {/* Soft vignette */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,hsl(0_0%_0%/0.7)_100%)]" aria-hidden />
+      <div
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,hsl(0_0%_0%/0.7)_100%)]"
+        aria-hidden
+      />
 
       <div className="relative z-10 mx-auto w-full max-w-[420px]">
         {/* Glassmorphic Card */}
@@ -437,7 +490,9 @@ const Onboarding = () => {
             ) : (
               <span aria-hidden />
             )}
-            <span className="sr-only" aria-live="polite">{progressPct}% complete</span>
+            <span className="sr-only" aria-live="polite">
+              {progressPct}% complete
+            </span>
           </div>
 
           {/* Progress segments */}
@@ -467,7 +522,8 @@ const Onboarding = () => {
           {/* Header */}
           <div className="flex flex-col gap-2">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/70">
-              Step {String(step).padStart(2, "0")} / {String(STEPS.length).padStart(2, "0")} · {current.label}
+              Step {String(step).padStart(2, "0")} /{" "}
+              {String(STEPS.length).padStart(2, "0")} · {current.label}
             </span>
             <h1 className="text-3xl font-extrabold leading-[1.05] text-foreground font-display">
               {current.title}
@@ -476,11 +532,16 @@ const Onboarding = () => {
                 {current.titleAccent}
               </span>
             </h1>
-            <p className="text-sm text-muted-foreground">{current.description}</p>
+            <p className="text-sm text-muted-foreground">
+              {current.description}
+            </p>
             {step === 2 && (
               <button
                 type="button"
-                onClick={() => { setDirection("forward"); setStep(3); }}
+                onClick={() => {
+                  setDirection("forward");
+                  setStep(3);
+                }}
                 className="mt-1 self-start text-[11px] font-semibold uppercase tracking-widest text-muted-foreground underline-offset-4 hover:text-primary hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
               >
                 Skip for now
@@ -495,148 +556,194 @@ const Onboarding = () => {
               onKeyDown={handleStep1KeyDown}
               className={`flex flex-col gap-5 ${direction === "forward" ? "animate-fade-in" : "animate-fade-in"}`}
             >
-            <div className="flex flex-col items-center">
-              <div className="relative">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-card/40 border border-border/60 backdrop-blur-sm flex items-center justify-center overflow-hidden">
-                  {avatarPreview ? (
-                    <img src={avatarPreview} alt="Avatar" width={96} height={96} className="w-full h-full object-cover" loading="lazy" decoding="async" />
-                  ) : (
-                    <Upload className="w-8 h-8 text-muted-foreground" />
-                  )}
+              <div className="flex flex-col items-center">
+                <div className="relative">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-card/40 border border-border/60 backdrop-blur-sm flex items-center justify-center overflow-hidden">
+                    {avatarPreview ? (
+                      <img
+                        src={avatarPreview}
+                        alt="Avatar"
+                        width={96}
+                        height={96}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      <Upload className="w-8 h-8 text-muted-foreground" />
+                    )}
+                  </div>
+                  <label className="absolute bottom-0 right-0 w-8 h-8 bg-gradient-to-r from-primary to-primary-glow rounded-full flex items-center justify-center cursor-pointer shadow-md shadow-primary/30 transition-transform hover:scale-105">
+                    <Upload className="w-4 h-4 text-primary-foreground" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarChange}
+                      className="hidden"
+                    />
+                  </label>
                 </div>
-                <label className="absolute bottom-0 right-0 w-8 h-8 bg-gradient-to-r from-primary to-primary-glow rounded-full flex items-center justify-center cursor-pointer shadow-md shadow-primary/30 transition-transform hover:scale-105">
-                  <Upload className="w-4 h-4 text-primary-foreground" />
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarChange}
-                    className="hidden"
-                  />
-                </label>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Upload profile picture
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground mt-2">Upload profile picture</p>
-            </div>
 
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="displayName" className="heading-luxe-eyebrow text-left">
-                Display Name <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="displayName"
-                placeholder="Enter your name"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                maxLength={50}
-                className={step1Errors.displayName ? "focus-visible:!ring-destructive/30" : ""}
-                aria-invalid={!!step1Errors.displayName}
-                aria-describedby={step1Errors.displayName ? "displayName-error" : undefined}
-                style={step1Errors.displayName ? { borderColor: "hsl(var(--destructive) / 0.7)" } : undefined}
-              />
-              {step1Errors.displayName && (
-                <p id="displayName-error" className="field-error">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  {step1Errors.displayName}
-                </p>
-              )}
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="bio" className="heading-luxe-eyebrow text-left">
-                Bio <span className="text-muted-foreground/70 normal-case">(optional)</span>
-              </Label>
-              <Textarea
-                id="bio"
-                placeholder="Tell us about yourself"
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                maxLength={200}
-                rows={3}
-              />
-              <p className="text-xs text-muted-foreground text-right">{bio.length}/200</p>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="birthdate" className="heading-luxe-eyebrow text-left">
-                Birthdate <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="birthdate"
-                type="date"
-                value={birthdate}
-                onChange={(e) => setBirthdate(e.target.value)}
-                max={maxBirthdate}
-                className={`bg-card/60 ${step1Errors.birthdate ? "focus-visible:!ring-destructive/30" : ""}`}
-                aria-invalid={!!step1Errors.birthdate}
-                aria-describedby={step1Errors.birthdate ? "birthdate-error" : undefined}
-                style={step1Errors.birthdate ? { borderColor: "hsl(var(--destructive) / 0.7)" } : undefined}
-              />
-              {step1Errors.birthdate && (
-                <p id="birthdate-error" className="field-error">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  {step1Errors.birthdate}
-                </p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
-                <Label className="heading-luxe-eyebrow text-left">
-                  Gender <span className="text-destructive">*</span>
+                <Label
+                  htmlFor="displayName"
+                  className="heading-luxe-eyebrow text-left"
+                >
+                  Display Name <span className="text-destructive">*</span>
                 </Label>
-                <Select value={gender} onValueChange={setGender}>
-                  <SelectTrigger
-                    className={`bg-card/60 ${step1Errors.gender ? "!border-destructive/70 focus:!ring-destructive/30 focus:!border-destructive/60" : ""}`}
-                    aria-invalid={!!step1Errors.gender}
-                    aria-describedby={step1Errors.gender ? "gender-error" : undefined}
-                  >
-                    <SelectValue placeholder="Select gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {GENDER_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {step1Errors.gender && (
-                  <p id="gender-error" className="field-error">
+                <Input
+                  id="displayName"
+                  placeholder="Enter your name"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  maxLength={50}
+                  className={
+                    step1Errors.displayName
+                      ? "focus-visible:!ring-destructive/30"
+                      : ""
+                  }
+                  aria-invalid={!!step1Errors.displayName}
+                  aria-describedby={
+                    step1Errors.displayName ? "displayName-error" : undefined
+                  }
+                  style={
+                    step1Errors.displayName
+                      ? { borderColor: "hsl(var(--destructive) / 0.7)" }
+                      : undefined
+                  }
+                />
+                {step1Errors.displayName && (
+                  <p id="displayName-error" className="field-error">
                     <AlertCircle className="w-3.5 h-3.5" />
-                    {step1Errors.gender}
+                    {step1Errors.displayName}
                   </p>
                 )}
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <Label className="heading-luxe-eyebrow text-left">
-                  Pronouns <span className="text-muted-foreground/70 normal-case">(optional)</span>
+                <Label htmlFor="bio" className="heading-luxe-eyebrow text-left">
+                  Bio{" "}
+                  <span className="text-muted-foreground/70 normal-case">
+                    (optional)
+                  </span>
                 </Label>
-                <Select value={pronouns} onValueChange={setPronouns}>
-                  <SelectTrigger className="bg-card/60">
-                    <SelectValue placeholder="Select pronouns" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PRONOUN_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Textarea
+                  id="bio"
+                  placeholder="Tell us about yourself"
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  maxLength={200}
+                  rows={3}
+                />
+                <p className="text-xs text-muted-foreground text-right">
+                  {bio.length}/200
+                </p>
               </div>
-            </div>
 
-            <div className="flex justify-end pt-2">
-              <Button
-                onClick={handleStep1Next}
-                disabled={isLoading}
-                variant="jet"
-                size="lg"
-                className="w-full sm:w-auto sm:min-w-[180px] rounded-full text-fluid-base font-semibold tracking-wide shadow-lg shadow-primary/20"
-              >
-                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Continue"}
-              </Button>
-            </div>
+              <div className="flex flex-col gap-1.5">
+                <Label
+                  htmlFor="birthdate"
+                  className="heading-luxe-eyebrow text-left"
+                >
+                  Birthdate <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="birthdate"
+                  type="date"
+                  value={birthdate}
+                  onChange={(e) => setBirthdate(e.target.value)}
+                  max={maxBirthdate}
+                  className={`bg-card/60 ${step1Errors.birthdate ? "focus-visible:!ring-destructive/30" : ""}`}
+                  aria-invalid={!!step1Errors.birthdate}
+                  aria-describedby={
+                    step1Errors.birthdate ? "birthdate-error" : undefined
+                  }
+                  style={
+                    step1Errors.birthdate
+                      ? { borderColor: "hsl(var(--destructive) / 0.7)" }
+                      : undefined
+                  }
+                />
+                {step1Errors.birthdate && (
+                  <p id="birthdate-error" className="field-error">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {step1Errors.birthdate}
+                  </p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <Label className="heading-luxe-eyebrow text-left">
+                    Gender <span className="text-destructive">*</span>
+                  </Label>
+                  <Select value={gender} onValueChange={setGender}>
+                    <SelectTrigger
+                      className={`bg-card/60 ${step1Errors.gender ? "!border-destructive/70 focus:!ring-destructive/30 focus:!border-destructive/60" : ""}`}
+                      aria-invalid={!!step1Errors.gender}
+                      aria-describedby={
+                        step1Errors.gender ? "gender-error" : undefined
+                      }
+                    >
+                      <SelectValue placeholder="Select gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {GENDER_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {step1Errors.gender && (
+                    <p id="gender-error" className="field-error">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      {step1Errors.gender}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <Label className="heading-luxe-eyebrow text-left">
+                    Pronouns{" "}
+                    <span className="text-muted-foreground/70 normal-case">
+                      (optional)
+                    </span>
+                  </Label>
+                  <Select value={pronouns} onValueChange={setPronouns}>
+                    <SelectTrigger className="bg-card/60">
+                      <SelectValue placeholder="Select pronouns" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PRONOUN_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <Button
+                  onClick={handleStep1Next}
+                  disabled={isLoading}
+                  variant="jet"
+                  size="lg"
+                  className="w-full sm:w-auto sm:min-w-[180px] rounded-full text-fluid-base font-semibold tracking-wide shadow-lg shadow-primary/20"
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    "Continue"
+                  )}
+                </Button>
+              </div>
             </div>
           )}
 
@@ -644,7 +751,10 @@ const Onboarding = () => {
           {step === 2 && (
             <div key="step-2" className="animate-fade-in">
               <PreferencesStep
-                onBack={() => { setDirection("backward"); setStep(1); }}
+                onBack={() => {
+                  setDirection("backward");
+                  setStep(1);
+                }}
                 onNext={handleStep2Next}
                 isLoading={isLoading}
                 initialPreferences={savedPreferences}
@@ -655,73 +765,86 @@ const Onboarding = () => {
           {/* Step 3: Suggestions */}
           {step === 3 && (
             <div key="step-3" className="flex flex-col gap-6 animate-fade-in">
-            <div className="flex flex-col gap-5">
-              <div className="relative bg-gradient-to-br from-primary/15 to-primary-glow/10 rounded-2xl p-6 sm:p-8 border border-primary/30 backdrop-blur-sm text-center overflow-hidden">
-                <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_0%,hsl(var(--primary)/0.25),transparent_70%)]" />
-                <div className="relative">
-                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary/20 animate-scale-in">
-                  <Sparkles className="w-7 h-7 text-primary" />
+              <div className="flex flex-col gap-5">
+                <div className="relative bg-gradient-to-br from-primary/15 to-primary-glow/10 rounded-2xl p-6 sm:p-8 border border-primary/30 backdrop-blur-sm text-center overflow-hidden">
+                  <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_0%,hsl(var(--primary)/0.25),transparent_70%)]" />
+                  <div className="relative">
+                    <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary/20 animate-scale-in">
+                      <Sparkles className="w-7 h-7 text-primary" />
+                    </div>
+                    <h3 className="heading-luxe-card mb-fluid-xs">All Set!</h3>
+                    <p className="text-fluid-sm text-muted-foreground">
+                      {savedPreferences
+                        ? "Based on your preferences, we'll show you the best deals in Charlotte"
+                        : "You're ready to explore Charlotte. Add your taste preferences whenever you like for a more personal feed."}
+                    </p>
+                    {!savedPreferences && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDirection("backward");
+                          setStep(2);
+                        }}
+                        className="mt-3 inline-flex min-h-11 items-center text-fluid-xs font-semibold uppercase tracking-widest text-primary underline-offset-4 hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+                      >
+                        Set preferences now
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <h3 className="heading-luxe-card mb-fluid-xs">All Set!</h3>
-                <p className="text-fluid-sm text-muted-foreground">
-                  {savedPreferences
-                    ? "Based on your preferences, we'll show you the best deals in Charlotte"
-                    : "You're ready to explore Charlotte. Add your taste preferences whenever you like for a more personal feed."}
-                </p>
-                {!savedPreferences && (
-                  <button
-                    type="button"
-                    onClick={() => { setDirection("backward"); setStep(2); }}
-                    className="mt-3 inline-flex min-h-11 items-center text-fluid-xs font-semibold uppercase tracking-widest text-primary underline-offset-4 hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
-                  >
-                    Set preferences now
-                  </button>
+
+                {savedPreferences && (
+                  <div className="flex flex-col gap-3 rounded-xl border-hairline bg-card/30 p-4 sm:p-5 backdrop-blur-sm">
+                    <p className="heading-luxe-eyebrow">Your Preferences</p>
+                    <div className="flex flex-wrap gap-fluid-xs">
+                      {savedPreferences.categories.map((type) => (
+                        <span
+                          key={type}
+                          className="px-3 py-1 bg-primary/15 border border-primary/30 text-primary text-fluid-xs font-medium rounded-full"
+                        >
+                          {type}
+                        </span>
+                      ))}
+                    </div>
+                    {savedPreferences.trendingVenues && (
+                      <p className="text-fluid-sm text-muted-foreground flex items-center gap-fluid-xs">
+                        <span className="dot-gold" /> Trending venues enabled
+                      </p>
+                    )}
+                    {savedPreferences.activityInArea && (
+                      <p className="text-fluid-sm text-muted-foreground flex items-center gap-fluid-xs">
+                        <span className="dot-gold" /> Location-based alerts
+                        enabled
+                      </p>
+                    )}
+                  </div>
                 )}
-                </div>
               </div>
 
-              {savedPreferences && (
-                <div className="flex flex-col gap-3 rounded-xl border-hairline bg-card/30 p-4 sm:p-5 backdrop-blur-sm">
-                  <p className="heading-luxe-eyebrow">Your Preferences</p>
-                  <div className="flex flex-wrap gap-fluid-xs">
-                    {savedPreferences.categories.map((type) => (
-                      <span
-                        key={type}
-                        className="px-3 py-1 bg-primary/15 border border-primary/30 text-primary text-fluid-xs font-medium rounded-full"
-                      >
-                        {type}
-                      </span>
-                    ))}
-                  </div>
-                  {savedPreferences.trendingVenues && (
-                    <p className="text-fluid-sm text-muted-foreground flex items-center gap-fluid-xs">
-                      <span className="dot-gold" /> Trending venues enabled
-                    </p>
-                  )}
-                  {savedPreferences.activityInArea && (
-                    <p className="text-fluid-sm text-muted-foreground flex items-center gap-fluid-xs">
-                      <span className="dot-gold" /> Location-based alerts enabled
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <Button
-              onClick={handleComplete}
-              disabled={isLoading}
-              variant="jet"
-              size="lg"
-              className="w-full rounded-full text-fluid-base font-semibold tracking-wide shadow-lg shadow-primary/20"
-            >
-              {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Go to Dashboard"}
-            </Button>
+              <Button
+                onClick={handleComplete}
+                disabled={isLoading}
+                variant="jet"
+                size="lg"
+                className="w-full rounded-full text-fluid-base font-semibold tracking-wide shadow-lg shadow-primary/20"
+              >
+                {isLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  "Go to Dashboard"
+                )}
+              </Button>
             </div>
           )}
         </div>
         {/* JET wordmark */}
         <div className="mt-7 flex items-center justify-center gap-3">
-          <img src={jetLogo} alt="" aria-hidden className="h-4 w-4 object-contain opacity-30" />
+          <img
+            src={jetLogo}
+            alt=""
+            aria-hidden
+            className="h-4 w-4 object-contain opacity-30"
+          />
           <span className="font-display text-xs font-extrabold uppercase tracking-[0.5em] text-muted-foreground">
             JET
           </span>

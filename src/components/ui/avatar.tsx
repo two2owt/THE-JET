@@ -12,10 +12,10 @@ const Avatar = React.forwardRef<
     className={cn(
       // Container-adaptive: never overflows. Default size h-10 w-10 — override via className/style.
       "relative flex shrink-0 overflow-hidden rounded-full h-10 w-10",
-      className
+      className,
     )}
     // containerType enables `cqw` units in AvatarFallback so text scales to container size.
-    style={{ containerType: 'inline-size', ...style }}
+    style={{ containerType: "inline-size", ...style }}
     {...props}
   />
 ));
@@ -32,17 +32,17 @@ const AvatarImage = React.forwardRef<
       // Always adapt to container: fill, crop centered, never overflow.
       // `min-*: 100%` guarantees portrait or landscape uploads cover the
       // circle without letterboxing; `object-fit: cover` crops the excess.
-      width: '100%',
-      height: '100%',
-      minWidth: '100%',
-      minHeight: '100%',
-      maxWidth: '100%',
-      maxHeight: '100%',
-      objectFit: 'cover',
-      objectPosition: 'center',
-      display: 'block',
+      width: "100%",
+      height: "100%",
+      minWidth: "100%",
+      minHeight: "100%",
+      maxWidth: "100%",
+      maxHeight: "100%",
+      objectFit: "cover",
+      objectPosition: "center",
+      display: "block",
       // Smooth scaling for high-DPI uploads.
-      imageRendering: 'auto',
+      imageRendering: "auto",
       ...style,
     }}
     {...props}
@@ -59,9 +59,9 @@ const AvatarFallback = React.forwardRef<
     className={cn(
       // Adapts type-scale to container size via container queries (clamp on font-size as fallback).
       "flex h-full w-full items-center justify-center rounded-full bg-muted leading-none select-none",
-      className
+      className,
     )}
-    style={{ fontSize: 'clamp(0.75rem, 40cqw, 2.25rem)' }}
+    style={{ fontSize: "clamp(0.75rem, 40cqw, 2.25rem)" }}
     {...props}
   />
 ));

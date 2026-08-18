@@ -17,9 +17,14 @@ const photoCache = new Map<string, string | null>();
  * Resolve the venue's Google Places photo. Returns null while loading or when
  * Places has no photo, so callers can fall back to their own imageUrl.
  */
-export const useVenuePhoto = (venue: VenuePhotoInput | null, maxWidth = 800) => {
+export const useVenuePhoto = (
+  venue: VenuePhotoInput | null,
+  maxWidth = 800,
+) => {
   const key = venue ? `${venue.placeId || venue.id}|${venue.name}` : "";
-  const [photoUrl, setPhotoUrl] = useState<string | null>(() => photoCache.get(key) ?? null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(
+    () => photoCache.get(key) ?? null,
+  );
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -31,7 +36,9 @@ export const useVenuePhoto = (venue: VenuePhotoInput | null, maxWidth = 800) => 
 
     let cancelled = false;
     const run = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session || cancelled) return;
       setLoading(true);
       try {
@@ -48,7 +55,10 @@ export const useVenuePhoto = (venue: VenuePhotoInput | null, maxWidth = 800) => 
           },
         });
         const timeout = new Promise<{ data: null; error: Error }>((resolve) =>
-          setTimeout(() => resolve({ data: null, error: new Error("timeout") }), 8000)
+          setTimeout(
+            () => resolve({ data: null, error: new Error("timeout") }),
+            8000,
+          ),
         );
         const { data, error } = (await Promise.race([request, timeout])) as {
           data: { photoUrl?: string | null } | null;
@@ -66,8 +76,18 @@ export const useVenuePhoto = (venue: VenuePhotoInput | null, maxWidth = 800) => 
       }
     };
     run();
-    return () => { cancelled = true; };
-  }, [key, venue?.name, venue?.address, venue?.lat, venue?.lng, venue?.placeId, maxWidth]);
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    key,
+    venue?.name,
+    venue?.address,
+    venue?.lat,
+    venue?.lng,
+    venue?.placeId,
+    maxWidth,
+  ]);
 
   return { photoUrl, loading };
 };

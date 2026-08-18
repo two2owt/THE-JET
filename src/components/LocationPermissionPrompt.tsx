@@ -50,7 +50,8 @@ export const LocationPermissionPrompt = () => {
     let cancelled = false;
 
     const maybeShow = async () => {
-      if (typeof navigator === "undefined" || !("geolocation" in navigator)) return;
+      if (typeof navigator === "undefined" || !("geolocation" in navigator))
+        return;
       if (promptShownThisSession) return;
 
       // Respect earlier dismissal within window.
@@ -84,7 +85,8 @@ export const LocationPermissionPrompt = () => {
             if (status!.state !== "prompt") {
               promptShownThisSession = true;
               setOpen(false);
-              if (status!.state === "granted") localStorage.removeItem(DISMISS_KEY);
+              if (status!.state === "granted")
+                localStorage.removeItem(DISMISS_KEY);
               localStorage.setItem(ASKED_KEY, "1");
             }
           };
@@ -135,7 +137,8 @@ export const LocationPermissionPrompt = () => {
       });
       await refreshConsents();
     } catch (e) {
-      if (import.meta.env.DEV) console.warn("[location-prompt] consent write failed", e);
+      if (import.meta.env.DEV)
+        console.warn("[location-prompt] consent write failed", e);
     }
   };
 
@@ -147,7 +150,7 @@ export const LocationPermissionPrompt = () => {
       navigator.geolocation.getCurrentPosition(
         () => resolve(true),
         () => resolve(false),
-        { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+        { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
       );
     });
 
@@ -204,19 +207,25 @@ export const LocationPermissionPrompt = () => {
               <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
                 <Navigation className="h-3.5 w-3.5 text-primary" />
               </div>
-              <span className="text-foreground/80">Nearby deals ranked by distance</span>
+              <span className="text-foreground/80">
+                Nearby deals ranked by distance
+              </span>
             </div>
             <div className="flex items-center gap-2.5 text-sm">
               <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
                 <MapPin className="h-3.5 w-3.5 text-primary" />
               </div>
-              <span className="text-foreground/80">Center the map on where you are</span>
+              <span className="text-foreground/80">
+                Center the map on where you are
+              </span>
             </div>
             <div className="flex items-center gap-2.5 text-sm">
               <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
                 <Zap className="h-3.5 w-3.5 text-primary" />
               </div>
-              <span className="text-foreground/80">Live venue activity in real time</span>
+              <span className="text-foreground/80">
+                Live venue activity in real time
+              </span>
             </div>
           </div>
 

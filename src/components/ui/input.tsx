@@ -9,7 +9,9 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
       (node: HTMLInputElement | null) => {
         innerRef.current = node;
         if (typeof ref === "function") ref(node);
-        else if (ref) (ref as React.MutableRefObject<HTMLInputElement | null>).current = node;
+        else if (ref)
+          (ref as React.MutableRefObject<HTMLInputElement | null>).current =
+            node;
       },
       [ref],
     );
@@ -57,19 +59,20 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           className,
         )}
         style={{
-          display: 'flex',
-          height: '44px',
-          minHeight: '44px',
-          width: '100%',
-          borderRadius: '8px',
+          display: "flex",
+          height: "44px",
+          minHeight: "44px",
+          width: "100%",
+          borderRadius: "8px",
           // Hairline border + slightly elevated surface for luxe inputs
-          border: '1px solid hsl(0 0% 100% / 0.06)',
-          background: 'hsl(var(--popover) / 0.6)',
-          color: 'hsl(var(--foreground))',
-          padding: '8px 12px',
-          fontSize: '16px',
-          letterSpacing: '0.01em',
-          transition: 'border-color 400ms ease-out, box-shadow 400ms ease-out, background-color 400ms ease-out',
+          border: "1px solid hsl(0 0% 100% / 0.06)",
+          background: "hsl(var(--popover) / 0.6)",
+          color: "hsl(var(--foreground))",
+          padding: "8px 12px",
+          fontSize: "16px",
+          letterSpacing: "0.01em",
+          transition:
+            "border-color 400ms ease-out, box-shadow 400ms ease-out, background-color 400ms ease-out",
           ...style,
         }}
         ref={setRefs}

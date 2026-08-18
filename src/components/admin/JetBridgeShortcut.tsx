@@ -1,6 +1,19 @@
 import { useEffect, useState } from "react";
-import { ExternalLink, Store, Sparkles, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  ExternalLink,
+  Store,
+  Sparkles,
+  RefreshCw,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,7 +45,9 @@ export function JetBridgeShortcut() {
     setLoading(true);
     const { data, error } = await supabase
       .from("deals")
-      .select("id,title,venue_name,deal_type,active,created_at,updated_at,merchant_id,onboarding_started_at,onboarding_completed_at")
+      .select(
+        "id,title,venue_name,deal_type,active,created_at,updated_at,merchant_id,onboarding_started_at,onboarding_completed_at",
+      )
       .order("updated_at", { ascending: false })
       .limit(5);
     if (!error && data) {
@@ -46,15 +61,19 @@ export function JetBridgeShortcut() {
     load();
     const channel = supabase
       .channel("admin-jetbridge-sync")
-      .on("postgres_changes", { event: "*", schema: "public", table: "deals" }, () => load())
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "deals" },
+        () => load(),
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const open = (url: string) => window.open(url, "_blank", "noopener,noreferrer");
+  const open = (url: string) =>
+    window.open(url, "_blank", "noopener,noreferrer");
 
   const minutesSinceSync = lastSyncAt
     ? Math.floor((Date.now() - new Date(lastSyncAt).getTime()) / 60000)
@@ -71,18 +90,34 @@ export function JetBridgeShortcut() {
               JET Bridge — Merchant Portal
             </CardTitle>
             <CardDescription>
-              Self-serve merchant onboarding & deal management. Deals listed below are synced live via webhook.
+              Self-serve merchant onboarding & deal management. Deals listed
+              below are synced live via webhook.
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
             {lastSyncAt && (
-              <Badge variant={healthy ? "secondary" : "destructive"} className="gap-1">
-                {healthy ? <CheckCircle2 className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
-                Last sync {formatDistanceToNow(new Date(lastSyncAt), { addSuffix: true })}
+              <Badge
+                variant={healthy ? "secondary" : "destructive"}
+                className="gap-1"
+              >
+                {healthy ? (
+                  <CheckCircle2 className="w-3 h-3" />
+                ) : (
+                  <AlertCircle className="w-3 h-3" />
+                )}
+                Last sync{" "}
+                {formatDistanceToNow(new Date(lastSyncAt), { addSuffix: true })}
               </Badge>
             )}
-            <Button variant="ghost" size="icon" onClick={load} aria-label="Refresh sync status">
-              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={load}
+              aria-label="Refresh sync status"
+            >
+              <RefreshCw
+                className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
+              />
             </Button>
           </div>
         </div>
@@ -94,7 +129,11 @@ export function JetBridgeShortcut() {
             Open Merchant Portal
             <ExternalLink className="w-3.5 h-3.5 opacity-70" />
           </Button>
-          <Button variant="outline" onClick={() => open(MERCHANT_SIGNUP_URL)} className="gap-2">
+          <Button
+            variant="outline"
+            onClick={() => open(MERCHANT_SIGNUP_URL)}
+            className="gap-2"
+          >
             <Sparkles className="w-4 h-4" />
             Onboarding Landing
             <ExternalLink className="w-3.5 h-3.5 opacity-70" />
@@ -114,9 +153,14 @@ export function JetBridgeShortcut() {
           ) : (
             <ul className="divide-y divide-border/60 rounded-md border border-border/60">
               {recentDeals.map((d) => (
-                <li key={d.id} className="flex items-center justify-between gap-3 px-3 py-2">
+                <li
+                  key={d.id}
+                  className="flex items-center justify-between gap-3 px-3 py-2"
+                >
                   <div className="min-w-0">
-                    <div className="text-sm font-medium truncate">{d.title}</div>
+                    <div className="text-sm font-medium truncate">
+                      {d.title}
+                    </div>
                     <div className="text-xs text-muted-foreground truncate">
                       {d.venue_name} · {d.deal_type}
                     </div>
@@ -129,11 +173,16 @@ export function JetBridgeShortcut() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <Badge variant={d.active ? "default" : "outline"} className="text-[10px]">
+                    <Badge
+                      variant={d.active ? "default" : "outline"}
+                      className="text-[10px]"
+                    >
                       {d.active ? "Live" : "Paused"}
                     </Badge>
                     <span className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(d.updated_at), { addSuffix: true })}
+                      {formatDistanceToNow(new Date(d.updated_at), {
+                        addSuffix: true,
+                      })}
                     </span>
                   </div>
                 </li>

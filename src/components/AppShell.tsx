@@ -50,7 +50,12 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
       if (!openModal) body.style.removeProperty("pointer-events");
     };
     const observer = new MutationObserver(unstick);
-    observer.observe(body, { attributes: true, attributeFilter: ["style"], childList: true, subtree: true });
+    observer.observe(body, {
+      attributes: true,
+      attributeFilter: ["style"],
+      childList: true,
+      subtree: true,
+    });
     unstick();
     return () => observer.disconnect();
   }, []);
@@ -65,13 +70,13 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
           <div
             aria-hidden="true"
             style={{
-              width: '100%',
-              height: 'var(--header-total-height, 52px)',
-              minHeight: 'var(--header-total-height, 52px)',
-              maxHeight: 'var(--header-total-height, 52px)',
+              width: "100%",
+              height: "var(--header-total-height, 52px)",
+              minHeight: "var(--header-total-height, 52px)",
+              maxHeight: "var(--header-total-height, 52px)",
               flexShrink: 0,
-              visibility: 'hidden',
-              pointerEvents: 'none',
+              visibility: "hidden",
+              pointerEvents: "none",
             }}
           />
         </>

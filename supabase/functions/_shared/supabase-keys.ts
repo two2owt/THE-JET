@@ -22,9 +22,9 @@ function parseKeyset(keyset: string, prefix: string): string | undefined {
     if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
       const keys = parsed as Record<string, unknown>;
       const key = [keys.default, ...Object.values(keys)]
-        .find((v): v is string =>
-          typeof v === "string" &&
-          v.trim().startsWith(prefix)
+        .find(
+          (v): v is string =>
+            typeof v === "string" && v.trim().startsWith(prefix),
         )
         ?.trim();
       if (key) return key;

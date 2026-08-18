@@ -6,21 +6,41 @@ import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { OptimizedImage } from "./ui/optimized-image";
 import { VirtualList } from "./ui/virtual-list";
-import { Search, MapPin, Clock, TrendingUp, Filter, X, Navigation, Heart, Sparkles } from "lucide-react";
+import {
+  Search,
+  MapPin,
+  Clock,
+  TrendingUp,
+  Filter,
+  X,
+  Navigation,
+  Heart,
+  Sparkles,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { EmptyState } from "./EmptyState";
 import { TabPageHeader } from "./TabPageHeader";
-import { calculateDistance, getDynamicRadius, formatDistance } from "@/utils/geospatialUtils";
+import {
+  calculateDistance,
+  getDynamicRadius,
+  formatDistance,
+} from "@/utils/geospatialUtils";
 import { useFavorites } from "@/hooks/useFavorites";
 import { requireConsent } from "@/lib/consent";
 
 import type { User } from "@supabase/supabase-js";
 
 // Lazy load Sheet and DealDetailCard - only needed when user clicks a deal
-const Sheet = lazy(() => import("./ui/sheet").then(m => ({ default: m.Sheet })));
-const SheetContent = lazy(() => import("./ui/sheet").then(m => ({ default: m.SheetContent })));
-const DealDetailCard = lazy(() => import("./DealDetailCard").then(m => ({ default: m.DealDetailCard })));
+const Sheet = lazy(() =>
+  import("./ui/sheet").then((m) => ({ default: m.Sheet })),
+);
+const SheetContent = lazy(() =>
+  import("./ui/sheet").then((m) => ({ default: m.SheetContent })),
+);
+const DealDetailCard = lazy(() =>
+  import("./DealDetailCard").then((m) => ({ default: m.DealDetailCard })),
+);
 
 interface UserPreferences {
   categories?: string[];
@@ -50,23 +70,23 @@ interface UserPreferences {
 
 // Map deal_type values to preference categories
 const dealTypeToCategory: Record<string, string> = {
-  'food': 'Food',
-  'Food': 'Food',
-  'restaurant': 'Food',
-  'dining': 'Food',
-  'drinks': 'Drinks',
-  'Drinks': 'Drinks',
-  'bar': 'Drinks',
-  'cocktail': 'Drinks',
-  'coffee': 'Drinks',
-  'nightlife': 'Nightlife',
-  'Nightlife': 'Nightlife',
-  'club': 'Nightlife',
-  'lounge': 'Nightlife',
-  'events': 'Events',
-  'Events': 'Events',
-  'concert': 'Events',
-  'festival': 'Events',
+  food: "Food",
+  Food: "Food",
+  restaurant: "Food",
+  dining: "Food",
+  drinks: "Drinks",
+  Drinks: "Drinks",
+  bar: "Drinks",
+  cocktail: "Drinks",
+  coffee: "Drinks",
+  nightlife: "Nightlife",
+  Nightlife: "Nightlife",
+  club: "Nightlife",
+  lounge: "Nightlife",
+  events: "Events",
+  Events: "Events",
+  concert: "Events",
+  festival: "Events",
 };
 
 interface Deal {
@@ -100,35 +120,39 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [userLocation, setUserLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
-  const [userPreferences, setUserPreferences] = useState<UserPreferences | null>(null);
+  const [userPreferences, setUserPreferences] =
+    useState<UserPreferences | null>(null);
   const [preferenceFilterEnabled, setPreferenceFilterEnabled] = useState(true);
-  
+
   const { isFavorite, toggleFavorite } = useFavorites(user?.id);
 
   const loadUserPreferences = useCallback(async (userId: string) => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('preferences')
-        .eq('id', userId)
+        .from("profiles")
+        .select("preferences")
+        .eq("id", userId)
         .single();
 
       if (error) throw error;
-      
+
       const prefs = data?.preferences as UserPreferences | null;
       setUserPreferences(prefs);
     } catch (err) {
-      console.error('Error loading user preferences:', err);
+      console.error("Error loading user preferences:", err);
     }
   }, []);
 
   useEffect(() => {
     getUserLocation();
-    
+
     // Get current user
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
@@ -137,7 +161,9 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         loadUserPreferences(session.user.id);
@@ -157,7 +183,13 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
 
   useEffect(() => {
     filterDeals();
-  }, [debouncedSearchQuery, deals, selectedCategories, userPreferences, preferenceFilterEnabled]);
+  }, [
+    debouncedSearchQuery,
+    deals,
+    selectedCategories,
+    userPreferences,
+    preferenceFilterEnabled,
+  ]);
 
   const getUserLocation = () => {
     if (!navigator.geolocation) {
@@ -184,14 +216,15 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
         setLocationError("Unable to access your location");
         // Show warning but don't block - show all deals if location unavailable
         toast.error("Location access denied", {
-          description: "Showing all deals. Enable location for personalized results.",
+          description:
+            "Showing all deals. Enable location for personalized results.",
         });
       },
       {
         enableHighAccuracy: true,
         timeout: 10000,
         maximumAge: 300000, // Cache for 5 minutes
-      }
+      },
     );
   };
 
@@ -199,8 +232,9 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
     try {
       setIsLoading(true);
       const { data, error } = await supabase
-        .from('deals')
-        .select(`
+        .from("deals")
+        .select(
+          `
           *,
           neighborhoods (
             id,
@@ -208,22 +242,23 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
             center_lat,
             center_lng
           )
-        `)
-        .eq('active', true)
-        .gte('expires_at', new Date().toISOString())
-        .lte('starts_at', new Date().toISOString())
-        .order('created_at', { ascending: false });
+        `,
+        )
+        .eq("active", true)
+        .gte("expires_at", new Date().toISOString())
+        .lte("starts_at", new Date().toISOString())
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
-      
+
       // Calculate distances for deals with neighborhood data
-      const dealsWithDistance = (data || []).map(deal => {
+      const dealsWithDistance = (data || []).map((deal) => {
         if (userLocation && deal.neighborhoods) {
           const distance = calculateDistance(
             userLocation.lat,
             userLocation.lng,
             deal.neighborhoods.center_lat,
-            deal.neighborhoods.center_lng
+            deal.neighborhoods.center_lng,
           );
           return { ...deal, distance };
         }
@@ -231,13 +266,15 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
       });
 
       setDeals(dealsWithDistance as unknown as Deal[]);
-      
+
       // Extract unique categories
-      const categories = [...new Set((data || []).map(d => d.deal_type))].sort();
+      const categories = [
+        ...new Set((data || []).map((d) => d.deal_type)),
+      ].sort();
       setAvailableCategories(categories);
     } catch (error) {
-      console.error('Error loading deals:', error);
-      toast.error('Failed to load deals');
+      console.error("Error loading deals:", error);
+      toast.error("Failed to load deals");
     } finally {
       setIsLoading(false);
     }
@@ -247,28 +284,33 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
     let filtered = [...deals];
 
     // Apply preference-based filter if enabled - but only if it would leave some results
-    if (preferenceFilterEnabled && userPreferences?.categories && userPreferences.categories.length > 0) {
-      const filteredByPreference = filtered.filter(deal => {
-        const dealCategory = dealTypeToCategory[deal.deal_type] || deal.deal_type;
-        return userPreferences.categories!.some(cat => 
-          cat.toLowerCase() === dealCategory.toLowerCase()
+    if (
+      preferenceFilterEnabled &&
+      userPreferences?.categories &&
+      userPreferences.categories.length > 0
+    ) {
+      const filteredByPreference = filtered.filter((deal) => {
+        const dealCategory =
+          dealTypeToCategory[deal.deal_type] || deal.deal_type;
+        return userPreferences.categories!.some(
+          (cat) => cat.toLowerCase() === dealCategory.toLowerCase(),
         );
       });
-      
+
       // Only apply preference filter if it leaves some results, otherwise show all
       if (filteredByPreference.length > 0) {
         filtered = filteredByPreference;
       }
     }
-    
+
     // Apply location-based filter if user location is available
     if (userLocation) {
-      filtered = filtered.filter(deal => {
+      filtered = filtered.filter((deal) => {
         // Only show deals with distance data
         if (deal.distance === undefined) {
           return false;
         }
-        
+
         // Get dynamic radius based on neighborhood
         const radius = getDynamicRadius(deal.neighborhoods?.name);
         return deal.distance <= radius;
@@ -281,14 +323,14 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
         return a.distance - b.distance;
       });
     }
-    
+
     // Apply category filter (manual override)
     if (selectedCategories.length > 0) {
-      filtered = filtered.filter(deal => 
-        selectedCategories.includes(deal.deal_type)
+      filtered = filtered.filter((deal) =>
+        selectedCategories.includes(deal.deal_type),
       );
     }
-    
+
     // Apply search filter
     if (debouncedSearchQuery.trim()) {
       const query = debouncedSearchQuery.toLowerCase();
@@ -297,7 +339,7 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
           deal.title.toLowerCase().includes(query) ||
           deal.description.toLowerCase().includes(query) ||
           deal.venue_name.toLowerCase().includes(query) ||
-          deal.deal_type.toLowerCase().includes(query)
+          deal.deal_type.toLowerCase().includes(query),
       );
     }
 
@@ -305,10 +347,10 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
   };
 
   const toggleCategory = (category: string) => {
-    setSelectedCategories(prev => 
+    setSelectedCategories((prev) =>
       prev.includes(category)
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
+        ? prev.filter((c) => c !== category)
+        : [...prev, category],
     );
   };
 
@@ -319,14 +361,14 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
 
   const getDealIcon = (dealType: string) => {
     switch (dealType) {
-      case 'offer':
-        return '🎉';
-      case 'event':
-        return '🎵';
-      case 'special':
-        return '⭐';
+      case "offer":
+        return "🎉";
+      case "event":
+        return "🎵";
+      case "special":
+        return "⭐";
       default:
-        return '💎';
+        return "💎";
     }
   };
 
@@ -336,7 +378,7 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
     const diff = expires.getTime() - now.getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(hours / 24);
-    
+
     if (days > 0) {
       return `${days}d left`;
     }
@@ -365,277 +407,404 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
       {/* Deal Detail Sheet - lazy loaded when user clicks a deal */}
       {selectedDeal && (
         <Suspense fallback={null}>
-          <Sheet open={!!selectedDeal} onOpenChange={(open) => !open && handleCloseDealCard()}>
-            <SheetContent side="bottom" className="h-auto max-h-[90svh] p-0 rounded-t-2xl overflow-auto">
-              <DealDetailCard deal={selectedDeal} onClose={handleCloseDealCard} />
+          <Sheet
+            open={!!selectedDeal}
+            onOpenChange={(open) => !open && handleCloseDealCard()}
+          >
+            <SheetContent
+              side="bottom"
+              className="h-auto max-h-[90svh] p-0 rounded-t-2xl overflow-auto"
+            >
+              <DealDetailCard
+                deal={selectedDeal}
+                onClose={handleCloseDealCard}
+              />
             </SheetContent>
           </Sheet>
         </Suspense>
       )}
 
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      {/* Header */}
-      <div>
-        <TabPageHeader
-          title="Explore Deals"
-          subtitle={userLocation ? "Showing deals near you" : "Showing all available deals"}
-        />
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '8px' }}>
-          {userLocation && (
-            <Badge variant="secondary" className="text-xs flex items-center gap-1">
-              <Navigation className="w-3 h-3" />
-              Location Active
-            </Badge>
-          )}
-          {userPreferences?.categories && userPreferences.categories.length > 0 && (
-            <Badge 
-              variant={preferenceFilterEnabled ? "default" : "outline"}
-              className="text-xs flex items-center gap-1 cursor-pointer"
-              onClick={() => setPreferenceFilterEnabled(!preferenceFilterEnabled)}
-            >
-              <Sparkles className="w-3 h-3" />
-              {preferenceFilterEnabled ? "Personalized" : "Show All"}
-            </Badge>
-          )}
-        </div>
-      </div>
-
-      {/* Search Bar */}
-      <div style={{ position: 'relative' }}>
-        <Search style={{
-          position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)',
-          width: '18px', height: '18px', color: 'hsl(var(--muted-foreground))', pointerEvents: 'none',
-        }} />
-        <Input
-          type="text"
-          placeholder="Search venues, deals, or categories..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          style={{
-            paddingLeft: '40px',
-            borderRadius: '12px',
-            backgroundColor: 'hsl(var(--muted) / 0.5)',
-            border: '1px solid hsl(var(--border) / 0.4)',
-            transition: 'all 0.2s',
-          }}
-          aria-label="Search venues, deals, or categories"
-        />
-      </div>
-
-      {/* Category Filters */}
-      {availableCategories.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Filter style={{ width: '16px', height: '16px', color: 'hsl(var(--muted-foreground))' }} />
-              <span style={{ fontSize: '14px', fontWeight: 500, color: 'hsl(var(--foreground))' }}>Filter by Category</span>
-            </div>
-            {(selectedCategories.length > 0 || searchQuery) && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearFilters}
-                className="h-8 text-xs"
-              >
-                <X className="w-3 h-3 mr-1" />
-                Clear all
-              </Button>
-            )}
-          </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-            {availableCategories.map((category) => (
-              <Badge
-                key={category}
-                variant={selectedCategories.includes(category) ? "default" : "outline"}
-                className="cursor-pointer hover-scale"
-                onClick={() => toggleCategory(category)}
-              >
-                {category}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
-        {[
-          { icon: TrendingUp, value: filteredDeals.length, label: userLocation ? "Nearby Deals" : "Active Deals", color: 'hsl(var(--primary))' },
-          { icon: MapPin, value: new Set(filteredDeals.map(d => d.venue_name)).size, label: userLocation ? "Nearby Venues" : "Venues", color: 'hsl(var(--accent))' },
-          { icon: Clock, value: filteredDeals.length, label: searchQuery || selectedCategories.length > 0 ? "Results" : "Available", color: 'hsl(var(--muted-foreground))' },
-        ].map((stat, i) => (
+      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+        {/* Header */}
+        <div>
+          <TabPageHeader
+            title="Explore Deals"
+            subtitle={
+              userLocation
+                ? "Showing deals near you"
+                : "Showing all available deals"
+            }
+          />
           <div
-            key={i}
             style={{
-              padding: '16px 8px',
-              textAlign: 'center',
-              borderRadius: '14px',
-              backgroundColor: 'hsl(var(--card) / 0.9)',
-              border: '1px solid hsl(var(--border) / 0.5)',
-              backdropFilter: 'blur(12px)',
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              flexWrap: "wrap",
+              marginTop: "8px",
             }}
           >
-            <div style={{
-              width: '40px', height: '40px', margin: '0 auto 8px',
-              borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: `linear-gradient(135deg, ${stat.color}26, ${stat.color}0d)`,
-              border: `1px solid ${stat.color}4d`,
-            }}>
-              <stat.icon style={{ width: '20px', height: '20px', color: stat.color }} />
-            </div>
-            <p style={{ fontSize: '22px', fontWeight: 700, color: 'hsl(var(--foreground))' }}>{stat.value}</p>
-            <p style={{ fontSize: '11px', color: 'hsl(var(--muted-foreground))' }}>{stat.label}</p>
+            {userLocation && (
+              <Badge
+                variant="secondary"
+                className="text-xs flex items-center gap-1"
+              >
+                <Navigation className="w-3 h-3" />
+                Location Active
+              </Badge>
+            )}
+            {userPreferences?.categories &&
+              userPreferences.categories.length > 0 && (
+                <Badge
+                  variant={preferenceFilterEnabled ? "default" : "outline"}
+                  className="text-xs flex items-center gap-1 cursor-pointer"
+                  onClick={() =>
+                    setPreferenceFilterEnabled(!preferenceFilterEnabled)
+                  }
+                >
+                  <Sparkles className="w-3 h-3" />
+                  {preferenceFilterEnabled ? "Personalized" : "Show All"}
+                </Badge>
+              )}
           </div>
-        ))}
-      </div>
+        </div>
 
+        {/* Search Bar */}
+        <div style={{ position: "relative" }}>
+          <Search
+            style={{
+              position: "absolute",
+              left: "12px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              width: "18px",
+              height: "18px",
+              color: "hsl(var(--muted-foreground))",
+              pointerEvents: "none",
+            }}
+          />
+          <Input
+            type="text"
+            placeholder="Search venues, deals, or categories..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              paddingLeft: "40px",
+              borderRadius: "12px",
+              backgroundColor: "hsl(var(--muted) / 0.5)",
+              border: "1px solid hsl(var(--border) / 0.4)",
+              transition: "all 0.2s",
+            }}
+            aria-label="Search venues, deals, or categories"
+          />
+        </div>
 
-      {/* No Results */}
-      {!isLoading && filteredDeals.length === 0 && (searchQuery || selectedCategories.length > 0) && (
-        <EmptyState
-          icon={Search}
-          title="No deals found"
-          description="Try adjusting your search or filter criteria to find more deals"
-          actionLabel="Clear Filters"
-          onAction={clearFilters}
-        />
-      )}
-
-      {/* No Deals at all */}
-      {!isLoading && deals.length === 0 && !searchQuery && selectedCategories.length === 0 && (
-        <EmptyState
-          icon={TrendingUp}
-          title="No active deals right now"
-          description="Check back soon for new exclusive offers and trending spots in your area"
-        />
-      )}
-
-      {/* No nearby deals but deals exist elsewhere - show helpful message */}
-      {!isLoading && filteredDeals.length === 0 && deals.length > 0 && !searchQuery && selectedCategories.length === 0 && (
-        <EmptyState
-          icon={MapPin}
-          title="No deals nearby"
-          description={userLocation 
-            ? "There are no deals within your current radius. Try expanding your search area or checking back later."
-            : "Enable location services to see deals near you, or browse all available deals below."}
-          actionLabel={userLocation ? "Disable location filter" : "Show all deals"}
-          onAction={() => {
-            // Show all deals by temporarily clearing location
-            setFilteredDeals(deals);
-          }}
-        />
-      )}
-
-      {/* Deals Grid - Uses virtual scrolling for large lists */}
-      {!isLoading && filteredDeals.length > 0 && (
-        <VirtualList
-          items={filteredDeals}
-          estimateSize={112}
-          overscan={3}
-          className="max-h-[60svh]"
-          renderItem={(deal) => (
-            <Card
-              className="relative overflow-hidden bg-card/90 backdrop-blur-sm hover-scale transition-all shadow-none"
+        {/* Category Filters */}
+        {availableCategories.length > 0 && (
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
             >
-              <div className="flex gap-4 p-4">
-                {/* Image or Icon */}
-                {deal.image_url ? (
-                  <OptimizedImage
-                    src={deal.image_url}
-                    alt={deal.venue_name}
-                    className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
-                    responsive={true}
-                    responsiveSizes={['thumbnail', 'small']}
-                    sizesConfig={{ mobile: '80px', tablet: '80px', desktop: '80px' }}
-                    deferLoad={false}
-                    aspectRatio="1/1"
-                    fallback={
-                      <div className="w-20 h-20 flex items-center justify-center bg-gradient-to-br from-primary/20 via-accent/20 to-secondary/20 rounded-lg flex-shrink-0">
-                        <span className="text-3xl">{getDealIcon(deal.deal_type)}</span>
-                      </div>
-                    }
-                  />
-                ) : (
-                  <div className="w-20 h-20 flex items-center justify-center bg-gradient-to-br from-primary/20 via-accent/20 to-secondary/20 rounded-lg flex-shrink-0">
-                    <span className="text-3xl">{getDealIcon(deal.deal_type)}</span>
-                  </div>
-                )}
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                <Filter
+                  style={{
+                    width: "16px",
+                    height: "16px",
+                    color: "hsl(var(--muted-foreground))",
+                  }}
+                />
+                <span
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: 500,
+                    color: "hsl(var(--foreground))",
+                  }}
+                >
+                  Filter by Category
+                </span>
+              </div>
+              {(selectedCategories.length > 0 || searchQuery) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="h-8 text-xs"
+                >
+                  <X className="w-3 h-3 mr-1" />
+                  Clear all
+                </Button>
+              )}
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {availableCategories.map((category) => (
+                <Badge
+                  key={category}
+                  variant={
+                    selectedCategories.includes(category)
+                      ? "default"
+                      : "outline"
+                  }
+                  className="cursor-pointer hover-scale"
+                  onClick={() => toggleCategory(category)}
+                >
+                  {category}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
 
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <h3 className="text-sm font-bold text-foreground line-clamp-1 min-w-0">
-                      {/* Stretched-link pattern: a single real button owns the
+        {/* Stats */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: "12px",
+          }}
+        >
+          {[
+            {
+              icon: TrendingUp,
+              value: filteredDeals.length,
+              label: userLocation ? "Nearby Deals" : "Active Deals",
+              color: "hsl(var(--primary))",
+            },
+            {
+              icon: MapPin,
+              value: new Set(filteredDeals.map((d) => d.venue_name)).size,
+              label: userLocation ? "Nearby Venues" : "Venues",
+              color: "hsl(var(--accent))",
+            },
+            {
+              icon: Clock,
+              value: filteredDeals.length,
+              label:
+                searchQuery || selectedCategories.length > 0
+                  ? "Results"
+                  : "Available",
+              color: "hsl(var(--muted-foreground))",
+            },
+          ].map((stat, i) => (
+            <div
+              key={i}
+              style={{
+                padding: "16px 8px",
+                textAlign: "center",
+                borderRadius: "14px",
+                backgroundColor: "hsl(var(--card) / 0.9)",
+                border: "1px solid hsl(var(--border) / 0.5)",
+                backdropFilter: "blur(12px)",
+              }}
+            >
+              <div
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  margin: "0 auto 8px",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: `linear-gradient(135deg, ${stat.color}26, ${stat.color}0d)`,
+                  border: `1px solid ${stat.color}4d`,
+                }}
+              >
+                <stat.icon
+                  style={{ width: "20px", height: "20px", color: stat.color }}
+                />
+              </div>
+              <p
+                style={{
+                  fontSize: "22px",
+                  fontWeight: 700,
+                  color: "hsl(var(--foreground))",
+                }}
+              >
+                {stat.value}
+              </p>
+              <p
+                style={{
+                  fontSize: "11px",
+                  color: "hsl(var(--muted-foreground))",
+                }}
+              >
+                {stat.label}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* No Results */}
+        {!isLoading &&
+          filteredDeals.length === 0 &&
+          (searchQuery || selectedCategories.length > 0) && (
+            <EmptyState
+              icon={Search}
+              title="No deals found"
+              description="Try adjusting your search or filter criteria to find more deals"
+              actionLabel="Clear Filters"
+              onAction={clearFilters}
+            />
+          )}
+
+        {/* No Deals at all */}
+        {!isLoading &&
+          deals.length === 0 &&
+          !searchQuery &&
+          selectedCategories.length === 0 && (
+            <EmptyState
+              icon={TrendingUp}
+              title="No active deals right now"
+              description="Check back soon for new exclusive offers and trending spots in your area"
+            />
+          )}
+
+        {/* No nearby deals but deals exist elsewhere - show helpful message */}
+        {!isLoading &&
+          filteredDeals.length === 0 &&
+          deals.length > 0 &&
+          !searchQuery &&
+          selectedCategories.length === 0 && (
+            <EmptyState
+              icon={MapPin}
+              title="No deals nearby"
+              description={
+                userLocation
+                  ? "There are no deals within your current radius. Try expanding your search area or checking back later."
+                  : "Enable location services to see deals near you, or browse all available deals below."
+              }
+              actionLabel={
+                userLocation ? "Disable location filter" : "Show all deals"
+              }
+              onAction={() => {
+                // Show all deals by temporarily clearing location
+                setFilteredDeals(deals);
+              }}
+            />
+          )}
+
+        {/* Deals Grid - Uses virtual scrolling for large lists */}
+        {!isLoading && filteredDeals.length > 0 && (
+          <VirtualList
+            items={filteredDeals}
+            estimateSize={112}
+            overscan={3}
+            className="max-h-[60svh]"
+            renderItem={(deal) => (
+              <Card className="relative overflow-hidden bg-card/90 backdrop-blur-sm hover-scale transition-all shadow-none">
+                <div className="flex gap-4 p-4">
+                  {/* Image or Icon */}
+                  {deal.image_url ? (
+                    <OptimizedImage
+                      src={deal.image_url}
+                      alt={deal.venue_name}
+                      className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+                      responsive={true}
+                      responsiveSizes={["thumbnail", "small"]}
+                      sizesConfig={{
+                        mobile: "80px",
+                        tablet: "80px",
+                        desktop: "80px",
+                      }}
+                      deferLoad={false}
+                      aspectRatio="1/1"
+                      fallback={
+                        <div className="w-20 h-20 flex items-center justify-center bg-gradient-to-br from-primary/20 via-accent/20 to-secondary/20 rounded-lg flex-shrink-0">
+                          <span className="text-3xl">
+                            {getDealIcon(deal.deal_type)}
+                          </span>
+                        </div>
+                      }
+                    />
+                  ) : (
+                    <div className="w-20 h-20 flex items-center justify-center bg-gradient-to-br from-primary/20 via-accent/20 to-secondary/20 rounded-lg flex-shrink-0">
+                      <span className="text-3xl">
+                        {getDealIcon(deal.deal_type)}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <h3 className="text-sm font-bold text-foreground line-clamp-1 min-w-0">
+                        {/* Stretched-link pattern: a single real button owns the
                           card's activation so the card itself never becomes a
                           focusable container wrapping other controls. */}
-                      <button
-                        type="button"
-                        onClick={() => handleDealClick(deal)}
-                        aria-label={`${deal.title} at ${deal.venue_name}`}
-                        className="text-left after:absolute after:inset-0 after:rounded-[inherit] after:content-['']"
-                      >
-                        {deal.title}
-                      </button>
-                    </h3>
-                    <div className="relative z-10 flex items-center gap-2 flex-shrink-0">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        aria-label={
-                          isFavorite(deal.id)
-                            ? `Remove ${deal.title} from favorites`
-                            : `Add ${deal.title} to favorites`
-                        }
-                        aria-pressed={isFavorite(deal.id)}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleFavorite(deal.id);
-                        }}
-                      >
-                        <Heart
-                          className={`w-4 h-4 ${
+                        <button
+                          type="button"
+                          onClick={() => handleDealClick(deal)}
+                          aria-label={`${deal.title} at ${deal.venue_name}`}
+                          className="text-left after:absolute after:inset-0 after:rounded-[inherit] after:content-['']"
+                        >
+                          {deal.title}
+                        </button>
+                      </h3>
+                      <div className="relative z-10 flex items-center gap-2 flex-shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          aria-label={
                             isFavorite(deal.id)
-                              ? "fill-primary text-primary"
-                              : "text-muted-foreground"
-                          }`}
-                        />
-                      </Button>
-                      <Badge variant="secondary">
-                        {deal.deal_type}
-                      </Badge>
+                              ? `Remove ${deal.title} from favorites`
+                              : `Add ${deal.title} to favorites`
+                          }
+                          aria-pressed={isFavorite(deal.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleFavorite(deal.id);
+                          }}
+                        >
+                          <Heart
+                            className={`w-4 h-4 ${
+                              isFavorite(deal.id)
+                                ? "fill-primary text-primary"
+                                : "text-muted-foreground"
+                            }`}
+                          />
+                        </Button>
+                        <Badge variant="secondary">{deal.deal_type}</Badge>
+                      </div>
                     </div>
-                  </div>
-                  
-                  <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
-                    {deal.description}
-                  </p>
-                  
-                  <div className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-1 text-muted-foreground">
-                      <MapPin className="w-3 h-3" />
-                      <span className="truncate">{deal.venue_name}</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      {deal.distance !== undefined && (
-                        <span className="text-accent font-medium">
-                          {formatDistance(deal.distance)}
-                        </span>
-                      )}
-                      <div className="flex items-center gap-1 text-primary font-medium">
-                        <Clock className="w-3 h-3" />
-                        {getTimeRemaining(deal.expires_at)}
+
+                    <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                      {deal.description}
+                    </p>
+
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <MapPin className="w-3 h-3" />
+                        <span className="truncate">{deal.venue_name}</span>
+                      </div>
+
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {deal.distance !== undefined && (
+                          <span className="text-accent font-medium">
+                            {formatDistance(deal.distance)}
+                          </span>
+                        )}
+                        <div className="flex items-center gap-1 text-primary font-medium">
+                          <Clock className="w-3 h-3" />
+                          {getTimeRemaining(deal.expires_at)}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </Card>
-          )}
-        />
-      )}
-    </div>
+              </Card>
+            )}
+          />
+        )}
+      </div>
     </>
   );
 };

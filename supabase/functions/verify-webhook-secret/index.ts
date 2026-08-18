@@ -42,7 +42,9 @@ Deno.serve(async (req) => {
 
   if (!expected) {
     return new Response(
-      JSON.stringify({ error: "Server misconfigured: JETBRIDGE_WEBHOOK_SECRET not set" }),
+      JSON.stringify({
+        error: "Server misconfigured: JETBRIDGE_WEBHOOK_SECRET not set",
+      }),
       { status: 500, headers: { ...cors, "Content-Type": "application/json" } },
     );
   }

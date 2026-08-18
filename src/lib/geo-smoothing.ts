@@ -66,7 +66,12 @@ const snap = (value: number, grid: number) => Math.round(value / grid) * grid;
 export function createLocationSmoother(options: SmootherOptions = {}) {
   const opts = { ...DEFAULTS, ...options };
 
-  let estimate: { lat: number; lng: number; accuracy: number; at: number } | null = null;
+  let estimate: {
+    lat: number;
+    lng: number;
+    accuracy: number;
+    at: number;
+  } | null = null;
   let lastEmitted: { lat: number; lng: number } | null = null;
 
   return {
@@ -81,7 +86,8 @@ export function createLocationSmoother(options: SmootherOptions = {}) {
           ? Math.max(sample.accuracy, 1)
           : opts.maxAccuracyMeters;
 
-      if (!Number.isFinite(sample.lat) || !Number.isFinite(sample.lng)) return null;
+      if (!Number.isFinite(sample.lat) || !Number.isFinite(sample.lng))
+        return null;
       if (accuracy > opts.maxAccuracyMeters) return null;
 
       if (!estimate) {
@@ -105,8 +111,15 @@ export function createLocationSmoother(options: SmootherOptions = {}) {
             at: now,
           };
           if (lastEmitted) return null;
-          lastEmitted = { lat: snap(estimate.lat, opts.gridDegrees), lng: snap(estimate.lng, opts.gridDegrees) };
-          return { ...lastEmitted, accuracy: Math.round(estimate.accuracy), movedMeters: 0 };
+          lastEmitted = {
+            lat: snap(estimate.lat, opts.gridDegrees),
+            lng: snap(estimate.lng, opts.gridDegrees),
+          };
+          return {
+            ...lastEmitted,
+            accuracy: Math.round(estimate.accuracy),
+            movedMeters: 0,
+          };
         }
 
         // Accuracy-weighted exponential moving average: a tight fix pulls the
@@ -127,7 +140,9 @@ export function createLocationSmoother(options: SmootherOptions = {}) {
         lat: snap(estimate.lat, opts.gridDegrees),
         lng: snap(estimate.lng, opts.gridDegrees),
       };
-      const movedMeters = lastEmitted ? haversineMeters(lastEmitted, out) : Infinity;
+      const movedMeters = lastEmitted
+        ? haversineMeters(lastEmitted, out)
+        : Infinity;
       lastEmitted = out;
 
       return { ...out, accuracy: Math.round(estimate.accuracy), movedMeters };

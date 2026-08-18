@@ -41,9 +41,9 @@ export const useConnections = (userId?: string) => {
       if (error) throw error;
 
       // Get all friend IDs to fetch their profiles
-      const friendIds = data?.map((c) => 
-        c.user_id === userId ? c.friend_id : c.user_id
-      ) || [];
+      const friendIds =
+        data?.map((c) => (c.user_id === userId ? c.friend_id : c.user_id)) ||
+        [];
 
       // Fetch profiles for all friends using profiles_secure view for privacy enforcement
       let profilesMap: Record<string, Profile> = {};
@@ -52,12 +52,15 @@ export const useConnections = (userId?: string) => {
           .from("profiles_secure")
           .select("id, display_name, avatar_url")
           .in("id", friendIds);
-        
-        profilesMap = (profiles || []).reduce((acc, p) => {
-          if (!p.id) return acc;
-          acc[p.id] = p as Profile;
-          return acc;
-        }, {} as Record<string, Profile>);
+
+        profilesMap = (profiles || []).reduce(
+          (acc, p) => {
+            if (!p.id) return acc;
+            acc[p.id] = p as Profile;
+            return acc;
+          },
+          {} as Record<string, Profile>,
+        );
       }
 
       // Attach profiles to connections
@@ -69,9 +72,11 @@ export const useConnections = (userId?: string) => {
         };
       }) as Connection[];
 
-      const accepted = connectionsWithProfiles.filter((c) => c.status === "accepted");
+      const accepted = connectionsWithProfiles.filter(
+        (c) => c.status === "accepted",
+      );
       const pending = connectionsWithProfiles.filter(
-        (c) => c.status === "pending" && c.friend_id === userId
+        (c) => c.status === "pending" && c.friend_id === userId,
       );
 
       setConnections(accepted);
@@ -101,15 +106,17 @@ export const useConnections = (userId?: string) => {
 
       // Send email notification (fire and forget - don't block on this).
       // Display names are resolved server-side.
-      supabase.functions.invoke("notify-social-email", {
-        body: {
-          type: "friend_request",
-          recipientUserId: friendId,
-          connectionId: data.id,
-        },
-      }).catch((emailError) => {
-        console.error("Failed to send friend request email:", emailError);
-      });
+      supabase.functions
+        .invoke("notify-social-email", {
+          body: {
+            type: "friend_request",
+            recipientUserId: friendId,
+            connectionId: data.id,
+          },
+        })
+        .catch((emailError) => {
+          console.error("Failed to send friend request email:", emailError);
+        });
 
       return { success: true, data };
     } catch (error) {
@@ -133,15 +140,17 @@ export const useConnections = (userId?: string) => {
       const originalSenderId = data.user_id;
 
       // Send email notification to the original sender (fire and forget)
-      supabase.functions.invoke("notify-social-email", {
-        body: {
-          type: "friend_accepted",
-          recipientUserId: originalSenderId,
-          connectionId: `accepted-${connectionId}`,
-        },
-      }).catch((emailError) => {
-        console.error("Failed to send friend accepted email:", emailError);
-      });
+      supabase.functions
+        .invoke("notify-social-email", {
+          body: {
+            type: "friend_accepted",
+            recipientUserId: originalSenderId,
+            connectionId: `accepted-${connectionId}`,
+          },
+        })
+        .catch((emailError) => {
+          console.error("Failed to send friend accepted email:", emailError);
+        });
 
       setPendingRequests((prev) => prev.filter((c) => c.id !== connectionId));
       setConnections((prev) => [...prev, data as Connection]);

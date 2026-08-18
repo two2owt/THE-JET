@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import Messages from "@/pages/Messages";
 
 const title = "Messages — JET";
-const description = "Chat with your crew and share venues and deals directly in JET.";
+const description =
+  "Chat with your crew and share venues and deals directly in JET.";
 
 export const Route = createFileRoute("/messages")({
   head: () => ({

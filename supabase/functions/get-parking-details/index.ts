@@ -1,4 +1,8 @@
-import { corsHeaders, logVersion, EDGE_FUNCTION_VERSION } from "../_shared/cors.ts";
+import {
+  corsHeaders,
+  logVersion,
+  EDGE_FUNCTION_VERSION,
+} from "../_shared/cors.ts";
 
 const FUNCTION_NAME = "get-parking-details";
 logVersion(FUNCTION_NAME);
@@ -6,43 +10,49 @@ logVersion(FUNCTION_NAME);
 // Coarse Google price level -> short label + estimated hourly band, so the
 // parking card can show a rate instead of nothing.
 const PRICE_BANDS: Array<{ label: string; detail: string }> = [
-  { label: 'Free', detail: 'No charge' },
-  { label: '$', detail: '~$1–$3/hr est.' },
-  { label: '$$', detail: '~$3–$7/hr est.' },
-  { label: '$$$', detail: '~$7–$15/hr est.' },
-  { label: '$$$$', detail: '~$15–$30/hr est.' },
+  { label: "Free", detail: "No charge" },
+  { label: "$", detail: "~$1–$3/hr est." },
+  { label: "$$", detail: "~$3–$7/hr est." },
+  { label: "$$$", detail: "~$7–$15/hr est." },
+  { label: "$$$$", detail: "~$15–$30/hr est." },
 ];
 
 const pricing = (level: number | null | undefined) => {
-  if (typeof level !== 'number' || !PRICE_BANDS[level]) {
+  if (typeof level !== "number" || !PRICE_BANDS[level]) {
     return { priceLabel: null, priceDetail: null };
   }
-  return { priceLabel: PRICE_BANDS[level].label, priceDetail: PRICE_BANDS[level].detail };
+  return {
+    priceLabel: PRICE_BANDS[level].label,
+    priceDetail: PRICE_BANDS[level].detail,
+  };
 };
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
     const { lat, lng, name } = await req.json();
 
-    if (typeof lat !== 'number' || typeof lng !== 'number') {
+    if (typeof lat !== "number" || typeof lng !== "number") {
       return new Response(
-        JSON.stringify({ error: 'lat and lng are required numbers' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: "lat and lng are required numbers" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
-    const apiKey = Deno.env.get('GOOGLE_PLACES_API_KEY');
+    const apiKey = Deno.env.get("GOOGLE_PLACES_API_KEY");
 
     if (!apiKey) {
-      console.warn('GOOGLE_PLACES_API_KEY not set, returning minimal data');
+      console.warn("GOOGLE_PLACES_API_KEY not set, returning minimal data");
       return new Response(
         JSON.stringify({
-          name: name || 'Parking Lot',
-          address: 'Address unavailable',
+          name: name || "Parking Lot",
+          address: "Address unavailable",
           lat,
           lng,
           rating: null,
@@ -51,38 +61,42 @@ Deno.serve(async (req) => {
           openingHours: [],
           priceLevel: null,
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     // Use Nearby Search to find the parking lot
-    const searchQuery = name ? `${name} parking` : 'parking';
-    const searchUrl = new URL('https://maps.googleapis.com/maps/api/place/nearbysearch/json');
-    searchUrl.searchParams.append('location', `${lat},${lng}`);
-    searchUrl.searchParams.append('radius', '100');
-    searchUrl.searchParams.append('type', 'parking');
-    searchUrl.searchParams.append('keyword', searchQuery);
-    searchUrl.searchParams.append('key', apiKey);
+    const searchQuery = name ? `${name} parking` : "parking";
+    const searchUrl = new URL(
+      "https://maps.googleapis.com/maps/api/place/nearbysearch/json",
+    );
+    searchUrl.searchParams.append("location", `${lat},${lng}`);
+    searchUrl.searchParams.append("radius", "100");
+    searchUrl.searchParams.append("type", "parking");
+    searchUrl.searchParams.append("keyword", searchQuery);
+    searchUrl.searchParams.append("key", apiKey);
 
     const searchResponse = await fetch(searchUrl.toString());
     const searchData = await searchResponse.json();
 
-    if (searchData.status !== 'OK' || !searchData.results?.length) {
+    if (searchData.status !== "OK" || !searchData.results?.length) {
       // Try broader search without keyword
-      const broadUrl = new URL('https://maps.googleapis.com/maps/api/place/nearbysearch/json');
-      broadUrl.searchParams.append('location', `${lat},${lng}`);
-      broadUrl.searchParams.append('radius', '200');
-      broadUrl.searchParams.append('type', 'parking');
-      broadUrl.searchParams.append('key', apiKey);
+      const broadUrl = new URL(
+        "https://maps.googleapis.com/maps/api/place/nearbysearch/json",
+      );
+      broadUrl.searchParams.append("location", `${lat},${lng}`);
+      broadUrl.searchParams.append("radius", "200");
+      broadUrl.searchParams.append("type", "parking");
+      broadUrl.searchParams.append("key", apiKey);
 
       const broadResponse = await fetch(broadUrl.toString());
       const broadData = await broadResponse.json();
 
-      if (broadData.status !== 'OK' || !broadData.results?.length) {
+      if (broadData.status !== "OK" || !broadData.results?.length) {
         return new Response(
           JSON.stringify({
-            name: name || 'Parking',
-            address: 'Address unavailable',
+            name: name || "Parking",
+            address: "Address unavailable",
             lat,
             lng,
             rating: null,
@@ -91,7 +105,7 @@ Deno.serve(async (req) => {
             openingHours: [],
             priceLevel: null,
           }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
 
@@ -101,18 +115,24 @@ Deno.serve(async (req) => {
     const place = searchData.results[0];
 
     // Get place details
-    const detailsUrl = new URL('https://maps.googleapis.com/maps/api/place/details/json');
-    detailsUrl.searchParams.append('place_id', place.place_id);
-    detailsUrl.searchParams.append('fields', 'formatted_address,formatted_phone_number,website,opening_hours,rating,user_ratings_total,price_level,name');
-    detailsUrl.searchParams.append('key', apiKey);
+    const detailsUrl = new URL(
+      "https://maps.googleapis.com/maps/api/place/details/json",
+    );
+    detailsUrl.searchParams.append("place_id", place.place_id);
+    detailsUrl.searchParams.append(
+      "fields",
+      "formatted_address,formatted_phone_number,website,opening_hours,rating,user_ratings_total,price_level,name",
+    );
+    detailsUrl.searchParams.append("key", apiKey);
 
     const detailsResponse = await fetch(detailsUrl.toString());
     const detailsData = await detailsResponse.json();
     const details = detailsData.result || {};
 
     const result = {
-      name: details.name || place.name || name || 'Parking',
-      address: details.formatted_address || place.vicinity || 'Address unavailable',
+      name: details.name || place.name || name || "Parking",
+      address:
+        details.formatted_address || place.vicinity || "Address unavailable",
       lat: place.geometry?.location?.lat || lat,
       lng: place.geometry?.location?.lng || lng,
       rating: details.rating || place.rating || null,
@@ -128,15 +148,14 @@ Deno.serve(async (req) => {
 
     console.log(`Parking details fetched: ${result.name} at ${result.address}`);
 
-    return new Response(
-      JSON.stringify(result),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify(result), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (error) {
-    console.error('Error in get-parking-details:', error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    console.error("Error in get-parking-details:", error);
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });

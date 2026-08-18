@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 
 interface CacheStats {
   mapboxTiles: number;
@@ -14,13 +14,13 @@ export const useOfflineMapCache = () => {
   const [cacheStats, setCacheStats] = useState<CacheStats>({
     mapboxTiles: 0,
     mapboxApi: 0,
-    totalSize: '0 KB',
+    totalSize: "0 KB",
     lastUpdated: null,
   });
   const [isCalculating, setIsCalculating] = useState(false);
 
   const calculateCacheStats = useCallback(async () => {
-    if (!('caches' in window)) {
+    if (!("caches" in window)) {
       return;
     }
 
@@ -33,7 +33,7 @@ export const useOfflineMapCache = () => {
       let totalBytes = 0;
 
       for (const name of cacheNames) {
-        if (name.includes('mapbox-tiles')) {
+        if (name.includes("mapbox-tiles")) {
           const cache = await caches.open(name);
           const keys = await cache.keys();
           tileCount += keys.length;
@@ -41,7 +41,7 @@ export const useOfflineMapCache = () => {
           // Estimate size (can't get exact size without fetching each response)
           // Average tile is ~20KB
           totalBytes += keys.length * 20 * 1024;
-        } else if (name.includes('mapbox-api')) {
+        } else if (name.includes("mapbox-api")) {
           const cache = await caches.open(name);
           const keys = await cache.keys();
           apiCount += keys.length;
@@ -51,7 +51,7 @@ export const useOfflineMapCache = () => {
       }
 
       // Format size
-      let sizeStr = '0 KB';
+      let sizeStr = "0 KB";
       if (totalBytes > 1024 * 1024) {
         sizeStr = `${(totalBytes / (1024 * 1024)).toFixed(1)} MB`;
       } else if (totalBytes > 1024) {
@@ -65,7 +65,7 @@ export const useOfflineMapCache = () => {
         lastUpdated: new Date(),
       });
     } catch (error) {
-      console.error('Failed to calculate cache stats:', error);
+      console.error("Failed to calculate cache stats:", error);
     } finally {
       setIsCalculating(false);
     }
@@ -77,23 +77,23 @@ export const useOfflineMapCache = () => {
   }, [calculateCacheStats]);
 
   const clearMapCache = useCallback(async () => {
-    if (!('caches' in window)) return;
+    if (!("caches" in window)) return;
 
     try {
       const cacheNames = await caches.keys();
       for (const name of cacheNames) {
-        if (name.includes('mapbox')) {
+        if (name.includes("mapbox")) {
           await caches.delete(name);
         }
       }
-      
+
       // Clear prefetch timestamp to allow re-prefetching
-      localStorage.removeItem('tile_prefetch_timestamp');
-      
+      localStorage.removeItem("tile_prefetch_timestamp");
+
       // Recalculate stats
       await calculateCacheStats();
     } catch (error) {
-      console.error('Failed to clear map cache:', error);
+      console.error("Failed to clear map cache:", error);
     }
   }, [calculateCacheStats]);
 
