@@ -30,9 +30,6 @@ export const NotificationCard = memo(
       }
     };
     const getIcon = () => {
-      return getIconInner();
-    };
-    const getIconInner = () => {
       switch (notification.type) {
         case "offer":
           return <Gift className="w-5 h-5 text-primary" />;
