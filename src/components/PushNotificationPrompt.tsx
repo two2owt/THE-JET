@@ -22,6 +22,10 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { setConsent } from "@/lib/consent";
 import { supabase } from "@/integrations/supabase/client";
 import { usePromptSlot, PROMPT_PRIORITY } from "@/hooks/usePromptSlot";
+import {
+  canOpenOsNotificationSettings,
+  openNotificationSettings,
+} from "@/lib/openAppSettings";
 
 interface PushNotificationPromptProps {
   show: boolean;
@@ -270,15 +274,28 @@ export const PushNotificationPrompt = ({
             >
               {needsInstallFirst || isBlocked ? "Close" : "Maybe Later"}
             </Button>
-            {!needsInstallFirst && (
-              <Button
-                className="flex-1 bg-primary hover:bg-primary/90"
-                onClick={handleEnable}
-                disabled={isLoading || isBlocked}
-              >
-                {isLoading ? "Enabling..." : "Enable Alerts"}
-              </Button>
-            )}
+            {!needsInstallFirst &&
+              (isBlocked ? (
+                canOpenOsNotificationSettings() ? (
+                  <Button
+                    className="flex-1 bg-primary hover:bg-primary/90"
+                    onClick={() => {
+                      void openNotificationSettings();
+                    }}
+                  >
+                    <Settings2 className="h-4 w-4 mr-1.5" />
+                    Open settings
+                  </Button>
+                ) : null
+              ) : (
+                <Button
+                  className="flex-1 bg-primary hover:bg-primary/90"
+                  onClick={handleEnable}
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Enabling..." : "Enable Alerts"}
+                </Button>
+              ))}
           </DialogFooter>
         </div>
       </DialogContent>
