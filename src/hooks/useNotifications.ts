@@ -18,6 +18,8 @@ export interface Notification {
   title: string;
   message: string;
   venue?: string;
+  /** Deal this alert refers to, when known (legacy notification_logs rows) */
+  dealId?: string;
   timestamp: string;
   /** Absolute ISO time the alert was sent/delivered */
   sentAt?: string;
@@ -54,6 +56,7 @@ const mapNotificationLogToNotification = (
     timestamp: relativeTime(log.sent_at),
     sentAt: log.sent_at ?? undefined,
     read: log.read || isReadPending(log.id) || false,
+    dealId: log.deal_id ?? undefined,
     source: "log",
   };
 };
