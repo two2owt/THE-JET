@@ -497,8 +497,19 @@ export const SearchResults = ({
         id="jet-search-results"
         role="dialog"
         aria-label="Search results"
-        className="fixed left-2 right-2 sm:left-auto sm:right-4 z-[9999] animate-fade-in sm:w-[420px] sm:max-w-[min(420px,calc(100vw-2rem))]"
+        aria-hidden={!entered}
+        className={`fixed left-2 right-2 sm:left-auto sm:right-4 z-[9999] sm:w-[420px] sm:max-w-[min(420px,calc(100vw-2rem))] will-change-transform motion-reduce:transition-none ${
+          entered
+            ? "opacity-100 translate-y-0 scale-100"
+            : "opacity-0 -translate-y-1 scale-[0.985] pointer-events-none"
+        }`}
         style={{
+          // Composited-only transition (opacity + transform) so opening and
+          // closing never trigger layout. Position/height changes from a
+          // resize are applied instantly to avoid lagging behind the viewport.
+          transition: `opacity ${TRANSITION_MS}ms cubic-bezier(0.22, 1, 0.36, 1), transform ${TRANSITION_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`,
+          transformOrigin: "top center",
+          contain: "layout paint",
           // Measured values win; the CSS fallbacks only apply for the very
           // first paint before measurement lands.
           top: box
