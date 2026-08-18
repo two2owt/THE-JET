@@ -136,6 +136,7 @@ import {
   type LiveStatsRange,
 } from "./map/LiveStatsPanel";
 import { useDensityLayer } from "./map/hooks/useDensityLayer";
+import { useMarkerDeclutter } from "./map/hooks/useMarkerDeclutter";
 import {
   useMovementPathsLayer,
   FLOW_LINE_ELEVATION_LAYOUT,
@@ -2744,6 +2745,10 @@ export const MapboxHeatmap = ({
         const staggerDelay = (index % 30) * 30;
         const el = document.createElement("div");
         el.className = "venue-marker";
+        // Consumed by the pitch/distance thinning pass so the selected pin is
+        // never culled.
+        el.dataset.venueId = String(venue.id ?? "");
+        el.dataset.selected = isSelected ? "true" : "false";
         // Dim non-selected markers when a venue is selected
         const dimOpacity = hasSelection && !isSelected ? "0.45" : "1";
         el.style.cssText = `
@@ -3145,6 +3150,14 @@ export const MapboxHeatmap = ({
       });
     }); // Close requestAnimationFrame
   };
+
+  // Thin out distant venue markers based on camera pitch/distance-from-center.
+  useMarkerDeclutter({
+    mapRef: map,
+    mapLoaded,
+    markersRef: markersRef as any,
+    markerRevision: `${venues.length}:${selectedVenue?.id ?? ""}:${selectedCity.name}`,
+  });
 
   // Call updateMarkers on initial load and when venues change
   useEffect(() => {

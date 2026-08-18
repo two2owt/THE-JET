@@ -1847,7 +1847,9 @@ All colors MUST be HSL.
       opacity: 0;
     }
     100% {
-      opacity: var(--target-opacity, 1);
+      /* --declutter-opacity is driven by the pitch/distance marker thinning
+         pass so far-away markers can fade without fighting selection dimming. */
+      opacity: calc(var(--target-opacity, 1) * var(--declutter-opacity, 1));
     }
   }
   
