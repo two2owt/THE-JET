@@ -564,9 +564,18 @@ const Onboarding = () => {
             ) : (
               <span aria-hidden />
             )}
-            <span className="sr-only" aria-live="polite">
-              {progressPct}% complete
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="sr-only" aria-live="polite">
+                {progressPct}% complete
+              </span>
+              <button
+                type="button"
+                onClick={handleSkipForLater}
+                className="inline-flex items-center text-[11px] font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+              >
+                Skip for later
+              </button>
+            </div>
           </div>
 
           {/* Progress segments */}
