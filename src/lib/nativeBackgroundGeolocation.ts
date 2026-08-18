@@ -50,12 +50,27 @@ type BackgroundGeolocationPlugin = {
   openSettings(): Promise<void>;
 };
 
+let cached: BackgroundGeolocationPlugin | null | undefined;
+
+/**
+ * The community plugin ships native code + typings only (no JS entry), so it
+ * is bound through Capacitor's `registerPlugin` rather than imported directly.
+ * Importing the package would break the web bundle at build time.
+ */
 const loadPlugin = async (): Promise<BackgroundGeolocationPlugin | null> => {
+  if (cached !== undefined) return cached;
   try {
-    const mod = await import("@capacitor-community/background-geolocation");
-    return (mod as unknown as { BackgroundGeolocation: BackgroundGeolocationPlugin })
-      .BackgroundGeolocation;
+    const { registerPlugin, Capacitor } = await import("@capacitor/core");
+    if (!Capacitor.isNativePlatform()) {
+      cached = null;
+      return null;
+    }
+    cached = registerPlugin<BackgroundGeolocationPlugin>(
+      "BackgroundGeolocation",
+    );
+    return cached;
   } catch {
+    cached = null;
     return null;
   }
 };
