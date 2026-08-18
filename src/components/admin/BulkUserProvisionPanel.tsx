@@ -17,8 +17,13 @@ import {
   RotateCcw,
   Eye,
   Send,
+  ClipboardList,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  PREVIEW_ONLY_USERS,
+  previewOnlyUsersAsText,
+} from "./previewOnlyUsers";
 import {
   DEFAULT_INVITE_TEMPLATE,
   INVITE_PLACEHOLDERS,
