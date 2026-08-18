@@ -9,6 +9,10 @@
 const args = process.argv.slice(2);
 const hostArg = args.indexOf('--host');
 const CANONICAL_HOST = hostArg > -1 ? args[hostArg + 1] : 'www.jet-around.com';
+// --origin lets the same assertions run against a local dev/preview server:
+// tags are still expected to point at the canonical production host.
+const originArg = args.indexOf('--origin');
+const ORIGIN = originArg > -1 ? args[originArg + 1] : null;
 const APEX_HOST = CANONICAL_HOST.replace(/^www\./, '');
 const MAX_HOPS = 5;
 
@@ -57,7 +61,10 @@ function extract(html, re) {
 
 console.log(`Canonical host: https://${CANONICAL_HOST}\n`);
 
-console.log('1) Redirect chains (apex + www)');
+if (ORIGIN) console.log(`Fetching from origin: ${ORIGIN} (redirect checks skipped)\n`);
+
+if (!ORIGIN) console.log('1) Redirect chains (apex + www)');
+if (!ORIGIN)
 for (const host of [APEX_HOST, CANONICAL_HOST]) {
   for (const path of ['/', '/auth']) {
     const start = `https://${host}${path}`;
@@ -77,7 +84,7 @@ for (const host of [APEX_HOST, CANONICAL_HOST]) {
 console.log('\n2) Canonical + og:url tags');
 for (const path of ROUTES) {
   const url = `https://${CANONICAL_HOST}${path}`;
-  const res = await fetch(url, { redirect: 'follow' });
+  const res = await fetch(ORIGIN ? `${ORIGIN}${path}` : url, { redirect: 'follow' });
   if (res.status !== 200) { fail(`${path} -> HTTP ${res.status}`); continue; }
   const html = await res.text();
   const canonical = extract(html, /<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i)
