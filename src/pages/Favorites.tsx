@@ -304,13 +304,61 @@ export default function Favorites() {
           />
         ) : (
           <div className="space-y-8">
-            {deals.length > 0 && (
+            <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+              <div className="relative flex-1 min-w-0">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search saved venues and deals"
+                  aria-label="Search favorites"
+                  className="pl-9 pr-9 h-11"
+                />
+                {query && (
+                  <button
+                    type="button"
+                    onClick={() => setQuery("")}
+                    aria-label="Clear search"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 grid place-items-center rounded-full text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              <Select
+                value={sortBy}
+                onValueChange={(v) => setSortBy(v as typeof sortBy)}
+              >
+                <SelectTrigger
+                  className="h-11 w-full sm:w-[190px]"
+                  aria-label="Sort favorites"
+                >
+                  <SelectValue placeholder="Sort" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recent">Recently saved</SelectItem>
+                  <SelectItem value="name">Name (A–Z)</SelectItem>
+                  <SelectItem value="venue">Venue (A–Z)</SelectItem>
+                  <SelectItem value="expiring">Expiring soon</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {visibleCount === 0 && (
+              <EmptyState
+                icon={Search}
+                title="No matches"
+                description={`Nothing in your favorites matches "${query.trim()}".`}
+                actionLabel="Clear search"
+                onAction={() => setQuery("")}
+              />
+            )}
+            {visibleDeals.length > 0 && (
               <section>
                 <h2 className="text-sm uppercase tracking-wider text-muted-foreground mb-3 px-1">
                   Saved deals
                 </h2>
                 <VirtualGrid
-                  items={deals}
+                  items={visibleDeals}
                   estimateSize={280}
                   className="min-h-[20svh]"
                   columns={{ mobile: 1, tablet: 2, desktop: 3 }}
@@ -321,13 +369,13 @@ export default function Favorites() {
                 />
               </section>
             )}
-            {venueOnlyFavorites.length > 0 && (
+            {visibleVenues.length > 0 && (
               <section>
                 <h2 className="text-sm uppercase tracking-wider text-muted-foreground mb-3 px-1">
                   Saved venues
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {venueOnlyFavorites.map((f) => (
+                  {visibleVenues.map((f) => (
                     <FavoriteVenueCard
                       key={f.id}
                       favorite={f}
