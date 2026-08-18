@@ -1828,6 +1828,22 @@ All colors MUST be HSL.
     }
   }
   
+  /* Selected marker: expanding gold halo so the active JetCard's pin is
+     unmistakable, including when it was opened from Favorites. */
+  @keyframes markerFocusHalo {
+    0% {
+      transform: scale(0.7);
+      opacity: 0.95;
+    }
+    70% {
+      opacity: 0.35;
+    }
+    100% {
+      transform: scale(1.5);
+      opacity: 0;
+    }
+  }
+
 
 
   /* Slide in from top animation - GPU accelerated for OfflineBanner */
