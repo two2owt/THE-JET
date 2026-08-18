@@ -856,7 +856,7 @@ const Onboarding = () => {
                   <div className="flex flex-col gap-3 rounded-xl border-hairline bg-card/30 p-4 sm:p-5 backdrop-blur-sm">
                     <p className="heading-luxe-eyebrow">Your Preferences</p>
                     <div className="flex flex-wrap gap-fluid-xs">
-                      {savedPreferences.categories.map((type) => (
+                      {(savedPreferences.categories ?? []).map((type) => (
                         <span
                           key={type}
                           className="px-3 py-1 bg-primary/15 border border-primary/30 text-primary text-fluid-xs font-medium rounded-full"
