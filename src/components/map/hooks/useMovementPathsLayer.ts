@@ -731,7 +731,7 @@ export const useMovementPathsLayer = ({
             );
           }
           particleOffset = (particleOffset + 2) % 100;
-          const particleSource = mapRef.current.getSource(particleSourceId);
+          const particleSource = mapRef.current.getSource<GeoJSONSource>(particleSourceId);
           const geojson = latestPathData.current?.geojson;
           if (particleSource && geojson) {
             particleSource.setData(
