@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLocationPreferences } from "@/hooks/useLocationPreferences";
 import { useGeolocationPermission } from "@/hooks/useGeolocationPermission";
 import { openLocationSettings } from "@/lib/nativeBackgroundGeolocation";
+import { logGeoPermissionEvent } from "@/lib/locationPermissionLog";
 import { isNativeApp, getPlatform } from "@/lib/platform";
 
 const platformSteps: Record<
@@ -123,6 +124,13 @@ export const LocationStatusBanner = ({ className }: { className?: string }) => {
                     size="sm"
                     className="h-8 text-xs"
                     onClick={() => {
+                      logGeoPermissionEvent({
+                        outcome: "settings_opened",
+                        surface: "map_banner",
+                        method: "ui",
+                        promptSuppressed: true,
+                        detail: isNativeApp() ? "os_settings" : "how_to_steps",
+                      });
                       if (isNativeApp()) {
                         void openLocationSettings();
                       } else {
@@ -147,7 +155,7 @@ export const LocationStatusBanner = ({ className }: { className?: string }) => {
                     onClick={async () => {
                       setRequesting(true);
                       try {
-                        await request();
+                        await request("map_banner");
                       } finally {
                         setRequesting(false);
                       }
