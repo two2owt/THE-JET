@@ -853,8 +853,17 @@ const Auth = () => {
       : mode === "forgot" || mode === "reset"
         ? "Reset your JET password to get back to discovering what's hot in Charlotte, NC."
         : "Sign in to JET to discover real-time deals, events, and trending venues across Charlotte, NC.";
-  const seoPath =
-    mode === "signup" ? "/signup" : mode === "signin" ? "/signin" : "/auth";
+  // Canonical must always be self-referencing: use the URL the visitor is
+  // actually on, so /auth never canonicalises to /signin (and vice versa).
+  const seoPath = ["/auth", "/signin", "/signup", "/reset-password"].includes(
+    location.pathname,
+  )
+    ? location.pathname
+    : mode === "signup"
+      ? "/signup"
+      : mode === "signin"
+        ? "/signin"
+        : "/auth";
 
   const switchToMode = (next: "signin" | "signup") => {
     setIsSignUp(next === "signup");

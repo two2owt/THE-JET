@@ -1,9 +1,12 @@
+import { SITE_URL } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import Messages from "@/pages/Messages";
 
 const title = "Messages — JET";
 const description =
   "Chat with your crew and share venues and deals directly in JET.";
+
+const CANONICAL_URL = `${SITE_URL}/messages`;
 
 export const Route = createFileRoute("/messages")({
   head: () => ({
@@ -15,7 +18,9 @@ export const Route = createFileRoute("/messages")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex, nofollow" },
+      { property: "og:url", content: CANONICAL_URL },
     ],
+    links: [{ rel: "canonical", href: CANONICAL_URL }],
   }),
   component: Messages,
 });
