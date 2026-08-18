@@ -62,6 +62,13 @@ export function useColdStartLocationFallback() {
             reason: `cold-start fallback (${result.source})`,
           });
           recordLocationWrite("network");
+          logGeoPermissionEvent({
+            outcome: "fallback_used",
+            surface: "cold_start",
+            method: network ? "network_fallback" : "ip_fallback",
+            fallbackUsed: true,
+            detail: `written via ${result.source}`,
+          });
         } else {
           logGeoEvent({
             kind: "skipped",
@@ -71,6 +78,13 @@ export function useColdStartLocationFallback() {
             reason: `cold-start fallback: ${result.reason}`,
           });
           recordLocationSkip(`cold-start fallback: ${result.reason}`);
+          logGeoPermissionEvent({
+            outcome: "fallback_used",
+            surface: "cold_start",
+            method: network ? "network_fallback" : "ip_fallback",
+            fallbackUsed: true,
+            detail: `skipped: ${result.reason}`,
+          });
         }
       } catch (err) {
         if (import.meta.env.DEV)
