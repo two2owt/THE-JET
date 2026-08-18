@@ -367,7 +367,7 @@ export const useMovementPathsLayer = ({
         "line-join": "round",
         "line-cap": "round",
         ...FLOW_LINE_ELEVATION_LAYOUT,
-      } as any,
+      },
       paint: {
         // Zoom must be the top-level interpolate input (Mapbox v3 rule);
         // each zoom stop multiplies the frequency-based width by a scale.
@@ -434,7 +434,7 @@ export const useMovementPathsLayer = ({
         "line-color-transition": { duration: 800, delay: 0 },
         "line-opacity-transition": { duration: 600, delay: 0 },
         "line-occlusion-opacity": OCCLUSION_OPACITY * 0.6,
-      } as any,
+      },
     });
 
     // Static (unselected) routes: below the current frequency selection.
@@ -448,7 +448,7 @@ export const useMovementPathsLayer = ({
         "line-join": "round",
         "line-cap": "round",
         ...FLOW_LINE_ELEVATION_LAYOUT,
-      } as any,
+      },
       paint: {
         "line-width": [
           "interpolate",
@@ -467,7 +467,7 @@ export const useMovementPathsLayer = ({
         "line-opacity": ["*", 0.55, ["coalesce", ["get", "recency"], 1]],
         "line-opacity-transition": { duration: 600, delay: 0 },
         "line-occlusion-opacity": OCCLUSION_OPACITY * 0.5,
-      } as any,
+      },
     });
 
     // Dark casing under the active flow lines: keeps the bright ramp legible
@@ -482,7 +482,7 @@ export const useMovementPathsLayer = ({
         "line-join": "round",
         "line-cap": "round",
         ...FLOW_LINE_ELEVATION_LAYOUT,
-      } as any,
+      },
       paint: {
         "line-width": [
           "interpolate",
@@ -502,7 +502,7 @@ export const useMovementPathsLayer = ({
         "line-opacity": ["*", 0.8, ["coalesce", ["get", "recency"], 1]],
         "line-opacity-transition": { duration: 600, delay: 0 },
         "line-occlusion-opacity": OCCLUSION_OPACITY * 0.4,
-      } as any,
+      },
     });
 
     mapRef.current.addLayer({
@@ -514,7 +514,7 @@ export const useMovementPathsLayer = ({
         "line-join": "round",
         "line-cap": "round",
         ...FLOW_LINE_ELEVATION_LAYOUT,
-      } as any,
+      },
       paint: {
         "line-width": [
           "interpolate",
@@ -568,7 +568,7 @@ export const useMovementPathsLayer = ({
         "line-width-transition": { duration: 800, delay: 0 },
         "line-color-transition": { duration: 800, delay: 0 },
         "line-occlusion-opacity": OCCLUSION_OPACITY,
-      } as any,
+      },
     });
 
     if (!mapRef.current.hasImage("flow-arrow")) {
@@ -625,10 +625,10 @@ export const useMovementPathsLayer = ({
         "icon-ignore-placement": true,
         // Lift arrows with the elevated route so they ride on top of 3D geometry.
         "symbol-z-elevate": true,
-      } as any,
+      },
       paint: {
         "icon-opacity": ["*", 0.85, ["coalesce", ["get", "recency"], 1]],
-      } as any,
+      },
     });
 
     mapRef.current.addSource(`${sourceId}-particles`, {
@@ -671,7 +671,7 @@ export const useMovementPathsLayer = ({
         "circle-blur": 0.3,
         "circle-stroke-width": 2,
         "circle-stroke-color": "rgba(255, 255, 255, 0.8)",
-      } as any,
+      },
     });
 
     devLog(

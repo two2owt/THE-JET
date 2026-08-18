@@ -1240,7 +1240,7 @@ export const MapboxHeatmap = ({
           type: "Feature",
           properties: { frequency: topRoute.frequency },
           geometry: { type: "LineString", coordinates: topRoute.coordinates },
-        } as any,
+        },
       });
       mapInstance.addLayer({
         id: glowId,
@@ -1250,14 +1250,14 @@ export const MapboxHeatmap = ({
           "line-join": "round",
           "line-cap": "round",
           ...FLOW_LINE_ELEVATION_LAYOUT,
-        } as any,
+        },
         paint: {
           "line-color": "hsl(45, 100%, 60%)",
           "line-width": 22,
           "line-blur": 8,
           "line-opacity": 0.55,
           "line-occlusion-opacity": 0.3,
-        } as any,
+        },
       });
       mapInstance.addLayer({
         id: layerId,
@@ -1267,13 +1267,13 @@ export const MapboxHeatmap = ({
           "line-join": "round",
           "line-cap": "round",
           ...FLOW_LINE_ELEVATION_LAYOUT,
-        } as any,
+        },
         paint: {
           "line-color": "#FFD666",
           "line-width": 6,
           "line-opacity": 0.95,
           "line-occlusion-opacity": 0.5,
-        } as any,
+        },
       });
 
       // Fit the map to the route bounds.
@@ -1670,7 +1670,7 @@ export const MapboxHeatmap = ({
           touchPitch: settings.touchPitch,
           dragRotate: settings.dragRotate,
           doubleClickZoom: true,
-          projection: "globe" as any,
+          projection: "globe",
           // Performance optimizations - reduce tile loading
           fadeDuration: settings.fadeDuration,
           refreshExpiredTiles: false,
@@ -1732,7 +1732,7 @@ export const MapboxHeatmap = ({
                     width: size,
                     height: size,
                     data: ctx.getImageData(0, 0, size, size).data,
-                  } as any,
+                  },
                   { pixelRatio: 2 },
                 );
               }

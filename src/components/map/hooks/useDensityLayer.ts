@@ -230,7 +230,7 @@ export const useDensityLayer = ({
         ],
         "heatmap-radius-transition": { duration: 450, delay: 0 },
         "heatmap-opacity-transition": { duration: 600, delay: 0 },
-      } as any,
+      },
     });
 
     mapRef.current.addLayer({
@@ -306,7 +306,7 @@ export const useDensityLayer = ({
             ],
         "circle-stroke-opacity": 0.8,
         "circle-opacity-transition": { duration: 1000, delay: 100 },
-      } as any,
+      },
     });
 
     mapRef.current.addLayer({
@@ -352,7 +352,7 @@ export const useDensityLayer = ({
         "circle-opacity": isLightBasemap ? 0.38 : 0.3,
         "circle-blur": 1,
         "circle-opacity-transition": { duration: 1000, delay: 200 },
-      } as any,
+      },
     });
 
     devLog(
