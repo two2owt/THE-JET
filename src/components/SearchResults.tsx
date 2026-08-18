@@ -370,7 +370,7 @@ export const SearchResults = ({
           </div>
 
           {/* Scrollable body */}
-          <CardContent className="p-3 sm:p-4 space-y-4 overflow-y-auto overscroll-contain flex-1 min-h-0">
+          <CardContent className="map-scroll-safe p-3 sm:p-4 space-y-4 overflow-y-auto flex-1 min-h-0">
             {!hasResults && (
               <div className="text-center py-10">
                 <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3">

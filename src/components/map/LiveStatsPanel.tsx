@@ -407,6 +407,7 @@ export const LiveStatsPanel = ({
 
   return (
     <div
+      className="map-scroll-safe"
       style={{
         position: "absolute",
         // Clear the top-left control row (city selector + map style button)

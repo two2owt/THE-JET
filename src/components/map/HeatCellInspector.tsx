@@ -67,14 +67,13 @@ export const HeatCellInspector = ({
       ref={cardRef}
       role="dialog"
       aria-label="Heat cell details"
-      className="absolute left-1/2 -translate-x-1/2 w-[min(420px,calc(100%-24px))] rounded-2xl p-4 pointer-events-auto"
+      className="map-scroll-safe absolute left-1/2 -translate-x-1/2 w-[min(420px,calc(100%-24px))] rounded-2xl p-4 pointer-events-auto"
       style={{
         bottom:
           "calc(var(--map-safe-bottom, calc(var(--bottom-nav-total-height, 60px) + 1rem)) + 12px)",
         maxHeight:
           "calc(100dvh - var(--header-total-height, 52px) - var(--map-safe-bottom, 72px) - 96px)",
         overflowY: "auto",
-        overscrollBehavior: "contain",
         zIndex: 35,
         background: "hsl(var(--card) / 0.86)",
         border: "1px solid hsl(var(--border) / 0.6)",

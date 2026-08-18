@@ -155,6 +155,11 @@ All colors MUST be HSL.
        Set dynamically by the map component; 0 when no panel is open. */
     --map-panel-bottom: 0px;
     --map-safe-bottom-panels: calc(var(--map-safe-bottom) + var(--map-panel-bottom));
+
+    /* Inner clearance for any scrollable surface rendered over the map
+       (JetCard, search results, heat-cell inspector, live stats). Keeps the
+       last row and any focused control clear of the footer nav. */
+    --map-scroll-clearance: calc(var(--map-ui-inset-bottom) + 0.75rem);
     
     /* Map control panel max width for responsive layouts */
     --map-control-max-width: 140px;
@@ -598,6 +603,7 @@ All colors MUST be HSL.
     max-width: 100vw;
     /* Use CSS variable for consistent bottom clearance */
     padding-bottom: var(--bottom-nav-total-height, 60px);
+    scroll-padding-bottom: calc(var(--bottom-nav-total-height, 60px) + 16px);
     overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -642,6 +648,18 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
+  /* Consistent bottom clearance for scrollable surfaces layered over the map.
+     padding keeps the last row above the footer nav, scroll-padding keeps
+     keyboard focus/scrollIntoView targets from landing under it. */
+  .map-scroll-safe {
+    padding-bottom: var(--map-scroll-clearance, 1.5rem);
+    scroll-padding-bottom: var(--map-scroll-clearance, 1.5rem);
+    overscroll-behavior: contain;
+  }
+  .map-scroll-safe :focus-visible {
+    scroll-margin-bottom: var(--map-scroll-clearance, 1.5rem);
+  }
+
   /* Subtle dot grid pattern for non-map tab backgrounds */
   .dot-grid-pattern {
     position: relative;
