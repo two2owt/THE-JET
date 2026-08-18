@@ -115,5 +115,20 @@ CREATE POLICY "Users can delete their own preferences" ON public.user_preference
 
 -- 3. Stop broadcasting precise coordinates over realtime; publish only non-sensitive columns
 ALTER TABLE public.user_locations REPLICA IDENTITY USING INDEX user_locations_pkey;
-ALTER PUBLICATION supabase_realtime DROP TABLE public.user_locations;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.user_locations (id, user_id, current_neighborhood_id, accuracy, created_at);
+
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'user_locations'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime DROP TABLE public.user_locations;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'user_locations'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.user_locations (id, user_id, current_neighborhood_id, accuracy, created_at);
+  END IF;
+END $$;
