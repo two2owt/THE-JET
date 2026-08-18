@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useLocation } from "@/lib/router-compat";
 import { CheckCircle2, Mail, Loader2, MailCheck, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,8 @@ export default function VerificationSuccess() {
   >("idle");
   const [resendMessage, setResendMessage] = useState<string>("");
   const [isVerified, setIsVerified] = useState(false);
+  // Whether a Supabase session exists (the email link signs the user in).
+  const [hasSession, setHasSession] = useState(false);
   // True when Supabase redirected here with an expired/invalid OTP error in
   // the URL hash (e.g. user clicked a verification link >1h old).
   const [linkExpired, setLinkExpired] = useState(false);
@@ -30,6 +32,27 @@ export default function VerificationSuccess() {
   // Email change uses type=email_change in the Supabase callback hash, or can
   // be signaled explicitly via ?context=email_change.
   const [flow, setFlow] = useState<"signup" | "email_change">("signup");
+
+  // Route the verified user into the app. When the email link established a
+  // session they are already signed in — send them to onboarding or home
+  // instead of back to the sign-in form.
+  const goToApp = useCallback(async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      navigate("/auth?mode=signin", { replace: true });
+      return;
+    }
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("onboarding_completed")
+      .eq("id", user.id)
+      .maybeSingle();
+    navigate(profile?.onboarding_completed ? "/" : "/onboarding", {
+      replace: true,
+    });
+  }, [navigate]);
 
   useEffect(() => {
     // Parse signals BEFORE stripping URL
@@ -77,9 +100,30 @@ export default function VerificationSuccess() {
 
     // Defensive: strip query/hash so navigating back to /auth never
     // re-triggers a signup submission.
-    if (location.search || location.hash) {
-      window.history.replaceState({}, "", "/verification-success");
-    }
+    // The Supabase email link carries the new session in the hash. Adopt it
+    // explicitly BEFORE stripping the URL, otherwise the verified user lands
+    // back on the sign-in form instead of being signed in.
+    const hashParams = new URLSearchParams(
+      hash.startsWith("#") ? hash.slice(1) : hash,
+    );
+    const accessToken = hashParams.get("access_token");
+    const refreshToken = hashParams.get("refresh_token");
+    const adoptSession = async () => {
+      if (accessToken && refreshToken) {
+        try {
+          await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          setIsVerified(true);
+        } catch {
+          // fall through — checkVerification below still runs
+        }
+      }
+      if (location.search || location.hash) {
+        window.history.replaceState({}, "", "/verification-success");
+      }
+    };
 
     // Auto-fill email from: query param > localStorage > current user (later)
     if (emailFromQuery) {
@@ -92,6 +136,7 @@ export default function VerificationSuccess() {
     // is already signed in OR just established a session via the email link.
     let cancelled = false;
     const checkVerification = async () => {
+      await adoptSession();
       try {
         await supabase.auth.refreshSession();
       } catch {
@@ -107,6 +152,7 @@ export default function VerificationSuccess() {
       if (user?.email_confirmed_at || (user as any)?.confirmed_at) {
         setIsVerified(true);
       }
+      setHasSession(!!user);
     };
     checkVerification();
 
@@ -121,6 +167,7 @@ export default function VerificationSuccess() {
       if (user?.email_confirmed_at || (user as any)?.confirmed_at) {
         setIsVerified(true);
       }
+      setHasSession(!!user);
     });
 
     // Re-check when tab regains focus (user returning from email client)
@@ -135,7 +182,7 @@ export default function VerificationSuccess() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          navigate("/auth?mode=signin", { replace: true });
+          void goToApp();
           return 0;
         }
         return prev - 1;
@@ -148,7 +195,7 @@ export default function VerificationSuccess() {
       subscription.unsubscribe();
       document.removeEventListener("visibilitychange", handleVisibility);
     };
-  }, [navigate, location.search, location.hash]);
+  }, [navigate, goToApp, location.search, location.hash]);
 
   // Fire welcome email once verification is confirmed (signup flow only).
   useEffect(() => {
@@ -336,18 +383,18 @@ export default function VerificationSuccess() {
                   : "You're all set. Tap “Go to app” below to start exploring JET."
                 : `Check your inbox${
                     resendEmail ? ` (${resendEmail})` : ""
-                  } and click the verification link. You'll be redirected to sign in in ${countdown}s.`}
+                  } and click the verification link. You'll be redirected in ${countdown}s.`}
             </p>
           </div>
         </div>
 
         <Button
-          onClick={() => navigate("/auth?mode=signin", { replace: true })}
+          onClick={() => void goToApp()}
           variant="jet"
           className="w-full"
           size="lg"
         >
-          Sign In Now
+          {hasSession ? "Continue to JET" : "Sign In Now"}
         </Button>
 
         {isVerified ? (
