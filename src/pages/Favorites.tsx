@@ -250,7 +250,9 @@ export default function Favorites() {
     return sorted;
   }, [venueOnlyFavorites, normalizedQuery, sortBy]);
 
-  const visibleCount = visibleDeals.length + visibleVenues.length;
+  const shownDeals = filter === "venues" ? [] : visibleDeals;
+  const shownVenues = filter === "deals" ? [] : visibleVenues;
+  const visibleCount = shownDeals.length + shownVenues.length;
 
   if (authLoading) {
     return (
