@@ -1,8 +1,9 @@
+import type { GeoJSONSource, Map as MapboxMap } from "mapbox-gl";
 import { devLog } from "@/lib/log";
 import { useEffect, useRef, MutableRefObject } from "react";
 
 interface Params {
-  mapRef: MutableRefObject<any>;
+  mapRef: MutableRefObject<MapboxMap | null>;
   mapLoaded: boolean;
   isMobile: boolean;
   showDensityLayer: boolean;
@@ -65,7 +66,7 @@ export const useDensityLayer = ({
 
     // Data update path — reuse existing source so Mapbox interpolates paint
     // transitions instead of hard-flashing on every realtime refetch.
-    const existingSource = mapRef.current.getSource(sourceId) as any;
+    const existingSource = mapRef.current.getSource<GeoJSONSource>(sourceId);
     const basemapChanged =
       paintedForLightRef.current !== null &&
       paintedForLightRef.current !== isLightBasemap;
@@ -230,7 +231,7 @@ export const useDensityLayer = ({
         ],
         "heatmap-radius-transition": { duration: 450, delay: 0 },
         "heatmap-opacity-transition": { duration: 600, delay: 0 },
-      } as any,
+      },
     });
 
     mapRef.current.addLayer({
@@ -306,7 +307,7 @@ export const useDensityLayer = ({
             ],
         "circle-stroke-opacity": 0.8,
         "circle-opacity-transition": { duration: 1000, delay: 100 },
-      } as any,
+      },
     });
 
     mapRef.current.addLayer({
@@ -352,7 +353,7 @@ export const useDensityLayer = ({
         "circle-opacity": isLightBasemap ? 0.38 : 0.3,
         "circle-blur": 1,
         "circle-opacity-transition": { duration: 1000, delay: 200 },
-      } as any,
+      },
     });
 
     devLog(

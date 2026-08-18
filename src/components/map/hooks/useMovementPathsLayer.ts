@@ -1,3 +1,4 @@
+import type { GeoJSONSource, Map as MapboxMap } from "mapbox-gl";
 import { devLog } from "@/lib/log";
 import { useEffect, useRef, useState, MutableRefObject } from "react";
 
@@ -149,7 +150,7 @@ const buildParticleData = (geojson: any, offset: number, minFrequency = 0) => {
 };
 
 interface Params {
-  mapRef: MutableRefObject<any>;
+  mapRef: MutableRefObject<MapboxMap | null>;
   mapLoaded: boolean;
   showMovementPaths: boolean;
   pathData: { geojson: any; stats: { total_paths: number } } | null | undefined;
@@ -281,7 +282,7 @@ export const useMovementPathsLayer = ({
 
     // Fast path: source already exists — just push new GeoJSON so Mapbox
     // smoothly transitions line-width/color instead of flashing on rebuild.
-    const existing = mapRef.current.getSource(sourceId) as any;
+    const existing = mapRef.current.getSource<GeoJSONSource>(sourceId);
     if (existing) {
       try {
         existing.setData(withDecay(pathData.geojson));
@@ -367,7 +368,7 @@ export const useMovementPathsLayer = ({
         "line-join": "round",
         "line-cap": "round",
         ...FLOW_LINE_ELEVATION_LAYOUT,
-      } as any,
+      },
       paint: {
         // Zoom must be the top-level interpolate input (Mapbox v3 rule);
         // each zoom stop multiplies the frequency-based width by a scale.
@@ -434,7 +435,7 @@ export const useMovementPathsLayer = ({
         "line-color-transition": { duration: 800, delay: 0 },
         "line-opacity-transition": { duration: 600, delay: 0 },
         "line-occlusion-opacity": OCCLUSION_OPACITY * 0.6,
-      } as any,
+      },
     });
 
     // Static (unselected) routes: below the current frequency selection.
@@ -448,7 +449,7 @@ export const useMovementPathsLayer = ({
         "line-join": "round",
         "line-cap": "round",
         ...FLOW_LINE_ELEVATION_LAYOUT,
-      } as any,
+      },
       paint: {
         "line-width": [
           "interpolate",
@@ -467,7 +468,7 @@ export const useMovementPathsLayer = ({
         "line-opacity": ["*", 0.55, ["coalesce", ["get", "recency"], 1]],
         "line-opacity-transition": { duration: 600, delay: 0 },
         "line-occlusion-opacity": OCCLUSION_OPACITY * 0.5,
-      } as any,
+      },
     });
 
     // Dark casing under the active flow lines: keeps the bright ramp legible
@@ -482,7 +483,7 @@ export const useMovementPathsLayer = ({
         "line-join": "round",
         "line-cap": "round",
         ...FLOW_LINE_ELEVATION_LAYOUT,
-      } as any,
+      },
       paint: {
         "line-width": [
           "interpolate",
@@ -502,7 +503,7 @@ export const useMovementPathsLayer = ({
         "line-opacity": ["*", 0.8, ["coalesce", ["get", "recency"], 1]],
         "line-opacity-transition": { duration: 600, delay: 0 },
         "line-occlusion-opacity": OCCLUSION_OPACITY * 0.4,
-      } as any,
+      },
     });
 
     mapRef.current.addLayer({
@@ -514,7 +515,7 @@ export const useMovementPathsLayer = ({
         "line-join": "round",
         "line-cap": "round",
         ...FLOW_LINE_ELEVATION_LAYOUT,
-      } as any,
+      },
       paint: {
         "line-width": [
           "interpolate",
@@ -568,7 +569,7 @@ export const useMovementPathsLayer = ({
         "line-width-transition": { duration: 800, delay: 0 },
         "line-color-transition": { duration: 800, delay: 0 },
         "line-occlusion-opacity": OCCLUSION_OPACITY,
-      } as any,
+      },
     });
 
     if (!mapRef.current.hasImage("flow-arrow")) {
@@ -625,10 +626,10 @@ export const useMovementPathsLayer = ({
         "icon-ignore-placement": true,
         // Lift arrows with the elevated route so they ride on top of 3D geometry.
         "symbol-z-elevate": true,
-      } as any,
+      },
       paint: {
         "icon-opacity": ["*", 0.85, ["coalesce", ["get", "recency"], 1]],
-      } as any,
+      },
     });
 
     mapRef.current.addSource(`${sourceId}-particles`, {
@@ -671,7 +672,7 @@ export const useMovementPathsLayer = ({
         "circle-blur": 0.3,
         "circle-stroke-width": 2,
         "circle-stroke-color": "rgba(255, 255, 255, 0.8)",
-      } as any,
+      },
     });
 
     devLog(
@@ -730,7 +731,7 @@ export const useMovementPathsLayer = ({
             );
           }
           particleOffset = (particleOffset + 2) % 100;
-          const particleSource = mapRef.current.getSource(particleSourceId);
+          const particleSource = mapRef.current.getSource<GeoJSONSource>(particleSourceId);
           const geojson = latestPathData.current?.geojson;
           if (particleSource && geojson) {
             particleSource.setData(
@@ -769,7 +770,7 @@ export const useMovementPathsLayer = ({
     if (!mapLoaded || !showMovementPaths || !debouncedPathData?.geojson) return;
     const id = window.setInterval(() => {
       if (document.hidden) return;
-      const src = mapRef.current?.getSource("movement-paths") as any;
+      const src = mapRef.current?.getSource<GeoJSONSource>("movement-paths");
       if (!src?.setData) return;
       try {
         src.setData(withDecay(debouncedPathData.geojson));
