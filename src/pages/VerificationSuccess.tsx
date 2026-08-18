@@ -77,9 +77,30 @@ export default function VerificationSuccess() {
 
     // Defensive: strip query/hash so navigating back to /auth never
     // re-triggers a signup submission.
-    if (location.search || location.hash) {
-      window.history.replaceState({}, "", "/verification-success");
-    }
+    // The Supabase email link carries the new session in the hash. Adopt it
+    // explicitly BEFORE stripping the URL, otherwise the verified user lands
+    // back on the sign-in form instead of being signed in.
+    const hashParams = new URLSearchParams(
+      hash.startsWith("#") ? hash.slice(1) : hash,
+    );
+    const accessToken = hashParams.get("access_token");
+    const refreshToken = hashParams.get("refresh_token");
+    const adoptSession = async () => {
+      if (accessToken && refreshToken) {
+        try {
+          await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          setIsVerified(true);
+        } catch {
+          // fall through — checkVerification below still runs
+        }
+      }
+      if (location.search || location.hash) {
+        window.history.replaceState({}, "", "/verification-success");
+      }
+    };
 
     // Auto-fill email from: query param > localStorage > current user (later)
     if (emailFromQuery) {
@@ -92,6 +113,7 @@ export default function VerificationSuccess() {
     // is already signed in OR just established a session via the email link.
     let cancelled = false;
     const checkVerification = async () => {
+      await adoptSession();
       try {
         await supabase.auth.refreshSession();
       } catch {
@@ -107,6 +129,7 @@ export default function VerificationSuccess() {
       if (user?.email_confirmed_at || (user as any)?.confirmed_at) {
         setIsVerified(true);
       }
+      setHasSession(!!user);
     };
     checkVerification();
 
@@ -135,7 +158,7 @@ export default function VerificationSuccess() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          navigate("/auth?mode=signin", { replace: true });
+          void goToApp();
           return 0;
         }
         return prev - 1;
