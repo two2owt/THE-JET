@@ -71,8 +71,10 @@ export function ProfileSettingsPanel({
   const {
     isRegistered: isPushRegistered,
     isNative,
-    initializePushNotifications,
-    unregister: unregisterPush,
+    enable: enableNativePush,
+    disable: disableNativePush,
+    permission: nativePushPermission,
+    isLoading: isNativePushLoading,
   } = usePushNotifications();
   const {
     isSupported: isWebPushSupported,
@@ -293,11 +295,11 @@ export function ProfileSettingsPanel({
   const handlePushNotificationToggle = async (enabled: boolean) => {
     try {
       if (enabled) {
-        await initializePushNotifications();
-        setPushNotificationsEnabled(true);
-        toast.success("Push notifications enabled");
+        const ok = await enableNativePush();
+        setPushNotificationsEnabled(ok);
+        if (ok) toast.success("Push notifications enabled");
       } else {
-        await unregisterPush();
+        await disableNativePush();
         setPushNotificationsEnabled(false);
         toast.success("Push notifications disabled");
       }
@@ -442,13 +444,16 @@ export function ProfileSettingsPanel({
                     Native Push Notifications
                   </label>
                   <p className="text-[10px] sm:text-xs text-muted-foreground">
-                    Receive notifications even when the app is closed
+                    {nativePushPermission === "denied"
+                      ? "Blocked in device settings — allow notifications for JET, then try again"
+                      : "Receive notifications even when the app is closed"}
                   </p>
                 </div>
                 <Switch
                   id="push-notifications"
                   checked={pushNotificationsEnabled}
                   onCheckedChange={handlePushNotificationToggle}
+                  disabled={isNativePushLoading}
                   className="flex-shrink-0"
                 />
               </div>

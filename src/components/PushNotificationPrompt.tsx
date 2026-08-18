@@ -18,6 +18,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useWebPushNotifications } from "@/hooks/useWebPushNotifications";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { setConsent } from "@/lib/consent";
 import { supabase } from "@/integrations/supabase/client";
 import { usePromptSlot, PROMPT_PRIORITY } from "@/hooks/usePromptSlot";
@@ -57,6 +58,12 @@ export const PushNotificationPrompt = ({
     subscribe: webSubscribe,
     permission: webPermission,
   } = useWebPushNotifications();
+  const {
+    isNative,
+    isRegistered: isNativeRegistered,
+    permission: nativePermission,
+    enable: enableNative,
+  } = usePushNotifications();
 
   // Subscriptions are stored per user, so only prompt signed-in visitors.
   useEffect(() => {
@@ -70,13 +77,20 @@ export const PushNotificationPrompt = ({
   }, [show]);
 
   // iOS Safari can't subscribe until the app is installed to the Home Screen.
-  const needsInstallFirst = useMemo(() => isIOS() && !isStandalone(), []);
-  const isBlocked = webPermission === "denied";
+  // Inside the native shell this never applies — the OS handles delivery.
+  const needsInstallFirst = useMemo(
+    () => !isNative && isIOS() && !isStandalone(),
+    [isNative],
+  );
+  const isBlocked = isNative
+    ? nativePermission === "denied"
+    : webPermission === "denied";
+  const alreadyOn = isNative ? isNativeRegistered : isWebSubscribed;
 
   useEffect(() => {
-    if (!show || isWebSubscribed || !signedIn) return;
-    // Browser-level block: nothing we can do in-app, so don't nag on load.
-    if (webPermission === "denied") return;
+    if (!show || alreadyOn || !signedIn) return;
+    // OS/browser-level block: nothing we can do in-app, so don't nag on load.
+    if (isBlocked) return;
 
     const dismissedAt = localStorage.getItem(DISMISS_KEY);
     if (dismissedAt) {
@@ -87,11 +101,22 @@ export const PushNotificationPrompt = ({
 
     const timer = setTimeout(() => setIsVisible(true), 1500);
     return () => clearTimeout(timer);
-  }, [show, isWebSubscribed, signedIn, webPermission]);
+  }, [show, alreadyOn, signedIn, isBlocked]);
 
   const handleEnable = async () => {
     setIsLoading(true);
     let success = false;
+
+    if (isNative) {
+      // enable() prompts the OS and records consent once granted.
+      success = await enableNative();
+      setIsLoading(false);
+      if (success) {
+        setIsVisible(false);
+        onDismiss();
+      }
+      return;
+    }
 
     // Record the opt-in before subscribing — the runtime consent guard inside
     // subscribe() rejects the call when `push_notifications` isn't granted,
@@ -138,7 +163,9 @@ export const PushNotificationPrompt = ({
             </DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
               {isBlocked
-                ? "Notifications are currently blocked for JET in this browser. Re-allow them, then come back and tap Enable."
+                ? isNative
+                  ? "Notifications are turned off for JET on this device. Allow them in Settings > Notifications > JET, then come back and tap Enable."
+                  : "Notifications are currently blocked for JET in this browser. Re-allow them, then come back and tap Enable."
                 : needsInstallFirst
                   ? "On iPhone and iPad, alerts work once JET is added to your Home Screen. Follow the two steps below, reopen JET from your Home Screen, then tap Enable."
                   : "Get instant alerts the moment a Charlotte deal goes live near you. Tap Enable, then choose Allow in the browser popup that appears."}
@@ -146,6 +173,19 @@ export const PushNotificationPrompt = ({
           </DialogHeader>
 
           {isBlocked ? (
+            isNative ? (
+              <ol className="space-y-2 my-5 text-sm text-foreground/80 list-decimal pl-5">
+                <li>Open your device Settings app.</li>
+                <li>
+                  Find <span className="font-medium">JET</span> →{" "}
+                  <span className="font-medium">Notifications</span>.
+                </li>
+                <li>
+                  Turn <span className="font-medium">Allow Notifications</span>{" "}
+                  on, then reopen JET.
+                </li>
+              </ol>
+            ) : (
             <ol className="space-y-2 my-5 text-sm text-foreground/80 list-decimal pl-5">
               <li>
                 Tap the lock or settings icon in your browser's address bar.
@@ -159,6 +199,7 @@ export const PushNotificationPrompt = ({
                 <span className="font-medium">Allow</span>, then reload JET.
               </li>
             </ol>
+            )
           ) : needsInstallFirst ? (
             <div className="space-y-2 my-5">
               <div className="flex items-center gap-2.5 text-sm">
