@@ -58,6 +58,7 @@ export default function Favorites() {
   const [sortBy, setSortBy] = useState<
     "recent" | "name" | "venue" | "expiring"
   >("recent");
+  const [filter, setFilter] = useState<"all" | "venues" | "deals">("all");
   const headerConfig = useMemo(() => ({}), []);
 
   const {
@@ -249,7 +250,9 @@ export default function Favorites() {
     return sorted;
   }, [venueOnlyFavorites, normalizedQuery, sortBy]);
 
-  const visibleCount = visibleDeals.length + visibleVenues.length;
+  const shownDeals = filter === "venues" ? [] : visibleDeals;
+  const shownVenues = filter === "deals" ? [] : visibleVenues;
+  const visibleCount = shownDeals.length + shownVenues.length;
 
   if (authLoading) {
     return (
@@ -365,6 +368,33 @@ export default function Favorites() {
                 </SelectContent>
               </Select>
             </div>
+            <div
+              role="group"
+              aria-label="Filter favorites by type"
+              className="flex flex-wrap gap-2"
+            >
+              {(
+                [
+                  { key: "all", label: `All (${visibleDeals.length + visibleVenues.length})` },
+                  { key: "venues", label: `Venues (${visibleVenues.length})` },
+                  { key: "deals", label: `Deals (${visibleDeals.length})` },
+                ] as const
+              ).map((chip) => (
+                <button
+                  key={chip.key}
+                  type="button"
+                  onClick={() => setFilter(chip.key)}
+                  aria-pressed={filter === chip.key}
+                  className={`min-h-[44px] px-4 rounded-full border text-sm font-medium transition ${
+                    filter === chip.key
+                      ? "border-primary bg-primary/15 text-primary"
+                      : "border-border bg-card/60 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {chip.label}
+                </button>
+              ))}
+            </div>
             {totalUnread > 0 && firstAlertTarget && (
               <button
                 type="button"
@@ -403,13 +433,13 @@ export default function Favorites() {
                 onAction={() => setQuery("")}
               />
             )}
-            {visibleDeals.length > 0 && (
+            {shownDeals.length > 0 && (
               <section>
                 <h2 className="text-sm uppercase tracking-wider text-muted-foreground mb-3 px-1">
                   Saved deals
                 </h2>
                 <VirtualGrid
-                  items={visibleDeals}
+                  items={shownDeals}
                   estimateSize={280}
                   className="min-h-[20svh]"
                   columns={{ mobile: 1, tablet: 2, desktop: 3 }}
@@ -436,13 +466,13 @@ export default function Favorites() {
                 />
               </section>
             )}
-            {visibleVenues.length > 0 && (
+            {shownVenues.length > 0 && (
               <section>
                 <h2 className="text-sm uppercase tracking-wider text-muted-foreground mb-3 px-1">
                   Saved venues
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {visibleVenues.map((f) => (
+                  {shownVenues.map((f) => (
                     <FavoriteVenueCard
                       key={f.id}
                       favorite={f}
