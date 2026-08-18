@@ -2678,6 +2678,42 @@ All colors MUST be HSL.
     border-color: hsl(var(--gold) / 0.45) !important;
     box-shadow: 0 0 18px hsl(var(--gold) / 0.08);
   }
+
+  /* ----------------------------------------------------------------------
+     Footer-nav clearance for focus + selection.
+     The bottom nav is fixed, so a focused or programmatically selected
+     element scrolled to the bottom edge of a scroll container can land
+     underneath it — invisible to keyboard and screen-reader users who rely
+     on the focus ring to track position. Reserving scroll padding on every
+     scroll root and scroll margin on every focus/selection target keeps the
+     element (plus its 2px ring + 2px offset) fully in view.
+     -------------------------------------------------------------------- */
+  :root {
+    --focus-nav-clearance: calc(var(--nav-clearance, 0px) + 1.25rem);
+  }
+
+  html,
+  body {
+    scroll-padding-bottom: var(--focus-nav-clearance);
+  }
+
+  /* Any element that becomes the focus target or the "current"/"selected"
+     item keeps clearance when the browser or a component scrolls it into view. */
+  :focus-visible,
+  [aria-selected="true"],
+  [aria-current]:not([aria-current="false"]),
+  [data-state="selected"],
+  [data-state="active"],
+  [data-selected="true"] {
+    scroll-margin-bottom: var(--focus-nav-clearance);
+    scroll-margin-top: calc(var(--header-total-height, 52px) + 0.75rem);
+  }
+
+  /* Focus rings must never be clipped by an overflow-hidden ancestor near the
+     nav; keep the ring painted outside the box. */
+  :focus-visible {
+    outline-offset: 2px;
+  }
 }
 
 /* Reduced-motion: keep the gold ring, but drop the transition */
