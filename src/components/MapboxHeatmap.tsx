@@ -1492,6 +1492,61 @@ export const MapboxHeatmap = ({
     mapLoaded,
   ]);
 
+  // Reveal the selected venue while preserving the user's map context: zoom,
+  // bearing and pitch are kept exactly as-is and the camera only pans when the
+  // pin sits outside the padded viewport (e.g. a JetCard opened from Favorites).
+  const revealedVenueRef = useRef<string | null>(null);
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !mapLoaded) return;
+    const id = selectedVenue?.id ?? null;
+    if (!id) {
+      revealedVenueRef.current = null;
+      return;
+    }
+    if (revealedVenueRef.current === id) return;
+    const lat = selectedVenue?.lat;
+    const lng = selectedVenue?.lng;
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    revealedVenueRef.current = id;
+    // Let the card's open transition (and the padding pass) settle first.
+    const timer = setTimeout(() => {
+      try {
+        const point = m.project([lng as number, lat as number]);
+        const pad = (m.getPadding?.() ?? {}) as {
+          top?: number;
+          bottom?: number;
+          left?: number;
+          right?: number;
+        };
+        const canvas = m.getCanvas();
+        const margin = 56;
+        const inView =
+          point.x > (pad.left ?? 0) + margin &&
+          point.x < canvas.clientWidth - (pad.right ?? 0) - margin &&
+          point.y > (pad.top ?? 0) + margin &&
+          point.y < canvas.clientHeight - (pad.bottom ?? 0) - margin;
+        if (inView) return;
+        m.easeTo({
+          center: [lng as number, lat as number],
+          zoom: m.getZoom(),
+          bearing: m.getBearing(),
+          pitch: m.getPitch(),
+          duration: platformSettings.current.hasReducedMotion ? 0 : 700,
+          essential: true,
+        });
+      } catch {
+        /* map not ready */
+      }
+    }, 320);
+    return () => clearTimeout(timer);
+  }, [
+    mapLoaded,
+    selectedVenue?.id,
+    selectedVenue?.lat,
+    selectedVenue?.lng,
+  ]);
+
   // Suspend map drag / scroll-zoom while the user interacts with an overlay
   // panel (JetCard, search results), and restore it when they leave/close it.
   useEffect(() => {
@@ -2790,6 +2845,27 @@ export const MapboxHeatmap = ({
 
         pinEl.appendChild(haloEl);
         pinEl.appendChild(ringEl);
+
+        // Selected pin gets an extra expanding gold halo so it reads as the
+        // active venue at a glance (e.g. when opened from Favorites).
+        if (isSelected && shouldAnimate) {
+          const focusEl = document.createElement("div");
+          const focusSize = markerSize + 30;
+          focusEl.style.cssText = `
+        position: absolute;
+        top: ${(markerSize - focusSize) / 2}px;
+        left: ${(markerSize - focusSize) / 2}px;
+        width: ${focusSize}px;
+        height: ${focusSize}px;
+        border-radius: 50%;
+        border: 2px solid ${GOLD};
+        box-shadow: 0 0 18px ${GOLD}66;
+        pointer-events: none;
+        will-change: transform, opacity;
+        animation: markerFocusHalo 2s ease-out infinite;
+      `;
+          pinEl.appendChild(focusEl);
+        }
         pinEl.appendChild(teardropEl);
         el.appendChild(pinEl);
 
