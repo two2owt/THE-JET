@@ -1,6 +1,7 @@
 import { devLog } from "@/lib/log";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { storeLastKnownLocation } from "@/lib/tile-prefetch";
+import { GEO_GRANTED_EVENT } from "@/lib/geolocationGrantEvent";
 import { subscribeMapInteractionLock } from "@/lib/mapInteractionLock";
 import type * as MapboxGL from "mapbox-gl";
 import type { FeatureCollection, Geometry } from "geojson";
