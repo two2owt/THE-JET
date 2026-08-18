@@ -406,13 +406,13 @@ export default function Favorites() {
                 onAction={() => setQuery("")}
               />
             )}
-            {visibleDeals.length > 0 && (
+            {shownDeals.length > 0 && (
               <section>
                 <h2 className="text-sm uppercase tracking-wider text-muted-foreground mb-3 px-1">
                   Saved deals
                 </h2>
                 <VirtualGrid
-                  items={visibleDeals}
+                  items={shownDeals}
                   estimateSize={280}
                   className="min-h-[20svh]"
                   columns={{ mobile: 1, tablet: 2, desktop: 3 }}
@@ -439,13 +439,13 @@ export default function Favorites() {
                 />
               </section>
             )}
-            {visibleVenues.length > 0 && (
+            {shownVenues.length > 0 && (
               <section>
                 <h2 className="text-sm uppercase tracking-wider text-muted-foreground mb-3 px-1">
                   Saved venues
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {visibleVenues.map((f) => (
+                  {shownVenues.map((f) => (
                     <FavoriteVenueCard
                       key={f.id}
                       favorite={f}
