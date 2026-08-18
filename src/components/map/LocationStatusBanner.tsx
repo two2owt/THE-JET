@@ -1,11 +1,51 @@
 import { useState } from "react";
-import { MapPinOff, X, Loader2 } from "lucide-react";
+import { MapPinOff, X, Loader2, Settings2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocationPreferences } from "@/hooks/useLocationPreferences";
 import { useGeolocationPermission } from "@/hooks/useGeolocationPermission";
 import { openLocationSettings } from "@/lib/nativeBackgroundGeolocation";
-import { isNativeApp } from "@/lib/platform";
+import { isNativeApp, getPlatform } from "@/lib/platform";
+
+const platformSteps: Record<
+  "ios" | "android" | "web",
+  { label: string; steps: string[] }
+> = {
+  ios: {
+    label: "iOS Settings",
+    steps: [
+      "Open Settings → Privacy & Security → Location Services.",
+      "Find JET (or Safari for mobile web) and tap it.",
+      "Select 'While Using the App' or 'Always'.",
+      "Return to JET and pull down to refresh.",
+    ],
+  },
+  android: {
+    label: "Android Settings",
+    steps: [
+      "Open Settings → Location, then make sure Location is on.",
+      "Go to Apps → JET → Permissions → Location.",
+      "Choose 'Allow all the time' or 'Allow only while using the app'.",
+      "Return to JET and pull down to refresh.",
+    ],
+  },
+  web: {
+    label: "Browser Settings",
+    steps: [
+      "Tap the lock/info icon in your browser's address bar.",
+      "Find 'Location' and change it to 'Allow'.",
+      "Refresh the page.",
+    ],
+  },
+};
+
+function getWebPlatform(): "ios" | "android" | "web" {
+  if (typeof navigator === "undefined") return "web";
+  const ua = navigator.userAgent.toLowerCase();
+  if (/iphone|ipad|ipod/.test(ua)) return "ios";
+  if (/android/.test(ua)) return "android";
+  return "web";
+}
 
 /**
  * Map-tab status banner that reflects the *effective* tracking state.
@@ -21,6 +61,7 @@ export const LocationStatusBanner = ({ className }: { className?: string }) => {
     useGeolocationPermission();
   const [dismissed, setDismissed] = useState(false);
   const [requesting, setRequesting] = useState(false);
+  const [showSteps, setShowSteps] = useState(false);
 
   const unsupported = permission === "unsupported";
   const undetermined = permission === "unknown";
@@ -54,6 +95,9 @@ export const LocationStatusBanner = ({ className }: { className?: string }) => {
         : "Re-allow location for this site in your browser settings to see live activity near you."
       : "Turn on location so your map shows live activity around you.";
 
+  const stepsKey = isNativeApp() ? getPlatform() : getWebPlatform();
+  const steps = platformSteps[stepsKey] ?? platformSteps.web;
+
   return (
     <div
       className={`pointer-events-auto w-[min(92vw,26rem)] rounded-2xl border border-border/60 bg-background/85 backdrop-blur-xl shadow-card px-3 py-2.5 ${className ?? ""}`}
@@ -70,36 +114,67 @@ export const LocationStatusBanner = ({ className }: { className?: string }) => {
             {description}
           </p>
           {!unsupported && (
-            <div className="mt-2 flex items-center gap-2">
-              {isBlocked ? (
-                isNativeApp() ? (
+            <div className="mt-2 flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                {isBlocked ? (
                   <Button
                     size="sm"
                     className="h-8 text-xs"
-                    onClick={() => void openLocationSettings()}
+                    onClick={() => {
+                      if (isNativeApp()) {
+                        void openLocationSettings();
+                      } else {
+                        setShowSteps((s) => !s);
+                      }
+                    }}
+                    aria-expanded={isBlocked && !isNativeApp() ? showSteps : undefined}
                   >
-                    Open settings
+                    <Settings2 className="w-3.5 h-3.5 mr-1.5" />
+                    {isNativeApp() ? "Open settings" : "How to enable"}
+                    {!isNativeApp() && (
+                      <ChevronDown
+                        className={`w-3 h-3 ml-1 transition-transform ${showSteps ? "rotate-180" : ""}`}
+                      />
+                    )}
                   </Button>
-                ) : null
-              ) : (
-                <Button
-                  size="sm"
-                  className="h-8 text-xs"
-                  disabled={requesting}
-                  onClick={async () => {
-                    setRequesting(true);
-                    try {
-                      await request();
-                    } finally {
-                      setRequesting(false);
-                    }
-                  }}
-                >
-                  {requesting && (
-                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                  )}
-                  Enable location
-                </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    className="h-8 text-xs"
+                    disabled={requesting}
+                    onClick={async () => {
+                      setRequesting(true);
+                      try {
+                        await request();
+                      } finally {
+                        setRequesting(false);
+                      }
+                    }}
+                  >
+                    {requesting && (
+                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                    )}
+                    Enable location
+                  </Button>
+                )}
+              </div>
+
+              {isBlocked && !isNativeApp() && showSteps && (
+                <div className="rounded-xl border border-border/50 bg-background/70 p-2.5">
+                  <p className="text-[11px] font-semibold text-foreground mb-1.5">
+                    {steps.label}
+                  </p>
+                  <ol className="list-decimal list-inside space-y-1">
+                    {steps.steps.map((step, i) => (
+                      <li
+                        key={i}
+                        className="text-[11px] text-muted-foreground leading-snug"
+                      >
+                        {step}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
               )}
             </div>
           )}
