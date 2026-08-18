@@ -8,6 +8,7 @@ export interface Notification {
   message: string;
   venue?: string;
   timestamp: string;
+  sentAt?: string;
   distance?: string;
   read?: boolean;
 }
@@ -29,6 +30,9 @@ export const NotificationCard = memo(
       }
     };
     const getIcon = () => {
+      return getIconInner();
+    };
+    const getIconInner = () => {
       switch (notification.type) {
         case "offer":
           return <Gift className="w-5 h-5 text-primary" />;
@@ -49,6 +53,16 @@ export const NotificationCard = memo(
           return "from-warm/10 to-hot/10";
       }
     };
+
+    const absoluteTime = notification.sentAt
+      ? new Date(notification.sentAt).toLocaleString(undefined, {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        })
+      : undefined;
 
     return (
       <div
@@ -98,8 +112,25 @@ export const NotificationCard = memo(
             </div>
           </div>
 
-          <div className="text-[10px] sm:text-xs text-muted-foreground flex-shrink-0">
-            {notification.timestamp}
+          <div className="flex flex-col items-end gap-1 flex-shrink-0">
+            <time
+              className="text-[10px] sm:text-xs text-muted-foreground"
+              {...(notification.sentAt ? { dateTime: notification.sentAt } : {})}
+              title={absoluteTime}
+            >
+              {notification.timestamp}
+            </time>
+            {!notification.read && (
+              <span
+                className="inline-block rounded-full bg-primary"
+                style={{
+                  width: "8px",
+                  height: "8px",
+                  boxShadow: "0 0 6px hsl(var(--primary))",
+                }}
+                aria-label="Unread"
+              />
+            )}
           </div>
         </div>
       </div>
