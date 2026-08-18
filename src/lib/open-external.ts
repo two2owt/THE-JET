@@ -12,6 +12,24 @@
 export function openExternalUrl(url: string): void {
   if (typeof document === "undefined" || !url) return;
 
+  // Native shells: use the system/in-app browser so the app's own webview is
+  // never replaced by the destination site (users can return with one tap).
+  void (async () => {
+    try {
+      const { Capacitor } = await import("@capacitor/core");
+      if (Capacitor.isNativePlatform()) {
+        const { Browser } = await import("@capacitor/browser");
+        await Browser.open({ url, presentationStyle: "popover" });
+        return;
+      }
+    } catch {
+      // fall through to the web path below
+    }
+    openInNewTab(url);
+  })();
+}
+
+function openInNewTab(url: string): void {
   const a = document.createElement("a");
   a.href = url;
   a.target = "_blank";
