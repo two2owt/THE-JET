@@ -1,3 +1,4 @@
+import type { GeoJSONSource, Map as MapboxMap } from "mapbox-gl";
 import { devLog } from "@/lib/log";
 import { useEffect, useRef, useState, MutableRefObject } from "react";
 
@@ -149,7 +150,7 @@ const buildParticleData = (geojson: any, offset: number, minFrequency = 0) => {
 };
 
 interface Params {
-  mapRef: MutableRefObject<any>;
+  mapRef: MutableRefObject<MapboxMap | null>;
   mapLoaded: boolean;
   showMovementPaths: boolean;
   pathData: { geojson: any; stats: { total_paths: number } } | null | undefined;

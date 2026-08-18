@@ -1,8 +1,9 @@
+import type { GeoJSONSource, Map as MapboxMap } from "mapbox-gl";
 import { devLog } from "@/lib/log";
 import { useEffect, useRef, MutableRefObject } from "react";
 
 interface Params {
-  mapRef: MutableRefObject<any>;
+  mapRef: MutableRefObject<MapboxMap | null>;
   mapLoaded: boolean;
   isMobile: boolean;
   showDensityLayer: boolean;
