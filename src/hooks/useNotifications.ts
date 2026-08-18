@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { syncNotificationRead } from "@/lib/notificationRead";
 import {
   enqueueRead,
+  isReadPending,
   flushPendingReads,
   initNotificationReadQueue,
 } from "@/lib/notificationReadQueue";
@@ -52,7 +53,7 @@ const mapNotificationLogToNotification = (
     message: log.message,
     timestamp: relativeTime(log.sent_at),
     sentAt: log.sent_at ?? undefined,
-    read: log.read || false,
+    read: log.read || isReadPending(log.id) || false,
     source: "log",
   };
 };
@@ -130,7 +131,10 @@ export const useNotifications = (enabled: boolean = true) => {
             venue: queuedNotification.venue_id ?? undefined,
             timestamp: relativeTime(delivery.created_at),
             sentAt: delivery.created_at,
-            read: delivery.status === "opened" || !!delivery.opened_at,
+            read:
+              delivery.status === "opened" ||
+              !!delivery.opened_at ||
+              isReadPending(delivery.id),
             source: "delivery" as const,
             _sortKey: delivery.created_at,
           } as Notification & { _sortKey: string },
