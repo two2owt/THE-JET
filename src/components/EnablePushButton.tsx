@@ -119,13 +119,13 @@ export function EnablePushButton({ className }: { className?: string }) {
     >
       {busy ? (
         <Loader2 className="h-4 w-4 animate-spin" />
-      ) : permission === "denied" ? (
+      ) : effectivePermission === "denied" ? (
         <BellOff className="h-4 w-4" />
       ) : (
         <Bell className="h-4 w-4" />
       )}
       <span>
-        {permission === "denied" ? "Alerts blocked" : "Enable alerts"}
+        {effectivePermission === "denied" ? "Alerts blocked" : "Enable alerts"}
       </span>
     </Button>
   );
