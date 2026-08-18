@@ -192,9 +192,16 @@ const Onboarding = () => {
           );
           const hasStep2 = !!profile.preferences;
           if (hasStep2) {
-            setSavedPreferences(
-              profile.preferences as unknown as PreferencesData,
-            );
+            // Older/partial preference blobs can be missing `categories`
+            // entirely; normalize so the summary render can't crash on
+            // `categories.map`.
+            const raw = profile.preferences as unknown as
+              | Partial<PreferencesData>
+              | null;
+            setSavedPreferences({
+              ...(raw ?? {}),
+              categories: Array.isArray(raw?.categories) ? raw.categories : [],
+            } as PreferencesData);
           }
           if (hasStep2) setStep(3);
           else if (hasStep1) setStep(2);
@@ -849,7 +856,7 @@ const Onboarding = () => {
                   <div className="flex flex-col gap-3 rounded-xl border-hairline bg-card/30 p-4 sm:p-5 backdrop-blur-sm">
                     <p className="heading-luxe-eyebrow">Your Preferences</p>
                     <div className="flex flex-wrap gap-fluid-xs">
-                      {savedPreferences.categories.map((type) => (
+                      {(savedPreferences.categories ?? []).map((type) => (
                         <span
                           key={type}
                           className="px-3 py-1 bg-primary/15 border border-primary/30 text-primary text-fluid-xs font-medium rounded-full"
