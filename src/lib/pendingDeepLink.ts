@@ -8,8 +8,9 @@
  * JetCard. We park the resolved target here and flush it once the router is
  * ready. sessionStorage keeps it alive across the launch reload.
  */
-const KEY = "jet:pending-deep-link";
 import { hasProcessedAlert } from "@/lib/notificationIdempotency";
+
+const KEY = "jet:pending-deep-link";
 
 export type PendingDeepLink = {
   target: string;
