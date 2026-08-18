@@ -194,17 +194,17 @@ export const SearchResults = ({
     };
   }, [isVisible]);
 
-  // Desktop click-outside dismiss. Mobile already has a tap-through backdrop.
-  // We exclude the header search input itself so typing/focusing the pill
-  // doesn't close the panel that just opened.
+  // Click/tap outside dismiss. We exclude both the results panel and the
+  // header search wrapper so focusing the pill or interacting with results
+  // keeps the panel open, while taps anywhere else close it.
   useEffect(() => {
     if (!isVisible) return;
     const handlePointerDown = (e: PointerEvent) => {
       const target = e.target as Node | null;
       if (!target) return;
       if (panelRef.current?.contains(target)) return;
-      const headerEl = document.querySelector('header[role="banner"]');
-      if (headerEl?.contains(target)) return;
+      const searchWrapper = document.querySelector("[data-jet-search-wrapper]");
+      if (searchWrapper?.contains(target)) return;
       onClose();
     };
     // Use pointerdown so we beat focus/blur races on touch + mouse.

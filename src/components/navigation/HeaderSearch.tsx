@@ -115,6 +115,7 @@ export function HeaderSearch({
   return (
     <div
       ref={wrapperRef}
+      data-jet-search-wrapper
       style={{
         position: "relative",
         flex: "1 1 0%",
