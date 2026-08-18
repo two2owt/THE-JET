@@ -10,7 +10,7 @@ import {
   Star,
 } from "lucide-react";
 import { createPortal } from "react-dom";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@/lib/router-compat";
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -42,6 +42,13 @@ const matchScore = (haystack: string | null | undefined, q: string): number => {
 };
 
 const MAX_PER_SECTION = 6;
+
+/** Duration (ms) of the panel open/close transition — keep in sync with the CSS below. */
+const TRANSITION_MS = 190;
+
+/** useLayoutEffect on the client, useEffect during SSR (avoids the hydration warning). */
+const useIsoLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 /** Small square thumbnail; falls back to the venue category's icon. */
 const ResultThumb = ({
@@ -110,7 +117,33 @@ export const SearchResults = ({
   const [panelEl, setPanelEl] = useState<HTMLDivElement | null>(null);
   useLockMapWhileInteracting(panelEl, isVisible);
 
+  const q = query.trim().toLowerCase();
+  const shouldShow = isVisible && q.length > 0;
+
+  // Keep the panel mounted through its closing transition, and only flip the
+  // "entered" flag on the frame after mount so the browser has a start value
+  // to animate from (no first-frame jump).
+  const [mounted, setMounted] = useState(shouldShow);
+  const [entered, setEntered] = useState(false);
+
   useEffect(() => {
+    if (shouldShow) {
+      setMounted(true);
+      let inner = 0;
+      const outer = requestAnimationFrame(() => {
+        inner = requestAnimationFrame(() => setEntered(true));
+      });
+      return () => {
+        cancelAnimationFrame(outer);
+        cancelAnimationFrame(inner);
+      };
+    }
+    setEntered(false);
+    const t = window.setTimeout(() => setMounted(false), TRANSITION_MS);
+    return () => window.clearTimeout(t);
+  }, [shouldShow]);
+
+  useIsoLayoutEffect(() => {
     if (!isVisible || typeof window === "undefined") return;
 
     let frame = 0;
@@ -135,12 +168,16 @@ export const SearchResults = ({
 
       const GAP_TOP = 8;
       const GAP_BOTTOM = 12;
-      const top = headerBottom + GAP_TOP;
-      const bottom = navHeight + GAP_BOTTOM;
+      // Round to whole pixels: sub-pixel churn from rubber-band scrolling or
+      // safe-area settling would otherwise re-render the panel every frame.
+      const top = Math.round(headerBottom + GAP_TOP);
+      const bottom = Math.round(navHeight + GAP_BOTTOM);
       const available = Math.max(160, viewportH - top - bottom);
       // Keep the map visible around the panel on tall screens, but never
       // exceed the space actually left between header and footer nav.
-      const maxHeight = Math.min(available, Math.max(240, viewportH * 0.52), 480);
+      const maxHeight = Math.round(
+        Math.min(available, Math.max(240, viewportH * 0.52), 480),
+      );
 
       setBox((prev) =>
         prev &&
@@ -264,8 +301,6 @@ export const SearchResults = ({
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [isVisible, onClose]);
 
-  const q = query.trim().toLowerCase();
-
   // Memoize result groups — all four sections derive from the same `venues` + `deals` props,
   // ranked by best-field match so the most relevant items float to the top of each section.
   const groups = useMemo(() => {
@@ -377,17 +412,25 @@ export const SearchResults = ({
     };
   }, [q, venues, deals]);
 
-  if (!isVisible || !q) return null;
+  // Freeze the last rendered query + results so the closing transition doesn't
+  // flash an empty "no results" state when the input clears.
+  const frozen = useRef({ query, groups });
+  if (shouldShow) frozen.current = { query, groups };
+  const displayQuery = shouldShow ? query : frozen.current.query;
+  const displayGroups = shouldShow ? groups : frozen.current.groups;
 
-  const filteredVenues = groups.venues
+  // Stay mounted while the closing transition plays out.
+  if (!mounted) return null;
+
+  const filteredVenues = displayGroups.venues
     .slice(0, MAX_PER_SECTION)
     .map((r) => r.venue);
-  const filteredDeals = groups.deals
+  const filteredDeals = displayGroups.deals
     .slice(0, MAX_PER_SECTION)
     .map((r) => r.deal);
-  const filteredAreas = groups.areas.slice(0, MAX_PER_SECTION);
-  const filteredCategories = groups.categories.slice(0, MAX_PER_SECTION);
-  const filteredJetcards = (groups.jetcards ?? []).map((r) => r.venue);
+  const filteredAreas = displayGroups.areas.slice(0, MAX_PER_SECTION);
+  const filteredCategories = displayGroups.categories.slice(0, MAX_PER_SECTION);
+  const filteredJetcards = (displayGroups.jetcards ?? []).map((r) => r.venue);
 
   const totalCount =
     filteredJetcards.length +
@@ -461,8 +504,19 @@ export const SearchResults = ({
         id="jet-search-results"
         role="dialog"
         aria-label="Search results"
-        className="fixed left-2 right-2 sm:left-auto sm:right-4 z-[9999] animate-fade-in sm:w-[420px] sm:max-w-[min(420px,calc(100vw-2rem))]"
+        aria-hidden={!entered}
+        className={`fixed left-2 right-2 sm:left-auto sm:right-4 z-[9999] sm:w-[420px] sm:max-w-[min(420px,calc(100vw-2rem))] will-change-transform motion-reduce:transition-none ${
+          entered
+            ? "opacity-100 translate-y-0 scale-100"
+            : "opacity-0 -translate-y-1 scale-[0.985] pointer-events-none"
+        }`}
         style={{
+          // Composited-only transition (opacity + transform) so opening and
+          // closing never trigger layout. Position/height changes from a
+          // resize are applied instantly to avoid lagging behind the viewport.
+          transition: `opacity ${TRANSITION_MS}ms cubic-bezier(0.22, 1, 0.36, 1), transform ${TRANSITION_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`,
+          transformOrigin: "top center",
+          contain: "layout paint",
           // Measured values win; the CSS fallbacks only apply for the very
           // first paint before measurement lands.
           top: box
@@ -490,7 +544,7 @@ export const SearchResults = ({
                   className="font-bold text-sm text-foreground truncate"
                   style={{ letterSpacing: "-0.01em" }}
                 >
-                  “{query}”
+                  “{displayQuery}”
                 </h3>
                 <p
                   className="text-[11px] font-medium text-muted-foreground tabular-nums"
