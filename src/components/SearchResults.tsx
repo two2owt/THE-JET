@@ -301,8 +301,6 @@ export const SearchResults = ({
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [isVisible, onClose]);
 
-  const q = query.trim().toLowerCase();
-
   // Memoize result groups — all four sections derive from the same `venues` + `deals` props,
   // ranked by best-field match so the most relevant items float to the top of each section.
   const groups = useMemo(() => {
