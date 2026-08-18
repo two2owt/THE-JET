@@ -578,6 +578,20 @@ All colors MUST be HSL.
   }
 
   /* Page container with bottom nav clearance and scrolling */
+  body[data-bottom-nav="1"] {
+    --nav-clearance: var(--bottom-nav-total-height);
+  }
+
+  /* Utility: clear the footer nav with padding (scrollable content). */
+  .pb-nav-safe {
+    padding-bottom: calc(var(--nav-clearance) + 0.75rem);
+  }
+
+  /* Utility: sit above the footer nav (fixed/absolute overlays). */
+  .bottom-nav-offset {
+    bottom: calc(var(--nav-clearance) + 0.75rem);
+  }
+
   .page-container {
     flex: 1;
     width: 100%;
