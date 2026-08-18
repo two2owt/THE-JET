@@ -8,7 +8,6 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { useConnections } from "@/hooks/useConnections";
 import { useProfile } from "@/hooks/useProfile";
 import { needsDisplayNameClaim } from "@/lib/display-name";
-import { SEO } from "@/components/SEO";
 import { useNotifications } from "@/hooks/useNotifications";
 import {
   Shield,
@@ -362,11 +361,6 @@ export default function Profile() {
       headerConfig={headerConfig}
       mainClassName="profile-scroll-root"
     >
-      <SEO
-        title="Your Profile — JET"
-        description="Manage your JET profile, preferences, subscription, and account settings."
-        path="/profile"
-      />
       <AvatarCropDialog
         open={isCropOpen}
         imageSrc={cropSrc}

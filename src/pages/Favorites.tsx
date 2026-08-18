@@ -12,7 +12,6 @@ import { PageShell } from "@/components/PageShell";
 import { useAuth } from "@/contexts/AuthContext";
 import { TabPageHeader } from "@/components/TabPageHeader";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
-import { SEO } from "@/components/SEO";
 import { useVenuePhoto } from "@/hooks/useVenuePhoto";
 import { Trash2, Search, X, Bell } from "lucide-react";
 import { useFavoriteAlerts } from "@/hooks/useFavoriteAlerts";
@@ -295,11 +294,6 @@ export default function Favorites() {
 
   return (
     <PageLayout defaultTab="favorites" headerConfig={headerConfig}>
-      <SEO
-        title="Saved Deals — JET"
-        description="Your saved venues and deals across Charlotte, ready when you are."
-        path="/favorites"
-      />
       <PageShell>
         <TabPageHeader
           title="Your Favorites"

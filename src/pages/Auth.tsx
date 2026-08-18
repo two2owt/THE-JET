@@ -34,7 +34,6 @@ import {
   isOnboardingSnoozed,
 } from "@/lib/onboardingStatus";
 import { discardCurrentAuthSession } from "@/lib/authSession";
-import { SEO } from "@/components/SEO";
 import { AuthPWAInstallPromptWrapper } from "@/components/AuthPWAInstallPromptWrapper";
 import { buildAuthRedirectUrl } from "@/lib/utils";
 import { requestGeolocationPermission } from "@/lib/requestGeolocationPermission";
@@ -905,7 +904,6 @@ const Auth = () => {
         aria-busy="true"
         data-auth-ready="false"
       >
-        <SEO title={seoTitle} description={seoDescription} path={seoPath} />
         <Loader2
           className="h-6 w-6 animate-spin text-primary"
           aria-hidden="true"
@@ -920,7 +918,6 @@ const Auth = () => {
       className="auth-fullscreen relative flex flex-col flex-1 min-h-0 w-full overflow-hidden"
       data-auth-ready="true"
     >
-      <SEO title={seoTitle} description={seoDescription} path={seoPath} />
       {/* Full-bleed background image — responsive by device width & DPR */}
       <picture className="absolute inset-0" aria-hidden="true">
         <source
