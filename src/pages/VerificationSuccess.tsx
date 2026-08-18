@@ -167,6 +167,7 @@ export default function VerificationSuccess() {
       if (user?.email_confirmed_at || (user as any)?.confirmed_at) {
         setIsVerified(true);
       }
+      setHasSession(!!user);
     });
 
     // Re-check when tab regains focus (user returning from email client)
