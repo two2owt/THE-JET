@@ -104,11 +104,6 @@ const DisplayNameBackfillPanel = lazy(() =>
     default: m.DisplayNameBackfillPanel,
   })),
 );
-const _SecurityFindingsPanelUnused = lazy(() =>
-  import("@/components/admin/SecurityFindingsPanel").then((m) => ({
-    default: m.SecurityFindingsPanel,
-  })),
-);
 const EmailHealthPanel = lazy(() =>
   import("@/components/admin/EmailHealthPanel").then((m) => ({
     default: m.EmailHealthPanel,
