@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "@/lib/router-compat";
+import { queueDeepLink } from "@/lib/pendingDeepLink";
 
 /**
  * Native (Capacitor) deep-link bridge.
@@ -29,6 +30,20 @@ export function useNativeDeepLinking() {
     (async () => {
       try {
         const { App } = await import("@capacitor/app");
+        // Cold start: the launch URL is already consumed by the time the
+        // listener attaches, so read it explicitly and queue it.
+        try {
+          const launch = await App.getLaunchUrl();
+          if (launch?.url) {
+            const target = new URL(launch.url);
+            queueDeepLink(
+              `${target.pathname || "/"}${target.search}${target.hash}`,
+            );
+          }
+        } catch {
+          /* no launch URL */
+        }
+
         const handle = await App.addListener("appUrlOpen", (event) => {
           try {
             const target = new URL(event.url);
