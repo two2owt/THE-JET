@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { isNativeApp } from "@/lib/platform";
 
+/** Non-standard Permissions API with one-tap request(), available in Chrome. */
+type PermissionsWithRequest = Permissions & {
+  request(permission: { name: PermissionName }): Promise<PermissionStatus>;
+};
+
 export type GeoPermissionState =
   | "unknown"
   | "unsupported"
