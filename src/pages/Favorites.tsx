@@ -469,11 +469,6 @@ function FavoriteVenueCard({
   onRemove,
   alertCount = 0,
 }: {
-  favorite,
-  onOpen,
-  onRemove,
-  alertCount = 0,
-}: {
   favorite: Favorite;
   onOpen: () => void;
   onRemove: (venueId: string, dealId?: string | null) => Promise<void>;
