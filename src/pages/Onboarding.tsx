@@ -192,9 +192,16 @@ const Onboarding = () => {
           );
           const hasStep2 = !!profile.preferences;
           if (hasStep2) {
-            setSavedPreferences(
-              profile.preferences as unknown as PreferencesData,
-            );
+            // Older/partial preference blobs can be missing `categories`
+            // entirely; normalize so the summary render can't crash on
+            // `categories.map`.
+            const raw = profile.preferences as unknown as
+              | Partial<PreferencesData>
+              | null;
+            setSavedPreferences({
+              ...(raw ?? {}),
+              categories: Array.isArray(raw?.categories) ? raw.categories : [],
+            } as PreferencesData);
           }
           if (hasStep2) setStep(3);
           else if (hasStep1) setStep(2);
