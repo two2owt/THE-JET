@@ -14,17 +14,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { refreshConsents } from "@/lib/consent";
 import { usePromptSlot, PROMPT_PRIORITY } from "@/hooks/usePromptSlot";
-
-const DISMISS_KEY = "location-permission-prompt-dismissed";
-const ASKED_KEY = "location-permission-prompt-asked";
-const DISMISS_DURATION = 14 * 24 * 60 * 60 * 1000; // 14 days
+import {
+  markLocationPermissionResolved,
+  markLocationPromptDismissed,
+  markLocationPromptShown,
+  sessionSignature,
+  shouldPromptForLocation,
+} from "@/lib/locationPromptPolicy";
 
 /**
  * Module-level latch: guarantees only one prompt instance can ever open per
  * page load, even if the component double-mounts (StrictMode, lazy remount,
- * route churn). Prevents stacked/duplicate dialogs.
+ * route churn). Prevents stacked/duplicate dialogs. Keyed by sign-in
+ * signature so a sign-out → sign-in inside one page load still re-asks.
  */
-let promptShownThisSession = false;
+let promptShownFor: string | null = null;
 
 /**
  * Foreground location prompt.
@@ -33,6 +37,9 @@ let promptShownThisSession = false;
  * whatever route the user lands on — no need to visit the map tab first. Waits
  * for `navigator.permissions` to confirm the browser is in `prompt` state
  * before showing — never re-asks when already granted/denied.
+ * Re-ask cadence lives in `@/lib/locationPromptPolicy`: every new sign-in gets
+ * a fresh ask (subject to a minimum gap), and dismissals snooze with a
+ * backoff instead of silencing the prompt forever.
  * Persists the granular `foreground_location` consent for signed-in users
  * (RLS scopes writes to auth.uid()); signed-out visitors get session-only
  * behavior via the dismissed flag.
@@ -40,6 +47,7 @@ let promptShownThisSession = false;
 export const LocationPermissionPrompt = () => {
   const { session } = useAuth();
   const userId = session?.user?.id;
+  const signature = sessionSignature(userId, session?.user?.last_sign_in_at);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   // Only ever render while this prompt owns the global dialog slot, so it can
@@ -52,14 +60,17 @@ export const LocationPermissionPrompt = () => {
     const maybeShow = async () => {
       if (typeof navigator === "undefined" || !("geolocation" in navigator))
         return;
-      if (promptShownThisSession) return;
+      if (promptShownFor === signature) return;
 
-      // Respect earlier dismissal within window.
-      const dismissedAt = localStorage.getItem(DISMISS_KEY);
-      if (dismissedAt) {
-        const t = parseInt(dismissedAt, 10);
-        if (Number.isFinite(t) && Date.now() - t < DISMISS_DURATION) return;
-        localStorage.removeItem(DISMISS_KEY);
+      const permissionsApiAvailable = Boolean(navigator.permissions?.query);
+      const decision = shouldPromptForLocation({
+        signature,
+        permissionsApiAvailable,
+      });
+      if (!decision.show) {
+        if (import.meta.env.DEV)
+          console.debug("[location-prompt] suppressed:", decision.reason);
+        return;
       }
 
       // Only prompt if browser is in `prompt` state — never re-ask.
@@ -72,8 +83,7 @@ export const LocationPermissionPrompt = () => {
           if (status.state === "granted") {
             // Granted elsewhere (signup flow, map locate button, OS settings):
             // clear the snooze so nothing re-asks and stay silent.
-            localStorage.removeItem(DISMISS_KEY);
-            localStorage.setItem(ASKED_KEY, "1");
+            markLocationPermissionResolved(signature);
             return;
           }
           if (status.state !== "prompt") return;
@@ -83,17 +93,17 @@ export const LocationPermissionPrompt = () => {
           status.onchange = () => {
             if (cancelled) return;
             if (status!.state !== "prompt") {
-              promptShownThisSession = true;
+              promptShownFor = signature;
               setOpen(false);
               if (status!.state === "granted")
-                localStorage.removeItem(DISMISS_KEY);
-              localStorage.setItem(ASKED_KEY, "1");
+                markLocationPermissionResolved(signature);
+              else markLocationPromptDismissed(signature);
             }
           };
         }
       } catch {
-        // Permissions API unsupported — fall through and show once.
-        if (localStorage.getItem(ASKED_KEY)) return;
+        // Permissions API unsupported — the policy above already applied the
+        // legacy asked-once guard, so fall through and show.
       }
 
       if (cancelled) return;
@@ -104,9 +114,10 @@ export const LocationPermissionPrompt = () => {
         // Re-check at fire time: permission may have been granted during the
         // delay (map locate button, signup consent), which would otherwise
         // surface a redundant prompt.
-        if (cancelled || promptShownThisSession) return;
+        if (cancelled || promptShownFor === signature) return;
         if (status && status.state !== "prompt") return;
-        promptShownThisSession = true;
+        promptShownFor = signature;
+        markLocationPromptShown(signature);
         setOpen(true);
       }, delay);
       return () => {
@@ -120,7 +131,7 @@ export const LocationPermissionPrompt = () => {
       cancelled = true;
       Promise.resolve(cleanup).then((fn) => typeof fn === "function" && fn());
     };
-  }, [userId]);
+  }, [signature, userId]);
 
   const recordConsent = async (granted: boolean) => {
     if (!session?.user?.id) return;
@@ -144,7 +155,7 @@ export const LocationPermissionPrompt = () => {
 
   const handleEnable = async () => {
     setLoading(true);
-    localStorage.setItem(ASKED_KEY, "1");
+    markLocationPromptShown(signature);
 
     const granted = await new Promise<boolean>((resolve) => {
       navigator.geolocation.getCurrentPosition(
@@ -157,7 +168,10 @@ export const LocationPermissionPrompt = () => {
     // Only ever record a grant here. A browser-level block is not an explicit
     // app-level opt-out — Settings → Location Tracking is the only switch that
     // revokes foreground location consent.
-    if (granted) await recordConsent(true);
+    if (granted) {
+      await recordConsent(true);
+      markLocationPermissionResolved(signature);
+    }
     setLoading(false);
     setOpen(false);
 
@@ -166,7 +180,7 @@ export const LocationPermissionPrompt = () => {
         description: "We'll show deals near you.",
       });
     } else {
-      localStorage.setItem(DISMISS_KEY, Date.now().toString());
+      markLocationPromptDismissed(signature);
       toast.error("Location blocked", {
         description: "You can re-enable it anytime in Settings → Privacy.",
       });
@@ -174,8 +188,7 @@ export const LocationPermissionPrompt = () => {
   };
 
   const handleDismiss = () => {
-    localStorage.setItem(DISMISS_KEY, Date.now().toString());
-    localStorage.setItem(ASKED_KEY, "1");
+    markLocationPromptDismissed(signature);
     setOpen(false);
   };
 
