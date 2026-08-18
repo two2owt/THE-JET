@@ -58,6 +58,7 @@ export default function Favorites() {
   const [sortBy, setSortBy] = useState<
     "recent" | "name" | "venue" | "expiring"
   >("recent");
+  const [filter, setFilter] = useState<"all" | "venues" | "deals">("all");
   const headerConfig = useMemo(() => ({}), []);
 
   const {
