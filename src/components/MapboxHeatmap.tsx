@@ -5325,8 +5325,7 @@ export const MapboxHeatmap = ({
         <div
           className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
           style={{
-            bottom:
-              "calc(var(--map-safe-bottom, calc(var(--bottom-nav-total-height, 60px) + 1rem)) + 152px)",
+            bottom: `calc(var(--map-safe-bottom, calc(var(--bottom-nav-total-height, 60px) + 1rem)) + ${Math.round(inspectorHeight || 140) + 22}px)`,
             zIndex: 34,
             transition: "bottom 220ms cubic-bezier(0.16,1,0.3,1)",
           }}
