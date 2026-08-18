@@ -8,6 +8,9 @@
 
 /* JET design system — ported from the Classic tailwind.config.ts + index.css. */
 @theme inline {
+  /* Extra-small breakpoint for narrow phones (e.g. 320-375px wide). */
+  --breakpoint-xs: 24rem;
+
   --font-sans: "Plus Jakarta Sans Variable", "Plus Jakarta Sans Fallback", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-display: "Syne Variable", "Plus Jakarta Sans Variable", system-ui, sans-serif;
 
