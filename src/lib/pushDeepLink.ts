@@ -27,7 +27,7 @@ export function resolvePushDeepLink(
   const rawUrl = (data.url ?? "").toString();
   if (rawUrl) {
     try {
-      const parsed = new URL(rawUrl, "https://jet-around.com");
+      const parsed = new URL(rawUrl, "https://www.jet-around.com");
       const path = `${parsed.pathname || "/"}${parsed.search}${parsed.hash}`;
       return appendLayers(path);
     } catch {

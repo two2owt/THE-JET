@@ -47,12 +47,12 @@ const PrivacyPolicy = () => {
               how we collect, use, disclose, and safeguard your information when
               you use our mobile application and website at{" "}
               <a
-                href="https://jet-around.com/"
+                href="https://www.jet-around.com/"
                 className="text-primary hover:underline"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                https://jet-around.com/
+                https://www.jet-around.com/
               </a>
               . Please read this policy carefully. By using Jet, you consent to
               the practices described in this policy.
@@ -648,12 +648,12 @@ const PrivacyPolicy = () => {
               <li>
                 <strong>Website:</strong>{" "}
                 <a
-                  href="https://jet-around.com"
+                  href="https://www.jet-around.com"
                   className="text-primary hover:underline"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  https://jet-around.com
+                  https://www.jet-around.com
                 </a>
               </li>
             </ul>

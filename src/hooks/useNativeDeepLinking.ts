@@ -6,7 +6,7 @@ import { queueDeepLink } from "@/lib/pendingDeepLink";
  * Native (Capacitor) deep-link bridge.
  *
  * Listens for iOS Universal Links / Android App Links / custom-scheme URLs
- * (e.g. `jetaround://?venue=<id>` or `https://jet-around.com/?layers=density,paths`)
+ * (e.g. `jetaround://?venue=<id>` or `https://www.jet-around.com/?layers=density,paths`)
  * and forwards the path + search + hash into react-router. This lets the
  * existing `useDeepLinking` and `layerPersistence` handlers run unchanged
  * on the native shells — same behavior as the web ?venue / ?deal / ?layers flow.
