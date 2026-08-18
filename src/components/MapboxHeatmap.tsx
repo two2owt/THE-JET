@@ -2790,6 +2790,27 @@ export const MapboxHeatmap = ({
 
         pinEl.appendChild(haloEl);
         pinEl.appendChild(ringEl);
+
+        // Selected pin gets an extra expanding gold halo so it reads as the
+        // active venue at a glance (e.g. when opened from Favorites).
+        if (isSelected && shouldAnimate) {
+          const focusEl = document.createElement("div");
+          const focusSize = markerSize + 30;
+          focusEl.style.cssText = `
+        position: absolute;
+        top: ${(markerSize - focusSize) / 2}px;
+        left: ${(markerSize - focusSize) / 2}px;
+        width: ${focusSize}px;
+        height: ${focusSize}px;
+        border-radius: 50%;
+        border: 2px solid ${GOLD};
+        box-shadow: 0 0 18px ${GOLD}66;
+        pointer-events: none;
+        will-change: transform, opacity;
+        animation: markerFocusHalo 2s ease-out infinite;
+      `;
+          pinEl.appendChild(focusEl);
+        }
         pinEl.appendChild(teardropEl);
         el.appendChild(pinEl);
 
