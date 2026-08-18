@@ -365,6 +365,35 @@ export default function Favorites() {
                 </SelectContent>
               </Select>
             </div>
+            {totalUnread > 0 && firstAlertTarget && (
+              <button
+                type="button"
+                onClick={() =>
+                  openFavorite(
+                    firstAlertTarget.venueId,
+                    firstAlertTarget.dealId,
+                  )
+                }
+                aria-label={`${totalUnread} new alert${totalUnread === 1 ? "" : "s"} on your favorites. Open the latest.`}
+                className="w-full flex items-center gap-3 rounded-xl border border-primary/40 bg-primary/10 px-3 py-2.5 text-left hover:bg-primary/15 transition min-h-[44px]"
+              >
+                <span className="relative shrink-0 grid place-items-center w-9 h-9 rounded-full bg-primary/20 text-primary">
+                  <Bell className="w-4 h-4" />
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold grid place-items-center">
+                    {totalUnread > 99 ? "99+" : totalUnread}
+                  </span>
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold">
+                    {totalUnread} new alert{totalUnread === 1 ? "" : "s"} on
+                    your favorites
+                  </span>
+                  <span className="block text-xs text-muted-foreground">
+                    Tap to open the JetCard
+                  </span>
+                </span>
+              </button>
+            )}
             {visibleCount === 0 && (
               <EmptyState
                 icon={Search}
@@ -386,7 +415,23 @@ export default function Favorites() {
                   columns={{ mobile: 1, tablet: 2, desktop: 3 }}
                   getItemKey={(deal) => deal.id}
                   renderItem={(deal, index) => (
-                    <DealCard deal={deal} index={index} />
+                    <div className="relative">
+                      <DealCard deal={deal} index={index} />
+                      {(byDeal.get(deal.id)?.length ||
+                        (deal.venue_id &&
+                          byVenue.get(deal.venue_id)?.length)) && (
+                        <AlertBadgeButton
+                          count={
+                            (byDeal.get(deal.id)?.length ?? 0) +
+                            (deal.venue_id
+                              ? (byVenue.get(deal.venue_id)?.length ?? 0)
+                              : 0)
+                          }
+                          label={deal.venue_name}
+                          onClick={() => openFavorite(deal.venue_id, deal.id)}
+                        />
+                      )}
+                    </div>
                   )}
                 />
               </section>
@@ -401,11 +446,11 @@ export default function Favorites() {
                     <FavoriteVenueCard
                       key={f.id}
                       favorite={f}
+                      alertCount={
+                        f.venue_id ? (byVenue.get(f.venue_id)?.length ?? 0) : 0
+                      }
                       onRemove={toggleVenueFavorite}
-                      onOpen={() => {
-                        if (f.venue_id)
-                          navigate(`/?venue=${encodeURIComponent(f.venue_id)}`);
-                      }}
+                      onOpen={() => openFavorite(f.venue_id, f.deal_id)}
                     />
                   ))}
                 </div>
