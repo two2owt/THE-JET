@@ -71,8 +71,21 @@ export const useMovementPaths = (filters: MovementPathFilters = {}) => {
         ? `get-movement-paths?${queryString}`
         : "get-movement-paths";
 
-      const { data, error: functionError } =
+      let { data, error: functionError } =
         await supabase.functions.invoke(path);
+
+      // A stale access token yields a 401 from the edge function. Refresh once
+      // and retry before treating it as an authorization failure.
+      if (
+        (functionError as { context?: { status?: number } })?.context
+          ?.status === 401
+      ) {
+        const { data: refreshed } = await supabase.auth.refreshSession();
+        if (refreshed?.session) {
+          ({ data, error: functionError } =
+            await supabase.functions.invoke(path));
+        }
+      }
 
       if (functionError) throw functionError;
 
@@ -87,7 +100,7 @@ export const useMovementPaths = (filters: MovementPathFilters = {}) => {
         setUnauthorized(true);
         setError("unauthorized");
       } else {
-        console.error("Error loading movement path data:", err);
+        console.warn("Movement paths unavailable:", err);
         setUnauthorized(false);
         setError("Failed to load movement paths");
       }
