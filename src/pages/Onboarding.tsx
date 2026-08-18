@@ -193,7 +193,7 @@ const Onboarding = () => {
     return () => {
       cancelled = true;
     };
-  }, [authLoading, session, navigate]);
+  }, [authLoading, session, navigate, previewMode]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -270,6 +270,13 @@ const Onboarding = () => {
 
     setStep1Errors({});
 
+    if (previewMode) {
+      toast.info("Review mode — nothing saved");
+      setDirection("forward");
+      setStep(2);
+      return;
+    }
+
     setIsLoading(true);
     try {
       // Check if display name is unique
@@ -344,6 +351,12 @@ const Onboarding = () => {
   };
 
   const handleStep2Next = async (preferences: PreferencesData) => {
+    if (previewMode) {
+      toast.info("Review mode — nothing saved");
+      setDirection("forward");
+      setStep(3);
+      return;
+    }
     setIsLoading(true);
     setSavedPreferences(preferences);
     try {
