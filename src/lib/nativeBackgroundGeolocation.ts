@@ -146,5 +146,33 @@ export const requestBackgroundPermission = async (): Promise<boolean> => {
 /** Deep-link into the OS location settings when permission was denied. */
 export const openLocationSettings = async () => {
   const plugin = await loadPlugin();
-  await plugin?.openSettings().catch(() => {});
+  try {
+    await plugin?.openSettings();
+    return;
+  } catch {
+    /* fall through to URL-based fallback */
+  }
+
+  // Fallback: try platform-specific settings URLs when the plugin's own
+  // openSettings() is unavailable or throws.
+  try {
+    const { Capacitor } = await import("@capacitor/core");
+    if (!Capacitor.isNativePlatform()) return;
+
+    const platform = Capacitor.getPlatform();
+    if (platform === "ios") {
+      // Opens the JET section inside iOS Settings.
+      window.location.href = "app-settings:";
+      return;
+    }
+
+    if (platform === "android") {
+      const { App } = await import("@capacitor/app");
+      const info = await App.getAppInfo();
+      // Application details settings for this package.
+      window.location.href = `intent:#Intent;action=android.settings.APPLICATION_DETAILS_SETTINGS;scheme=package;package=${info.id};end`;
+    }
+  } catch {
+    /* nothing more we can do on this device */
+  }
 };
