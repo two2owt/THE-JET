@@ -11,7 +11,7 @@ const TermsOfService = () => {
       className="bg-background flex-1 overflow-y-auto"
       style={{ WebkitOverflowScrolling: "touch" }}
     >
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 pb-16 pb-nav-safe">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 pb-nav-safe">
         <Button
           onClick={() => navigate(-1)}
           variant="ghost"
