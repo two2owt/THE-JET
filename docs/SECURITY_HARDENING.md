@@ -314,3 +314,62 @@ regressions. If you intentionally accept a new baseline entry (rare —
 prefer fixing the migration), run
 `node scripts/verify-security-hardening.mjs --update-baseline` and commit
 the updated file along with the justification in this document.
+
+---
+
+## 12. Migration authoring rules (idempotency + no live-data mutations)
+
+Every **new** migration must be replay-safe and must not mutate existing
+rows. Enforced by `scripts/verify-migration-idempotency.mjs`, wired into
+`.github/workflows/ci.yml` and runnable locally with:
+
+```bash
+bun run scripts/verify-migration-idempotency.mjs
+```
+
+### Idempotency
+
+| Statement                     | Required form                                        |
+| ----------------------------- | ---------------------------------------------------- |
+| `CREATE TABLE`                | `CREATE TABLE IF NOT EXISTS`                          |
+| `CREATE INDEX`                | `CREATE INDEX IF NOT EXISTS`                          |
+| `ADD COLUMN` / `DROP COLUMN`  | `ADD COLUMN IF NOT EXISTS` / `DROP COLUMN IF EXISTS`  |
+| `CREATE FUNCTION`             | `CREATE OR REPLACE FUNCTION`                          |
+| `CREATE POLICY`               | preceded by `DROP POLICY IF EXISTS <name> ON <table>` |
+| `CREATE TRIGGER`              | preceded by `DROP TRIGGER IF EXISTS <name> ON <table>`|
+| `ALTER PUBLICATION ... TABLE` | wrapped in a `DO $$ … pg_publication_tables … $$` guard |
+
+Realtime guard template:
+
+```sql
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime'
+      AND schemaname = 'public' AND tablename = 'my_table'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.my_table;
+  END IF;
+END $$;
+```
+
+### No data-mutating statements
+
+`UPDATE` / `DELETE` / `INSERT` / `TRUNCATE` against `public.*` at the top
+level of a migration is rejected: those are what trip the "database changes
+conflict with live data" publish gate (the original offender was the
+display-name backfill in `20260816192452`).
+
+Backfills go into a one-off, admin-gated action instead. Canonical example:
+`public.admin_backfill_display_names(_dry_run boolean)` — `SECURITY DEFINER`,
+`has_role(auth.uid(),'admin')` checked first, `EXECUTE` revoked from `PUBLIC`
+and `anon`, surfaced in the admin dashboard (Analytics → *Display-name
+backfill*) with a preview mode before apply.
+
+Escape hatch for genuine seed rows on a brand-new table: put
+`-- idempotency-check: allow-dml` on the line directly above the statement.
+
+Migrations that predate this rule are grandfathered in
+`scripts/migration-idempotency-baseline.txt`; never add a new file to that
+list — fix the migration instead.
