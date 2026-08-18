@@ -377,10 +377,14 @@ export const SearchResults = ({
         className="fixed left-2 right-2 sm:left-auto sm:right-4 z-[9999] animate-fade-in sm:w-[420px] sm:max-w-[min(420px,calc(100vw-2rem))]"
         style={{
           top: "calc(var(--header-height, 56px) + env(safe-area-inset-top, 0px) + 8px)",
-          // Fixed max height: the overlay never grows past ~half the viewport,
-          // so the map stays visible and fully interactive around it.
+          // Hard-anchor the bottom edge above the nav bar so the panel can
+          // never sit under (or scroll behind) the footer navigation.
+          bottom:
+            "calc(var(--bottom-nav-total-height, 80px) + env(safe-area-inset-bottom, 0px) + 12px)",
+          // Still cap the height so the map stays visible around it; the
+          // bottom anchor wins whenever the viewport is shorter than this.
           maxHeight:
-            "min(calc(100dvh - var(--header-height, 56px) - var(--bottom-nav-total-height, 80px) - env(safe-area-inset-top, 0px) - 24px), 52dvh, 480px)",
+            "min(calc(100dvh - var(--header-height, 56px) - var(--bottom-nav-total-height, 80px) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 24px), 52dvh, 480px)",
         }}
       >
         <Card className="flex flex-col h-full max-h-full overflow-hidden shadow-glow w-full bg-card/95 backdrop-blur-xl border-primary/20 rounded-2xl">
@@ -417,7 +421,9 @@ export const SearchResults = ({
 
           {/* Scrollable body */}
           <CardContent
-            ref={listRef} className="map-scroll-safe p-3 sm:p-4 space-y-4 overflow-y-auto flex-1 min-h-0">
+            ref={listRef}
+            className="p-3 sm:p-4 pb-4 space-y-4 overflow-y-auto overscroll-contain flex-1 min-h-0"
+          >
             {!hasResults && (
               <div className="text-center py-10">
                 <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3">
