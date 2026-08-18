@@ -1,44 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-
-/** A fix older than this makes the user "stale" for heatmap purposes. */
-const STALE_AFTER_MS = 24 * 60 * 60 * 1000;
-/** Coarse network fixes are capped so we never store junk-precision points. */
-const MAX_COARSE_ACCURACY_METERS = 25_000;
-
-/** Edge/CDN geo headers, used when the client can't produce any fix at all. */
-function edgeGeoFromHeaders(): {
-  lat: number;
-  lng: number;
-  accuracy: number;
-} | null {
-  const request = getRequest();
-  const h = request?.headers;
-  if (!h) return null;
-  const lat = Number(h.get("cf-iplatitude") ?? h.get("x-vercel-ip-latitude"));
-  const lng = Number(h.get("cf-iplongitude") ?? h.get("x-vercel-ip-longitude"));
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
-  if (lat === 0 && lng === 0) return null;
-  if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
-  // City-level IP geolocation — flag it as very coarse.
-  return { lat, lng, accuracy: 20_000 };
-}
-
-async function lastFixAt(
-  supabase: { from: (t: string) => any },
-  userId: string,
-): Promise<string | null> {
-  const { data } = await supabase
-    .from("user_locations")
-    .select("created_at")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  return (data?.created_at as string | undefined) ?? null;
-}
 
 /**
  * Reports whether the caller has any location row in the last 24h, so the app
@@ -47,6 +9,9 @@ async function lastFixAt(
 export const getLocationFreshness = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    const { lastFixAt, STALE_AFTER_MS } = await import(
+      "@/lib/location-fallback.server"
+    );
     const at = await lastFixAt(context.supabase as never, context.userId);
     const ageMs = at ? Date.now() - new Date(at).getTime() : null;
     return {
@@ -75,11 +40,19 @@ export const writeCoarseLocationFallback = createServerFn({ method: "POST" })
       .parse(data ?? {}),
   )
   .handler(async ({ data, context }) => {
+    const {
+      lastFixAt,
+      isStale,
+      edgeGeoFromHeaders,
+      MAX_COARSE_ACCURACY_METERS,
+    } = await import("@/lib/location-fallback.server");
+
     const at = await lastFixAt(context.supabase as never, context.userId);
-    if (at && Date.now() - new Date(at).getTime() <= STALE_AFTER_MS) {
+    if (!isStale(at)) {
       return { written: false as const, reason: "recent fix already exists" };
     }
 
+    let source: "client-network" | "edge-ip" = "client-network";
     let fix =
       typeof data.lat === "number" && typeof data.lng === "number"
         ? {
@@ -88,13 +61,14 @@ export const writeCoarseLocationFallback = createServerFn({ method: "POST" })
             accuracy: data.accuracy ?? MAX_COARSE_ACCURACY_METERS,
           }
         : null;
-    let source: "client-network" | "edge-ip" = "client-network";
 
     if (!fix) {
       fix = edgeGeoFromHeaders();
       source = "edge-ip";
     }
-    if (!fix) return { written: false as const, reason: "no coarse fix available" };
+    if (!fix) {
+      return { written: false as const, reason: "no coarse fix available" };
+    }
     if (fix.accuracy > MAX_COARSE_ACCURACY_METERS) {
       return { written: false as const, reason: "fix too coarse" };
     }
@@ -107,5 +81,9 @@ export const writeCoarseLocationFallback = createServerFn({ method: "POST" })
     });
     if (error) return { written: false as const, reason: error.message };
 
-    return { written: true as const, source, accuracy: Math.round(fix.accuracy) };
+    return {
+      written: true as const,
+      source,
+      accuracy: Math.round(fix.accuracy),
+    };
   });
