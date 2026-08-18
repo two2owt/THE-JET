@@ -4,6 +4,10 @@ import { storeLastKnownLocation } from "@/lib/tile-prefetch";
 import { GEO_GRANTED_EVENT } from "@/lib/geolocationGrantEvent";
 import { subscribeMapInteractionLock } from "@/lib/mapInteractionLock";
 import { verifyMapboxVersion } from "@/lib/mapbox-version";
+import {
+  createTileRetryController,
+  type TileRetryController,
+} from "@/lib/mapTileRetry";
 import type * as MapboxGL from "mapbox-gl";
 import type { FeatureCollection, Geometry } from "geojson";
 import {
@@ -270,6 +274,7 @@ export const MapboxHeatmap = ({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapboxGL.Map | null>(null);
   const mapboxglRef = useRef<MapboxGLModule | null>(null);
+  const tileRetry = useRef<TileRetryController | null>(null);
   const [mapboxLoaded, setMapboxLoaded] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapInitializing, setMapInitializing] = useState(true);
