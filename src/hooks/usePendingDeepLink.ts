@@ -1,6 +1,7 @@
 import { useEffect } from "react";
-import { useNavigate } from "@/lib/router-compat";
+import { useNavigate, useSearchParams } from "@/lib/router-compat";
 import { consumeDeepLink } from "@/lib/pendingDeepLink";
+import { syncNotificationRead } from "@/lib/notificationRead";
 
 /**
  * Flushes any deep link parked during a cold start (notification tapped while
@@ -9,13 +10,28 @@ import { consumeDeepLink } from "@/lib/pendingDeepLink";
  */
 export function usePendingDeepLink() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Web path: the service worker appends ?nid=<inbox row id> when a pushed
+  // alert is tapped. Mark it read, then strip the param so a refresh or share
+  // of the URL stays clean.
+  useEffect(() => {
+    const nid = searchParams.get("nid");
+    if (!nid) return;
+    void syncNotificationRead(nid);
+    const next = new URLSearchParams(searchParams);
+    next.delete("nid");
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     const flush = () => {
-      const target = consumeDeepLink();
-      if (!target) return;
+      const entry = consumeDeepLink();
+      if (!entry) return;
+      // Opening the JetCard from a tap counts as reading the alert.
+      void syncNotificationRead(entry.notificationId);
       // Defer a tick so the route tree has finished its first commit.
-      setTimeout(() => navigate(target), 0);
+      setTimeout(() => navigate(entry.target), 0);
     };
 
     flush();

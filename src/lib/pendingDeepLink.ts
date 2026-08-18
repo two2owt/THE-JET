@@ -10,13 +10,35 @@
  */
 const KEY = "jet:pending-deep-link";
 
-let memory: string | null = null;
+export type PendingDeepLink = {
+  target: string;
+  /** Inbox row id from the push payload, so we can mark it read on open. */
+  notificationId?: string | null;
+};
 
-export function queueDeepLink(target: string | null | undefined) {
+let memory: PendingDeepLink | null = null;
+
+function parse(raw: string | null): PendingDeepLink | null {
+  if (!raw) return null;
+  if (raw.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(raw) as PendingDeepLink;
+      return parsed?.target ? parsed : null;
+    } catch {
+      return null;
+    }
+  }
+  return { target: raw };
+}
+
+export function queueDeepLink(
+  target: string | null | undefined,
+  notificationId?: string | null,
+) {
   if (!target) return;
-  memory = target;
+  memory = { target, notificationId: notificationId ?? null };
   try {
-    sessionStorage.setItem(KEY, target);
+    sessionStorage.setItem(KEY, JSON.stringify(memory));
   } catch {
     /* private mode — memory copy is enough */
   }
@@ -27,13 +49,13 @@ export function queueDeepLink(target: string | null | undefined) {
   }
 }
 
-export function consumeDeepLink(): string | null {
-  let target = memory;
-  if (!target) {
+export function consumeDeepLink(): PendingDeepLink | null {
+  let entry = memory;
+  if (!entry) {
     try {
-      target = sessionStorage.getItem(KEY);
+      entry = parse(sessionStorage.getItem(KEY));
     } catch {
-      target = null;
+      entry = null;
     }
   }
   memory = null;
@@ -42,13 +64,13 @@ export function consumeDeepLink(): string | null {
   } catch {
     /* ignore */
   }
-  return target;
+  return entry;
 }
 
 export function peekDeepLink(): string | null {
-  if (memory) return memory;
+  if (memory) return memory.target;
   try {
-    return sessionStorage.getItem(KEY);
+    return parse(sessionStorage.getItem(KEY))?.target ?? null;
   } catch {
     return null;
   }

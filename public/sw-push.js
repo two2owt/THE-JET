@@ -119,6 +119,12 @@ self.addEventListener("notificationclick", function (event) {
     urlToOpen = `/?venue=${encodeURIComponent(notificationData.venueId)}`;
   }
 
+  // Carry the inbox row id so the app can mark the alert read on open.
+  if (notificationData.notificationId) {
+    const sepN = urlToOpen.includes("?") ? "&" : "?";
+    urlToOpen += `${sepN}nid=${encodeURIComponent(notificationData.notificationId)}`;
+  }
+
   // Preserve heatmap layer state if the sender specified it.
   if (notificationData.layers) {
     const sep = urlToOpen.includes("?") ? "&" : "?";
