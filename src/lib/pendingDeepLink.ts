@@ -20,6 +20,11 @@ export function queueDeepLink(target: string | null | undefined) {
   } catch {
     /* private mode — memory copy is enough */
   }
+  try {
+    window.dispatchEvent(new CustomEvent("jet:deep-link-queued"));
+  } catch {
+    /* non-browser context */
+  }
 }
 
 export function consumeDeepLink(): string | null {
