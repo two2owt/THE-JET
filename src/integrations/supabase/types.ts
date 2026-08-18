@@ -1564,6 +1564,11 @@ export type Database = {
           routine_name: string
         }[]
       }
+      privacy_allows: {
+        Args: { _field_name: string; _privacy_settings: Json }
+        Returns: boolean
+      }
+      privacy_field_default: { Args: { _field_name: string }; Returns: boolean }
       process_location_data_retention: { Args: never; Returns: undefined }
       profiles_secure_rows: {
         Args: never
