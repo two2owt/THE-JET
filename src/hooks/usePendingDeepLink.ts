@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate } from "@/lib/router-compat";
+import { useNavigate, useSearchParams } from "@/lib/router-compat";
 import { consumeDeepLink } from "@/lib/pendingDeepLink";
 import { syncNotificationRead } from "@/lib/notificationRead";
 
@@ -10,6 +10,19 @@ import { syncNotificationRead } from "@/lib/notificationRead";
  */
 export function usePendingDeepLink() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Web path: the service worker appends ?nid=<inbox row id> when a pushed
+  // alert is tapped. Mark it read, then strip the param so a refresh or share
+  // of the URL stays clean.
+  useEffect(() => {
+    const nid = searchParams.get("nid");
+    if (!nid) return;
+    void syncNotificationRead(nid);
+    const next = new URLSearchParams(searchParams);
+    next.delete("nid");
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     const flush = () => {
