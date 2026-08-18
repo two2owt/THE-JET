@@ -18,6 +18,17 @@ import type { CapacitorConfig } from "@capacitor/cli";
  * The `server.url` block enables hot-reload from the Lovable sandbox while
  * developing on a physical device. Comment it out (or set CAP_PROD=1) before
  * producing a release build so the bundled `dist/` is used.
+ *
+ * Background location (@capacitor-community/background-geolocation) needs
+ * native project edits after `npx cap add`:
+ *   iOS  ios/App/App/Info.plist
+ *     NSLocationWhenInUseUsageDescription
+ *     NSLocationAlwaysAndWhenInUseUsageDescription
+ *     UIBackgroundModes -> <string>location</string>
+ *   Android android/app/src/main/AndroidManifest.xml
+ *     ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION,
+ *     ACCESS_BACKGROUND_LOCATION (API 29+),
+ *     FOREGROUND_SERVICE + FOREGROUND_SERVICE_LOCATION (API 34+)
  */
 const isProd = process.env.CAP_PROD === "1";
 

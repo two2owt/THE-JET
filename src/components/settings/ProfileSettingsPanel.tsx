@@ -35,6 +35,11 @@ import { useWebPushNotifications } from "@/hooks/useWebPushNotifications";
 import { PushEnablementGuide } from "@/components/settings/PushEnablementGuide";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { isMonetizationEnabled } from "@/lib/monetization";
+import { isNativeApp } from "@/lib/platform";
+import {
+  openLocationSettings,
+  requestBackgroundPermission,
+} from "@/lib/nativeBackgroundGeolocation";
 
 const preferencesSchema = z.object({
   notifications_enabled: z.boolean(),
@@ -629,7 +634,26 @@ export function ProfileSettingsPanel({
             <Switch
               id="background-tracking"
               checked={backgroundTrackingEnabled}
-              onCheckedChange={setBackgroundTrackingEnabled}
+              onCheckedChange={async (next) => {
+                // On native, turning this on needs the OS "always allow"
+                // grant — request it here (user-initiated) so the tracker can
+                // start its background watcher without ever prompting itself.
+                if (next && isNativeApp()) {
+                  const granted = await requestBackgroundPermission();
+                  if (!granted) {
+                    toast.error("Background location not allowed", {
+                      description:
+                        "Set location access to \"Always\" to keep tracking while JET is closed.",
+                      action: {
+                        label: "Open settings",
+                        onClick: () => void openLocationSettings(),
+                      },
+                    });
+                    return;
+                  }
+                }
+                setBackgroundTrackingEnabled(next);
+              }}
               disabled={!locationTrackingEnabled}
               className="flex-shrink-0"
             />

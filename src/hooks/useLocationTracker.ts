@@ -6,6 +6,11 @@ import { isNativeApp } from "@/lib/platform";
 import { createLocationSmoother, haversineMeters } from "@/lib/geo-smoothing";
 import { getNetworkLocation } from "@/lib/networkGeolocation";
 import { logGeoEvent } from "@/lib/geoDiagnostics";
+import {
+  startBackgroundWatcher,
+  stopBackgroundWatcher,
+  type BackgroundWatcher,
+} from "@/lib/nativeBackgroundGeolocation";
 
 /**
  * Streams the signed-in user's location into `public.user_locations`
@@ -67,6 +72,7 @@ export const useLocationTracker = () => {
     useLocationPreferences();
   const watchIdRef = useRef<number | null>(null);
   const nativeWatchIdRef = useRef<string | null>(null);
+  const bgWatcherRef = useRef<BackgroundWatcher | null>(null);
   const lastWriteAtRef = useRef<number>(0);
   const lastCoordsRef = useRef<{ lat: number; lng: number } | null>(null);
   const inFlightRef = useRef(false);
@@ -359,6 +365,29 @@ export const useLocationTracker = () => {
           })
           .catch(() => {});
 
+        // Preferred path when the user allowed background tracking: the
+        // community plugin keeps delivering fixes while the app is
+        // backgrounded or the screen is off (Android foreground service /
+        // iOS location background mode). Falls through to the foreground
+        // watcher below when the plugin or the "always" grant is missing.
+        if (backgroundEnabled) {
+          const watcher = await startBackgroundWatcher(
+            (fix) => {
+              if (cancelled) return;
+              void maybeWrite(fix.latitude, fix.longitude, fix.accuracy);
+            },
+            { distanceFilter: MOVING_MIN_MOVE_METERS },
+          );
+          if (cancelled) {
+            if (watcher) void stopBackgroundWatcher(watcher);
+            return;
+          }
+          if (watcher) {
+            bgWatcherRef.current = watcher;
+            return;
+          }
+        }
+
         nativeWatchIdRef.current = await Geolocation.watchPosition(
           { enableHighAccuracy: false, timeout: 20_000, maximumAge: 30_000 },
           (pos, err) => {
@@ -486,6 +515,11 @@ export const useLocationTracker = () => {
         void import("@capacitor/geolocation")
           .then(({ Geolocation }) => Geolocation.clearWatch({ id }))
           .catch(() => {});
+      }
+      if (bgWatcherRef.current) {
+        const watcher = bgWatcherRef.current;
+        bgWatcherRef.current = null;
+        void stopBackgroundWatcher(watcher);
       }
     };
 
