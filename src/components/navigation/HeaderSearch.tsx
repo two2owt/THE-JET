@@ -251,8 +251,8 @@ export function HeaderSearch({
             query={query}
             venues={venues}
             deals={deals}
-            onVenueSelect={onVenueSelect}
-            onClose={onCloseResults}
+            onVenueSelect={handleVenueSelect}
+            onClose={handleCloseResults}
             isVisible={showResults}
           />
         </Suspense>
