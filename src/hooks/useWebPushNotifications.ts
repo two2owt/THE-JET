@@ -7,6 +7,8 @@ import { requireConsent } from "@/lib/consent";
 // The key lives as a backend secret, so Vite cannot inline it at build time.
 // Fall back to the edge function that serves the public half of the key pair.
 const BUILD_TIME_VAPID_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || "";
+/** Last web push endpoint stored for this browser — detects rotation. */
+const WEB_ENDPOINT_KEY = "jet:web-push-endpoint";
 let cachedVapidKey: string | null = BUILD_TIME_VAPID_KEY || null;
 
 async function getVapidPublicKey(): Promise<string> {
@@ -78,6 +80,49 @@ export const useWebPushNotifications = () => {
         ).pushManager.getSubscription();
         setSubscription(existingSubscription);
         setIsSubscribed(!!existingSubscription);
+
+        // Browsers rotate push endpoints (pushsubscriptionchange, profile
+        // resets, key rotation). If the live endpoint differs from the one we
+        // last stored, retire the stale row and re-claim under the new one so
+        // delivery never silently breaks.
+        if (existingSubscription) {
+          const json = existingSubscription.toJSON() as {
+            endpoint?: string;
+            keys?: { p256dh?: string; auth?: string };
+          };
+          const endpoint = json.endpoint || existingSubscription.endpoint;
+          let previous: string | null = null;
+          try {
+            previous = localStorage.getItem(WEB_ENDPOINT_KEY);
+          } catch {
+            previous = null;
+          }
+
+          if (endpoint && previous !== endpoint) {
+            if (previous) {
+              await supabase
+                .from("push_subscriptions")
+                .update({ active: false })
+                .eq("endpoint", previous);
+            }
+            const { error: claimError } = await supabase.rpc(
+              "claim_push_subscription",
+              {
+                _endpoint: endpoint,
+                _p256dh: json.keys?.p256dh || "",
+                _auth: json.keys?.auth || "",
+                _platform: "web",
+              },
+            );
+            if (!claimError) {
+              try {
+                localStorage.setItem(WEB_ENDPOINT_KEY, endpoint);
+              } catch {
+                /* ignore */
+              }
+            }
+          }
+        }
       } else {
         setSubscription(null);
         setIsSubscribed(false);
@@ -237,6 +282,12 @@ export const useWebPushNotifications = () => {
       console.error("Error saving subscription:", error);
       throw error;
     }
+
+    try {
+      localStorage.setItem(WEB_ENDPOINT_KEY, subscriptionJson.endpoint || "");
+    } catch {
+      /* ignore */
+    }
   };
 
   const unsubscribe = useCallback(async (): Promise<boolean> => {
@@ -258,6 +309,11 @@ export const useWebPushNotifications = () => {
           .update({ active: false })
           .eq("user_id", user.id)
           .eq("endpoint", subscription.endpoint);
+      }
+      try {
+        localStorage.removeItem(WEB_ENDPOINT_KEY);
+      } catch {
+        /* ignore */
       }
 
       setSubscription(null);

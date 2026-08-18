@@ -23,6 +23,25 @@ import { toast } from "sonner";
 
 export type NativePushPermission = "prompt" | "granted" | "denied";
 
+/** Last token this device registered — used to detect APNs/FCM rotation. */
+const LAST_TOKEN_KEY = "jet:push-last-token";
+
+function readLastToken(): string | null {
+  try {
+    return localStorage.getItem(LAST_TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function writeLastToken(value: string) {
+  try {
+    localStorage.setItem(LAST_TOKEN_KEY, value);
+  } catch {
+    /* ignore */
+  }
+}
+
 function isNativeShell() {
   return (
     typeof window !== "undefined" &&
@@ -64,6 +83,41 @@ export const usePushNotifications = () => {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) return;
+
+      // --- Token rotation -------------------------------------------------
+      // APNs/FCM reissue device tokens (reinstall, restore, key rotation).
+      // Migrate this device's existing row onto the new token instead of
+      // leaving a stale subscription that keeps failing on delivery.
+      const previous = readLastToken();
+      if (previous && previous !== deviceToken) {
+        const { data: newRow } = await supabase
+          .from("push_subscriptions")
+          .select("id")
+          .eq("endpoint", deviceToken)
+          .maybeSingle();
+
+        if (newRow?.id) {
+          // New token already registered — retire the superseded row.
+          await supabase
+            .from("push_subscriptions")
+            .delete()
+            .eq("endpoint", previous)
+            .eq("user_id", user.id);
+        } else {
+          // Rewrite the old row in place so history/ownership is preserved.
+          await supabase
+            .from("push_subscriptions")
+            .update({
+              endpoint: deviceToken,
+              platform,
+              active: true,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("endpoint", previous)
+            .eq("user_id", user.id);
+        }
+      }
+
       // No unique constraint on `endpoint` — do a manual find-or-update.
       const { data: existing } = await supabase
         .from("push_subscriptions")
@@ -73,7 +127,12 @@ export const usePushNotifications = () => {
       if (existing?.id) {
         await supabase
           .from("push_subscriptions")
-          .update({ user_id: user.id, platform, active: true })
+          .update({
+            user_id: user.id,
+            platform,
+            active: true,
+            updated_at: new Date().toISOString(),
+          })
           .eq("id", existing.id);
       } else {
         await supabase.from("push_subscriptions").insert({
@@ -85,6 +144,8 @@ export const usePushNotifications = () => {
           active: true,
         });
       }
+
+      writeLastToken(deviceToken);
     },
     [],
   );
