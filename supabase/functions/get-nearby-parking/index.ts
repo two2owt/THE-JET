@@ -252,7 +252,7 @@ Deno.serve(async (req) => {
     }
 
     // Return the 5 closest parking spots.
-    const results = normalized
+    const results = (normalized ?? [])
       .sort((a: any, b: any) => (a.distance ?? 9e9) - (b.distance ?? 9e9))
       .slice(0, 5);
 
