@@ -5323,8 +5323,8 @@ export const MapboxHeatmap = ({
           className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
           style={{
             bottom: inspectedCell
-              ? "calc(var(--map-ui-inset-bottom, 1rem) + 116px)"
-              : "calc(var(--map-ui-inset-bottom, 1rem) + 8px)",
+              ? "calc(var(--map-safe-bottom, calc(var(--bottom-nav-total-height, 60px) + 1rem)) + 128px)"
+              : "calc(var(--map-safe-bottom, calc(var(--bottom-nav-total-height, 60px) + 1rem)) + 8px)",
             zIndex: 34,
             transition: "bottom 220ms cubic-bezier(0.16,1,0.3,1)",
           }}
