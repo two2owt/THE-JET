@@ -44,3 +44,39 @@ export const clearCachedOnboardingStatus = (userId?: string): void => {
     // ignore
   }
 };
+
+const SNOOZE_PREFIX = "jet-onboarding-snoozed:";
+const SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
+
+/** "Skip for later": remember that the user chose to postpone onboarding so
+ *  sign-in redirects send them to the app instead of back to /onboarding. */
+export const snoozeOnboarding = (userId: string): void => {
+  try {
+    localStorage.setItem(SNOOZE_PREFIX + userId, String(Date.now() + SNOOZE_MS));
+  } catch {
+    // localStorage may be unavailable
+  }
+};
+
+export const isOnboardingSnoozed = (userId: string): boolean => {
+  try {
+    const raw = localStorage.getItem(SNOOZE_PREFIX + userId);
+    if (!raw) return false;
+    const until = Number(raw);
+    if (!Number.isFinite(until) || Date.now() > until) {
+      localStorage.removeItem(SNOOZE_PREFIX + userId);
+      return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+export const clearOnboardingSnooze = (userId: string): void => {
+  try {
+    localStorage.removeItem(SNOOZE_PREFIX + userId);
+  } catch {
+    // ignore
+  }
+};
