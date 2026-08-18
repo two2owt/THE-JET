@@ -21,6 +21,7 @@ import {
   sessionSignature,
   shouldPromptForLocation,
 } from "@/lib/locationPromptPolicy";
+import { recordPromptOutcome } from "@/lib/locationDiagnostics";
 
 /**
  * Module-level latch: guarantees only one prompt instance can ever open per
@@ -70,6 +71,7 @@ export const LocationPermissionPrompt = () => {
       if (!decision.show) {
         if (import.meta.env.DEV)
           console.debug("[location-prompt] suppressed:", decision.reason);
+        if (userId) recordPromptOutcome("suppressed");
         return;
       }
 
@@ -84,6 +86,7 @@ export const LocationPermissionPrompt = () => {
             // Granted elsewhere (signup flow, map locate button, OS settings):
             // clear the snooze so nothing re-asks and stay silent.
             markLocationPermissionResolved(signature);
+            if (userId) recordPromptOutcome("granted");
             return;
           }
           if (status.state !== "prompt") return;
@@ -118,6 +121,7 @@ export const LocationPermissionPrompt = () => {
         if (status && status.state !== "prompt") return;
         promptShownFor = signature;
         markLocationPromptShown(signature);
+        if (userId) recordPromptOutcome("shown");
         setOpen(true);
       }, delay);
       return () => {
@@ -172,6 +176,7 @@ export const LocationPermissionPrompt = () => {
       await recordConsent(true);
       markLocationPermissionResolved(signature);
     }
+    recordPromptOutcome(granted ? "granted" : "denied");
     setLoading(false);
     setOpen(false);
 
@@ -189,6 +194,7 @@ export const LocationPermissionPrompt = () => {
 
   const handleDismiss = () => {
     markLocationPromptDismissed(signature);
+    recordPromptOutcome("dismissed");
     setOpen(false);
   };
 
