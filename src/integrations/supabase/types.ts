@@ -1530,6 +1530,14 @@ export type Database = {
       }
     }
     Functions: {
+      admin_backfill_display_names: {
+        Args: { _dry_run?: boolean }
+        Returns: {
+          auto_handles_assigned: number
+          claimed_flags_set: number
+          dry_run: boolean
+        }[]
+      }
       admin_list_user_emails: {
         Args: never
         Returns: {
