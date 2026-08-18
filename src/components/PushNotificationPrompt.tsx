@@ -163,7 +163,9 @@ export const PushNotificationPrompt = ({
             </DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
               {isBlocked
-                ? "Notifications are currently blocked for JET in this browser. Re-allow them, then come back and tap Enable."
+                ? isNative
+                  ? "Notifications are turned off for JET on this device. Allow them in Settings > Notifications > JET, then come back and tap Enable."
+                  : "Notifications are currently blocked for JET in this browser. Re-allow them, then come back and tap Enable."
                 : needsInstallFirst
                   ? "On iPhone and iPad, alerts work once JET is added to your Home Screen. Follow the two steps below, reopen JET from your Home Screen, then tap Enable."
                   : "Get instant alerts the moment a Charlotte deal goes live near you. Tap Enable, then choose Allow in the browser popup that appears."}
