@@ -267,7 +267,9 @@ const Index = () => {
   const venueRestoredRef = useRef(false);
   useEffect(() => {
     if (venueRestoredRef.current) return;
-    if (!venues.length) return;
+    // Wait for the first venue load to settle, but don't require a non-empty
+    // set: favorites resolve from their own snapshot when the map list misses.
+    if (venuesLoading) return;
     const venueParam = searchParams.get("venue");
     if (!venueParam) {
       venueRestoredRef.current = true;
@@ -285,18 +287,52 @@ const Index = () => {
         ...match,
         imageUrl: getVenueImage(match.name) || match.imageUrl,
       });
-    } else {
-      // Unknown venue id/name in the URL — surface a toast and strip the
-      // stale param so a reload doesn't keep retrying the miss.
+      venueRestoredRef.current = true;
+      return;
+    }
+    // Not in the currently loaded (city/active-filtered) venue set. A saved
+    // favorite carries a full venue snapshot, so rehydrate the JetCard from
+    // it — a closed or out-of-city venue must still open.
+    venueRestoredRef.current = true;
+    let cancelled = false;
+    void (async () => {
+      const { data } = await supabase
+        .from("user_favorites")
+        .select(
+          "venue_id, venue_name, venue_address, venue_category, venue_neighborhood, venue_image_url, venue_lat, venue_lng",
+        )
+        .eq("venue_id", decoded)
+        .limit(1)
+        .maybeSingle();
+      if (cancelled) return;
+      if (data?.venue_id && data.venue_lat != null && data.venue_lng != null) {
+        const name = data.venue_name || decoded;
+        setSelectedVenue({
+          id: data.venue_id,
+          name,
+          lat: Number(data.venue_lat),
+          lng: Number(data.venue_lng),
+          activity: 0,
+          category: data.venue_category || "Venue",
+          neighborhood: data.venue_neighborhood || "",
+          address: data.venue_address || undefined,
+          imageUrl: getVenueImage(name) || data.venue_image_url || undefined,
+        });
+        return;
+      }
+      // Genuinely unresolvable — strip the stale param so a reload doesn't
+      // keep retrying the miss.
       toast.error("Venue not found", {
         description: "That venue link is no longer available.",
       });
       const next = new URLSearchParams(searchParams);
       next.delete("venue");
       setSearchParams(next, { replace: true });
-    }
-    venueRestoredRef.current = true;
-  }, [venues, searchParams, setSearchParams, getVenueImage]);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [venues, venuesLoading, searchParams, setSearchParams, getVenueImage]);
 
   useEffect(() => {
     // Don't write the URL until the initial restoration pass has run, or we
