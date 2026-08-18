@@ -54,21 +54,21 @@ const organizationJsonLd = JSON.stringify({
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "JET",
-  url: "https://jet-around.com/",
-  logo: "https://jet-around.com/pwa-512x512.png",
+  url: "https://www.jet-around.com/",
+  logo: "https://www.jet-around.com/pwa-512x512.png",
   sameAs: ["https://twitter.com/JETaround"],
 });
 const websiteJsonLd = JSON.stringify({
   "@context": "https://schema.org",
   "@type": "WebSite",
   name: "JET",
-  url: "https://jet-around.com/",
+  url: "https://www.jet-around.com/",
 });
 
 const TITLE = "JET — Find Live Deals & Events Near You in Charlotte";
 const DESCRIPTION =
   "Discover trending venues, live events, and exclusive happy-hour deals across Charlotte on a real-time heatmap. Your guide to what's hot right now.";
-const SOCIAL_IMAGE = "https://jet-around.com/pwa-512x512.png";
+const SOCIAL_IMAGE = "https://www.jet-around.com/pwa-512x512.png";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   {
@@ -97,7 +97,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         { name: "apple-mobile-web-app-status-bar-style", content: "default" },
         { name: "apple-mobile-web-app-title", content: "JET" },
         { property: "og:type", content: "website" },
-        { property: "og:url", content: "https://jet-around.com/" },
+        { property: "og:url", content: "https://www.jet-around.com/" },
         { property: "og:title", content: TITLE },
         { property: "og:description", content: DESCRIPTION },
         { property: "og:image", content: SOCIAL_IMAGE },

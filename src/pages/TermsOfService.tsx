@@ -46,12 +46,12 @@ const TermsOfService = () => {
               (&quot;Jet&quot;, &quot;we&quot;, &quot;our&quot;, or
               &quot;us&quot;) available at{" "}
               <a
-                href="https://jet-around.com/"
+                href="https://www.jet-around.com/"
                 className="text-primary hover:underline"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                https://jet-around.com/
+                https://www.jet-around.com/
               </a>
               , you agree to be bound by these Terms of Service
               (&quot;Terms&quot;). If you do not agree to these Terms, do not
@@ -607,12 +607,12 @@ const TermsOfService = () => {
               <li>
                 <strong>Website:</strong>{" "}
                 <a
-                  href="https://jet-around.com"
+                  href="https://www.jet-around.com"
                   className="text-primary hover:underline"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  https://jet-around.com
+                  https://www.jet-around.com
                 </a>
               </li>
             </ul>

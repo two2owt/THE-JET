@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://jet-around.com/sitemap.xml
+Sitemap: https://www.jet-around.com/sitemap.xml

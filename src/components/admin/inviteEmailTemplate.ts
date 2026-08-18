@@ -28,7 +28,7 @@ export const DEFAULT_INVITE_TEMPLATE: InviteTemplate = {
     If the button doesn't work, copy this link into your browser:<br />{{invite_url}}
   </p>
 </div>`,
-  redirectTo: "https://jet-around.com/",
+  redirectTo: "https://www.jet-around.com/",
 };
 
 export function loadInviteTemplate(): InviteTemplate {

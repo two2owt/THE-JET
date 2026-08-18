@@ -219,7 +219,7 @@ export function BulkUserProvisionPanel() {
       renderInvitePreview(template.html, {
         display_name: "Alex",
         email: "alex@example.com",
-        invite_url: "https://jet-around.com/invite?token=preview",
+        invite_url: "https://www.jet-around.com/invite?token=preview",
         site_name: "JET",
       }),
     [template.html],
@@ -599,7 +599,7 @@ export function BulkUserProvisionPanel() {
                   id="invite-redirect"
                   value={template.redirectTo}
                   disabled={running}
-                  placeholder="https://jet-around.com/"
+                  placeholder="https://www.jet-around.com/"
                   onChange={(e) =>
                     updateTemplate({ redirectTo: e.target.value })
                   }

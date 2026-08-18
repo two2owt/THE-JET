@@ -61,7 +61,7 @@ const jsonLd = [
       "A neighborhood-by-neighborhood guide to the best happy hour deals in Charlotte, NC — times, price ranges, and how to find live specials near you.",
     author: { "@type": "Organization", name: "JET" },
     publisher: { "@type": "Organization", name: "JET" },
-    mainEntityOfPage: "https://jet-around.com/guides/charlotte-happy-hour",
+    mainEntityOfPage: "https://www.jet-around.com/guides/charlotte-happy-hour",
   },
   {
     "@context": "https://schema.org",
