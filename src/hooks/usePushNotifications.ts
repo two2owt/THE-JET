@@ -226,7 +226,7 @@ export const usePushNotifications = () => {
         if (!target) return;
         // Queue first (survives a not-yet-mounted router), then attempt an
         // immediate navigate for the warm/background case.
-        queueDeepLink(target);
+        queueDeepLink(target, data.notificationId ?? null);
       },
     );
   }, [navigate, persistToken]);
