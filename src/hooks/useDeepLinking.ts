@@ -28,56 +28,58 @@ export const useDeepLinking = (handlers?: DeepLinkHandler) => {
   const lastHandledVenueRef = useRef<string | null>(null);
 
   // Handle deal deep link
-  const handleDealDeepLink = useCallback(async (dealId: string) => {
-    try {
-      // Fetch the deal data
-      const { data: deal, error } = await supabase
-        .from("deals")
-        .select("*")
-        .eq("id", dealId)
-        .single();
+  const handleDealDeepLink = useCallback(
+    async (dealId: string) => {
+      try {
+        // Fetch the deal data
+        const { data: deal, error } = await supabase
+          .from("deals")
+          .select("*")
+          .eq("id", dealId)
+          .single();
 
-      if (error || !deal) {
-        toast.error("Deal not found", {
-          description: "This deal may have expired or been removed"
+        if (error || !deal) {
+          toast.error("Deal not found", {
+            description: "This deal may have expired or been removed",
+          });
+          // Clear the deal param
+          searchParams.delete("deal");
+          setSearchParams(searchParams);
+          return;
+        }
+
+        // Check if deal is still active
+        const now = new Date();
+        const expiresAt = new Date(deal.expires_at);
+        const startsAt = new Date(deal.starts_at);
+
+        if (!deal.active || expiresAt < now || startsAt > now) {
+          toast.error("Deal expired", {
+            description: "This deal is no longer available",
+          });
+          searchParams.delete("deal");
+          setSearchParams(searchParams);
+          return;
+        }
+
+        // Call the handler if provided (read via ref so this callback is stable).
+        handlersRef.current?.onDealOpen?.(dealId, deal);
+
+        // Show success toast
+        toast.success(`${deal.title}`, {
+          description: `at ${deal.venue_name}`,
         });
-        // Clear the deal param
+
+        // Clear the deal param after handling
         searchParams.delete("deal");
         setSearchParams(searchParams);
-        return;
+      } catch (error) {
+        console.error("Error handling deal deep link:", error);
+        toast.error("Failed to load deal");
       }
-
-      // Check if deal is still active
-      const now = new Date();
-      const expiresAt = new Date(deal.expires_at);
-      const startsAt = new Date(deal.starts_at);
-
-      if (!deal.active || expiresAt < now || startsAt > now) {
-        toast.error("Deal expired", {
-          description: "This deal is no longer available"
-        });
-        searchParams.delete("deal");
-        setSearchParams(searchParams);
-        return;
-      }
-
-      // Call the handler if provided (read via ref so this callback is stable).
-      handlersRef.current?.onDealOpen?.(dealId, deal);
-
-      // Show success toast
-      toast.success(`${deal.title}`, {
-        description: `at ${deal.venue_name}`
-      });
-
-      // Clear the deal param after handling
-      searchParams.delete("deal");
-      setSearchParams(searchParams);
-
-    } catch (error) {
-      console.error("Error handling deal deep link:", error);
-      toast.error("Failed to load deal");
-    }
-  }, [searchParams, setSearchParams]);
+    },
+    [searchParams, setSearchParams],
+  );
 
   // Handle venue deep link. The `?venue=` param is now a stable venue id,
   // but we accept legacy name-based links too — the page-level handler
@@ -91,14 +93,20 @@ export const useDeepLinking = (handlers?: DeepLinkHandler) => {
   }, []);
 
   // Navigate to a deal (for use from notifications)
-  const navigateToDeal = useCallback((dealId: string) => {
-    navigate(`/?deal=${dealId}`);
-  }, [navigate]);
+  const navigateToDeal = useCallback(
+    (dealId: string) => {
+      navigate(`/?deal=${dealId}`);
+    },
+    [navigate],
+  );
 
   // Navigate to a venue by its stable id.
-  const navigateToVenue = useCallback((venueId: string) => {
-    navigate(`/?venue=${encodeURIComponent(venueId)}`);
-  }, [navigate]);
+  const navigateToVenue = useCallback(
+    (venueId: string) => {
+      navigate(`/?venue=${encodeURIComponent(venueId)}`);
+    },
+    [navigate],
+  );
 
   // Check for deep links on mount and URL changes. Only fire each handler
   // when the underlying param value actually changes.
@@ -143,7 +151,8 @@ export const useDeepLinking = (handlers?: DeepLinkHandler) => {
       }
     };
     navigator.serviceWorker.addEventListener("message", onMessage);
-    return () => navigator.serviceWorker.removeEventListener("message", onMessage);
+    return () =>
+      navigator.serviceWorker.removeEventListener("message", onMessage);
   }, [navigate]);
 
   return {

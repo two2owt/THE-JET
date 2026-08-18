@@ -35,7 +35,11 @@ export default function Favorites() {
   const [loadError, setLoadError] = useState(false);
   const headerConfig = useMemo(() => ({}), []);
 
-  const { favorites, loading: favoritesLoading, toggleVenueFavorite } = useFavorites(user?.id);
+  const {
+    favorites,
+    loading: favoritesLoading,
+    toggleVenueFavorite,
+  } = useFavorites(user?.id);
 
   useEffect(() => {
     if (!user || favoritesLoading) return;
@@ -72,7 +76,7 @@ export default function Favorites() {
             .then(({ data, error }) => {
               if (error) throw error;
               return (data || []) as Deal[];
-            })
+            }),
         );
       }
       if (venueIds.length > 0) {
@@ -85,7 +89,7 @@ export default function Favorites() {
             .then(({ data, error }) => {
               if (error) throw error;
               return (data || []) as Deal[];
-            })
+            }),
         );
       }
 
@@ -144,7 +148,10 @@ export default function Favorites() {
             title="Sign in to view favorites"
             description="Create an account to save and track your favorite deals across all venues"
             actionLabel="Sign In"
-            onAction={() => { rememberPostAuthRedirect(); navigate("/auth"); }}
+            onAction={() => {
+              rememberPostAuthRedirect();
+              navigate("/auth");
+            }}
           />
         </PageShell>
       </PageLayout>
@@ -183,7 +190,9 @@ export default function Favorites() {
             title="Couldn't load your favorites"
             description="Something went wrong reaching the network. Check your connection and try again."
             actionLabel="Retry"
-            onAction={() => { void fetchFavoriteDeals(); }}
+            onAction={() => {
+              void fetchFavoriteDeals();
+            }}
           />
         ) : totalCount === 0 ? (
           <EmptyState
@@ -206,7 +215,9 @@ export default function Favorites() {
                   className="min-h-[20svh]"
                   columns={{ mobile: 1, tablet: 2, desktop: 3 }}
                   getItemKey={(deal) => deal.id}
-                  renderItem={(deal, index) => <DealCard deal={deal} index={index} />}
+                  renderItem={(deal, index) => (
+                    <DealCard deal={deal} index={index} />
+                  )}
                 />
               </section>
             )}
@@ -222,7 +233,8 @@ export default function Favorites() {
                       favorite={f}
                       onRemove={toggleVenueFavorite}
                       onOpen={() => {
-                        if (f.venue_id) navigate(`/?venue=${encodeURIComponent(f.venue_id)}`);
+                        if (f.venue_id)
+                          navigate(`/?venue=${encodeURIComponent(f.venue_id)}`);
                       }}
                     />
                   ))}
@@ -260,10 +272,18 @@ function FavoriteVenueCard({
             lng: favorite.venue_lng ?? undefined,
           }
         : null,
-    [favorite.venue_id, favorite.venue_name, favorite.venue_address, favorite.venue_lat, favorite.venue_lng]
+    [
+      favorite.venue_id,
+      favorite.venue_name,
+      favorite.venue_address,
+      favorite.venue_lat,
+      favorite.venue_lng,
+    ],
   );
   const { photoUrl, loading: photoLoading } = useVenuePhoto(photoInput, 600);
-  const heroImage = !imgFailed ? photoUrl ?? favorite.venue_image_url ?? null : null;
+  const heroImage = !imgFailed
+    ? (photoUrl ?? favorite.venue_image_url ?? null)
+    : null;
 
   const handleUnfavorite = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -289,16 +309,16 @@ function FavoriteVenueCard({
       }}
       aria-label={`Open ${favorite.venue_name ?? "saved venue"} on the map`}
       className="group relative cursor-pointer text-left rounded-2xl overflow-hidden border border-border bg-card/60 backdrop-blur-sm hover:border-primary/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      style={{ containerType: 'inline-size' }}
+      style={{ containerType: "inline-size" }}
     >
       {/* Hero sizing matches JetCard: container-relative (cqw), 16/9, same clamp. */}
       <div
         className="relative bg-muted"
         style={{
-          width: '100%',
-          aspectRatio: '16 / 9',
-          maxHeight: 'clamp(96px, 26cqw, 180px)',
-          overflow: 'hidden',
+          width: "100%",
+          aspectRatio: "16 / 9",
+          maxHeight: "clamp(96px, 26cqw, 180px)",
+          overflow: "hidden",
         }}
       >
         {/* Branded fallback sits underneath so slow networks never show an empty tile. */}
@@ -306,7 +326,10 @@ function FavoriteVenueCard({
           <MapPin className="w-8 h-8" />
         </div>
         {photoLoading && !heroImage && (
-          <div aria-hidden="true" className="absolute inset-0 animate-pulse bg-muted/40" />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 animate-pulse bg-muted/40"
+          />
         )}
         {heroImage && (
           <img
@@ -337,7 +360,10 @@ function FavoriteVenueCard({
           {favorite.venue_name ?? "Saved venue"}
         </div>
         <div className="text-xs text-muted-foreground truncate mt-0.5">
-          {favorite.venue_neighborhood ?? favorite.venue_address ?? favorite.venue_category ?? ""}
+          {favorite.venue_neighborhood ??
+            favorite.venue_address ??
+            favorite.venue_category ??
+            ""}
         </div>
       </div>
     </div>

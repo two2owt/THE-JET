@@ -22,19 +22,19 @@ Deno.serve(async (req) => {
     console.error("VITE_VAPID_PUBLIC_KEY is not configured");
     return new Response(
       JSON.stringify({ error: "VAPID public key not configured" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 
-  return new Response(
-    JSON.stringify({ publicKey }),
-    {
-      headers: {
-        ...corsHeaders,
-        "Content-Type": "application/json",
-        // Key is stable; let clients cache it for an hour.
-        "Cache-Control": "public, max-age=3600",
-      },
+  return new Response(JSON.stringify({ publicKey }), {
+    headers: {
+      ...corsHeaders,
+      "Content-Type": "application/json",
+      // Key is stable; let clients cache it for an hour.
+      "Cache-Control": "public, max-age=3600",
     },
-  );
+  });
 });

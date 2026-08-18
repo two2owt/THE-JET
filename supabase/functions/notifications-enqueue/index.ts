@@ -52,7 +52,8 @@ Deno.serve(async (req) => {
 
   try {
     const raw = await req.text();
-    if (!(await verifyBridgeAuth(req, raw))) return json({ error: "Unauthorized" }, 401);
+    if (!(await verifyBridgeAuth(req, raw)))
+      return json({ error: "Unauthorized" }, 401);
 
     let payload: EnqueueBody;
     try {
@@ -63,9 +64,12 @@ Deno.serve(async (req) => {
 
     const errors: string[] = [];
     if (!payload.event_type) errors.push("event_type is required");
-    if (!payload.title || payload.title.length > 200) errors.push("title is required (<=200 chars)");
-    if (!payload.body || payload.body.length > 500) errors.push("body is required (<=500 chars)");
-    const audience = payload.audience ?? (payload.user_ids?.length ? "users" : "favorites");
+    if (!payload.title || payload.title.length > 200)
+      errors.push("title is required (<=200 chars)");
+    if (!payload.body || payload.body.length > 500)
+      errors.push("body is required (<=500 chars)");
+    const audience =
+      payload.audience ?? (payload.user_ids?.length ? "users" : "favorites");
     if (!["favorites", "users", "neighborhood", "all"].includes(audience)) {
       errors.push("audience must be favorites|users|neighborhood|all");
     }
@@ -125,21 +129,34 @@ Deno.serve(async (req) => {
           .select("id, status")
           .eq("idempotency_key", idempotencyKey)
           .maybeSingle();
-        return json({ ok: true, duplicate: true, id: existing?.id, status: existing?.status });
+        return json({
+          ok: true,
+          duplicate: true,
+          id: existing?.id,
+          status: existing?.status,
+        });
       }
       throw error;
     }
 
     // Best-effort immediate wake of the dispatcher; cron is the safety net.
     try {
-      await supabase.functions.invoke("notifications-dispatch", { body: { wake: true } });
+      await supabase.functions.invoke("notifications-dispatch", {
+        body: { wake: true },
+      });
     } catch (_e) {
       /* cron will pick it up */
     }
 
-    return json({ ok: true, id: inserted?.id, status: inserted?.status ?? "pending" }, 202);
+    return json(
+      { ok: true, id: inserted?.id, status: inserted?.status ?? "pending" },
+      202,
+    );
   } catch (err) {
-    console.error(`[${FUNCTION_NAME}]`, err instanceof Error ? err.message : err);
+    console.error(
+      `[${FUNCTION_NAME}]`,
+      err instanceof Error ? err.message : err,
+    );
     return json({ error: "Internal server error" }, 500);
   }
 });

@@ -17,7 +17,8 @@ const isSafeTarget = (target: string): boolean => {
 export const rememberPostAuthRedirect = (path?: string): void => {
   try {
     const target =
-      path ?? `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      path ??
+      `${window.location.pathname}${window.location.search}${window.location.hash}`;
     if (isSafeTarget(target)) {
       sessionStorage.setItem(KEY, target);
     }

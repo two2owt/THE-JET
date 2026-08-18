@@ -11,19 +11,27 @@ interface BottomNavProps {
   onPrefetch?: (tab: NavItem) => void;
 }
 
-export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, messageCount = 0, onPrefetch }: BottomNavProps) => {
+export const BottomNav = ({
+  activeTab,
+  onTabChange,
+  notificationCount = 0,
+  messageCount = 0,
+  onPrefetch,
+}: BottomNavProps) => {
   // Delegated prefetch: a single handler on the container reads `data-tab`
   // off the hovered/touched button instead of attaching one listener per
   // button. Cuts listener count from ~2*N to 2 total.
   const handleDelegatedPrefetch = useCallback(
     (e: React.SyntheticEvent<HTMLDivElement>) => {
       if (!onPrefetch) return;
-      const target = (e.target as HTMLElement).closest<HTMLElement>('[data-tab]');
+      const target = (e.target as HTMLElement).closest<HTMLElement>(
+        "[data-tab]",
+      );
       if (!target) return;
       const tab = target.dataset.tab as NavItem | undefined;
       if (tab && tab !== activeTab) onPrefetch(tab);
     },
-    [onPrefetch, activeTab]
+    [onPrefetch, activeTab],
   );
 
   const [mounted, setMounted] = useState(false);
@@ -50,14 +58,14 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, messa
       role="navigation"
       aria-label="Main navigation"
       style={{
-        paddingBottom: 'var(--safe-area-inset-bottom)',
-        paddingLeft: 'var(--safe-area-inset-left)',
-        paddingRight: 'var(--safe-area-inset-right)',
-        height: 'var(--bottom-nav-total-height)',
-        minHeight: 'var(--bottom-nav-total-height)',
-        maxHeight: 'var(--bottom-nav-total-height)',
+        paddingBottom: "var(--safe-area-inset-bottom)",
+        paddingLeft: "var(--safe-area-inset-left)",
+        paddingRight: "var(--safe-area-inset-right)",
+        height: "var(--bottom-nav-total-height)",
+        minHeight: "var(--bottom-nav-total-height)",
+        maxHeight: "var(--bottom-nav-total-height)",
         flexShrink: 0,
-        contain: 'layout style',
+        contain: "layout style",
       }}
     >
       {/* Glass background */}
@@ -65,18 +73,18 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, messa
         className="absolute inset-0"
         style={{
           background:
-            'linear-gradient(0deg, hsl(var(--background) / 0.94), hsl(var(--background) / 0.78))',
-          backdropFilter: 'blur(24px) saturate(1.6)',
-          WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
+            "linear-gradient(0deg, hsl(var(--background) / 0.94), hsl(var(--background) / 0.78))",
+          backdropFilter: "blur(24px) saturate(1.6)",
+          WebkitBackdropFilter: "blur(24px) saturate(1.6)",
         }}
       />
       {/* Top divider — gold hairline luxe accent */}
       <div
         className="absolute top-0 left-0 right-0"
         style={{
-          height: '1px',
+          height: "1px",
           background:
-            'linear-gradient(90deg, transparent 0%, hsl(var(--gold) / 0.35) 50%, transparent 100%)',
+            "linear-gradient(90deg, transparent 0%, hsl(var(--gold) / 0.35) 50%, transparent 100%)",
         }}
       />
       {/* Soft shadow-sm above */}
@@ -84,21 +92,21 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, messa
         className="absolute -top-3 left-0 right-0 h-3 pointer-events-none"
         style={{
           background:
-            'linear-gradient(to top, hsl(0 0% 0% / 0.4), transparent)',
+            "linear-gradient(to top, hsl(0 0% 0% / 0.4), transparent)",
         }}
       />
 
       <div
         style={{
-          display: 'flex',
-          flexDirection: 'row',
-          flexWrap: 'nowrap',
-          alignItems: 'center',
-          justifyContent: 'space-around',
-          height: '100%',
-          maxWidth: 'clamp(320px, 72vw, 600px)',
-          margin: '0 auto',
-          padding: '0 clamp(10px, 2.4vw, 20px)',
+          display: "flex",
+          flexDirection: "row",
+          flexWrap: "nowrap",
+          alignItems: "center",
+          justifyContent: "space-around",
+          height: "100%",
+          maxWidth: "clamp(320px, 72vw, 600px)",
+          margin: "0 auto",
+          padding: "0 clamp(10px, 2.4vw, 20px)",
         }}
         onMouseOver={handleDelegatedPrefetch}
         onTouchStart={handleDelegatedPrefetch}
@@ -107,11 +115,11 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, messa
           const isActive = activeTab === item.id;
           const Icon = item.icon;
           const badgeCount =
-            item.id === 'notifications'
+            item.id === "notifications"
               ? notificationCount
-              : item.id === 'social'
-              ? messageCount
-              : 0;
+              : item.id === "social"
+                ? messageCount
+                : 0;
           const hasNotification = badgeCount > 0;
           const staggerDelay = `${0.05 + index * 0.06}s`;
 
@@ -120,25 +128,25 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, messa
               key={item.id}
               data-tab={item.id}
               onClick={() => onTabChange(item.id)}
-              aria-label={`${item.label}${hasNotification ? `, ${badgeCount} unread` : ''}`}
+              aria-label={`${item.label}${hasNotification ? `, ${badgeCount} unread` : ""}`}
               aria-current={isActive ? "page" : undefined}
               className="touch-manipulation focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
               style={{
-                position: 'relative',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minWidth: 'clamp(52px, 13vw, 72px)',
-                height: 'clamp(44px, 7vw, 56px)',
-                gap: 'clamp(2px, 0.6vw, 4px)',
-                background: 'transparent',
-                border: 'none',
-                padding: '0 clamp(2px, 0.6vw, 6px)',
-                cursor: 'pointer',
-                WebkitAppearance: 'none' as any,
+                position: "relative",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                minWidth: "clamp(52px, 13vw, 72px)",
+                height: "clamp(44px, 7vw, 56px)",
+                gap: "clamp(2px, 0.6vw, 4px)",
+                background: "transparent",
+                border: "none",
+                padding: "0 clamp(2px, 0.6vw, 6px)",
+                cursor: "pointer",
+                WebkitAppearance: "none" as any,
                 opacity: mounted ? 1 : 0,
-                transform: mounted ? 'translateY(0)' : 'translateY(8px)',
+                transform: mounted ? "translateY(0)" : "translateY(8px)",
                 transition: `opacity 0.35s ease-out ${staggerDelay}, transform 0.35s ease-out ${staggerDelay}`,
               }}
             >
@@ -146,14 +154,16 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, messa
               {isActive && (
                 <div
                   style={{
-                    position: 'absolute',
-                    top: '-2px',
-                    left: '12px',
-                    right: '12px',
-                    height: '3px',
-                    borderRadius: '2px',
-                    background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))',
-                    boxShadow: '0 0 10px hsl(var(--primary) / 0.5), 0 0 4px hsl(var(--accent) / 0.3)',
+                    position: "absolute",
+                    top: "-2px",
+                    left: "12px",
+                    right: "12px",
+                    height: "3px",
+                    borderRadius: "2px",
+                    background:
+                      "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))",
+                    boxShadow:
+                      "0 0 10px hsl(var(--primary) / 0.5), 0 0 4px hsl(var(--accent) / 0.3)",
                   }}
                 />
               )}
@@ -163,7 +173,8 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, messa
                 <div
                   className="absolute inset-1 rounded-lg"
                   style={{
-                    background: 'linear-gradient(180deg, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.06))',
+                    background:
+                      "linear-gradient(180deg, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.06))",
                   }}
                 />
               )}
@@ -173,18 +184,18 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, messa
                 <span
                   className="absolute flex items-center justify-center bg-destructive text-destructive-foreground font-bold rounded-full"
                   style={{
-                    top: '2px',
-                    right: '4px',
-                    minWidth: '16px',
-                    height: '16px',
-                    padding: '0 4px',
-                    fontSize: '9px',
+                    top: "2px",
+                    right: "4px",
+                    minWidth: "16px",
+                    height: "16px",
+                    padding: "0 4px",
+                    fontSize: "9px",
                     lineHeight: 1,
-                    boxShadow: '0 2px 6px hsl(var(--destructive) / 0.4)',
+                    boxShadow: "0 2px 6px hsl(var(--destructive) / 0.4)",
                   }}
                   aria-hidden="true"
                 >
-                  {badgeCount > 9 ? '9+' : badgeCount}
+                  {badgeCount > 9 ? "9+" : badgeCount}
                 </span>
               )}
 
@@ -192,14 +203,18 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, messa
               <Icon
                 className="relative z-10"
                 style={{
-                  width: 'clamp(18px, 4.8vw, 22px)',
-                  height: 'clamp(18px, 4.8vw, 22px)',
-                  color: isActive ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
+                  width: "clamp(18px, 4.8vw, 22px)",
+                  height: "clamp(18px, 4.8vw, 22px)",
+                  color: isActive
+                    ? "hsl(var(--primary))"
+                    : "hsl(var(--muted-foreground))",
                   strokeWidth: isActive ? 2.4 : 1.8,
-                  transition: 'color 0.2s, transform 0.2s',
-                  transform: isActive ? 'scale(1.05)' : 'scale(1)',
+                  transition: "color 0.2s, transform 0.2s",
+                  transform: isActive ? "scale(1.05)" : "scale(1)",
                 }}
-                fill={isActive && item.id === 'favorites' ? 'currentColor' : 'none'}
+                fill={
+                  isActive && item.id === "favorites" ? "currentColor" : "none"
+                }
                 aria-hidden="true"
               />
 
@@ -207,12 +222,14 @@ export const BottomNav = ({ activeTab, onTabChange, notificationCount = 0, messa
               <span
                 className="relative z-10"
                 style={{
-                  fontSize: 'clamp(9px, 2.2vw, 11px)',
+                  fontSize: "clamp(9px, 2.2vw, 11px)",
                   fontWeight: isActive ? 600 : 500,
-                  color: isActive ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
+                  color: isActive
+                    ? "hsl(var(--primary))"
+                    : "hsl(var(--muted-foreground))",
                   opacity: isActive ? 1 : 0.65,
-                  transition: 'all 0.2s',
-                  letterSpacing: '0.01em',
+                  transition: "all 0.2s",
+                  letterSpacing: "0.01em",
                 }}
               >
                 {item.label}

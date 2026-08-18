@@ -6,7 +6,20 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SectionTitle } from "@/components/ui/page-title";
-import { Bell, MapPin, Heart, Shield, ShieldCheck, CreditCard, Moon, Smartphone, Loader2, Save, Radio, RefreshCw } from "lucide-react";
+import {
+  Bell,
+  MapPin,
+  Heart,
+  Shield,
+  ShieldCheck,
+  CreditCard,
+  Moon,
+  Smartphone,
+  Loader2,
+  Save,
+  Radio,
+  RefreshCw,
+} from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -51,8 +64,16 @@ interface ProfileSettingsPanelProps {
  * location, subscription, support, account) rendered inline inside /profile
  * when the user enters edit mode. Consolidated into the Profile page.
  */
-export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanelProps) {
-  const { isRegistered: isPushRegistered, isNative, initializePushNotifications, unregister: unregisterPush } = usePushNotifications();
+export function ProfileSettingsPanel({
+  userId,
+  userEmail,
+}: ProfileSettingsPanelProps) {
+  const {
+    isRegistered: isPushRegistered,
+    isNative,
+    initializePushNotifications,
+    unregister: unregisterPush,
+  } = usePushNotifications();
   const {
     isSupported: isWebPushSupported,
     isSubscribed: isWebPushSubscribed,
@@ -65,14 +86,18 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
   const { isAdmin } = useIsAdmin();
   const showSubscriptionSection = isMonetizationEnabled() || isAdmin;
 
-  const [preferences, setPreferences] = useState<UserPreferencesRow | null>(null);
+  const [preferences, setPreferences] = useState<UserPreferencesRow | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState(false);
+  const [pushNotificationsEnabled, setPushNotificationsEnabled] =
+    useState(false);
   const [locationTrackingEnabled, setLocationTrackingEnabled] = useState(false);
-  const [backgroundTrackingEnabled, setBackgroundTrackingEnabled] = useState(true);
+  const [backgroundTrackingEnabled, setBackgroundTrackingEnabled] =
+    useState(true);
   const [autoReloadUpdates, setAutoReloadUpdates] = useState(false);
   const [marketingEmailsEnabled, setMarketingEmailsEnabled] = useState(false);
 
@@ -147,11 +172,11 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
     const handleVisibility = () => {
       if (!document.hidden) resyncWebPush();
     };
-    window.addEventListener('focus', handleFocus);
-    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibility);
     return () => {
-      window.removeEventListener('focus', handleFocus);
-      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, [resyncWebPush]);
 
@@ -164,7 +189,14 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
       preferences.auto_reload_updates !== autoReloadUpdates ||
       (preferences.marketing_emails_enabled ?? false) !== marketingEmailsEnabled
     );
-  }, [preferences, notificationsEnabled, locationTrackingEnabled, backgroundTrackingEnabled, autoReloadUpdates, marketingEmailsEnabled]);
+  }, [
+    preferences,
+    notificationsEnabled,
+    locationTrackingEnabled,
+    backgroundTrackingEnabled,
+    autoReloadUpdates,
+    marketingEmailsEnabled,
+  ]);
 
   const handleSaveSettings = async () => {
     if (!preferences) return;
@@ -191,7 +223,8 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
           background_tracking_enabled: backgroundTrackingEnabled,
           auto_reload_updates: autoReloadUpdates,
           marketing_emails_enabled: marketingEmailsEnabled,
-          ...((preferences.marketing_emails_enabled ?? false) !== marketingEmailsEnabled
+          ...((preferences.marketing_emails_enabled ?? false) !==
+          marketingEmailsEnabled
             ? { marketing_consent_updated_at: new Date().toISOString() }
             : {}),
         })
@@ -202,32 +235,39 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
       // toggle is the single explicit switch that grants/revokes it.
       if (preferences.location_tracking_enabled !== locationTrackingEnabled) {
         const nowIso = new Date().toISOString();
-        const { error: consentError } = await supabase.from("user_consents").insert({
-          user_id: preferences.user_id,
-          consent_type: "foreground_location",
-          granted: locationTrackingEnabled,
-          policy_version: "2025-06",
-          source: "settings.location_tracking",
-          granted_at: locationTrackingEnabled ? nowIso : null,
-          revoked_at: locationTrackingEnabled ? null : nowIso,
-        });
+        const { error: consentError } = await supabase
+          .from("user_consents")
+          .insert({
+            user_id: preferences.user_id,
+            consent_type: "foreground_location",
+            granted: locationTrackingEnabled,
+            policy_version: "2025-06",
+            source: "settings.location_tracking",
+            granted_at: locationTrackingEnabled ? nowIso : null,
+            revoked_at: locationTrackingEnabled ? null : nowIso,
+          });
         if (consentError) throw consentError;
         await refreshConsents();
       }
 
       // Marketing email consent is tracked separately from transactional
       // notifications so newsletter opt-in is auditable on its own.
-      if ((preferences.marketing_emails_enabled ?? false) !== marketingEmailsEnabled) {
+      if (
+        (preferences.marketing_emails_enabled ?? false) !==
+        marketingEmailsEnabled
+      ) {
         const nowIso = new Date().toISOString();
-        const { error: marketingConsentError } = await supabase.from("user_consents").insert({
-          user_id: preferences.user_id,
-          consent_type: "marketing_email",
-          granted: marketingEmailsEnabled,
-          policy_version: "2025-06",
-          source: "settings.marketing_emails",
-          granted_at: marketingEmailsEnabled ? nowIso : null,
-          revoked_at: marketingEmailsEnabled ? null : nowIso,
-        });
+        const { error: marketingConsentError } = await supabase
+          .from("user_consents")
+          .insert({
+            user_id: preferences.user_id,
+            consent_type: "marketing_email",
+            granted: marketingEmailsEnabled,
+            policy_version: "2025-06",
+            source: "settings.marketing_emails",
+            granted_at: marketingEmailsEnabled ? nowIso : null,
+            revoked_at: marketingEmailsEnabled ? null : nowIso,
+          });
         if (marketingConsentError) throw marketingConsentError;
         await refreshConsents();
       }
@@ -275,7 +315,9 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         await setConsent("push_notifications", true, "settings.web_push");
         const ok = await subscribeWebPush();
         if (!ok && webPushPermission === "denied") {
-          toast.error("Notifications blocked. Enable them in your browser settings.");
+          toast.error(
+            "Notifications blocked. Enable them in your browser settings.",
+          );
         }
       } else {
         await unsubscribeWebPush();
@@ -302,12 +344,17 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
           <SectionTitle
             subtitle="Manage your JET subscription plan"
-            meta={isAdmin && !isMonetizationEnabled() ? (
-              <Badge variant="outline" className="flex items-center gap-1 text-xs border-primary/50 text-primary shrink-0">
-                <ShieldCheck className="w-3 h-3" />
-                Admin Only
-              </Badge>
-            ) : undefined}
+            meta={
+              isAdmin && !isMonetizationEnabled() ? (
+                <Badge
+                  variant="outline"
+                  className="flex items-center gap-1 text-xs border-primary/50 text-primary shrink-0"
+                >
+                  <ShieldCheck className="w-3 h-3" />
+                  Admin Only
+                </Badge>
+              ) : undefined
+            }
             className="mb-0"
           >
             <span className="inline-flex items-center gap-2">
@@ -322,7 +369,10 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
 
       {/* Personal Preferences */}
       <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
-        <SectionTitle subtitle="Customize your interests for personalized recommendations" className="mb-0">
+        <SectionTitle
+          subtitle="Customize your interests for personalized recommendations"
+          className="mb-0"
+        >
           <span className="inline-flex items-center gap-2">
             <Heart className="w-5 h-5 text-primary" />
             Personal Preferences
@@ -334,7 +384,10 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
 
       {/* Privacy */}
       <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
-        <SectionTitle subtitle="Control what information is visible to your connections" className="mb-0">
+        <SectionTitle
+          subtitle="Control what information is visible to your connections"
+          className="mb-0"
+        >
           <span className="inline-flex items-center gap-2">
             <Shield className="w-5 h-5 text-primary" />
             Privacy Settings
@@ -346,7 +399,10 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
 
       {/* Notifications */}
       <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
-        <SectionTitle subtitle="Manage how you receive alerts and updates" className="mb-0">
+        <SectionTitle
+          subtitle="Manage how you receive alerts and updates"
+          className="mb-0"
+        >
           <span className="inline-flex items-center gap-2">
             <Bell className="w-5 h-5 text-primary" />
             Notifications
@@ -356,7 +412,10 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         <div className="space-y-3 sm:space-y-4">
           <div className="flex items-center justify-between gap-3">
             <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
-              <label htmlFor="notifications" className="text-xs sm:text-sm font-medium text-foreground block">
+              <label
+                htmlFor="notifications"
+                className="text-xs sm:text-sm font-medium text-foreground block"
+              >
                 App Notifications
               </label>
               <p className="text-[10px] sm:text-xs text-muted-foreground">
@@ -375,7 +434,10 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
               <Separator className="my-2" />
               <div className="flex items-center justify-between gap-3">
                 <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
-                  <label htmlFor="push-notifications" className="text-xs sm:text-sm font-medium text-foreground flex items-center gap-1.5">
+                  <label
+                    htmlFor="push-notifications"
+                    className="text-xs sm:text-sm font-medium text-foreground flex items-center gap-1.5"
+                  >
                     <Smartphone className="w-3.5 h-3.5" />
                     Native Push Notifications
                   </label>
@@ -397,7 +459,10 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
               <Separator className="my-2" />
               <div className="flex items-center justify-between gap-3">
                 <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
-                  <label htmlFor="web-push-notifications" className="text-xs sm:text-sm font-medium text-foreground flex items-center gap-1.5">
+                  <label
+                    htmlFor="web-push-notifications"
+                    className="text-xs sm:text-sm font-medium text-foreground flex items-center gap-1.5"
+                  >
                     <Smartphone className="w-3.5 h-3.5" />
                     Push Notifications
                   </label>
@@ -429,12 +494,16 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
           <Separator className="my-2" />
           <div className="flex items-center justify-between gap-3">
             <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
-              <label htmlFor="marketing-emails" className="text-xs sm:text-sm font-medium text-foreground block">
+              <label
+                htmlFor="marketing-emails"
+                className="text-xs sm:text-sm font-medium text-foreground block"
+              >
                 JET Newsletter
               </label>
               <p className="text-[10px] sm:text-xs text-muted-foreground">
-                Occasional emails about new venues, city drops and features. Separate from
-                account and deal alerts — you can unsubscribe any time.
+                Occasional emails about new venues, city drops and features.
+                Separate from account and deal alerts — you can unsubscribe any
+                time.
               </p>
             </div>
             <Switch
@@ -449,7 +518,10 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
 
       {/* Appearance */}
       <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
-        <SectionTitle subtitle="JET ships in a single, signature dark luxe theme." className="mb-0">
+        <SectionTitle
+          subtitle="JET ships in a single, signature dark luxe theme."
+          className="mb-0"
+        >
           <span className="inline-flex items-center gap-2">
             <Moon className="w-5 h-5 text-gold" />
             Appearance
@@ -466,13 +538,16 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
               Near-black surfaces, hairline borders, soft ambient glow.
             </p>
           </div>
-        <span className="dot-gold" aria-hidden="true" />
+          <span className="dot-gold" aria-hidden="true" />
         </div>
       </Card>
 
       {/* App Updates */}
       <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
-        <SectionTitle subtitle="Control how JET handles production updates when installed." className="mb-0">
+        <SectionTitle
+          subtitle="Control how JET handles production updates when installed."
+          className="mb-0"
+        >
           <span className="inline-flex items-center gap-2">
             <RefreshCw className="w-5 h-5 text-primary" />
             App Updates
@@ -482,7 +557,10 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         <div className="space-y-3 sm:space-y-4">
           <div className="flex items-center justify-between gap-3">
             <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
-              <label htmlFor="auto-reload-updates" className="text-xs sm:text-sm font-medium text-foreground block">
+              <label
+                htmlFor="auto-reload-updates"
+                className="text-xs sm:text-sm font-medium text-foreground block"
+              >
                 Auto-reload on update
               </label>
               <p className="text-[10px] sm:text-xs text-muted-foreground">
@@ -501,7 +579,10 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
 
       {/* Location */}
       <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
-        <SectionTitle subtitle="Control how the app uses your location" className="mb-0">
+        <SectionTitle
+          subtitle="Control how the app uses your location"
+          className="mb-0"
+        >
           <span className="inline-flex items-center gap-2">
             <MapPin className="w-5 h-5 text-primary" />
             Location
@@ -511,7 +592,10 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         <div className="space-y-3 sm:space-y-4">
           <div className="flex items-center justify-between gap-3">
             <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
-              <label htmlFor="location-tracking" className="text-xs sm:text-sm font-medium text-foreground block">
+              <label
+                htmlFor="location-tracking"
+                className="text-xs sm:text-sm font-medium text-foreground block"
+              >
                 Location Tracking
               </label>
               <p className="text-[10px] sm:text-xs text-muted-foreground">
@@ -527,7 +611,10 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
           </div>
           <div className="flex items-center justify-between gap-3">
             <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
-              <label htmlFor="background-tracking" className="text-xs sm:text-sm font-medium text-foreground block">
+              <label
+                htmlFor="background-tracking"
+                className="text-xs sm:text-sm font-medium text-foreground block"
+              >
                 Background Tracking
               </label>
               <p className="text-[10px] sm:text-xs text-muted-foreground">
@@ -550,10 +637,13 @@ export function ProfileSettingsPanel({ userId, userEmail }: ProfileSettingsPanel
         <div className="flex items-start gap-2 sm:gap-3">
           <Radio className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground mt-0.5 flex-shrink-0" />
           <div className="space-y-1 sm:space-y-2 flex-1 min-w-0">
-            <h3 className="text-xs sm:text-sm font-medium text-foreground">Privacy Notice</h3>
+            <h3 className="text-xs sm:text-sm font-medium text-foreground">
+              Privacy Notice
+            </h3>
             <p className="text-[10px] sm:text-xs text-muted-foreground">
-              Your location data is used solely to provide personalized recommendations and notifications.
-              We never share your data with third parties without your explicit consent.
+              Your location data is used solely to provide personalized
+              recommendations and notifications. We never share your data with
+              third parties without your explicit consent.
             </p>
           </div>
         </div>

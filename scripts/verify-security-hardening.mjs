@@ -201,7 +201,11 @@ for (const file of migrationFiles) {
   if (/create\s+policy\s+"?Anyone can view chat images"?/i.test(sql)) {
     chatImagesPublicPolicy = true;
   }
-  if (/drop\s+policy\s+(?:if\s+exists\s+)?"?Anyone can view chat images"?/i.test(sql)) {
+  if (
+    /drop\s+policy\s+(?:if\s+exists\s+)?"?Anyone can view chat images"?/i.test(
+      sql,
+    )
+  ) {
     chatImagesPublicPolicy = false;
   }
 }
@@ -275,7 +279,9 @@ const baseline = existsSync(BASELINE_PATH)
 if (UPDATE_BASELINE) {
   const sorted = [...new Set(errors)].sort();
   writeFileSync(BASELINE_PATH, sorted.join("\n") + (sorted.length ? "\n" : ""));
-  console.log(`Baseline updated with ${sorted.length} entries → ${BASELINE_PATH}`);
+  console.log(
+    `Baseline updated with ${sorted.length} entries → ${BASELINE_PATH}`,
+  );
   process.exit(0);
 }
 

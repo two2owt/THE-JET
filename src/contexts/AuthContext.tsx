@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  ReactNode,
+} from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { loadConsents } from "@/lib/consent";
@@ -39,7 +46,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Centralized session refresh function
   const refreshSession = useCallback(async () => {
     try {
-      const { data: { session: refreshedSession }, error } = await supabase.auth.getSession();
+      const {
+        data: { session: refreshedSession },
+        error,
+      } = await supabase.auth.getSession();
       if (error) {
         console.error("Session refresh error:", error.message);
         return;
@@ -72,7 +82,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         if (error) return;
         localStorage.setItem(
           "jet_auto_reload_updates",
-          JSON.stringify(data?.auto_reload_updates ?? false)
+          JSON.stringify(data?.auto_reload_updates ?? false),
         );
       } catch {
         // Best-effort sync
@@ -80,67 +90,76 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
 
     // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, currentSession) => {
-        // Only synchronous state updates here
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        setIsLoading(false);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, currentSession) => {
+      // Only synchronous state updates here
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+      setIsLoading(false);
 
-        // Refresh runtime consent cache whenever auth identity changes
-        loadConsents(currentSession?.user?.id ?? null).catch(() => undefined);
+      // Refresh runtime consent cache whenever auth identity changes
+      loadConsents(currentSession?.user?.id ?? null).catch(() => undefined);
 
-        // Sync the auto-reload PWA preference to localStorage for the SW tracker.
-        syncAutoReloadPreference(currentSession?.user?.id ?? null).catch(() => undefined);
+      // Sync the auto-reload PWA preference to localStorage for the SW tracker.
+      syncAutoReloadPreference(currentSession?.user?.id ?? null).catch(
+        () => undefined,
+      );
 
-        // Funnel instrumentation — identify on sign-in, reset on sign-out.
-        // Wrapped in try/catch so analytics can never break auth flow.
+      // Funnel instrumentation — identify on sign-in, reset on sign-out.
+      // Wrapped in try/catch so analytics can never break auth flow.
+      try {
+        if (event === "SIGNED_IN" && currentSession?.user) {
+          analytics.identify(currentSession.user.id);
+          const provider =
+            (currentSession.user.app_metadata as { provider?: string } | null)
+              ?.provider ?? "email";
+          // Single canonical sign-in event — "Auth Event"/login was a
+          // duplicate of this and doubled every row in analytics_events.
+          analytics.track("Auth Signed In", { provider });
+        } else if (event === "SIGNED_OUT") {
+          analytics.authEvent("logout");
+          analytics.reset();
+        }
+      } catch {
+        // analytics is best-effort
+      }
+
+      // Handle specific auth events
+      if (event === "TOKEN_REFRESHED") {
+        if (import.meta.env.DEV)
+          console.log("Session token refreshed successfully");
+      }
+
+      if (event === "SIGNED_OUT") {
+        setSession(null);
+        setUser(null);
+      }
+
+      // Broadcast session change to other tabs/windows
+      if (
+        event === "SIGNED_IN" ||
+        event === "TOKEN_REFRESHED" ||
+        event === "SIGNED_OUT"
+      ) {
         try {
-          if (event === "SIGNED_IN" && currentSession?.user) {
-            analytics.identify(currentSession.user.id);
-            const provider =
-              (currentSession.user.app_metadata as { provider?: string } | null)
-                ?.provider ?? "email";
-            // Single canonical sign-in event — "Auth Event"/login was a
-            // duplicate of this and doubled every row in analytics_events.
-            analytics.track("Auth Signed In", { provider });
-          } else if (event === "SIGNED_OUT") {
-            analytics.authEvent("logout");
-            analytics.reset();
-          }
+          localStorage.setItem(SESSION_BROADCAST_KEY, Date.now().toString());
         } catch {
-          // analytics is best-effort
-        }
-
-        // Handle specific auth events
-        if (event === "TOKEN_REFRESHED") {
-          if (import.meta.env.DEV) console.log("Session token refreshed successfully");
-        }
-
-        if (event === "SIGNED_OUT") {
-          setSession(null);
-          setUser(null);
-        }
-
-        // Broadcast session change to other tabs/windows
-        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "SIGNED_OUT") {
-          try {
-            localStorage.setItem(SESSION_BROADCAST_KEY, Date.now().toString());
-          } catch {
-            // localStorage may not be available
-          }
+          // localStorage may not be available
         }
       }
-    );
+    });
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
-      setSession(existingSession);
-      setUser(existingSession?.user ?? null);
-      setIsLoading(false);
-      loadConsents(existingSession?.user?.id ?? null).catch(() => undefined);
-      syncAutoReloadPreference(existingSession?.user?.id ?? null);
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data: { session: existingSession } }) => {
+        setSession(existingSession);
+        setUser(existingSession?.user ?? null);
+        setIsLoading(false);
+        loadConsents(existingSession?.user?.id ?? null).catch(() => undefined);
+        syncAutoReloadPreference(existingSession?.user?.id ?? null);
+      });
 
     // Listen for session changes from other tabs/windows
     const handleStorageChange = (e: StorageEvent) => {
@@ -159,9 +178,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     // Set up periodic session check (every 5 minutes for better responsiveness)
-    const intervalId = setInterval(() => {
-      refreshSession();
-    }, 5 * 60 * 1000); // 5 minutes
+    const intervalId = setInterval(
+      () => {
+        refreshSession();
+      },
+      5 * 60 * 1000,
+    ); // 5 minutes
 
     return () => {
       subscription.unsubscribe();

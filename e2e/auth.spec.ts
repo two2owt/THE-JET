@@ -98,7 +98,9 @@ test.describe("sign-in form", () => {
 });
 
 test.describe("sign-up form", () => {
-  test("weak password shows the strength hint as an error", async ({ page }) => {
+  test("weak password shows the strength hint as an error", async ({
+    page,
+  }) => {
     await gotoAuth(page, "/signup");
     await page.locator("#auth-email").fill("test@example.com");
     await page.locator("#auth-password").fill("weak");
@@ -122,7 +124,9 @@ test.describe("sign-up form", () => {
     );
   });
 
-  test("submitting without consent boxes blocks submission", async ({ page }) => {
+  test("submitting without consent boxes blocks submission", async ({
+    page,
+  }) => {
     await gotoAuth(page, "/signup");
     await page.locator("#auth-email").fill("test@example.com");
     await page.locator("#auth-password").fill("StrongPass1");
@@ -136,7 +140,9 @@ test.describe("sign-up form", () => {
 });
 
 test.describe("forgot-password flow", () => {
-  test("`Forgot?` link reveals the forgot-password screen", async ({ page }) => {
+  test("`Forgot?` link reveals the forgot-password screen", async ({
+    page,
+  }) => {
     await gotoAuth(page, "/signin");
     await expect(
       page.getByRole("heading", { name: /welcome back/i }),

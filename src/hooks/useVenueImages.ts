@@ -11,11 +11,13 @@ interface CachedVenueImages {
   timestamp: number;
 }
 
-const CACHE_KEY = 'venue_images_cache';
+const CACHE_KEY = "venue_images_cache";
 const CACHE_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
 
 export const useVenueImages = () => {
-  const [venueImages, setVenueImages] = useState<Map<string, string>>(new Map());
+  const [venueImages, setVenueImages] = useState<Map<string, string>>(
+    new Map(),
+  );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,7 +25,7 @@ export const useVenueImages = () => {
     const timer = setTimeout(() => {
       loadVenueImages();
     }, 100);
-    
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -34,7 +36,7 @@ export const useVenueImages = () => {
       if (cached) {
         const { data, timestamp }: CachedVenueImages = JSON.parse(cached);
         const isExpired = Date.now() - timestamp > CACHE_DURATION;
-        
+
         if (!isExpired) {
           // Use cached data
           const imageMap = new Map<string, string>(data);
@@ -46,10 +48,10 @@ export const useVenueImages = () => {
 
       // Fetch from database if no valid cache
       const { data, error } = await supabase
-        .from('deals')
-        .select('venue_name, image_url')
-        .not('image_url', 'is', null)
-        .eq('active', true);
+        .from("deals")
+        .select("venue_name, image_url")
+        .not("image_url", "is", null)
+        .eq("active", true);
 
       if (error) throw error;
 
@@ -63,13 +65,13 @@ export const useVenueImages = () => {
       // Cache the results
       const cacheData: CachedVenueImages = {
         data: Array.from(imageMap.entries()),
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
       localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
 
       setVenueImages(imageMap);
     } catch (error) {
-      console.error('Error loading venue images:', error);
+      console.error("Error loading venue images:", error);
     } finally {
       setLoading(false);
     }

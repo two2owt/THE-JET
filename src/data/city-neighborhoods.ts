@@ -27,7 +27,7 @@ export const CITY_NEIGHBORHOODS: Record<string, Neighborhood[]> = {
     { name: "Midtown", lat: 40.7549, lng: -73.984, radiusKm: 2 },
     { name: "Lower East Side", lat: 40.715, lng: -73.9843, radiusKm: 1.5 },
     { name: "West Village", lat: 40.7358, lng: -74.0036, radiusKm: 1.5 },
-    { name: "SoHo", lat: 40.7233, lng: -74.0020, radiusKm: 1.2 },
+    { name: "SoHo", lat: 40.7233, lng: -74.002, radiusKm: 1.2 },
     { name: "Williamsburg", lat: 40.7081, lng: -73.9571, radiusKm: 2.5 },
     { name: "Harlem", lat: 40.8116, lng: -73.9465, radiusKm: 3 },
     { name: "Upper East Side", lat: 40.7736, lng: -73.9566, radiusKm: 2.5 },
@@ -111,7 +111,11 @@ export const CITY_NEIGHBORHOODS: Record<string, Neighborhood[]> = {
  * Resolve the neighborhood label for a venue in a given city.
  * Falls back to the city's display name when no neighborhood is close enough.
  */
-export function getNeighborhoodForCoords(cityId: string, lat: number, lng: number): string {
+export function getNeighborhoodForCoords(
+  cityId: string,
+  lat: number,
+  lng: number,
+): string {
   const city = CITIES.find((c) => c.id === cityId);
   const hoods = CITY_NEIGHBORHOODS[cityId] ?? [];
 

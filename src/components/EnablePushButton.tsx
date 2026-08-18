@@ -14,8 +14,14 @@ import { setConsent } from "@/lib/consent";
  */
 export function EnablePushButton({ className }: { className?: string }) {
   const { session } = useAuth();
-  const { isSupported, isSubscribed, isLoading, permission, subscribe, unsubscribe } =
-    useWebPushNotifications();
+  const {
+    isSupported,
+    isSubscribed,
+    isLoading,
+    permission,
+    subscribe,
+    unsubscribe,
+  } = useWebPushNotifications();
   const [working, setWorking] = useState(false);
 
   if (!isSupported) return null;
@@ -31,7 +37,8 @@ export function EnablePushButton({ className }: { className?: string }) {
     }
     if (permission === "denied") {
       toast.error("Notifications are blocked", {
-        description: "Allow notifications for this site in your browser settings, then try again.",
+        description:
+          "Allow notifications for this site in your browser settings, then try again.",
       });
       return;
     }
@@ -66,7 +73,11 @@ export function EnablePushButton({ className }: { className?: string }) {
         className={className}
         aria-label="Turn off browser push notifications"
       >
-        {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <BellRing className="h-4 w-4" />}
+        {busy ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <BellRing className="h-4 w-4" />
+        )}
         <span>Alerts on</span>
       </Button>
     );
@@ -88,7 +99,9 @@ export function EnablePushButton({ className }: { className?: string }) {
       ) : (
         <Bell className="h-4 w-4" />
       )}
-      <span>{permission === "denied" ? "Alerts blocked" : "Enable alerts"}</span>
+      <span>
+        {permission === "denied" ? "Alerts blocked" : "Enable alerts"}
+      </span>
     </Button>
   );
 }

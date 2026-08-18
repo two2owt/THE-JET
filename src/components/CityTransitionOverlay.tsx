@@ -16,7 +16,10 @@ interface CityTransitionOverlayProps {
  * screen, and "lands" with an "Arriving in <City>" caption. GPU-only animation
  * (transform + opacity) so it costs 0 CLS.
  */
-export function CityTransitionOverlay({ city, nonce }: CityTransitionOverlayProps) {
+export function CityTransitionOverlay({
+  city,
+  nonce,
+}: CityTransitionOverlayProps) {
   const [visible, setVisible] = useState(false);
   const [planeSrc, setPlaneSrc] = useState(planeImg);
 
@@ -110,7 +113,8 @@ export function CityTransitionOverlay({ city, nonce }: CityTransitionOverlayProp
           width: "clamp(72px, 12vw, 128px)",
           height: "auto",
           willChange: "transform, opacity",
-          animation: "plane-flight 2.4s cubic-bezier(0.4, 0.0, 0.2, 1) forwards",
+          animation:
+            "plane-flight 2.4s cubic-bezier(0.4, 0.0, 0.2, 1) forwards",
         }}
       />
     </div>

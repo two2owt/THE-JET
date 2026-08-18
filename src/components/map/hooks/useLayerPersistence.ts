@@ -32,17 +32,39 @@ export const useLayerPersistence = ({
   timelapseMode,
   pathsWindowMinutes,
 }: Params) => {
-  useEffect(() => { localStorage.setItem(layerKeys.density, String(showDensityLayer)); }, [layerKeys.density, showDensityLayer]);
-  useEffect(() => { localStorage.setItem(layerKeys.paths, String(showMovementPaths)); }, [layerKeys.paths, showMovementPaths]);
-  useEffect(() => { localStorage.setItem(layerKeys.parking, String(showParking)); }, [layerKeys.parking, showParking]);
-  useEffect(() => { localStorage.setItem(layerKeys.stats, String(showLiveStats)); }, [layerKeys.stats, showLiveStats]);
-
-  useEffect(() => { localStorage.setItem(filterKeys.timeFilter, timeFilter); }, [filterKeys.timeFilter, timeFilter]);
-  useEffect(() => { localStorage.setItem(filterKeys.pathTimeFilter, pathTimeFilter); }, [filterKeys.pathTimeFilter, pathTimeFilter]);
-  useEffect(() => { localStorage.setItem(filterKeys.dayFilter, dayFilter === undefined ? "all" : String(dayFilter)); }, [filterKeys.dayFilter, dayFilter]);
-  useEffect(() => { localStorage.setItem(filterKeys.timelapseMode, String(timelapseMode)); }, [filterKeys.timelapseMode, timelapseMode]);
+  useEffect(() => {
+    localStorage.setItem(layerKeys.density, String(showDensityLayer));
+  }, [layerKeys.density, showDensityLayer]);
+  useEffect(() => {
+    localStorage.setItem(layerKeys.paths, String(showMovementPaths));
+  }, [layerKeys.paths, showMovementPaths]);
+  useEffect(() => {
+    localStorage.setItem(layerKeys.parking, String(showParking));
+  }, [layerKeys.parking, showParking]);
+  useEffect(() => {
+    localStorage.setItem(layerKeys.stats, String(showLiveStats));
+  }, [layerKeys.stats, showLiveStats]);
 
   useEffect(() => {
-    localStorage.setItem(filterKeys.pathsWindow, pathsWindowMinutes === null ? "off" : String(pathsWindowMinutes));
+    localStorage.setItem(filterKeys.timeFilter, timeFilter);
+  }, [filterKeys.timeFilter, timeFilter]);
+  useEffect(() => {
+    localStorage.setItem(filterKeys.pathTimeFilter, pathTimeFilter);
+  }, [filterKeys.pathTimeFilter, pathTimeFilter]);
+  useEffect(() => {
+    localStorage.setItem(
+      filterKeys.dayFilter,
+      dayFilter === undefined ? "all" : String(dayFilter),
+    );
+  }, [filterKeys.dayFilter, dayFilter]);
+  useEffect(() => {
+    localStorage.setItem(filterKeys.timelapseMode, String(timelapseMode));
+  }, [filterKeys.timelapseMode, timelapseMode]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      filterKeys.pathsWindow,
+      pathsWindowMinutes === null ? "off" : String(pathsWindowMinutes),
+    );
   }, [filterKeys.pathsWindow, pathsWindowMinutes]);
 };

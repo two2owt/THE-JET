@@ -1,6 +1,13 @@
 import { useState, useCallback } from "react";
 import Cropper, { Area } from "react-easy-crop";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Loader2, ZoomIn, RotateCw } from "lucide-react";
@@ -16,7 +23,11 @@ interface AvatarCropDialogProps {
 /** Output square size for the cropped avatar (px) */
 const OUTPUT_SIZE = 512;
 
-async function getCroppedBlob(imageSrc: string, pixelCrop: Area, rotation = 0): Promise<Blob> {
+async function getCroppedBlob(
+  imageSrc: string,
+  pixelCrop: Area,
+  rotation = 0,
+): Promise<Blob> {
   const image = await new Promise<HTMLImageElement>((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = "anonymous";
@@ -74,7 +85,8 @@ async function getCroppedBlob(imageSrc: string, pixelCrop: Area, rotation = 0): 
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
-      (blob) => (blob ? resolve(blob) : reject(new Error("Failed to encode image"))),
+      (blob) =>
+        blob ? resolve(blob) : reject(new Error("Failed to encode image")),
       "image/jpeg",
       0.9,
     );
@@ -168,10 +180,17 @@ export const AvatarCropDialog = ({
         </div>
 
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={handleClose} disabled={isProcessing}>
+          <Button
+            variant="outline"
+            onClick={handleClose}
+            disabled={isProcessing}
+          >
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={isProcessing || !croppedAreaPixels}>
+          <Button
+            onClick={handleSave}
+            disabled={isProcessing || !croppedAreaPixels}
+          >
             {isProcessing ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />

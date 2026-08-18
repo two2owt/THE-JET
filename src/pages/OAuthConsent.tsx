@@ -10,12 +10,22 @@ type AuthorizationDetails = {
 };
 
 type OAuthNamespace = {
-  getAuthorizationDetails: (id: string) => Promise<{ data: AuthorizationDetails | null; error: { message: string } | null }>;
-  approveAuthorization: (id: string) => Promise<{ data: AuthorizationDetails | null; error: { message: string } | null }>;
-  denyAuthorization: (id: string) => Promise<{ data: AuthorizationDetails | null; error: { message: string } | null }>;
+  getAuthorizationDetails: (id: string) => Promise<{
+    data: AuthorizationDetails | null;
+    error: { message: string } | null;
+  }>;
+  approveAuthorization: (id: string) => Promise<{
+    data: AuthorizationDetails | null;
+    error: { message: string } | null;
+  }>;
+  denyAuthorization: (id: string) => Promise<{
+    data: AuthorizationDetails | null;
+    error: { message: string } | null;
+  }>;
 };
 
-const oauth = () => (supabase.auth as unknown as { oauth: OAuthNamespace }).oauth;
+const oauth = () =>
+  (supabase.auth as unknown as { oauth: OAuthNamespace }).oauth;
 
 export default function OAuthConsent() {
   const [params] = useSearchParams();
@@ -37,7 +47,8 @@ export default function OAuthConsent() {
         window.location.href = `/auth?next=${encodeURIComponent(next)}`;
         return;
       }
-      const { data, error: detailsError } = await oauth().getAuthorizationDetails(authorizationId);
+      const { data, error: detailsError } =
+        await oauth().getAuthorizationDetails(authorizationId);
       if (!active) return;
       if (detailsError) {
         setError(detailsError.message);
@@ -88,12 +99,19 @@ export default function OAuthConsent() {
           <p className="text-sm text-muted-foreground">Loading…</p>
         ) : (
           <>
-            <h1 className="font-display text-xl mb-2">Connect {clientName} to JET-Around</h1>
+            <h1 className="font-display text-xl mb-2">
+              Connect {clientName} to JET-Around
+            </h1>
             <p className="text-sm text-muted-foreground mb-6">
-              {clientName} will be able to browse deals and read or update your saved venues as you.
+              {clientName} will be able to browse deals and read or update your
+              saved venues as you.
             </p>
             <div className="flex gap-3">
-              <Button className="flex-1 min-h-[44px]" disabled={busy} onClick={() => decide(true)}>
+              <Button
+                className="flex-1 min-h-[44px]"
+                disabled={busy}
+                onClick={() => decide(true)}
+              >
                 Approve
               </Button>
               <Button

@@ -38,15 +38,19 @@ for (const file of readdirSync(MIGRATIONS_DIR).sort()) {
 }
 
 if (failures.length > 0) {
-  console.error("Migration preflight failed: invalid advisory-lock signature.\n");
+  console.error(
+    "Migration preflight failed: invalid advisory-lock signature.\n",
+  );
   for (const f of failures) console.error(`  ${f}`);
   console.error(
     "\nUse the single-bigint form instead, e.g.\n" +
       "  PERFORM pg_catalog.pg_advisory_xact_lock(\n" +
       "    pg_catalog.hashtextextended('scope:' || _user_id::text, 0)\n" +
-      "  );"
+      "  );",
   );
   process.exit(1);
 }
 
-console.log("Advisory-lock preflight passed: all advisory lock calls are valid.");
+console.log(
+  "Advisory-lock preflight passed: all advisory lock calls are valid.",
+);

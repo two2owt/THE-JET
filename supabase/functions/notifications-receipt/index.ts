@@ -17,16 +17,19 @@ function json(payload: unknown, status = 200) {
   });
 }
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS")
+    return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
   try {
     const body = await req.json().catch(() => ({}));
     const notificationId = String(body?.notificationId ?? "");
-    if (!UUID_RE.test(notificationId)) return json({ error: "invalid notificationId" }, 400);
+    if (!UUID_RE.test(notificationId))
+      return json({ error: "invalid notificationId" }, 400);
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -42,7 +45,10 @@ Deno.serve(async (req) => {
 
     return json({ ok: true });
   } catch (err) {
-    console.error(`[${FUNCTION_NAME}]`, err instanceof Error ? err.message : err);
+    console.error(
+      `[${FUNCTION_NAME}]`,
+      err instanceof Error ? err.message : err,
+    );
     return json({ error: "Internal server error" }, 500);
   }
 });

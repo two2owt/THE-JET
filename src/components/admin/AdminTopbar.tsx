@@ -1,8 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@/lib/router-compat";
 import {
-  Bell, LogOut, Search, Settings, User as UserIcon, X,
-  LayoutGrid, Tag, Store, MapPinned, Loader2,
+  Bell,
+  LogOut,
+  Search,
+  Settings,
+  User as UserIcon,
+  X,
+  LayoutGrid,
+  Tag,
+  Store,
+  MapPinned,
+  Loader2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
@@ -41,10 +50,10 @@ interface EntityResult {
 }
 
 const KIND_META: Record<EntityKind, { label: string; icon: typeof Tag }> = {
-  section:      { label: "Admin sections", icon: LayoutGrid },
-  deal:         { label: "Deals",          icon: Tag },
-  venue:        { label: "Venues / JetCards", icon: Store },
-  neighborhood: { label: "Neighborhoods",  icon: MapPinned },
+  section: { label: "Admin sections", icon: LayoutGrid },
+  deal: { label: "Deals", icon: Tag },
+  venue: { label: "Venues / JetCards", icon: Store },
+  neighborhood: { label: "Neighborhoods", icon: MapPinned },
 };
 
 interface AdminTopbarProps {
@@ -66,8 +75,7 @@ export function AdminTopbar({ items, onSelect }: AdminTopbarProps) {
 
   const unread = notifications.filter((n) => !n.read).length;
   const displayName =
-    profile?.display_name ||
-    (user?.email ? user.email.split("@")[0] : "Admin");
+    profile?.display_name || (user?.email ? user.email.split("@")[0] : "Admin");
   const initials = getInitials(displayName);
   const avatarUrl = profile?.avatar_url || DEFAULT_AVATAR;
 
@@ -173,7 +181,9 @@ export function AdminTopbar({ items, onSelect }: AdminTopbarProps) {
             label: d.title,
             description: d.venue_name
               ? `${d.venue_name}${d.active ? "" : " · inactive"}`
-              : (d.active ? "Active deal" : "Inactive deal"),
+              : d.active
+                ? "Active deal"
+                : "Inactive deal",
             href: `/?deal=${encodeURIComponent(d.id)}`,
           });
         });
@@ -184,7 +194,9 @@ export function AdminTopbar({ items, onSelect }: AdminTopbarProps) {
             kind: "neighborhood",
             id: n.id,
             label: n.name,
-            description: n.description ?? (n.active ? "Active geofence" : "Inactive geofence"),
+            description:
+              n.description ??
+              (n.active ? "Active geofence" : "Inactive geofence"),
             sectionId: "areas",
           });
         });
@@ -251,7 +263,9 @@ export function AdminTopbar({ items, onSelect }: AdminTopbarProps) {
       >
         <Search className="h-4 w-4" />
         <span className="admin-topbar-search-trigger-label">Search admin…</span>
-        <kbd className="admin-topbar-kbd" aria-hidden="true">/</kbd>
+        <kbd className="admin-topbar-kbd" aria-hidden="true">
+          /
+        </kbd>
       </button>
 
       <div className="admin-topbar-spacer" />
@@ -283,7 +297,11 @@ export function AdminTopbar({ items, onSelect }: AdminTopbarProps) {
               <AvatarImage
                 src={avatarUrl}
                 alt=""
-                className={profile?.avatar_url ? "object-cover" : "object-contain p-1 bg-background"}
+                className={
+                  profile?.avatar_url
+                    ? "object-cover"
+                    : "object-contain p-1 bg-background"
+                }
               />
               <AvatarFallback>{initials}</AvatarFallback>
             </Avatar>
@@ -298,7 +316,9 @@ export function AdminTopbar({ items, onSelect }: AdminTopbarProps) {
           className="admin-topbar-menu w-56"
         >
           <DropdownMenuLabel className="flex flex-col gap-0.5">
-            <span className="text-sm font-semibold text-foreground">{displayName}</span>
+            <span className="text-sm font-semibold text-foreground">
+              {displayName}
+            </span>
             {user?.email && (
               <span className="text-xs font-normal text-muted-foreground truncate">
                 {user.email}
@@ -309,7 +329,9 @@ export function AdminTopbar({ items, onSelect }: AdminTopbarProps) {
           <DropdownMenuItem onSelect={() => navigate("/profile")}>
             <UserIcon aria-hidden="true" /> Profile
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => navigate("/profile?section=settings")}>
+          <DropdownMenuItem
+            onSelect={() => navigate("/profile?section=settings")}
+          >
             <Settings aria-hidden="true" /> Settings
           </DropdownMenuItem>
           <DropdownMenuSeparator />
@@ -321,7 +343,12 @@ export function AdminTopbar({ items, onSelect }: AdminTopbarProps) {
 
       {/* Expanded search overlay */}
       {searchOpen && (
-        <div className="admin-search-overlay" role="dialog" aria-modal="true" aria-label="Search">
+        <div
+          className="admin-search-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Search"
+        >
           <button
             type="button"
             aria-label="Close search"
@@ -348,7 +375,11 @@ export function AdminTopbar({ items, onSelect }: AdminTopbarProps) {
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="admin-search-results" role="listbox" aria-label="Search results">
+            <div
+              className="admin-search-results"
+              role="listbox"
+              aria-label="Search results"
+            >
               {totalCount === 0 ? (
                 <p className="admin-search-empty">
                   {entitySearching
@@ -362,7 +393,12 @@ export function AdminTopbar({ items, onSelect }: AdminTopbarProps) {
                   const meta = KIND_META[group.kind];
                   const Icon = meta.icon;
                   return (
-                    <section key={group.kind} className="admin-search-group" role="group" aria-label={meta.label}>
+                    <section
+                      key={group.kind}
+                      className="admin-search-group"
+                      role="group"
+                      aria-label={meta.label}
+                    >
                       <header className="admin-search-group-label">
                         <Icon className="h-3.5 w-3.5" aria-hidden="true" />
                         <span>{meta.label}</span>
@@ -377,9 +413,13 @@ export function AdminTopbar({ items, onSelect }: AdminTopbarProps) {
                               role="option"
                               aria-selected="false"
                             >
-                              <span className="admin-search-result-label">{r.label}</span>
+                              <span className="admin-search-result-label">
+                                {r.label}
+                              </span>
                               {r.description && (
-                                <span className="admin-search-result-desc">{r.description}</span>
+                                <span className="admin-search-result-desc">
+                                  {r.description}
+                                </span>
                               )}
                             </button>
                           </li>
@@ -391,7 +431,10 @@ export function AdminTopbar({ items, onSelect }: AdminTopbarProps) {
               )}
               {entitySearching && totalCount > 0 && (
                 <div className="admin-search-searching" aria-live="polite">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                  <Loader2
+                    className="h-3.5 w-3.5 animate-spin"
+                    aria-hidden="true"
+                  />
                   <span>Updating results…</span>
                 </div>
               )}
@@ -406,6 +449,9 @@ export function AdminTopbar({ items, onSelect }: AdminTopbarProps) {
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "JA";
-  const letters = parts.length === 1 ? parts[0].slice(0, 2) : parts[0][0] + parts[parts.length - 1][0];
+  const letters =
+    parts.length === 1
+      ? parts[0].slice(0, 2)
+      : parts[0][0] + parts[parts.length - 1][0];
   return letters.toUpperCase();
 }

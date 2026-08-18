@@ -177,13 +177,23 @@ export const LiveStatsPanel = ({
   }
 
   const content = (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--live-stats-gap)" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--live-stats-gap)",
+      }}
+    >
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
         {isLoading ? (
           <Loader2
             aria-hidden="true"
             className="animate-spin"
-            style={{ width: "8px", height: "8px", color: "hsl(var(--primary))" }}
+            style={{
+              width: "8px",
+              height: "8px",
+              color: "hsl(var(--primary))",
+            }}
           />
         ) : (
           <span
@@ -259,7 +269,8 @@ export const LiveStatsPanel = ({
                   : "hsl(var(--muted-foreground))",
                 cursor: "pointer",
                 lineHeight: 1,
-                transition: "background 160ms ease, color 160ms ease, border-color 160ms ease",
+                transition:
+                  "background 160ms ease, color 160ms ease, border-color 160ms ease",
                 minHeight: "26px",
               }}
             >
@@ -270,7 +281,13 @@ export const LiveStatsPanel = ({
       </div>
 
       {isLoading ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--live-stats-row-v-gap, 8px)" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "var(--live-stats-row-v-gap, 8px)",
+          }}
+        >
           {[0, 1].map((i) => (
             <div
               key={i}
@@ -306,7 +323,13 @@ export const LiveStatsPanel = ({
           ))}
         </div>
       ) : rows.length > 0 ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--live-stats-row-v-gap, 8px)" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "var(--live-stats-row-v-gap, 8px)",
+          }}
+        >
           {rows.map((row) => (
             <div
               key={row.key}
@@ -318,8 +341,12 @@ export const LiveStatsPanel = ({
                 paddingBlock: "2px",
               }}
             >
-              <span className="live-stats-label" style={labelStyle}>{row.label}</span>
-              <span style={{ ...valueStyle, color: row.tone }}>{row.value}</span>
+              <span className="live-stats-label" style={labelStyle}>
+                {row.label}
+              </span>
+              <span style={{ ...valueStyle, color: row.tone }}>
+                {row.value}
+              </span>
             </div>
           ))}
         </div>
@@ -330,38 +357,47 @@ export const LiveStatsPanel = ({
       )}
 
       {/* Quick actions — jump to hotspot / highlight top route. */}
-      {!isLoading && (topHotspot || topRoute) && (onJumpToHotspot || onHighlightTopRoute) && (
-        <div
-          className="live-stats-quick-actions"
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "8px",
-            marginTop: "4px",
-            paddingTop: "10px",
-            borderTop: "1px solid hsl(var(--border) / 0.4)",
-          }}
-        >
-          {topHotspot && onJumpToHotspot && (
-            <QuickAction
-              icon={<MapPin style={{ width: 11, height: 11 }} strokeWidth={2.5} />}
-              label="Top hotspot"
-              hint={`${topHotspot.density}`}
-              onClick={onJumpToHotspot}
-              ariaLabel={`Jump to the busiest hotspot with ${topHotspot.density} check-ins`}
-            />
-          )}
-          {topRoute && onHighlightTopRoute && (
-            <QuickAction
-              icon={<RouteIcon style={{ width: 11, height: 11 }} strokeWidth={2.5} />}
-              label="Top route"
-              hint={`${topRoute.frequency}`}
-              onClick={onHighlightTopRoute}
-              ariaLabel={`Highlight the busiest route with frequency ${topRoute.frequency}`}
-            />
-          )}
-        </div>
-      )}
+      {!isLoading &&
+        (topHotspot || topRoute) &&
+        (onJumpToHotspot || onHighlightTopRoute) && (
+          <div
+            className="live-stats-quick-actions"
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "8px",
+              marginTop: "4px",
+              paddingTop: "10px",
+              borderTop: "1px solid hsl(var(--border) / 0.4)",
+            }}
+          >
+            {topHotspot && onJumpToHotspot && (
+              <QuickAction
+                icon={
+                  <MapPin style={{ width: 11, height: 11 }} strokeWidth={2.5} />
+                }
+                label="Top hotspot"
+                hint={`${topHotspot.density}`}
+                onClick={onJumpToHotspot}
+                ariaLabel={`Jump to the busiest hotspot with ${topHotspot.density} check-ins`}
+              />
+            )}
+            {topRoute && onHighlightTopRoute && (
+              <QuickAction
+                icon={
+                  <RouteIcon
+                    style={{ width: 11, height: 11 }}
+                    strokeWidth={2.5}
+                  />
+                }
+                label="Top route"
+                hint={`${topRoute.frequency}`}
+                onClick={onHighlightTopRoute}
+                ariaLabel={`Highlight the busiest route with frequency ${topRoute.frequency}`}
+              />
+            )}
+          </div>
+        )}
     </div>
   );
 
@@ -439,7 +475,8 @@ const QuickAction = ({
       fontWeight: 700,
       letterSpacing: "0.02em",
       cursor: "pointer",
-      transition: "background 180ms ease, border-color 180ms ease, transform 120ms ease",
+      transition:
+        "background 180ms ease, border-color 180ms ease, transform 120ms ease",
       lineHeight: 1,
       minHeight: "26px",
     }}
@@ -471,4 +508,3 @@ const QuickAction = ({
     </span>
   </button>
 );
-

@@ -1,16 +1,34 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate, useSearchParams, useLocation, Link } from "@/lib/router-compat";
+import {
+  useNavigate,
+  useSearchParams,
+  useLocation,
+  Link,
+} from "@/lib/router-compat";
 import { supabase } from "@/integrations/supabase/client";
 import { IconButton } from "@/components/ui/icon-button";
 import { AuthButton } from "@/components/auth/AuthButton";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Loader2, Eye, EyeOff, Mail, Lock, ArrowLeft, AlertCircle, CheckCircle2, Circle } from "lucide-react";
+import {
+  Loader2,
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  ArrowLeft,
+  AlertCircle,
+  CheckCircle2,
+  Circle,
+} from "lucide-react";
 import { z } from "zod";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/contexts/AuthContext";
-import { consumePostAuthRedirect, rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
+import {
+  consumePostAuthRedirect,
+  rememberPostAuthRedirect,
+} from "@/lib/postAuthRedirect";
 import { writeCachedOnboardingStatus } from "@/lib/onboardingStatus";
 import { discardCurrentAuthSession } from "@/lib/authSession";
 import { SEO } from "@/components/SEO";
@@ -33,18 +51,23 @@ import authBgWebp640 from "@/assets/auth-background-640.webp";
 import authBgWebp1024 from "@/assets/auth-background-1024.webp";
 import authBgWebp1600 from "@/assets/auth-background-1600.webp";
 
-
 // Enhanced validation schemas
-const emailSchema = z.string()
+const emailSchema = z
+  .string()
   .trim()
   .email({ message: "Please enter a valid email address" })
   .max(255, { message: "Email must be less than 255 characters" });
 
-const passwordSchema = z.string()
+const passwordSchema = z
+  .string()
   .min(8, { message: "Password must be at least 8 characters" })
   .max(72, { message: "Password must be less than 72 characters" })
-  .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
-  .regex(/[a-z]/, { message: "Password must contain at least one lowercase letter" })
+  .regex(/[A-Z]/, {
+    message: "Password must contain at least one uppercase letter",
+  })
+  .regex(/[a-z]/, {
+    message: "Password must contain at least one lowercase letter",
+  })
   .regex(/[0-9]/, { message: "Password must contain at least one number" });
 
 type AuthMode = "signin" | "signup" | "forgot" | "reset";
@@ -57,8 +80,9 @@ const PASSWORD_RULES: { label: string; test: (v: string) => boolean }[] = [
   { label: "Number", test: (v) => /[0-9]/.test(v) },
 ];
 type FieldName = "email" | "password" | "confirmPassword";
-type ValidationErrors = Partial<Record<FieldName | "consent" | "locationConsent", string>>;
-
+type ValidationErrors = Partial<
+  Record<FieldName | "consent" | "locationConsent", string>
+>;
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -73,8 +97,12 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
-  const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
+    {},
+  );
+  const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>(
+    {},
+  );
   const [showResendVerification, setShowResendVerification] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [isResending, setIsResending] = useState(false);
@@ -86,7 +114,10 @@ const Auth = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   // Auto-fit: scales the auth card down just enough to fit short viewports
   // (landscape phones, small windows) so the page never needs scrolling.
-  const autoFitRef = useAutoFitScale<HTMLDivElement>({ minScale: 0.7, containerSelector: ".auth-fullscreen" });
+  const autoFitRef = useAutoFitScale<HTMLDivElement>({
+    minScale: 0.7,
+    containerSelector: ".auth-fullscreen",
+  });
   const { user: authUser, isLoading: authLoading } = useAuth();
   // True while we're holding the form back because an already-authenticated
   // user is about to be redirected (prevents the form flashing for a frame).
@@ -99,10 +130,10 @@ const Auth = () => {
   const mode: AuthMode = isResettingPassword
     ? "reset"
     : isForgotPassword
-    ? "forgot"
-    : isSignUp
-    ? "signup"
-    : "signin";
+      ? "forgot"
+      : isSignUp
+        ? "signup"
+        : "signin";
 
   // Preserve an explicit ?next= target (e.g. the MCP OAuth consent URL) so the
   // user returns there after any sign-in method completes.
@@ -131,9 +162,7 @@ const Auth = () => {
       if (cancelled) return;
       const completed = !!profile?.onboarding_completed;
       writeCachedOnboardingStatus(authUser.id, completed);
-      const target = completed
-        ? consumePostAuthRedirect("/")
-        : "/onboarding";
+      const target = completed ? consumePostAuthRedirect("/") : "/onboarding";
       navigate(target, { replace: true });
     })();
     return () => {
@@ -145,10 +174,14 @@ const Auth = () => {
   // Also supports legacy ?mode=signup query param on /auth.
   useEffect(() => {
     const path = location.pathname;
-    const queryMode = searchParams.get('mode');
-    if (path === '/signup' || queryMode === 'signup') {
+    const queryMode = searchParams.get("mode");
+    if (path === "/signup" || queryMode === "signup") {
       setIsSignUp(true);
-    } else if (path === '/signin' || path === '/auth' || queryMode === 'signin') {
+    } else if (
+      path === "/signin" ||
+      path === "/auth" ||
+      queryMode === "signin"
+    ) {
       setIsSignUp(false);
     }
   }, [location.pathname, searchParams]);
@@ -158,12 +191,12 @@ const Auth = () => {
   // Supabase may still be exchanging the code/hash for a session when we mount,
   // so we listen for PASSWORD_RECOVERY / SIGNED_IN before declaring the link bad.
   useEffect(() => {
-    const hash = typeof window !== 'undefined' ? window.location.hash : '';
+    const hash = typeof window !== "undefined" ? window.location.hash : "";
     const isRecoveryEntry =
-      location.pathname === '/reset-password' ||
-      searchParams.get('reset') === 'true' ||
-      searchParams.get('type') === 'recovery' ||
-      hash.includes('type=recovery');
+      location.pathname === "/reset-password" ||
+      searchParams.get("reset") === "true" ||
+      searchParams.get("type") === "recovery" ||
+      hash.includes("type=recovery");
 
     if (!isRecoveryEntry) return;
 
@@ -174,8 +207,15 @@ const Auth = () => {
       setIsResettingPassword(true);
     };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session && (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (
+        session &&
+        (event === "PASSWORD_RECOVERY" ||
+          event === "SIGNED_IN" ||
+          event === "INITIAL_SESSION")
+      ) {
         enterResetMode();
       }
     });
@@ -216,9 +256,12 @@ const Auth = () => {
     if (!showResendVerification) return;
     let cancelled = false;
     const checkVerified = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (cancelled) return;
-      const verified = !!user?.email_confirmed_at || !!(user as any)?.confirmed_at;
+      const verified =
+        !!user?.email_confirmed_at || !!(user as any)?.confirmed_at;
       setIsVerified(verified);
       if (verified) {
         setSuccessMessage("Your email is verified. You can sign in now.");
@@ -238,8 +281,18 @@ const Auth = () => {
   }, [showResendVerification]);
 
   // Single-field validation for inline feedback
-  const getFieldError = (field: FieldName, value?: string, compareValue?: string): string | undefined => {
-    const fieldValue = value ?? (field === "email" ? email : field === "password" ? password : confirmPassword);
+  const getFieldError = (
+    field: FieldName,
+    value?: string,
+    compareValue?: string,
+  ): string | undefined => {
+    const fieldValue =
+      value ??
+      (field === "email"
+        ? email
+        : field === "password"
+          ? password
+          : confirmPassword);
 
     if (field === "email") {
       const result = emailSchema.safeParse(fieldValue);
@@ -274,7 +327,9 @@ const Auth = () => {
   };
 
   const focusFirstError = (errors: ValidationErrors) => {
-    const firstKey = (Object.keys(errors) as (keyof typeof errors)[]).find((k) => errors[k]);
+    const firstKey = (Object.keys(errors) as (keyof typeof errors)[]).find(
+      (k) => errors[k],
+    );
     if (!firstKey) return;
     const elId = fieldToElementId[firstKey as string];
     if (!elId) return;
@@ -289,8 +344,17 @@ const Auth = () => {
 
   const getAutofillAwareValue = (field: FieldName): string => {
     const id = fieldToElementId[field];
-    const el = id ? (document.getElementById(id) as HTMLInputElement | null) : null;
-    return el?.value ?? (field === "email" ? email : field === "password" ? password : confirmPassword);
+    const el = id
+      ? (document.getElementById(id) as HTMLInputElement | null)
+      : null;
+    return (
+      el?.value ??
+      (field === "email"
+        ? email
+        : field === "password"
+          ? password
+          : confirmPassword)
+    );
   };
 
   const validateInputs = (): boolean => {
@@ -303,7 +367,12 @@ const Auth = () => {
 
     // Ensure React state matches any browser-autofilled values before validation.
     (Object.keys(values) as FieldName[]).forEach((field) => {
-      const stateValue = field === "email" ? email : field === "password" ? password : confirmPassword;
+      const stateValue =
+        field === "email"
+          ? email
+          : field === "password"
+            ? password
+            : confirmPassword;
       if (values[field] !== stateValue) {
         handleFieldChange(field, values[field]);
       }
@@ -319,15 +388,21 @@ const Auth = () => {
       const pwErr = getFieldError("password", values.password);
       if (pwErr) errors.password = pwErr;
 
-      const confirmErr = getFieldError("confirmPassword", values.confirmPassword, values.password);
+      const confirmErr = getFieldError(
+        "confirmPassword",
+        values.confirmPassword,
+        values.password,
+      );
       if (confirmErr) errors.confirmPassword = confirmErr;
 
       if (mode === "signup") {
         if (!dataProcessingConsent) {
-          errors.consent = "You must agree to the Privacy Policy and Terms of Service";
+          errors.consent =
+            "You must agree to the Privacy Policy and Terms of Service";
         }
         if (!locationConsent) {
-          errors.locationConsent = "Location consent is required to receive personalized deals";
+          errors.locationConsent =
+            "Location consent is required to receive personalized deals";
         }
       }
     }
@@ -352,7 +427,11 @@ const Auth = () => {
     // Read straight from the DOM so browser autofill (which can skip React's
     // change events) is validated with the value the user actually sees.
     const value = getAutofillAwareValue(field);
-    const error = getFieldError(field, value, field === "confirmPassword" ? password : undefined);
+    const error = getFieldError(
+      field,
+      value,
+      field === "confirmPassword" ? password : undefined,
+    );
     setValidationErrors((prev) => ({ ...prev, [field]: error }));
   };
 
@@ -365,10 +444,20 @@ const Auth = () => {
     // so passing it explicitly keeps inline errors one keystroke ahead.
     setValidationErrors((prev) => {
       const next = { ...prev };
-      next[field] = touched[field] ? getFieldError(field, value, field === "confirmPassword" ? password : undefined) : undefined;
+      next[field] = touched[field]
+        ? getFieldError(
+            field,
+            value,
+            field === "confirmPassword" ? password : undefined,
+          )
+        : undefined;
       // Keep the confirm-password error in sync while the password is edited.
       if (field === "password" && touched.confirmPassword) {
-        next.confirmPassword = getFieldError("confirmPassword", confirmPassword, value);
+        next.confirmPassword = getFieldError(
+          "confirmPassword",
+          confirmPassword,
+          value,
+        );
       }
       return next;
     });
@@ -406,7 +495,10 @@ const Auth = () => {
       // Post-OAuth routing is handled by the authUser effect above, which
       // checks onboarding_completed and the remembered redirect.
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Please try again or use email sign-in.";
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Please try again or use email sign-in.";
       toast.error("Google sign-in failed", {
         description: message,
       });
@@ -416,7 +508,9 @@ const Auth = () => {
   };
 
   /** Map common Supabase error messages to a uniform toast. Returns true if handled. */
-  const handleCommonAuthError = (error: { message?: string } | null | undefined): boolean => {
+  const handleCommonAuthError = (
+    error: { message?: string } | null | undefined,
+  ): boolean => {
     const msg = error?.message?.toLowerCase() ?? "";
     if (msg.includes("rate limit")) {
       toast.error("Too many attempts", {
@@ -457,9 +551,11 @@ const Auth = () => {
 
     try {
       const { error } = await supabase.auth.resend({
-        type: 'signup',
+        type: "signup",
         email: email.trim(),
-        options: { emailRedirectTo: buildAuthRedirectUrl("/verification-success") },
+        options: {
+          emailRedirectTo: buildAuthRedirectUrl("/verification-success"),
+        },
       });
 
       if (error) {
@@ -489,7 +585,8 @@ const Auth = () => {
         return;
       }
       toast.error("Failed to resend email", {
-        description: "Please try again or contact support if the issue persists.",
+        description:
+          "Please try again or contact support if the issue persists.",
       });
     } finally {
       setIsResending(false);
@@ -503,12 +600,15 @@ const Auth = () => {
     const { data: signUpData, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
-      options: { emailRedirectTo: buildAuthRedirectUrl("/verification-success") },
+      options: {
+        emailRedirectTo: buildAuthRedirectUrl("/verification-success"),
+      },
     });
 
     const accountExistsToast = () =>
       toast.error("Account already exists", {
-        description: "This email is already registered. Please sign in instead.",
+        description:
+          "This email is already registered. Please sign in instead.",
       });
 
     if (error) {
@@ -528,8 +628,13 @@ const Auth = () => {
 
     // Supabase returns a user with empty `identities` when the email is already
     // registered (no error thrown) — surface it instead of silently "succeeding".
-    const identities = (signUpData.user as { identities?: unknown[] } | null)?.identities;
-    if (signUpData.user && Array.isArray(identities) && identities.length === 0) {
+    const identities = (signUpData.user as { identities?: unknown[] } | null)
+      ?.identities;
+    if (
+      signUpData.user &&
+      Array.isArray(identities) &&
+      identities.length === 0
+    ) {
       accountExistsToast();
       resetToSignIn();
       return;
@@ -543,7 +648,9 @@ const Auth = () => {
           data_processing_consent: dataProcessingConsent,
           data_processing_consent_date: new Date().toISOString(),
           location_consent_given: locationConsent,
-          location_consent_date: locationConsent ? new Date().toISOString() : null,
+          location_consent_date: locationConsent
+            ? new Date().toISOString()
+            : null,
         })
         .eq("id", signUpData.user.id);
 
@@ -605,9 +712,13 @@ const Auth = () => {
       }
       if (msg.includes("Email not confirmed")) {
         toast.error("Email not verified", {
-          description: "Your verification link may have expired. Tap \"Resend Verification Email\" below to get a fresh one.",
+          description:
+            'Your verification link may have expired. Tap "Resend Verification Email" below to get a fresh one.',
         });
-        localStorage.setItem("jet_verification_email", email.trim().toLowerCase());
+        localStorage.setItem(
+          "jet_verification_email",
+          email.trim().toLowerCase(),
+        );
         setShowResendVerification(true);
         return;
       }
@@ -618,9 +729,13 @@ const Auth = () => {
     if (!data.user.email_confirmed_at) {
       discardCurrentAuthSession();
       toast.error("Email not verified", {
-        description: "Verification links expire after a short time. Tap \"Resend Verification Email\" below to get a new one.",
+        description:
+          'Verification links expire after a short time. Tap "Resend Verification Email" below to get a new one.',
       });
-      localStorage.setItem("jet_verification_email", email.trim().toLowerCase());
+      localStorage.setItem(
+        "jet_verification_email",
+        email.trim().toLowerCase(),
+      );
       setShowResendVerification(true);
       return;
     }
@@ -634,10 +749,9 @@ const Auth = () => {
     toast.success("Signed in successfully");
     const completed = !!profile?.onboarding_completed;
     writeCachedOnboardingStatus(data.user.id, completed);
-    navigate(
-      completed ? consumePostAuthRedirect("/") : "/onboarding",
-      { replace: true },
-    );
+    navigate(completed ? consumePostAuthRedirect("/") : "/onboarding", {
+      replace: true,
+    });
   };
 
   const doForgotPassword = async () => {
@@ -709,19 +823,19 @@ const Auth = () => {
     mode === "reset"
       ? "Set your new password to secure your account."
       : mode === "forgot"
-      ? "We'll email you a secure link to reset your password."
-      : mode === "signup"
-      ? "Join JET and discover what's hot near you."
-      : "Sign in to discover what's hot in your area.";
+        ? "We'll email you a secure link to reset your password."
+        : mode === "signup"
+          ? "Join JET and discover what's hot near you."
+          : "Sign in to discover what's hot in your area.";
 
   const primaryLabel =
     mode === "reset"
       ? "Update Password"
       : mode === "forgot"
-      ? "Send Reset Link"
-      : mode === "signup"
-      ? "Create Account"
-      : "Sign In";
+        ? "Send Reset Link"
+        : mode === "signup"
+          ? "Create Account"
+          : "Sign In";
 
   // Dynamic SEO per mode so /signin, /signup, and recovery views have
   // distinct titles, descriptions, and canonical paths.
@@ -729,16 +843,16 @@ const Auth = () => {
     mode === "signup"
       ? "Create your JET account — Charlotte's Live City Pulse"
       : mode === "forgot"
-      ? "Reset your JET password"
-      : mode === "reset"
-      ? "Set a new JET password"
-      : "Sign in to JET — Charlotte's Live City Pulse";
+        ? "Reset your JET password"
+        : mode === "reset"
+          ? "Set a new JET password"
+          : "Sign in to JET — Charlotte's Live City Pulse";
   const seoDescription =
     mode === "signup"
       ? "Create your JET account to unlock real-time deals, events, and trending venues across Charlotte, NC."
       : mode === "forgot" || mode === "reset"
-      ? "Reset your JET password to get back to discovering what's hot in Charlotte, NC."
-      : "Sign in to JET to discover real-time deals, events, and trending venues across Charlotte, NC.";
+        ? "Reset your JET password to get back to discovering what's hot in Charlotte, NC."
+        : "Sign in to JET to discover real-time deals, events, and trending venues across Charlotte, NC.";
   const seoPath =
     mode === "signup" ? "/signup" : mode === "signin" ? "/signin" : "/auth";
 
@@ -775,12 +889,11 @@ const Auth = () => {
         aria-busy="true"
         data-auth-ready="false"
       >
-        <SEO
-          title={seoTitle}
-          description={seoDescription}
-          path={seoPath}
+        <SEO title={seoTitle} description={seoDescription} path={seoPath} />
+        <Loader2
+          className="h-6 w-6 animate-spin text-primary"
+          aria-hidden="true"
         />
-        <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden="true" />
         <span className="sr-only">Loading sign-in…</span>
       </div>
     );
@@ -791,11 +904,7 @@ const Auth = () => {
       className="auth-fullscreen relative flex flex-col flex-1 min-h-0 w-full overflow-hidden"
       data-auth-ready="true"
     >
-      <SEO
-        title={seoTitle}
-        description={seoDescription}
-        path={seoPath}
-      />
+      <SEO title={seoTitle} description={seoDescription} path={seoPath} />
       {/* Full-bleed background image — responsive by device width & DPR */}
       <picture className="absolute inset-0" aria-hidden="true">
         <source
@@ -823,11 +932,20 @@ const Auth = () => {
         aria-hidden="true"
       />
       {/* Animated radial mesh gradient */}
-      <div className="pointer-events-none absolute inset-0 auth-mesh-gradient" aria-hidden="true" />
+      <div
+        className="pointer-events-none absolute inset-0 auth-mesh-gradient"
+        aria-hidden="true"
+      />
       {/* Geometric pattern (low opacity) */}
-      <div className="pointer-events-none absolute inset-0 auth-geo-pattern" aria-hidden="true" />
+      <div
+        className="pointer-events-none absolute inset-0 auth-geo-pattern"
+        aria-hidden="true"
+      />
       {/* Floating shapes */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+      <div
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+        aria-hidden="true"
+      >
         <span className="auth-float-shape auth-float-shape--1" />
         <span className="auth-float-shape auth-float-shape--2" />
         <span className="auth-float-shape auth-float-shape--3" />
@@ -871,421 +989,565 @@ const Auth = () => {
             <div key={mode} className="auth-crossfade">
               {/* Title */}
               <div className="auth-title flex flex-col items-center gap-1.5 text-center mb-4 sm:mb-5">
-            <h1 className="heading-luxe-gradient text-[26px] sm:text-[28px] leading-tight m-0">
-              {mode === "signup"
-                ? "Create your account"
-                : mode === "forgot"
-                ? "Reset password"
-                : mode === "reset"
-                ? "New password"
-                : "Welcome back"}
-            </h1>
-            <p className="text-fluid-sm text-muted-foreground max-w-[320px]">
-              {subtitle}
-            </p>
-          </div>
-
-          {/* Form (relative so the loading overlay positions correctly) */}
-          <form
-            onSubmit={handleSubmit}
-            className="auth-form relative flex flex-col gap-3 sm:gap-4"
-            aria-busy={isLoading}
-            aria-label={
-              mode === "signup"
-                ? "Create account form"
-                : mode === "forgot"
-                ? "Forgot password form"
-                : mode === "reset"
-                ? "Reset password form"
-                : "Sign in form"
-            }
-          >
-            {isLoading && (
-              <div className="auth-loading-overlay" aria-hidden="true">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                <h1 className="heading-luxe-gradient text-[26px] sm:text-[28px] leading-tight m-0">
+                  {mode === "signup"
+                    ? "Create your account"
+                    : mode === "forgot"
+                      ? "Reset password"
+                      : mode === "reset"
+                        ? "New password"
+                        : "Welcome back"}
+                </h1>
+                <p className="text-fluid-sm text-muted-foreground max-w-[320px]">
+                  {subtitle}
+                </p>
               </div>
-            )}
 
-            {/* Email field */}
-            {!isResettingPassword && (
-                <div className="flex flex-col gap-1 sm:gap-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-foreground/80 text-left" htmlFor="auth-email">
-                  Email
-                </label>
-                <div className="relative">
-                  <Mail
-                    aria-hidden="true"
-                    className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-                  />
-                  <Input
-                    id="auth-email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => handleFieldChange("email", e.target.value)}
-                    onInput={(e) => handleFieldChange("email", e.currentTarget.value)}
-                    onBlur={() => handleBlur("email")}
-                    required
-                    disabled={isLoading}
-                    aria-invalid={!!validationErrors.email}
-                    aria-describedby={validationErrors.email ? "auth-email-error" : undefined}
-                    className={`auth-input !pl-11 ${validationErrors.email ? "auth-input-error" : ""}`}
-                    autoComplete="email"
-                  />
-                </div>
-                {validationErrors.email && (
-                  <p id="auth-email-error" className="auth-field-error">
-                    <AlertCircle aria-hidden="true" />
-                    {validationErrors.email}
-                  </p>
+              {/* Form (relative so the loading overlay positions correctly) */}
+              <form
+                onSubmit={handleSubmit}
+                className="auth-form relative flex flex-col gap-3 sm:gap-4"
+                aria-busy={isLoading}
+                aria-label={
+                  mode === "signup"
+                    ? "Create account form"
+                    : mode === "forgot"
+                      ? "Forgot password form"
+                      : mode === "reset"
+                        ? "Reset password form"
+                        : "Sign in form"
+                }
+              >
+                {isLoading && (
+                  <div className="auth-loading-overlay" aria-hidden="true">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  </div>
                 )}
-              </div>
-            )}
 
-            {/* Password */}
-            {!isForgotPassword && (
-              <>
+                {/* Email field */}
+                {!isResettingPassword && (
                   <div className="flex flex-col gap-1 sm:gap-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-semibold uppercase tracking-wider text-foreground/80" htmlFor="auth-password">
-                      Password
-                    </label>
-                    {mode === "signin" && (
-                      <AuthButton
-                        variant="link"
-                        size="sm"
-                        onClick={() => setIsForgotPassword(true)}
-                        disabled={isLoading}
-                        className="text-xs"
-                      >
-                        Forgot?
-                      </AuthButton>
-                    )}
-                  </div>
-                  <div className="relative">
-                    <Lock
-                      aria-hidden="true"
-                      className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-                    />
-                    <Input
-                      id="auth-password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => handleFieldChange("password", e.target.value)}
-                      onInput={(e) => handleFieldChange("password", e.currentTarget.value)}
-                      onBlur={() => handleBlur("password")}
-                      required
-                      disabled={isLoading}
-                      aria-invalid={!!validationErrors.password}
-                      aria-describedby={validationErrors.password ? "auth-password-error" : undefined}
-                      className={`auth-input !pl-11 !pr-12 ${validationErrors.password ? "auth-input-error" : ""}`}
-                      autoComplete={isSignUp ? "new-password" : "current-password"}
-                    />
-                    <IconButton
-                      onClick={() => setShowPassword(!showPassword)}
-                      ariaLabel={showPassword ? "Hide password" : "Show password"}
-                      ariaPressed={showPassword}
-                      className="absolute right-1.5 top-1/2 -translate-y-1/2"
+                    <label
+                      className="text-xs font-semibold uppercase tracking-wider text-foreground/80 text-left"
+                      htmlFor="auth-email"
                     >
-                      {showPassword ? <EyeOff /> : <Eye />}
-                    </IconButton>
-                  </div>
-                  {validationErrors.password ? (
-                    <p id="auth-password-error" className="auth-field-error">
-                      <AlertCircle aria-hidden="true" />
-                      {validationErrors.password}
-                    </p>
-                  ) : (isSignUp || isResettingPassword) ? (
-                    <ul
-                      className="auth-password-hint mt-0.5 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground"
-                      aria-live="polite"
-                    >
-                      {PASSWORD_RULES.map((rule) => {
-                        const met = rule.test(password);
-                        return (
-                          <li
-                            key={rule.label}
-                            className={`flex items-center gap-1 transition-colors ${met ? "text-primary" : ""}`}
-                          >
-                            {met ? (
-                              <CheckCircle2 aria-hidden="true" className="h-3 w-3" />
-                            ) : (
-                              <Circle aria-hidden="true" className="h-3 w-3 opacity-60" />
-                            )}
-                            <span>{rule.label}</span>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  ) : null}
-                </div>
-
-                {(isSignUp || isResettingPassword) && (
-                  <div className="flex flex-col gap-1 sm:gap-1.5">
-                    <label className="text-xs font-semibold uppercase tracking-wider text-foreground/80 text-left" htmlFor="auth-confirm-password">
-                      Confirm Password
+                      Email
                     </label>
                     <div className="relative">
-                      <Lock
+                      <Mail
                         aria-hidden="true"
                         className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
                       />
                       <Input
-                        id="auth-confirm-password"
-                        type={showConfirmPassword ? "text" : "password"}
-                        placeholder="••••••••"
-                        value={confirmPassword}
-                        onChange={(e) => handleFieldChange("confirmPassword", e.target.value)}
-                        onInput={(e) => handleFieldChange("confirmPassword", e.currentTarget.value)}
-                        onBlur={() => handleBlur("confirmPassword")}
+                        id="auth-email"
+                        type="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(e) =>
+                          handleFieldChange("email", e.target.value)
+                        }
+                        onInput={(e) =>
+                          handleFieldChange("email", e.currentTarget.value)
+                        }
+                        onBlur={() => handleBlur("email")}
                         required
                         disabled={isLoading}
-                        aria-invalid={!!validationErrors.confirmPassword}
-                        aria-describedby={validationErrors.confirmPassword ? "auth-confirm-password-error" : undefined}
-                        className={`auth-input !pl-11 !pr-12 ${validationErrors.confirmPassword ? "auth-input-error" : ""}`}
-                        autoComplete="new-password"
+                        aria-invalid={!!validationErrors.email}
+                        aria-describedby={
+                          validationErrors.email
+                            ? "auth-email-error"
+                            : undefined
+                        }
+                        className={`auth-input !pl-11 ${validationErrors.email ? "auth-input-error" : ""}`}
+                        autoComplete="email"
                       />
-                      <IconButton
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        ariaLabel={showConfirmPassword ? "Hide password" : "Show password"}
-                        ariaPressed={showConfirmPassword}
-                        className="absolute right-1.5 top-1/2 -translate-y-1/2"
-                      >
-                        {showConfirmPassword ? <EyeOff /> : <Eye />}
-                      </IconButton>
                     </div>
-                    {validationErrors.confirmPassword && (
-                      <p id="auth-confirm-password-error" className="auth-field-error">
+                    {validationErrors.email && (
+                      <p id="auth-email-error" className="auth-field-error">
                         <AlertCircle aria-hidden="true" />
-                        {validationErrors.confirmPassword}
+                        {validationErrors.email}
                       </p>
                     )}
                   </div>
                 )}
 
-                {/* Signup consent */}
-                {isSignUp && (
-                  <div className="flex flex-col gap-2 sm:gap-3 pt-1">
-                    <div className="flex items-start gap-3">
-                      <Checkbox
-                        id="dataConsent"
-                        checked={dataProcessingConsent}
-                        onCheckedChange={(checked) => {
-                          setDataProcessingConsent(checked === true);
-                          setValidationErrors((prev) => ({ ...prev, consent: undefined }));
-                        }}
-                        disabled={isLoading}
-                        className="mt-0.5"
-                      />
-                      <label htmlFor="dataConsent" className="cursor-pointer text-xs leading-relaxed text-foreground/85">
-                        I agree to the{" "}
-                        <Link to="/privacy-policy" target="_blank" className="font-medium text-primary underline-offset-4 hover:underline">
-                          Privacy Policy
-                        </Link>{" "}
-                        and{" "}
-                        <Link to="/terms-of-service" target="_blank" className="font-medium text-primary underline-offset-4 hover:underline">
-                          Terms of Service
-                        </Link>
-                        <span aria-hidden="true" className="text-destructive ml-0.5">*</span>
-                      </label>
-                    </div>
-                    {validationErrors.consent && (
-                      <p id="auth-consent-error" className="auth-field-error auth-field-error--indented">
-                        <AlertCircle aria-hidden="true" />
-                        {validationErrors.consent}
-                      </p>
-                    )}
-
-                    <div className="flex items-start gap-3">
-                      <Checkbox
-                        id="locationConsent"
-                        checked={locationConsent}
-                        onCheckedChange={(checked) => {
-                          setLocationConsent(checked === true);
-                          setValidationErrors((prev) => ({ ...prev, locationConsent: undefined }));
-                          // Ticking the box is a real user gesture, so this is
-                          // the moment the browser will actually show its
-                          // native location prompt. Without it, consent is
-                          // recorded but the OS permission is never granted
-                          // and no heatmap points can be collected.
-                          if (checked === true) {
-                            void requestGeolocationPermission().then((result) => {
-                              if (result === "denied") {
-                                toast.error("Location blocked by your browser", {
-                                  description:
-                                    "Allow location for this site to get nearby deals and live activity. You can re-enable it in Settings → Privacy.",
-                                });
-                              }
-                            });
+                {/* Password */}
+                {!isForgotPassword && (
+                  <>
+                    <div className="flex flex-col gap-1 sm:gap-1.5">
+                      <div className="flex items-center justify-between">
+                        <label
+                          className="text-xs font-semibold uppercase tracking-wider text-foreground/80"
+                          htmlFor="auth-password"
+                        >
+                          Password
+                        </label>
+                        {mode === "signin" && (
+                          <AuthButton
+                            variant="link"
+                            size="sm"
+                            onClick={() => setIsForgotPassword(true)}
+                            disabled={isLoading}
+                            className="text-xs"
+                          >
+                            Forgot?
+                          </AuthButton>
+                        )}
+                      </div>
+                      <div className="relative">
+                        <Lock
+                          aria-hidden="true"
+                          className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                        />
+                        <Input
+                          id="auth-password"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          value={password}
+                          onChange={(e) =>
+                            handleFieldChange("password", e.target.value)
                           }
-                        }}
-                        disabled={isLoading}
-                        className="mt-0.5"
-                      />
-                      <label htmlFor="locationConsent" className="cursor-pointer text-xs leading-relaxed text-foreground/85">
-                        I consent to location tracking for personalized deals and alerts. Manage in Profile anytime.
-                        <span aria-hidden="true" className="text-destructive ml-0.5">*</span>
-                      </label>
+                          onInput={(e) =>
+                            handleFieldChange("password", e.currentTarget.value)
+                          }
+                          onBlur={() => handleBlur("password")}
+                          required
+                          disabled={isLoading}
+                          aria-invalid={!!validationErrors.password}
+                          aria-describedby={
+                            validationErrors.password
+                              ? "auth-password-error"
+                              : undefined
+                          }
+                          className={`auth-input !pl-11 !pr-12 ${validationErrors.password ? "auth-input-error" : ""}`}
+                          autoComplete={
+                            isSignUp ? "new-password" : "current-password"
+                          }
+                        />
+                        <IconButton
+                          onClick={() => setShowPassword(!showPassword)}
+                          ariaLabel={
+                            showPassword ? "Hide password" : "Show password"
+                          }
+                          ariaPressed={showPassword}
+                          className="absolute right-1.5 top-1/2 -translate-y-1/2"
+                        >
+                          {showPassword ? <EyeOff /> : <Eye />}
+                        </IconButton>
+                      </div>
+                      {validationErrors.password ? (
+                        <p
+                          id="auth-password-error"
+                          className="auth-field-error"
+                        >
+                          <AlertCircle aria-hidden="true" />
+                          {validationErrors.password}
+                        </p>
+                      ) : isSignUp || isResettingPassword ? (
+                        <ul
+                          className="auth-password-hint mt-0.5 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground"
+                          aria-live="polite"
+                        >
+                          {PASSWORD_RULES.map((rule) => {
+                            const met = rule.test(password);
+                            return (
+                              <li
+                                key={rule.label}
+                                className={`flex items-center gap-1 transition-colors ${met ? "text-primary" : ""}`}
+                              >
+                                {met ? (
+                                  <CheckCircle2
+                                    aria-hidden="true"
+                                    className="h-3 w-3"
+                                  />
+                                ) : (
+                                  <Circle
+                                    aria-hidden="true"
+                                    className="h-3 w-3 opacity-60"
+                                  />
+                                )}
+                                <span>{rule.label}</span>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      ) : null}
                     </div>
-                    {validationErrors.locationConsent && (
-                      <p id="auth-location-consent-error" className="auth-field-error auth-field-error--indented">
-                        <AlertCircle aria-hidden="true" />
-                        {validationErrors.locationConsent}
-                      </p>
+
+                    {(isSignUp || isResettingPassword) && (
+                      <div className="flex flex-col gap-1 sm:gap-1.5">
+                        <label
+                          className="text-xs font-semibold uppercase tracking-wider text-foreground/80 text-left"
+                          htmlFor="auth-confirm-password"
+                        >
+                          Confirm Password
+                        </label>
+                        <div className="relative">
+                          <Lock
+                            aria-hidden="true"
+                            className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                          />
+                          <Input
+                            id="auth-confirm-password"
+                            type={showConfirmPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            value={confirmPassword}
+                            onChange={(e) =>
+                              handleFieldChange(
+                                "confirmPassword",
+                                e.target.value,
+                              )
+                            }
+                            onInput={(e) =>
+                              handleFieldChange(
+                                "confirmPassword",
+                                e.currentTarget.value,
+                              )
+                            }
+                            onBlur={() => handleBlur("confirmPassword")}
+                            required
+                            disabled={isLoading}
+                            aria-invalid={!!validationErrors.confirmPassword}
+                            aria-describedby={
+                              validationErrors.confirmPassword
+                                ? "auth-confirm-password-error"
+                                : undefined
+                            }
+                            className={`auth-input !pl-11 !pr-12 ${validationErrors.confirmPassword ? "auth-input-error" : ""}`}
+                            autoComplete="new-password"
+                          />
+                          <IconButton
+                            onClick={() =>
+                              setShowConfirmPassword(!showConfirmPassword)
+                            }
+                            ariaLabel={
+                              showConfirmPassword
+                                ? "Hide password"
+                                : "Show password"
+                            }
+                            ariaPressed={showConfirmPassword}
+                            className="absolute right-1.5 top-1/2 -translate-y-1/2"
+                          >
+                            {showConfirmPassword ? <EyeOff /> : <Eye />}
+                          </IconButton>
+                        </div>
+                        {validationErrors.confirmPassword && (
+                          <p
+                            id="auth-confirm-password-error"
+                            className="auth-field-error"
+                          >
+                            <AlertCircle aria-hidden="true" />
+                            {validationErrors.confirmPassword}
+                          </p>
+                        )}
+                      </div>
                     )}
+
+                    {/* Signup consent */}
+                    {isSignUp && (
+                      <div className="flex flex-col gap-2 sm:gap-3 pt-1">
+                        <div className="flex items-start gap-3">
+                          <Checkbox
+                            id="dataConsent"
+                            checked={dataProcessingConsent}
+                            onCheckedChange={(checked) => {
+                              setDataProcessingConsent(checked === true);
+                              setValidationErrors((prev) => ({
+                                ...prev,
+                                consent: undefined,
+                              }));
+                            }}
+                            disabled={isLoading}
+                            className="mt-0.5"
+                          />
+                          <label
+                            htmlFor="dataConsent"
+                            className="cursor-pointer text-xs leading-relaxed text-foreground/85"
+                          >
+                            I agree to the{" "}
+                            <Link
+                              to="/privacy-policy"
+                              target="_blank"
+                              className="font-medium text-primary underline-offset-4 hover:underline"
+                            >
+                              Privacy Policy
+                            </Link>{" "}
+                            and{" "}
+                            <Link
+                              to="/terms-of-service"
+                              target="_blank"
+                              className="font-medium text-primary underline-offset-4 hover:underline"
+                            >
+                              Terms of Service
+                            </Link>
+                            <span
+                              aria-hidden="true"
+                              className="text-destructive ml-0.5"
+                            >
+                              *
+                            </span>
+                          </label>
+                        </div>
+                        {validationErrors.consent && (
+                          <p
+                            id="auth-consent-error"
+                            className="auth-field-error auth-field-error--indented"
+                          >
+                            <AlertCircle aria-hidden="true" />
+                            {validationErrors.consent}
+                          </p>
+                        )}
+
+                        <div className="flex items-start gap-3">
+                          <Checkbox
+                            id="locationConsent"
+                            checked={locationConsent}
+                            onCheckedChange={(checked) => {
+                              setLocationConsent(checked === true);
+                              setValidationErrors((prev) => ({
+                                ...prev,
+                                locationConsent: undefined,
+                              }));
+                              // Ticking the box is a real user gesture, so this is
+                              // the moment the browser will actually show its
+                              // native location prompt. Without it, consent is
+                              // recorded but the OS permission is never granted
+                              // and no heatmap points can be collected.
+                              if (checked === true) {
+                                void requestGeolocationPermission().then(
+                                  (result) => {
+                                    if (result === "denied") {
+                                      toast.error(
+                                        "Location blocked by your browser",
+                                        {
+                                          description:
+                                            "Allow location for this site to get nearby deals and live activity. You can re-enable it in Settings → Privacy.",
+                                        },
+                                      );
+                                    }
+                                  },
+                                );
+                              }
+                            }}
+                            disabled={isLoading}
+                            className="mt-0.5"
+                          />
+                          <label
+                            htmlFor="locationConsent"
+                            className="cursor-pointer text-xs leading-relaxed text-foreground/85"
+                          >
+                            I consent to location tracking for personalized
+                            deals and alerts. Manage in Profile anytime.
+                            <span
+                              aria-hidden="true"
+                              className="text-destructive ml-0.5"
+                            >
+                              *
+                            </span>
+                          </label>
+                        </div>
+                        {validationErrors.locationConsent && (
+                          <p
+                            id="auth-location-consent-error"
+                            className="auth-field-error auth-field-error--indented"
+                          >
+                            <AlertCircle aria-hidden="true" />
+                            {validationErrors.locationConsent}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Form-level error alert */}
+                {formError && (
+                  <div
+                    role="alert"
+                    className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-xs text-destructive"
+                  >
+                    <AlertCircle
+                      aria-hidden="true"
+                      className="h-4 w-4 flex-shrink-0 mt-0.5"
+                    />
+                    <span className="leading-snug">{formError}</span>
                   </div>
                 )}
-              </>
-            )}
+                {successMessage && (
+                  <div
+                    role="status"
+                    className="flex items-start gap-2 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2.5 text-xs text-emerald-400"
+                  >
+                    <CheckCircle2
+                      aria-hidden="true"
+                      className="h-4 w-4 flex-shrink-0 mt-0.5"
+                    />
+                    <span className="leading-snug">{successMessage}</span>
+                  </div>
+                )}
 
-            {/* Form-level error alert */}
-            {formError && (
-              <div
-                role="alert"
-                className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-xs text-destructive"
-              >
-                <AlertCircle aria-hidden="true" className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                <span className="leading-snug">{formError}</span>
-              </div>
-            )}
-            {successMessage && (
-              <div
-                role="status"
-                className="flex items-start gap-2 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2.5 text-xs text-emerald-400"
-              >
-                <CheckCircle2 aria-hidden="true" className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                <span className="leading-snug">{successMessage}</span>
-              </div>
-            )}
-
-            <AuthButton
-              type="submit"
-              variant="primary"
-              size="lg"
-              fullWidth
-              loading={isLoading}
-              className="mt-0 sm:mt-1"
-            >
-              {primaryLabel}
-            </AuthButton>
-          </form>
-
-          {/* Social section */}
-          {(mode === "signin" || mode === "signup") && (
-            <>
-                <div className="auth-social flex items-center gap-3 my-4 sm:my-5">
-                <div className="h-px flex-1 bg-border/40" />
-                <span className="text-[11px] uppercase tracking-wider text-muted-foreground">or continue with</span>
-                <div className="h-px flex-1 bg-border/40" />
-              </div>
                 <AuthButton
-                  onClick={handleGoogleSignIn}
-                  loading={isLoading}
-                  variant="secondary"
+                  type="submit"
+                  variant="primary"
                   size="lg"
                   fullWidth
-                  className="auth-google"
-                  leftIcon={
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z" fill="#4285F4" />
-                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-                  </svg>
-                }
-              >
-                Continue with Google
-              </AuthButton>
-            </>
-          )}
+                  loading={isLoading}
+                  className="mt-0 sm:mt-1"
+                >
+                  {primaryLabel}
+                </AuthButton>
+              </form>
 
-          {/* Resend Verification */}
-          {showResendVerification && !isResettingPassword && (
-            <div className="mt-4 sm:mt-5 flex flex-col gap-2 rounded-xl border border-primary/25 bg-card/40 p-4 backdrop-blur-md">
-              <div className="text-center text-xs text-muted-foreground">
-                {isVerified
-                  ? "Your email is verified. Sign in to get started."
-                  : "Didn't receive the verification email, or did your link expire?"}
-              </div>
-              <AuthButton
-                onClick={handleResendVerification}
-                disabled={!isVerified && resendCooldown > 0}
-                loading={isResending}
-                variant={isVerified ? "primary" : "secondary"}
-                size="md"
-                fullWidth
-              >
-                {isVerified
-                  ? "Sign In"
-                  : resendCooldown > 0
-                    ? `Resend in ${resendCooldown}s`
-                    : "Resend Verification Email"}
-              </AuthButton>
-              {!isVerified && (
-                <div className="text-center text-[10px] text-muted-foreground">
-                  Verification links expire 1 hour after they're sent.
+              {/* Social section */}
+              {(mode === "signin" || mode === "signup") && (
+                <>
+                  <div className="auth-social flex items-center gap-3 my-4 sm:my-5">
+                    <div className="h-px flex-1 bg-border/40" />
+                    <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                      or continue with
+                    </span>
+                    <div className="h-px flex-1 bg-border/40" />
+                  </div>
+                  <AuthButton
+                    onClick={handleGoogleSignIn}
+                    loading={isLoading}
+                    variant="secondary"
+                    size="lg"
+                    fullWidth
+                    className="auth-google"
+                    leftIcon={
+                      <svg
+                        className="h-5 w-5"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"
+                          fill="#4285F4"
+                        />
+                        <path
+                          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                          fill="#34A853"
+                        />
+                        <path
+                          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                          fill="#FBBC05"
+                        />
+                        <path
+                          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                          fill="#EA4335"
+                        />
+                      </svg>
+                    }
+                  >
+                    Continue with Google
+                  </AuthButton>
+                </>
+              )}
+
+              {/* Resend Verification */}
+              {showResendVerification && !isResettingPassword && (
+                <div className="mt-4 sm:mt-5 flex flex-col gap-2 rounded-xl border border-primary/25 bg-card/40 p-4 backdrop-blur-md">
+                  <div className="text-center text-xs text-muted-foreground">
+                    {isVerified
+                      ? "Your email is verified. Sign in to get started."
+                      : "Didn't receive the verification email, or did your link expire?"}
+                  </div>
+                  <AuthButton
+                    onClick={handleResendVerification}
+                    disabled={!isVerified && resendCooldown > 0}
+                    loading={isResending}
+                    variant={isVerified ? "primary" : "secondary"}
+                    size="md"
+                    fullWidth
+                  >
+                    {isVerified
+                      ? "Sign In"
+                      : resendCooldown > 0
+                        ? `Resend in ${resendCooldown}s`
+                        : "Resend Verification Email"}
+                  </AuthButton>
+                  {!isVerified && (
+                    <div className="text-center text-[10px] text-muted-foreground">
+                      Verification links expire 1 hour after they're sent.
+                    </div>
+                  )}
                 </div>
               )}
+
+              {/* Back link for recovery / reset */}
+              {(mode === "forgot" || mode === "reset") && (
+                <AuthButton
+                  onClick={() => {
+                    setIsForgotPassword(false);
+                    setIsResettingPassword(false);
+                    setValidationErrors({});
+                    setFormError(null);
+                  }}
+                  disabled={isLoading}
+                  variant="secondary"
+                  size="sm"
+                  leftIcon={<ArrowLeft />}
+                  className="mt-4 sm:mt-5 self-center mx-auto text-xs"
+                >
+                  Back to sign in
+                </AuthButton>
+              )}
+
+              {/* Switch mode link */}
+              {(mode === "signin" || mode === "signup") && (
+                <p className="auth-switch mt-4 sm:mt-6 text-center text-xs text-muted-foreground">
+                  {mode === "signin"
+                    ? "Don't have an account? "
+                    : "Already have an account? "}
+                  <AuthButton
+                    variant="link"
+                    size="sm"
+                    onClick={() =>
+                      switchToMode(mode === "signin" ? "signup" : "signin")
+                    }
+                    disabled={isLoading}
+                    data-testid="auth-mode-switch"
+                    className="text-xs font-semibold"
+                  >
+                    {mode === "signin" ? "Sign up" : "Sign in"}
+                  </AuthButton>
+                </p>
+              )}
             </div>
-          )}
+          </div>
 
-          {/* Back link for recovery / reset */}
-          {(mode === "forgot" || mode === "reset") && (
-            <AuthButton
-              onClick={() => {
-                setIsForgotPassword(false);
-                setIsResettingPassword(false);
-                setValidationErrors({});
-                setFormError(null);
-              }}
-              disabled={isLoading}
-              variant="secondary"
-              size="sm"
-              leftIcon={<ArrowLeft />}
-              className="mt-4 sm:mt-5 self-center mx-auto text-xs"
-            >
-              Back to sign in
-            </AuthButton>
-          )}
-
-          {/* Switch mode link */}
-          {(mode === "signin" || mode === "signup") && (
-            <p className="auth-switch mt-4 sm:mt-6 text-center text-xs text-muted-foreground">
-              {mode === "signin" ? "Don't have an account? " : "Already have an account? "}
-              <AuthButton
-                variant="link"
-                size="sm"
-                onClick={() => switchToMode(mode === "signin" ? "signup" : "signin")}
-                disabled={isLoading}
-                data-testid="auth-mode-switch"
-                className="text-xs font-semibold"
-              >
-                {mode === "signin" ? "Sign up" : "Sign in"}
-              </AuthButton>
-            </p>
-          )}
-
-        </div>
-        </div>
-
-        {/* Footer links */}
-        <nav aria-label="Legal" className="auth-footer relative z-10 mt-4 sm:mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
-          <Link to="/terms-of-service" className="hover:text-foreground hover:underline underline-offset-4 transition-colors">
-            Terms
-          </Link>
-          <span aria-hidden="true" className="opacity-40">·</span>
-          <Link to="/privacy-policy" className="hover:text-foreground hover:underline underline-offset-4 transition-colors">
-            Privacy
-          </Link>
-          <span aria-hidden="true" className="opacity-40">·</span>
-          <a
-            href="mailto:support@jet-around.com"
-            className="hover:text-foreground hover:underline underline-offset-4 transition-colors"
+          {/* Footer links */}
+          <nav
+            aria-label="Legal"
+            className="auth-footer relative z-10 mt-4 sm:mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground"
           >
-            Help
-          </a>
-        </nav>
+            <Link
+              to="/terms-of-service"
+              className="hover:text-foreground hover:underline underline-offset-4 transition-colors"
+            >
+              Terms
+            </Link>
+            <span aria-hidden="true" className="opacity-40">
+              ·
+            </span>
+            <Link
+              to="/privacy-policy"
+              className="hover:text-foreground hover:underline underline-offset-4 transition-colors"
+            >
+              Privacy
+            </Link>
+            <span aria-hidden="true" className="opacity-40">
+              ·
+            </span>
+            <a
+              href="mailto:support@jet-around.com"
+              className="hover:text-foreground hover:underline underline-offset-4 transition-colors"
+            >
+              Help
+            </a>
+          </nav>
         </div>
       </div>
       <AuthPWAInstallPromptWrapper ignoreRoute />

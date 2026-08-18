@@ -1,4 +1,8 @@
-import type { ToolContext, ToolDefinition, ZodRawShape } from "@lovable.dev/mcp-js";
+import type {
+  ToolContext,
+  ToolDefinition,
+  ZodRawShape,
+} from "@lovable.dev/mcp-js";
 
 type RuntimeGlobals = typeof globalThis & {
   Deno?: { env?: { get?: (name: string) => string | undefined } };
@@ -21,7 +25,11 @@ function environmentLabel(): string {
 }
 
 /** Emit a single JSON line; edge function logs are line-oriented. */
-function emit(level: "info" | "warn" | "error", event: string, fields: Record<string, unknown>) {
+function emit(
+  level: "info" | "warn" | "error",
+  event: string,
+  fields: Record<string, unknown>,
+) {
   const line = JSON.stringify({
     source: "mcp",
     event,
@@ -42,10 +50,15 @@ function emit(level: "info" | "warn" | "error", event: string, fields: Record<st
 function authSummary(ctx: ToolContext) {
   const authenticated = ctx.isAuthenticated();
   if (!authenticated) {
-    return { authenticated: false as const, jwt_verified: false as const, reason: "no_verified_token" };
+    return {
+      authenticated: false as const,
+      jwt_verified: false as const,
+      reason: "no_verified_token",
+    };
   }
   const claims = ctx.getClaims() as Record<string, unknown> | undefined;
-  const exp = typeof claims?.exp === "number" ? (claims.exp as number) : undefined;
+  const exp =
+    typeof claims?.exp === "number" ? (claims.exp as number) : undefined;
   return {
     authenticated: true as const,
     jwt_verified: true as const,
@@ -66,10 +79,14 @@ let requestSeq = 0;
  * Wraps a tool handler with structured request / JWT-verification / outcome
  * logging so 401s and auth drift are visible in edge function logs.
  */
-export function withLogging<TInput extends ZodRawShape | undefined, TOutput extends ZodRawShape | undefined>(
-  tool: ToolDefinition<TInput, TOutput>,
-): ToolDefinition<TInput, TOutput> {
-  const handler = tool.handler as (input: unknown, ctx: ToolContext) => Promise<unknown>;
+export function withLogging<
+  TInput extends ZodRawShape | undefined,
+  TOutput extends ZodRawShape | undefined,
+>(tool: ToolDefinition<TInput, TOutput>): ToolDefinition<TInput, TOutput> {
+  const handler = tool.handler as (
+    input: unknown,
+    ctx: ToolContext,
+  ) => Promise<unknown>;
   return {
     ...tool,
     handler: (async (input: unknown, ctx: ToolContext) => {
@@ -80,7 +97,10 @@ export function withLogging<TInput extends ZodRawShape | undefined, TOutput exte
       emit(auth.authenticated ? "info" : "warn", "mcp_tool_request", {
         request_id: requestId,
         tool: tool.name,
-        input_keys: input && typeof input === "object" ? Object.keys(input as object) : [],
+        input_keys:
+          input && typeof input === "object"
+            ? Object.keys(input as object)
+            : [],
         ...auth,
       });
 
@@ -89,12 +109,14 @@ export function withLogging<TInput extends ZodRawShape | undefined, TOutput exte
           request_id: requestId,
           tool: tool.name,
           http_equivalent: 401,
-          detail: "Tool invoked without a verified OAuth bearer token (JWT missing, expired, or failed issuer/audience verification).",
+          detail:
+            "Tool invoked without a verified OAuth bearer token (JWT missing, expired, or failed issuer/audience verification).",
         });
       }
 
       try {
-        const result = (await handler(input, ctx)) as { isError?: boolean } | undefined;
+        const result = (await handler(input, ctx)) as
+          { isError?: boolean } | undefined;
         const isError = Boolean(result?.isError);
         emit(isError ? "warn" : "info", "mcp_tool_result", {
           request_id: requestId,
@@ -119,12 +141,19 @@ export function withLogging<TInput extends ZodRawShape | undefined, TOutput exte
 }
 
 /** Logged once at cold start so manifest/auth config drift is greppable. */
-export function logServerBoot(info: { name: string; version: string; issuer: string; toolCount: number }) {
+export function logServerBoot(info: {
+  name: string;
+  version: string;
+  issuer: string;
+  toolCount: number;
+}) {
   emit("info", "mcp_server_boot", {
     server: info.name,
     version: info.version,
     issuer: info.issuer,
     tool_count: info.toolCount,
-    supabase_url_configured: Boolean(env("SUPABASE_URL") ?? env("VITE_SUPABASE_URL")),
+    supabase_url_configured: Boolean(
+      env("SUPABASE_URL") ?? env("VITE_SUPABASE_URL"),
+    ),
   });
 }

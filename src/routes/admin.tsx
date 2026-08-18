@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import AdminDashboard from "@/pages/AdminDashboard";
 
 const title = "Admin — JET";
-const description = "Internal JET admin dashboard for merchant deals, users, and notifications.";
+const description =
+  "Internal JET admin dashboard for merchant deals, users, and notifications.";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({

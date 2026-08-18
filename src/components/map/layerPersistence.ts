@@ -48,9 +48,7 @@ export const LAYER_SERIALIZE_ORDER: readonly LayerName[] = [
  * reader uses to distinguish "URL says nothing, defer to storage" from
  * "URL explicitly says no layers".
  */
-export function parseLayersParam(
-  urlSearch: string,
-): Set<LayerName> | null {
+export function parseLayersParam(urlSearch: string): Set<LayerName> | null {
   try {
     const params = new URLSearchParams(urlSearch);
     if (!params.has("layers")) return null;
@@ -114,7 +112,11 @@ export function readLayerState(
 /** Clear every persisted layer toggle. Used by "Reset to defaults". */
 export function clearPersistedLayerState(): void {
   Object.values(LAYER_KEYS).forEach((key) => {
-    try { localStorage.removeItem(key); } catch { /* ignore */ }
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      /* ignore */
+    }
   });
 }
 
@@ -123,12 +125,7 @@ export function clearPersistedLayerState(): void {
  * every one of them, otherwise a refresh restores the toggles the user
  * just cleared.
  */
-export const LAYER_URL_PARAMS = [
-  "layers",
-  "time",
-  "day",
-  "pathTime",
-] as const;
+export const LAYER_URL_PARAMS = ["layers", "time", "day", "pathTime"] as const;
 
 /**
  * Strip every persisted layer/filter query param from the current URL via

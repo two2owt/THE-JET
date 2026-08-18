@@ -1,5 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
-import { Bell, Zap, MapPin, Gift, Share, PlusSquare, Settings2 } from "lucide-react";
+import {
+  Bell,
+  Zap,
+  MapPin,
+  Gift,
+  Share,
+  PlusSquare,
+  Settings2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,24 +34,28 @@ const DISMISS_DURATION = 14 * 24 * 60 * 60 * 1000; // 14 days
 const isIOS = () =>
   typeof navigator !== "undefined" &&
   (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
-    (navigator.platform === "MacIntel" && (navigator as any).maxTouchPoints > 1));
+    (navigator.platform === "MacIntel" &&
+      (navigator as any).maxTouchPoints > 1));
 
 const isStandalone = () =>
   typeof window !== "undefined" &&
   (window.matchMedia("(display-mode: standalone)").matches ||
     (window.navigator as any).standalone === true);
 
-export const PushNotificationPrompt = ({ show, onDismiss }: PushNotificationPromptProps) => {
+export const PushNotificationPrompt = ({
+  show,
+  onDismiss,
+}: PushNotificationPromptProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
   const hasSlot = usePromptSlot("push", PROMPT_PRIORITY.push, isVisible);
 
-  const { 
-    isSupported: isWebPushSupported, 
-    isSubscribed: isWebSubscribed, 
+  const {
+    isSupported: isWebPushSupported,
+    isSubscribed: isWebSubscribed,
     subscribe: webSubscribe,
-    permission: webPermission
+    permission: webPermission,
   } = useWebPushNotifications();
 
   // Subscriptions are stored per user, so only prompt signed-in visitors.
@@ -52,7 +64,9 @@ export const PushNotificationPrompt = ({ show, onDismiss }: PushNotificationProm
     supabase.auth.getUser().then(({ data }) => {
       if (!cancelled) setSignedIn(!!data.user);
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [show]);
 
   // iOS Safari can't subscribe until the app is installed to the Home Screen.
@@ -94,7 +108,10 @@ export const PushNotificationPrompt = ({ show, onDismiss }: PushNotificationProm
     }
 
     setIsLoading(false);
-    if (success) { setIsVisible(false); onDismiss(); }
+    if (success) {
+      setIsVisible(false);
+      onDismiss();
+    }
   };
 
   const handleDismiss = () => {
@@ -116,7 +133,9 @@ export const PushNotificationPrompt = ({ show, onDismiss }: PushNotificationProm
             <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
               <Bell className="h-7 w-7 text-primary" />
             </div>
-            <DialogTitle className="text-lg font-semibold">Turn on deal alerts</DialogTitle>
+            <DialogTitle className="text-lg font-semibold">
+              Turn on deal alerts
+            </DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
               {isBlocked
                 ? "Notifications are currently blocked for JET in this browser. Re-allow them, then come back and tap Enable."
@@ -128,9 +147,17 @@ export const PushNotificationPrompt = ({ show, onDismiss }: PushNotificationProm
 
           {isBlocked ? (
             <ol className="space-y-2 my-5 text-sm text-foreground/80 list-decimal pl-5">
-              <li>Tap the lock or settings icon in your browser's address bar.</li>
-              <li>Open <span className="font-medium">Site settings</span> → <span className="font-medium">Notifications</span>.</li>
-              <li>Switch notifications to <span className="font-medium">Allow</span>, then reload JET.</li>
+              <li>
+                Tap the lock or settings icon in your browser's address bar.
+              </li>
+              <li>
+                Open <span className="font-medium">Site settings</span> →{" "}
+                <span className="font-medium">Notifications</span>.
+              </li>
+              <li>
+                Switch notifications to{" "}
+                <span className="font-medium">Allow</span>, then reload JET.
+              </li>
             </ol>
           ) : needsInstallFirst ? (
             <div className="space-y-2 my-5">
@@ -138,46 +165,59 @@ export const PushNotificationPrompt = ({ show, onDismiss }: PushNotificationProm
                 <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
                   <Share className="h-3.5 w-3.5 text-primary" />
                 </div>
-                <span className="text-foreground/80">1. Tap the Share button in Safari</span>
+                <span className="text-foreground/80">
+                  1. Tap the Share button in Safari
+                </span>
               </div>
               <div className="flex items-center gap-2.5 text-sm">
                 <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
                   <PlusSquare className="h-3.5 w-3.5 text-primary" />
                 </div>
-                <span className="text-foreground/80">2. Choose "Add to Home Screen"</span>
+                <span className="text-foreground/80">
+                  2. Choose "Add to Home Screen"
+                </span>
               </div>
               <div className="flex items-center gap-2.5 text-sm">
                 <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
                   <Settings2 className="h-3.5 w-3.5 text-primary" />
                 </div>
-                <span className="text-foreground/80">You can also enable alerts later in Settings</span>
+                <span className="text-foreground/80">
+                  You can also enable alerts later in Settings
+                </span>
               </div>
             </div>
           ) : (
-          <div className="space-y-2 my-5">
-            <div className="flex items-center gap-2.5 text-sm">
-              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
-                <MapPin className="h-3.5 w-3.5 text-primary" />
+            <div className="space-y-2 my-5">
+              <div className="flex items-center gap-2.5 text-sm">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
+                  <MapPin className="h-3.5 w-3.5 text-primary" />
+                </div>
+                <span className="text-foreground/80">
+                  Deals near you, as they drop
+                </span>
               </div>
-              <span className="text-foreground/80">Deals near you, as they drop</span>
-            </div>
-            <div className="flex items-center gap-2.5 text-sm">
-              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
-                <Zap className="h-3.5 w-3.5 text-primary" />
+              <div className="flex items-center gap-2.5 text-sm">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
+                  <Zap className="h-3.5 w-3.5 text-primary" />
+                </div>
+                <span className="text-foreground/80">
+                  Heads-up before a favorite ends
+                </span>
               </div>
-              <span className="text-foreground/80">Heads-up before a favorite ends</span>
-            </div>
-            <div className="flex items-center gap-2.5 text-sm">
-              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
-                <Gift className="h-3.5 w-3.5 text-primary" />
+              <div className="flex items-center gap-2.5 text-sm">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
+                  <Gift className="h-3.5 w-3.5 text-primary" />
+                </div>
+                <span className="text-foreground/80">
+                  Exclusive member-only offers
+                </span>
               </div>
-              <span className="text-foreground/80">Exclusive member-only offers</span>
             </div>
-          </div>
           )}
 
           <p className="text-xs text-muted-foreground mb-4">
-            No spam — only deals and updates you follow. You can turn alerts off any time in Settings.
+            No spam — only deals and updates you follow. You can turn alerts off
+            any time in Settings.
           </p>
 
           <DialogFooter className="flex-row gap-3 sm:gap-3">

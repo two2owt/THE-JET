@@ -3,11 +3,30 @@ import { useSearchParams } from "@/lib/router-compat";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Plus, Edit, Trash2, Loader2, Search, SlidersHorizontal, X } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Loader2,
+  Search,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { DealForm } from "./DealForm";
 import { OnboardingStatusBadge } from "./OnboardingStatusBadge";
@@ -25,7 +44,7 @@ import {
   type Priority,
 } from "./dealFilters";
 
-type Deal = Database['public']['Tables']['deals']['Row'];
+type Deal = Database["public"]["Tables"]["deals"]["Row"];
 
 const STATUS_OPTIONS: { id: Filters["status"]; label: string }[] = [
   { id: "all", label: "All" },
@@ -53,17 +72,19 @@ export const DealManagement = () => {
   );
 
   const clearAll = useCallback(() => {
-    setSearchParams(writeFilters(searchParams, defaultFilters), { replace: true });
+    setSearchParams(writeFilters(searchParams, defaultFilters), {
+      replace: true,
+    });
   }, [searchParams, setSearchParams]);
 
   const { data: deals, isLoading } = useQuery({
-    queryKey: ['admin-deals'],
+    queryKey: ["admin-deals"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('deals')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
+        .from("deals")
+        .select("*")
+        .order("created_at", { ascending: false });
+
       if (error) throw error;
       return data;
     },
@@ -71,9 +92,11 @@ export const DealManagement = () => {
 
   // Resolve neighborhood ids → names for facet labels.
   const { data: neighborhoods } = useQuery({
-    queryKey: ['admin-neighborhoods-lookup'],
+    queryKey: ["admin-neighborhoods-lookup"],
     queryFn: async () => {
-      const { data, error } = await supabase.from('neighborhoods').select('id,name');
+      const { data, error } = await supabase
+        .from("neighborhoods")
+        .select("id,name");
       if (error) throw error;
       return data ?? [];
     },
@@ -87,39 +110,43 @@ export const DealManagement = () => {
 
   const deleteMutation = useMutation({
     mutationFn: async (dealId: string) => {
-      const { error } = await supabase
-        .from('deals')
-        .delete()
-        .eq('id', dealId);
-      
+      const { error } = await supabase.from("deals").delete().eq("id", dealId);
+
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-deals'] });
-      toast.success('Deal deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ["admin-deals"] });
+      toast.success("Deal deleted successfully");
     },
     onError: (error) => {
-      toast.error('Failed to delete deal');
-      console.error('Delete error:', error);
+      toast.error("Failed to delete deal");
+      console.error("Delete error:", error);
     },
   });
 
   /* ------------ Faceted aggregates (over full unfiltered set for stable counts) ------------ */
   const typeCounts = useMemo(() => {
     const map = new Map<string, number>();
-    (deals ?? []).forEach((d) => map.set(d.deal_type, (map.get(d.deal_type) ?? 0) + 1));
+    (deals ?? []).forEach((d) =>
+      map.set(d.deal_type, (map.get(d.deal_type) ?? 0) + 1),
+    );
     return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
   }, [deals]);
 
   const statusCounts = useMemo(() => {
     const now = new Date();
     const counts: Record<Filters["status"], number> = {
-      all: deals?.length ?? 0, active: 0, inactive: 0, upcoming: 0, expired: 0,
+      all: deals?.length ?? 0,
+      active: 0,
+      inactive: 0,
+      upcoming: 0,
+      expired: 0,
     };
     (deals ?? []).forEach((d) => {
       const expires = d.expires_at ? new Date(d.expires_at) : null;
       const starts = d.starts_at ? new Date(d.starts_at) : null;
-      if (d.active) counts.active += 1; else counts.inactive += 1;
+      if (d.active) counts.active += 1;
+      else counts.inactive += 1;
       if (expires && expires < now) counts.expired += 1;
       if (starts && starts > now) counts.upcoming += 1;
     });
@@ -171,46 +198,71 @@ export const DealManagement = () => {
   const activeChips = useMemo(() => {
     const chips: { key: string; label: string; onClear: () => void }[] = [];
     if (filters.q)
-      chips.push({ key: "q", label: `“${filters.q}”`, onClear: () => updateFilters({ q: "" }) });
+      chips.push({
+        key: "q",
+        label: `“${filters.q}”`,
+        onClear: () => updateFilters({ q: "" }),
+      });
     filters.types.forEach((t) =>
       chips.push({
         key: `t:${t}`,
         label: t,
-        onClear: () => updateFilters({ types: filters.types.filter((x) => x !== t) }),
+        onClear: () =>
+          updateFilters({ types: filters.types.filter((x) => x !== t) }),
       }),
     );
     if (filters.status !== "all")
-      chips.push({ key: "status", label: `Status: ${filters.status}`, onClear: () => updateFilters({ status: "all" }) });
+      chips.push({
+        key: "status",
+        label: `Status: ${filters.status}`,
+        onClear: () => updateFilters({ status: "all" }),
+      });
     if (filters.from)
-      chips.push({ key: "from", label: `From ${filters.from}`, onClear: () => updateFilters({ from: "" }) });
+      chips.push({
+        key: "from",
+        label: `From ${filters.from}`,
+        onClear: () => updateFilters({ from: "" }),
+      });
     if (filters.to)
-      chips.push({ key: "to", label: `To ${filters.to}`, onClear: () => updateFilters({ to: "" }) });
+      chips.push({
+        key: "to",
+        label: `To ${filters.to}`,
+        onClear: () => updateFilters({ to: "" }),
+      });
     filters.priority.forEach((p) =>
       chips.push({
         key: `p:${p}`,
         label: `Priority: ${p}`,
-        onClear: () => updateFilters({ priority: filters.priority.filter((x) => x !== p) }),
+        onClear: () =>
+          updateFilters({ priority: filters.priority.filter((x) => x !== p) }),
       }),
     );
     filters.merchants.forEach((id) =>
       chips.push({
         key: `m:${id}`,
         label: `Merchant: ${id === NONE_KEY ? "Unassigned" : id.slice(0, 6)}`,
-        onClear: () => updateFilters({ merchants: filters.merchants.filter((x) => x !== id) }),
+        onClear: () =>
+          updateFilters({
+            merchants: filters.merchants.filter((x) => x !== id),
+          }),
       }),
     );
     filters.neighborhoods.forEach((id) =>
       chips.push({
         key: `n:${id}`,
-        label: `Area: ${id === NONE_KEY ? "Unassigned" : neighborhoodNameById.get(id) ?? id.slice(0, 6)}`,
-        onClear: () => updateFilters({ neighborhoods: filters.neighborhoods.filter((x) => x !== id) }),
+        label: `Area: ${id === NONE_KEY ? "Unassigned" : (neighborhoodNameById.get(id) ?? id.slice(0, 6))}`,
+        onClear: () =>
+          updateFilters({
+            neighborhoods: filters.neighborhoods.filter((x) => x !== id),
+          }),
       }),
     );
     filters.days.forEach((d) =>
       chips.push({
         key: `d:${d}`,
         label: DAY_LABELS[d],
-        onClear: () => updateFilters({ days: filters.days.filter((x) => x !== d) }),
+        onClear: () =>
+          updateFilters({ days: filters.days.filter((x) => x !== d) }),
       }),
     );
     return chips;
@@ -233,7 +285,7 @@ export const DealManagement = () => {
           setEditingDeal(null);
         }}
         onSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: ['admin-deals'] });
+          queryClient.invalidateQueries({ queryKey: ["admin-deals"] });
           setIsCreating(false);
           setEditingDeal(null);
         }}
@@ -284,12 +336,21 @@ export const DealManagement = () => {
         </div>
         <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
           <SheetTrigger asChild>
-            <Button variant="outline" className="lg:hidden" aria-label="Open filters">
+            <Button
+              variant="outline"
+              className="lg:hidden"
+              aria-label="Open filters"
+            >
               <SlidersHorizontal className="h-4 w-4" />
-              <span className="ml-2">Filters{activeChips.length ? ` (${activeChips.length})` : ""}</span>
+              <span className="ml-2">
+                Filters{activeChips.length ? ` (${activeChips.length})` : ""}
+              </span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-[320px] sm:w-[360px] overflow-y-auto">
+          <SheetContent
+            side="right"
+            className="w-[320px] sm:w-[360px] overflow-y-auto"
+          >
             <SheetTitle className="mb-4">Filters</SheetTitle>
             {Facets}
           </SheetContent>
@@ -304,7 +365,9 @@ export const DealManagement = () => {
           {/* Results count + active chips */}
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm text-muted-foreground">
-              <span className="font-semibold text-foreground">{filtered.length}</span>
+              <span className="font-semibold text-foreground">
+                {filtered.length}
+              </span>
               {" of "}
               {deals?.length ?? 0} deals
             </span>
@@ -337,7 +400,9 @@ export const DealManagement = () => {
                   <div className="flex justify-between items-start gap-3">
                     <div className="min-w-0">
                       <CardTitle className="truncate">{deal.title}</CardTitle>
-                      <CardDescription className="truncate">{deal.venue_name}</CardDescription>
+                      <CardDescription className="truncate">
+                        {deal.venue_name}
+                      </CardDescription>
                       <div className="mt-2">
                         <OnboardingStatusBadge
                           startedAt={deal.onboarding_started_at}
@@ -347,7 +412,11 @@ export const DealManagement = () => {
                       </div>
                     </div>
                     <div className="flex gap-2 shrink-0">
-                      <Button variant="outline" size="sm" onClick={() => setEditingDeal(deal)}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingDeal(deal)}
+                      >
                         <Edit className="w-4 h-4" />
                       </Button>
                       <Button
@@ -362,14 +431,20 @@ export const DealManagement = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground line-clamp-3">{deal.description}</p>
+                  <p className="text-sm text-muted-foreground line-clamp-3">
+                    {deal.description}
+                  </p>
                   <div className="mt-2 text-sm">
                     <span className="font-medium">Type:</span> {deal.deal_type}
                   </div>
                   <div className="mt-1 text-sm">
-                    <span className="font-medium">Status:</span>{' '}
-                    <span className={deal.active ? 'text-green-600' : 'text-red-600'}>
-                      {deal.active ? 'Active' : 'Inactive'}
+                    <span className="font-medium">Status:</span>{" "}
+                    <span
+                      className={
+                        deal.active ? "text-green-600" : "text-red-600"
+                      }
+                    >
+                      {deal.active ? "Active" : "Inactive"}
                     </span>
                   </div>
                 </CardContent>
@@ -429,27 +504,32 @@ function FacetSidebar({
 }: FacetSidebarProps) {
   const toggleType = (t: string) => {
     const set = new Set(filters.types);
-    if (set.has(t)) set.delete(t); else set.add(t);
+    if (set.has(t)) set.delete(t);
+    else set.add(t);
     onChange({ types: Array.from(set) });
   };
   const togglePriority = (p: Priority) => {
     const set = new Set(filters.priority);
-    if (set.has(p)) set.delete(p); else set.add(p);
+    if (set.has(p)) set.delete(p);
+    else set.add(p);
     onChange({ priority: Array.from(set) });
   };
   const toggleMerchant = (id: string) => {
     const set = new Set(filters.merchants);
-    if (set.has(id)) set.delete(id); else set.add(id);
+    if (set.has(id)) set.delete(id);
+    else set.add(id);
     onChange({ merchants: Array.from(set) });
   };
   const toggleNeighborhood = (id: string) => {
     const set = new Set(filters.neighborhoods);
-    if (set.has(id)) set.delete(id); else set.add(id);
+    if (set.has(id)) set.delete(id);
+    else set.add(id);
     onChange({ neighborhoods: Array.from(set) });
   };
   const toggleDay = (d: number) => {
     const set = new Set(filters.days);
-    if (set.has(d)) set.delete(d); else set.add(d);
+    if (set.has(d)) set.delete(d);
+    else set.add(d);
     onChange({ days: Array.from(set).sort((a, b) => a - b) });
   };
 
@@ -458,7 +538,11 @@ function FacetSidebar({
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-foreground">Filters</h3>
         {hasActive && (
-          <button type="button" onClick={onClearAll} className="text-xs font-medium text-primary hover:underline">
+          <button
+            type="button"
+            onClick={onClearAll}
+            className="text-xs font-medium text-primary hover:underline"
+          >
             Clear all
           </button>
         )}
@@ -474,7 +558,9 @@ function FacetSidebar({
               <label
                 key={s.id}
                 className={`flex items-center justify-between gap-2 rounded-md px-2 py-1.5 cursor-pointer text-sm transition-colors ${
-                  checked ? "bg-primary/10 text-foreground" : "hover:bg-muted/50 text-muted-foreground"
+                  checked
+                    ? "bg-primary/10 text-foreground"
+                    : "hover:bg-muted/50 text-muted-foreground"
                 }`}
               >
                 <span className="flex items-center gap-2">
@@ -508,10 +594,15 @@ function FacetSidebar({
                   className="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 cursor-pointer text-sm hover:bg-muted/50"
                 >
                   <span className="flex items-center gap-2 min-w-0">
-                    <Checkbox checked={checked} onCheckedChange={() => toggleType(t)} />
+                    <Checkbox
+                      checked={checked}
+                      onCheckedChange={() => toggleType(t)}
+                    />
                     <span className="truncate">{t}</span>
                   </span>
-                  <span className="text-xs tabular-nums text-muted-foreground">{count}</span>
+                  <span className="text-xs tabular-nums text-muted-foreground">
+                    {count}
+                  </span>
                 </label>
               );
             })}
@@ -530,10 +621,15 @@ function FacetSidebar({
                 className="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 cursor-pointer text-sm hover:bg-muted/50"
               >
                 <span className="flex items-center gap-2 capitalize">
-                  <Checkbox checked={checked} onCheckedChange={() => togglePriority(p)} />
+                  <Checkbox
+                    checked={checked}
+                    onCheckedChange={() => togglePriority(p)}
+                  />
                   {p}
                 </span>
-                <span className="text-xs tabular-nums text-muted-foreground">{priorityCounts[p]}</span>
+                <span className="text-xs tabular-nums text-muted-foreground">
+                  {priorityCounts[p]}
+                </span>
               </label>
             );
           })}
@@ -556,10 +652,15 @@ function FacetSidebar({
                   title={id === NONE_KEY ? undefined : id}
                 >
                   <span className="flex items-center gap-2 min-w-0">
-                    <Checkbox checked={checked} onCheckedChange={() => toggleMerchant(id)} />
+                    <Checkbox
+                      checked={checked}
+                      onCheckedChange={() => toggleMerchant(id)}
+                    />
                     <span className="truncate font-mono text-xs">{label}</span>
                   </span>
-                  <span className="text-xs tabular-nums text-muted-foreground">{count}</span>
+                  <span className="text-xs tabular-nums text-muted-foreground">
+                    {count}
+                  </span>
                 </label>
               );
             })}
@@ -576,17 +677,24 @@ function FacetSidebar({
             {neighborhoodCounts.map(([id, count]) => {
               const checked = filters.neighborhoods.includes(id);
               const label =
-                id === NONE_KEY ? "Unassigned" : neighborhoodNameById.get(id) ?? id.slice(0, 8);
+                id === NONE_KEY
+                  ? "Unassigned"
+                  : (neighborhoodNameById.get(id) ?? id.slice(0, 8));
               return (
                 <label
                   key={id}
                   className="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 cursor-pointer text-sm hover:bg-muted/50"
                 >
                   <span className="flex items-center gap-2 min-w-0">
-                    <Checkbox checked={checked} onCheckedChange={() => toggleNeighborhood(id)} />
+                    <Checkbox
+                      checked={checked}
+                      onCheckedChange={() => toggleNeighborhood(id)}
+                    />
                     <span className="truncate">{label}</span>
                   </span>
-                  <span className="text-xs tabular-nums text-muted-foreground">{count}</span>
+                  <span className="text-xs tabular-nums text-muted-foreground">
+                    {count}
+                  </span>
                 </label>
               );
             })}
@@ -647,12 +755,24 @@ function FacetSidebar({
   );
 }
 
-function FacetGroup({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
+function FacetGroup({
+  title,
+  hint,
+  children,
+}: {
+  title: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="space-y-2">
       <div className="flex items-baseline justify-between gap-2">
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</h4>
-        {hint && <span className="text-[10px] text-muted-foreground/70">{hint}</span>}
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {title}
+        </h4>
+        {hint && (
+          <span className="text-[10px] text-muted-foreground/70">{hint}</span>
+        )}
       </div>
       {children}
     </div>

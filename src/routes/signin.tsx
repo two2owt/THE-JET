@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import Auth from "@/pages/Auth";
 
 const title = "Sign In — JET";
-const description = "Sign in to your JET account to see live deals and trending venues near you.";
+const description =
+  "Sign in to your JET account to see live deals and trending venues near you.";
 
 export const Route = createFileRoute("/signin")({
   head: () => ({

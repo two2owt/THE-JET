@@ -1,5 +1,30 @@
-import { memo, useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from "react";
-import { MapPin, Users, Star, TrendingUp, X, Share2, Send, Car, Navigation, Phone, Globe, RefreshCw, Loader2, Heart, Clock } from "lucide-react";
+import {
+  memo,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+  lazy,
+  Suspense,
+} from "react";
+import {
+  MapPin,
+  Users,
+  Star,
+  TrendingUp,
+  X,
+  Share2,
+  Send,
+  Car,
+  Navigation,
+  Phone,
+  Globe,
+  RefreshCw,
+  Loader2,
+  Heart,
+  Clock,
+} from "lucide-react";
 import { glideHaptic } from "@/lib/haptics";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,97 +64,48 @@ interface JetCardProps {
   onSendToFriend?: () => void;
 }
 
-export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }: JetCardProps) => {
-  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
-  const { canAccessSocialFeatures } = useFeatureAccess();
-  const [nearbyParking, setNearbyParking] = useState<NearbyParking[]>([]);
-  const [parkingLoading, setParkingLoading] = useState(false);
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const { favorites, toggleVenueFavorite, refetch } = useFavorites(user?.id);
-  const [activeDealId, setActiveDealId] = useState<string | null>(null);
-  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
-  const [directionsTarget, setDirectionsTarget] = useState<DirectionsVenue | null>(null);
-  const [directionsPlaceId, setDirectionsPlaceId] = useState<string | null>(null);
+export const JetCard = memo(
+  ({ venue, onGetDirections, onClose, onSendToFriend }: JetCardProps) => {
+    const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
+    const { canAccessSocialFeatures } = useFeatureAccess();
+    const [nearbyParking, setNearbyParking] = useState<NearbyParking[]>([]);
+    const [parkingLoading, setParkingLoading] = useState(false);
+    const { user } = useAuth();
+    const navigate = useNavigate();
+    const { favorites, toggleVenueFavorite, refetch } = useFavorites(user?.id);
+    const [activeDealId, setActiveDealId] = useState<string | null>(null);
+    const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+    const [directionsTarget, setDirectionsTarget] =
+      useState<DirectionsVenue | null>(null);
+    const [directionsPlaceId, setDirectionsPlaceId] = useState<string | null>(
+      null,
+    );
 
-  // Suspend map drag / scroll-zoom while the user interacts with this card.
-  const cardRef = useRef<HTMLElement | null>(null);
-  useLockMapWhileInteracting(cardRef);
+    // Suspend map drag / scroll-zoom while the user interacts with this card.
+    const cardRef = useRef<HTMLElement | null>(null);
+    useLockMapWhileInteracting(cardRef);
 
-  // Google Places photo for this venue — preferred over any scraped image.
-  const { photoUrl: placesPhoto, loading: photoLoading } = useVenuePhoto(
-    {
-      id: venue.id,
-      name: venue.name,
-      address: venue.address ?? null,
-      lat: venue.lat,
-      lng: venue.lng,
-      placeId: (venue as { placeId?: string | null }).placeId ?? null,
-    },
-    900
-  );
-  const heroImage = placesPhoto ?? venue.imageUrl ?? null;
+    // Google Places photo for this venue — preferred over any scraped image.
+    const { photoUrl: placesPhoto, loading: photoLoading } = useVenuePhoto(
+      {
+        id: venue.id,
+        name: venue.name,
+        address: venue.address ?? null,
+        lat: venue.lat,
+        lng: venue.lng,
+        placeId: (venue as { placeId?: string | null }).placeId ?? null,
+      },
+      900,
+    );
+    const heroImage = placesPhoto ?? venue.imageUrl ?? null;
 
-  // Look up the active deal (if any) for this venue so a favorited venue
-  // can still link to the user's saved deal under /favorites.
-  useEffect(() => {
-    let cancelled = false;
-    setActiveDealId(null);
-    const resolveDeal = async () => {
-      const { data, error } = await supabase
-        .from("deals")
-        .select("id")
-        .eq("venue_id", venue.id)
-        .eq("active", true)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (cancelled) return;
-      if (!error && data) setActiveDealId(data.id);
-    };
-    resolveDeal();
-    return () => { cancelled = true; };
-  }, [venue.id]);
-
-  // Favorited if either the venue_id matches OR the linked active deal_id matches.
-  const favorited = useMemo(
-    () =>
-      favorites.some(
-        (f) => f.venue_id === venue.id || (activeDealId !== null && f.deal_id === activeDealId)
-      ),
-    [favorites, venue.id, activeDealId]
-  );
-
-  // Refresh favorites when the card opens so the active state is always correct.
-  useEffect(() => {
-    if (user) {
-      refetch();
-    }
-  }, [user, venue.id, refetch]);
-
-  const handleToggleFavorite = useCallback(async () => {
-    if (isTogglingFavorite) return;
-    setIsTogglingFavorite(true);
-    await glideHaptic();
-    if (!user) {
-      rememberPostAuthRedirect();
-      toast("Sign in to save favorites", { description: "Create an account to keep this venue." });
-      navigate("/auth");
-      setIsTogglingFavorite(false);
-      return;
-    }
-    try {
-      const { analytics } = await import("@/lib/analytics");
-      analytics.dealClicked(venue.id, venue.name, favorited ? "unfavorite" : "favorite");
-    } catch { /* noop */ }
-    try {
-      // Resolve the active deal on-demand if the background lookup hasn't
-      // completed yet, so the favorite row always links to the deal when
-      // one exists. This keeps the map heart and the /favorites DealCard
-      // heart in sync (DealCard.isFavorite only matches by deal_id).
-      let dealIdForFavorite = activeDealId;
-      if (!dealIdForFavorite) {
-        const { data } = await supabase
+    // Look up the active deal (if any) for this venue so a favorited venue
+    // can still link to the user's saved deal under /favorites.
+    useEffect(() => {
+      let cancelled = false;
+      setActiveDealId(null);
+      const resolveDeal = async () => {
+        const { data, error } = await supabase
           .from("deals")
           .select("id")
           .eq("venue_id", venue.id)
@@ -137,995 +113,1294 @@ export const JetCard = memo(({ venue, onGetDirections, onClose, onSendToFriend }
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
-        if (data?.id) {
-          dealIdForFavorite = data.id;
-          setActiveDealId(data.id);
-        }
+        if (cancelled) return;
+        if (!error && data) setActiveDealId(data.id);
+      };
+      resolveDeal();
+      return () => {
+        cancelled = true;
+      };
+    }, [venue.id]);
+
+    // Favorited if either the venue_id matches OR the linked active deal_id matches.
+    const favorited = useMemo(
+      () =>
+        favorites.some(
+          (f) =>
+            f.venue_id === venue.id ||
+            (activeDealId !== null && f.deal_id === activeDealId),
+        ),
+      [favorites, venue.id, activeDealId],
+    );
+
+    // Refresh favorites when the card opens so the active state is always correct.
+    useEffect(() => {
+      if (user) {
+        refetch();
       }
-      await toggleVenueFavorite(venue.id, dealIdForFavorite, {
-        name: venue.name,
-        address: venue.address ?? null,
-        imageUrl: venue.imageUrl ?? null,
-        category: venue.category,
-        neighborhood: venue.neighborhood,
-        lat: venue.lat,
-        lng: venue.lng,
-      });
-    } finally {
-      setIsTogglingFavorite(false);
-    }
-  }, [user, favorited, activeDealId, venue.id, venue.name, toggleVenueFavorite, navigate, isTogglingFavorite]);
+    }, [user, venue.id, refetch]);
 
-  const loadParking = useCallback(async (showToast = false) => {
-    if (!venue.lat || !venue.lng) return;
-    setParkingLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('get-nearby-parking', {
-        body: JSON.stringify({ lat: venue.lat, lng: venue.lng, radius: 1000 }),
-      });
-      if (error) throw error;
-      const results = data?.results ?? [];
-      setNearbyParking(results);
-      if (showToast) {
-        if (results.length > 0) {
-          toast.success(`Found ${results.length} nearby parking spot${results.length === 1 ? '' : 's'}`);
-        } else {
-          toast.message('No parking found nearby');
-        }
+    const handleToggleFavorite = useCallback(async () => {
+      if (isTogglingFavorite) return;
+      setIsTogglingFavorite(true);
+      await glideHaptic();
+      if (!user) {
+        rememberPostAuthRedirect();
+        toast("Sign in to save favorites", {
+          description: "Create an account to keep this venue.",
+        });
+        navigate("/auth");
+        setIsTogglingFavorite(false);
+        return;
       }
-    } catch {
-      if (showToast) toast.error("Couldn't refresh parking");
-    } finally {
-      setParkingLoading(false);
-    }
-  }, [venue.lat, venue.lng]);
-
-  // Fetch nearby parking when venue changes
-  useEffect(() => {
-    setNearbyParking([]);
-    loadParking(false);
-  }, [venue.id, loadParking]);
-
-  const handleRefreshParking = async () => {
-    if (parkingLoading) return;
-    await glideHaptic();
-    await loadParking(true);
-  };
-
-  // Single source of truth: the same tier boundaries and colours the map
-  // markers and the Activity legend use, so a "Peak" marker can never read
-  // as "Moderate" on its card. App chrome is dark-only -> dark tier variant.
-  const getActivityLevel = (activity: number) => {
-    const tier = activityTier(activity);
-    const emoji: Record<ActivityTierId, string> = {
-      peak: "🔥",
-      busy: "🌟",
-      steady: "✨",
-      quiet: "😌",
-    };
-    return { label: `${emoji[tier.id]} ${tier.label}`, color: tier.dark };
-  };
-  const handleGetDirections = async () => {
-    await glideHaptic();
-    try {
-      const { analytics } = await import("@/lib/analytics");
-      analytics.dealClicked(venue.id, venue.name, "directions");
-    } catch { /* noop */ }
-    onGetDirections();
-  };
-
-  const handleShare = async () => {
-    if (!canAccessSocialFeatures()) {
-      setShowUpgradePrompt(true);
       try {
         const { analytics } = await import("@/lib/analytics");
-        analytics.track("Upgrade Prompt Shown", { source: "jetcard_share", venue_id: venue.id });
-      } catch { /* noop */ }
-      return;
-    }
-    await glideHaptic();
-    try {
-      const { analytics } = await import("@/lib/analytics");
-      analytics.dealClicked(venue.id, venue.name, "share");
-    } catch { /* noop */ }
-    const result = await shareVenue({ id: venue.id, name: venue.name });
-    if (result.success) {
-      if (result.method === "native") {
-        toast.success("Shared successfully!", { description: `${venue.name} shared with others` });
-      } else {
-        toast.success("Copied to clipboard!", { description: "Share link copied - paste it anywhere" });
+        analytics.dealClicked(
+          venue.id,
+          venue.name,
+          favorited ? "unfavorite" : "favorite",
+        );
+      } catch {
+        /* noop */
       }
-    } else if (result.method !== "native") {
-      toast.error("Couldn't share", { description: "Please try again" });
-    }
-  };
+      try {
+        // Resolve the active deal on-demand if the background lookup hasn't
+        // completed yet, so the favorite row always links to the deal when
+        // one exists. This keeps the map heart and the /favorites DealCard
+        // heart in sync (DealCard.isFavorite only matches by deal_id).
+        let dealIdForFavorite = activeDealId;
+        if (!dealIdForFavorite) {
+          const { data } = await supabase
+            .from("deals")
+            .select("id")
+            .eq("venue_id", venue.id)
+            .eq("active", true)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (data?.id) {
+            dealIdForFavorite = data.id;
+            setActiveDealId(data.id);
+          }
+        }
+        await toggleVenueFavorite(venue.id, dealIdForFavorite, {
+          name: venue.name,
+          address: venue.address ?? null,
+          imageUrl: venue.imageUrl ?? null,
+          category: venue.category,
+          neighborhood: venue.neighborhood,
+          lat: venue.lat,
+          lng: venue.lng,
+        });
+      } finally {
+        setIsTogglingFavorite(false);
+      }
+    }, [
+      user,
+      favorited,
+      activeDealId,
+      venue.id,
+      venue.name,
+      toggleVenueFavorite,
+      navigate,
+      isTogglingFavorite,
+    ]);
 
-  const openParkingDirections = (parking: NearbyParking) => {
-    // Guard against malformed coordinates so we never open a broken Maps URL.
-    if (
-      typeof parking.lat !== 'number' ||
-      typeof parking.lng !== 'number' ||
-      Number.isNaN(parking.lat) ||
-      Number.isNaN(parking.lng)
-    ) {
-      toast.error("Couldn't open directions", { description: "Missing parking coordinates" });
-      return;
-    }
+    const loadParking = useCallback(
+      async (showToast = false) => {
+        if (!venue.lat || !venue.lng) return;
+        setParkingLoading(true);
+        try {
+          const { data, error } = await supabase.functions.invoke(
+            "get-nearby-parking",
+            {
+              body: JSON.stringify({
+                lat: venue.lat,
+                lng: venue.lng,
+                radius: 1000,
+              }),
+            },
+          );
+          if (error) throw error;
+          const results = data?.results ?? [];
+          setNearbyParking(results);
+          if (showToast) {
+            if (results.length > 0) {
+              toast.success(
+                `Found ${results.length} nearby parking spot${results.length === 1 ? "" : "s"}`,
+              );
+            } else {
+              toast.message("No parking found nearby");
+            }
+          }
+        } catch {
+          if (showToast) toast.error("Couldn't refresh parking");
+        } finally {
+          setParkingLoading(false);
+        }
+      },
+      [venue.lat, venue.lng],
+    );
 
-    // Let the user pick Google Maps / Apple Maps / Waze instead of forcing Google.
-    setDirectionsPlaceId(parking.placeId ?? null);
-    setDirectionsTarget({
-      id: parking.placeId || `${parking.lat},${parking.lng}`,
-      name: parking.name,
-      lat: parking.lat,
-      lng: parking.lng,
-      activity: 0,
-      category: 'parking',
-      neighborhood: venue.neighborhood ?? '',
-      address: parking.address,
-    });
-  };
+    // Fetch nearby parking when venue changes
+    useEffect(() => {
+      setNearbyParking([]);
+      loadParking(false);
+    }, [venue.id, loadParking]);
 
-  const activityLevel = getActivityLevel(venue.activity);
+    const handleRefreshParking = async () => {
+      if (parkingLoading) return;
+      await glideHaptic();
+      await loadParking(true);
+    };
 
-  return (
-    <article
-      ref={cardRef}
-      style={{
-        position: 'relative',
-        width: '100%',
-        // Dark luxe surface — vertical gradient + hairline border with
-        // a barely-there gold ambient ring (JET red/purple stays in shadow-sm).
-        background:
-          'linear-gradient(180deg, hsl(var(--card) / 0.96), hsl(var(--card) / 0.82))',
-        border: '1px solid hsl(0 0% 100% / 0.06)',
-        borderRadius: 'clamp(12px, 1.6vw, 20px)',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        boxShadow:
-          '0 0 60px hsl(var(--gold) / 0.05), 0 24px 50px -20px rgba(0,0,0,0.75), 0 0 0 1px hsl(var(--gold) / 0.18), inset 0 1px 0 hsl(0 0% 100% / 0.05)',
-        // Never obstruct the map: fit within the space between the fixed header
-        // and the bottom nav, on any device / orientation / zoom level.
-        maxHeight:
-          'min(calc(100svh - var(--header-total-height, 52px) - var(--bottom-nav-total-height, 60px) - 32px), 78svh, 640px)',
-        overflowY: 'auto',
-        overscrollBehavior: 'contain',
-        containerType: 'inline-size',
-        fontFamily: 'var(--font-sans, system-ui, -apple-system, sans-serif)',
-        color: 'hsl(var(--foreground))',
-        fontSize: 'clamp(13px, 0.95vw + 11px, 16px)',
-      }}
-      aria-label={`${venue.name} - ${venue.category} in ${venue.neighborhood}`}
-    >
-      {/* Image Header */}
-      <div style={{
-        position: 'relative',
-        // Size the hero to the card container itself (not the viewport) so it
-        // scales with the JetCard on any device or user zoom level.
-        width: '100%',
-        aspectRatio: '16 / 9',
-        minHeight: '72px',
-        maxHeight: 'clamp(96px, 26cqw, 180px)',
-        background: 'linear-gradient(135deg, hsl(var(--primary) / 0.3), hsl(var(--accent) / 0.2))',
-        overflow: 'hidden',
-      }}>
-        {/* Branded placeholder renders underneath while the Places photo
-            resolves, so slow networks never show an empty hero. */}
-        {photoLoading && !heroImage && (
-          <div
-            aria-hidden="true"
-            className="animate-pulse"
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background: 'hsl(var(--muted) / 0.35)',
-              zIndex: 0,
-            }}
-          />
-        )}
-        {heroImage ? (
-          <img
-            src={heroImage}
-            alt={venue.name}
-            style={{
-              position: 'absolute',
-              inset: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              objectPosition: 'center',
-              opacity: 1,
-              transition: 'opacity 200ms ease',
-            }}
-            loading="eager"
-            decoding="async"
-            onError={(e) => {
-              // Swap to the centered JET-mark placeholder rather than the
-              // generic stretched placeholder.svg so the card stays on-brand.
-              const img = e.currentTarget;
-              img.src = '/jet-email-logo.png';
-              img.alt = 'JET';
-              img.style.objectFit = 'contain';
-              img.style.padding = 'clamp(12px, 4%, 22px)';
-              img.style.filter = 'none';
-              img.style.opacity = '0.85';
-            }}
-          />
-        ) : (
-          // No venue image — render the JET mark, centered with adaptive
-          // breathing room so it scales gracefully across viewport widths.
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 'clamp(10px, 4%, 20px)',
-              background:
-                'radial-gradient(circle at 50% 50%, hsl(var(--primary) / 0.18), transparent 70%)',
-            }}
-          >
-            <img
-              src="/jet-email-logo.png"
-              alt=""
-              loading="lazy"
-              style={{
-                maxWidth: '46%',
-                maxHeight: '78%',
-                width: 'auto',
-                height: 'auto',
-                objectFit: 'contain',
-                opacity: 0.9,
-                filter: 'drop-shadow(0 2px 8px hsl(var(--primary) / 0.35))',
-              }}
-            />
-          </div>
-        )}
-        {/* JET watermark — only render over real venue photos so the
-            placeholder (which is the same mark, centered) isn't duplicated. */}
-        {heroImage && (
-          <img
-            src="/jet-email-logo.png"
-            alt="JET"
-            style={{
-              position: 'absolute',
-              bottom: '8px',
-              right: '8px',
-              width: '28px',
-              height: '28px',
-              opacity: 0.5,
-              objectFit: 'contain',
-              pointerEvents: 'none',
-            }}
-          />
-        )}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'linear-gradient(to top, rgba(0,0,0,0.4), transparent)',
-        }} />
+    // Single source of truth: the same tier boundaries and colours the map
+    // markers and the Activity legend use, so a "Peak" marker can never read
+    // as "Moderate" on its card. App chrome is dark-only -> dark tier variant.
+    const getActivityLevel = (activity: number) => {
+      const tier = activityTier(activity);
+      const emoji: Record<ActivityTierId, string> = {
+        peak: "🔥",
+        busy: "🌟",
+        steady: "✨",
+        quiet: "😌",
+      };
+      return { label: `${emoji[tier.id]} ${tier.label}`, color: tier.dark };
+    };
+    const handleGetDirections = async () => {
+      await glideHaptic();
+      try {
+        const { analytics } = await import("@/lib/analytics");
+        analytics.dealClicked(venue.id, venue.name, "directions");
+      } catch {
+        /* noop */
+      }
+      onGetDirections();
+    };
 
-        {onClose && (
-          <button
-            onClick={onClose}
-            style={{
-              position: 'absolute',
-              top: '8px',
-              right: '8px',
-              zIndex: 20,
-              background: 'hsl(var(--background) / 0.8)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              border: 'none',
-              borderRadius: '50%',
-              padding: '0',
-              width: '44px',
-              height: '44px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            aria-label="Close"
-          >
-            <X style={{ width: '18px', height: '18px', color: 'hsl(var(--foreground))' }} />
-          </button>
-        )}
+    const handleShare = async () => {
+      if (!canAccessSocialFeatures()) {
+        setShowUpgradePrompt(true);
+        try {
+          const { analytics } = await import("@/lib/analytics");
+          analytics.track("Upgrade Prompt Shown", {
+            source: "jetcard_share",
+            venue_id: venue.id,
+          });
+        } catch {
+          /* noop */
+        }
+        return;
+      }
+      await glideHaptic();
+      try {
+        const { analytics } = await import("@/lib/analytics");
+        analytics.dealClicked(venue.id, venue.name, "share");
+      } catch {
+        /* noop */
+      }
+      const result = await shareVenue({ id: venue.id, name: venue.name });
+      if (result.success) {
+        if (result.method === "native") {
+          toast.success("Shared successfully!", {
+            description: `${venue.name} shared with others`,
+          });
+        } else {
+          toast.success("Copied to clipboard!", {
+            description: "Share link copied - paste it anywhere",
+          });
+        }
+      } else if (result.method !== "native") {
+        toast.error("Couldn't share", { description: "Please try again" });
+      }
+    };
 
-        {/* Favorite toggle — saves venue to /favorites */}
-        <button
-          onClick={handleToggleFavorite}
-          disabled={isTogglingFavorite}
-          aria-label={favorited ? `Remove ${venue.name} from favorites` : `Save ${venue.name} to favorites`}
-          aria-pressed={favorited}
-          aria-busy={isTogglingFavorite}
+    const openParkingDirections = (parking: NearbyParking) => {
+      // Guard against malformed coordinates so we never open a broken Maps URL.
+      if (
+        typeof parking.lat !== "number" ||
+        typeof parking.lng !== "number" ||
+        Number.isNaN(parking.lat) ||
+        Number.isNaN(parking.lng)
+      ) {
+        toast.error("Couldn't open directions", {
+          description: "Missing parking coordinates",
+        });
+        return;
+      }
+
+      // Let the user pick Google Maps / Apple Maps / Waze instead of forcing Google.
+      setDirectionsPlaceId(parking.placeId ?? null);
+      setDirectionsTarget({
+        id: parking.placeId || `${parking.lat},${parking.lng}`,
+        name: parking.name,
+        lat: parking.lat,
+        lng: parking.lng,
+        activity: 0,
+        category: "parking",
+        neighborhood: venue.neighborhood ?? "",
+        address: parking.address,
+      });
+    };
+
+    const activityLevel = getActivityLevel(venue.activity);
+
+    return (
+      <article
+        ref={cardRef}
+        style={{
+          position: "relative",
+          width: "100%",
+          // Dark luxe surface — vertical gradient + hairline border with
+          // a barely-there gold ambient ring (JET red/purple stays in shadow-sm).
+          background:
+            "linear-gradient(180deg, hsl(var(--card) / 0.96), hsl(var(--card) / 0.82))",
+          border: "1px solid hsl(0 0% 100% / 0.06)",
+          borderRadius: "clamp(12px, 1.6vw, 20px)",
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+          boxShadow:
+            "0 0 60px hsl(var(--gold) / 0.05), 0 24px 50px -20px rgba(0,0,0,0.75), 0 0 0 1px hsl(var(--gold) / 0.18), inset 0 1px 0 hsl(0 0% 100% / 0.05)",
+          // Never obstruct the map: fit within the space between the fixed header
+          // and the bottom nav, on any device / orientation / zoom level.
+          maxHeight:
+            "min(calc(100svh - var(--header-total-height, 52px) - var(--bottom-nav-total-height, 60px) - 32px), 78svh, 640px)",
+          overflowY: "auto",
+          overscrollBehavior: "contain",
+          containerType: "inline-size",
+          fontFamily: "var(--font-sans, system-ui, -apple-system, sans-serif)",
+          color: "hsl(var(--foreground))",
+          fontSize: "clamp(13px, 0.95vw + 11px, 16px)",
+        }}
+        aria-label={`${venue.name} - ${venue.category} in ${venue.neighborhood}`}
+      >
+        {/* Image Header */}
+        <div
           style={{
-            position: 'absolute',
-            top: '8px',
-            right: onClose ? '60px' : '8px',
-            zIndex: 20,
-            background: favorited
-              ? 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))'
-              : 'hsl(var(--background) / 0.8)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            border: '1px solid hsl(var(--gold) / 0.35)',
-            boxShadow: favorited
-              ? '0 0 16px hsl(var(--primary) / 0.55)'
-              : '0 0 10px hsl(var(--gold) / 0.18)',
-            borderRadius: '50%',
-            padding: 0,
-            width: '44px',
-            height: '44px',
-            cursor: isTogglingFavorite ? 'default' : 'pointer',
-            opacity: isTogglingFavorite ? 0.7 : 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'transform 200ms ease-out, box-shadow 200ms ease-out, background 200ms ease-out, opacity 200ms ease-out',
-            transform: isTogglingFavorite ? 'scale(0.92)' : 'scale(1)',
+            position: "relative",
+            // Size the hero to the card container itself (not the viewport) so it
+            // scales with the JetCard on any device or user zoom level.
+            width: "100%",
+            aspectRatio: "16 / 9",
+            minHeight: "72px",
+            maxHeight: "clamp(96px, 26cqw, 180px)",
+            background:
+              "linear-gradient(135deg, hsl(var(--primary) / 0.3), hsl(var(--accent) / 0.2))",
+            overflow: "hidden",
           }}
         >
-          {isTogglingFavorite ? (
-            <Loader2 className="animate-spin" style={{ width: '18px', height: '18px', color: 'hsl(var(--foreground))' }} />
-          ) : (
-            <Heart
+          {/* Branded placeholder renders underneath while the Places photo
+            resolves, so slow networks never show an empty hero. */}
+          {photoLoading && !heroImage && (
+            <div
+              aria-hidden="true"
+              className="animate-pulse"
               style={{
-                width: '18px',
-                height: '18px',
-                color: favorited ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
-                fill: favorited ? 'hsl(var(--primary-foreground))' : 'transparent',
-                transition: 'fill 200ms ease-out, color 200ms ease-out',
+                position: "absolute",
+                inset: 0,
+                background: "hsl(var(--muted) / 0.35)",
+                zIndex: 0,
               }}
             />
           )}
-        </button>
-
-        {/* Activity Badge */}
-        <div style={{
-          position: 'absolute',
-          top: '8px',
-          left: '8px',
-          // Luxe metric pill — near-black glass with hairline gold ring + ambient glow
-          background:
-            'linear-gradient(135deg, rgba(0,0,0,0.72), rgba(0,0,0,0.55))',
-          border: '1px solid hsl(var(--gold) / 0.45)',
-          boxShadow:
-            '0 0 14px hsl(var(--gold) / 0.25), inset 0 1px 0 hsl(0 0% 100% / 0.08)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          padding: '3px 10px',
-          borderRadius: '9999px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-        }}>
-          <div
-            className="animate-pulse"
-            style={{
-              width: '6px',
-              height: '6px',
-              background: 'hsl(var(--gold))',
-              borderRadius: '50%',
-              boxShadow: '0 0 8px hsl(var(--gold) / 0.7)',
-            }}
-          />
-          <span
-            style={{
-              fontSize: '10px',
-              fontWeight: 700,
-              letterSpacing: '0.08em',
-              background: 'var(--gradient-gold)',
-              WebkitBackgroundClip: 'text',
-              backgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              color: 'transparent',
-            }}
-          >
-            {venue.activity}% ACTIVE
-          </span>
-        </div>
-
-        {/* Category Badge */}
-        <div style={{
-          position: 'absolute',
-          bottom: '8px',
-          left: '8px',
-          background: 'rgba(0,0,0,0.55)',
-          border: '1px solid hsl(var(--silver) / 0.35)',
-          boxShadow: '0 0 10px hsl(var(--silver) / 0.12)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          padding: '3px 10px',
-          borderRadius: '9999px',
-        }}>
-          <span
-            style={{
-              fontSize: '10px',
-              fontWeight: 600,
-              color: 'hsl(var(--silver))',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-            }}
-          >
-            {venue.category}
-          </span>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div style={{
-        padding: 'clamp(12px, 3.4cqw, 20px)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 'clamp(6px, 2cqw, 12px)',
-      }}>
-        {/* Title */}
-        <div>
-          <h3 style={{
-            fontSize: 'clamp(15px, 3.4cqw + 4px, 21px)',
-            fontWeight: 700,
-            color: 'hsl(var(--foreground))',
-            lineHeight: 1.25,
-            margin: 0,
-            overflowWrap: 'anywhere',
-          }}>{venue.name}</h3>
-          {/* Open / Closed status + today's hours from Google Places */}
-          {(venue.isOpen !== null && venue.isOpen !== undefined) || (venue.openingHours && venue.openingHours.length > 0) ? (
-            (() => {
-              const todayIdx = new Date().getDay(); // 0 = Sun
-              // Google weekday_text is Mon-first; map Sun(0)->6, Mon(1)->0, etc.
-              const gIdx = todayIdx === 0 ? 6 : todayIdx - 1;
-              const todayLine = venue.openingHours?.[gIdx];
-              const todayHours = todayLine?.includes(":") ? todayLine.split(":").slice(1).join(":").trim() : null;
-              // Prefer Google's live `open_now`; fall back to computing from
-              // `weekday_text` against the device's local clock so the pill
-              // still shows when the Places API didn't return `open_now`.
-              const isOpen = (venue.isOpen ?? null) !== null
-                ? venue.isOpen!
-                : isVenueOpenNow(venue.openingHours);
-              const showPill = isOpen !== null && isOpen !== undefined;
-              return (
-                <div style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  alignItems: 'center',
-                  gap: '6px',
-                  marginTop: '6px',
-                  fontSize: 'clamp(10.5px, 1.1cqw + 7px, 12.5px)',
-                  color: 'hsl(var(--muted-foreground))',
-                }}>
-                  {showPill && (
-                    <span
-                      role="status"
-                      aria-label={isOpen ? `${venue.name} is open now` : `${venue.name} is closed`}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        padding: '2px 8px',
-                        borderRadius: '999px',
-                        fontWeight: 700,
-                        letterSpacing: '0.02em',
-                        textTransform: 'uppercase',
-                        fontSize: '10px',
-                        background: isOpen
-                          ? 'color-mix(in oklab, hsl(var(--cool)) 16%, transparent)'
-                          : 'color-mix(in oklab, hsl(var(--hot)) 16%, transparent)',
-                        color: isOpen ? 'hsl(var(--cool))' : 'hsl(var(--hot))',
-                        border: `1px solid ${isOpen
-                          ? 'color-mix(in oklab, hsl(var(--cool)) 35%, transparent)'
-                          : 'color-mix(in oklab, hsl(var(--hot)) 35%, transparent)'}`,
-                      }}
-                    >
-                      <span style={{
-                        width: '6px',
-                        height: '6px',
-                        borderRadius: '50%',
-                        background: 'currentColor',
-                        boxShadow: isOpen ? '0 0 6px currentColor' : 'none',
-                      }} />
-                      {isOpen ? 'Open' : 'Closed'}
-                    </span>
-                  )}
-                  {todayHours && (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      <Clock style={{ width: '11px', height: '11px' }} aria-hidden />
-                      {todayHours}
-                    </span>
-                  )}
-                </div>
-              );
-            })()
-          ) : null}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            marginTop: '4px',
-            color: 'hsl(var(--muted-foreground))',
-            fontSize: 'clamp(11px, 1.2cqw + 7.2px, 13px)',
-          }}>
-            <MapPin style={{ width: '12px', height: '12px', flexShrink: 0 }} />
-            <span style={{ flexShrink: 0 }}>{venue.neighborhood}</span>
-            {venue.address && (
-              <span style={{ opacity: 0.6, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                · {venue.address}
-              </span>
-            )}
-          </div>
-          {(venue.phone || venue.website) && (
-            <div style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              gap: '10px',
-              marginTop: '6px',
-              fontSize: 'clamp(11px, 1.2cqw + 7.2px, 13px)',
-            }}>
-              {venue.phone && (
-                <a
-                  href={`tel:${venue.phone.replace(/[^+\d]/g, '')}`}
-                  onClick={(e) => e.stopPropagation()}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    color: 'hsl(var(--gold))',
-                    textDecoration: 'none',
-                    fontWeight: 600,
-                  }}
-                  aria-label={`Call ${venue.name}`}
-                >
-                  <Phone style={{ width: '12px', height: '12px' }} />
-                  {venue.phone}
-                </a>
-              )}
-              {venue.website && (
-                <a
-                  href={venue.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    color: 'hsl(var(--primary))',
-                    textDecoration: 'none',
-                    fontWeight: 600,
-                    maxWidth: '200px',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                  aria-label={`Visit ${venue.name} website`}
-                >
-                  <Globe style={{ width: '12px', height: '12px', flexShrink: 0 }} />
-                  Website
-                </a>
-              )}
+          {heroImage ? (
+            <img
+              src={heroImage}
+              alt={venue.name}
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                objectPosition: "center",
+                opacity: 1,
+                transition: "opacity 200ms ease",
+              }}
+              loading="eager"
+              decoding="async"
+              onError={(e) => {
+                // Swap to the centered JET-mark placeholder rather than the
+                // generic stretched placeholder.svg so the card stays on-brand.
+                const img = e.currentTarget;
+                img.src = "/jet-email-logo.png";
+                img.alt = "JET";
+                img.style.objectFit = "contain";
+                img.style.padding = "clamp(12px, 4%, 22px)";
+                img.style.filter = "none";
+                img.style.opacity = "0.85";
+              }}
+            />
+          ) : (
+            // No venue image — render the JET mark, centered with adaptive
+            // breathing room so it scales gracefully across viewport widths.
+            <div
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "clamp(10px, 4%, 20px)",
+                background:
+                  "radial-gradient(circle at 50% 50%, hsl(var(--primary) / 0.18), transparent 70%)",
+              }}
+            >
+              <img
+                src="/jet-email-logo.png"
+                alt=""
+                loading="lazy"
+                style={{
+                  maxWidth: "46%",
+                  maxHeight: "78%",
+                  width: "auto",
+                  height: "auto",
+                  objectFit: "contain",
+                  opacity: 0.9,
+                  filter: "drop-shadow(0 2px 8px hsl(var(--primary) / 0.35))",
+                }}
+              />
             </div>
           )}
-        </div>
+          {/* JET watermark — only render over real venue photos so the
+            placeholder (which is the same mark, centered) isn't duplicated. */}
+          {heroImage && (
+            <img
+              src="/jet-email-logo.png"
+              alt="JET"
+              style={{
+                position: "absolute",
+                bottom: "8px",
+                right: "8px",
+                width: "28px",
+                height: "28px",
+                opacity: 0.5,
+                objectFit: "contain",
+                pointerEvents: "none",
+              }}
+            />
+          )}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "linear-gradient(to top, rgba(0,0,0,0.4), transparent)",
+            }}
+          />
 
-        {/* Hairline gold divider above key metrics */}
-        <div
-          aria-hidden="true"
-          style={{
-            height: '1px',
-            width: '100%',
-            background:
-              'linear-gradient(90deg, transparent, hsl(var(--gold) / 0.35) 50%, transparent)',
-          }}
-        />
-
-        {/* Inline Stats — luxe metric strip with gold/silver overlays */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '8px',
-            padding: 'clamp(6px, 1.8cqw, 12px) clamp(8px, 2.4cqw, 14px)',
-            borderRadius: '10px',
-            background:
-              'linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.18))',
-            border: '1px solid hsl(0 0% 100% / 0.05)',
-            boxShadow:
-              'inset 0 1px 0 hsl(0 0% 100% / 0.04), 0 0 24px hsl(var(--gold) / 0.04)',
-            fontSize: 'clamp(12px, 1.2cqw + 8px, 14px)',
-          }}
-        >
-          {/* Activity — primary metric (kept on JET red/purple via activityLevel.color) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <TrendingUp style={{ width: '14px', height: '14px', color: activityLevel.color, filter: `drop-shadow(0 0 4px ${activityLevel.color})` }} />
-            <span style={{ fontWeight: 700, color: 'hsl(var(--foreground))', letterSpacing: '0.02em' }}>
-              {activityLevel.label.split(" ")[1]}
-            </span>
-          </div>
-
-          {/* Hairline silver vertical separator */}
-          <div aria-hidden="true" style={{ width: '1px', height: '14px', background: 'hsl(var(--silver) / 0.18)' }} />
-
-          {/* Momentum — venue-relative trend ("Filling up" / "Winding down") */}
-          {venue.momentumLabel && venue.momentumTrend && venue.momentumTrend !== 'unknown' && (
-            <>
-              <div
-                title={`Momentum ${(venue.momentum ?? 0) > 0 ? '+' : ''}${venue.momentum ?? 0}`}
+          {onClose && (
+            <button
+              onClick={onClose}
+              style={{
+                position: "absolute",
+                top: "8px",
+                right: "8px",
+                zIndex: 20,
+                background: "hsl(var(--background) / 0.8)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                border: "none",
+                borderRadius: "50%",
+                padding: "0",
+                width: "44px",
+                height: "44px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              aria-label="Close"
+            >
+              <X
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  fontWeight: 600,
-                  color:
-                    venue.momentumTrend === 'falling'
-                      ? 'hsl(var(--silver))'
-                      : venue.momentumTrend === 'steady'
-                        ? 'hsl(var(--muted-foreground))'
-                        : 'hsl(var(--hot))',
+                  width: "18px",
+                  height: "18px",
+                  color: "hsl(var(--foreground))",
                 }}
-              >
-                <span aria-hidden="true">
-                  {venue.momentumTrend === 'falling' ? '↓' : venue.momentumTrend === 'steady' ? '→' : '↑'}
-                </span>
-                <span>{venue.momentumLabel}</span>
-              </div>
-              <div aria-hidden="true" style={{ width: '1px', height: '14px', background: 'hsl(var(--silver) / 0.18)' }} />
-            </>
+              />
+            </button>
           )}
 
-          {/* Rating — GOLD luxe overlay (precious metal accent) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <Star
+          {/* Favorite toggle — saves venue to /favorites */}
+          <button
+            onClick={handleToggleFavorite}
+            disabled={isTogglingFavorite}
+            aria-label={
+              favorited
+                ? `Remove ${venue.name} from favorites`
+                : `Save ${venue.name} to favorites`
+            }
+            aria-pressed={favorited}
+            aria-busy={isTogglingFavorite}
+            style={{
+              position: "absolute",
+              top: "8px",
+              right: onClose ? "60px" : "8px",
+              zIndex: 20,
+              background: favorited
+                ? "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))"
+                : "hsl(var(--background) / 0.8)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              border: "1px solid hsl(var(--gold) / 0.35)",
+              boxShadow: favorited
+                ? "0 0 16px hsl(var(--primary) / 0.55)"
+                : "0 0 10px hsl(var(--gold) / 0.18)",
+              borderRadius: "50%",
+              padding: 0,
+              width: "44px",
+              height: "44px",
+              cursor: isTogglingFavorite ? "default" : "pointer",
+              opacity: isTogglingFavorite ? 0.7 : 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transition:
+                "transform 200ms ease-out, box-shadow 200ms ease-out, background 200ms ease-out, opacity 200ms ease-out",
+              transform: isTogglingFavorite ? "scale(0.92)" : "scale(1)",
+            }}
+          >
+            {isTogglingFavorite ? (
+              <Loader2
+                className="animate-spin"
+                style={{
+                  width: "18px",
+                  height: "18px",
+                  color: "hsl(var(--foreground))",
+                }}
+              />
+            ) : (
+              <Heart
+                style={{
+                  width: "18px",
+                  height: "18px",
+                  color: favorited
+                    ? "hsl(var(--primary-foreground))"
+                    : "hsl(var(--foreground))",
+                  fill: favorited
+                    ? "hsl(var(--primary-foreground))"
+                    : "transparent",
+                  transition: "fill 200ms ease-out, color 200ms ease-out",
+                }}
+              />
+            )}
+          </button>
+
+          {/* Activity Badge */}
+          <div
+            style={{
+              position: "absolute",
+              top: "8px",
+              left: "8px",
+              // Luxe metric pill — near-black glass with hairline gold ring + ambient glow
+              background:
+                "linear-gradient(135deg, rgba(0,0,0,0.72), rgba(0,0,0,0.55))",
+              border: "1px solid hsl(var(--gold) / 0.45)",
+              boxShadow:
+                "0 0 14px hsl(var(--gold) / 0.25), inset 0 1px 0 hsl(0 0% 100% / 0.08)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              padding: "3px 10px",
+              borderRadius: "9999px",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+            }}
+          >
+            <div
+              className="animate-pulse"
               style={{
-                width: '14px',
-                height: '14px',
-                color: 'hsl(var(--gold))',
-                fill: 'hsl(var(--gold))',
-                filter: 'drop-shadow(0 0 4px hsl(var(--gold) / 0.55))',
+                width: "6px",
+                height: "6px",
+                background: "hsl(var(--gold))",
+                borderRadius: "50%",
+                boxShadow: "0 0 8px hsl(var(--gold) / 0.7)",
               }}
             />
             <span
               style={{
+                fontSize: "10px",
                 fontWeight: 700,
-                background: 'var(--gradient-gold)',
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                color: 'transparent',
+                letterSpacing: "0.08em",
+                background: "var(--gradient-gold)",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                color: "transparent",
               }}
             >
-              4.5
+              {venue.activity}% ACTIVE
             </span>
           </div>
 
-          {/* Hairline silver vertical separator */}
-          <div aria-hidden="true" style={{ width: '1px', height: '14px', background: 'hsl(var(--silver) / 0.18)' }} />
-
-          {/* Live users — SILVER platinum overlay */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <Users
+          {/* Category Badge */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: "8px",
+              left: "8px",
+              background: "rgba(0,0,0,0.55)",
+              border: "1px solid hsl(var(--silver) / 0.35)",
+              boxShadow: "0 0 10px hsl(var(--silver) / 0.12)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              padding: "3px 10px",
+              borderRadius: "9999px",
+            }}
+          >
+            <span
               style={{
-                width: '14px',
-                height: '14px',
-                color: 'hsl(var(--silver))',
-                filter: 'drop-shadow(0 0 4px hsl(var(--silver) / 0.4))',
+                fontSize: "10px",
+                fontWeight: 600,
+                color: "hsl(var(--silver))",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
               }}
-            />
-            <span style={{ fontWeight: 700, color: 'hsl(var(--silver))', letterSpacing: '0.02em' }}>
-              {Math.round(venue.activity / 10) * 10}+
+            >
+              {venue.category}
             </span>
           </div>
         </div>
 
-        {/* Buttons */}
-        <div style={{
-          display: 'grid',
-          // Adapts to the card's own width: three across when there's room,
-          // gracefully wrapping to 2-up / 1-up on very narrow devices.
-          gridTemplateColumns: 'repeat(auto-fit, minmax(88px, 1fr))',
-          gap: 'clamp(6px, 1.2cqw, 10px)',
-        }} role="group" aria-label="Venue actions">
-          <button
-            onClick={handleShare}
-            style={{
-              width: '100%',
-              background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
-              color: 'hsl(var(--primary-foreground))',
-              fontWeight: 600,
-              minHeight: '44px',
-              height: 'clamp(44px, 10cqw, 52px)',
-              fontSize: 'clamp(11px, 0.4cqw + 10.5px, 14px)',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 'clamp(3px, 0.6cqw, 6px)',
-              padding: '0 clamp(6px, 1cqw, 12px)',
-              minWidth: 0,
-              whiteSpace: 'nowrap',
-            }}
-            aria-label={`Share ${venue.name}`}
-          >
-            <Share2 style={{ width: '14px', height: '14px', flexShrink: 0 }} aria-hidden="true" />
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>Share</span>
-          </button>
-          <button
-            onClick={() => {
-              glideHaptic();
-              if (onSendToFriend) onSendToFriend();
-            }}
-            style={{
-              width: '100%',
-              background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
-              color: 'hsl(var(--primary-foreground))',
-              fontWeight: 600,
-              minHeight: '44px',
-              height: 'clamp(44px, 10cqw, 52px)',
-              fontSize: 'clamp(11px, 0.4cqw + 10.5px, 14px)',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 'clamp(3px, 0.6cqw, 6px)',
-              padding: '0 clamp(6px, 1cqw, 12px)',
-              minWidth: 0,
-              whiteSpace: 'nowrap',
-            }}
-            aria-label={`Send ${venue.name} to a friend`}
-          >
-            <Send style={{ width: '14px', height: '14px', flexShrink: 0 }} aria-hidden="true" />
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>Send</span>
-          </button>
-          <button
-            onClick={handleGetDirections}
-            style={{
-              width: '100%',
-              background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))',
-              color: 'hsl(var(--primary-foreground))',
-              fontWeight: 600,
-              minHeight: '44px',
-              height: 'clamp(44px, 10cqw, 52px)',
-              fontSize: 'clamp(11px, 0.4cqw + 10.5px, 14px)',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 'clamp(3px, 0.6cqw, 6px)',
-              padding: '0 clamp(6px, 1cqw, 12px)',
-              minWidth: 0,
-              whiteSpace: 'nowrap',
-            }}
-            aria-label={`Get directions to ${venue.name}`}
-          >
-            <Navigation style={{ width: '14px', height: '14px', flexShrink: 0 }} aria-hidden="true" />
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>Directions</span>
-          </button>
-        </div>
-
-        {/* Nearby Parking Section */}
-        {venue.lat && venue.lng && (
-          <div style={{
-            borderTop: '1px solid hsl(var(--border) / 0.5)',
-            paddingTop: 'clamp(8px, 2cqw, 12px)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'clamp(6px, 1.6cqw, 10px)',
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              fontSize: 'clamp(10.5px, 0.9cqw + 7.5px, 12px)',
-              fontWeight: 600,
-              color: 'hsl(var(--muted-foreground))',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-            }}>
-              <Car style={{ width: '12px', height: '12px' }} />
-              <span>Nearby Parking</span>
-              <button
-                type="button"
-                onClick={handleRefreshParking}
-                disabled={parkingLoading}
-                aria-label="Refresh nearby parking"
+        {/* Content */}
+        <div
+          style={{
+            padding: "clamp(12px, 3.4cqw, 20px)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "clamp(6px, 2cqw, 12px)",
+          }}
+        >
+          {/* Title */}
+          <div>
+            <h3
+              style={{
+                fontSize: "clamp(15px, 3.4cqw + 4px, 21px)",
+                fontWeight: 700,
+                color: "hsl(var(--foreground))",
+                lineHeight: 1.25,
+                margin: 0,
+                overflowWrap: "anywhere",
+              }}
+            >
+              {venue.name}
+            </h3>
+            {/* Open / Closed status + today's hours from Google Places */}
+            {(venue.isOpen !== null && venue.isOpen !== undefined) ||
+            (venue.openingHours && venue.openingHours.length > 0)
+              ? (() => {
+                  const todayIdx = new Date().getDay(); // 0 = Sun
+                  // Google weekday_text is Mon-first; map Sun(0)->6, Mon(1)->0, etc.
+                  const gIdx = todayIdx === 0 ? 6 : todayIdx - 1;
+                  const todayLine = venue.openingHours?.[gIdx];
+                  const todayHours = todayLine?.includes(":")
+                    ? todayLine.split(":").slice(1).join(":").trim()
+                    : null;
+                  // Prefer Google's live `open_now`; fall back to computing from
+                  // `weekday_text` against the device's local clock so the pill
+                  // still shows when the Places API didn't return `open_now`.
+                  const isOpen =
+                    (venue.isOpen ?? null) !== null
+                      ? venue.isOpen!
+                      : isVenueOpenNow(venue.openingHours);
+                  const showPill = isOpen !== null && isOpen !== undefined;
+                  return (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                        gap: "6px",
+                        marginTop: "6px",
+                        fontSize: "clamp(10.5px, 1.1cqw + 7px, 12.5px)",
+                        color: "hsl(var(--muted-foreground))",
+                      }}
+                    >
+                      {showPill && (
+                        <span
+                          role="status"
+                          aria-label={
+                            isOpen
+                              ? `${venue.name} is open now`
+                              : `${venue.name} is closed`
+                          }
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px",
+                            padding: "2px 8px",
+                            borderRadius: "999px",
+                            fontWeight: 700,
+                            letterSpacing: "0.02em",
+                            textTransform: "uppercase",
+                            fontSize: "10px",
+                            background: isOpen
+                              ? "color-mix(in oklab, hsl(var(--cool)) 16%, transparent)"
+                              : "color-mix(in oklab, hsl(var(--hot)) 16%, transparent)",
+                            color: isOpen
+                              ? "hsl(var(--cool))"
+                              : "hsl(var(--hot))",
+                            border: `1px solid ${
+                              isOpen
+                                ? "color-mix(in oklab, hsl(var(--cool)) 35%, transparent)"
+                                : "color-mix(in oklab, hsl(var(--hot)) 35%, transparent)"
+                            }`,
+                          }}
+                        >
+                          <span
+                            style={{
+                              width: "6px",
+                              height: "6px",
+                              borderRadius: "50%",
+                              background: "currentColor",
+                              boxShadow: isOpen
+                                ? "0 0 6px currentColor"
+                                : "none",
+                            }}
+                          />
+                          {isOpen ? "Open" : "Closed"}
+                        </span>
+                      )}
+                      {todayHours && (
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px",
+                          }}
+                        >
+                          <Clock
+                            style={{ width: "11px", height: "11px" }}
+                            aria-hidden
+                          />
+                          {todayHours}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()
+              : null}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                marginTop: "4px",
+                color: "hsl(var(--muted-foreground))",
+                fontSize: "clamp(11px, 1.2cqw + 7.2px, 13px)",
+              }}
+            >
+              <MapPin
+                style={{ width: "12px", height: "12px", flexShrink: 0 }}
+              />
+              <span style={{ flexShrink: 0 }}>{venue.neighborhood}</span>
+              {venue.address && (
+                <span
+                  style={{
+                    opacity: 0.6,
+                    minWidth: 0,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  · {venue.address}
+                </span>
+              )}
+            </div>
+            {(venue.phone || venue.website) && (
+              <div
                 style={{
-                  marginLeft: 'auto',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  background: 'hsl(var(--secondary) / 0.5)',
-                  border: '1px solid hsl(var(--border) / 0.4)',
-                  color: 'hsl(var(--foreground))',
-                  padding: 'clamp(6px, 1.4cqw, 9px) clamp(10px, 2.4cqw, 14px)',
-                  minHeight: '32px',
-                  borderRadius: '9999px',
-                  fontSize: 'clamp(10px, 0.8cqw + 7.5px, 11.5px)',
-                  fontWeight: 600,
-                  letterSpacing: '0.04em',
-                  cursor: parkingLoading ? 'not-allowed' : 'pointer',
-                  opacity: parkingLoading ? 0.5 : 1,
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                  gap: "10px",
+                  marginTop: "6px",
+                  fontSize: "clamp(11px, 1.2cqw + 7.2px, 13px)",
                 }}
               >
-                {parkingLoading ? (
-                  <Loader2 className="animate-spin" style={{ width: '11px', height: '11px' }} />
-                ) : (
-                  <RefreshCw style={{ width: '11px', height: '11px' }} />
+                {venue.phone && (
+                  <a
+                    href={`tel:${venue.phone.replace(/[^+\d]/g, "")}`}
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "4px",
+                      color: "hsl(var(--gold))",
+                      textDecoration: "none",
+                      fontWeight: 600,
+                    }}
+                    aria-label={`Call ${venue.name}`}
+                  >
+                    <Phone style={{ width: "12px", height: "12px" }} />
+                    {venue.phone}
+                  </a>
                 )}
-                {parkingLoading ? 'Loading...' : 'Refresh'}
-              </button>
+                {venue.website && (
+                  <a
+                    href={venue.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "4px",
+                      color: "hsl(var(--primary))",
+                      textDecoration: "none",
+                      fontWeight: 600,
+                      maxWidth: "200px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                    aria-label={`Visit ${venue.name} website`}
+                  >
+                    <Globe
+                      style={{ width: "12px", height: "12px", flexShrink: 0 }}
+                    />
+                    Website
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Hairline gold divider above key metrics */}
+          <div
+            aria-hidden="true"
+            style={{
+              height: "1px",
+              width: "100%",
+              background:
+                "linear-gradient(90deg, transparent, hsl(var(--gold) / 0.35) 50%, transparent)",
+            }}
+          />
+
+          {/* Inline Stats — luxe metric strip with gold/silver overlays */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "8px",
+              padding: "clamp(6px, 1.8cqw, 12px) clamp(8px, 2.4cqw, 14px)",
+              borderRadius: "10px",
+              background:
+                "linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.18))",
+              border: "1px solid hsl(0 0% 100% / 0.05)",
+              boxShadow:
+                "inset 0 1px 0 hsl(0 0% 100% / 0.04), 0 0 24px hsl(var(--gold) / 0.04)",
+              fontSize: "clamp(12px, 1.2cqw + 8px, 14px)",
+            }}
+          >
+            {/* Activity — primary metric (kept on JET red/purple via activityLevel.color) */}
+            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+              <TrendingUp
+                style={{
+                  width: "14px",
+                  height: "14px",
+                  color: activityLevel.color,
+                  filter: `drop-shadow(0 0 4px ${activityLevel.color})`,
+                }}
+              />
+              <span
+                style={{
+                  fontWeight: 700,
+                  color: "hsl(var(--foreground))",
+                  letterSpacing: "0.02em",
+                }}
+              >
+                {activityLevel.label.split(" ")[1]}
+              </span>
             </div>
 
-            {parkingLoading && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                padding: '10px 0',
-                fontSize: '11px',
-                color: 'hsl(var(--muted-foreground))',
-              }}>
-                <Loader2 className="animate-spin" style={{ width: '14px', height: '14px' }} />
-                <span>Finding nearest parking...</span>
-              </div>
-            )}
-            {!parkingLoading && nearbyParking.length === 0 && (
-              <div style={{
-                fontSize: '11px',
-                color: 'hsl(var(--muted-foreground))',
-                padding: '4px 2px',
-              }}>
-                No parking found nearby. Tap Refresh to try again.
-              </div>
-            )}
+            {/* Hairline silver vertical separator */}
+            <div
+              aria-hidden="true"
+              style={{
+                width: "1px",
+                height: "14px",
+                background: "hsl(var(--silver) / 0.18)",
+              }}
+            />
 
-            {nearbyParking.map((parking, i) => (
-              <button
-                key={parking.placeId || i}
-                onClick={() => openParkingDirections(parking)}
+            {/* Momentum — venue-relative trend ("Filling up" / "Winding down") */}
+            {venue.momentumLabel &&
+              venue.momentumTrend &&
+              venue.momentumTrend !== "unknown" && (
+                <>
+                  <div
+                    title={`Momentum ${(venue.momentum ?? 0) > 0 ? "+" : ""}${venue.momentum ?? 0}`}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                      fontWeight: 600,
+                      color:
+                        venue.momentumTrend === "falling"
+                          ? "hsl(var(--silver))"
+                          : venue.momentumTrend === "steady"
+                            ? "hsl(var(--muted-foreground))"
+                            : "hsl(var(--hot))",
+                    }}
+                  >
+                    <span aria-hidden="true">
+                      {venue.momentumTrend === "falling"
+                        ? "↓"
+                        : venue.momentumTrend === "steady"
+                          ? "→"
+                          : "↑"}
+                    </span>
+                    <span>{venue.momentumLabel}</span>
+                  </div>
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      width: "1px",
+                      height: "14px",
+                      background: "hsl(var(--silver) / 0.18)",
+                    }}
+                  />
+                </>
+              )}
+
+            {/* Rating — GOLD luxe overlay (precious metal accent) */}
+            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+              <Star
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 'clamp(8px, 2cqw, 12px)',
-                  padding: 'clamp(8px, 2cqw, 12px) clamp(8px, 2.2cqw, 12px)',
-                  minHeight: '44px',
-                  borderRadius: 'clamp(8px, 2cqw, 12px)',
-                  background: 'hsl(var(--secondary) / 0.4)',
-                  border: '1px solid hsl(var(--border) / 0.3)',
-                  cursor: 'pointer',
-                  transition: 'background 0.15s',
-                  width: '100%',
-                  textAlign: 'left',
+                  width: "14px",
+                  height: "14px",
+                  color: "hsl(var(--gold))",
+                  fill: "hsl(var(--gold))",
+                  filter: "drop-shadow(0 0 4px hsl(var(--gold) / 0.55))",
+                }}
+              />
+              <span
+                style={{
+                  fontWeight: 700,
+                  background: "var(--gradient-gold)",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  color: "transparent",
                 }}
               >
-                <div style={{
-                  width: 'clamp(28px, 7cqw, 34px)',
-                  height: 'clamp(28px, 7cqw, 34px)',
-                  borderRadius: 'clamp(6px, 1.8cqw, 10px)',
-                  background: 'hsl(var(--primary) / 0.15)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}>
-                  <Car style={{ width: '14px', height: '14px', color: 'hsl(var(--primary))' }} />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    fontSize: 'clamp(12px, 1cqw + 8.5px, 13.5px)',
+                4.5
+              </span>
+            </div>
+
+            {/* Hairline silver vertical separator */}
+            <div
+              aria-hidden="true"
+              style={{
+                width: "1px",
+                height: "14px",
+                background: "hsl(var(--silver) / 0.18)",
+              }}
+            />
+
+            {/* Live users — SILVER platinum overlay */}
+            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+              <Users
+                style={{
+                  width: "14px",
+                  height: "14px",
+                  color: "hsl(var(--silver))",
+                  filter: "drop-shadow(0 0 4px hsl(var(--silver) / 0.4))",
+                }}
+              />
+              <span
+                style={{
+                  fontWeight: 700,
+                  color: "hsl(var(--silver))",
+                  letterSpacing: "0.02em",
+                }}
+              >
+                {Math.round(venue.activity / 10) * 10}+
+              </span>
+            </div>
+          </div>
+
+          {/* Buttons */}
+          <div
+            style={{
+              display: "grid",
+              // Adapts to the card's own width: three across when there's room,
+              // gracefully wrapping to 2-up / 1-up on very narrow devices.
+              gridTemplateColumns: "repeat(auto-fit, minmax(88px, 1fr))",
+              gap: "clamp(6px, 1.2cqw, 10px)",
+            }}
+            role="group"
+            aria-label="Venue actions"
+          >
+            <button
+              onClick={handleShare}
+              style={{
+                width: "100%",
+                background:
+                  "linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))",
+                color: "hsl(var(--primary-foreground))",
+                fontWeight: 600,
+                minHeight: "44px",
+                height: "clamp(44px, 10cqw, 52px)",
+                fontSize: "clamp(11px, 0.4cqw + 10.5px, 14px)",
+                borderRadius: "8px",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "clamp(3px, 0.6cqw, 6px)",
+                padding: "0 clamp(6px, 1cqw, 12px)",
+                minWidth: 0,
+                whiteSpace: "nowrap",
+              }}
+              aria-label={`Share ${venue.name}`}
+            >
+              <Share2
+                style={{ width: "14px", height: "14px", flexShrink: 0 }}
+                aria-hidden="true"
+              />
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+                Share
+              </span>
+            </button>
+            <button
+              onClick={() => {
+                glideHaptic();
+                if (onSendToFriend) onSendToFriend();
+              }}
+              style={{
+                width: "100%",
+                background:
+                  "linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))",
+                color: "hsl(var(--primary-foreground))",
+                fontWeight: 600,
+                minHeight: "44px",
+                height: "clamp(44px, 10cqw, 52px)",
+                fontSize: "clamp(11px, 0.4cqw + 10.5px, 14px)",
+                borderRadius: "8px",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "clamp(3px, 0.6cqw, 6px)",
+                padding: "0 clamp(6px, 1cqw, 12px)",
+                minWidth: 0,
+                whiteSpace: "nowrap",
+              }}
+              aria-label={`Send ${venue.name} to a friend`}
+            >
+              <Send
+                style={{ width: "14px", height: "14px", flexShrink: 0 }}
+                aria-hidden="true"
+              />
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+                Send
+              </span>
+            </button>
+            <button
+              onClick={handleGetDirections}
+              style={{
+                width: "100%",
+                background:
+                  "linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)))",
+                color: "hsl(var(--primary-foreground))",
+                fontWeight: 600,
+                minHeight: "44px",
+                height: "clamp(44px, 10cqw, 52px)",
+                fontSize: "clamp(11px, 0.4cqw + 10.5px, 14px)",
+                borderRadius: "8px",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "clamp(3px, 0.6cqw, 6px)",
+                padding: "0 clamp(6px, 1cqw, 12px)",
+                minWidth: 0,
+                whiteSpace: "nowrap",
+              }}
+              aria-label={`Get directions to ${venue.name}`}
+            >
+              <Navigation
+                style={{ width: "14px", height: "14px", flexShrink: 0 }}
+                aria-hidden="true"
+              />
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+                Directions
+              </span>
+            </button>
+          </div>
+
+          {/* Nearby Parking Section */}
+          {venue.lat && venue.lng && (
+            <div
+              style={{
+                borderTop: "1px solid hsl(var(--border) / 0.5)",
+                paddingTop: "clamp(8px, 2cqw, 12px)",
+                display: "flex",
+                flexDirection: "column",
+                gap: "clamp(6px, 1.6cqw, 10px)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  fontSize: "clamp(10.5px, 0.9cqw + 7.5px, 12px)",
+                  fontWeight: 600,
+                  color: "hsl(var(--muted-foreground))",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                }}
+              >
+                <Car style={{ width: "12px", height: "12px" }} />
+                <span>Nearby Parking</span>
+                <button
+                  type="button"
+                  onClick={handleRefreshParking}
+                  disabled={parkingLoading}
+                  aria-label="Refresh nearby parking"
+                  style={{
+                    marginLeft: "auto",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    background: "hsl(var(--secondary) / 0.5)",
+                    border: "1px solid hsl(var(--border) / 0.4)",
+                    color: "hsl(var(--foreground))",
+                    padding:
+                      "clamp(6px, 1.4cqw, 9px) clamp(10px, 2.4cqw, 14px)",
+                    minHeight: "32px",
+                    borderRadius: "9999px",
+                    fontSize: "clamp(10px, 0.8cqw + 7.5px, 11.5px)",
                     fontWeight: 600,
-                    color: 'hsl(var(--foreground))',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}>{parking.name}</div>
-                  <div style={{
-                    fontSize: 'clamp(10px, 0.9cqw + 7px, 11.5px)',
-                    color: 'hsl(var(--muted-foreground))',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}>
-                    {typeof parking.distance === 'number' && (
-                      <span style={{ color: 'hsl(var(--gold))', fontWeight: 600, marginRight: '4px' }}>
-                        {parking.distance < 1000
-                          ? `${parking.distance}m`
-                          : `${(parking.distance / 1000).toFixed(1)}km`}
-                        ·
-                      </span>
-                    )}
-                    {parking.address}
-                    {parking.isOpen !== null && (
-                      <span style={{ color: parking.isOpen ? 'hsl(var(--cool))' : 'hsl(var(--hot))', marginLeft: '4px' }}>
-                        · {parking.isOpen ? 'Open' : 'Closed'}
+                    letterSpacing: "0.04em",
+                    cursor: parkingLoading ? "not-allowed" : "pointer",
+                    opacity: parkingLoading ? 0.5 : 1,
+                  }}
+                >
+                  {parkingLoading ? (
+                    <Loader2
+                      className="animate-spin"
+                      style={{ width: "11px", height: "11px" }}
+                    />
+                  ) : (
+                    <RefreshCw style={{ width: "11px", height: "11px" }} />
+                  )}
+                  {parkingLoading ? "Loading..." : "Refresh"}
+                </button>
+              </div>
+
+              {parkingLoading && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    padding: "10px 0",
+                    fontSize: "11px",
+                    color: "hsl(var(--muted-foreground))",
+                  }}
+                >
+                  <Loader2
+                    className="animate-spin"
+                    style={{ width: "14px", height: "14px" }}
+                  />
+                  <span>Finding nearest parking...</span>
+                </div>
+              )}
+              {!parkingLoading && nearbyParking.length === 0 && (
+                <div
+                  style={{
+                    fontSize: "11px",
+                    color: "hsl(var(--muted-foreground))",
+                    padding: "4px 2px",
+                  }}
+                >
+                  No parking found nearby. Tap Refresh to try again.
+                </div>
+              )}
+
+              {nearbyParking.map((parking, i) => (
+                <button
+                  key={parking.placeId || i}
+                  onClick={() => openParkingDirections(parking)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "clamp(8px, 2cqw, 12px)",
+                    padding: "clamp(8px, 2cqw, 12px) clamp(8px, 2.2cqw, 12px)",
+                    minHeight: "44px",
+                    borderRadius: "clamp(8px, 2cqw, 12px)",
+                    background: "hsl(var(--secondary) / 0.4)",
+                    border: "1px solid hsl(var(--border) / 0.3)",
+                    cursor: "pointer",
+                    transition: "background 0.15s",
+                    width: "100%",
+                    textAlign: "left",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "clamp(28px, 7cqw, 34px)",
+                      height: "clamp(28px, 7cqw, 34px)",
+                      borderRadius: "clamp(6px, 1.8cqw, 10px)",
+                      background: "hsl(var(--primary) / 0.15)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Car
+                      style={{
+                        width: "14px",
+                        height: "14px",
+                        color: "hsl(var(--primary))",
+                      }}
+                    />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div
+                      style={{
+                        fontSize: "clamp(12px, 1cqw + 8.5px, 13.5px)",
+                        fontWeight: 600,
+                        color: "hsl(var(--foreground))",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {parking.name}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "clamp(10px, 0.9cqw + 7px, 11.5px)",
+                        color: "hsl(var(--muted-foreground))",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {typeof parking.distance === "number" && (
+                        <span
+                          style={{
+                            color: "hsl(var(--gold))",
+                            fontWeight: 600,
+                            marginRight: "4px",
+                          }}
+                        >
+                          {parking.distance < 1000
+                            ? `${parking.distance}m`
+                            : `${(parking.distance / 1000).toFixed(1)}km`}
+                          ·
+                        </span>
+                      )}
+                      {parking.address}
+                      {parking.isOpen !== null && (
+                        <span
+                          style={{
+                            color: parking.isOpen
+                              ? "hsl(var(--cool))"
+                              : "hsl(var(--hot))",
+                            marginLeft: "4px",
+                          }}
+                        >
+                          · {parking.isOpen ? "Open" : "Closed"}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-end",
+                      gap: "2px",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "clamp(10px, 0.9cqw + 7px, 12px)",
+                        fontWeight: 700,
+                        lineHeight: 1.1,
+                        padding: "3px 7px",
+                        borderRadius: "999px",
+                        whiteSpace: "nowrap",
+                        color:
+                          parking.priceLabel === "Free"
+                            ? "hsl(var(--cool))"
+                            : parking.priceLabel
+                              ? "hsl(var(--gold))"
+                              : "hsl(var(--muted-foreground))",
+                        background:
+                          parking.priceLabel === "Free"
+                            ? "hsl(var(--cool) / 0.15)"
+                            : parking.priceLabel
+                              ? "hsl(var(--gold) / 0.15)"
+                              : "hsl(var(--muted) / 0.25)",
+                      }}
+                    >
+                      {parking.priceLabel ?? "Rate varies"}
+                    </span>
+                    {parking.priceDetail && (
+                      <span
+                        style={{
+                          fontSize: "clamp(9px, 0.8cqw + 6px, 10.5px)",
+                          color: "hsl(var(--muted-foreground))",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {parking.priceDetail}
                       </span>
                     )}
                   </div>
-                </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'flex-end',
-                    gap: '2px',
-                    flexShrink: 0,
-                  }}
-                >
-                  <span
+                  <Navigation
                     style={{
-                      fontSize: 'clamp(10px, 0.9cqw + 7px, 12px)',
-                      fontWeight: 700,
-                      lineHeight: 1.1,
-                      padding: '3px 7px',
-                      borderRadius: '999px',
-                      whiteSpace: 'nowrap',
-                      color:
-                        parking.priceLabel === 'Free'
-                          ? 'hsl(var(--cool))'
-                          : parking.priceLabel
-                            ? 'hsl(var(--gold))'
-                            : 'hsl(var(--muted-foreground))',
-                      background:
-                        parking.priceLabel === 'Free'
-                          ? 'hsl(var(--cool) / 0.15)'
-                          : parking.priceLabel
-                            ? 'hsl(var(--gold) / 0.15)'
-                            : 'hsl(var(--muted) / 0.25)',
+                      width: "14px",
+                      height: "14px",
+                      color: "hsl(var(--primary))",
+                      flexShrink: 0,
                     }}
-                  >
-                    {parking.priceLabel ?? 'Rate varies'}
-                  </span>
-                  {parking.priceDetail && (
-                    <span
-                      style={{
-                        fontSize: 'clamp(9px, 0.8cqw + 6px, 10.5px)',
-                        color: 'hsl(var(--muted-foreground))',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {parking.priceDetail}
-                    </span>
-                  )}
-                </div>
-                <Navigation style={{ width: '14px', height: '14px', color: 'hsl(var(--primary))', flexShrink: 0 }} />
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
-      <UpgradePrompt
-        requiredTier="jet_plus"
-        featureName="Venue sharing"
-        isOpen={showUpgradePrompt}
-        onClose={() => setShowUpgradePrompt(false)}
-      />
-
-      <Suspense fallback={null}>
-        <DirectionsDialog
-          open={directionsTarget !== null}
-          onOpenChange={(open) => {
-            if (!open) {
-              setDirectionsTarget(null);
-              setDirectionsPlaceId(null);
-            }
-          }}
-          venue={directionsTarget}
-          placeId={directionsPlaceId}
+        <UpgradePrompt
+          requiredTier="jet_plus"
+          featureName="Venue sharing"
+          isOpen={showUpgradePrompt}
+          onClose={() => setShowUpgradePrompt(false)}
         />
-      </Suspense>
 
-    </article>
-  );
-});
+        <Suspense fallback={null}>
+          <DirectionsDialog
+            open={directionsTarget !== null}
+            onOpenChange={(open) => {
+              if (!open) {
+                setDirectionsTarget(null);
+                setDirectionsPlaceId(null);
+              }
+            }}
+            venue={directionsTarget}
+            placeId={directionsPlaceId}
+          />
+        </Suspense>
+      </article>
+    );
+  },
+);

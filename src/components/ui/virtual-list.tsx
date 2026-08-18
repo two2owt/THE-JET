@@ -32,7 +32,7 @@ export function VirtualList<T>({
     getScrollElement: () => parentRef.current,
     estimateSize: () => estimateSize + gap,
     overscan,
-    getItemKey: getItemKey 
+    getItemKey: getItemKey
       ? (index) => getItemKey(items[index], index)
       : undefined,
   });
@@ -150,7 +150,7 @@ export function VirtualGrid<T>({
         className={cn(
           "grid gap-4",
           `grid-cols-${columns.mobile} md:grid-cols-${columns.tablet} lg:grid-cols-${columns.desktop}`,
-          className
+          className,
         )}
         style={{ gap }}
       >
@@ -198,7 +198,9 @@ export function VirtualGrid<T>({
               {rowItems.map((item, colIndex) => {
                 const itemIndex = startIndex + colIndex;
                 return (
-                  <div key={getItemKey ? getItemKey(item, itemIndex) : itemIndex}>
+                  <div
+                    key={getItemKey ? getItemKey(item, itemIndex) : itemIndex}
+                  >
                     {renderItem(item, itemIndex)}
                   </div>
                 );

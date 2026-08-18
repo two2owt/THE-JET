@@ -64,13 +64,16 @@ Deno.serve(async (req) => {
     if (!payload?.title || !payload?.body) {
       return new Response(
         JSON.stringify({ error: "title and body are required" }),
-        { status: 400, headers: { ...cors, "Content-Type": "application/json" } }
+        {
+          status: 400,
+          headers: { ...cors, "Content-Type": "application/json" },
+        },
       );
     }
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
     // Only follow-up events about an existing deal should target favoriters.
@@ -88,7 +91,8 @@ Deno.serve(async (req) => {
         ? requested
         : payload.neighborhood_id
           ? "neighborhood"
-          : FAVORITE_EVENTS.has(eventType) && (payload.deal_id || payload.venue_id)
+          : FAVORITE_EVENTS.has(eventType) &&
+              (payload.deal_id || payload.venue_id)
             ? "favorites"
             : "all";
 
@@ -126,7 +130,9 @@ Deno.serve(async (req) => {
 
     if (!error) {
       try {
-        await supabase.functions.invoke("notifications-dispatch", { body: { wake: true } });
+        await supabase.functions.invoke("notifications-dispatch", {
+          body: { wake: true },
+        });
       } catch (_e) {
         /* cron picks it up */
       }
@@ -139,7 +145,7 @@ Deno.serve(async (req) => {
         duplicate: !!error,
         id: inserted?.id ?? null,
       }),
-      { status: 202, headers: { ...cors, "Content-Type": "application/json" } }
+      { status: 202, headers: { ...cors, "Content-Type": "application/json" } },
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";

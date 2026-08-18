@@ -1,13 +1,17 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { corsHeaders, logVersion, EDGE_FUNCTION_VERSION } from "../_shared/cors.ts";
+import {
+  corsHeaders,
+  logVersion,
+  EDGE_FUNCTION_VERSION,
+} from "../_shared/cors.ts";
 import { getPublishableKey } from "../_shared/supabase-keys.ts";
 
 const FUNCTION_NAME = "create-checkout";
 logVersion(FUNCTION_NAME);
 
 const logStep = (step: string, details?: any) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
@@ -18,7 +22,7 @@ Deno.serve(async (req) => {
 
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    getPublishableKey()
+    getPublishableKey(),
   );
 
   try {
@@ -38,7 +42,8 @@ Deno.serve(async (req) => {
     const token = authHeader.replace("Bearer ", "");
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
+    if (!user?.email)
+      throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { email: user.email });
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
@@ -46,7 +51,10 @@ Deno.serve(async (req) => {
     });
 
     // Check if customer exists
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    const customers = await stripe.customers.list({
+      email: user.email,
+      limit: 1,
+    });
     let customerId;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
@@ -54,7 +62,7 @@ Deno.serve(async (req) => {
     }
 
     const origin = req.headers.get("origin") || "https://jet-around.com";
-    
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
@@ -72,7 +80,10 @@ Deno.serve(async (req) => {
       },
     });
 
-    logStep("Checkout session created", { sessionId: session.id, url: session.url });
+    logStep("Checkout session created", {
+      sessionId: session.id,
+      url: session.url,
+    });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -81,7 +92,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: errorMessage });
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

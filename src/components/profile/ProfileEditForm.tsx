@@ -51,7 +51,10 @@ export interface ProfileEditFormValues {
 
 interface ProfileEditFormProps {
   values: ProfileEditFormValues;
-  setValue: <K extends keyof ProfileEditFormValues>(key: K, val: ProfileEditFormValues[K]) => void;
+  setValue: <K extends keyof ProfileEditFormValues>(
+    key: K,
+    val: ProfileEditFormValues[K],
+  ) => void;
   fieldErrors: Record<string, string | undefined>;
   clearFieldError: (key: string) => void;
   isSaving: boolean;
@@ -71,11 +74,31 @@ export function ProfileEditForm({
   onSave,
 }: ProfileEditFormProps) {
   const socialFields = [
-    { key: "instagramUrl" as const, icon: Instagram, placeholder: "Instagram profile URL" },
-    { key: "twitterUrl" as const, icon: Twitter, placeholder: "Twitter/X profile URL" },
-    { key: "facebookUrl" as const, icon: Facebook, placeholder: "Facebook profile URL" },
-    { key: "linkedinUrl" as const, icon: Linkedin, placeholder: "LinkedIn profile URL" },
-    { key: "tiktokUrl" as const, icon: Video, placeholder: "TikTok profile URL" },
+    {
+      key: "instagramUrl" as const,
+      icon: Instagram,
+      placeholder: "Instagram profile URL",
+    },
+    {
+      key: "twitterUrl" as const,
+      icon: Twitter,
+      placeholder: "Twitter/X profile URL",
+    },
+    {
+      key: "facebookUrl" as const,
+      icon: Facebook,
+      placeholder: "Facebook profile URL",
+    },
+    {
+      key: "linkedinUrl" as const,
+      icon: Linkedin,
+      placeholder: "LinkedIn profile URL",
+    },
+    {
+      key: "tiktokUrl" as const,
+      icon: Video,
+      placeholder: "TikTok profile URL",
+    },
   ];
 
   return (
@@ -88,7 +111,10 @@ export function ProfileEditForm({
       <div className="flex flex-col" style={{ gap: "var(--space-sm)" }}>
         {/* Display Name */}
         <div className="flex flex-col" style={{ gap: "var(--space-xs)" }}>
-          <Label htmlFor="display_name" className="heading-luxe-eyebrow text-left">
+          <Label
+            htmlFor="display_name"
+            className="heading-luxe-eyebrow text-left"
+          >
             Display Name <span className="text-destructive">*</span>
           </Label>
           <Input
@@ -101,11 +127,17 @@ export function ProfileEditForm({
             placeholder="Your display name"
             maxLength={100}
             aria-invalid={!!fieldErrors.display_name}
-            aria-describedby={fieldErrors.display_name ? "display_name-error" : undefined}
+            aria-describedby={
+              fieldErrors.display_name ? "display_name-error" : undefined
+            }
             className="profile-input w-full"
           />
           {fieldErrors.display_name && (
-            <p id="display_name-error" role="alert" className="text-xs font-medium text-destructive">
+            <p
+              id="display_name-error"
+              role="alert"
+              className="text-xs font-medium text-destructive"
+            >
               {fieldErrors.display_name}
             </p>
           )}
@@ -114,7 +146,10 @@ export function ProfileEditForm({
         {/* Bio */}
         <div className="flex flex-col" style={{ gap: "var(--space-xs)" }}>
           <Label htmlFor="bio" className="heading-luxe-eyebrow text-left">
-            Bio <span className="text-muted-foreground/70 normal-case">(optional)</span>
+            Bio{" "}
+            <span className="text-muted-foreground/70 normal-case">
+              (optional)
+            </span>
           </Label>
           <Textarea
             id="bio"
@@ -131,16 +166,28 @@ export function ProfileEditForm({
             aria-describedby={fieldErrors.bio ? "bio-error" : undefined}
           />
           {fieldErrors.bio && (
-            <p id="bio-error" role="alert" className="text-xs font-medium text-destructive">
+            <p
+              id="bio-error"
+              role="alert"
+              className="text-xs font-medium text-destructive"
+            >
               {fieldErrors.bio}
             </p>
           )}
-          <p className="text-xs text-muted-foreground text-right">{values.bio.length}/500</p>
+          <p className="text-xs text-muted-foreground text-right">
+            {values.bio.length}/500
+          </p>
         </div>
 
         {/* Gender + Pronouns */}
-        <div className="profile-2col-grid grid" style={{ gap: "var(--space-sm)" }}>
-          <div className="flex flex-col min-w-0" style={{ gap: "var(--space-xs)" }}>
+        <div
+          className="profile-2col-grid grid"
+          style={{ gap: "var(--space-sm)" }}
+        >
+          <div
+            className="flex flex-col min-w-0"
+            style={{ gap: "var(--space-xs)" }}
+          >
             <Label className="heading-luxe-eyebrow text-left">
               Gender <span className="text-destructive">*</span>
             </Label>
@@ -169,11 +216,20 @@ export function ProfileEditForm({
             )}
           </div>
 
-          <div className="flex flex-col min-w-0" style={{ gap: "var(--space-xs)" }}>
+          <div
+            className="flex flex-col min-w-0"
+            style={{ gap: "var(--space-xs)" }}
+          >
             <Label className="heading-luxe-eyebrow text-left">
-              Pronouns <span className="text-muted-foreground/70 normal-case">(optional)</span>
+              Pronouns{" "}
+              <span className="text-muted-foreground/70 normal-case">
+                (optional)
+              </span>
             </Label>
-            <Select value={values.pronouns} onValueChange={(v) => setValue("pronouns", v)}>
+            <Select
+              value={values.pronouns}
+              onValueChange={(v) => setValue("pronouns", v)}
+            >
               <SelectTrigger className="bg-card/60 profile-select-trigger w-full">
                 <SelectValue placeholder="Select pronouns" />
               </SelectTrigger>
@@ -209,7 +265,10 @@ export function ProfileEditForm({
         </div>
 
         {/* Save */}
-        <div className="flex" style={{ gap: "var(--space-sm)", paddingTop: "var(--space-md)" }}>
+        <div
+          className="flex"
+          style={{ gap: "var(--space-sm)", paddingTop: "var(--space-md)" }}
+        >
           <Button
             onClick={onSave}
             disabled={isSaving || !values.displayName.trim()}

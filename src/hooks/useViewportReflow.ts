@@ -24,7 +24,8 @@ import { useEffect } from "react";
  */
 export function useViewportReflow(): void {
   useEffect(() => {
-    if (typeof window === "undefined" || typeof document === "undefined") return;
+    if (typeof window === "undefined" || typeof document === "undefined")
+      return;
 
     const root = document.documentElement;
 

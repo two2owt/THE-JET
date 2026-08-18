@@ -91,8 +91,12 @@ describe("layer persistence contract", () => {
       localStorage.setItem(LAYER_KEYS.density, "false");
       localStorage.setItem(LAYER_KEYS.paths, "false");
 
-      expect(readLayerState("density", "?layers=density,paths", false)).toBe(true);
-      expect(readLayerState("paths", "?layers=density,paths", false)).toBe(true);
+      expect(readLayerState("density", "?layers=density,paths", false)).toBe(
+        true,
+      );
+      expect(readLayerState("paths", "?layers=density,paths", false)).toBe(
+        true,
+      );
     });
 
     it("omitting a layer from `?layers=` falls back to storage, not off", () => {
@@ -105,7 +109,9 @@ describe("layer persistence contract", () => {
     });
 
     it("ignores unknown tokens in `?layers=`", () => {
-      expect(readLayerState("density", "?layers=bogus,density", false)).toBe(true);
+      expect(readLayerState("density", "?layers=bogus,density", false)).toBe(
+        true,
+      );
       expect(readLayerState("paths", "?layers=bogus", false)).toBe(false);
     });
   });
@@ -169,8 +175,12 @@ describe("layer persistence contract", () => {
       clearPersistedLayerState();
 
       // Simulate a page refresh — reader consults fresh URL + storage.
-      expect(readLayerState("density", window.location.search, false)).toBe(false);
-      expect(readLayerState("paths", window.location.search, false)).toBe(false);
+      expect(readLayerState("density", window.location.search, false)).toBe(
+        false,
+      );
+      expect(readLayerState("paths", window.location.search, false)).toBe(
+        false,
+      );
     });
   });
 
@@ -250,21 +260,20 @@ describe("layer persistence contract", () => {
 
     it("emits layers in a fixed order regardless of input order", () => {
       expect(serializeLayersParam(["paths", "density"])).toBe("density,paths");
-      expect(serializeLayersParam(["stats", "parking", "density", "paths"]))
-        .toBe("density,paths,parking,stats");
+      expect(
+        serializeLayersParam(["stats", "parking", "density", "paths"]),
+      ).toBe("density,paths,parking,stats");
     });
 
     it("dedupes repeated layers", () => {
-      expect(serializeLayersParam(["density", "density", "paths"]))
-        .toBe("density,paths");
+      expect(serializeLayersParam(["density", "density", "paths"])).toBe(
+        "density,paths",
+      );
     });
 
     it("is idempotent: parse ∘ serialize is a no-op on canonical form", () => {
-      const cases: Array<["density"[] | "paths"[] | ("density" | "paths")[]]> = [
-        [["density"]],
-        [["paths"]],
-        [["density", "paths"]],
-      ];
+      const cases: Array<["density"[] | "paths"[] | ("density" | "paths")[]]> =
+        [[["density"]], [["paths"]], [["density", "paths"]]];
       for (const [input] of cases) {
         const serialized = serializeLayersParam(input)!;
         const parsed = parseLayersParam(`?layers=${serialized}`)!;
@@ -277,15 +286,23 @@ describe("layer persistence contract", () => {
     beforeEach(() => localStorage.clear());
 
     it("enables the correct toggles when URL is uppercase / reordered", () => {
-      expect(readLayerState("density", "?layers=PATHS,DENSITY", false)).toBe(true);
-      expect(readLayerState("paths", "?layers=PATHS,DENSITY", false)).toBe(true);
+      expect(readLayerState("density", "?layers=PATHS,DENSITY", false)).toBe(
+        true,
+      );
+      expect(readLayerState("paths", "?layers=PATHS,DENSITY", false)).toBe(
+        true,
+      );
     });
 
     it("never enables a toggle that isn't in KNOWN_LAYERS", () => {
       // If some future / typo'd token slips into the URL, the UI must not
       // flip on an unrelated toggle or crash.
-      expect(readLayerState("density", "?layers=heat,foo,bar", false)).toBe(false);
-      expect(readLayerState("paths", "?layers=heat,foo,bar", false)).toBe(false);
+      expect(readLayerState("density", "?layers=heat,foo,bar", false)).toBe(
+        false,
+      );
+      expect(readLayerState("paths", "?layers=heat,foo,bar", false)).toBe(
+        false,
+      );
     });
 
     it("empty `?layers=` doesn't override persisted storage", () => {
@@ -297,8 +314,12 @@ describe("layer persistence contract", () => {
     });
 
     it("repeated `?layers=` occurrences enable every listed layer", () => {
-      expect(readLayerState("density", "?layers=density&layers=paths", false)).toBe(true);
-      expect(readLayerState("paths", "?layers=density&layers=paths", false)).toBe(true);
+      expect(
+        readLayerState("density", "?layers=density&layers=paths", false),
+      ).toBe(true);
+      expect(
+        readLayerState("paths", "?layers=density&layers=paths", false),
+      ).toBe(true);
     });
   });
 });

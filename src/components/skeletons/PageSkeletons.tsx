@@ -3,7 +3,11 @@ import { PageShell } from "@/components/PageShell";
 
 /* ─── Shared helpers ─── */
 
-function PageHeadingSkeleton({ subtitleWidth = "w-24" }: { subtitleWidth?: string }) {
+function PageHeadingSkeleton({
+  subtitleWidth = "w-24",
+}: {
+  subtitleWidth?: string;
+}) {
   return (
     <div className="mb-fluid-lg">
       <Skeleton className="h-8 w-48 rounded-lg mb-fluid-xs" />
@@ -123,18 +127,21 @@ export function ConversationRowsSkeleton({ count = 5 }: { count?: number }) {
           key={i}
           className="flex items-center"
           style={{
-            gap: 'clamp(10px, 3vw, 14px)',
-            padding: 'clamp(10px, 2.8vw, 14px) clamp(12px, 3.2vw, 16px)',
+            gap: "clamp(10px, 3vw, 14px)",
+            padding: "clamp(10px, 2.8vw, 14px) clamp(12px, 3.2vw, 16px)",
             // Real rows measure 48px of content (name + preview line) inside the
             // same clamped padding — pin it so skeleton → data is pixel-stable.
-            height: 'calc(48px + clamp(10px, 2.8vw, 14px) * 2)',
-            boxSizing: 'border-box',
+            height: "calc(48px + clamp(10px, 2.8vw, 14px) * 2)",
+            boxSizing: "border-box",
           }}
         >
           <Skeleton className="h-11 w-11 sm:h-12 sm:w-12 lg:h-[52px] lg:w-[52px] rounded-full shrink-0" />
           <div className="flex-1 min-w-0">
             <Skeleton className="h-[18px] w-32 rounded" />
-            <Skeleton className="h-[15px] w-48 max-w-full rounded" style={{ marginTop: 4 }} />
+            <Skeleton
+              className="h-[15px] w-48 max-w-full rounded"
+              style={{ marginTop: 4 }}
+            />
           </div>
         </div>
       ))}
@@ -149,24 +156,30 @@ export function ConversationRowsSkeleton({ count = 5 }: { count?: number }) {
  */
 export function SocialListSkeleton({ count = 3 }: { count?: number }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }} aria-hidden="true">
+    <div
+      style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+      aria-hidden="true"
+    >
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'clamp(10px, 3vw, 14px)',
-            padding: 'clamp(10px, 2.8vw, 14px) clamp(12px, 3.2vw, 16px)',
-            borderRadius: '14px',
-            backgroundColor: 'hsl(var(--card) / 0.9)',
-            border: '1px solid hsl(var(--border) / 0.6)',
+            display: "flex",
+            alignItems: "center",
+            gap: "clamp(10px, 3vw, 14px)",
+            padding: "clamp(10px, 2.8vw, 14px) clamp(12px, 3.2vw, 16px)",
+            borderRadius: "14px",
+            backgroundColor: "hsl(var(--card) / 0.9)",
+            border: "1px solid hsl(var(--border) / 0.6)",
           }}
         >
           <Skeleton className="w-10 h-10 min-[360px]:w-11 min-[360px]:h-11 sm:w-12 sm:h-12 lg:w-[52px] lg:h-[52px] rounded-full shrink-0" />
           <div style={{ flex: 1, minWidth: 0 }}>
             <Skeleton className="h-[19px] w-28 rounded" />
-            <Skeleton className="h-[17px] w-40 max-w-full rounded" style={{ marginTop: 2 }} />
+            <Skeleton
+              className="h-[17px] w-40 max-w-full rounded"
+              style={{ marginTop: 2 }}
+            />
           </div>
           <Skeleton className="h-10 w-10 rounded-[10px] shrink-0" />
         </div>
@@ -228,9 +241,7 @@ export function ProfilePageSkeleton() {
 
       {/* Identity hero — matches real centered hero card (rounded-2xl,
           border-hairline, bg-card/40 backdrop-blur-xl, glow-ambient). */}
-      <section
-        className="relative rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg overflow-hidden"
-      >
+      <section className="relative rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg overflow-hidden">
         <div className="flex flex-col items-center text-center">
           {/* Avatar — exact 104px ring matches real Avatar */}
           <Skeleton
@@ -246,7 +257,7 @@ export function ProfilePageSkeleton() {
           {/* Edit pill */}
           <Skeleton
             className="h-9 w-28 rounded-full"
-            style={{ marginTop: 'max(16px, var(--space-lg))' }}
+            style={{ marginTop: "max(16px, var(--space-lg))" }}
           />
         </div>
 
@@ -274,12 +285,12 @@ export function ProfilePageSkeleton() {
           <Skeleton className="w-2 h-2 rounded-full" />
           <Skeleton className="h-3 w-32 rounded" />
         </div>
-        <div className="flex flex-col" style={{ gap: 'var(--space-sm)' }}>
-          <div className="flex flex-col" style={{ gap: 'var(--space-xs)' }}>
+        <div className="flex flex-col" style={{ gap: "var(--space-sm)" }}>
+          <div className="flex flex-col" style={{ gap: "var(--space-xs)" }}>
             <Skeleton className="h-3 w-28 rounded" />
             <Skeleton className="h-10 w-full rounded-md" />
           </div>
-          <div className="flex flex-col" style={{ gap: 'var(--space-xs)' }}>
+          <div className="flex flex-col" style={{ gap: "var(--space-xs)" }}>
             <Skeleton className="h-3 w-16 rounded" />
             <Skeleton className="h-24 w-full rounded-md" />
           </div>

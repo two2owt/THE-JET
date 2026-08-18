@@ -8,7 +8,11 @@ import { useEffect, useState } from "react";
  *
  * Higher priority wins the slot; lower-priority waiters open once it frees.
  */
-type Waiter = { id: string; priority: number; notify: (active: boolean) => void };
+type Waiter = {
+  id: string;
+  priority: number;
+  notify: (active: boolean) => void;
+};
 
 const waiters: Waiter[] = [];
 let holder: string | null = null;
@@ -23,7 +27,11 @@ const settle = () => {
   }
 };
 
-export const usePromptSlot = (id: string, priority: number, wanted: boolean) => {
+export const usePromptSlot = (
+  id: string,
+  priority: number,
+  wanted: boolean,
+) => {
   const [active, setActive] = useState(false);
 
   useEffect(() => {

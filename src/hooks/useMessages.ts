@@ -26,7 +26,8 @@ export const useMessages = (userId?: string, friendId?: string) => {
   const typingTimeoutRef = useRef<number | null>(null);
   const lastTypingSentRef = useRef<number>(0);
 
-  const conversationId = userId && friendId ? getConversationId(userId, friendId) : null;
+  const conversationId =
+    userId && friendId ? getConversationId(userId, friendId) : null;
 
   const fetchMessages = useCallback(async () => {
     if (!conversationId) return;
@@ -90,7 +91,7 @@ export const useMessages = (userId?: string, friendId?: string) => {
           });
       }
     },
-    [userId, friendId, conversationId]
+    [userId, friendId, conversationId],
   );
 
   // Send an image message
@@ -143,7 +144,7 @@ export const useMessages = (userId?: string, friendId?: string) => {
         image_url: path,
       });
     },
-    [userId, friendId, conversationId]
+    [userId, friendId, conversationId],
   );
 
   // Share a deal
@@ -158,7 +159,7 @@ export const useMessages = (userId?: string, friendId?: string) => {
         deal_id: dealId,
       });
     },
-    [userId, friendId, conversationId]
+    [userId, friendId, conversationId],
   );
 
   // Realtime subscription
@@ -188,29 +189,35 @@ export const useMessages = (userId?: string, friendId?: string) => {
               prev.map((m) =>
                 m.id === (payload.new as Message).id
                   ? (payload.new as Message)
-                  : m
-              )
+                  : m,
+              ),
             );
           } else if (payload.eventType === "DELETE") {
             setMessages((prev) =>
-              prev.filter((m) => m.id !== (payload.old as { id: string }).id)
+              prev.filter((m) => m.id !== (payload.old as { id: string }).id),
             );
           }
-        }
+        },
       )
       .on("broadcast", { event: "typing" }, (payload) => {
-        const fromId = (payload?.payload as { userId?: string } | undefined)?.userId;
+        const fromId = (payload?.payload as { userId?: string } | undefined)
+          ?.userId;
         if (!fromId || fromId === userId) return;
         setIsFriendTyping(true);
-        if (typingTimeoutRef.current) window.clearTimeout(typingTimeoutRef.current);
+        if (typingTimeoutRef.current)
+          window.clearTimeout(typingTimeoutRef.current);
         // Auto-clear if no further typing event lands within 3s.
-        typingTimeoutRef.current = window.setTimeout(() => setIsFriendTyping(false), 3000);
+        typingTimeoutRef.current = window.setTimeout(
+          () => setIsFriendTyping(false),
+          3000,
+        );
       })
       .subscribe();
 
     return () => {
       channelRef.current?.unsubscribe();
-      if (typingTimeoutRef.current) window.clearTimeout(typingTimeoutRef.current);
+      if (typingTimeoutRef.current)
+        window.clearTimeout(typingTimeoutRef.current);
       setIsFriendTyping(false);
     };
   }, [conversationId, fetchMessages, userId, friendId]);
@@ -234,7 +241,7 @@ export const useMessages = (userId?: string, friendId?: string) => {
       if (!userId) return 0;
       return msgs.filter((m) => m.recipient_id === userId && !m.read_at).length;
     },
-    [userId]
+    [userId],
   );
 
   return {
@@ -285,7 +292,7 @@ export const useUnreadCounts = (userId?: string) => {
           table: "messages",
           filter: `recipient_id=eq.${userId}`,
         },
-        () => fetchCounts()
+        () => fetchCounts(),
       )
       .on(
         "postgres_changes",
@@ -295,7 +302,7 @@ export const useUnreadCounts = (userId?: string) => {
           table: "messages",
           filter: `recipient_id=eq.${userId}`,
         },
-        () => fetchCounts()
+        () => fetchCounts(),
       )
       .subscribe();
 

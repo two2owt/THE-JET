@@ -93,12 +93,8 @@ test.describe("?layers= URL param drives layer state and stays in sync", () => {
     await waitForLayersUi(page);
 
     // Storage reflects the URL request.
-    await expect
-      .poll(() => readStorage(page, DENSITY_KEY))
-      .toBe("true");
-    await expect
-      .poll(() => readStorage(page, PATHS_KEY))
-      .toBe("true");
+    await expect.poll(() => readStorage(page, DENSITY_KEY)).toBe("true");
+    await expect.poll(() => readStorage(page, PATHS_KEY)).toBe("true");
 
     // Chip UI reflects the same state.
     await expect(heatmapChip(page)).toHaveAttribute("aria-pressed", "true");
@@ -130,12 +126,8 @@ test.describe("?layers= URL param drives layer state and stays in sync", () => {
     await expect(heatmapChip(page)).toHaveAttribute("aria-pressed", "true");
     await expect(pathsChip(page)).toHaveAttribute("aria-pressed", "true");
 
-    await expect
-      .poll(() => readStorage(page, DENSITY_KEY))
-      .toBe("true");
-    await expect
-      .poll(() => readStorage(page, PATHS_KEY))
-      .toBe("true");
+    await expect.poll(() => readStorage(page, DENSITY_KEY)).toBe("true");
+    await expect.poll(() => readStorage(page, PATHS_KEY)).toBe("true");
 
     await expect.poll(() => currentLayersParam(page)).toBe("density,paths");
   });
@@ -152,12 +144,8 @@ test.describe("?layers= URL param drives layer state and stays in sync", () => {
   test("resolved state survives a full page refresh", async ({ page }) => {
     await page.goto("/?layers=paths,foo,DENSITY");
     await waitForLayersUi(page);
-    await expect
-      .poll(() => readStorage(page, DENSITY_KEY))
-      .toBe("true");
-    await expect
-      .poll(() => readStorage(page, PATHS_KEY))
-      .toBe("true");
+    await expect.poll(() => readStorage(page, DENSITY_KEY)).toBe("true");
+    await expect.poll(() => readStorage(page, PATHS_KEY)).toBe("true");
 
     // Refresh — the canonical URL + storage should reproduce the same UI.
     await page.reload();

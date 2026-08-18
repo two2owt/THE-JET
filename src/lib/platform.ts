@@ -9,11 +9,11 @@
 
 type CapacitorGlobal = {
   isNativePlatform?: () => boolean;
-  getPlatform?: () => 'ios' | 'android' | 'web';
+  getPlatform?: () => "ios" | "android" | "web";
 };
 
 function getCap(): CapacitorGlobal | undefined {
-  if (typeof window === 'undefined') return undefined;
+  if (typeof window === "undefined") return undefined;
   return (window as unknown as { Capacitor?: CapacitorGlobal }).Capacitor;
 }
 
@@ -22,17 +22,17 @@ export function isNativeApp(): boolean {
   return Boolean(cap?.isNativePlatform?.());
 }
 
-export function getPlatform(): 'ios' | 'android' | 'web' {
+export function getPlatform(): "ios" | "android" | "web" {
   const cap = getCap();
-  return cap?.getPlatform?.() ?? 'web';
+  return cap?.getPlatform?.() ?? "web";
 }
 
 export function isIOSNative(): boolean {
-  return isNativeApp() && getPlatform() === 'ios';
+  return isNativeApp() && getPlatform() === "ios";
 }
 
 export function isAndroidNative(): boolean {
-  return isNativeApp() && getPlatform() === 'android';
+  return isNativeApp() && getPlatform() === "android";
 }
 
 /**

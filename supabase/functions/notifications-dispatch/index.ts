@@ -36,7 +36,8 @@ function json(payload: unknown, status = 200) {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS")
+    return new Response(null, { headers: corsHeaders });
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -46,13 +47,20 @@ Deno.serve(async (req) => {
   const vapidPublic = Deno.env.get("VITE_VAPID_PUBLIC_KEY");
   const vapidPrivate = Deno.env.get("VAPID_PRIVATE_KEY");
   if (vapidPublic && vapidPrivate) {
-    webpush.setVapidDetails("mailto:support@jet-around.com", vapidPublic, vapidPrivate);
+    webpush.setVapidDetails(
+      "mailto:support@jet-around.com",
+      vapidPublic,
+      vapidPrivate,
+    );
   }
 
   try {
-    const { data: jobs, error: claimErr } = await supabase.rpc("claim_notification_batch", {
-      _limit: BATCH_SIZE,
-    });
+    const { data: jobs, error: claimErr } = await supabase.rpc(
+      "claim_notification_batch",
+      {
+        _limit: BATCH_SIZE,
+      },
+    );
     if (claimErr) throw claimErr;
     if (!jobs || jobs.length === 0) return json({ ok: true, processed: 0 });
 
@@ -108,14 +116,19 @@ Deno.serve(async (req) => {
           .from("user_preferences")
           .select("user_id, notifications_enabled")
           .in("user_id", userIds);
-        const prefById = new Map((prefRows ?? []).map((p: any) => [p.user_id, p]));
+        const prefById = new Map(
+          (prefRows ?? []).map((p: any) => [p.user_id, p]),
+        );
 
         const { data: settingsRows } = await supabase
           .from("user_notification_settings")
           .select("*")
           .in("user_id", userIds);
         const settingsById = new Map(
-          (settingsRows ?? []).map((s: any) => [s.user_id, s as UserNotificationSettings]),
+          (settingsRows ?? []).map((s: any) => [
+            s.user_id,
+            s as UserNotificationSettings,
+          ]),
         );
 
         const now = new Date();
@@ -130,8 +143,10 @@ Deno.serve(async (req) => {
             optedOut++;
             continue;
           }
-          const settings: UserNotificationSettings =
-            settingsById.get(uid) ?? { user_id: uid, ...DEFAULT_SETTINGS };
+          const settings: UserNotificationSettings = settingsById.get(uid) ?? {
+            user_id: uid,
+            ...DEFAULT_SETTINGS,
+          };
           if (!categoryAllowed(settings, job.category)) {
             optedOut++;
             continue;
@@ -163,7 +178,11 @@ Deno.serve(async (req) => {
               .update({
                 status: "skipped",
                 processed_at: new Date().toISOString(),
-                stats: { reason: "all_opted_out", opted_out: optedOut, deferred },
+                stats: {
+                  reason: "all_opted_out",
+                  opted_out: optedOut,
+                  deferred,
+                },
               })
               .eq("id", job.id);
             results.push({ id: job.id, skipped: "all_opted_out" });
@@ -204,17 +223,23 @@ Deno.serve(async (req) => {
 
         await Promise.allSettled(
           (subs ?? []).map(async (sub: any) => {
-            const isNative = sub.platform === "ios" || sub.platform === "android";
+            const isNative =
+              sub.platform === "ios" || sub.platform === "android";
             try {
               if (isNative) {
-                const res = await sendFcmV1(sub.endpoint, { title: job.title, body: job.body }, data);
+                const res = await sendFcmV1(
+                  sub.endpoint,
+                  { title: job.title, body: job.body },
+                  data,
+                );
                 if (!res.ok) {
                   if (res.unregistered) invalid.push(sub.id);
                   throw new Error(res.error ?? "fcm failed");
                 }
                 nativeSent++;
               } else {
-                if (!vapidPublic || !vapidPrivate) throw new Error("VAPID keys not configured");
+                if (!vapidPublic || !vapidPrivate)
+                  throw new Error("VAPID keys not configured");
                 await webpush.sendNotification(
                   {
                     endpoint: sub.endpoint,
@@ -232,7 +257,8 @@ Deno.serve(async (req) => {
                 status: "sent",
               });
             } catch (err: any) {
-              if (err?.statusCode === 404 || err?.statusCode === 410) invalid.push(sub.id);
+              if (err?.statusCode === 404 || err?.statusCode === 410)
+                invalid.push(sub.id);
               deliveries.push({
                 queue_id: job.id,
                 user_id: sub.user_id,
@@ -285,7 +311,11 @@ Deno.serve(async (req) => {
           })
           .eq("id", job.id);
 
-        results.push({ id: job.id, web_sent: webSent, native_sent: nativeSent });
+        results.push({
+          id: job.id,
+          web_sent: webSent,
+          native_sent: nativeSent,
+        });
       } catch (err: any) {
         const message = String(err?.message ?? err).slice(0, 500);
         console.error(`[${FUNCTION_NAME}] job ${job.id} failed:`, message);
@@ -299,7 +329,9 @@ Deno.serve(async (req) => {
             // exponential backoff: 1m, 2m, 4m, 8m…
             scheduled_at: exhausted
               ? job.scheduled_at
-              : new Date(Date.now() + 60_000 * 2 ** ((job.attempts ?? 1) - 1)).toISOString(),
+              : new Date(
+                  Date.now() + 60_000 * 2 ** ((job.attempts ?? 1) - 1),
+                ).toISOString(),
             processed_at: exhausted ? new Date().toISOString() : null,
           })
           .eq("id", job.id);
@@ -309,7 +341,10 @@ Deno.serve(async (req) => {
 
     return json({ ok: true, processed: jobs.length, results });
   } catch (err) {
-    console.error(`[${FUNCTION_NAME}]`, err instanceof Error ? err.message : err);
+    console.error(
+      `[${FUNCTION_NAME}]`,
+      err instanceof Error ? err.message : err,
+    );
     return json({ error: "Internal server error" }, 500);
   }
 });

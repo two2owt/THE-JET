@@ -26,7 +26,8 @@ export function useAutoFitScale<T extends HTMLElement>({
     const el = node;
     if (!el) return;
     const container = containerSelector
-      ? ((el.closest(containerSelector) as HTMLElement | null) ?? el.parentElement)
+      ? ((el.closest(containerSelector) as HTMLElement | null) ??
+        el.parentElement)
       : el.parentElement;
     if (!container) return;
 
@@ -43,7 +44,8 @@ export function useAutoFitScale<T extends HTMLElement>({
     if (inner && inner !== container) {
       const ics = getComputedStyle(inner);
       available -=
-        parseFloat(ics.paddingTop || "0") + parseFloat(ics.paddingBottom || "0");
+        parseFloat(ics.paddingTop || "0") +
+        parseFloat(ics.paddingBottom || "0");
     }
 
     // scrollHeight rounds down and ignores collapsed/overflowing child margins,
@@ -52,7 +54,8 @@ export function useAutoFitScale<T extends HTMLElement>({
     const scroller = inner && inner !== container ? inner : container;
     const residual = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
     const natural =
-      Math.max(el.scrollHeight, Math.ceil(el.getBoundingClientRect().height)) + residual;
+      Math.max(el.scrollHeight, Math.ceil(el.getBoundingClientRect().height)) +
+      residual;
     if (available <= 0 || natural <= 0) return;
 
     const apply = (scale: number) => {

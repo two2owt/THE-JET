@@ -7,11 +7,26 @@ import { Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const COLUMNS = [
-  "id", "email", "display_name", "bio", "created_at", "updated_at",
-  "onboarding_completed", "discoverable", "birthdate", "gender", "pronouns",
-  "location_consent_given", "location_consent_date",
-  "data_processing_consent", "data_processing_consent_date",
-  "instagram_url", "twitter_url", "facebook_url", "linkedin_url", "tiktok_url",
+  "id",
+  "email",
+  "display_name",
+  "bio",
+  "created_at",
+  "updated_at",
+  "onboarding_completed",
+  "discoverable",
+  "birthdate",
+  "gender",
+  "pronouns",
+  "location_consent_given",
+  "location_consent_date",
+  "data_processing_consent",
+  "data_processing_consent_date",
+  "instagram_url",
+  "twitter_url",
+  "facebook_url",
+  "linkedin_url",
+  "tiktok_url",
 ] as const;
 
 type Column = (typeof COLUMNS)[number];
@@ -19,7 +34,11 @@ type Column = (typeof COLUMNS)[number];
 // `id` is always included so exported rows remain identifiable.
 const REQUIRED: Column[] = ["id"];
 const DEFAULT_SELECTED: Column[] = [
-  "id", "email", "display_name", "created_at", "onboarding_completed",
+  "id",
+  "email",
+  "display_name",
+  "created_at",
+  "onboarding_completed",
 ];
 
 function toCsv(rows: Record<string, unknown>[], cols: Column[]): string {
@@ -58,7 +77,10 @@ export function ExportUsersPanel() {
   const selectNone = () => setSelected(new Set(REQUIRED));
 
   const handleExport = async () => {
-    if (selectedCols.length <= REQUIRED.length && !selectedCols.some((c) => !REQUIRED.includes(c))) {
+    if (
+      selectedCols.length <= REQUIRED.length &&
+      !selectedCols.some((c) => !REQUIRED.includes(c))
+    ) {
       toast.error("Pick at least one field to export");
       return;
     }
@@ -73,7 +95,7 @@ export function ExportUsersPanel() {
       let from = 0;
       const all: Record<string, unknown>[] = [];
       // Paginate to avoid PostgREST 1000-row cap.
-      // eslint-disable-next-line no-constant-condition
+
       while (true) {
         const { data, error } = await supabase
           .from("profiles")
@@ -115,7 +137,9 @@ export function ExportUsersPanel() {
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
-      toast.success(`Exported ${all.length} user${all.length === 1 ? "" : "s"}`);
+      toast.success(
+        `Exported ${all.length} user${all.length === 1 ? "" : "s"}`,
+      );
     } catch (err) {
       console.error("Export users failed", err);
       toast.error("Failed to export users");
@@ -134,7 +158,11 @@ export function ExportUsersPanel() {
           </p>
         </div>
         <Button onClick={handleExport} disabled={loading} className="gap-2">
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+          {loading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Download className="h-4 w-4" />
+          )}
           {loading ? "Exporting…" : "Export CSV"}
         </Button>
       </div>
@@ -145,10 +173,22 @@ export function ExportUsersPanel() {
             Fields ({selectedCols.length}/{COLUMNS.length})
           </p>
           <div className="flex gap-2">
-            <Button type="button" variant="ghost" size="sm" onClick={selectAll} disabled={loading}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={selectAll}
+              disabled={loading}
+            >
               Select all
             </Button>
-            <Button type="button" variant="ghost" size="sm" onClick={selectNone} disabled={loading}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={selectNone}
+              disabled={loading}
+            >
               Clear
             </Button>
           </div>
@@ -172,7 +212,9 @@ export function ExportUsersPanel() {
                 <Label htmlFor={id} className="cursor-pointer font-normal">
                   {col}
                   {required && (
-                    <span className="ml-1 text-[10px] uppercase text-muted-foreground">required</span>
+                    <span className="ml-1 text-[10px] uppercase text-muted-foreground">
+                      required
+                    </span>
                   )}
                 </Label>
               </label>

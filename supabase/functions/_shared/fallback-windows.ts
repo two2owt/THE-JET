@@ -12,19 +12,24 @@
  * Entries are minutes; the literal `all` (or `0` / `null`) means "no cutoff".
  * Invalid entries are ignored; an unusable value falls back to the default.
  */
-export const DEFAULT_FALLBACK_WINDOW_MINUTES: (number | null)[] = [1440, 10080, 43200, null];
+export const DEFAULT_FALLBACK_WINDOW_MINUTES: (number | null)[] = [
+  1440,
+  10080,
+  43200,
+  null,
+];
 
 export function getFallbackWindowMinutes(
-  envVar = 'FALLBACK_WINDOW_MINUTES',
+  envVar = "FALLBACK_WINDOW_MINUTES",
 ): (number | null)[] {
   const raw = Deno.env.get(envVar);
   if (!raw) return DEFAULT_FALLBACK_WINDOW_MINUTES;
 
   const parsed: (number | null)[] = [];
-  for (const token of raw.split(',')) {
+  for (const token of raw.split(",")) {
     const t = token.trim().toLowerCase();
     if (!t) continue;
-    if (t === 'all' || t === 'null' || t === '0') {
+    if (t === "all" || t === "null" || t === "0") {
       parsed.push(null);
       continue;
     }
@@ -33,7 +38,9 @@ export function getFallbackWindowMinutes(
   }
 
   if (parsed.length === 0) {
-    console.warn(`[fallback-windows] Unusable ${envVar}="${raw}" — using defaults.`);
+    console.warn(
+      `[fallback-windows] Unusable ${envVar}="${raw}" — using defaults.`,
+    );
     return DEFAULT_FALLBACK_WINDOW_MINUTES;
   }
   return parsed;
@@ -43,9 +50,14 @@ export function getFallbackWindowMinutes(
  * Builds the ordered list of cutoffs to try: the caller's own cutoff first,
  * then each configured fallback window that is strictly wider than it.
  */
-export function buildCutoffLadder(now: Date, primaryCutoff: Date | null): (Date | null)[] {
+export function buildCutoffLadder(
+  now: Date,
+  primaryCutoff: Date | null,
+): (Date | null)[] {
   const minutesSince = (d: Date | null) =>
-    d === null ? Number.POSITIVE_INFINITY : Math.round((now.getTime() - d.getTime()) / 60_000);
+    d === null
+      ? Number.POSITIVE_INFINITY
+      : Math.round((now.getTime() - d.getTime()) / 60_000);
 
   const fallbacks = getFallbackWindowMinutes().map((m) =>
     m === null ? null : new Date(now.getTime() - m * 60_000),

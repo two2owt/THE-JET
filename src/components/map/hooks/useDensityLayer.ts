@@ -6,7 +6,8 @@ interface Params {
   mapLoaded: boolean;
   isMobile: boolean;
   showDensityLayer: boolean;
-  densityData: { geojson: any; stats: { grid_cells: number } } | null | undefined;
+  densityData:
+    { geojson: any; stats: { grid_cells: number } } | null | undefined;
   timelapseMode: boolean;
   timelapse: { currentData: any; currentHour: number };
   /** True when the active Mapbox style is light/streets — the ramp darkens and
@@ -34,14 +35,15 @@ export const useDensityLayer = ({
   const paintedForLightRef = useRef<boolean | null>(null);
 
   useEffect(() => {
-    const activeData = timelapseMode && timelapse.currentData
-      ? timelapse.currentData
-      : densityData;
+    const activeData =
+      timelapseMode && timelapse.currentData
+        ? timelapse.currentData
+        : densityData;
 
     if (!mapRef.current || !mapLoaded || !activeData) return;
 
-    const sourceId = 'location-density';
-    const layerId = 'location-density-heat';
+    const sourceId = "location-density";
+    const layerId = "location-density-heat";
     const pointLayerId = `${layerId}-point`;
     const glowLayerId = `${layerId}-glow`;
 
@@ -52,10 +54,11 @@ export const useDensityLayer = ({
           [glowLayerId, pointLayerId, layerId].forEach((id) => {
             if (mapRef.current?.getLayer(id)) mapRef.current.removeLayer(id);
           });
-          if (mapRef.current?.getSource(sourceId)) mapRef.current.removeSource(sourceId);
+          if (mapRef.current?.getSource(sourceId))
+            mapRef.current.removeSource(sourceId);
         }
       } catch (error) {
-        console.error('Error removing density layers:', error);
+        console.error("Error removing density layers:", error);
       }
       return;
     }
@@ -63,20 +66,24 @@ export const useDensityLayer = ({
     // Data update path — reuse existing source so Mapbox interpolates paint
     // transitions instead of hard-flashing on every realtime refetch.
     const existingSource = mapRef.current.getSource(sourceId) as any;
-    const basemapChanged = paintedForLightRef.current !== null
-      && paintedForLightRef.current !== isLightBasemap;
+    const basemapChanged =
+      paintedForLightRef.current !== null &&
+      paintedForLightRef.current !== isLightBasemap;
     if (existingSource && !basemapChanged) {
       try {
         existingSource.setData(activeData.geojson);
         return;
       } catch (err) {
-        console.warn('density setData failed, rebuilding:', err);
+        console.warn("density setData failed, rebuilding:", err);
         try {
           [glowLayerId, pointLayerId, layerId].forEach((id) => {
             if (mapRef.current?.getLayer(id)) mapRef.current.removeLayer(id);
           });
-          if (mapRef.current?.getSource(sourceId)) mapRef.current.removeSource(sourceId);
-        } catch { /* no-op */ }
+          if (mapRef.current?.getSource(sourceId))
+            mapRef.current.removeSource(sourceId);
+        } catch {
+          /* no-op */
+        }
       }
     } else if (existingSource && basemapChanged) {
       // Rebuild with the contrast-matched ramp for the new basemap.
@@ -84,204 +91,285 @@ export const useDensityLayer = ({
         [glowLayerId, pointLayerId, layerId].forEach((id) => {
           if (mapRef.current?.getLayer(id)) mapRef.current.removeLayer(id);
         });
-        if (mapRef.current?.getSource(sourceId)) mapRef.current.removeSource(sourceId);
-      } catch { /* no-op */ }
+        if (mapRef.current?.getSource(sourceId))
+          mapRef.current.removeSource(sourceId);
+      } catch {
+        /* no-op */
+      }
     }
     paintedForLightRef.current = isLightBasemap;
 
     mapRef.current.addSource(sourceId, {
-      type: 'geojson',
+      type: "geojson",
       data: activeData.geojson,
     });
 
     mapRef.current.addLayer({
       id: layerId,
-      type: 'heatmap',
+      type: "heatmap",
       source: sourceId,
       paint: {
-        'heatmap-weight': [
-          'interpolate',
-          ['exponential', 1.5],
-          ['get', 'density'],
-          0, 0,
-          5, 0.5,
-          10, 1,
+        "heatmap-weight": [
+          "interpolate",
+          ["exponential", 1.5],
+          ["get", "density"],
+          0,
+          0,
+          5,
+          0.5,
+          10,
+          1,
         ],
-        'heatmap-intensity': [
-          'interpolate',
-          ['exponential', 2],
-          ['zoom'],
-          0, (isMobile ? 2.2 : 2),
-          9, (isMobile ? 2.6 : 3),
-          15, (isMobile ? 4 : 5),
+        "heatmap-intensity": [
+          "interpolate",
+          ["exponential", 2],
+          ["zoom"],
+          0,
+          isMobile ? 2.2 : 2,
+          9,
+          isMobile ? 2.6 : 3,
+          15,
+          isMobile ? 4 : 5,
         ],
-        'heatmap-color': isLightBasemap
+        "heatmap-color": isLightBasemap
           ? [
               // Light basemap: deeper, more opaque hues so low-density heat
               // doesn't wash out against white/grey tiles.
-              'interpolate',
-              ['linear'],
-              ['heatmap-density'],
-              0, 'rgba(0, 0, 0, 0)',
-              0.1, 'rgba(37, 62, 158, 0.75)',
-              0.2, 'rgba(0, 122, 194, 0.9)',
-              0.3, 'rgba(0, 158, 96, 0.92)',
-              0.4, 'rgba(76, 160, 30, 0.95)',
-              0.5, 'rgba(214, 184, 0, 1)',
-              0.6, 'rgba(230, 150, 0, 1)',
-              0.7, 'rgba(233, 110, 0, 1)',
-              0.8, 'rgba(220, 50, 10, 1)',
-              0.9, 'rgba(190, 0, 10, 1)',
-              1, 'rgba(110, 0, 5, 1)',
+              "interpolate",
+              ["linear"],
+              ["heatmap-density"],
+              0,
+              "rgba(0, 0, 0, 0)",
+              0.1,
+              "rgba(37, 62, 158, 0.75)",
+              0.2,
+              "rgba(0, 122, 194, 0.9)",
+              0.3,
+              "rgba(0, 158, 96, 0.92)",
+              0.4,
+              "rgba(76, 160, 30, 0.95)",
+              0.5,
+              "rgba(214, 184, 0, 1)",
+              0.6,
+              "rgba(230, 150, 0, 1)",
+              0.7,
+              "rgba(233, 110, 0, 1)",
+              0.8,
+              "rgba(220, 50, 10, 1)",
+              0.9,
+              "rgba(190, 0, 10, 1)",
+              1,
+              "rgba(110, 0, 5, 1)",
             ]
           : [
-              'interpolate',
-              ['linear'],
-              ['heatmap-density'],
-              0, 'rgba(0, 0, 0, 0)',
-              0.1, 'rgba(65, 105, 225, 0.6)',
-              0.2, 'rgba(0, 191, 255, 0.8)',
-              0.3, 'rgba(0, 255, 127, 0.85)',
-              0.4, 'rgba(50, 205, 50, 0.9)',
-              0.5, 'rgba(255, 255, 0, 0.95)',
-              0.6, 'rgba(255, 215, 0, 0.95)',
-              0.7, 'rgba(255, 165, 0, 1)',
-              0.8, 'rgba(255, 69, 0, 1)',
-              0.9, 'rgba(255, 0, 0, 1)',
-              1, 'rgba(139, 0, 0, 1)',
+              "interpolate",
+              ["linear"],
+              ["heatmap-density"],
+              0,
+              "rgba(0, 0, 0, 0)",
+              0.1,
+              "rgba(65, 105, 225, 0.6)",
+              0.2,
+              "rgba(0, 191, 255, 0.8)",
+              0.3,
+              "rgba(0, 255, 127, 0.85)",
+              0.4,
+              "rgba(50, 205, 50, 0.9)",
+              0.5,
+              "rgba(255, 255, 0, 0.95)",
+              0.6,
+              "rgba(255, 215, 0, 0.95)",
+              0.7,
+              "rgba(255, 165, 0, 1)",
+              0.8,
+              "rgba(255, 69, 0, 1)",
+              0.9,
+              "rgba(255, 0, 0, 1)",
+              1,
+              "rgba(139, 0, 0, 1)",
             ],
-        'heatmap-radius': [
-          'interpolate',
-          ['cubic-bezier', 0.4, 0, 0.2, 1],
-          ['zoom'],
-          0,  (isMobile ? 26 : 20),
-          5,  (isMobile ? 38 : 30),
-          9,  (isMobile ? 60 : 50),
-          11, (isMobile ? 72 : 60),
-          12, (isMobile ? 82 : 70),
-          13, (isMobile ? 94 : 80),
-          15, (isMobile ? 115 : 100),
-          17, (isMobile ? 130 : 115),
+        "heatmap-radius": [
+          "interpolate",
+          ["cubic-bezier", 0.4, 0, 0.2, 1],
+          ["zoom"],
+          0,
+          isMobile ? 26 : 20,
+          5,
+          isMobile ? 38 : 30,
+          9,
+          isMobile ? 60 : 50,
+          11,
+          isMobile ? 72 : 60,
+          12,
+          isMobile ? 82 : 70,
+          13,
+          isMobile ? 94 : 80,
+          15,
+          isMobile ? 115 : 100,
+          17,
+          isMobile ? 130 : 115,
         ],
-        'heatmap-opacity': [
-          'interpolate',
-          ['cubic-bezier', 0.4, 0, 0.2, 1],
-          ['zoom'],
-          5,  (isMobile ? 0.85 : 1),
-          7,  (isMobile ? 0.82 : 0.95),
-          10, (isMobile ? 0.8  : 0.92),
-          12, (isMobile ? 0.78 : 0.9),
-          14, (isMobile ? 0.74 : 0.87),
-          15, (isMobile ? 0.7  : 0.85),
-          17, (isMobile ? 0.6  : 0.75),
+        "heatmap-opacity": [
+          "interpolate",
+          ["cubic-bezier", 0.4, 0, 0.2, 1],
+          ["zoom"],
+          5,
+          isMobile ? 0.85 : 1,
+          7,
+          isMobile ? 0.82 : 0.95,
+          10,
+          isMobile ? 0.8 : 0.92,
+          12,
+          isMobile ? 0.78 : 0.9,
+          14,
+          isMobile ? 0.74 : 0.87,
+          15,
+          isMobile ? 0.7 : 0.85,
+          17,
+          isMobile ? 0.6 : 0.75,
         ],
-        'heatmap-radius-transition': { duration: 450, delay: 0 },
-        'heatmap-opacity-transition': { duration: 600, delay: 0 },
+        "heatmap-radius-transition": { duration: 450, delay: 0 },
+        "heatmap-opacity-transition": { duration: 600, delay: 0 },
       } as any,
     });
 
     mapRef.current.addLayer({
       id: `${layerId}-point`,
-      type: 'circle',
+      type: "circle",
       source: sourceId,
       minzoom: 13,
       paint: {
-        'circle-radius': [
-          'interpolate',
-          ['exponential', 1.5],
-          ['get', 'density'],
-          0, 5,
-          5, 12,
-          10, 25,
+        "circle-radius": [
+          "interpolate",
+          ["exponential", 1.5],
+          ["get", "density"],
+          0,
+          5,
+          5,
+          12,
+          10,
+          25,
         ],
-        'circle-color': isLightBasemap
+        "circle-color": isLightBasemap
           ? [
-              'interpolate',
-              ['linear'],
-              ['get', 'density'],
-              0, 'rgb(37, 62, 158)',
-              3, 'rgb(0, 158, 96)',
-              6, 'rgb(214, 152, 0)',
-              8, 'rgb(220, 50, 10)',
-              10, 'rgb(110, 0, 5)',
+              "interpolate",
+              ["linear"],
+              ["get", "density"],
+              0,
+              "rgb(37, 62, 158)",
+              3,
+              "rgb(0, 158, 96)",
+              6,
+              "rgb(214, 152, 0)",
+              8,
+              "rgb(220, 50, 10)",
+              10,
+              "rgb(110, 0, 5)",
             ]
           : [
-              'interpolate',
-              ['linear'],
-              ['get', 'density'],
-              0, 'rgb(65, 105, 225)',
-              3, 'rgb(0, 255, 127)',
-              6, 'rgb(255, 215, 0)',
-              8, 'rgb(255, 69, 0)',
-              10, 'rgb(139, 0, 0)',
+              "interpolate",
+              ["linear"],
+              ["get", "density"],
+              0,
+              "rgb(65, 105, 225)",
+              3,
+              "rgb(0, 255, 127)",
+              6,
+              "rgb(255, 215, 0)",
+              8,
+              "rgb(255, 69, 0)",
+              10,
+              "rgb(139, 0, 0)",
             ],
-        'circle-opacity': 0.7,
-        'circle-blur': 0.3,
-        'circle-stroke-width': 2,
+        "circle-opacity": 0.7,
+        "circle-blur": 0.3,
+        "circle-stroke-width": 2,
         // Halo flips to ink on light basemaps so dots keep a visible edge.
-        'circle-stroke-color': isLightBasemap
+        "circle-stroke-color": isLightBasemap
           ? [
-              'interpolate',
-              ['linear'],
-              ['get', 'density'],
-              0, 'rgba(15, 18, 26, 0.45)',
-              10, 'rgba(15, 18, 26, 0.75)',
+              "interpolate",
+              ["linear"],
+              ["get", "density"],
+              0,
+              "rgba(15, 18, 26, 0.45)",
+              10,
+              "rgba(15, 18, 26, 0.75)",
             ]
           : [
-              'interpolate',
-              ['linear'],
-              ['get', 'density'],
-              0, 'rgba(255, 255, 255, 0.6)',
-              10, 'rgba(255, 255, 255, 0.9)',
+              "interpolate",
+              ["linear"],
+              ["get", "density"],
+              0,
+              "rgba(255, 255, 255, 0.6)",
+              10,
+              "rgba(255, 255, 255, 0.9)",
             ],
-        'circle-stroke-opacity': 0.8,
-        'circle-opacity-transition': { duration: 1000, delay: 100 },
+        "circle-stroke-opacity": 0.8,
+        "circle-opacity-transition": { duration: 1000, delay: 100 },
       } as any,
     });
 
     mapRef.current.addLayer({
       id: `${layerId}-glow`,
-      type: 'circle',
+      type: "circle",
       source: sourceId,
       minzoom: 13,
       paint: {
-        'circle-radius': [
-          'interpolate',
-          ['exponential', 1.5],
-          ['get', 'density'],
-          0, 10,
-          5, 20,
-          10, 40,
+        "circle-radius": [
+          "interpolate",
+          ["exponential", 1.5],
+          ["get", "density"],
+          0,
+          10,
+          5,
+          20,
+          10,
+          40,
         ],
-        'circle-color': isLightBasemap
+        "circle-color": isLightBasemap
           ? [
-              'interpolate',
-              ['linear'],
-              ['get', 'density'],
-              0, 'rgba(37, 62, 158, 0.35)',
-              5, 'rgba(214, 152, 0, 0.45)',
-              10, 'rgba(190, 0, 10, 0.5)',
+              "interpolate",
+              ["linear"],
+              ["get", "density"],
+              0,
+              "rgba(37, 62, 158, 0.35)",
+              5,
+              "rgba(214, 152, 0, 0.45)",
+              10,
+              "rgba(190, 0, 10, 0.5)",
             ]
           : [
-              'interpolate',
-              ['linear'],
-              ['get', 'density'],
-              0, 'rgba(65, 105, 225, 0.3)',
-              5, 'rgba(255, 215, 0, 0.4)',
-              10, 'rgba(255, 0, 0, 0.5)',
+              "interpolate",
+              ["linear"],
+              ["get", "density"],
+              0,
+              "rgba(65, 105, 225, 0.3)",
+              5,
+              "rgba(255, 215, 0, 0.4)",
+              10,
+              "rgba(255, 0, 0, 0.5)",
             ],
-        'circle-opacity': isLightBasemap ? 0.38 : 0.3,
-        'circle-blur': 1,
-        'circle-opacity-transition': { duration: 1000, delay: 200 },
+        "circle-opacity": isLightBasemap ? 0.38 : 0.3,
+        "circle-blur": 1,
+        "circle-opacity-transition": { duration: 1000, delay: 200 },
       } as any,
     });
 
     devLog(
-      'Density heatmap layer added with',
+      "Density heatmap layer added with",
       activeData.stats.grid_cells,
-      'points',
-      timelapseMode ? `(hour ${timelapse.currentHour})` : ''
+      "points",
+      timelapseMode ? `(hour ${timelapse.currentHour})` : "",
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapLoaded, densityData, showDensityLayer, timelapseMode, timelapse.currentData, timelapse.currentHour, isMobile, isLightBasemap]);
+  }, [
+    mapLoaded,
+    densityData,
+    showDensityLayer,
+    timelapseMode,
+    timelapse.currentData,
+    timelapse.currentHour,
+    isMobile,
+    isLightBasemap,
+  ]);
 };

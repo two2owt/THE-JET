@@ -15,7 +15,8 @@ import listActivePromotionsTool from "./tools/list-active-promotions";
 import whoamiTool from "./tools/whoami";
 
 // Issuer must be the direct Supabase host, built from the project ref literal.
-const projectRef = import.meta.env.VITE_SUPABASE_PROJECT_ID ?? "project-ref-unset";
+const projectRef =
+  import.meta.env.VITE_SUPABASE_PROJECT_ID ?? "project-ref-unset";
 
 const issuerUrl = `https://${projectRef}.supabase.co/auth/v1`;
 
@@ -36,9 +37,16 @@ const tools = [
   getTierBenefitsTool,
   listActivePromotionsTool,
   whoamiTool,
-].map((tool) => withLogging(tool as never)) as unknown as Parameters<typeof defineMcp>[0]["tools"];
+].map((tool) => withLogging(tool as never)) as unknown as Parameters<
+  typeof defineMcp
+>[0]["tools"];
 
-logServerBoot({ name: "jet-around", version: "0.1.0", issuer: issuerUrl, toolCount: tools.length });
+logServerBoot({
+  name: "jet-around",
+  version: "0.1.0",
+  issuer: issuerUrl,
+  toolCount: tools.length,
+});
 
 export default defineMcp({
   name: "jet-around",

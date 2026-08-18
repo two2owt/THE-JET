@@ -66,7 +66,9 @@ export const useSubscription = () => {
       setLoading(true);
       setError(null);
 
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) {
         setSubscription({
           subscribed: false,
@@ -77,10 +79,11 @@ export const useSubscription = () => {
         return;
       }
 
-      const { data, error: fnError } = await supabase.functions.invoke("check-subscription");
-      
+      const { data, error: fnError } =
+        await supabase.functions.invoke("check-subscription");
+
       if (fnError) throw fnError;
-      
+
       setSubscription({
         subscribed: data.subscribed,
         tier: data.tier as SubscriptionTier,
@@ -89,7 +92,9 @@ export const useSubscription = () => {
       });
     } catch (err) {
       console.error("Error checking subscription:", err);
-      setError(err instanceof Error ? err.message : "Failed to check subscription");
+      setError(
+        err instanceof Error ? err.message : "Failed to check subscription",
+      );
     } finally {
       setLoading(false);
     }
@@ -97,9 +102,12 @@ export const useSubscription = () => {
 
   const createCheckout = async (priceId: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId },
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "create-checkout",
+        {
+          body: { priceId },
+        },
+      );
 
       if (error) throw error;
       if (data?.url) {
@@ -113,7 +121,8 @@ export const useSubscription = () => {
 
   const openCustomerPortal = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke("customer-portal");
+      const { data, error } =
+        await supabase.functions.invoke("customer-portal");
 
       if (error) throw error;
       if (data?.url) {
@@ -132,7 +141,9 @@ export const useSubscription = () => {
     const interval = setInterval(checkSubscription, 60000);
 
     // Listen for auth changes
-    const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange(() => {
+    const {
+      data: { subscription: authSub },
+    } = supabase.auth.onAuthStateChange(() => {
       checkSubscription();
     });
 

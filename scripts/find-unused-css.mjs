@@ -29,10 +29,17 @@ import { join, extname } from "node:path";
 const ROOT = process.cwd();
 const CSS_FILE = join(ROOT, "src/index.css");
 const SEARCH_ROOTS = ["src", "index.html", "public"].filter((p) =>
-  existsSync(join(ROOT, p))
+  existsSync(join(ROOT, p)),
 );
 const SEARCH_EXTS = new Set([
-  ".ts", ".tsx", ".js", ".jsx", ".html", ".css", ".mdx", ".md",
+  ".ts",
+  ".tsx",
+  ".js",
+  ".jsx",
+  ".html",
+  ".css",
+  ".mdx",
+  ".md",
 ]);
 
 const args = new Set(process.argv.slice(2));
@@ -54,12 +61,37 @@ const CLASS_RE = /\.([a-zA-Z][a-zA-Z0-9_-]*)/g;
 // Common Tailwind / shadcn patterns to ignore — they're dynamically composed
 // or generated, so a static grep is unreliable.
 const TAILWIND_PREFIXES = [
-  "bg-", "text-", "border-", "ring-", "shadow-", "from-", "to-", "via-",
-  "hover:", "focus:", "active:", "dark:", "sm:", "md:", "lg:", "xl:", "2xl:",
-  "data-", "group", "peer", "rtl-", "ltr-", "before:", "after:",
+  "bg-",
+  "text-",
+  "border-",
+  "ring-",
+  "shadow-",
+  "from-",
+  "to-",
+  "via-",
+  "hover:",
+  "focus:",
+  "active:",
+  "dark:",
+  "sm:",
+  "md:",
+  "lg:",
+  "xl:",
+  "2xl:",
+  "data-",
+  "group",
+  "peer",
+  "rtl-",
+  "ltr-",
+  "before:",
+  "after:",
 ];
 const TAILWIND_EXACT = new Set([
-  "container", "sr-only", "not-sr-only", "antialiased", "subpixel-antialiased",
+  "container",
+  "sr-only",
+  "not-sr-only",
+  "antialiased",
+  "subpixel-antialiased",
 ]);
 
 /**
@@ -68,10 +100,10 @@ const TAILWIND_EXACT = new Set([
  * Add patterns here to suppress false positives.
  */
 const RUNTIME_APPLIED_PREFIXES = [
-  "mapboxgl-",        // Mapbox GL JS controls
-  "maplibregl-",      // MapLibre fallback
-  "radix-",           // Radix UI internals
-  "leaflet-",         // Leaflet
+  "mapboxgl-", // Mapbox GL JS controls
+  "maplibregl-", // MapLibre fallback
+  "radix-", // Radix UI internals
+  "leaflet-", // Leaflet
 ];
 function isRuntimeApplied(cls) {
   return RUNTIME_APPLIED_PREFIXES.some((p) => cls.startsWith(p));
@@ -155,7 +187,9 @@ for (const cls of allClasses) {
   //   plain HTML class="..."
   // A simple substring match would over-report (`pulse` matches `animate-pulse`),
   // so we require a non-class-name boundary on either side.
-  const re = new RegExp(`(^|[^a-zA-Z0-9_-])${escapeRegex(cls)}([^a-zA-Z0-9_-]|$)`);
+  const re = new RegExp(
+    `(^|[^a-zA-Z0-9_-])${escapeRegex(cls)}([^a-zA-Z0-9_-]|$)`,
+  );
   if (!re.test(corpus)) unusedClasses.push(cls);
 }
 
@@ -165,7 +199,9 @@ for (const kf of allKeyframes) {
   // OR via tailwind config (`animation: { foo: 'name 1s ...' }`).
   // Always self-references in `@keyframes <name>` count as definitions only —
   // we already exclude the css file.
-  const re = new RegExp(`(^|[^a-zA-Z0-9_-])${escapeRegex(kf)}([^a-zA-Z0-9_-]|$)`);
+  const re = new RegExp(
+    `(^|[^a-zA-Z0-9_-])${escapeRegex(kf)}([^a-zA-Z0-9_-]|$)`,
+  );
   if (!re.test(corpus)) unusedKeyframes.push(kf);
 }
 

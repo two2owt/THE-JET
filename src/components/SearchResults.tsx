@@ -1,4 +1,15 @@
-import { MapPin, Tag, X, Search as SearchIcon, Store, Sparkles, Compass, LayoutGrid, Star, ImageIcon } from "lucide-react";
+import {
+  MapPin,
+  Tag,
+  X,
+  Search as SearchIcon,
+  Store,
+  Sparkles,
+  Compass,
+  LayoutGrid,
+  Star,
+  ImageIcon,
+} from "lucide-react";
 import { createPortal } from "react-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@/lib/router-compat";
@@ -9,7 +20,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { useLockMapWhileInteracting } from "@/lib/mapInteractionLock";
 import { activityTier } from "@/lib/activity-palette";
 
-type Deal = Database['public']['Tables']['deals']['Row'];
+type Deal = Database["public"]["Tables"]["deals"]["Row"];
 
 interface SearchResultsProps {
   query: string;
@@ -47,7 +58,10 @@ const ResultThumb = ({ src, alt }: { src?: string | null; alt: string }) => {
           onError={() => setFailed(true)}
         />
       ) : (
-        <ImageIcon className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
+        <ImageIcon
+          className="w-5 h-5 text-muted-foreground"
+          aria-hidden="true"
+        />
       )}
     </div>
   );
@@ -72,22 +86,22 @@ export const SearchResults = ({
 
   useEffect(() => {
     if (!isVisible) return;
-    const recalc = () => setPosVersion(v => v + 1);
+    const recalc = () => setPosVersion((v) => v + 1);
 
-    window.addEventListener('resize', recalc);
-    window.addEventListener('orientationchange', recalc);
+    window.addEventListener("resize", recalc);
+    window.addEventListener("orientationchange", recalc);
     // Custom event dispatched by other floating UI (e.g. city dropdown) when it opens/closes
-    window.addEventListener('jet:floating-ui-toggle', recalc);
+    window.addEventListener("jet:floating-ui-toggle", recalc);
 
     // VisualViewport handles iOS keyboard/zoom changes that affect safe-area insets
     const vv = window.visualViewport;
-    vv?.addEventListener('resize', recalc);
+    vv?.addEventListener("resize", recalc);
 
     return () => {
-      window.removeEventListener('resize', recalc);
-      window.removeEventListener('orientationchange', recalc);
-      window.removeEventListener('jet:floating-ui-toggle', recalc);
-      vv?.removeEventListener('resize', recalc);
+      window.removeEventListener("resize", recalc);
+      window.removeEventListener("orientationchange", recalc);
+      window.removeEventListener("jet:floating-ui-toggle", recalc);
+      vv?.removeEventListener("resize", recalc);
     };
   }, [isVisible]);
 
@@ -105,18 +119,19 @@ export const SearchResults = ({
       onClose();
     };
     // Use pointerdown so we beat focus/blur races on touch + mouse.
-    document.addEventListener('pointerdown', handlePointerDown, true);
-    return () => document.removeEventListener('pointerdown', handlePointerDown, true);
+    document.addEventListener("pointerdown", handlePointerDown, true);
+    return () =>
+      document.removeEventListener("pointerdown", handlePointerDown, true);
   }, [isVisible, onClose]);
 
   // Escape dismisses the overlay
   useEffect(() => {
     if (!isVisible) return;
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === "Escape") onClose();
     };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
   }, [isVisible, onClose]);
 
   const q = query.trim().toLowerCase();
@@ -157,7 +172,10 @@ export const SearchResults = ({
       .sort((a, b) => b.score - a.score);
 
     // --- Areas (distinct neighborhoods from venues that match the query) ---
-    const areaMap = new Map<string, { name: string; count: number; score: number }>();
+    const areaMap = new Map<
+      string,
+      { name: string; count: number; score: number }
+    >();
     for (const v of venues) {
       const score = matchScore(v.neighborhood, q);
       if (!score) continue;
@@ -181,7 +199,8 @@ export const SearchResults = ({
       const key = v.category.toLowerCase();
       const existing = catMap.get(key);
       if (existing) existing.count += 1;
-      else catMap.set(key, { name: v.category, count: 1, score, source: "venue" });
+      else
+        catMap.set(key, { name: v.category, count: 1, score, source: "venue" });
     }
     for (const d of deals) {
       const score = matchScore(d.deal_type, q);
@@ -189,7 +208,8 @@ export const SearchResults = ({
       const key = d.deal_type.toLowerCase();
       const existing = catMap.get(key);
       if (existing) existing.count += 1;
-      else catMap.set(key, { name: d.deal_type, count: 1, score, source: "deal" });
+      else
+        catMap.set(key, { name: d.deal_type, count: 1, score, source: "deal" });
     }
     const categories = Array.from(catMap.values()).sort(
       (a, b) => b.score - a.score || b.count - a.count,
@@ -208,20 +228,33 @@ export const SearchResults = ({
             (v) => v.name.toLowerCase() === (d.venue_name ?? "").toLowerCase(),
           );
       if (venueMatch && !jetcardsMap.has(venueMatch.id)) {
-        jetcardsMap.set(venueMatch.id, { venue: venueMatch, score: rd.score * 0.8 });
+        jetcardsMap.set(venueMatch.id, {
+          venue: venueMatch,
+          score: rd.score * 0.8,
+        });
       }
     }
     const jetcards = Array.from(jetcardsMap.values())
       .sort((a, b) => b.score - a.score || b.venue.activity - a.venue.activity)
       .slice(0, MAX_PER_SECTION);
 
-    return { venues: rankedVenues, deals: rankedDeals, areas, categories, jetcards };
+    return {
+      venues: rankedVenues,
+      deals: rankedDeals,
+      areas,
+      categories,
+      jetcards,
+    };
   }, [q, venues, deals]);
 
   if (!isVisible || !q) return null;
 
-  const filteredVenues = groups.venues.slice(0, MAX_PER_SECTION).map((r) => r.venue);
-  const filteredDeals = groups.deals.slice(0, MAX_PER_SECTION).map((r) => r.deal);
+  const filteredVenues = groups.venues
+    .slice(0, MAX_PER_SECTION)
+    .map((r) => r.venue);
+  const filteredDeals = groups.deals
+    .slice(0, MAX_PER_SECTION)
+    .map((r) => r.deal);
   const filteredAreas = groups.areas.slice(0, MAX_PER_SECTION);
   const filteredCategories = groups.categories.slice(0, MAX_PER_SECTION);
   const filteredJetcards = (groups.jetcards ?? []).map((r) => r.venue);
@@ -261,7 +294,9 @@ export const SearchResults = ({
   const venueImageFor = (deal: Deal): string | undefined => {
     const match = deal.venue_id
       ? venues.find((v) => v.id === deal.venue_id)
-      : venues.find((v) => v.name.toLowerCase() === (deal.venue_name ?? "").toLowerCase());
+      : venues.find(
+          (v) => v.name.toLowerCase() === (deal.venue_name ?? "").toLowerCase(),
+        );
     return match?.imageUrl;
   };
 
@@ -284,7 +319,7 @@ export const SearchResults = ({
     onClose();
   };
 
-  if (typeof document === 'undefined') return null;
+  if (typeof document === "undefined") return null;
 
   return createPortal(
     <>
@@ -298,11 +333,11 @@ export const SearchResults = ({
         aria-label="Search results"
         className="fixed left-2 right-2 sm:left-auto sm:right-4 z-[9999] animate-fade-in sm:w-[420px] sm:max-w-[min(420px,calc(100vw-2rem))]"
         style={{
-          top: 'calc(var(--header-height, 56px) + env(safe-area-inset-top, 0px) + 8px)',
+          top: "calc(var(--header-height, 56px) + env(safe-area-inset-top, 0px) + 8px)",
           // Fixed max height: the overlay never grows past ~half the viewport,
           // so the map stays visible and fully interactive around it.
           maxHeight:
-            'min(calc(100dvh - var(--header-height, 56px) - var(--bottom-nav-total-height, 80px) - env(safe-area-inset-top, 0px) - 24px), 52dvh, 480px)',
+            "min(calc(100dvh - var(--header-height, 56px) - var(--bottom-nav-total-height, 80px) - env(safe-area-inset-top, 0px) - 24px), 52dvh, 480px)",
         }}
       >
         <Card className="flex flex-col h-full max-h-full overflow-hidden shadow-glow w-full bg-card/95 backdrop-blur-xl border-primary/20 rounded-2xl">
@@ -313,11 +348,14 @@ export const SearchResults = ({
                 <SearchIcon className="w-3.5 h-3.5 text-primary" />
               </div>
               <div className="min-w-0">
-                <h3 className="font-bold text-sm text-foreground truncate" style={{ letterSpacing: '-0.01em' }}>
+                <h3
+                  className="font-bold text-sm text-foreground truncate"
+                  style={{ letterSpacing: "-0.01em" }}
+                >
                   “{query}”
                 </h3>
                 <p className="text-[11px] font-medium text-muted-foreground tabular-nums">
-                  {totalCount} {totalCount === 1 ? 'result' : 'results'}
+                  {totalCount} {totalCount === 1 ? "result" : "results"}
                 </p>
               </div>
             </div>
@@ -338,7 +376,9 @@ export const SearchResults = ({
                 <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3">
                   <SearchIcon className="w-5 h-5 text-muted-foreground" />
                 </div>
-                <p className="text-sm font-semibold text-foreground">No results found</p>
+                <p className="text-sm font-semibold text-foreground">
+                  No results found
+                </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Try a venue, area, category, or deal
                 </p>
@@ -351,7 +391,9 @@ export const SearchResults = ({
                 <h4 className="flex items-center gap-1.5 heading-luxe-eyebrow px-1">
                   <Store className="w-3 h-3" />
                   JetCards
-                  <span className="ml-auto text-muted-foreground tabular-nums">{filteredJetcards.length}</span>
+                  <span className="ml-auto text-muted-foreground tabular-nums">
+                    {filteredJetcards.length}
+                  </span>
                 </h4>
                 <div className="space-y-1">
                   {filteredJetcards.map((venue) => (
@@ -364,21 +406,30 @@ export const SearchResults = ({
                       className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-hidden focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <ResultThumb src={venue.imageUrl} alt={`${venue.name} photo`} />
+                        <ResultThumb
+                          src={venue.imageUrl}
+                          alt={`${venue.name} photo`}
+                        />
                         <div className="flex-1 min-w-0">
                           <h5 className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors">
                             {venue.name}
                           </h5>
                           <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
-                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-semibold flex-shrink-0">
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] px-1.5 py-0 h-4 font-semibold flex-shrink-0"
+                            >
                               {venue.category}
                             </Badge>
                             <span className="text-[11px] text-muted-foreground flex items-center gap-0.5 min-w-0 truncate">
                               <MapPin className="w-3 h-3 flex-shrink-0" />
-                              <span className="truncate">{venue.neighborhood}</span>
+                              <span className="truncate">
+                                {venue.neighborhood}
+                              </span>
                             </span>
                           </div>
-                          {(venue.googleRating != null || venue.googleTotalRatings != null) && (
+                          {(venue.googleRating != null ||
+                            venue.googleTotalRatings != null) && (
                             <div className="flex items-center gap-1 mt-1">
                               {venue.googleRating != null && (
                                 <span className="flex items-center gap-0.5 text-[11px] font-medium text-foreground">
@@ -396,7 +447,9 @@ export const SearchResults = ({
                         </div>
                         <div
                           className="w-2 h-2 rounded-full flex-shrink-0"
-                          style={{ background: activityTier(venue.activity).dark }}
+                          style={{
+                            background: activityTier(venue.activity).dark,
+                          }}
                           aria-label={`Activity ${venue.activity} — ${activityTier(venue.activity).label}`}
                         />
                       </div>
@@ -412,7 +465,9 @@ export const SearchResults = ({
                 <h4 className="flex items-center gap-1.5 heading-luxe-eyebrow px-1">
                   <Compass className="w-3 h-3" />
                   Areas
-                  <span className="ml-auto text-muted-foreground tabular-nums">{filteredAreas.length}</span>
+                  <span className="ml-auto text-muted-foreground tabular-nums">
+                    {filteredAreas.length}
+                  </span>
                 </h4>
                 <div className="flex flex-wrap gap-1.5">
                   {filteredAreas.map((area) => (
@@ -422,7 +477,9 @@ export const SearchResults = ({
                       className="group inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-secondary/60 hover:bg-primary/10 hover:text-primary border border-border/60 hover:border-primary/40 text-xs font-semibold text-foreground transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95"
                     >
                       <MapPin className="w-3 h-3" />
-                      <span className="truncate max-w-[140px]">{area.name}</span>
+                      <span className="truncate max-w-[140px]">
+                        {area.name}
+                      </span>
                       <span className="text-[10px] font-medium text-muted-foreground tabular-nums group-hover:text-primary/80">
                         {area.count}
                       </span>
@@ -438,7 +495,9 @@ export const SearchResults = ({
                 <h4 className="flex items-center gap-1.5 heading-luxe-eyebrow px-1">
                   <LayoutGrid className="w-3 h-3" />
                   Categories
-                  <span className="ml-auto text-muted-foreground tabular-nums">{filteredCategories.length}</span>
+                  <span className="ml-auto text-muted-foreground tabular-nums">
+                    {filteredCategories.length}
+                  </span>
                 </h4>
                 <div className="flex flex-wrap gap-1.5">
                   {filteredCategories.map((cat) => (
@@ -464,7 +523,9 @@ export const SearchResults = ({
                 <h4 className="flex items-center gap-1.5 heading-luxe-eyebrow px-1">
                   <Store className="w-3 h-3" />
                   Venues
-                  <span className="ml-auto text-muted-foreground tabular-nums">{filteredVenues.length}</span>
+                  <span className="ml-auto text-muted-foreground tabular-nums">
+                    {filteredVenues.length}
+                  </span>
                 </h4>
                 <div className="space-y-1">
                   {filteredVenues.map((venue) => (
@@ -477,24 +538,34 @@ export const SearchResults = ({
                       className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-hidden focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <ResultThumb src={venue.imageUrl} alt={`${venue.name} photo`} />
+                        <ResultThumb
+                          src={venue.imageUrl}
+                          alt={`${venue.name} photo`}
+                        />
                         <div className="flex-1 min-w-0">
                           <h5 className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors">
                             {venue.name}
                           </h5>
                           <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
-                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-semibold flex-shrink-0">
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] px-1.5 py-0 h-4 font-semibold flex-shrink-0"
+                            >
                               {venue.category}
                             </Badge>
                             <span className="text-[11px] text-muted-foreground flex items-center gap-0.5 min-w-0 truncate">
                               <MapPin className="w-3 h-3 flex-shrink-0" />
-                              <span className="truncate">{venue.neighborhood}</span>
+                              <span className="truncate">
+                                {venue.neighborhood}
+                              </span>
                             </span>
                           </div>
                         </div>
                         <div
                           className="w-2 h-2 rounded-full flex-shrink-0"
-                          style={{ background: activityTier(venue.activity).dark }}
+                          style={{
+                            background: activityTier(venue.activity).dark,
+                          }}
                           aria-label={`Activity ${venue.activity} — ${activityTier(venue.activity).label}`}
                         />
                       </div>
@@ -510,7 +581,9 @@ export const SearchResults = ({
                 <h4 className="flex items-center gap-1.5 heading-luxe-eyebrow px-1">
                   <Sparkles className="w-3 h-3" />
                   Deals
-                  <span className="ml-auto text-muted-foreground tabular-nums">{filteredDeals.length}</span>
+                  <span className="ml-auto text-muted-foreground tabular-nums">
+                    {filteredDeals.length}
+                  </span>
                 </h4>
                 <div className="space-y-1">
                   {filteredDeals.map((deal) => (
@@ -532,13 +605,18 @@ export const SearchResults = ({
                             {deal.description}
                           </p>
                           <div className="flex items-center gap-1.5 mt-1.5 min-w-0">
-                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-semibold flex-shrink-0">
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] px-1.5 py-0 h-4 font-semibold flex-shrink-0"
+                            >
                               <Tag className="w-2.5 h-2.5 mr-0.5" />
                               {deal.deal_type}
                             </Badge>
                             <span className="text-[11px] text-muted-foreground flex items-center gap-0.5 min-w-0 truncate">
                               <MapPin className="w-3 h-3 flex-shrink-0" />
-                              <span className="truncate">{deal.venue_name}</span>
+                              <span className="truncate">
+                                {deal.venue_name}
+                              </span>
                             </span>
                           </div>
                         </div>
@@ -552,6 +630,6 @@ export const SearchResults = ({
         </Card>
       </div>
     </>,
-    document.body
+    document.body,
   );
 };

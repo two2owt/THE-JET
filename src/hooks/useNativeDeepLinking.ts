@@ -32,7 +32,8 @@ export function useNativeDeepLinking() {
         const handle = await App.addListener("appUrlOpen", (event) => {
           try {
             const target = new URL(event.url);
-            const path = target.pathname && target.pathname !== "" ? target.pathname : "/";
+            const path =
+              target.pathname && target.pathname !== "" ? target.pathname : "/";
             navigate(`${path}${target.search}${target.hash}`);
           } catch {
             // Ignore malformed URLs.

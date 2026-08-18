@@ -36,7 +36,10 @@ export function ProfileHeader({
       <div className="profile-identity">
         <div className="profile-avatar-wrap">
           <Avatar className="ring-4 ring-background profile-avatar-shadow profile-avatar-img">
-            <AvatarImage src={avatarUrl || undefined} alt={displayName || "User avatar"} />
+            <AvatarImage
+              src={avatarUrl || undefined}
+              alt={displayName || "User avatar"}
+            />
             <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-primary to-primary-glow text-primary-foreground">
               {unclaimedName ? (
                 <User className="w-1/2 h-1/2" aria-hidden="true" />
@@ -52,7 +55,11 @@ export function ProfileHeader({
                 className="profile-avatar-camera"
                 aria-label="Upload new avatar"
               >
-                {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+                {isUploading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Camera className="w-4 h-4" />
+                )}
               </label>
               <input
                 id="avatar-upload"
@@ -67,7 +74,9 @@ export function ProfileHeader({
         </div>
 
         <div className="profile-identity-text">
-          <h1 className={`profile-name${unclaimedName ? " text-muted-foreground" : ""}`}>
+          <h1
+            className={`profile-name${unclaimedName ? " text-muted-foreground" : ""}`}
+          >
             {displayName || "User"}
           </h1>
           {unclaimedName && !isEditing && (

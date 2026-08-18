@@ -27,16 +27,23 @@ export function useOpenNowTick(intervalMs = 60_000): number {
 
     // Align first tick to the next wall-clock minute, then run every `intervalMs`.
     const now = new Date();
-    const msToNextMinute = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
-    alignId = setTimeout(() => {
-      bump();
-      intervalId = setInterval(bump, intervalMs);
-    }, Math.max(0, msToNextMinute));
+    const msToNextMinute =
+      (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
+    alignId = setTimeout(
+      () => {
+        bump();
+        intervalId = setInterval(bump, intervalMs);
+      },
+      Math.max(0, msToNextMinute),
+    );
 
     // Heal staleness when the tab returns to the foreground or window regains
     // focus (covers throttled intervals, system sleep, and clock changes).
     const onVisibility = () => {
-      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+      if (
+        typeof document !== "undefined" &&
+        document.visibilityState === "visible"
+      ) {
         bump();
       }
     };

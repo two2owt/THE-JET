@@ -1,5 +1,9 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { corsHeaders, logVersion, EDGE_FUNCTION_VERSION } from "../_shared/cors.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  corsHeaders,
+  logVersion,
+  EDGE_FUNCTION_VERSION,
+} from "../_shared/cors.ts";
 import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
 import { buildCutoffLadder } from "../_shared/fallback-windows.ts";
 
@@ -17,31 +21,64 @@ const K_ANONYMITY_MIN_USERS = 3;
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
 const RATE_LIMIT_MAX_REQUESTS = 15;
 const SUSPICIOUS_THRESHOLD = 12; // Log as suspicious when 80% of limit reached
-const rateLimitMap = new Map<string, { count: number; resetTime: number; violations: number }>();
+const rateLimitMap = new Map<
+  string,
+  { count: number; resetTime: number; violations: number }
+>();
 
 function getRateLimitKey(req: Request): string {
-  return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
-         req.headers.get('x-real-ip') || 
-         'unknown';
+  return (
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    req.headers.get("x-real-ip") ||
+    "unknown"
+  );
 }
 
-function checkRateLimit(ip: string): { allowed: boolean; remaining: number; resetIn: number; count: number; violations: number } {
+function checkRateLimit(ip: string): {
+  allowed: boolean;
+  remaining: number;
+  resetIn: number;
+  count: number;
+  violations: number;
+} {
   const now = Date.now();
   const entry = rateLimitMap.get(ip);
-  
+
   if (!entry || now >= entry.resetTime) {
     const violations = entry?.violations || 0;
-    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS, violations });
-    return { allowed: true, remaining: RATE_LIMIT_MAX_REQUESTS - 1, resetIn: RATE_LIMIT_WINDOW_MS, count: 1, violations };
+    rateLimitMap.set(ip, {
+      count: 1,
+      resetTime: now + RATE_LIMIT_WINDOW_MS,
+      violations,
+    });
+    return {
+      allowed: true,
+      remaining: RATE_LIMIT_MAX_REQUESTS - 1,
+      resetIn: RATE_LIMIT_WINDOW_MS,
+      count: 1,
+      violations,
+    };
   }
-  
+
   if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
     entry.violations++;
-    return { allowed: false, remaining: 0, resetIn: entry.resetTime - now, count: entry.count, violations: entry.violations };
+    return {
+      allowed: false,
+      remaining: 0,
+      resetIn: entry.resetTime - now,
+      count: entry.count,
+      violations: entry.violations,
+    };
   }
-  
+
   entry.count++;
-  return { allowed: true, remaining: RATE_LIMIT_MAX_REQUESTS - entry.count, resetIn: entry.resetTime - now, count: entry.count, violations: entry.violations };
+  return {
+    allowed: true,
+    remaining: RATE_LIMIT_MAX_REQUESTS - entry.count,
+    resetIn: entry.resetTime - now,
+    count: entry.count,
+    violations: entry.violations,
+  };
 }
 
 // Security audit logging
@@ -50,27 +87,27 @@ async function logSecurityEvent(
   clientIp: string,
   userAgent: string | null,
   requestCount: number,
-  details: Record<string, unknown>
+  details: Record<string, unknown>,
 ) {
   try {
     const serviceClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
-    
-    await serviceClient.from('security_audit_logs').insert({
+
+    await serviceClient.from("security_audit_logs").insert({
       event_type: eventType,
-      endpoint: 'get-movement-paths',
+      endpoint: "get-movement-paths",
       client_ip: clientIp,
       user_agent: userAgent,
       request_count: requestCount,
       time_window_seconds: Math.round(RATE_LIMIT_WINDOW_MS / 1000),
-      details
+      details,
     });
-    
+
     console.log(`[SECURITY AUDIT] ${eventType} logged for IP: ${clientIp}`);
   } catch (error) {
-    console.error('[SECURITY AUDIT] Failed to log event:', error);
+    console.error("[SECURITY AUDIT] Failed to log event:", error);
   }
 }
 
@@ -100,7 +137,12 @@ interface MovementPath {
 }
 
 // Calculate distance between two points in meters using Haversine formula
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+function calculateDistance(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number,
+): number {
   const R = 6371e3; // Earth's radius in meters
   const φ1 = (lat1 * Math.PI) / 180;
   const φ2 = (lat2 * Math.PI) / 180;
@@ -116,104 +158,139 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 // Snap coordinates to a grid to group nearby movements
-function snapToGrid(lat: number, lng: number, gridSize = 0.001): [number, number] {
+function snapToGrid(
+  lat: number,
+  lng: number,
+  gridSize = 0.001,
+): [number, number] {
   return [
     Math.round(lat / gridSize) * gridSize,
-    Math.round(lng / gridSize) * gridSize
+    Math.round(lng / gridSize) * gridSize,
   ];
 }
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   // Aggregated GPS data is only available to authenticated users.
   const userId = await getAuthenticatedUserId(req);
   if (!userId) {
-    return new Response(
-      JSON.stringify({ error: 'Unauthorized' }),
-      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   // Check rate limit
   const clientIp = getRateLimitKey(req);
-  const userAgent = req.headers.get('user-agent');
+  const userAgent = req.headers.get("user-agent");
   const rateLimit = checkRateLimit(clientIp);
-  
+
   const rateLimitHeaders = {
     ...corsHeaders,
-    'X-RateLimit-Limit': RATE_LIMIT_MAX_REQUESTS.toString(),
-    'X-RateLimit-Remaining': rateLimit.remaining.toString(),
-    'X-RateLimit-Reset': Math.ceil(rateLimit.resetIn / 1000).toString(),
+    "X-RateLimit-Limit": RATE_LIMIT_MAX_REQUESTS.toString(),
+    "X-RateLimit-Remaining": rateLimit.remaining.toString(),
+    "X-RateLimit-Reset": Math.ceil(rateLimit.resetIn / 1000).toString(),
   };
 
   // Log rate limit exceeded
   if (!rateLimit.allowed) {
     console.warn(`Rate limit exceeded for IP: ${clientIp}`);
-    
+
     // Log security event
-    await logSecurityEvent('rate_limit_exceeded', clientIp, userAgent, rateLimit.count, {
-      violations_count: rateLimit.violations,
-      reset_in_seconds: Math.ceil(rateLimit.resetIn / 1000)
-    });
-    
+    await logSecurityEvent(
+      "rate_limit_exceeded",
+      clientIp,
+      userAgent,
+      rateLimit.count,
+      {
+        violations_count: rateLimit.violations,
+        reset_in_seconds: Math.ceil(rateLimit.resetIn / 1000),
+      },
+    );
+
     return new Response(
-      JSON.stringify({ error: 'Too many requests. Please try again later.' }),
+      JSON.stringify({ error: "Too many requests. Please try again later." }),
       {
         status: 429,
-        headers: { ...rateLimitHeaders, 'Content-Type': 'application/json', 'Retry-After': Math.ceil(rateLimit.resetIn / 1000).toString() },
-      }
+        headers: {
+          ...rateLimitHeaders,
+          "Content-Type": "application/json",
+          "Retry-After": Math.ceil(rateLimit.resetIn / 1000).toString(),
+        },
+      },
     );
   }
-  
+
   // Log suspicious pattern (approaching rate limit)
-  if (rateLimit.count >= SUSPICIOUS_THRESHOLD && rateLimit.count === SUSPICIOUS_THRESHOLD) {
-    await logSecurityEvent('suspicious_pattern', clientIp, userAgent, rateLimit.count, {
-      pattern: 'high_request_frequency',
-      threshold_percentage: Math.round((rateLimit.count / RATE_LIMIT_MAX_REQUESTS) * 100),
-      remaining_requests: rateLimit.remaining
-    });
+  if (
+    rateLimit.count >= SUSPICIOUS_THRESHOLD &&
+    rateLimit.count === SUSPICIOUS_THRESHOLD
+  ) {
+    await logSecurityEvent(
+      "suspicious_pattern",
+      clientIp,
+      userAgent,
+      rateLimit.count,
+      {
+        pattern: "high_request_frequency",
+        threshold_percentage: Math.round(
+          (rateLimit.count / RATE_LIMIT_MAX_REQUESTS) * 100,
+        ),
+        remaining_requests: rateLimit.remaining,
+      },
+    );
   }
-  
+
   // Log repeated violators
   if (rateLimit.violations >= 3 && rateLimit.count === 1) {
-    await logSecurityEvent('repeated_violator', clientIp, userAgent, rateLimit.count, {
-      total_violations: rateLimit.violations,
-      pattern: 'persistent_abuse'
-    });
+    await logSecurityEvent(
+      "repeated_violator",
+      clientIp,
+      userAgent,
+      rateLimit.count,
+      {
+        total_violations: rateLimit.violations,
+        pattern: "persistent_abuse",
+      },
+    );
   }
 
   try {
     // Aggregated, non-PII movement data — readable by any caller (authed or anon)
     // so the flow layer stays in sync with realtime user activity for all users.
     const serviceClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
-    console.log('Fetching user location data for movement analysis (all users)...');
+    console.log(
+      "Fetching user location data for movement analysis (all users)...",
+    );
 
     // Parse query parameters for filtering
     const url = new URL(req.url);
-    const timeFilter = url.searchParams.get('time_filter') || 'all';
+    const timeFilter = url.searchParams.get("time_filter") || "all";
 
     // Identify the caller (if signed in). Their own routes are always visible
     // to them; the k-anonymity floor still hides every other user's edges.
     let callerId: string | null = null;
-    const authHeader = req.headers.get('Authorization');
-    if (authHeader?.startsWith('Bearer ')) {
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader?.startsWith("Bearer ")) {
       try {
-        const { data } = await serviceClient.auth.getUser(authHeader.replace('Bearer ', ''));
+        const { data } = await serviceClient.auth.getUser(
+          authHeader.replace("Bearer ", ""),
+        );
         callerId = data.user?.id ?? null;
       } catch (_) {
         callerId = null;
       }
     }
-    const minFrequency = parseInt(url.searchParams.get('min_frequency') || '2');
-    const timeWindowMinutesRaw = url.searchParams.get('time_window_minutes');
+    const minFrequency = parseInt(url.searchParams.get("min_frequency") || "2");
+    const timeWindowMinutesRaw = url.searchParams.get("time_window_minutes");
     let timeWindowMinutes: number | null = null;
     if (timeWindowMinutesRaw !== null) {
       const parsed = Number(timeWindowMinutesRaw);
@@ -227,141 +304,168 @@ Deno.serve(async (req) => {
     let primaryCutoff: Date | null = null;
     if (timeWindowMinutes !== null) {
       primaryCutoff = new Date(now.getTime() - timeWindowMinutes * 60_000);
-    } else if (timeFilter === 'today') {
-      primaryCutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    } else if (timeFilter === 'this_week') {
+    } else if (timeFilter === "today") {
+      primaryCutoff = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+      );
+    } else if (timeFilter === "this_week") {
       const startOfWeek = new Date(now);
       startOfWeek.setDate(now.getDate() - now.getDay());
       startOfWeek.setHours(0, 0, 0, 0);
       primaryCutoff = startOfWeek;
-    } else if (timeFilter === 'this_hour') {
-      primaryCutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours());
+    } else if (timeFilter === "this_hour") {
+      primaryCutoff = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        now.getHours(),
+      );
     }
 
     /** Computes k-anonymised movement edges for one cutoff. */
     const computePaths = async (cutoff: Date | null) => {
-    // PostgREST caps a single response at 1000 rows; page through so path
-    // frequency and the k-anonymity floor are computed on the full dataset.
-    const PAGE_SIZE = 1000;
-    const locations: Array<{ latitude: unknown; longitude: unknown; created_at: string; user_id: string | null }> = [];
-    for (let from = 0; ; from += PAGE_SIZE) {
-      let query = serviceClient
-        .from('user_locations')
-        .select('latitude, longitude, created_at, user_id')
-        .order('user_id')
-        .order('created_at')
-        .range(from, from + PAGE_SIZE - 1);
-      if (cutoff) query = query.gte('created_at', cutoff.toISOString());
+      // PostgREST caps a single response at 1000 rows; page through so path
+      // frequency and the k-anonymity floor are computed on the full dataset.
+      const PAGE_SIZE = 1000;
+      const locations: Array<{
+        latitude: unknown;
+        longitude: unknown;
+        created_at: string;
+        user_id: string | null;
+      }> = [];
+      for (let from = 0; ; from += PAGE_SIZE) {
+        let query = serviceClient
+          .from("user_locations")
+          .select("latitude, longitude, created_at, user_id")
+          .order("user_id")
+          .order("created_at")
+          .range(from, from + PAGE_SIZE - 1);
+        if (cutoff) query = query.gte("created_at", cutoff.toISOString());
 
-      const { data: page, error } = await query;
-      if (error) {
-        console.error('Error fetching locations:', error);
-        throw error;
-      }
-      if (!page?.length) break;
-      locations.push(...page);
-      if (page.length < PAGE_SIZE) break;
-    }
-
-    console.log(`Processing ${locations?.length || 0} location points from all users...`);
-
-    // Strip user_id from the returned path stats — we still group by user
-    // server-side to compute frequency, but the response only contains
-    // aggregated counts.
-    // Group locations by user and identify movements
-    const userPaths = new Map<string, LocationPoint[]>();
-    
-    for (const location of locations || []) {
-      const userId = location.user_id || 'anonymous';
-      if (!userPaths.has(userId)) {
-        userPaths.set(userId, []);
-      }
-      userPaths.get(userId)!.push({
-        latitude: parseFloat(String(location.latitude)),
-        longitude: parseFloat(String(location.longitude)),
-        created_at: location.created_at,
-        user_id: userId,
-      });
-    }
-
-    // Analyze movements between locations
-    const pathKey = (from: [number, number], to: [number, number]) => 
-      `${from[0]},${from[1]}->${to[0]},${to[1]}`;
-    
-    const movements = new Map<string, MovementPath>();
-
-    for (const [userId, userLocations] of userPaths) {
-      // Sort by timestamp
-      userLocations.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-
-      for (let i = 0; i < userLocations.length - 1; i++) {
-        const current = userLocations[i];
-        const next = userLocations[i + 1];
-
-        // Skip invalid coordinates
-        if (isNaN(current.latitude) || isNaN(current.longitude) || 
-            isNaN(next.latitude) || isNaN(next.longitude)) {
-          continue;
+        const { data: page, error } = await query;
+        if (error) {
+          console.error("Error fetching locations:", error);
+          throw error;
         }
+        if (!page?.length) break;
+        locations.push(...page);
+        if (page.length < PAGE_SIZE) break;
+      }
 
-        // Calculate distance between points
-        const distance = calculateDistance(
-          current.latitude,
-          current.longitude,
-          next.latitude,
-          next.longitude
+      console.log(
+        `Processing ${locations?.length || 0} location points from all users...`,
+      );
+
+      // Strip user_id from the returned path stats — we still group by user
+      // server-side to compute frequency, but the response only contains
+      // aggregated counts.
+      // Group locations by user and identify movements
+      const userPaths = new Map<string, LocationPoint[]>();
+
+      for (const location of locations || []) {
+        const userId = location.user_id || "anonymous";
+        if (!userPaths.has(userId)) {
+          userPaths.set(userId, []);
+        }
+        userPaths.get(userId)!.push({
+          latitude: parseFloat(String(location.latitude)),
+          longitude: parseFloat(String(location.longitude)),
+          created_at: location.created_at,
+          user_id: userId,
+        });
+      }
+
+      // Analyze movements between locations
+      const pathKey = (from: [number, number], to: [number, number]) =>
+        `${from[0]},${from[1]}->${to[0]},${to[1]}`;
+
+      const movements = new Map<string, MovementPath>();
+
+      for (const [userId, userLocations] of userPaths) {
+        // Sort by timestamp
+        userLocations.sort(
+          (a, b) =>
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
         );
 
-        // Only consider significant movements (50m to 10km - filters noise and unrealistic jumps)
-        if (distance > 50 && distance < 10000) {
-          // Snap to grid for grouping
-          const fromSnapped = snapToGrid(current.latitude, current.longitude);
-          const toSnapped = snapToGrid(next.latitude, next.longitude);
-          
-          const key = pathKey(
-            [fromSnapped[1], fromSnapped[0]], // [lng, lat] for GeoJSON
-            [toSnapped[1], toSnapped[0]]
+        for (let i = 0; i < userLocations.length - 1; i++) {
+          const current = userLocations[i];
+          const next = userLocations[i + 1];
+
+          // Skip invalid coordinates
+          if (
+            isNaN(current.latitude) ||
+            isNaN(current.longitude) ||
+            isNaN(next.latitude) ||
+            isNaN(next.longitude)
+          ) {
+            continue;
+          }
+
+          // Calculate distance between points
+          const distance = calculateDistance(
+            current.latitude,
+            current.longitude,
+            next.latitude,
+            next.longitude,
           );
 
-          if (!movements.has(key)) {
-            movements.set(key, {
-              from: [fromSnapped[1], fromSnapped[0]],
-              to: [toSnapped[1], toSnapped[0]],
-              frequency: 0,
-              users: [],
-              last_seen: undefined,
-            });
-          }
+          // Only consider significant movements (50m to 10km - filters noise and unrealistic jumps)
+          if (distance > 50 && distance < 10000) {
+            // Snap to grid for grouping
+            const fromSnapped = snapToGrid(current.latitude, current.longitude);
+            const toSnapped = snapToGrid(next.latitude, next.longitude);
 
-          const movement = movements.get(key)!;
-          movement.frequency++;
-          if (!movement.users.includes(userId)) {
-            movement.users.push(userId);
-          }
-          // Track the most recent time this route was observed.
-          if (!movement.last_seen || new Date(next.created_at) > new Date(movement.last_seen)) {
-            movement.last_seen = next.created_at;
+            const key = pathKey(
+              [fromSnapped[1], fromSnapped[0]], // [lng, lat] for GeoJSON
+              [toSnapped[1], toSnapped[0]],
+            );
+
+            if (!movements.has(key)) {
+              movements.set(key, {
+                from: [fromSnapped[1], fromSnapped[0]],
+                to: [toSnapped[1], toSnapped[0]],
+                frequency: 0,
+                users: [],
+                last_seen: undefined,
+              });
+            }
+
+            const movement = movements.get(key)!;
+            movement.frequency++;
+            if (!movement.users.includes(userId)) {
+              movement.users.push(userId);
+            }
+            // Track the most recent time this route was observed.
+            if (
+              !movement.last_seen ||
+              new Date(next.created_at) > new Date(movement.last_seen)
+            ) {
+              movement.last_seen = next.created_at;
+            }
           }
         }
       }
-    }
 
-    // Filter by minimum frequency, then apply the k-anonymity floor so edges
-    // travelled by fewer than K distinct users are never exposed.
-    const frequencyMatched = Array.from(movements.values())
-      .filter(m => m.frequency >= minFrequency);
-    const filteredMovements = frequencyMatched
-      .filter(
-        m =>
+      // Filter by minimum frequency, then apply the k-anonymity floor so edges
+      // travelled by fewer than K distinct users are never exposed.
+      const frequencyMatched = Array.from(movements.values()).filter(
+        (m) => m.frequency >= minFrequency,
+      );
+      const filteredMovements = frequencyMatched.filter(
+        (m) =>
           m.users.length >= K_ANONYMITY_MIN_USERS ||
           (callerId !== null && m.users.includes(callerId)),
       );
-    const suppressedPaths = frequencyMatched.length - filteredMovements.length;
+      const suppressedPaths =
+        frequencyMatched.length - filteredMovements.length;
 
-    console.log(
-      `Found ${filteredMovements.length} movement paths with frequency >= ${minFrequency} ` +
-      `(${suppressedPaths} suppressed by k-anonymity floor of ${K_ANONYMITY_MIN_USERS})`
-    );
+      console.log(
+        `Found ${filteredMovements.length} movement paths with frequency >= ${minFrequency} ` +
+          `(${suppressedPaths} suppressed by k-anonymity floor of ${K_ANONYMITY_MIN_USERS})`,
+      );
 
       return { filteredMovements, suppressedPaths };
     };
@@ -371,76 +475,85 @@ Deno.serve(async (req) => {
     // going blank. Steps are configurable via the FALLBACK_WINDOW_MINUTES
     // secret (default 24h → 7d → 30d → all time).
     const minutesSince = (d: Date | null) =>
-      d === null ? Number.POSITIVE_INFINITY : Math.round((now.getTime() - d.getTime()) / 60_000);
+      d === null
+        ? Number.POSITIVE_INFINITY
+        : Math.round((now.getTime() - d.getTime()) / 60_000);
     const ladder: (Date | null)[] = buildCutoffLadder(now, primaryCutoff);
 
     let pathResult = await computePaths(ladder[0]);
     let usedCutoff = ladder[0];
     let isFallback = false;
-    for (let i = 1; i < ladder.length && pathResult.filteredMovements.length === 0; i++) {
+    for (
+      let i = 1;
+      i < ladder.length && pathResult.filteredMovements.length === 0;
+      i++
+    ) {
       pathResult = await computePaths(ladder[i]);
       usedCutoff = ladder[i];
       isFallback = pathResult.filteredMovements.length > 0;
     }
     const { filteredMovements, suppressedPaths } = pathResult;
     if (isFallback) {
-      console.log(`Flow-path fallback engaged — widened window to ${minutesSince(usedCutoff)} min`);
+      console.log(
+        `Flow-path fallback engaged — widened window to ${minutesSince(usedCutoff)} min`,
+      );
     }
 
     // Convert to GeoJSON format
-    const features = filteredMovements.map(movement => ({
-      type: 'Feature',
+    const features = filteredMovements.map((movement) => ({
+      type: "Feature",
       geometry: {
-        type: 'LineString',
-        coordinates: [movement.from, movement.to]
+        type: "LineString",
+        coordinates: [movement.from, movement.to],
       },
       properties: {
         frequency: movement.frequency,
         unique_users: movement.users.length,
         last_seen: movement.last_seen ?? null,
-        weight: Math.min(movement.frequency / 2, 10) // Normalize weight for visualization
-      }
+        weight: Math.min(movement.frequency / 2, 10), // Normalize weight for visualization
+      },
     }));
 
     const geojson = {
-      type: 'FeatureCollection',
-      features
+      type: "FeatureCollection",
+      features,
     };
 
     // Calculate statistics
     const stats = {
       total_paths: filteredMovements.length,
-      total_movements: filteredMovements.reduce((sum, m) => sum + m.frequency, 0),
-      unique_users: new Set(filteredMovements.flatMap(m => m.users)).size,
-      max_frequency: Math.max(...filteredMovements.map(m => m.frequency), 0),
-      avg_frequency: filteredMovements.length > 0 
-        ? filteredMovements.reduce((sum, m) => sum + m.frequency, 0) / filteredMovements.length 
-        : 0,
+      total_movements: filteredMovements.reduce(
+        (sum, m) => sum + m.frequency,
+        0,
+      ),
+      unique_users: new Set(filteredMovements.flatMap((m) => m.users)).size,
+      max_frequency: Math.max(...filteredMovements.map((m) => m.frequency), 0),
+      avg_frequency:
+        filteredMovements.length > 0
+          ? filteredMovements.reduce((sum, m) => sum + m.frequency, 0) /
+            filteredMovements.length
+          : 0,
       suppressed_paths: suppressedPaths,
       k_anonymity_min_users: K_ANONYMITY_MIN_USERS,
       is_fallback: isFallback,
       fallback_window_minutes: isFallback
-        ? (Number.isFinite(minutesSince(usedCutoff)) ? minutesSince(usedCutoff) : null)
+        ? Number.isFinite(minutesSince(usedCutoff))
+          ? minutesSince(usedCutoff)
+          : null
         : null,
     };
 
-    console.log('Movement path statistics:', stats);
+    console.log("Movement path statistics:", stats);
 
-    return new Response(
-      JSON.stringify({ geojson, stats }),
-      {
-        headers: { ...rateLimitHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
-    );
+    return new Response(JSON.stringify({ geojson, stats }), {
+      headers: { ...rateLimitHeaders, "Content-Type": "application/json" },
+      status: 200,
+    });
   } catch (error) {
-    console.error('Error in get-movement-paths function:', error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      {
-        headers: { ...rateLimitHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      }
-    );
+    console.error("Error in get-movement-paths function:", error);
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      headers: { ...rateLimitHeaders, "Content-Type": "application/json" },
+      status: 500,
+    });
   }
 });

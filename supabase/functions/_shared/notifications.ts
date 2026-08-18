@@ -1,6 +1,7 @@
 /** Shared helpers for the unified notification bus. */
 
-export type NotificationCategory = "deals" | "favorites" | "social" | "system" | "marketing";
+export type NotificationCategory =
+  "deals" | "favorites" | "social" | "system" | "marketing";
 
 export interface UserNotificationSettings {
   user_id: string;
@@ -20,7 +21,10 @@ export function safeEqual(a: string, b: string): boolean {
 }
 
 /** HMAC-SHA256 hex digest. */
-export async function hmacHex(secret: string, payload: string): Promise<string> {
+export async function hmacHex(
+  secret: string,
+  payload: string,
+): Promise<string> {
   const key = await crypto.subtle.importKey(
     "raw",
     new TextEncoder().encode(secret),
@@ -28,7 +32,11 @@ export async function hmacHex(secret: string, payload: string): Promise<string> 
     false,
     ["sign"],
   );
-  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload));
+  const sig = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(payload),
+  );
   return Array.from(new Uint8Array(sig))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
@@ -39,14 +47,21 @@ export async function hmacHex(secret: string, payload: string): Promise<string> 
  *  - `x-jet-signature: sha256=<hmac of raw body>` (preferred), or
  *  - a shared-secret header (legacy portal behaviour).
  */
-export async function verifyBridgeAuth(req: Request, rawBody: string): Promise<boolean> {
+export async function verifyBridgeAuth(
+  req: Request,
+  rawBody: string,
+): Promise<boolean> {
   const secret = Deno.env.get("JETBRIDGE_WEBHOOK_SECRET");
   if (!secret) return false;
 
   const sigHeader =
-    req.headers.get("x-jet-signature") ?? req.headers.get("x-webhook-signature");
+    req.headers.get("x-jet-signature") ??
+    req.headers.get("x-webhook-signature");
   if (sigHeader) {
-    const provided = sigHeader.replace(/^sha256=/, "").trim().toLowerCase();
+    const provided = sigHeader
+      .replace(/^sha256=/, "")
+      .trim()
+      .toLowerCase();
     const expected = await hmacHex(secret, rawBody);
     return safeEqual(provided, expected);
   }
@@ -74,7 +89,10 @@ export function hourInTimezone(tz: string, at: Date = new Date()): number {
 }
 
 /** True when `at` falls inside the user's quiet-hours window. */
-export function isQuietHours(s: UserNotificationSettings, at: Date = new Date()): boolean {
+export function isQuietHours(
+  s: UserNotificationSettings,
+  at: Date = new Date(),
+): boolean {
   if (!s.quiet_hours_enabled) return false;
   const h = hourInTimezone(s.timezone || "America/New_York", at);
   const { quiet_hours_start: start, quiet_hours_end: end } = s;
@@ -83,7 +101,10 @@ export function isQuietHours(s: UserNotificationSettings, at: Date = new Date())
 }
 
 /** Next time outside quiet hours (i.e. the window's end), as an ISO string. */
-export function nextDeliverableAt(s: UserNotificationSettings, at: Date = new Date()): string {
+export function nextDeliverableAt(
+  s: UserNotificationSettings,
+  at: Date = new Date(),
+): string {
   const h = hourInTimezone(s.timezone || "America/New_York", at);
   let hoursAhead = (s.quiet_hours_end - h + 24) % 24;
   if (hoursAhead === 0) hoursAhead = 1;
@@ -95,7 +116,13 @@ export const DEFAULT_SETTINGS: Omit<UserNotificationSettings, "user_id"> = {
   quiet_hours_enabled: true,
   quiet_hours_start: 22,
   quiet_hours_end: 8,
-  categories: { deals: true, favorites: true, social: true, system: true, marketing: false },
+  categories: {
+    deals: true,
+    favorites: true,
+    social: true,
+    system: true,
+    marketing: false,
+  },
 };
 
 /** Category opt-out check with sane defaults for unknown categories. */
@@ -104,7 +131,8 @@ export function categoryAllowed(
   category: string,
 ): boolean {
   const map = s.categories ?? {};
-  if (Object.prototype.hasOwnProperty.call(map, category)) return map[category] !== false;
+  if (Object.prototype.hasOwnProperty.call(map, category))
+    return map[category] !== false;
   return category !== "marketing";
 }
 

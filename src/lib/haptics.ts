@@ -4,13 +4,24 @@
  * Gracefully degrades on unsupported platforms
  */
 
-export type HapticPattern = 'light' | 'medium' | 'heavy' | 'success' | 'warning' | 'error' | 'glide' | 'soar';
+export type HapticPattern =
+  | "light"
+  | "medium"
+  | "heavy"
+  | "success"
+  | "warning"
+  | "error"
+  | "glide"
+  | "soar";
 
-const canVibrate = () => typeof navigator !== 'undefined' && 'vibrate' in navigator;
+const canVibrate = () =>
+  typeof navigator !== "undefined" && "vibrate" in navigator;
 
 export const isHapticSupported = async (): Promise<boolean> => canVibrate();
 
-export const triggerHaptic = async (pattern: HapticPattern = 'light'): Promise<void> => {
+export const triggerHaptic = async (
+  pattern: HapticPattern = "light",
+): Promise<void> => {
   if (!canVibrate()) return;
   try {
     const patterns: Record<HapticPattern, number | number[]> = {
@@ -29,11 +40,13 @@ export const triggerHaptic = async (pattern: HapticPattern = 'light'): Promise<v
 
 export const triggerCustomHaptic = async (duration = 20): Promise<void> => {
   if (!canVibrate()) return;
-  try { navigator.vibrate(duration); } catch {}
+  try {
+    navigator.vibrate(duration);
+  } catch {}
 };
 
-export const glideHaptic = async () => triggerHaptic('glide');
-export const soarHaptic = async () => triggerHaptic('soar');
+export const glideHaptic = async () => triggerHaptic("glide");
+export const soarHaptic = async () => triggerHaptic("soar");
 
 export const useHaptic = () => ({
   trigger: triggerHaptic,

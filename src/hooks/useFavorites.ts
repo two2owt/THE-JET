@@ -72,17 +72,17 @@ export const useFavorites = (userId: string | undefined) => {
     const channel = supabase
       .channel(`favorites-${userId}-${instanceId}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'user_favorites',
-          filter: `user_id=eq.${userId}`
+          event: "*",
+          schema: "public",
+          table: "user_favorites",
+          filter: `user_id=eq.${userId}`,
         },
         () => {
           // Refetch on any change to ensure consistency across devices
           fetchFavorites();
-        }
+        },
       )
       .subscribe();
 
@@ -184,7 +184,7 @@ export const useFavorites = (userId: string | undefined) => {
     }
 
     const existing = favorites.find(
-      (fav) => fav.venue_id === venueId || (dealId && fav.deal_id === dealId)
+      (fav) => fav.venue_id === venueId || (dealId && fav.deal_id === dealId),
     );
     const previous = favorites;
 
@@ -197,19 +197,23 @@ export const useFavorites = (userId: string | undefined) => {
           .delete()
           .eq("id", existing.id);
         if (error) throw error;
-        toast("Removed from favorites", { description: "Venue removed from your favorites" });
+        toast("Removed from favorites", {
+          description: "Venue removed from your favorites",
+        });
       } else {
-        const payload: { user_id: string; venue_id: string; deal_id?: string } = {
-          user_id: userId,
-          venue_id: venueId,
-        };
+        const payload: { user_id: string; venue_id: string; deal_id?: string } =
+          {
+            user_id: userId,
+            venue_id: venueId,
+          };
         if (dealId) payload.deal_id = dealId;
         const snap: Record<string, unknown> = {};
         if (snapshot?.name) snap.venue_name = snapshot.name;
         if (snapshot?.address) snap.venue_address = snapshot.address;
         if (snapshot?.imageUrl) snap.venue_image_url = snapshot.imageUrl;
         if (snapshot?.category) snap.venue_category = snapshot.category;
-        if (snapshot?.neighborhood) snap.venue_neighborhood = snapshot.neighborhood;
+        if (snapshot?.neighborhood)
+          snap.venue_neighborhood = snapshot.neighborhood;
         if (typeof snapshot?.lat === "number") snap.venue_lat = snapshot.lat;
         if (typeof snapshot?.lng === "number") snap.venue_lng = snapshot.lng;
         // Optimistically add with a temp row
@@ -236,7 +240,9 @@ export const useFavorites = (userId: string | undefined) => {
           .single();
         if (error) throw error;
         setFavorites((curr) => [data, ...curr.filter((f) => f.id !== tempId)]);
-        toast.success("Added to favorites", { description: "Venue saved to your favorites" });
+        toast.success("Added to favorites", {
+          description: "Venue saved to your favorites",
+        });
       }
     } catch (error) {
       console.error("Error toggling venue favorite:", error);

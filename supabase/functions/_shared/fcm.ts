@@ -42,7 +42,8 @@ export function getServiceAccount(): ServiceAccount | null {
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw) as ServiceAccount;
-    if (!parsed.client_email || !parsed.private_key || !parsed.project_id) return null;
+    if (!parsed.client_email || !parsed.private_key || !parsed.project_id)
+      return null;
     parsed.private_key = parsed.private_key.replace(/\\n/g, "\n");
     return parsed;
   } catch {
@@ -113,7 +114,12 @@ export async function sendFcmV1(
   data: Record<string, string>,
 ): Promise<FcmSendResult> {
   const sa = getServiceAccount();
-  if (!sa) return { ok: false, unregistered: false, error: "FCM_SERVICE_ACCOUNT_JSON not configured" };
+  if (!sa)
+    return {
+      ok: false,
+      unregistered: false,
+      error: "FCM_SERVICE_ACCOUNT_JSON not configured",
+    };
 
   const accessToken = await getAccessToken(sa);
   const res = await fetch(
@@ -145,6 +151,10 @@ export async function sendFcmV1(
   const unregistered =
     res.status === 404 ||
     text.includes("UNREGISTERED") ||
-    text.includes("INVALID_ARGUMENT") && text.includes("token");
-  return { ok: false, unregistered, error: `fcm ${res.status} ${text.slice(0, 300)}` };
+    (text.includes("INVALID_ARGUMENT") && text.includes("token"));
+  return {
+    ok: false,
+    unregistered,
+    error: `fcm ${res.status} ${text.slice(0, 300)}`,
+  };
 }

@@ -13,11 +13,11 @@ export const useAutoScrapeVenueImages = (enabled: boolean = true) => {
       try {
         // Find deals with website_url but no image_url
         const { data: dealsToScrape, error } = await supabase
-          .from('deals')
-          .select('id, venue_name, website_url')
-          .not('website_url', 'is', null)
-          .is('image_url', null)
-          .eq('active', true)
+          .from("deals")
+          .select("id, venue_name, website_url")
+          .not("website_url", "is", null)
+          .is("image_url", null)
+          .eq("active", true)
           .limit(5); // Process 5 at a time to avoid overwhelming the API
 
         if (error) throw error;
@@ -30,25 +30,26 @@ export const useAutoScrapeVenueImages = (enabled: boolean = true) => {
           for (const deal of dealsToScrape) {
             try {
               devLog(`Scraping image for ${deal.venue_name}...`);
-              
-              const { data, error: functionError } = await supabase.functions.invoke(
-                'scrape-venue-images',
-                {
+
+              const { data, error: functionError } =
+                await supabase.functions.invoke("scrape-venue-images", {
                   body: {
                     dealId: deal.id,
                     websiteUrl: deal.website_url,
                   },
-                }
-              );
+                });
 
               if (functionError) {
-                console.error(`Failed to scrape ${deal.venue_name}:`, functionError);
+                console.error(
+                  `Failed to scrape ${deal.venue_name}:`,
+                  functionError,
+                );
               } else if (data?.imageUrl) {
                 devLog(`Successfully scraped image for ${deal.venue_name}`);
               }
 
               // Small delay between requests
-              await new Promise(resolve => setTimeout(resolve, 1000));
+              await new Promise((resolve) => setTimeout(resolve, 1000));
             } catch (err) {
               console.error(`Error scraping ${deal.venue_name}:`, err);
             }
@@ -61,7 +62,7 @@ export const useAutoScrapeVenueImages = (enabled: boolean = true) => {
           });
         }
       } catch (error) {
-        console.error('Error in auto-scrape:', error);
+        console.error("Error in auto-scrape:", error);
         setIsScrapingActive(false);
       }
     };
@@ -71,31 +72,31 @@ export const useAutoScrapeVenueImages = (enabled: boolean = true) => {
 
     // Set up realtime listener for new deals
     const channel = supabase
-      .channel('new-deals-scraper')
+      .channel("new-deals-scraper")
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'deals',
-          filter: 'image_url=is.null',
+          event: "INSERT",
+          schema: "public",
+          table: "deals",
+          filter: "image_url=is.null",
         },
         async (payload) => {
           const newDeal = payload.new as any;
           if (newDeal.website_url && !newDeal.image_url) {
-            devLog('New deal detected, scraping image...');
+            devLog("New deal detected, scraping image...");
             try {
-              await supabase.functions.invoke('scrape-venue-images', {
+              await supabase.functions.invoke("scrape-venue-images", {
                 body: {
                   dealId: newDeal.id,
                   websiteUrl: newDeal.website_url,
                 },
               });
             } catch (err) {
-              console.error('Error scraping new deal:', err);
+              console.error("Error scraping new deal:", err);
             }
           }
-        }
+        },
       )
       .subscribe();
 
@@ -106,9 +107,12 @@ export const useAutoScrapeVenueImages = (enabled: boolean = true) => {
 
   const manualScrape = async (dealId: string, websiteUrl: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke('scrape-venue-images', {
-        body: { dealId, websiteUrl },
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "scrape-venue-images",
+        {
+          body: { dealId, websiteUrl },
+        },
+      );
 
       if (error) throw error;
 
@@ -118,7 +122,7 @@ export const useAutoScrapeVenueImages = (enabled: boolean = true) => {
 
       return data;
     } catch (error) {
-      console.error('Manual scrape error:', error);
+      console.error("Manual scrape error:", error);
       toast.error("Scrape Failed", {
         description: "Could not fetch venue image",
       });

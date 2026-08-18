@@ -68,8 +68,13 @@ Deno.serve(async (req) => {
     const payload = (await req.json()) as RequestPayload;
     if (!payload.event_type || (!payload.deal_id && !payload.venue_id)) {
       return new Response(
-        JSON.stringify({ error: "deal_id or venue_id and event_type required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        JSON.stringify({
+          error: "deal_id or venue_id and event_type required",
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -96,22 +101,35 @@ Deno.serve(async (req) => {
 
     // Find users who favorited this deal OR this venue
     const favQuery = supabase.from("user_favorites").select("user_id");
-    let orClauses: string[] = [];
+    const orClauses: string[] = [];
     if (payload.deal_id) orClauses.push(`deal_id.eq.${payload.deal_id}`);
     if (venueId) orClauses.push(`venue_id.eq.${venueId}`);
-    const { data: favs, error: favErr } = await favQuery.or(orClauses.join(","));
+    const { data: favs, error: favErr } = await favQuery.or(
+      orClauses.join(","),
+    );
     if (favErr) throw favErr;
 
-    const userIds = Array.from(new Set((favs ?? []).map((f) => f.user_id))).filter(Boolean);
+    const userIds = Array.from(
+      new Set((favs ?? []).map((f) => f.user_id)),
+    ).filter(Boolean);
     if (userIds.length === 0) {
       return new Response(
-        JSON.stringify({ message: "No favorites for this deal/venue", sent: 0 }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        JSON.stringify({
+          message: "No favorites for this deal/venue",
+          sent: 0,
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
     const { title, body } = payload.body_override
-      ? { title: payload.title_override ?? dealTitle, body: payload.body_override }
+      ? {
+          title: payload.title_override ?? dealTitle,
+          body: payload.body_override,
+        }
       : buildMessage(payload.event_type, dealTitle, venueName, expiresAt);
 
     const url = payload.deal_id
@@ -133,7 +151,9 @@ Deno.serve(async (req) => {
           idempotency_key: idempotencyKey,
           source: "favorites",
           event_type:
-            payload.event_type === "ending_soon" ? "ending_soon" : "favorite_update",
+            payload.event_type === "ending_soon"
+              ? "ending_soon"
+              : "favorite_update",
           category: "favorites",
           title,
           body,
@@ -152,7 +172,9 @@ Deno.serve(async (req) => {
       } else {
         queuedId = queued?.id ?? null;
         try {
-          await supabase.functions.invoke("notifications-dispatch", { body: { wake: true } });
+          await supabase.functions.invoke("notifications-dispatch", {
+            body: { wake: true },
+          });
         } catch (_e) {
           /* cron picks it up */
         }
@@ -176,7 +198,9 @@ Deno.serve(async (req) => {
           .from("profiles")
           .select("id, display_name")
           .in("id", emailUserIds);
-        const nameById = new Map((profs ?? []).map((p) => [p.id, p.display_name]));
+        const nameById = new Map(
+          (profs ?? []).map((p) => [p.id, p.display_name]),
+        );
 
         // Fetch auth emails via admin API
         const { data: usersList } = await supabase.auth.admin.listUsers({
@@ -237,7 +261,10 @@ Deno.serve(async (req) => {
         queue_duplicate: queueDuplicate,
         emails_sent: emailsSent,
       }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown error";

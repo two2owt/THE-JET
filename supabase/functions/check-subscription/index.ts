@@ -1,24 +1,28 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { corsHeaders, logVersion, EDGE_FUNCTION_VERSION } from "../_shared/cors.ts";
+import {
+  corsHeaders,
+  logVersion,
+  EDGE_FUNCTION_VERSION,
+} from "../_shared/cors.ts";
 import { getServiceRoleKey } from "../_shared/supabase-keys.ts";
 
 const FUNCTION_NAME = "check-subscription";
 logVersion(FUNCTION_NAME);
 
 const logStep = (step: string, details?: any) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
 // Tier mapping - includes both old and new product IDs for backwards compatibility
 const TIER_MAP: Record<string, string> = {
   // New products (Jan 2026 pricing)
-  "prod_TZO4ZimXhwOsHJ": "jet_plus",
-  "prod_TZO4046HaI8g2t": "jetx",
+  prod_TZO4ZimXhwOsHJ: "jet_plus",
+  prod_TZO4046HaI8g2t: "jetx",
   // Legacy products (original pricing)
-  "prod_TUHQC9j6XgrHOV": "jet_plus",
-  "prod_TUHQzyndNlfBAr": "jetx",
+  prod_TUHQC9j6XgrHOV: "jet_plus",
+  prod_TUHQzyndNlfBAr: "jetx",
 };
 
 Deno.serve(async (req) => {
@@ -29,7 +33,7 @@ Deno.serve(async (req) => {
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     getServiceRoleKey(),
-    { auth: { persistSession: false } }
+    { auth: { persistSession: false } },
   );
 
   try {
@@ -42,27 +46,36 @@ Deno.serve(async (req) => {
     if (!authHeader) throw new Error("No authorization header provided");
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
-    
+    const { data: userData, error: userError } =
+      await supabaseClient.auth.getUser(token);
+    if (userError)
+      throw new Error(`Authentication error: ${userError.message}`);
+
     const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
+    if (!user?.email)
+      throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    const customers = await stripe.customers.list({
+      email: user.email,
+      limit: 1,
+    });
 
     if (customers.data.length === 0) {
       logStep("No Stripe customer found");
-      return new Response(JSON.stringify({ 
-        subscribed: false, 
-        tier: "free",
-        product_id: null,
-        subscription_end: null 
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+      return new Response(
+        JSON.stringify({
+          subscribed: false,
+          tier: "free",
+          product_id: null,
+          subscription_end: null,
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        },
+      );
     }
 
     const customerId = customers.data[0].id;
@@ -81,14 +94,16 @@ Deno.serve(async (req) => {
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+      subscriptionEnd = new Date(
+        subscription.current_period_end * 1000,
+      ).toISOString();
       productId = subscription.items.data[0].price.product as string;
       tier = TIER_MAP[productId] || "free";
-      logStep("Active subscription found", { 
-        subscriptionId: subscription.id, 
+      logStep("Active subscription found", {
+        subscriptionId: subscription.id,
         productId,
         tier,
-        endDate: subscriptionEnd 
+        endDate: subscriptionEnd,
       });
     } else {
       logStep("No active subscription found");
@@ -104,7 +119,9 @@ Deno.serve(async (req) => {
           user_id: user.id,
           email: user.email,
           stripe_customer_id: customerId,
-          stripe_subscription_id: hasActiveSub ? subscriptions.data[0].id : null,
+          stripe_subscription_id: hasActiveSub
+            ? subscriptions.data[0].id
+            : null,
           product_id: productId,
           tier,
           subscribed: hasActiveSub,
@@ -118,23 +135,29 @@ Deno.serve(async (req) => {
       );
     } catch (mirrorError) {
       logStep("subscribers_mirror_failed", {
-        message: mirrorError instanceof Error ? mirrorError.message : String(mirrorError),
+        message:
+          mirrorError instanceof Error
+            ? mirrorError.message
+            : String(mirrorError),
       });
     }
 
-    return new Response(JSON.stringify({
-      subscribed: hasActiveSub,
-      tier,
-      product_id: productId,
-      subscription_end: subscriptionEnd
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
+    return new Response(
+      JSON.stringify({
+        subscribed: hasActiveSub,
+        tier,
+        product_id: productId,
+        subscription_end: subscriptionEnd,
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      },
+    );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: errorMessage });
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

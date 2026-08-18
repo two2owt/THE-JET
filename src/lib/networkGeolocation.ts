@@ -23,7 +23,9 @@ let inFlight: Promise<NetworkFix | null> | null = null;
  * Used only as a fallback when the browser/device GPS gives us nothing, so
  * heatmap density and flow paths still receive points from those users.
  */
-export async function getNetworkLocation(force = false): Promise<NetworkFix | null> {
+export async function getNetworkLocation(
+  force = false,
+): Promise<NetworkFix | null> {
   const now = Date.now();
   if (!force && now - lastLookupAt < MIN_LOOKUP_INTERVAL_MS) return null;
   if (inFlight) return inFlight;
@@ -31,9 +33,12 @@ export async function getNetworkLocation(force = false): Promise<NetworkFix | nu
   lastLookupAt = now;
   inFlight = (async () => {
     try {
-      const { data, error } = await supabase.functions.invoke("get-network-location", {
-        body: { considerIp: true },
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "get-network-location",
+        {
+          body: { considerIp: true },
+        },
+      );
       if (error || !data?.location) {
         logGeoEvent({
           kind: "rejected",

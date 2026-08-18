@@ -1,7 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@4.0.0";
 import { corsHeaders, logVersion } from "../_shared/cors.ts";
-import { getPublishableKey, getServiceRoleKey } from "../_shared/supabase-keys.ts";
+import {
+  getPublishableKey,
+  getServiceRoleKey,
+} from "../_shared/supabase-keys.ts";
 
 const FUNCTION_NAME = "admin-bulk-provision-users";
 logVersion(FUNCTION_NAME);
@@ -25,7 +28,12 @@ const MAX_USERS = 200;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type Method = "password" | "invite" | "resend" | "reverify";
-type Incoming = { email?: unknown; display_name?: unknown; password?: unknown; method?: unknown };
+type Incoming = {
+  email?: unknown;
+  display_name?: unknown;
+  password?: unknown;
+  method?: unknown;
+};
 
 function escapeHtml(s: string) {
   return s
@@ -35,7 +43,11 @@ function escapeHtml(s: string) {
     .replace(/"/g, "&quot;");
 }
 
-function renderTemplate(tpl: string, vars: Record<string, string>, escape: boolean) {
+function renderTemplate(
+  tpl: string,
+  vars: Record<string, string>,
+  escape: boolean,
+) {
   return tpl.replace(/\{\{\s*(\w+)\s*\}\}/g, (_m, key: string) => {
     const v = vars[key] ?? "";
     return escape ? escapeHtml(v) : v;
@@ -52,11 +64,18 @@ function json(body: unknown, status = 200) {
 function randomPassword() {
   const bytes = new Uint8Array(18);
   crypto.getRandomValues(bytes);
-  return "Jet-" + btoa(String.fromCharCode(...bytes)).replace(/[^a-zA-Z0-9]/g, "").slice(0, 20) + "1!";
+  return (
+    "Jet-" +
+    btoa(String.fromCharCode(...bytes))
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .slice(0, 20) +
+    "1!"
+  );
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS")
+    return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
   try {
@@ -64,7 +83,8 @@ Deno.serve(async (req) => {
 
     // 1. Authenticated caller
     const authHeader = req.headers.get("Authorization") ?? "";
-    if (!authHeader.toLowerCase().startsWith("bearer ")) return json({ error: "Unauthorized" }, 401);
+    if (!authHeader.toLowerCase().startsWith("bearer "))
+      return json({ error: "Unauthorized" }, 401);
 
     const userClient = createClient(supabaseUrl, getPublishableKey(), {
       global: { headers: { Authorization: authHeader } },
@@ -88,7 +108,11 @@ Deno.serve(async (req) => {
       users?: unknown;
       sendInvite?: unknown;
       defaultMethod?: unknown;
-      inviteTemplate?: { subject?: unknown; html?: unknown; redirectTo?: unknown };
+      inviteTemplate?: {
+        subject?: unknown;
+        html?: unknown;
+        redirectTo?: unknown;
+      };
     };
     try {
       body = await req.json();
@@ -99,27 +123,36 @@ Deno.serve(async (req) => {
       return json({ error: "users must be a non-empty array" }, 400);
     }
     if (body.users.length > MAX_USERS) {
-      return json({ error: `Too many users in one request (max ${MAX_USERS})` }, 400);
+      return json(
+        { error: `Too many users in one request (max ${MAX_USERS})` },
+        400,
+      );
     }
     const defaultMethod: Method =
-      body.defaultMethod === "invite" || body.sendInvite === true ? "invite" : "password";
+      body.defaultMethod === "invite" || body.sendInvite === true
+        ? "invite"
+        : "password";
 
     const tplSubject =
-      typeof body.inviteTemplate?.subject === "string" && body.inviteTemplate.subject.trim()
+      typeof body.inviteTemplate?.subject === "string" &&
+      body.inviteTemplate.subject.trim()
         ? body.inviteTemplate.subject.trim().slice(0, 200)
         : null;
     const tplHtml =
-      typeof body.inviteTemplate?.html === "string" && body.inviteTemplate.html.trim()
+      typeof body.inviteTemplate?.html === "string" &&
+      body.inviteTemplate.html.trim()
         ? body.inviteTemplate.html.slice(0, 20000)
         : null;
     const tplRedirect =
-      typeof body.inviteTemplate?.redirectTo === "string" && /^https?:\/\//.test(body.inviteTemplate.redirectTo)
+      typeof body.inviteTemplate?.redirectTo === "string" &&
+      /^https?:\/\//.test(body.inviteTemplate.redirectTo)
         ? body.inviteTemplate.redirectTo.slice(0, 500)
         : undefined;
     const useCustomInviteEmail = Boolean(tplSubject && tplHtml);
     const resendKey = Deno.env.get("RESEND_API_KEY");
     const resend = resendKey ? new Resend(resendKey) : null;
-    const fromAddress = Deno.env.get("RESEND_FROM_EMAIL") ?? "JET <noreply@jet-around.com>";
+    const fromAddress =
+      Deno.env.get("RESEND_FROM_EMAIL") ?? "JET <noreply@jet-around.com>";
 
     const parsed: {
       email: string;
@@ -128,9 +161,13 @@ Deno.serve(async (req) => {
       method: Method;
     }[] = [];
     for (const raw of body.users as Incoming[]) {
-      const email = typeof raw?.email === "string" ? raw.email.trim().toLowerCase() : "";
+      const email =
+        typeof raw?.email === "string" ? raw.email.trim().toLowerCase() : "";
       if (!EMAIL_RE.test(email) || email.length > 254) {
-        return json({ error: `Invalid email: ${String(raw?.email).slice(0, 80)}` }, 400);
+        return json(
+          { error: `Invalid email: ${String(raw?.email).slice(0, 80)}` },
+          400,
+        );
       }
       const displayName =
         typeof raw?.display_name === "string" && raw.display_name.trim()
@@ -167,7 +204,9 @@ Deno.serve(async (req) => {
             options: tplRedirect ? { emailRedirectTo: tplRedirect } : undefined,
           });
           if (error) {
-            const already = /already\s+confirmed|already\s+registered/i.test(error.message ?? "");
+            const already = /already\s+confirmed|already\s+registered/i.test(
+              error.message ?? "",
+            );
             results.push({
               email: u.email,
               status: already ? "exists" : "error",
@@ -183,12 +222,19 @@ Deno.serve(async (req) => {
           // Re-trigger an invite for an address that may or may not already exist.
           if (!useCustomInviteEmail || !resend) {
             // No custom template: let Supabase send its own invite email.
-            const { data, error } = await admin.auth.admin.inviteUserByEmail(u.email, {
-              data: u.display_name ? { display_name: u.display_name } : undefined,
-              redirectTo: tplRedirect,
-            });
+            const { data, error } = await admin.auth.admin.inviteUserByEmail(
+              u.email,
+              {
+                data: u.display_name
+                  ? { display_name: u.display_name }
+                  : undefined,
+                redirectTo: tplRedirect,
+              },
+            );
             if (error) {
-              const exists = /already|registered|exist/i.test(error.message ?? "");
+              const exists = /already|registered|exist/i.test(
+                error.message ?? "",
+              );
               results.push({
                 email: u.email,
                 status: "error",
@@ -198,7 +244,12 @@ Deno.serve(async (req) => {
               });
               continue;
             }
-            results.push({ email: u.email, status: "resent", user_id: data.user?.id, invited: true });
+            results.push({
+              email: u.email,
+              status: "resent",
+              user_id: data.user?.id,
+              invited: true,
+            });
             continue;
           }
 
@@ -210,27 +261,39 @@ Deno.serve(async (req) => {
             type: "invite",
             email: u.email,
             options: {
-              data: u.display_name ? { display_name: u.display_name } : undefined,
+              data: u.display_name
+                ? { display_name: u.display_name }
+                : undefined,
               redirectTo: tplRedirect,
             },
           });
           if (!invite.error) {
             actionLink = invite.data?.properties?.action_link ?? null;
             userId = invite.data?.user?.id;
-          } else if (/already|registered|exist/i.test(invite.error.message ?? "")) {
+          } else if (
+            /already|registered|exist/i.test(invite.error.message ?? "")
+          ) {
             const magic = await admin.auth.admin.generateLink({
               type: "magiclink",
               email: u.email,
               options: { redirectTo: tplRedirect },
             });
             if (magic.error) {
-              results.push({ email: u.email, status: "error", error: magic.error.message });
+              results.push({
+                email: u.email,
+                status: "error",
+                error: magic.error.message,
+              });
               continue;
             }
             actionLink = magic.data?.properties?.action_link ?? null;
             userId = magic.data?.user?.id;
           } else {
-            results.push({ email: u.email, status: "error", error: invite.error.message });
+            results.push({
+              email: u.email,
+              status: "error",
+              error: invite.error.message,
+            });
             continue;
           }
 
@@ -247,27 +310,46 @@ Deno.serve(async (req) => {
             html: renderTemplate(tplHtml!, vars, true),
           });
           if (sendErr) {
-            results.push({ email: u.email, status: "error", user_id: userId, error: sendErr.message });
+            results.push({
+              email: u.email,
+              status: "error",
+              user_id: userId,
+              error: sendErr.message,
+            });
             continue;
           }
-          results.push({ email: u.email, status: "resent", user_id: userId, invited: true });
+          results.push({
+            email: u.email,
+            status: "resent",
+            user_id: userId,
+            invited: true,
+          });
           continue;
         }
 
         if (u.method === "invite") {
           // Custom-branded invite: mint the link ourselves and send our own email.
           if (useCustomInviteEmail && resend) {
-            const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({
-              type: "invite",
-              email: u.email,
-              options: {
-                data: u.display_name ? { display_name: u.display_name } : undefined,
-                redirectTo: tplRedirect,
-              },
-            });
+            const { data: linkData, error: linkErr } =
+              await admin.auth.admin.generateLink({
+                type: "invite",
+                email: u.email,
+                options: {
+                  data: u.display_name
+                    ? { display_name: u.display_name }
+                    : undefined,
+                  redirectTo: tplRedirect,
+                },
+              });
             if (linkErr) {
-              const exists = /already|registered|duplicate/i.test(linkErr.message ?? "");
-              results.push({ email: u.email, status: exists ? "exists" : "error", error: linkErr.message });
+              const exists = /already|registered|duplicate/i.test(
+                linkErr.message ?? "",
+              );
+              results.push({
+                email: u.email,
+                status: exists ? "exists" : "error",
+                error: linkErr.message,
+              });
               continue;
             }
             const vars = {
@@ -291,20 +373,39 @@ Deno.serve(async (req) => {
               });
               continue;
             }
-            results.push({ email: u.email, status: "created", user_id: linkData?.user?.id, invited: true });
+            results.push({
+              email: u.email,
+              status: "created",
+              user_id: linkData?.user?.id,
+              invited: true,
+            });
             continue;
           }
 
-          const { data, error } = await admin.auth.admin.inviteUserByEmail(u.email, {
-            data: u.display_name ? { display_name: u.display_name } : undefined,
-            redirectTo: tplRedirect,
-          });
+          const { data, error } = await admin.auth.admin.inviteUserByEmail(
+            u.email,
+            {
+              data: u.display_name
+                ? { display_name: u.display_name }
+                : undefined,
+              redirectTo: tplRedirect,
+            },
+          );
           if (error) {
             const exists = /already/i.test(error.message ?? "");
-            results.push({ email: u.email, status: exists ? "exists" : "error", error: error.message });
+            results.push({
+              email: u.email,
+              status: exists ? "exists" : "error",
+              error: error.message,
+            });
             continue;
           }
-          results.push({ email: u.email, status: "created", user_id: data.user?.id, invited: true });
+          results.push({
+            email: u.email,
+            status: "created",
+            user_id: data.user?.id,
+            invited: true,
+          });
           continue;
         }
 
@@ -316,19 +417,37 @@ Deno.serve(async (req) => {
           user_metadata: u.display_name ? { display_name: u.display_name } : {},
         });
         if (error) {
-          const exists = /already|registered|duplicate/i.test(error.message ?? "");
-          results.push({ email: u.email, status: exists ? "exists" : "error", error: error.message });
+          const exists = /already|registered|duplicate/i.test(
+            error.message ?? "",
+          );
+          results.push({
+            email: u.email,
+            status: exists ? "exists" : "error",
+            error: error.message,
+          });
           continue;
         }
 
         // Trigger handles profile creation; ensure display_name is set.
         if (data.user && u.display_name) {
-          await admin.from("profiles").update({ display_name: u.display_name }).eq("id", data.user.id);
+          await admin
+            .from("profiles")
+            .update({ display_name: u.display_name })
+            .eq("id", data.user.id);
         }
 
-        results.push({ email: u.email, status: "created", user_id: data.user?.id, password });
+        results.push({
+          email: u.email,
+          status: "created",
+          user_id: data.user?.id,
+          password,
+        });
       } catch (e) {
-        results.push({ email: u.email, status: "error", error: e instanceof Error ? e.message : String(e) });
+        results.push({
+          email: u.email,
+          status: "error",
+          error: e instanceof Error ? e.message : String(e),
+        });
       }
     }
 

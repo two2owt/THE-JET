@@ -62,91 +62,115 @@ const DESCRIPTION =
   "Discover trending venues, live events, and exclusive happy-hour deals across Charlotte on a real-time heatmap. Your guide to what's hot right now.";
 const SOCIAL_IMAGE = "https://jet-around.com/pwa-512x512.png";
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1.0, viewport-fit=cover" },
-      { title: TITLE },
-      { name: "description", content: DESCRIPTION },
-      { name: "author", content: "JET" },
-      {
-        name: "keywords",
-        content:
-          "Charlotte nightlife, CLT events, Charlotte bars, restaurants near me, things to do Charlotte",
-      },
-      {
-        name: "google-site-verification",
-        content: "NaHWfiMq4v81RSUiLCSniJmSspDHkqzloJd7s7SX5vg",
-      },
-      { name: "theme-color", content: "#0f0f0f" },
-      { name: "mobile-web-app-capable", content: "yes" },
-      { name: "apple-mobile-web-app-capable", content: "yes" },
-      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
-      { name: "apple-mobile-web-app-title", content: "JET" },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://jet-around.com/" },
-      { property: "og:title", content: TITLE },
-      { property: "og:description", content: DESCRIPTION },
-      { property: "og:image", content: SOCIAL_IMAGE },
-      { property: "og:image:width", content: "512" },
-      { property: "og:image:height", content: "512" },
-      { property: "og:image:type", content: "image/png" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@JETaround" },
-      { name: "twitter:title", content: TITLE },
-      { name: "twitter:description", content: DESCRIPTION },
-      { name: "twitter:image", content: SOCIAL_IMAGE },
-    ],
-    links: [
-      { rel: "stylesheet", href: appCss },
-      // Preload the latin variable subsets actually used above the fold so the
-      // first paint uses the real typeface (no swap-induced reflow / flash).
-      {
-        rel: "preload",
-        as: "font",
-        type: "font/woff2",
-        href: jakartaLatin,
-        crossOrigin: "anonymous",
-      },
-      {
-        rel: "preload",
-        as: "font",
-        type: "font/woff2",
-        href: syneLatin,
-        crossOrigin: "anonymous",
-      },
-      { rel: "manifest", href: "/manifest.webmanifest" },
-      { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon-180x180.png" },
-      { rel: "apple-touch-icon", sizes: "152x152", href: "/apple-touch-icon-152x152.png" },
-      { rel: "apple-touch-icon", sizes: "120x120", href: "/apple-touch-icon-120x120.png" },
-      { rel: "preconnect", href: "https://api.mapbox.com", crossOrigin: "anonymous" },
-      {
-        rel: "preconnect",
-        href: "https://flvhduntedvorikonuvy.supabase.co",
-        crossOrigin: "anonymous",
-      },
-      { rel: "dns-prefetch", href: "https://b.tiles.mapbox.com" },
-      { rel: "dns-prefetch", href: "https://c.tiles.mapbox.com" },
-      { rel: "dns-prefetch", href: "https://d.tiles.mapbox.com" },
-      { rel: "dns-prefetch", href: "https://tiles.mapbox.com" },
-      { rel: "dns-prefetch", href: "https://events.mapbox.com" },
-      { rel: "dns-prefetch", href: "https://maps.googleapis.com" },
-      { rel: "stylesheet", href: "https://api.mapbox.com/mapbox-gl-js/v3.18.1/mapbox-gl.css" },
-    ],
-    scripts: [
-      { children: themeInitScript },
-      { type: "application/ld+json", children: organizationJsonLd },
-      { type: "application/ld+json", children: websiteJsonLd },
-      { children: mapboxTokenPreloadScript },
-      { children: mapboxLoaderScript },
-    ],
-  }),
-  shellComponent: RootShell,
-  component: RootComponent,
-  notFoundComponent: NotFound,
-  errorComponent: RootErrorComponent,
-});
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
+  {
+    head: () => ({
+      meta: [
+        { charSet: "utf-8" },
+        {
+          name: "viewport",
+          content: "width=device-width, initial-scale=1.0, viewport-fit=cover",
+        },
+        { title: TITLE },
+        { name: "description", content: DESCRIPTION },
+        { name: "author", content: "JET" },
+        {
+          name: "keywords",
+          content:
+            "Charlotte nightlife, CLT events, Charlotte bars, restaurants near me, things to do Charlotte",
+        },
+        {
+          name: "google-site-verification",
+          content: "NaHWfiMq4v81RSUiLCSniJmSspDHkqzloJd7s7SX5vg",
+        },
+        { name: "theme-color", content: "#0f0f0f" },
+        { name: "mobile-web-app-capable", content: "yes" },
+        { name: "apple-mobile-web-app-capable", content: "yes" },
+        { name: "apple-mobile-web-app-status-bar-style", content: "default" },
+        { name: "apple-mobile-web-app-title", content: "JET" },
+        { property: "og:type", content: "website" },
+        { property: "og:url", content: "https://jet-around.com/" },
+        { property: "og:title", content: TITLE },
+        { property: "og:description", content: DESCRIPTION },
+        { property: "og:image", content: SOCIAL_IMAGE },
+        { property: "og:image:width", content: "512" },
+        { property: "og:image:height", content: "512" },
+        { property: "og:image:type", content: "image/png" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:site", content: "@JETaround" },
+        { name: "twitter:title", content: TITLE },
+        { name: "twitter:description", content: DESCRIPTION },
+        { name: "twitter:image", content: SOCIAL_IMAGE },
+      ],
+      links: [
+        { rel: "stylesheet", href: appCss },
+        // Preload the latin variable subsets actually used above the fold so the
+        // first paint uses the real typeface (no swap-induced reflow / flash).
+        {
+          rel: "preload",
+          as: "font",
+          type: "font/woff2",
+          href: jakartaLatin,
+          crossOrigin: "anonymous",
+        },
+        {
+          rel: "preload",
+          as: "font",
+          type: "font/woff2",
+          href: syneLatin,
+          crossOrigin: "anonymous",
+        },
+        { rel: "manifest", href: "/manifest.webmanifest" },
+        {
+          rel: "apple-touch-icon",
+          sizes: "180x180",
+          href: "/apple-touch-icon-180x180.png",
+        },
+        {
+          rel: "apple-touch-icon",
+          sizes: "152x152",
+          href: "/apple-touch-icon-152x152.png",
+        },
+        {
+          rel: "apple-touch-icon",
+          sizes: "120x120",
+          href: "/apple-touch-icon-120x120.png",
+        },
+        {
+          rel: "preconnect",
+          href: "https://api.mapbox.com",
+          crossOrigin: "anonymous",
+        },
+        {
+          rel: "preconnect",
+          href: "https://flvhduntedvorikonuvy.supabase.co",
+          crossOrigin: "anonymous",
+        },
+        { rel: "dns-prefetch", href: "https://b.tiles.mapbox.com" },
+        { rel: "dns-prefetch", href: "https://c.tiles.mapbox.com" },
+        { rel: "dns-prefetch", href: "https://d.tiles.mapbox.com" },
+        { rel: "dns-prefetch", href: "https://tiles.mapbox.com" },
+        { rel: "dns-prefetch", href: "https://events.mapbox.com" },
+        { rel: "dns-prefetch", href: "https://maps.googleapis.com" },
+        {
+          rel: "stylesheet",
+          href: "https://api.mapbox.com/mapbox-gl-js/v3.18.1/mapbox-gl.css",
+        },
+      ],
+      scripts: [
+        { children: themeInitScript },
+        { type: "application/ld+json", children: organizationJsonLd },
+        { type: "application/ld+json", children: websiteJsonLd },
+        { children: mapboxTokenPreloadScript },
+        { children: mapboxLoaderScript },
+      ],
+    }),
+    shellComponent: RootShell,
+    component: RootComponent,
+    notFoundComponent: NotFound,
+    errorComponent: RootErrorComponent,
+  },
+);
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
@@ -168,7 +192,9 @@ function RootShell({ children }: { children: React.ReactNode }) {
 /** Route-change analytics — ported from App.tsx's PageTracker */
 const PageTracker = memo(function PageTracker() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const analyticsRef = useRef<typeof import("@/lib/analytics").analytics | null>(null);
+  const analyticsRef = useRef<
+    typeof import("@/lib/analytics").analytics | null
+  >(null);
 
   useEffect(() => {
     if (!analyticsRef.current) {
@@ -199,7 +225,10 @@ function AppLayout() {
       (window as any).requestIdleCallback = (cb: any, options?: any) => {
         const start = Date.now();
         return window.setTimeout(() => {
-          cb({ didTimeout: false, timeRemaining: () => Math.max(0, 50 - (Date.now() - start)) });
+          cb({
+            didTimeout: false,
+            timeRemaining: () => Math.max(0, 50 - (Date.now() - start)),
+          });
         }, options?.timeout || 1);
       };
     }
@@ -214,11 +243,19 @@ function AppLayout() {
       });
 
     let sentryLoaded = false;
-    const interactionEvents = ["click", "scroll", "keydown", "touchstart", "mousemove"] as const;
+    const interactionEvents = [
+      "click",
+      "scroll",
+      "keydown",
+      "touchstart",
+      "mousemove",
+    ] as const;
     const loadSentry = async () => {
       if (sentryLoaded) return;
       sentryLoaded = true;
-      interactionEvents.forEach((event) => window.removeEventListener(event, loadSentry));
+      interactionEvents.forEach((event) =>
+        window.removeEventListener(event, loadSentry),
+      );
       requestIdleCallback(
         async () => {
           const { initSentry } = await import("@/lib/sentry");
@@ -232,9 +269,8 @@ function AppLayout() {
       () => {
         (async () => {
           await yieldToMain();
-          const { prefetchMapboxToken, prefetchRoutes, prefetchHomeTabChunks } = await import(
-            "@/lib/prefetch"
-          );
+          const { prefetchMapboxToken, prefetchRoutes, prefetchHomeTabChunks } =
+            await import("@/lib/prefetch");
           prefetchMapboxToken();
           prefetchRoutes();
           prefetchHomeTabChunks();
@@ -263,7 +299,9 @@ function AppLayout() {
 
     return () => {
       window.clearTimeout(sentryTimer);
-      interactionEvents.forEach((event) => window.removeEventListener(event, loadSentry));
+      interactionEvents.forEach((event) =>
+        window.removeEventListener(event, loadSentry),
+      );
     };
   }, []);
 
@@ -304,7 +342,13 @@ function RootComponent() {
   );
 }
 
-function RootErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function RootErrorComponent({
+  error,
+  reset,
+}: {
+  error: Error;
+  reset: () => void;
+}) {
   const router = useRouter();
 
   console.error(error);
@@ -317,7 +361,8 @@ function RootErrorComponent({ error, reset }: { error: Error; reset: () => void 
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background p-6 text-center text-foreground">
       <h1 className="text-2xl font-semibold">This page didn't load</h1>
       <p className="max-w-md text-sm text-muted-foreground">
-        Something went wrong while rendering this page. You can try again or head back home.
+        Something went wrong while rendering this page. You can try again or
+        head back home.
       </p>
       <div className="flex gap-3">
         <button

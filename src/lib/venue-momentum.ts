@@ -13,7 +13,8 @@
  *  - Honesty: with fewer than two samples we return `unknown`, never a guess.
  */
 
-export type MomentumTrend = "rising" | "peaking" | "falling" | "steady" | "unknown";
+export type MomentumTrend =
+  "rising" | "peaking" | "falling" | "steady" | "unknown";
 
 export interface MomentumResult {
   /** -100 (emptying fast) .. +100 (filling fast). 0 when unknown. */
@@ -60,7 +61,11 @@ function load(): SampleMap {
       const parsed = JSON.parse(raw) as SampleMap;
       const now = Date.now();
       for (const [id, sample] of Object.entries(parsed)) {
-        if (sample && typeof sample.at === "number" && now - sample.at < MAX_AGE_MS) {
+        if (
+          sample &&
+          typeof sample.at === "number" &&
+          now - sample.at < MAX_AGE_MS
+        ) {
           memory[id] = sample;
         }
       }
@@ -134,7 +139,9 @@ export function scoreVenueMomentum(
   }
 
   map[venueId] = {
-    baseline: prev ? prev.baseline * (1 - BASELINE_ALPHA) + raw * BASELINE_ALPHA : raw,
+    baseline: prev
+      ? prev.baseline * (1 - BASELINE_ALPHA) + raw * BASELINE_ALPHA
+      : raw,
     last: raw,
     at: now,
     n: Math.min(50, (prev?.n ?? 0) + 1),

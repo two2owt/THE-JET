@@ -28,11 +28,12 @@ export async function generateThumbnail(
     const canvas =
       typeof OffscreenCanvas !== "undefined"
         ? new OffscreenCanvas(tw, th)
-        : Object.assign(document.createElement("canvas"), { width: tw, height: th });
+        : Object.assign(document.createElement("canvas"), {
+            width: tw,
+            height: th,
+          });
     const ctx = canvas.getContext("2d") as
-      | CanvasRenderingContext2D
-      | OffscreenCanvasRenderingContext2D
-      | null;
+      CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
     if (!ctx) return null;
     ctx.drawImage(bitmap as unknown as CanvasImageSource, 0, 0, tw, th);
     if ("close" in bitmap && typeof bitmap.close === "function") bitmap.close();
@@ -46,7 +47,9 @@ export async function generateThumbnail(
   }
 }
 
-async function createBitmapFromFile(file: File): Promise<ImageBitmap | HTMLImageElement> {
+async function createBitmapFromFile(
+  file: File,
+): Promise<ImageBitmap | HTMLImageElement> {
   if (typeof createImageBitmap === "function") {
     return await createImageBitmap(file);
   }

@@ -41,27 +41,68 @@ import {
 } from "@/components/profile/ProfileEditForm";
 
 const profileSchema = z.object({
-  display_name: z.string().trim().min(1, "Display name is required").max(100, "Display name must be less than 100 characters"),
-  bio: z.string().trim().max(500, "Bio must be less than 500 characters").optional()
+  display_name: z
+    .string()
+    .trim()
+    .min(1, "Display name is required")
+    .max(100, "Display name must be less than 100 characters"),
+  bio: z
+    .string()
+    .trim()
+    .max(500, "Bio must be less than 500 characters")
+    .optional(),
 });
 const socialMediaSchema = z.object({
-  instagram_url: z.string().trim().url("Invalid Instagram URL").optional().or(z.literal('')),
-  twitter_url: z.string().trim().url("Invalid Twitter/X URL").optional().or(z.literal('')),
-  facebook_url: z.string().trim().url("Invalid Facebook URL").optional().or(z.literal('')),
-  linkedin_url: z.string().trim().url("Invalid LinkedIn URL").optional().or(z.literal('')),
-  tiktok_url: z.string().trim().url("Invalid TikTok URL").optional().or(z.literal(''))
+  instagram_url: z
+    .string()
+    .trim()
+    .url("Invalid Instagram URL")
+    .optional()
+    .or(z.literal("")),
+  twitter_url: z
+    .string()
+    .trim()
+    .url("Invalid Twitter/X URL")
+    .optional()
+    .or(z.literal("")),
+  facebook_url: z
+    .string()
+    .trim()
+    .url("Invalid Facebook URL")
+    .optional()
+    .or(z.literal("")),
+  linkedin_url: z
+    .string()
+    .trim()
+    .url("Invalid LinkedIn URL")
+    .optional()
+    .or(z.literal("")),
+  tiktok_url: z
+    .string()
+    .trim()
+    .url("Invalid TikTok URL")
+    .optional()
+    .or(z.literal("")),
 });
-const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'] as const;
+const ALLOWED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+] as const;
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 const avatarFileSchema = z.object({
   type: z.enum(ALLOWED_IMAGE_TYPES, {
     errorMap: () => ({
-      message: 'Only JPG, PNG, WEBP, and GIF images are allowed'
-    })
+      message: "Only JPG, PNG, WEBP, and GIF images are allowed",
+    }),
   }),
-  size: z.number().max(MAX_FILE_SIZE, 'Image size must be less than 5MB'),
-  name: z.string().regex(/\.(jpg|jpeg|png|webp|gif)$/i, 'Invalid file extension')
+  size: z.number().max(MAX_FILE_SIZE, "Image size must be less than 5MB"),
+  name: z
+    .string()
+    .regex(/\.(jpg|jpeg|png|webp|gif)$/i, "Invalid file extension"),
 });
 
 const EMPTY_FORM: ProfileEditFormValues = {
@@ -97,14 +138,18 @@ export default function Profile() {
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [isCropOpen, setIsCropOpen] = useState(false);
   // Inline field-level validation errors for the profile form.
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string | undefined>>({});
+  const [fieldErrors, setFieldErrors] = useState<
+    Record<string, string | undefined>
+  >({});
   const { favorites } = useFavorites(user?.id);
   const { connections } = useConnections(user?.id);
   const { notifications } = useNotifications(!!user);
 
   const setFormValue = useCallback(
-    <K extends keyof ProfileEditFormValues>(key: K, val: ProfileEditFormValues[K]) =>
-      setForm((prev) => ({ ...prev, [key]: val })),
+    <K extends keyof ProfileEditFormValues>(
+      key: K,
+      val: ProfileEditFormValues[K],
+    ) => setForm((prev) => ({ ...prev, [key]: val })),
     [],
   );
   const clearFieldError = useCallback((key: string) => {
@@ -137,7 +182,7 @@ export default function Profile() {
       avatarFileSchema.parse({
         type: file.type,
         size: file.size,
-        name: file.name
+        name: file.name,
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -150,7 +195,7 @@ export default function Profile() {
       setCropSrc(reader.result as string);
       setIsCropOpen(true);
     };
-    reader.onerror = () => toast.error('Failed to read image');
+    reader.onerror = () => toast.error("Failed to read image");
     reader.readAsDataURL(file);
   };
 
@@ -158,12 +203,12 @@ export default function Profile() {
     if (!profile || !user) return;
     try {
       await uploadAvatar(blob);
-      toast.success('Avatar updated');
+      toast.success("Avatar updated");
       setIsCropOpen(false);
       setCropSrc(null);
     } catch (error) {
-      console.error('Error uploading avatar:', error);
-      toast.error('Failed to upload avatar');
+      console.error("Error uploading avatar:", error);
+      toast.error("Failed to upload avatar");
     }
   };
   const handleSaveProfile = async () => {
@@ -179,16 +224,16 @@ export default function Profile() {
       if (!form.gender) {
         setFieldErrors((p) => ({ ...p, gender: "Please select your gender" }));
         toast.error("Gender required", {
-          description: "Please select your gender"
+          description: "Please select your gender",
         });
         return;
       }
       const validatedSocial = socialMediaSchema.parse({
-        instagram_url: form.instagramUrl || '',
-        twitter_url: form.twitterUrl || '',
-        facebook_url: form.facebookUrl || '',
-        linkedin_url: form.linkedinUrl || '',
-        tiktok_url: form.tiktokUrl || '',
+        instagram_url: form.instagramUrl || "",
+        twitter_url: form.twitterUrl || "",
+        facebook_url: form.facebookUrl || "",
+        linkedin_url: form.linkedinUrl || "",
+        tiktok_url: form.tiktokUrl || "",
       });
 
       // Check unique display name
@@ -196,7 +241,8 @@ export default function Profile() {
       if (!isUnique) {
         setFieldErrors({ display_name: "This display name is already in use" });
         toast.error("Display name taken", {
-          description: "This display name is already in use. Please choose another."
+          description:
+            "This display name is already in use. Please choose another.",
         });
         return;
       }
@@ -214,16 +260,19 @@ export default function Profile() {
           tiktok_url: validatedSocial.tiktok_url || null,
         });
       } catch (err: any) {
-        if (err?.code === '23505') {
-          setFieldErrors({ display_name: "This display name is already in use" });
+        if (err?.code === "23505") {
+          setFieldErrors({
+            display_name: "This display name is already in use",
+          });
           toast.error("Display name taken", {
-            description: "This display name is already in use. Please choose another.",
+            description:
+              "This display name is already in use. Please choose another.",
           });
           return;
         }
         throw err;
       }
-      toast.success('Profile updated');
+      toast.success("Profile updated");
       setIsEditing(false);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -236,37 +285,37 @@ export default function Profile() {
         setFieldErrors(errs);
         toast.error(error.errors[0].message);
       } else {
-        toast.error('Failed to update profile');
+        toast.error("Failed to update profile");
       }
     }
   };
   const handleShareProfile = async () => {
     const url = `${window.location.origin}/profile`;
     const shareData = {
-      title: `${form.displayName || 'JET Around'} on JET`,
-      text: form.bio || 'Check out my JET profile',
+      title: `${form.displayName || "JET Around"} on JET`,
+      text: form.bio || "Check out my JET profile",
       url,
     };
     try {
-      if (typeof navigator !== 'undefined' && (navigator as any).share) {
+      if (typeof navigator !== "undefined" && (navigator as any).share) {
         await (navigator as any).share(shareData);
         return;
       }
       await navigator.clipboard.writeText(url);
-      toast.success('Profile link copied');
+      toast.success("Profile link copied");
     } catch (err: any) {
-      if (err?.name === 'AbortError') return;
+      if (err?.name === "AbortError") return;
       try {
         await navigator.clipboard.writeText(url);
-        toast.success('Profile link copied');
+        toast.success("Profile link copied");
       } catch {
-        toast.error('Unable to share profile');
+        toast.error("Unable to share profile");
       }
     }
   };
   const handleSignOut = () => {
-    toast.success('Signed out');
-    signOutCurrentUser('/auth');
+    toast.success("Signed out");
+    signOutCurrentUser("/auth");
   };
   const handleCancelEdit = () => {
     setIsEditing(false);
@@ -299,11 +348,20 @@ export default function Profile() {
     return <Navigate to="/auth" replace />;
   }
 
-  const hasAnySocial =
-    !!(form.instagramUrl || form.twitterUrl || form.facebookUrl || form.linkedinUrl || form.tiktokUrl);
+  const hasAnySocial = !!(
+    form.instagramUrl ||
+    form.twitterUrl ||
+    form.facebookUrl ||
+    form.linkedinUrl ||
+    form.tiktokUrl
+  );
 
   return (
-    <PageLayout defaultTab="map" headerConfig={headerConfig} mainClassName="profile-scroll-root">
+    <PageLayout
+      defaultTab="map"
+      headerConfig={headerConfig}
+      mainClassName="profile-scroll-root"
+    >
       <SEO
         title="Your Profile — JET"
         description="Manage your JET profile, preferences, subscription, and account settings."
@@ -312,7 +370,10 @@ export default function Profile() {
       <AvatarCropDialog
         open={isCropOpen}
         imageSrc={cropSrc}
-        onClose={() => { setIsCropOpen(false); setCropSrc(null); }}
+        onClose={() => {
+          setIsCropOpen(false);
+          setCropSrc(null);
+        }}
         onCropComplete={handleCroppedAvatarSave}
         isProcessing={isUploading}
       />
@@ -354,144 +415,227 @@ export default function Profile() {
             />
           </section>
         ) : (
-        <section aria-label="Profile content" className="profile-section">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="profile-tabs-list">
-              <TabsTrigger value="about" className="profile-tab-trigger">
-                <UserIcon className="profile-tab-icon" aria-hidden="true" />
-                <span>About</span>
-              </TabsTrigger>
-              <TabsTrigger value="activity" className="profile-tab-trigger">
-                <ActivityIcon className="profile-tab-icon" aria-hidden="true" />
-                <span>Activity</span>
-              </TabsTrigger>
-              <TabsTrigger value="account" className="profile-tab-trigger">
-                <SettingsIcon className="profile-tab-icon" aria-hidden="true" />
-                <span>Account</span>
-              </TabsTrigger>
-            </TabsList>
+          <section aria-label="Profile content" className="profile-section">
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full"
+            >
+              <TabsList className="profile-tabs-list">
+                <TabsTrigger value="about" className="profile-tab-trigger">
+                  <UserIcon className="profile-tab-icon" aria-hidden="true" />
+                  <span>About</span>
+                </TabsTrigger>
+                <TabsTrigger value="activity" className="profile-tab-trigger">
+                  <ActivityIcon
+                    className="profile-tab-icon"
+                    aria-hidden="true"
+                  />
+                  <span>Activity</span>
+                </TabsTrigger>
+                <TabsTrigger value="account" className="profile-tab-trigger">
+                  <SettingsIcon
+                    className="profile-tab-icon"
+                    aria-hidden="true"
+                  />
+                  <span>Account</span>
+                </TabsTrigger>
+              </TabsList>
 
-            {/* ABOUT */}
-            <TabsContent value="about" className="profile-tab-content">
-              <div className="rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg">
-                <div className="mb-fluid-sm flex items-center gap-2">
-                  <span className="dot-gold shrink-0" />
-                  <span className="heading-luxe-eyebrow">About</span>
+              {/* ABOUT */}
+              <TabsContent value="about" className="profile-tab-content">
+                <div className="rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg">
+                  <div className="mb-fluid-sm flex items-center gap-2">
+                    <span className="dot-gold shrink-0" />
+                    <span className="heading-luxe-eyebrow">About</span>
+                  </div>
+                  {form.bio ? (
+                    <p className="text-fluid-base text-foreground/90 leading-relaxed whitespace-pre-wrap">
+                      {form.bio}
+                    </p>
+                  ) : (
+                    <p className="text-fluid-sm text-muted-foreground italic">
+                      No bio yet. Add one in the Account tab.
+                    </p>
+                  )}
+
+                  {(form.gender || form.pronouns) && (
+                    <>
+                      <div className="divider-luxe my-fluid-md" />
+                      <div className="grid grid-cols-2 gap-fluid-sm">
+                        {form.gender && (
+                          <div>
+                            <div className="heading-luxe-eyebrow mb-1">
+                              Gender
+                            </div>
+                            <div className="text-fluid-sm text-foreground capitalize">
+                              {form.gender.replace(/-/g, " ")}
+                            </div>
+                          </div>
+                        )}
+                        {form.pronouns && (
+                          <div>
+                            <div className="heading-luxe-eyebrow mb-1">
+                              Pronouns
+                            </div>
+                            <div className="text-fluid-sm text-foreground">
+                              {form.pronouns}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+
+                  {hasAnySocial && (
+                    <>
+                      <div className="divider-luxe my-fluid-md" />
+                      <div className="flex items-center gap-2 mb-fluid-sm">
+                        <Link2 className="w-3.5 h-3.5 text-primary" />
+                        <h3 className="heading-luxe-eyebrow">Social Media</h3>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          {
+                            url: form.instagramUrl,
+                            icon: Instagram,
+                            label: "Instagram",
+                          },
+                          {
+                            url: form.twitterUrl,
+                            icon: Twitter,
+                            label: "Twitter / X",
+                          },
+                          {
+                            url: form.facebookUrl,
+                            icon: Facebook,
+                            label: "Facebook",
+                          },
+                          {
+                            url: form.linkedinUrl,
+                            icon: Linkedin,
+                            label: "LinkedIn",
+                          },
+                          { url: form.tiktokUrl, icon: Video, label: "TikTok" },
+                        ]
+                          .filter((s) => !!s.url)
+                          .map(({ url, icon: Icon, label }) => (
+                            <a
+                              key={label}
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full border-hairline bg-card/40 backdrop-blur-sm text-foreground text-sm font-semibold hover:border-primary/50 hover:bg-primary/10 hover:text-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors"
+                            >
+                              <Icon className="w-4 h-4 text-primary" />
+                              {label}
+                            </a>
+                          ))}
+                      </div>
+                    </>
+                  )}
                 </div>
-                {form.bio ? (
-                  <p className="text-fluid-base text-foreground/90 leading-relaxed whitespace-pre-wrap">{form.bio}</p>
-                ) : (
-                  <p className="text-fluid-sm text-muted-foreground italic">No bio yet. Add one in the Account tab.</p>
-                )}
+              </TabsContent>
 
-                {(form.gender || form.pronouns) && (
-                  <>
-                    <div className="divider-luxe my-fluid-md" />
-                    <div className="grid grid-cols-2 gap-fluid-sm">
-                      {form.gender && (
-                        <div>
-                          <div className="heading-luxe-eyebrow mb-1">Gender</div>
-                          <div className="text-fluid-sm text-foreground capitalize">{form.gender.replace(/-/g, ' ')}</div>
-                        </div>
-                      )}
-                      {form.pronouns && (
-                        <div>
-                          <div className="heading-luxe-eyebrow mb-1">Pronouns</div>
-                          <div className="text-fluid-sm text-foreground">{form.pronouns}</div>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
+              {/* ACTIVITY */}
+              <TabsContent value="activity" className="profile-tab-content">
+                <div className="rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg">
+                  <EmptyState
+                    icon={ActivityIcon}
+                    title="No activity yet"
+                    description="When you save deals, connect with people, or get alerts, you'll see them here."
+                    actionLabel="Explore the map"
+                    onAction={() => navigate("/")}
+                  />
+                </div>
+              </TabsContent>
 
-                {hasAnySocial && (
-                  <>
-                    <div className="divider-luxe my-fluid-md" />
-                    <div className="flex items-center gap-2 mb-fluid-sm">
-                      <Link2 className="w-3.5 h-3.5 text-primary" />
-                      <h3 className="heading-luxe-eyebrow">Social Media</h3>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {[
-                        { url: form.instagramUrl, icon: Instagram, label: 'Instagram' },
-                        { url: form.twitterUrl, icon: Twitter, label: 'Twitter / X' },
-                        { url: form.facebookUrl, icon: Facebook, label: 'Facebook' },
-                        { url: form.linkedinUrl, icon: Linkedin, label: 'LinkedIn' },
-                        { url: form.tiktokUrl, icon: Video, label: 'TikTok' },
-                      ]
-                        .filter((s) => !!s.url)
-                        .map(({ url, icon: Icon, label }) => (
-                          <a
-                            key={label}
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full border-hairline bg-card/40 backdrop-blur-sm text-foreground text-sm font-semibold hover:border-primary/50 hover:bg-primary/10 hover:text-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors"
-                          >
-                            <Icon className="w-4 h-4 text-primary" />
-                            {label}
-                          </a>
-                        ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            </TabsContent>
-
-            {/* ACTIVITY */}
-            <TabsContent value="activity" className="profile-tab-content">
-              <div className="rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg">
-                <EmptyState
-                  icon={ActivityIcon}
-                  title="No activity yet"
-                  description="When you save deals, connect with people, or get alerts, you'll see them here."
-                  actionLabel="Explore the map"
-                  onAction={() => navigate('/')}
-                />
-              </div>
-            </TabsContent>
-
-            {/* ACCOUNT — admin shortcut + settings panel (edit lives at top via Edit Profile) */}
-            <TabsContent value="account" className="profile-tab-content">
-              <div className="flex flex-col" style={{ gap: 'var(--space-md)' }}>
-                {/* Admin shortcut */}
-                {isAdmin && (
-                  <nav aria-label="Account navigation" className="flex flex-col" style={{ gap: 'var(--space-sm)' }}>
-                    <button
-                      type="button"
-                      onClick={() => navigate('/admin')}
-                      className="group w-full text-left rounded-2xl border-hairline bg-card/40 backdrop-blur-xl hover:border-primary/50 hover:bg-card/60 active:scale-[0.99] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 transition-all"
-                      style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', padding: 'var(--space-sm)', minWidth: 0 }}
+              {/* ACCOUNT — admin shortcut + settings panel (edit lives at top via Edit Profile) */}
+              <TabsContent value="account" className="profile-tab-content">
+                <div
+                  className="flex flex-col"
+                  style={{ gap: "var(--space-md)" }}
+                >
+                  {/* Admin shortcut */}
+                  {isAdmin && (
+                    <nav
+                      aria-label="Account navigation"
+                      className="flex flex-col"
+                      style={{ gap: "var(--space-sm)" }}
                     >
-                      <span
-                        className="rounded-full bg-gradient-to-br from-primary/20 to-primary-glow/10 text-primary border-hairline"
-                        style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, flexShrink: 0 }}
+                      <button
+                        type="button"
+                        onClick={() => navigate("/admin")}
+                        className="group w-full text-left rounded-2xl border-hairline bg-card/40 backdrop-blur-xl hover:border-primary/50 hover:bg-card/60 active:scale-[0.99] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 transition-all"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "var(--space-sm)",
+                          padding: "var(--space-sm)",
+                          minWidth: 0,
+                        }}
                       >
-                        <Shield className="w-5 h-5" />
-                      </span>
-                      <span style={{ display: 'flex', flexDirection: 'column', flex: '1 1 0%', minWidth: 0 }}>
-                        <span className="heading-luxe-card text-fluid-sm">Admin</span>
-                        <span className="text-xs text-muted-foreground" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          Dashboard & analytics
+                        <span
+                          className="rounded-full bg-gradient-to-br from-primary/20 to-primary-glow/10 text-primary border-hairline"
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: 44,
+                            height: 44,
+                            flexShrink: 0,
+                          }}
+                        >
+                          <Shield className="w-5 h-5" />
                         </span>
-                      </span>
-                      <ChevronRight className="text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" style={{ width: 16, height: 16, flexShrink: 0 }} />
-                    </button>
-                  </nav>
-                )}
+                        <span
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            flex: "1 1 0%",
+                            minWidth: 0,
+                          }}
+                        >
+                          <span className="heading-luxe-card text-fluid-sm">
+                            Admin
+                          </span>
+                          <span
+                            className="text-xs text-muted-foreground"
+                            style={{
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            Dashboard & analytics
+                          </span>
+                        </span>
+                        <ChevronRight
+                          className="text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all"
+                          style={{ width: 16, height: 16, flexShrink: 0 }}
+                        />
+                      </button>
+                    </nav>
+                  )}
 
-                {/* Preferences / privacy / consent / notifications / subscription / support */}
-                {user?.id && (
-                  <ProfileSettingsPanel userId={user.id} userEmail={user.email} />
-                )}
-              </div>
-            </TabsContent>
-          </Tabs>
-        </section>
+                  {/* Preferences / privacy / consent / notifications / subscription / support */}
+                  {user?.id && (
+                    <ProfileSettingsPanel
+                      userId={user.id}
+                      userEmail={user.email}
+                    />
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
+          </section>
         )}
 
         {/* Action bar — Edit / Share / Sign out moved to the bottom */}
-        <section aria-label="Profile actions" className="profile-section profile-section-actions">
+        <section
+          aria-label="Profile actions"
+          className="profile-section profile-section-actions"
+        >
           <ProfileActions
             isEditing={isEditing}
             onStartEdit={() => setIsEditing(true)}

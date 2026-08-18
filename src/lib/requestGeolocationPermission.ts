@@ -14,10 +14,13 @@ const DISMISS_KEY = "location-permission-prompt-dismissed";
 export async function requestGeolocationPermission(): Promise<
   "granted" | "denied" | "unavailable" | "already-decided"
 > {
-  if (typeof navigator === "undefined" || !("geolocation" in navigator)) return "unavailable";
+  if (typeof navigator === "undefined" || !("geolocation" in navigator))
+    return "unavailable";
 
   try {
-    const status = await navigator.permissions?.query?.({ name: "geolocation" as PermissionName });
+    const status = await navigator.permissions?.query?.({
+      name: "geolocation" as PermissionName,
+    });
     if (status && status.state !== "prompt") return "already-decided";
   } catch {
     // Permissions API unsupported — fall through and ask once.

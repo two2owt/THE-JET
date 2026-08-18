@@ -77,7 +77,10 @@ export function useChatImagePair(
   thumbUrl: string | null;
   fullUrl: string | null;
 } {
-  const [pair, setPair] = useState<{ thumbUrl: string | null; fullUrl: string | null }>({
+  const [pair, setPair] = useState<{
+    thumbUrl: string | null;
+    fullUrl: string | null;
+  }>({
     thumbUrl: null,
     fullUrl: null,
   });

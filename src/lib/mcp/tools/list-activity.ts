@@ -16,26 +16,45 @@ export default defineTool({
   description:
     "Return the signed-in user's recent JetCard activity — saved and removed favorites, shared deals, and venue reviews — each with a timestamp, venue, and action, newest first.",
   inputSchema: {
-    limit: z.number().int().min(1).max(100).default(20).describe("Maximum activities to return."),
+    limit: z
+      .number()
+      .int()
+      .min(1)
+      .max(100)
+      .default(20)
+      .describe("Maximum activities to return."),
     since_hours: z
       .number()
       .int()
       .min(1)
       .max(24 * 90)
       .optional()
-      .describe("Only include activity from the last N hours (default: no time limit)."),
+      .describe(
+        "Only include activity from the last N hours (default: no time limit).",
+      ),
   },
-  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  annotations: {
+    readOnlyHint: true,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
   handler: async ({ limit, since_hours }, ctx) => {
     if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+      return {
+        content: [{ type: "text", text: "Not authenticated" }],
+        isError: true,
+      };
     }
     const supabase = supabaseForUser(ctx);
     const userId = ctx.getUserId();
-    const since = since_hours ? new Date(Date.now() - since_hours * 3600_000).toISOString() : null;
+    const since = since_hours
+      ? new Date(Date.now() - since_hours * 3600_000).toISOString()
+      : null;
 
-    const withSince = <T extends { gte: (col: string, v: string) => T }>(q: T, col: string) =>
-      since ? q.gte(col, since) : q;
+    const withSince = <T extends { gte: (col: string, v: string) => T }>(
+      q: T,
+      col: string,
+    ) => (since ? q.gte(col, since) : q);
 
     const [favRes, shareRes, reviewRes] = await Promise.all([
       withSince(
@@ -69,7 +88,10 @@ export default defineTool({
 
     const firstError = favRes.error ?? shareRes.error ?? reviewRes.error;
     if (firstError) {
-      return { content: [{ type: "text", text: firstError.message }], isError: true };
+      return {
+        content: [{ type: "text", text: firstError.message }],
+        isError: true,
+      };
     }
 
     const activities: Activity[] = [];
@@ -85,7 +107,15 @@ export default defineTool({
     }
 
     for (const row of shareRes.data ?? []) {
-      const deal = (row as { deals?: { venue_id?: string; venue_name?: string; title?: string } | null }).deals;
+      const deal = (
+        row as {
+          deals?: {
+            venue_id?: string;
+            venue_name?: string;
+            title?: string;
+          } | null;
+        }
+      ).deals;
       activities.push({
         timestamp: row.shared_at as string,
         action: "deal_shared",
@@ -105,7 +135,10 @@ export default defineTool({
       });
     }
 
-    activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    activities.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+    );
     const results = activities.slice(0, limit);
 
     return {

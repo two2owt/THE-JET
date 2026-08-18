@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, RefObject } from 'react';
+import { useEffect, useRef, useState, RefObject } from "react";
 
 interface UseIntersectionObserverOptions {
   threshold?: number | number[];
@@ -8,12 +8,12 @@ interface UseIntersectionObserverOptions {
 }
 
 export function useIntersectionObserver<T extends Element = Element>(
-  options: UseIntersectionObserverOptions = {}
+  options: UseIntersectionObserverOptions = {},
 ): [RefObject<T>, boolean] {
   const {
     threshold = 0,
     root = null,
-    rootMargin = '100px', // Start loading 100px before visible
+    rootMargin = "100px", // Start loading 100px before visible
     freezeOnceVisible = true,
   } = options;
 
@@ -30,7 +30,7 @@ export function useIntersectionObserver<T extends Element = Element>(
     const observer = new IntersectionObserver(
       ([entry]) => {
         const isElementVisible = entry.isIntersecting;
-        
+
         if (isElementVisible) {
           setIsVisible(true);
           if (freezeOnceVisible) {
@@ -40,7 +40,7 @@ export function useIntersectionObserver<T extends Element = Element>(
           setIsVisible(false);
         }
       },
-      { threshold, root, rootMargin }
+      { threshold, root, rootMargin },
     );
 
     observer.observe(element);
@@ -56,7 +56,7 @@ export function useIntersectionObserver<T extends Element = Element>(
 // Hook for lazy loading multiple items in a list
 export function useLazyList<T>(
   items: T[],
-  batchSize: number = 10
+  batchSize: number = 10,
 ): { visibleItems: T[]; loadMore: () => void; hasMore: boolean } {
   const [visibleCount, setVisibleCount] = useState(batchSize);
 

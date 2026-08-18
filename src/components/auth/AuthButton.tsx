@@ -39,8 +39,7 @@ const authButtonVariants = cva(
           "bg-destructive text-destructive-foreground shadow-md shadow-destructive/20 hover:bg-destructive/90 hover:-translate-y-px",
         ghost:
           "bg-transparent text-foreground/85 hover:bg-accent/10 hover:text-foreground",
-        link:
-          "h-auto rounded-sm bg-transparent px-1 py-0.5 font-medium text-primary underline-offset-4 hover:underline active:scale-100",
+        link: "h-auto rounded-sm bg-transparent px-1 py-0.5 font-medium text-primary underline-offset-4 hover:underline active:scale-100",
       },
       size: {
         sm: "h-8 px-3 text-[13px] [&_svg]:h-3.5 [&_svg]:w-3.5",
@@ -69,7 +68,14 @@ const authButtonVariants = cva(
 
 type IconOnlyProps =
   | { size: "icon"; ariaLabel: string; children: React.ReactNode }
-  | { size?: Exclude<NonNullable<VariantProps<typeof authButtonVariants>["size"]>, "icon">; ariaLabel?: string; children?: React.ReactNode };
+  | {
+      size?: Exclude<
+        NonNullable<VariantProps<typeof authButtonVariants>["size"]>,
+        "icon"
+      >;
+      ariaLabel?: string;
+      children?: React.ReactNode;
+    };
 
 export type AuthButtonProps = Omit<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -137,7 +143,9 @@ const AuthButton = React.forwardRef<HTMLButtonElement, AuthButtonProps>(
       <Comp
         ref={ref}
         type={asChild ? undefined : (type ?? "button")}
-        className={cn(authButtonVariants({ variant, size, fullWidth, className }))}
+        className={cn(
+          authButtonVariants({ variant, size, fullWidth, className }),
+        )}
         disabled={asChild ? undefined : isDisabled}
         aria-disabled={isDisabled || undefined}
         aria-busy={loading || undefined}

@@ -1,5 +1,13 @@
 import { memo, useState, useEffect, lazy, Suspense } from "react";
-import { Clock, MapPin, Share2, Heart, X, ExternalLink, Navigation } from "lucide-react";
+import {
+  Clock,
+  MapPin,
+  Share2,
+  Heart,
+  X,
+  ExternalLink,
+  Navigation,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import { OptimizedImage } from "./ui/optimized-image";
 import { toast } from "sonner";
@@ -50,13 +58,15 @@ interface DealDetailCardProps {
 export const DealDetailCard = memo(({ deal, onClose }: DealDetailCardProps) => {
   const [user, setUser] = useState<any>(null);
   const [showDirections, setShowDirections] = useState(false);
-  
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
 
@@ -68,14 +78,17 @@ export const DealDetailCard = memo(({ deal, onClose }: DealDetailCardProps) => {
 
   const handleShare = async () => {
     await triggerHaptic();
-    
-    const result = await shareDeal({
-      id: deal.id,
-      title: deal.title,
-      venue_name: deal.venue_name,
-      description: deal.description,
-    }, user?.id);
-    
+
+    const result = await shareDeal(
+      {
+        id: deal.id,
+        title: deal.title,
+        venue_name: deal.venue_name,
+        description: deal.description,
+      },
+      user?.id,
+    );
+
     if (result.success) {
       if (result.method === "native") {
         toast.success("Shared successfully!", {
@@ -137,7 +150,12 @@ export const DealDetailCard = memo(({ deal, onClose }: DealDetailCardProps) => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
   };
 
   const getTimeRemaining = (expiresAt: string) => {
@@ -146,19 +164,23 @@ export const DealDetailCard = memo(({ deal, onClose }: DealDetailCardProps) => {
     const diff = expires.getTime() - now.getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(hours / 24);
-    
-    if (days > 0) return `${days} day${days > 1 ? 's' : ''} left`;
-    if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} left`;
+
+    if (days > 0) return `${days} day${days > 1 ? "s" : ""} left`;
+    if (hours > 0) return `${hours} hour${hours > 1 ? "s" : ""} left`;
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    return `${minutes} minute${minutes > 1 ? 's' : ''} left`;
+    return `${minutes} minute${minutes > 1 ? "s" : ""} left`;
   };
 
   const getDealIcon = (dealType: string) => {
     switch (dealType) {
-      case 'offer': return '🎉';
-      case 'event': return '🎵';
-      case 'special': return '⭐';
-      default: return '💎';
+      case "offer":
+        return "🎉";
+      case "event":
+        return "🎵";
+      case "special":
+        return "⭐";
+      default:
+        return "💎";
     }
   };
 
@@ -207,7 +229,7 @@ export const DealDetailCard = memo(({ deal, onClose }: DealDetailCardProps) => {
           <Heart
             className={cn(
               "w-4 h-4 sm:w-5 sm:h-5 transition-colors",
-              isFav ? "fill-red-500 text-red-500" : "text-foreground"
+              isFav ? "fill-red-500 text-red-500" : "text-foreground",
             )}
           />
         </button>
@@ -216,7 +238,7 @@ export const DealDetailCard = memo(({ deal, onClose }: DealDetailCardProps) => {
         <div
           className={cn(
             "absolute bottom-2 left-2 sm:bottom-3 sm:left-3 backdrop-blur-md px-2 py-1 sm:px-3 sm:py-1.5 rounded-full border",
-            getDealTypeColor(deal.deal_type)
+            getDealTypeColor(deal.deal_type),
           )}
         >
           <span className="text-[10px] sm:text-xs font-semibold capitalize">
@@ -235,21 +257,25 @@ export const DealDetailCard = memo(({ deal, onClose }: DealDetailCardProps) => {
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2 text-muted-foreground">
               <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              <span className="text-xs sm:text-sm font-medium">{deal.venue_name}</span>
+              <span className="text-xs sm:text-sm font-medium">
+                {deal.venue_name}
+              </span>
             </div>
             {deal.neighborhoods?.name && (
-              <p className="text-xs text-muted-foreground/80 pl-5 sm:pl-6">{deal.neighborhoods.name}</p>
+              <p className="text-xs text-muted-foreground/80 pl-5 sm:pl-6">
+                {deal.neighborhoods.name}
+              </p>
             )}
             {deal.venue_address && (
-              <p className="text-xs text-muted-foreground/70 pl-5 sm:pl-6">{deal.venue_address}</p>
+              <p className="text-xs text-muted-foreground/70 pl-5 sm:pl-6">
+                {deal.venue_address}
+              </p>
             )}
           </div>
         </div>
 
         {/* Description */}
-        <p className="text-sm text-muted-foreground">
-          {deal.description}
-        </p>
+        <p className="text-sm text-muted-foreground">{deal.description}</p>
 
         {/* Deal Info */}
         <div className="bg-gradient-to-r from-primary/10 via-accent/10 to-secondary/10 rounded-xl p-4 border border-primary/20">

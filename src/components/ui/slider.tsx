@@ -14,7 +14,7 @@ const Slider = React.forwardRef<
       // track without shifting the visual layout — the track/thumb still
       // render centered. Critical for comfortable mobile dragging.
       "relative flex w-full touch-none select-none items-center py-3",
-      className
+      className,
     )}
     {...props}
   >

@@ -20,20 +20,21 @@ const FILTER_KEYS = {
 } as const;
 
 function render(showDensityLayer: boolean, showMovementPaths: boolean) {
-  return renderHook(({ density, paths }: { density: boolean; paths: boolean }) =>
-    useLayerPersistence({
-      layerKeys: LAYER_KEYS,
-      filterKeys: FILTER_KEYS,
-      showDensityLayer: density,
-      showMovementPaths: paths,
-      showParking: false,
-      showLiveStats: false,
-      timeFilter: "all",
-      pathTimeFilter: "all",
-      dayFilter: undefined,
-      timelapseMode: false,
-      pathsWindowMinutes: null,
-    }),
+  return renderHook(
+    ({ density, paths }: { density: boolean; paths: boolean }) =>
+      useLayerPersistence({
+        layerKeys: LAYER_KEYS,
+        filterKeys: FILTER_KEYS,
+        showDensityLayer: density,
+        showMovementPaths: paths,
+        showParking: false,
+        showLiveStats: false,
+        timeFilter: "all",
+        pathTimeFilter: "all",
+        dayFilter: undefined,
+        timelapseMode: false,
+        pathsWindowMinutes: null,
+      }),
     { initialProps: { density: showDensityLayer, paths: showMovementPaths } },
   );
 }

@@ -57,17 +57,26 @@ function inRange(now: number, start: number, end: number): boolean {
  * supplied "now minutes" falls inside any of its intervals.
  * Returns null if the line is unparseable.
  */
-function isOpenForLine(line: string, nowMinutes: number, isToday: boolean): boolean | null {
+function isOpenForLine(
+  line: string,
+  nowMinutes: number,
+  isToday: boolean,
+): boolean | null {
   // Strip "Monday: " prefix
   const colon = line.indexOf(":");
-  const value = (colon >= 0 ? line.slice(colon + 1) : line).trim().toLowerCase();
+  const value = (colon >= 0 ? line.slice(colon + 1) : line)
+    .trim()
+    .toLowerCase();
 
   if (!value || value === "closed") return false;
   if (value.includes("24 hours") || value.includes("open 24")) return true;
 
   // Multiple intervals separated by comma. Use a regex that tolerates
   // unicode dashes (–, —, -) and "to".
-  const intervals = value.split(",").map((s) => s.trim()).filter(Boolean);
+  const intervals = value
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
   let parsedAny = false;
   for (const iv of intervals) {
     const parts = iv.split(/\s*[\u2013\u2014\-]\s*|\s+to\s+/);
@@ -93,7 +102,7 @@ function isOpenForLine(line: string, nowMinutes: number, isToday: boolean): bool
  */
 export function isVenueOpenNow(
   weekdayText: readonly string[] | undefined,
-  now: Date = new Date()
+  now: Date = new Date(),
 ): boolean | null {
   if (!weekdayText?.length) return null;
 
@@ -129,7 +138,9 @@ export function isVenueOpenNow(
   // Check overnight carry-over from yesterday (e.g. yesterday 5pm–2am, now 1am).
   if (yLine) {
     const colon = yLine.indexOf(":");
-    const value = (colon >= 0 ? yLine.slice(colon + 1) : yLine).trim().toLowerCase();
+    const value = (colon >= 0 ? yLine.slice(colon + 1) : yLine)
+      .trim()
+      .toLowerCase();
     if (value && value !== "closed") {
       for (const iv of value.split(",").map((s) => s.trim())) {
         const parts = iv.split(/\s*[\u2013\u2014\-]\s*|\s+to\s+/);

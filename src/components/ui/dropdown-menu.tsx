@@ -69,10 +69,14 @@ const DropdownMenuSubTrigger = React.forwardRef<
     {...props}
   >
     {children}
-    <ChevronRight className="ml-auto !text-muted-foreground" aria-hidden="true" />
+    <ChevronRight
+      className="ml-auto !text-muted-foreground"
+      aria-hidden="true"
+    />
   </DropdownMenuPrimitive.SubTrigger>
 ));
-DropdownMenuSubTrigger.displayName = DropdownMenuPrimitive.SubTrigger.displayName;
+DropdownMenuSubTrigger.displayName =
+  DropdownMenuPrimitive.SubTrigger.displayName;
 
 /**
  * Sub-menu content. Defaults: opens to the right with 4px gap; flips to the
@@ -82,18 +86,30 @@ DropdownMenuSubTrigger.displayName = DropdownMenuPrimitive.SubTrigger.displayNam
 const DropdownMenuSubContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.SubContent>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent>
->(({ className, sideOffset = 4, alignOffset = -4, collisionPadding = 12, ...props }, ref) => (
-  <DropdownMenuPrimitive.SubContent
-    ref={ref}
-    sideOffset={sideOffset}
-    alignOffset={alignOffset}
-    collisionPadding={collisionPadding}
-    avoidCollisions
-    className={cn(contentBase, className)}
-    {...props}
-  />
-));
-DropdownMenuSubContent.displayName = DropdownMenuPrimitive.SubContent.displayName;
+>(
+  (
+    {
+      className,
+      sideOffset = 4,
+      alignOffset = -4,
+      collisionPadding = 12,
+      ...props
+    },
+    ref,
+  ) => (
+    <DropdownMenuPrimitive.SubContent
+      ref={ref}
+      sideOffset={sideOffset}
+      alignOffset={alignOffset}
+      collisionPadding={collisionPadding}
+      avoidCollisions
+      className={cn(contentBase, className)}
+      {...props}
+    />
+  ),
+);
+DropdownMenuSubContent.displayName =
+  DropdownMenuPrimitive.SubContent.displayName;
 
 /**
  * Menu content with smart positioning.
@@ -147,7 +163,12 @@ const DropdownMenuItem = React.forwardRef<
 >(({ className, inset, variant = "default", ...props }, ref) => (
   <DropdownMenuPrimitive.Item
     ref={ref}
-    className={cn(itemBase, variant === "destructive" && dangerItem, inset && "pl-8", className)}
+    className={cn(
+      itemBase,
+      variant === "destructive" && dangerItem,
+      inset && "pl-8",
+      className,
+    )}
     {...props}
   />
 ));
@@ -170,7 +191,9 @@ const DropdownMenuItemDescription = ({
   <div className={cn("flex min-w-0 flex-col leading-tight", className)}>
     <span className="truncate text-sm font-medium">{label}</span>
     {description && (
-      <span className="truncate text-[12px] text-muted-foreground">{description}</span>
+      <span className="truncate text-[12px] text-muted-foreground">
+        {description}
+      </span>
     )}
   </div>
 );
@@ -193,7 +216,8 @@ const DropdownMenuCheckboxItem = React.forwardRef<
     {children}
   </DropdownMenuPrimitive.CheckboxItem>
 ));
-DropdownMenuCheckboxItem.displayName = DropdownMenuPrimitive.CheckboxItem.displayName;
+DropdownMenuCheckboxItem.displayName =
+  DropdownMenuPrimitive.CheckboxItem.displayName;
 
 const DropdownMenuRadioItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.RadioItem>,
@@ -206,7 +230,10 @@ const DropdownMenuRadioItem = React.forwardRef<
   >
     <span className="absolute left-2.5 flex h-4 w-4 items-center justify-center">
       <DropdownMenuPrimitive.ItemIndicator>
-        <Circle className="h-2 w-2 fill-current !text-primary" aria-hidden="true" />
+        <Circle
+          className="h-2 w-2 fill-current !text-primary"
+          aria-hidden="true"
+        />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}
@@ -244,7 +271,10 @@ const DropdownMenuSeparator = React.forwardRef<
 ));
 DropdownMenuSeparator.displayName = DropdownMenuPrimitive.Separator.displayName;
 
-const DropdownMenuShortcut = ({ className, ...props }: React.HTMLAttributes<HTMLSpanElement>) => {
+const DropdownMenuShortcut = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLSpanElement>) => {
   return (
     <span
       className={cn(

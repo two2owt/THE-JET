@@ -72,7 +72,9 @@ export const buildAuthRedirectUrl = (
 ): string => {
   const base = getAppUrl();
   // Strip any query/hash the caller may have accidentally embedded.
-  const cleanPath = String(path ?? "/").split("#")[0].split("?")[0];
+  const cleanPath = String(path ?? "/")
+    .split("#")[0]
+    .split("?")[0];
   // Normalize to exactly one leading slash, encode each segment.
   const segments = cleanPath.split("/").filter(Boolean).map(encodeURIComponent);
   const pathname = "/" + segments.join("/");

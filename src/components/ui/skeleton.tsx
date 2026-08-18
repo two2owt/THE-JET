@@ -13,18 +13,22 @@ import { cn } from "@/lib/utils";
  * `animate-pulse` is kept as a graceful fallback for browsers/users that
  * don't run the shimmer (e.g. prefers-reduced-motion strips it).
  */
-function Skeleton({ className, style, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+function Skeleton({
+  className,
+  style,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn("skeleton-luxe animate-pulse rounded-md", className)}
       style={{
-        position: 'relative',
-        overflow: 'hidden',
+        position: "relative",
+        overflow: "hidden",
         background:
-          'linear-gradient(180deg, hsl(var(--card) / 0.85), hsl(var(--card) / 0.65))',
-        border: '1px solid hsl(0 0% 100% / 0.05)',
+          "linear-gradient(180deg, hsl(var(--card) / 0.85), hsl(var(--card) / 0.65))",
+        border: "1px solid hsl(0 0% 100% / 0.05)",
         boxShadow:
-          '0 0 30px hsl(var(--gold) / 0.03), inset 0 1px 0 hsl(0 0% 100% / 0.03)',
+          "0 0 30px hsl(var(--gold) / 0.03), inset 0 1px 0 hsl(0 0% 100% / 0.03)",
         ...style,
       }}
       {...props}

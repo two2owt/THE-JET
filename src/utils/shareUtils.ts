@@ -19,7 +19,10 @@ const withRef = (url: string, referrerId?: string | null) => {
 };
 
 export const shareDeal = async (deal: Deal, userId: string | undefined) => {
-  const shareUrl = withRef(`${window.location.origin}/?deal=${deal.id}`, userId);
+  const shareUrl = withRef(
+    `${window.location.origin}/?deal=${deal.id}`,
+    userId,
+  );
   const shareText = `Check out this deal: ${deal.title} at ${deal.venue_name}`;
 
   // Track the share
@@ -63,7 +66,7 @@ export const shareDeal = async (deal: Deal, userId: string | undefined) => {
 };
 
 export const shareVenue = async (
-  venue: Pick<Venue, 'id' | 'name'>,
+  venue: Pick<Venue, "id" | "name">,
   referrerId?: string | null,
 ) => {
   const shareUrl = withRef(

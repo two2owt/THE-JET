@@ -2,7 +2,15 @@ import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { supabaseForUser } from "../supabase";
 
-const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const DAY_NAMES = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
 
 const TIER_LABEL: Record<string, string> = {
   free: "JET",
@@ -10,11 +18,15 @@ const TIER_LABEL: Record<string, string> = {
   jetx: "JETx",
 };
 
-const normalizeTier = (raw: string | null | undefined, subscribed: boolean | null | undefined): string => {
+const normalizeTier = (
+  raw: string | null | undefined,
+  subscribed: boolean | null | undefined,
+): string => {
   if (!subscribed) return "free";
   const value = (raw ?? "").toLowerCase().replace(/[\s-]/g, "_");
   if (value === "jetx" || value === "jet_x") return "jetx";
-  if (value === "jet_plus" || value === "jetplus" || value === "plus") return "jet_plus";
+  if (value === "jet_plus" || value === "jetplus" || value === "plus")
+    return "jet_plus";
   return "free";
 };
 
@@ -38,7 +50,9 @@ export default defineTool({
     only_favorites: z
       .boolean()
       .default(false)
-      .describe("When true, only return promotions for venues or deals the user has saved as favorites."),
+      .describe(
+        "When true, only return promotions for venues or deals the user has saved as favorites.",
+      ),
     venue_id: z
       .string()
       .trim()
@@ -50,7 +64,9 @@ export default defineTool({
       .min(1)
       .max(720)
       .optional()
-      .describe("Optional filter: only promotions expiring within this many hours."),
+      .describe(
+        "Optional filter: only promotions expiring within this many hours.",
+      ),
     limit: z
       .number()
       .int()
@@ -59,10 +75,20 @@ export default defineTool({
       .default(20)
       .describe("Maximum number of promotions to return."),
   },
-  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ only_favorites, venue_id, expiring_within_hours, limit }, ctx) => {
+  annotations: {
+    readOnlyHint: true,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
+  handler: async (
+    { only_favorites, venue_id, expiring_within_hours, limit },
+    ctx,
+  ) => {
     if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+      return {
+        content: [{ type: "text", text: "Not authenticated" }],
+        isError: true,
+      };
     }
     const supabase = supabaseForUser(ctx);
     const userId = ctx.getUserId();
@@ -83,13 +109,18 @@ export default defineTool({
 
     if (venue_id) dealsQuery = dealsQuery.eq("venue_id", venue_id);
     if (expiring_within_hours) {
-      const cutoff = new Date(now.getTime() + expiring_within_hours * 3600_000).toISOString();
+      const cutoff = new Date(
+        now.getTime() + expiring_within_hours * 3600_000,
+      ).toISOString();
       dealsQuery = dealsQuery.lte("expires_at", cutoff);
     }
 
     const [dealsRes, favRes, subRes] = await Promise.all([
       dealsQuery,
-      supabase.from("user_favorites").select("deal_id, venue_id").eq("user_id", userId),
+      supabase
+        .from("user_favorites")
+        .select("deal_id, venue_id")
+        .eq("user_id", userId),
       supabase
         .from("subscribers")
         .select("tier, subscribed, subscription_end")
@@ -99,19 +130,31 @@ export default defineTool({
 
     const firstError = dealsRes.error ?? favRes.error ?? subRes.error;
     if (firstError) {
-      return { content: [{ type: "text", text: firstError.message }], isError: true };
+      return {
+        content: [{ type: "text", text: firstError.message }],
+        isError: true,
+      };
     }
 
-    const favoriteDealIds = new Set((favRes.data ?? []).map((f) => f.deal_id).filter(Boolean) as string[]);
-    const favoriteVenueIds = new Set((favRes.data ?? []).map((f) => f.venue_id).filter(Boolean) as string[]);
+    const favoriteDealIds = new Set(
+      (favRes.data ?? []).map((f) => f.deal_id).filter(Boolean) as string[],
+    );
+    const favoriteVenueIds = new Set(
+      (favRes.data ?? []).map((f) => f.venue_id).filter(Boolean) as string[],
+    );
 
     const tierKey = normalizeTier(subRes.data?.tier, subRes.data?.subscribed);
 
     let promotions = (dealsRes.data ?? []).map((d) => {
       const expiresAt = new Date(d.expires_at);
-      const activeDays: number[] | null = Array.isArray(d.active_days) && d.active_days.length > 0 ? d.active_days : null;
+      const activeDays: number[] | null =
+        Array.isArray(d.active_days) && d.active_days.length > 0
+          ? d.active_days
+          : null;
       const runsToday = !activeDays || activeDays.includes(todayIndex);
-      const isFavorite = favoriteDealIds.has(d.id) || (!!d.venue_id && favoriteVenueIds.has(d.venue_id));
+      const isFavorite =
+        favoriteDealIds.has(d.id) ||
+        (!!d.venue_id && favoriteVenueIds.has(d.venue_id));
 
       return {
         id: d.id,
@@ -133,7 +176,9 @@ export default defineTool({
           membership_tier_required: "JET (all tiers)",
           your_tier: TIER_LABEL[tierKey] ?? "JET",
           eligible_now: runsToday,
-          active_days: activeDays ? activeDays.map((n) => DAY_NAMES[n] ?? String(n)) : "Every day",
+          active_days: activeDays
+            ? activeDays.map((n) => DAY_NAMES[n] ?? String(n))
+            : "Every day",
           redeemable_window: `${d.starts_at} to ${d.expires_at}`,
           location: "In-person at the venue (Charlotte, NC)",
           saved_by_you: isFavorite,
@@ -153,7 +198,8 @@ export default defineTool({
       your_tier: TIER_LABEL[tierKey] ?? "JET",
       subscription_ends: subRes.data?.subscription_end ?? null,
       promotion_count: promotions.length,
-      eligible_today_count: promotions.filter((p) => p.eligibility.eligible_now).length,
+      eligible_today_count: promotions.filter((p) => p.eligibility.eligible_now)
+        .length,
       filters: {
         only_favorites,
         venue_id: venue_id ?? null,

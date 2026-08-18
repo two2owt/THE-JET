@@ -84,7 +84,15 @@ const LayerSliderRowImpl = ({
       {/* Indeterminate sweep — signals a pending refetch without shifting
           layout (absolutely positioned, GPU transform only). */}
       {loading && <span aria-hidden className="layer-loading-bar" />}
-      <div style={{ display: "flex", alignItems: "center", gap: "clamp(6px, 1.4vw, 8px)", minWidth: 0, flexWrap: "wrap" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "clamp(6px, 1.4vw, 8px)",
+          minWidth: 0,
+          flexWrap: "wrap",
+        }}
+      >
         <div
           style={{
             width: "clamp(22px, 5.4vw, 26px)",
@@ -106,7 +114,10 @@ const LayerSliderRowImpl = ({
           }}
         >
           <Icon
-            style={{ width: "clamp(12px, 3vw, 14px)", height: "clamp(12px, 3vw, 14px)" }}
+            style={{
+              width: "clamp(12px, 3vw, 14px)",
+              height: "clamp(12px, 3vw, 14px)",
+            }}
             strokeWidth={2.25}
           />
         </div>
@@ -188,7 +199,10 @@ const LayerSliderRowImpl = ({
               touchAction: "manipulation",
             }}
           >
-            <RotateCcw style={{ width: "14px", height: "14px" }} strokeWidth={2.25} />
+            <RotateCcw
+              style={{ width: "14px", height: "14px" }}
+              strokeWidth={2.25}
+            />
           </button>
         )}
       </div>

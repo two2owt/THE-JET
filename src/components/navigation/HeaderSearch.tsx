@@ -8,7 +8,9 @@ import type { Database } from "@/integrations/supabase/types";
 type Deal = Database["public"]["Tables"]["deals"]["Row"];
 
 const SearchResults = lazy(() =>
-  import("@/components/SearchResults").then((m) => ({ default: m.SearchResults }))
+  import("@/components/SearchResults").then((m) => ({
+    default: m.SearchResults,
+  })),
 );
 
 const MAX_QUERY_LENGTH = 100;
@@ -109,7 +111,13 @@ export function HeaderSearch({
           pointerEvents: "none",
         }}
       >
-        <Search style={{ width: 16, height: 16, color: "hsl(var(--muted-foreground) / 0.6)" }} />
+        <Search
+          style={{
+            width: 16,
+            height: 16,
+            color: "hsl(var(--muted-foreground) / 0.6)",
+          }}
+        />
       </div>
 
       <Input
@@ -171,7 +179,13 @@ export function HeaderSearch({
             cursor: "pointer",
           }}
         >
-          <X style={{ width: 12, height: 12, color: "hsl(var(--muted-foreground))" }} />
+          <X
+            style={{
+              width: 12,
+              height: 12,
+              color: "hsl(var(--muted-foreground))",
+            }}
+          />
         </IconButton>
       )}
 
@@ -191,7 +205,13 @@ export function HeaderSearch({
             height: 28,
           }}
         >
-          <X style={{ width: 14, height: 14, color: "hsl(var(--muted-foreground))" }} />
+          <X
+            style={{
+              width: 14,
+              height: 14,
+              color: "hsl(var(--muted-foreground))",
+            }}
+          />
         </IconButton>
       )}
 

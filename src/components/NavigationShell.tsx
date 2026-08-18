@@ -12,9 +12,9 @@ export function NavigationShell() {
     <div
       className="relative w-full h-full"
       style={{
-        flex: '1 1 0%',
+        flex: "1 1 0%",
         minHeight: 0,
-        overflow: 'hidden',
+        overflow: "hidden",
       }}
     >
       <HeaderSkeleton />
@@ -22,14 +22,14 @@ export function NavigationShell() {
       <main
         role="main"
         style={{
-          flex: '1 1 auto',
-          height: 'var(--main-height, calc(100dvh - 52px - 60px))',
-          minHeight: 'var(--main-height, calc(100dvh - 52px - 60px))',
-          maxHeight: 'var(--main-height, calc(100dvh - 52px - 60px))',
-          contain: 'strict',
-          boxSizing: 'border-box',
-          width: '100%',
-          overflow: 'hidden',
+          flex: "1 1 auto",
+          height: "var(--main-height, calc(100dvh - 52px - 60px))",
+          minHeight: "var(--main-height, calc(100dvh - 52px - 60px))",
+          maxHeight: "var(--main-height, calc(100dvh - 52px - 60px))",
+          contain: "strict",
+          boxSizing: "border-box",
+          width: "100%",
+          overflow: "hidden",
         }}
       >
         <GenericPageSkeleton />

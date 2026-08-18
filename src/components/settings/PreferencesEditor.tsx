@@ -2,7 +2,19 @@ import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Sparkles, ChevronDown, ChevronUp, Check, Loader2, UtensilsCrossed, Wine, Moon, CalendarDays, LucideIcon } from "lucide-react";
+import {
+  MapPin,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
+  Check,
+  Loader2,
+  UtensilsCrossed,
+  Wine,
+  Moon,
+  CalendarDays,
+  LucideIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Json } from "@/integrations/supabase/types";
@@ -48,27 +60,75 @@ interface ProfilePreferences {
 }
 
 const FOOD_OPTIONS = {
-  cuisineType: ["American", "Italian", "Mexican", "Asian Fusion", "Mediterranean"],
+  cuisineType: [
+    "American",
+    "Italian",
+    "Mexican",
+    "Asian Fusion",
+    "Mediterranean",
+  ],
   dietaryPreference: ["Vegetarian", "Vegan", "Gluten-Free", "Keto", "Halal"],
   mealOccasion: ["Breakfast", "Brunch", "Lunch", "Dinner", "Late Night Bites"],
 };
 
 const DRINK_OPTIONS = {
-  coffeeTea: ["Espresso-based", "Cold brew", "Specialty teas", "Matcha", "Flavored lattes"],
-  barCocktail: ["Craft cocktails", "Classic cocktails", "Wine bar", "Craft beer", "Whiskey bar"],
-  atmosphere: ["Quiet & cozy", "Modern & upscale", "Casual & social", "Outdoor seating", "Live music friendly"],
+  coffeeTea: [
+    "Espresso-based",
+    "Cold brew",
+    "Specialty teas",
+    "Matcha",
+    "Flavored lattes",
+  ],
+  barCocktail: [
+    "Craft cocktails",
+    "Classic cocktails",
+    "Wine bar",
+    "Craft beer",
+    "Whiskey bar",
+  ],
+  atmosphere: [
+    "Quiet & cozy",
+    "Modern & upscale",
+    "Casual & social",
+    "Outdoor seating",
+    "Live music friendly",
+  ],
 };
 
 const NIGHTLIFE_OPTIONS = {
   venueType: ["Clubs", "Lounges", "Bars", "Rooftop venues", "Speakeasies"],
   musicPreference: ["Hip-Hop", "EDM", "Pop/Top 40", "Latin", "Live bands"],
-  crowdVibe: ["High-energy", "Chill/lounge", "Young professional", "Mixed crowd", "Exclusive/VIP"],
+  crowdVibe: [
+    "High-energy",
+    "Chill/lounge",
+    "Young professional",
+    "Mixed crowd",
+    "Exclusive/VIP",
+  ],
 };
 
 const EVENTS_OPTIONS = {
-  eventType: ["Concerts", "Festivals", "Sports events", "Comedy shows", "Cultural events"],
-  groupType: ["Solo", "Date night", "Friends/group outing", "Family-friendly", "Networking/meetups"],
-  timeSetting: ["Daytime events", "Evening events", "Outdoor", "Indoor", "Seasonal/holiday"],
+  eventType: [
+    "Concerts",
+    "Festivals",
+    "Sports events",
+    "Comedy shows",
+    "Cultural events",
+  ],
+  groupType: [
+    "Solo",
+    "Date night",
+    "Friends/group outing",
+    "Family-friendly",
+    "Networking/meetups",
+  ],
+  timeSetting: [
+    "Daytime events",
+    "Evening events",
+    "Outdoor",
+    "Indoor",
+    "Seasonal/holiday",
+  ],
 };
 
 const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
@@ -80,27 +140,27 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
   } = useProfile(userId);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
-  
+
   // Food preferences
   const [foodCuisine, setFoodCuisine] = useState<string[]>([]);
   const [foodDietary, setFoodDietary] = useState<string[]>([]);
   const [foodMeal, setFoodMeal] = useState<string[]>([]);
-  
+
   // Drink preferences
   const [drinkCoffee, setDrinkCoffee] = useState<string[]>([]);
   const [drinkBar, setDrinkBar] = useState<string[]>([]);
   const [drinkAtmosphere, setDrinkAtmosphere] = useState<string[]>([]);
-  
+
   // Nightlife preferences
   const [nightlifeVenue, setNightlifeVenue] = useState<string[]>([]);
   const [nightlifeMusic, setNightlifeMusic] = useState<string[]>([]);
   const [nightlifeCrowd, setNightlifeCrowd] = useState<string[]>([]);
-  
+
   // Events preferences
   const [eventsType, setEventsType] = useState<string[]>([]);
   const [eventsGroup, setEventsGroup] = useState<string[]>([]);
   const [eventsTime, setEventsTime] = useState<string[]>([]);
-  
+
   // Live discovery
   const [trendingVenues, setTrendingVenues] = useState(true);
   const [activityInArea, setActivityInArea] = useState(false);
@@ -159,16 +219,16 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
       };
 
       await updatePreferences(preferencesJson as unknown as Json);
-      toast.success('Preferences saved successfully');
+      toast.success("Preferences saved successfully");
       onSaved?.();
     } catch (error) {
-      console.error('Error saving preferences:', error);
-      toast.error('Failed to save preferences');
+      console.error("Error saving preferences:", error);
+      toast.error("Failed to save preferences");
     }
   };
 
   const toggleCategory = (category: string) => {
-    setSelectedCategories(prev => {
+    setSelectedCategories((prev) => {
       if (prev.includes(category)) {
         // Clear subcategory selections when deselecting
         if (category === "Food") {
@@ -188,7 +248,7 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
           setEventsGroup([]);
           setEventsTime([]);
         }
-        return prev.filter(c => c !== category);
+        return prev.filter((c) => c !== category);
       }
       if (prev.length >= 3) {
         return prev;
@@ -199,18 +259,18 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
 
   const toggleExpanded = (category: string) => {
     if (!selectedCategories.includes(category)) return;
-    setExpandedCategory(prev => prev === category ? null : category);
+    setExpandedCategory((prev) => (prev === category ? null : category));
   };
 
   const toggleOption = (
     option: string,
     _currentSelection: string[],
     setter: React.Dispatch<React.SetStateAction<string[]>>,
-    maxSelections: number = 5
+    maxSelections: number = 5,
   ) => {
-    setter(prev => {
+    setter((prev) => {
       if (prev.includes(option)) {
-        return prev.filter(o => o !== option);
+        return prev.filter((o) => o !== option);
       }
       if (prev.length >= maxSelections) {
         return prev;
@@ -227,13 +287,13 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
     );
   }
 
-  const OptionChip = ({ 
-    label, 
-    selected, 
-    onClick 
-  }: { 
-    label: string; 
-    selected: boolean; 
+  const OptionChip = ({
+    label,
+    selected,
+    onClick,
+  }: {
+    label: string;
+    selected: boolean;
     onClick: () => void;
   }) => (
     <button
@@ -243,7 +303,7 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
         "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
         selected
           ? "bg-primary text-primary-foreground border-primary"
-          : "bg-muted/50 text-muted-foreground border-border hover:border-primary/50 hover:bg-muted"
+          : "bg-muted/50 text-muted-foreground border-border hover:border-primary/50 hover:bg-muted",
       )}
     >
       {label}
@@ -262,9 +322,11 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
     onToggle: (option: string) => void;
   }) => (
     <div className="space-y-2">
-      <p className="text-xs font-medium text-muted-foreground">{title} <span className="text-muted-foreground">(up to 5)</span></p>
+      <p className="text-xs font-medium text-muted-foreground">
+        {title} <span className="text-muted-foreground">(up to 5)</span>
+      </p>
       <div className="flex flex-wrap gap-1.5">
-        {options.map(option => (
+        {options.map((option) => (
           <OptionChip
             key={option}
             label={option}
@@ -292,7 +354,7 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
     <div
       className={cn(
         "border rounded-xl transition-all overflow-hidden",
-        isSelected ? "border-primary bg-primary/5" : "border-border bg-card"
+        isSelected ? "border-primary bg-primary/5" : "border-border bg-card",
       )}
     >
       {/* Use a div with role="button" to avoid nested button warning */}
@@ -301,7 +363,7 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
         tabIndex={0}
         onClick={() => toggleCategory(category)}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
+          if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             toggleCategory(category);
           }
@@ -309,18 +371,23 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
         className="w-full p-3 flex items-center justify-between cursor-pointer select-none"
       >
         <div className="flex items-center gap-3">
-          <Icon className={cn("w-5 h-5", isSelected ? "text-primary" : "text-muted-foreground")} />
-          <span className={cn(
-            "font-medium text-sm",
-            isSelected ? "text-foreground" : "text-muted-foreground"
-          )}>
+          <Icon
+            className={cn(
+              "w-5 h-5",
+              isSelected ? "text-primary" : "text-muted-foreground",
+            )}
+          />
+          <span
+            className={cn(
+              "font-medium text-sm",
+              isSelected ? "text-foreground" : "text-muted-foreground",
+            )}
+          >
             {category}
           </span>
         </div>
         <div className="flex items-center gap-2">
-          {isSelected && (
-            <Check className="w-4 h-4 text-primary" />
-          )}
+          {isSelected && <Check className="w-4 h-4 text-primary" />}
           {isSelected && (
             <button
               type="button"
@@ -351,8 +418,10 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
     <div className="space-y-4">
       <div>
         <Label className="text-sm mb-1 block">Select up to 3 categories</Label>
-        <p className="text-xs text-muted-foreground mb-3">Tap a category to select, then expand to set preferences</p>
-        
+        <p className="text-xs text-muted-foreground mb-3">
+          Tap a category to select, then expand to set preferences
+        </p>
+
         <div className="space-y-2">
           <CategoryCard
             category="Food"
@@ -402,7 +471,9 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
               title="Atmosphere"
               options={DRINK_OPTIONS.atmosphere}
               selected={drinkAtmosphere}
-              onToggle={(o) => toggleOption(o, drinkAtmosphere, setDrinkAtmosphere)}
+              onToggle={(o) =>
+                toggleOption(o, drinkAtmosphere, setDrinkAtmosphere)
+              }
             />
           </CategoryCard>
 
@@ -416,19 +487,25 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
               title="Venue Type"
               options={NIGHTLIFE_OPTIONS.venueType}
               selected={nightlifeVenue}
-              onToggle={(o) => toggleOption(o, nightlifeVenue, setNightlifeVenue)}
+              onToggle={(o) =>
+                toggleOption(o, nightlifeVenue, setNightlifeVenue)
+              }
             />
             <SubcategorySection
               title="Music Preference"
               options={NIGHTLIFE_OPTIONS.musicPreference}
               selected={nightlifeMusic}
-              onToggle={(o) => toggleOption(o, nightlifeMusic, setNightlifeMusic)}
+              onToggle={(o) =>
+                toggleOption(o, nightlifeMusic, setNightlifeMusic)
+              }
             />
             <SubcategorySection
               title="Crowd & Vibe"
               options={NIGHTLIFE_OPTIONS.crowdVibe}
               selected={nightlifeCrowd}
-              onToggle={(o) => toggleOption(o, nightlifeCrowd, setNightlifeCrowd)}
+              onToggle={(o) =>
+                toggleOption(o, nightlifeCrowd, setNightlifeCrowd)
+              }
             />
           </CategoryCard>
 
@@ -464,13 +541,17 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
 
       <div className="space-y-3">
         <Label className="text-sm">Live Discovery</Label>
-        
+
         <div className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-background/50 backdrop-blur-sm">
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-primary" />
             <div>
-              <p className="font-medium text-xs text-foreground">Trending Venues</p>
-              <p className="text-[10px] text-muted-foreground">See what's popular now</p>
+              <p className="font-medium text-xs text-foreground">
+                Trending Venues
+              </p>
+              <p className="text-[10px] text-muted-foreground">
+                See what's popular now
+              </p>
             </div>
           </div>
           <Switch
@@ -483,8 +564,12 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-primary" />
             <div>
-              <p className="font-medium text-xs text-foreground">Activity in Your Area</p>
-              <p className="text-[10px] text-muted-foreground">Get location-based alerts</p>
+              <p className="font-medium text-xs text-foreground">
+                Activity in Your Area
+              </p>
+              <p className="text-[10px] text-muted-foreground">
+                Get location-based alerts
+              </p>
             </div>
           </div>
           <Switch
@@ -505,7 +590,7 @@ const PreferencesEditor = ({ userId, onSaved }: PreferencesEditorProps) => {
             Saving...
           </>
         ) : (
-          'Save Preferences'
+          "Save Preferences"
         )}
       </button>
     </div>

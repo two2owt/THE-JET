@@ -26,17 +26,34 @@ export default defineTool({
   description:
     "View or update the signed-in user's push notification preferences for JetCard updates and merchant offers. Call with no arguments to read current settings; pass any flag to change it.",
   inputSchema: {
-    push_enabled: topicFlag("Master device push switch. Turning this off silences all push topics."),
-    jetcard_updates: topicFlag("Push about JetCard membership/status changes and account updates."),
-    merchant_offers: topicFlag("Push when merchants activate new deals or offers."),
-    favorite_venue_alerts: topicFlag("Push when a saved/favorite venue posts or updates a deal."),
-    ending_soon_reminders: topicFlag("Push when a saved deal is about to expire."),
+    push_enabled: topicFlag(
+      "Master device push switch. Turning this off silences all push topics.",
+    ),
+    jetcard_updates: topicFlag(
+      "Push about JetCard membership/status changes and account updates.",
+    ),
+    merchant_offers: topicFlag(
+      "Push when merchants activate new deals or offers.",
+    ),
+    favorite_venue_alerts: topicFlag(
+      "Push when a saved/favorite venue posts or updates a deal.",
+    ),
+    ending_soon_reminders: topicFlag(
+      "Push when a saved deal is about to expire.",
+    ),
     direct_messages: topicFlag("Push for direct messages from other users."),
   },
-  annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: false },
+  annotations: {
+    readOnlyHint: false,
+    idempotentHint: true,
+    openWorldHint: false,
+  },
   handler: async (input, ctx) => {
     if (!ctx.isAuthenticated()) {
-      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+      return {
+        content: [{ type: "text", text: "Not authenticated" }],
+        isError: true,
+      };
     }
     const supabase = supabaseForUser(ctx);
     const userId = ctx.getUserId();
@@ -45,8 +62,15 @@ export default defineTool({
     if (input.push_enabled !== undefined) {
       const { error } = await supabase
         .from("user_preferences")
-        .upsert({ user_id: userId, notifications_enabled: input.push_enabled }, { onConflict: "user_id" });
-      if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+        .upsert(
+          { user_id: userId, notifications_enabled: input.push_enabled },
+          { onConflict: "user_id" },
+        );
+      if (error)
+        return {
+          content: [{ type: "text", text: error.message }],
+          isError: true,
+        };
     }
 
     // --- topic switches live on profiles.preferences.push_topics ---
@@ -56,7 +80,10 @@ export default defineTool({
       .eq("id", userId)
       .maybeSingle();
     if (profileError) {
-      return { content: [{ type: "text", text: profileError.message }], isError: true };
+      return {
+        content: [{ type: "text", text: profileError.message }],
+        isError: true,
+      };
     }
 
     const prefs = (profile?.preferences ?? {}) as Record<string, unknown>;
@@ -77,7 +104,11 @@ export default defineTool({
         .from("profiles")
         .update({ preferences: { ...prefs, push_topics: topics } })
         .eq("id", userId);
-      if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+      if (error)
+        return {
+          content: [{ type: "text", text: error.message }],
+          isError: true,
+        };
     }
 
     const { data: userPrefs, error: prefsError } = await supabase
@@ -86,7 +117,10 @@ export default defineTool({
       .eq("user_id", userId)
       .maybeSingle();
     if (prefsError) {
-      return { content: [{ type: "text", text: prefsError.message }], isError: true };
+      return {
+        content: [{ type: "text", text: prefsError.message }],
+        isError: true,
+      };
     }
 
     const pushEnabled = userPrefs?.notifications_enabled ?? false;

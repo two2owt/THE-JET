@@ -31,39 +31,46 @@ export const usePushNotifications = () => {
   const [token, setToken] = useState<string | null>(null);
   const initedRef = useRef(false);
 
-  const persistToken = useCallback(async (deviceToken: string, platform: "ios" | "android") => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    // No unique constraint on `endpoint` — do a manual find-or-update.
-    const { data: existing } = await supabase
-      .from("push_subscriptions")
-      .select("id")
-      .eq("endpoint", deviceToken)
-      .maybeSingle();
-    if (existing?.id) {
-      await supabase
+  const persistToken = useCallback(
+    async (deviceToken: string, platform: "ios" | "android") => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      // No unique constraint on `endpoint` — do a manual find-or-update.
+      const { data: existing } = await supabase
         .from("push_subscriptions")
-        .update({ user_id: user.id, platform, active: true })
-        .eq("id", existing.id);
-    } else {
-      await supabase.from("push_subscriptions").insert({
-        user_id: user.id,
-        endpoint: deviceToken,
-        p256dh_key: "native",
-        auth_key: "native",
-        platform,
-        active: true,
-      });
-    }
-  }, []);
+        .select("id")
+        .eq("endpoint", deviceToken)
+        .maybeSingle();
+      if (existing?.id) {
+        await supabase
+          .from("push_subscriptions")
+          .update({ user_id: user.id, platform, active: true })
+          .eq("id", existing.id);
+      } else {
+        await supabase.from("push_subscriptions").insert({
+          user_id: user.id,
+          endpoint: deviceToken,
+          p256dh_key: "native",
+          auth_key: "native",
+          platform,
+          active: true,
+        });
+      }
+    },
+    [],
+  );
 
   const initializePushNotifications = useCallback(async () => {
     if (initedRef.current || !isNativeShell()) return;
     initedRef.current = true;
     try {
-      const { PushNotifications } = await import("@capacitor/push-notifications");
+      const { PushNotifications } =
+        await import("@capacitor/push-notifications");
       // @ts-expect-error runtime
-      const platform = (window.Capacitor?.getPlatform?.() ?? "android") as "ios" | "android";
+      const platform = (window.Capacitor?.getPlatform?.() ?? "android") as
+        "ios" | "android";
 
       let perm = await PushNotifications.checkPermissions();
       if (perm.receive !== "granted") {
@@ -89,31 +96,42 @@ export const usePushNotifications = () => {
 
       // Foreground receipt — surface as a lightweight toast route is left
       // to the app; the OS handles background delivery natively.
-      await PushNotifications.addListener("pushNotificationReceived", (notif) => {
-        // Foreground on native: the OS suppresses the banner, so surface the
-        // alert in-app with a deep-link action into the matching JetCard.
-        const data = (notif?.data ?? {}) as Record<string, string>;
-        const target = resolvePushDeepLink(data);
-        toast(notif?.title || "New JET alert", {
-          description: notif?.body || undefined,
-          action: target ? { label: "View", onClick: () => navigate(target) } : undefined,
-        });
-        window.dispatchEvent(new CustomEvent("jet:notifications-refresh"));
-      });
+      await PushNotifications.addListener(
+        "pushNotificationReceived",
+        (notif) => {
+          // Foreground on native: the OS suppresses the banner, so surface the
+          // alert in-app with a deep-link action into the matching JetCard.
+          const data = (notif?.data ?? {}) as Record<string, string>;
+          const target = resolvePushDeepLink(data);
+          toast(notif?.title || "New JET alert", {
+            description: notif?.body || undefined,
+            action: target
+              ? { label: "View", onClick: () => navigate(target) }
+              : undefined,
+          });
+          window.dispatchEvent(new CustomEvent("jet:notifications-refresh"));
+        },
+      );
 
       // User tapped the notification → route into the correct heatmap state.
-      await PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
-        const data = (action.notification?.data ?? {}) as Record<string, string>;
-        if (data.notificationId) {
-          void supabase.functions
-            .invoke("notifications-receipt", {
-              body: { notificationId: data.notificationId },
-            })
-            .catch(() => {});
-        }
-        const target = resolvePushDeepLink(data);
-        if (target) navigate(target);
-      });
+      await PushNotifications.addListener(
+        "pushNotificationActionPerformed",
+        (action) => {
+          const data = (action.notification?.data ?? {}) as Record<
+            string,
+            string
+          >;
+          if (data.notificationId) {
+            void supabase.functions
+              .invoke("notifications-receipt", {
+                body: { notificationId: data.notificationId },
+              })
+              .catch(() => {});
+          }
+          const target = resolvePushDeepLink(data);
+          if (target) navigate(target);
+        },
+      );
     } catch (err) {
       console.error("[push] init failed", err);
     }
@@ -122,7 +140,8 @@ export const usePushNotifications = () => {
   const unregister = useCallback(async () => {
     if (!isNativeShell()) return;
     try {
-      const { PushNotifications } = await import("@capacitor/push-notifications");
+      const { PushNotifications } =
+        await import("@capacitor/push-notifications");
       await PushNotifications.removeAllListeners();
       if (token) {
         await supabase
@@ -139,7 +158,8 @@ export const usePushNotifications = () => {
   const checkPermissions = useCallback(async () => {
     if (!isNativeShell()) return false;
     try {
-      const { PushNotifications } = await import("@capacitor/push-notifications");
+      const { PushNotifications } =
+        await import("@capacitor/push-notifications");
       const perm = await PushNotifications.checkPermissions();
       return perm.receive === "granted";
     } catch {

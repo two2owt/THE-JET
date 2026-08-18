@@ -1,6 +1,10 @@
 import { memo } from "react";
 import { LucideIcon, Loader2, HelpCircle } from "lucide-react";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 interface LayerToggleRowProps {
   label: string;
@@ -74,7 +78,9 @@ const LayerToggleRowImpl = ({
         boxShadow: active
           ? "0 8px 24px -10px hsl(var(--primary) / 0.55), inset 0 0 0 1px hsl(var(--primary-glow) / 0.18)"
           : "inset 0 0 0 1px hsl(0 0% 100% / 0.03)",
-        color: active ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
+        color: active
+          ? "hsl(var(--foreground))"
+          : "hsl(var(--muted-foreground))",
         opacity: loading ? 0.85 : 1,
       }}
     >
@@ -99,11 +105,15 @@ const LayerToggleRowImpl = ({
           boxShadow: active
             ? "0 4px 12px -4px hsl(var(--primary) / 0.6)"
             : "none",
-          transition: "background 220ms ease, color 220ms ease, box-shadow 220ms ease",
+          transition:
+            "background 220ms ease, color 220ms ease, box-shadow 220ms ease",
         }}
       >
         <Icon
-          style={{ width: "clamp(14px, 3.4vw, 16px)", height: "clamp(14px, 3.4vw, 16px)" }}
+          style={{
+            width: "clamp(14px, 3.4vw, 16px)",
+            height: "clamp(14px, 3.4vw, 16px)",
+          }}
           strokeWidth={2.25}
         />
       </div>
@@ -115,7 +125,9 @@ const LayerToggleRowImpl = ({
           fontSize: "clamp(12px, 2.8vw, 14px)",
           fontWeight: 700,
           letterSpacing: "-0.005em",
-          color: active ? "hsl(var(--foreground))" : "hsl(var(--foreground) / 0.75)",
+          color: active
+            ? "hsl(var(--foreground))"
+            : "hsl(var(--foreground) / 0.75)",
         }}
       >
         {label}
@@ -143,7 +155,8 @@ const LayerToggleRowImpl = ({
                 color: "hsl(var(--muted-foreground) / 0.7)",
                 cursor: "pointer",
                 touchAction: "manipulation",
-                transition: "color 150ms ease, background 150ms ease, border-color 150ms ease",
+                transition:
+                  "color 150ms ease, background 150ms ease, border-color 150ms ease",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.color = "hsl(var(--foreground))";
@@ -151,12 +164,16 @@ const LayerToggleRowImpl = ({
                 e.currentTarget.style.borderColor = "hsl(var(--border) / 0.6)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.color = "hsl(var(--muted-foreground) / 0.7)";
+                e.currentTarget.style.color =
+                  "hsl(var(--muted-foreground) / 0.7)";
                 e.currentTarget.style.background = "transparent";
                 e.currentTarget.style.borderColor = "transparent";
               }}
             >
-              <HelpCircle style={{ width: "15px", height: "15px" }} strokeWidth={2.25} />
+              <HelpCircle
+                style={{ width: "15px", height: "15px" }}
+                strokeWidth={2.25}
+              />
             </button>
           </TooltipTrigger>
           <TooltipContent

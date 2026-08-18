@@ -36,7 +36,9 @@ export function buildDirectionsUrl(
   // "lat,lng" fallbacks) must not be sent as destination_place_id.
   const rawPlaceId = options?.placeId ?? undefined;
   const placeId =
-    rawPlaceId && /^[A-Za-z0-9_-]{10,}$/.test(rawPlaceId) && rawPlaceId.startsWith("ChIJ")
+    rawPlaceId &&
+    /^[A-Za-z0-9_-]{10,}$/.test(rawPlaceId) &&
+    rawPlaceId.startsWith("ChIJ")
       ? encodeURIComponent(rawPlaceId)
       : "";
 

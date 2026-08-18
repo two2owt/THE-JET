@@ -47,7 +47,7 @@ export const useSearchHistory = (userId: string | undefined) => {
     try {
       // Check if query already exists recently
       const recentQuery = searchHistory.find(
-        (item) => item.search_query.toLowerCase() === query.toLowerCase()
+        (item) => item.search_query.toLowerCase() === query.toLowerCase(),
       );
 
       if (!recentQuery) {

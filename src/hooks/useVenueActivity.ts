@@ -9,18 +9,23 @@ import { scoreVenueMomentum } from "@/lib/venue-momentum";
 /**
  * Fetch the top 10 most popular venues for the given city
  */
-const fetchPopularVenuesFromGooglePlaces = async (city: City): Promise<Venue[]> => {
+const fetchPopularVenuesFromGooglePlaces = async (
+  city: City,
+): Promise<Venue[]> => {
   try {
     devLog(`Fetching top 10 ${city.name} venues...`);
 
     const cityLocation = { lat: city.lat, lng: city.lng };
 
-    const { data, error } = await supabase.functions.invoke('search-google-places-venues', {
-      body: { location: cityLocation }
-    });
+    const { data, error } = await supabase.functions.invoke(
+      "search-google-places-venues",
+      {
+        body: { location: cityLocation },
+      },
+    );
 
     if (error) {
-      console.error('Error fetching venues:', error);
+      console.error("Error fetching venues:", error);
       return [];
     }
 
@@ -31,7 +36,7 @@ const fetchPopularVenuesFromGooglePlaces = async (city: City): Promise<Venue[]> 
       lat: v.lat,
       lng: v.lng,
       activity: v.activity || 50,
-      category: v.category || 'Venue',
+      category: v.category || "Venue",
       neighborhood: getNeighborhoodForCoords(city.id, v.lat, v.lng),
       address: v.address,
       googleRating: v.googleRating,
@@ -41,14 +46,16 @@ const fetchPopularVenuesFromGooglePlaces = async (city: City): Promise<Venue[]> 
       phone: v.phone,
       website: v.website,
     }));
-    
+
     devLog(`Fetched ${venues.length} ${city.name} venues:`);
     venues.forEach((v, i) => {
-      devLog(`  ${i + 1}. ${v.name}: lat=${v.lat}, lng=${v.lng} | ${v.address || 'No address'}`);
+      devLog(
+        `  ${i + 1}. ${v.name}: lat=${v.lat}, lng=${v.lng} | ${v.address || "No address"}`,
+      );
     });
     return venues;
   } catch (error) {
-    console.error('Error in fetchPopularVenuesFromGooglePlaces:', error);
+    console.error("Error in fetchPopularVenuesFromGooglePlaces:", error);
     return [];
   }
 };
@@ -56,7 +63,10 @@ const fetchPopularVenuesFromGooglePlaces = async (city: City): Promise<Venue[]> 
 /**
  * Hook to fetch real venue activity data from Supabase and Google Places
  */
-export const useVenueActivity = (enabled: boolean = true, city: City = CITIES[0]) => {
+export const useVenueActivity = (
+  enabled: boolean = true,
+  city: City = CITIES[0],
+) => {
   const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,11 +83,12 @@ export const useVenueActivity = (enabled: boolean = true, city: City = CITIES[0]
 
       // First, fetch popular venues from Google Places as the base dataset
       const googleVenues = await fetchPopularVenuesFromGooglePlaces(city);
-      
+
       // Then, enhance with our own platform data (deals, engagement, etc.)
       const { data: deals, error: dealsError } = await supabase
-          .from('deals')
-          .select(`
+        .from("deals")
+        .select(
+          `
             venue_id,
             venue_name,
             venue_address,
@@ -88,23 +99,27 @@ export const useVenueActivity = (enabled: boolean = true, city: City = CITIES[0]
               center_lat,
               center_lng
             )
-          `)
-          .eq('active', true)
-          .gte('expires_at', new Date().toISOString())
-          .lte('starts_at', new Date().toISOString());
+          `,
+        )
+        .eq("active", true)
+        .gte("expires_at", new Date().toISOString())
+        .lte("starts_at", new Date().toISOString());
 
       if (dealsError) {
-        console.warn('Error fetching deals:', dealsError);
+        console.warn("Error fetching deals:", dealsError);
       }
 
       // Aggregate venue metrics from deals
-      const venueEngagementMap = new Map<string, {
-        dealCount: number;
-        recentDealCount: number;
-        favoriteCount: number;
-        shareCount: number;
-      }>();
-      
+      const venueEngagementMap = new Map<
+        string,
+        {
+          dealCount: number;
+          recentDealCount: number;
+          favoriteCount: number;
+          shareCount: number;
+        }
+      >();
+
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
@@ -128,58 +143,62 @@ export const useVenueActivity = (enabled: boolean = true, city: City = CITIES[0]
 
       // Fetch engagement metrics (favorites and shares) for venues with deals
       const venueIds = Array.from(venueEngagementMap.keys());
-      
+
       if (venueIds.length > 0) {
         const { data: dealIds } = await supabase
-          .from('deals')
-          .select('id, venue_id')
-          .in('venue_id', venueIds);
+          .from("deals")
+          .select("id, venue_id")
+          .in("venue_id", venueIds);
 
         if (dealIds && dealIds.length > 0) {
-          const dealIdsArray = dealIds.map(d => d.id);
+          const dealIdsArray = dealIds.map((d) => d.id);
 
           // Get favorites count
           const { data: favorites } = await supabase
-            .from('user_favorites')
-            .select('deal_id')
-            .in('deal_id', dealIdsArray);
+            .from("user_favorites")
+            .select("deal_id")
+            .in("deal_id", dealIdsArray);
 
           // Get shares count
           const { data: shares } = await supabase
-            .from('deal_shares')
-            .select('deal_id')
-            .in('deal_id', dealIdsArray);
+            .from("deal_shares")
+            .select("deal_id")
+            .in("deal_id", dealIdsArray);
 
           // Update engagement map
-          dealIds.forEach(dealMapping => {
+          dealIds.forEach((dealMapping) => {
             const engagement = venueEngagementMap.get(dealMapping.venue_id);
             if (engagement) {
-              engagement.favoriteCount += favorites?.filter(f => f.deal_id === dealMapping.id).length || 0;
-              engagement.shareCount += shares?.filter(s => s.deal_id === dealMapping.id).length || 0;
+              engagement.favoriteCount +=
+                favorites?.filter((f) => f.deal_id === dealMapping.id).length ||
+                0;
+              engagement.shareCount +=
+                shares?.filter((s) => s.deal_id === dealMapping.id).length || 0;
             }
           });
         }
       }
 
       // Enhance Google Places venues with our engagement data
-      const enhancedVenues = googleVenues.map(venue => {
+      const enhancedVenues = googleVenues.map((venue) => {
         const engagement = venueEngagementMap.get(venue.id);
-        
+
         if (engagement) {
           // Boost activity score for venues with deals/engagement
-          const engagementBoost = Math.min(30, 
-            (engagement.dealCount * 5) + 
-            (engagement.recentDealCount * 10) + 
-            (engagement.favoriteCount * 2) + 
-            (engagement.shareCount * 2)
+          const engagementBoost = Math.min(
+            30,
+            engagement.dealCount * 5 +
+              engagement.recentDealCount * 10 +
+              engagement.favoriteCount * 2 +
+              engagement.shareCount * 2,
           );
-          
+
           return {
             ...venue,
             activity: Math.min(100, venue.activity + engagementBoost),
           };
         }
-        
+
         return venue;
       });
 
@@ -199,15 +218,18 @@ export const useVenueActivity = (enabled: boolean = true, city: City = CITIES[0]
 
       // Sort by activity, breaking ties toward venues that are on the way up.
       const sortedVenues = withMomentum.sort(
-        (a, b) => b.activity - a.activity || (b.momentum ?? 0) - (a.momentum ?? 0),
+        (a, b) =>
+          b.activity - a.activity || (b.momentum ?? 0) - (a.momentum ?? 0),
       );
-      
+
       devLog(`Loaded ${sortedVenues.length} venues with activity scores`);
       setVenues(sortedVenues);
       setLastUpdated(new Date());
     } catch (err) {
-      console.error('Error loading venue activity:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load venue data');
+      console.error("Error loading venue activity:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to load venue data",
+      );
     } finally {
       setLoading(false);
     }
@@ -216,7 +238,7 @@ export const useVenueActivity = (enabled: boolean = true, city: City = CITIES[0]
   useEffect(() => {
     // Skip initialization if disabled (deferred loading)
     if (!enabled) return;
-    
+
     loadVenueActivity();
 
     // Realtime tables like user_locations fire constantly; coalesce refreshes
@@ -225,7 +247,10 @@ export const useVenueActivity = (enabled: boolean = true, city: City = CITIES[0]
     const REFRESH_INTERVAL_MS = 60_000;
     const scheduleRefresh = () => {
       if (pendingRef.current) return;
-      const wait = Math.max(0, REFRESH_INTERVAL_MS - (Date.now() - lastLoadRef.current));
+      const wait = Math.max(
+        0,
+        REFRESH_INTERVAL_MS - (Date.now() - lastLoadRef.current),
+      );
       pendingRef.current = setTimeout(() => {
         pendingRef.current = null;
         loadVenueActivity();
@@ -236,52 +261,52 @@ export const useVenueActivity = (enabled: boolean = true, city: City = CITIES[0]
     const channel = supabase
       .channel(`venue-activity-changes-${channelId}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'deals'
+          event: "*",
+          schema: "public",
+          table: "deals",
         },
         () => {
-          devLog('Deal change detected, refreshing venue activity');
+          devLog("Deal change detected, refreshing venue activity");
           scheduleRefresh();
-        }
+        },
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'user_locations'
+          event: "INSERT",
+          schema: "public",
+          table: "user_locations",
         },
         () => {
-          devLog('User location update detected, refreshing venue activity');
+          devLog("User location update detected, refreshing venue activity");
           scheduleRefresh();
-        }
+        },
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'user_favorites'
+          event: "*",
+          schema: "public",
+          table: "user_favorites",
         },
         () => {
-          devLog('Favorites change detected, refreshing venue activity');
+          devLog("Favorites change detected, refreshing venue activity");
           scheduleRefresh();
-        }
+        },
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'deal_shares'
+          event: "*",
+          schema: "public",
+          table: "deal_shares",
         },
         () => {
-          devLog('Deal share detected, refreshing venue activity');
+          devLog("Deal share detected, refreshing venue activity");
           scheduleRefresh();
-        }
+        },
       )
       .subscribe();
 
@@ -299,7 +324,9 @@ export const useVenueActivity = (enabled: boolean = true, city: City = CITIES[0]
     window.addEventListener("online", resync);
 
     // Refetch once auth becomes available (the venue search requires a JWT).
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
         scheduleRefresh();
       }

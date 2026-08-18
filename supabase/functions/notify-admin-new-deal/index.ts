@@ -11,28 +11,31 @@ const ADMIN_EMAIL = "creativebreakroominfo@gmail.com";
 // HTML escape function to prevent XSS/injection
 function escapeHtml(text: string): string {
   const htmlEntities: Record<string, string> = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;',
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
   };
   return text.replace(/[&<>"']/g, (char) => htmlEntities[char] || char);
 }
 
 Deno.serve(async (req) => {
-  if (req.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 });
+  if (req.method !== "POST") {
+    return new Response("Method not allowed", { status: 405 });
   }
 
   try {
     // Verify webhook secret to prevent unauthorized calls
     if (!hookSecret) {
       console.error("NOTIFY_ADMIN_HOOK_SECRET not configured");
-      return new Response(JSON.stringify({ error: "Server configuration error" }), {
-        headers: { "Content-Type": "application/json" },
-        status: 500,
-      });
+      return new Response(
+        JSON.stringify({ error: "Server configuration error" }),
+        {
+          headers: { "Content-Type": "application/json" },
+          status: 500,
+        },
+      );
     }
 
     // Verify Authorization header matches the secret
@@ -50,14 +53,18 @@ Deno.serve(async (req) => {
 
     const subject = "New Deal Created";
     const safeSubject = escapeHtml(subject);
-    
+
     const details: Record<string, string> = {
       "Deal Title": deal.title || "N/A",
-      "Venue": deal.venue_name || "N/A",
+      Venue: deal.venue_name || "N/A",
       "Deal Type": deal.deal_type || "N/A",
-      "Description": deal.description || "N/A",
-      "Starts At": deal.starts_at ? new Date(deal.starts_at).toLocaleString() : "N/A",
-      "Expires At": deal.expires_at ? new Date(deal.expires_at).toLocaleString() : "N/A",
+      Description: deal.description || "N/A",
+      "Starts At": deal.starts_at
+        ? new Date(deal.starts_at).toLocaleString()
+        : "N/A",
+      "Expires At": deal.expires_at
+        ? new Date(deal.expires_at).toLocaleString()
+        : "N/A",
     };
 
     const emailHtml = `
@@ -66,7 +73,10 @@ Deno.serve(async (req) => {
       <h3>Details:</h3>
       <ul>
         ${Object.entries(details)
-          .map(([key, value]) => `<li><strong>${escapeHtml(key)}:</strong> ${escapeHtml(value)}</li>`)
+          .map(
+            ([key, value]) =>
+              `<li><strong>${escapeHtml(key)}:</strong> ${escapeHtml(value)}</li>`,
+          )
           .join("")}
       </ul>
     `;
@@ -78,7 +88,10 @@ Deno.serve(async (req) => {
       html: emailHtml,
     });
 
-    console.log("Admin notification sent successfully for new deal:", emailResponse);
+    console.log(
+      "Admin notification sent successfully for new deal:",
+      emailResponse,
+    );
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { "Content-Type": "application/json" },

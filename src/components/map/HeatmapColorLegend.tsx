@@ -37,7 +37,14 @@ const HeatmapColorLegendImpl = ({
     }}
   >
     {loading && <span aria-hidden className="layer-loading-bar" />}
-    <div style={{ display: "flex", alignItems: "center", gap: "clamp(6px, 1.4vw, 8px)", minWidth: 0 }}>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "clamp(6px, 1.4vw, 8px)",
+        minWidth: 0,
+      }}
+    >
       <div
         aria-hidden
         style={{
@@ -53,7 +60,13 @@ const HeatmapColorLegendImpl = ({
           color: "hsl(var(--muted-foreground))",
         }}
       >
-        <Flame style={{ width: "clamp(12px, 3vw, 14px)", height: "clamp(12px, 3vw, 14px)" }} strokeWidth={2.25} />
+        <Flame
+          style={{
+            width: "clamp(12px, 3vw, 14px)",
+            height: "clamp(12px, 3vw, 14px)",
+          }}
+          strokeWidth={2.25}
+        />
       </div>
       <span
         className="font-display"
@@ -112,7 +125,8 @@ const HeatmapColorLegendImpl = ({
         color: "hsl(var(--muted-foreground) / 0.85)",
       }}
     >
-      Color shows how many people are checked in nearby. Zoom in past street level to see individual hotspots as dots.
+      Color shows how many people are checked in nearby. Zoom in past street
+      level to see individual hotspots as dots.
     </p>
   </div>
 );

@@ -7,7 +7,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
-import { useSubscription, SubscriptionTier, SUBSCRIPTION_TIERS } from "@/hooks/useSubscription";
+import {
+  useSubscription,
+  SubscriptionTier,
+  SUBSCRIPTION_TIERS,
+} from "@/hooks/useSubscription";
 import { useState } from "react";
 import { canPurchaseSubscription } from "@/lib/platform";
 
@@ -31,7 +35,7 @@ export const UpgradePrompt = ({
 
   const handleUpgrade = async () => {
     if (!tierInfo.priceId) return;
-    
+
     setLoading(true);
     try {
       await createCheckout(tierInfo.priceId);
@@ -69,7 +73,10 @@ export const UpgradePrompt = ({
             </p>
             <ul className="space-y-2">
               {tierInfo.features.map((feature, index) => (
-                <li key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
+                <li
+                  key={index}
+                  className="flex items-center gap-2 text-sm text-muted-foreground"
+                >
                   <div className="w-1.5 h-1.5 rounded-full bg-primary" />
                   {feature}
                 </li>
@@ -117,9 +124,9 @@ export const useFeatureAccess = () => {
   const canAccessFeature = (requiredTier: SubscriptionTier): boolean => {
     // Check monetization status (includes admin override and release date)
     if (!isMonetizationEnabled()) return true;
-    
+
     if (loading) return false;
-    
+
     const tierOrder: Record<SubscriptionTier, number> = {
       free: 0,
       jet_plus: 1,

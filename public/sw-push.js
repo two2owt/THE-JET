@@ -1,18 +1,18 @@
 // Service Worker for Web Push Notifications only
 // Main caching is handled by Workbox-generated sw.js
 
-self.addEventListener('push', function(event) {
-  console.log('[SW-Push] Push event received:', event);
+self.addEventListener("push", function (event) {
+  console.log("[SW-Push] Push event received:", event);
 
   let data = {};
-  
+
   if (event.data) {
     try {
       data = event.data.json();
     } catch (e) {
       data = {
-        title: 'JET Notification',
-        body: event.data.text()
+        title: "JET Notification",
+        body: event.data.text(),
       };
     }
   }
@@ -21,33 +21,33 @@ self.addEventListener('push', function(event) {
   // `data`. Older senders put them at the top level — support both.
   const payloadData = data.data || data;
 
-  const title = data.title || 'JET Deal Alert';
+  const title = data.title || "JET Deal Alert";
   const options = {
-    body: data.body || 'Check out this deal!',
-    icon: data.icon || '/pwa-192x192.png',
-    badge: data.badge || '/pwa-192x192.png',
-    tag: data.tag || 'jet-notification',
+    body: data.body || "Check out this deal!",
+    icon: data.icon || "/pwa-192x192.png",
+    badge: data.badge || "/pwa-192x192.png",
+    tag: data.tag || "jet-notification",
     data: {
-      url: payloadData.url || data.click_action || '/',
+      url: payloadData.url || data.click_action || "/",
       dealId: payloadData.dealId || null,
       venueId: payloadData.venueId || null,
       venueName: payloadData.venueName || null,
       layers: payloadData.layers || null,
-      notificationId: payloadData.notificationId || null
+      notificationId: payloadData.notificationId || null,
     },
     actions: [
       {
-        action: 'view',
-        title: 'View Deal'
+        action: "view",
+        title: "View Deal",
       },
       {
-        action: 'dismiss',
-        title: 'Dismiss'
-      }
+        action: "dismiss",
+        title: "Dismiss",
+      },
     ],
     vibrate: [100, 50, 100],
     requireInteraction: true,
-    renotify: true
+    renotify: true,
   };
 
   event.waitUntil(
@@ -55,17 +55,20 @@ self.addEventListener('push', function(event) {
       // Foreground delivery: if JET is already open and visible, hand the
       // payload to the page so it renders an in-app toast instead of an OS
       // banner (avoids duplicate alerts for an active user).
-      const windowClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+      const windowClients = await clients.matchAll({
+        type: "window",
+        includeUncontrolled: true,
+      });
       const visible = windowClients.filter(function (c) {
-        return c.visibilityState === 'visible';
+        return c.visibilityState === "visible";
       });
 
       if (visible.length > 0) {
         visible.forEach(function (client) {
           try {
             client.postMessage({
-              type: 'PUSH_RECEIVED',
-              payload: { title: title, body: options.body, data: options.data }
+              type: "PUSH_RECEIVED",
+              payload: { title: title, body: options.body, data: options.data },
             });
           } catch (e) {}
         });
@@ -73,30 +76,35 @@ self.addEventListener('push', function(event) {
       }
 
       return self.registration.showNotification(title, options);
-    })()
+    })(),
   );
 });
 
-self.addEventListener('notificationclick', function(event) {
-  console.log('[SW-Push] Notification click received:', event);
+self.addEventListener("notificationclick", function (event) {
+  console.log("[SW-Push] Notification click received:", event);
 
   event.notification.close();
 
-  if (event.action === 'dismiss') {
+  if (event.action === "dismiss") {
     return;
   }
 
   const notificationData = event.notification.data || {};
-  let urlToOpen = notificationData.url || '/';
+  let urlToOpen = notificationData.url || "/";
 
   // Fire-and-forget open receipt so merchant analytics can close the loop.
   if (notificationData.notificationId) {
     try {
-      fetch('https://flvhduntedvorikonuvy.supabase.co/functions/v1/notifications-receipt', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notificationId: notificationData.notificationId })
-      }).catch(function () {});
+      fetch(
+        "https://flvhduntedvorikonuvy.supabase.co/functions/v1/notifications-receipt",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            notificationId: notificationData.notificationId,
+          }),
+        },
+      ).catch(function () {});
     } catch (e) {}
   }
 
@@ -113,21 +121,24 @@ self.addEventListener('notificationclick', function(event) {
 
   // Preserve heatmap layer state if the sender specified it.
   if (notificationData.layers) {
-    const sep = urlToOpen.includes('?') ? '&' : '?';
+    const sep = urlToOpen.includes("?") ? "&" : "?";
     urlToOpen += `${sep}layers=${encodeURIComponent(notificationData.layers)}`;
   }
 
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true })
-      .then(function(clientList) {
+    clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then(function (clientList) {
         for (let i = 0; i < clientList.length; i++) {
           const client = clientList[i];
-          if (client.url.includes(self.location.origin) && 'focus' in client) {
+          if (client.url.includes(self.location.origin) && "focus" in client) {
             // Always navigate so the SPA re-reads search params even when the
             // tab is already at "/". postMessage as a belt-and-suspenders signal
             // for the React layer to re-trigger deep-link handlers.
             return client.focus().then(function () {
-              try { client.postMessage({ type: 'DEEP_LINK', url: urlToOpen }); } catch (e) {}
+              try {
+                client.postMessage({ type: "DEEP_LINK", url: urlToOpen });
+              } catch (e) {}
               return client.navigate(urlToOpen).catch(function () {
                 if (clients.openWindow) return clients.openWindow(urlToOpen);
               });
@@ -137,76 +148,79 @@ self.addEventListener('notificationclick', function(event) {
         if (clients.openWindow) {
           return clients.openWindow(urlToOpen);
         }
-      })
+      }),
   );
 });
 
-self.addEventListener('notificationclose', function(event) {
-  console.log('[SW-Push] Notification closed:', event);
+self.addEventListener("notificationclose", function (event) {
+  console.log("[SW-Push] Notification closed:", event);
 });
 
-self.addEventListener('pushsubscriptionchange', function(event) {
-  console.log('[SW-Push] Push subscription change event:', event);
-  
+self.addEventListener("pushsubscriptionchange", function (event) {
+  console.log("[SW-Push] Push subscription change event:", event);
+
   event.waitUntil(
-    self.registration.pushManager.subscribe({ userVisibleOnly: true })
-      .then(function(subscription) {
-        console.log('[SW-Push] New subscription:', subscription);
-        return fetch('/api/push-subscribe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+    self.registration.pushManager
+      .subscribe({ userVisibleOnly: true })
+      .then(function (subscription) {
+        console.log("[SW-Push] New subscription:", subscription);
+        return fetch("/api/push-subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             endpoint: subscription.endpoint,
-            keys: subscription.toJSON().keys
-          })
+            keys: subscription.toJSON().keys,
+          }),
         });
-      })
+      }),
   );
 });
 
-self.addEventListener('message', function(event) {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    console.log('[SW-Push] Skip waiting requested');
+self.addEventListener("message", function (event) {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    console.log("[SW-Push] Skip waiting requested");
     self.skipWaiting();
   }
-  
+
   // Handle tile prefetch requests from main thread
-  if (event.data && event.data.type === 'PREFETCH_TILES') {
-    console.log('[SW-Push] Tile prefetch requested:', event.data.urls?.length || 0, 'tiles');
-    
-    const urls = event.data.urls || [];
-    
-    // Prefetch tiles in background with low priority
-    event.waitUntil(
-      prefetchTilesInBackground(urls)
+  if (event.data && event.data.type === "PREFETCH_TILES") {
+    console.log(
+      "[SW-Push] Tile prefetch requested:",
+      event.data.urls?.length || 0,
+      "tiles",
     );
+
+    const urls = event.data.urls || [];
+
+    // Prefetch tiles in background with low priority
+    event.waitUntil(prefetchTilesInBackground(urls));
   }
 });
 
 // Background tile prefetching
 async function prefetchTilesInBackground(urls) {
-  const cache = await caches.open('mapbox-tiles-cache');
+  const cache = await caches.open("mapbox-tiles-cache");
   let successCount = 0;
-  
+
   // Prefetch in small batches with delays to avoid network congestion
   const BATCH_SIZE = 2;
-  
+
   for (let i = 0; i < urls.length; i += BATCH_SIZE) {
     const batch = urls.slice(i, i + BATCH_SIZE);
-    
+
     const results = await Promise.allSettled(
       batch.map(async (url) => {
         // Check if already cached
         const cached = await cache.match(url);
         if (cached) return true;
-        
+
         // Fetch and cache
         try {
           const response = await fetch(url, {
-            mode: 'cors',
-            credentials: 'omit',
+            mode: "cors",
+            credentials: "omit",
           });
-          
+
           if (response.ok) {
             await cache.put(url, response.clone());
             return true;
@@ -215,26 +229,33 @@ async function prefetchTilesInBackground(urls) {
           // Ignore errors - tiles may not be critical
         }
         return false;
-      })
+      }),
     );
-    
-    successCount += results.filter(r => r.status === 'fulfilled' && r.value).length;
-    
+
+    successCount += results.filter(
+      (r) => r.status === "fulfilled" && r.value,
+    ).length;
+
     // Delay between batches to avoid hogging network
     if (i + BATCH_SIZE < urls.length) {
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 200));
     }
   }
-  
-  console.log('[SW-Push] Tile prefetch complete:', successCount, '/', urls.length);
+
+  console.log(
+    "[SW-Push] Tile prefetch complete:",
+    successCount,
+    "/",
+    urls.length,
+  );
 }
 
-self.addEventListener('install', function() {
-  console.log('[SW-Push] Installed');
+self.addEventListener("install", function () {
+  console.log("[SW-Push] Installed");
   self.skipWaiting();
 });
 
-self.addEventListener('activate', function(event) {
-  console.log('[SW-Push] Activated');
+self.addEventListener("activate", function (event) {
+  console.log("[SW-Push] Activated");
   event.waitUntil(self.clients.claim());
 });
