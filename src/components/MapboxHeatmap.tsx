@@ -1081,6 +1081,66 @@ export const MapboxHeatmap = ({
     return { lng, lat, density: bestDensity };
   }, [densityData]);
 
+  // ── Tap-to-inspect: heat cell details ────────────────────────────────
+  const [inspectedCell, setInspectedCell] = useState<HeatCell | null>(null);
+
+  useEffect(() => {
+    if (!showDensityLayer) setInspectedCell(null);
+  }, [showDensityLayer]);
+
+  useEffect(() => {
+    const mapInstance = map.current;
+    if (!mapInstance || !mapLoaded || !showDensityLayer) return;
+
+    const handleHeatClick = (e: any) => {
+      const feats = densityData?.geojson?.features as any[] | undefined;
+      if (!feats?.length) return;
+
+      // Nearest grid cell within a finger-sized radius of the tap.
+      const threshold = isMobile ? 44 : 32;
+      let best: any = null;
+      let bestDist = Infinity;
+      for (const feature of feats) {
+        const coords = feature?.geometry?.coordinates;
+        if (!Array.isArray(coords)) continue;
+        const projected = mapInstance.project({
+          lng: coords[0],
+          lat: coords[1],
+        });
+        const dist = Math.hypot(
+          projected.x - e.point.x,
+          projected.y - e.point.y,
+        );
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = feature;
+        }
+      }
+
+      if (!best || bestDist > threshold) {
+        setInspectedCell(null);
+        return;
+      }
+
+      const [lng, lat] = best.geometry.coordinates as [number, number];
+      const density = Number(best.properties?.density ?? 0);
+      triggerHaptic("light");
+      setInspectedCell({
+        lat,
+        lng,
+        density,
+        intensity: Number(
+          best.properties?.intensity ?? Math.min(density / 10, 1),
+        ),
+      });
+    };
+
+    mapInstance.on("click", handleHeatClick);
+    return () => {
+      mapInstance.off("click", handleHeatClick);
+    };
+  }, [mapLoaded, showDensityLayer, densityData, isMobile]);
+
   const topRoute = useMemo(() => {
     const feats = pathData?.geojson?.features as any[] | undefined;
     if (!feats?.length) return null;
