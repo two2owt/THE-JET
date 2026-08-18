@@ -99,6 +99,16 @@ const SecurityFindingsPanel = lazy(() =>
     default: m.SecurityFindingsPanel,
   })),
 );
+const DisplayNameBackfillPanel = lazy(() =>
+  import("@/components/admin/DisplayNameBackfillPanel").then((m) => ({
+    default: m.DisplayNameBackfillPanel,
+  })),
+);
+const _SecurityFindingsPanelUnused = lazy(() =>
+  import("@/components/admin/SecurityFindingsPanel").then((m) => ({
+    default: m.SecurityFindingsPanel,
+  })),
+);
 const EmailHealthPanel = lazy(() =>
   import("@/components/admin/EmailHealthPanel").then((m) => ({
     default: m.EmailHealthPanel,
@@ -425,6 +435,7 @@ export default function AdminDashboard() {
                   >
                     <UserAnalytics />
                     <UnverifiedNudgePanel />
+                    <DisplayNameBackfillPanel />
                   </div>
                 </Suspense>
               )}
