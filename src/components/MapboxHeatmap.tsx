@@ -1532,7 +1532,7 @@ export const MapboxHeatmap = ({
           zoom: m.getZoom(),
           bearing: m.getBearing(),
           pitch: m.getPitch(),
-          duration: hasReducedMotion ? 0 : 700,
+          duration: platformSettings.current.hasReducedMotion ? 0 : 700,
           essential: true,
         });
       } catch {
@@ -1542,7 +1542,6 @@ export const MapboxHeatmap = ({
     return () => clearTimeout(timer);
   }, [
     mapLoaded,
-    hasReducedMotion,
     selectedVenue?.id,
     selectedVenue?.lat,
     selectedVenue?.lng,
