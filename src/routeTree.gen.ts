@@ -25,6 +25,7 @@ import { Route as TermsOfServiceRouteImport } from './routes/terms-of-service'
 import { Route as VerificationSuccessRouteImport } from './routes/verification-success'
 import { Route as GuidesCharlotteHappyHourRouteImport } from './routes/guides/charlotte-happy-hour'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable/oauth/consent'
+import { Route as ApiPublicVersionRouteImport } from './routes/api/public/version'
 import { Route as ApiPublicHooksNudgeIncompleteOnboardingRouteImport } from './routes/api/public/hooks/nudge-incomplete-onboarding'
 import { Route as ApiPublicHooksResendMarketingEventsRouteImport } from './routes/api/public/hooks/resend-marketing-events'
 import { Route as ApiPublicHooksSyncResendAudienceRouteImport } from './routes/api/public/hooks/sync-resend-audience'
@@ -110,6 +111,11 @@ const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicVersionRoute = ApiPublicVersionRouteImport.update({
+  id: '/api/public/version',
+  path: '/api/public/version',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksNudgeIncompleteOnboardingRoute =
   ApiPublicHooksNudgeIncompleteOnboardingRouteImport.update({
     id: '/api/public/hooks/nudge-incomplete-onboarding',
@@ -146,6 +152,7 @@ export interface FileRoutesByFullPath {
   '/verification-success': typeof VerificationSuccessRoute
   '/guides/charlotte-happy-hour': typeof GuidesCharlotteHappyHourRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/api/public/version': typeof ApiPublicVersionRoute
   '/api/public/hooks/nudge-incomplete-onboarding': typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
   '/api/public/hooks/resend-marketing-events': typeof ApiPublicHooksResendMarketingEventsRoute
   '/api/public/hooks/sync-resend-audience': typeof ApiPublicHooksSyncResendAudienceRoute
@@ -167,6 +174,7 @@ export interface FileRoutesByTo {
   '/verification-success': typeof VerificationSuccessRoute
   '/guides/charlotte-happy-hour': typeof GuidesCharlotteHappyHourRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/api/public/version': typeof ApiPublicVersionRoute
   '/api/public/hooks/nudge-incomplete-onboarding': typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
   '/api/public/hooks/resend-marketing-events': typeof ApiPublicHooksResendMarketingEventsRoute
   '/api/public/hooks/sync-resend-audience': typeof ApiPublicHooksSyncResendAudienceRoute
@@ -189,6 +197,7 @@ export interface FileRoutesById {
   '/verification-success': typeof VerificationSuccessRoute
   '/guides/charlotte-happy-hour': typeof GuidesCharlotteHappyHourRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/api/public/version': typeof ApiPublicVersionRoute
   '/api/public/hooks/nudge-incomplete-onboarding': typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
   '/api/public/hooks/resend-marketing-events': typeof ApiPublicHooksResendMarketingEventsRoute
   '/api/public/hooks/sync-resend-audience': typeof ApiPublicHooksSyncResendAudienceRoute
@@ -212,6 +221,7 @@ export interface FileRouteTypes {
     | '/verification-success'
     | '/guides/charlotte-happy-hour'
     | '/.lovable/oauth/consent'
+    | '/api/public/version'
     | '/api/public/hooks/nudge-incomplete-onboarding'
     | '/api/public/hooks/resend-marketing-events'
     | '/api/public/hooks/sync-resend-audience'
@@ -233,6 +243,7 @@ export interface FileRouteTypes {
     | '/verification-success'
     | '/guides/charlotte-happy-hour'
     | '/.lovable/oauth/consent'
+    | '/api/public/version'
     | '/api/public/hooks/nudge-incomplete-onboarding'
     | '/api/public/hooks/resend-marketing-events'
     | '/api/public/hooks/sync-resend-audience'
@@ -254,6 +265,7 @@ export interface FileRouteTypes {
     | '/verification-success'
     | '/guides/charlotte-happy-hour'
     | '/.lovable/oauth/consent'
+    | '/api/public/version'
     | '/api/public/hooks/nudge-incomplete-onboarding'
     | '/api/public/hooks/resend-marketing-events'
     | '/api/public/hooks/sync-resend-audience'
@@ -276,6 +288,7 @@ export interface RootRouteChildren {
   VerificationSuccessRoute: typeof VerificationSuccessRoute
   GuidesCharlotteHappyHourRoute: typeof GuidesCharlotteHappyHourRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
+  ApiPublicVersionRoute: typeof ApiPublicVersionRoute
   ApiPublicHooksNudgeIncompleteOnboardingRoute: typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
   ApiPublicHooksResendMarketingEventsRoute: typeof ApiPublicHooksResendMarketingEventsRoute
   ApiPublicHooksSyncResendAudienceRoute: typeof ApiPublicHooksSyncResendAudienceRoute
@@ -395,6 +408,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/version': {
+      id: '/api/public/version'
+      path: '/api/public/version'
+      fullPath: '/api/public/version'
+      preLoaderRoute: typeof ApiPublicVersionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/nudge-incomplete-onboarding': {
       id: '/api/public/hooks/nudge-incomplete-onboarding'
       path: '/api/public/hooks/nudge-incomplete-onboarding'
@@ -436,6 +456,7 @@ const rootRouteChildren: RootRouteChildren = {
   VerificationSuccessRoute: VerificationSuccessRoute,
   GuidesCharlotteHappyHourRoute: GuidesCharlotteHappyHourRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
+  ApiPublicVersionRoute: ApiPublicVersionRoute,
   ApiPublicHooksNudgeIncompleteOnboardingRoute:
     ApiPublicHooksNudgeIncompleteOnboardingRoute,
   ApiPublicHooksResendMarketingEventsRoute:
