@@ -126,7 +126,7 @@ export function useGeolocationPermission() {
 
     // One-tap Permissions API request, supported in Chrome/Android.
     const permissionsApi = navigator.permissions as
-      | Permissions
+      | PermissionsWithRequest
       | undefined;
     if (typeof permissionsApi?.request === "function") {
       try {
