@@ -14,7 +14,8 @@ import { TabPageHeader } from "@/components/TabPageHeader";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { SEO } from "@/components/SEO";
 import { useVenuePhoto } from "@/hooks/useVenuePhoto";
-import { Trash2, Search, X } from "lucide-react";
+import { Trash2, Search, X, Bell } from "lucide-react";
+import { useFavoriteAlerts } from "@/hooks/useFavoriteAlerts";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -152,6 +153,25 @@ export default function Favorites() {
   }, [favorites, deals]);
 
   const totalCount = deals.length + venueOnlyFavorites.length;
+
+  // Alerts that belong to the user's saved venues/deals, so the tab can badge
+  // exactly which favorite has news and open its JetCard on tap.
+  const { byVenue, byDeal, totalUnread, markFavoriteAlertsRead } =
+    useFavoriteAlerts(favorites, !!user);
+
+  const openFavorite = (venueId?: string | null, dealId?: string | null) => {
+    void markFavoriteAlertsRead({ venueId, dealId });
+    if (venueId) navigate(`/?venue=${encodeURIComponent(venueId)}`);
+    else if (dealId) navigate(`/?deal=${encodeURIComponent(dealId)}`);
+  };
+
+  const firstAlertTarget = useMemo(() => {
+    const venueId = [...byVenue.keys()][0];
+    if (venueId) return { venueId, dealId: null as string | null };
+    const dealId = [...byDeal.keys()][0];
+    if (dealId) return { venueId: null as string | null, dealId };
+    return null;
+  }, [byVenue, byDeal]);
 
   // When a favorite was saved, keyed by deal id and venue id, so both lists
   // can share the same "recently saved" ordering.
