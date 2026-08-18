@@ -55,7 +55,6 @@ export function usePendingDeepLink() {
           // Opening the JetCard from a tap counts as reading the alert.
           void syncNotificationRead(entry.notificationId);
           if (opened > 0) await wait(700);
-          if (cancelled) return;
           navigate(entry.target);
           opened += 1;
         }
