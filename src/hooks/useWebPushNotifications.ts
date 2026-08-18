@@ -7,6 +7,8 @@ import { requireConsent } from "@/lib/consent";
 // The key lives as a backend secret, so Vite cannot inline it at build time.
 // Fall back to the edge function that serves the public half of the key pair.
 const BUILD_TIME_VAPID_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || "";
+/** Last web push endpoint stored for this browser — detects rotation. */
+const WEB_ENDPOINT_KEY = "jet:web-push-endpoint";
 let cachedVapidKey: string | null = BUILD_TIME_VAPID_KEY || null;
 
 async function getVapidPublicKey(): Promise<string> {
