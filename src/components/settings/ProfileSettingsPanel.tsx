@@ -20,6 +20,8 @@ import {
   Radio,
   RefreshCw,
 } from "lucide-react";
+import { openNotificationSettings } from "@/lib/openAppSettings";
+import { Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import { useGeolocationPermission } from "@/hooks/useGeolocationPermission";
 import { z } from "zod";
