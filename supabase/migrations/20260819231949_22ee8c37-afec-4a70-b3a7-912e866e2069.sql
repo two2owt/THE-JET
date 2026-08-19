@@ -1,0 +1,1 @@
+SELECT * FROM public.check_email_queue_health();

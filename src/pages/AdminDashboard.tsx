@@ -113,7 +113,11 @@ const MarketingAudiencePanel = lazy(() =>
     default: m.MarketingAudiencePanel,
   })),
 );
-
+const EmailQueueMonitorPanel = lazy(() =>
+  import("@/components/admin/EmailQueueMonitorPanel").then((m) => ({
+    default: m.EmailQueueMonitorPanel,
+  })),
+);
 type SectionId =
   | "deals"
   | "analytics"
@@ -460,6 +464,7 @@ export default function AdminDashboard() {
                     style={{ gap: "var(--space-md)" }}
                   >
                     <EmailHealthPanel />
+                    <EmailQueueMonitorPanel />
                     <MarketingAudiencePanel />
                   </div>
                 </Suspense>
