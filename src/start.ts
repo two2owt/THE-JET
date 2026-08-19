@@ -51,7 +51,6 @@ if (!csrfMiddleware) {
 }
 
 const requestMiddleware = [
-  canonicalHostMiddleware,
   errorMiddleware,
   ...(csrfMiddleware ? [csrfMiddleware as typeof errorMiddleware] : []),
 ];
