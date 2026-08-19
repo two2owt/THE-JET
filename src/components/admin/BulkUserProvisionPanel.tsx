@@ -46,6 +46,7 @@ type ProvisionResult = {
   user_id?: string;
   password?: string;
   invited?: boolean;
+  restored_id?: boolean;
   error?: string;
 };
 
@@ -326,6 +327,55 @@ export function BulkUserProvisionPanel() {
 
   const resendInvite = async (email: string, displayName: string | null) => {
     setResending(email);
+    return resendInviteInner(email, displayName);
+  };
+
+  /** Recreate every preview-only account under its original user id. */
+  const restorePreviewAccounts = async () => {
+    setRunning(true);
+    setResults([]);
+    setProgress({ done: 0, total: PREVIEW_ONLY_USERS.length });
+    const collected: ProvisionResult[] = [];
+    try {
+      for (let i = 0; i < PREVIEW_ONLY_USERS.length; i += BATCH_SIZE) {
+        const batch = PREVIEW_ONLY_USERS.slice(i, i + BATCH_SIZE).map((u) => ({
+          email: u.email,
+          display_name: u.display_name,
+          user_id: u.id,
+          onboarding_completed: u.onboarding_completed,
+          method: "password" as const,
+        }));
+        const { data, error } = await supabase.functions.invoke(
+          "admin-bulk-provision-users",
+          { body: { users: batch, defaultMethod: "password" } },
+        );
+        if (error) throw error;
+        collected.push(...((data?.results ?? []) as ProvisionResult[]));
+        setResults([...collected]);
+        setProgress({
+          done: Math.min(i + BATCH_SIZE, PREVIEW_ONLY_USERS.length),
+          total: PREVIEW_ONLY_USERS.length,
+        });
+      }
+      const created = collected.filter((r) => r.status === "created");
+      const keptId = created.filter((r) => r.restored_id).length;
+      const skipped = collected.filter((r) => r.status === "exists").length;
+      const failed = collected.filter((r) => r.status === "error").length;
+      toast.success(
+        `${created.length} restored (${keptId} kept original id) · ${skipped} already existed · ${failed} failed`,
+      );
+    } catch (err) {
+      console.error("Restore preview accounts failed", err);
+      toast.error("Restore failed");
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  const resendInviteInner = async (
+    email: string,
+    displayName: string | null,
+  ) => {
     try {
       const { data, error } = await supabase.functions.invoke(
         "admin-bulk-provision-users",
@@ -491,6 +541,21 @@ export function BulkUserProvisionPanel() {
           <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"
+              variant="default"
+              size="sm"
+              disabled={running}
+              className="gap-1"
+              onClick={restorePreviewAccounts}
+            >
+              {running ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <RotateCcw className="h-3.5 w-3.5" />
+              )}
+              Restore backup accounts ({PREVIEW_ONLY_USERS.length})
+            </Button>
+            <Button
+              type="button"
               variant="outline"
               size="sm"
               disabled={running}
@@ -506,7 +571,9 @@ export function BulkUserProvisionPanel() {
               Load preview-only accounts ({PREVIEW_ONLY_USERS.length})
             </Button>
             <span className="text-xs text-muted-foreground">
-              Accounts that exist in preview but are missing from Live.
+              Restore recreates each account under its <em>original</em> user
+              id, so already-migrated data (locations, messages, favorites)
+              attaches automatically. Export the CSV — passwords show once.
             </span>
           </div>
           <Textarea
