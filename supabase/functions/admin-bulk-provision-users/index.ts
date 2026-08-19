@@ -33,7 +33,13 @@ type Incoming = {
   display_name?: unknown;
   password?: unknown;
   method?: unknown;
+  /** Original user id to recreate the account under (restore flow). */
+  user_id?: unknown;
+  onboarding_completed?: unknown;
 };
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function escapeHtml(s: string) {
   return s
@@ -159,6 +165,8 @@ Deno.serve(async (req) => {
       display_name: string | null;
       password: string | null;
       method: Method;
+      user_id: string | null;
+      onboarding_completed: boolean | null;
     }[] = [];
     for (const raw of body.users as Incoming[]) {
       const email =
@@ -187,7 +195,22 @@ Deno.serve(async (req) => {
               : raw?.method === "password"
                 ? "password"
                 : defaultMethod;
-      parsed.push({ email, display_name: displayName, password, method });
+      const userId =
+        typeof raw?.user_id === "string" && UUID_RE.test(raw.user_id.trim())
+          ? raw.user_id.trim()
+          : null;
+      const onboarding =
+        typeof raw?.onboarding_completed === "boolean"
+          ? raw.onboarding_completed
+          : null;
+      parsed.push({
+        email,
+        display_name: displayName,
+        password,
+        method,
+        user_id: userId,
+        onboarding_completed: onboarding,
+      });
     }
 
     // 4. Provision sequentially (keeps auth rate limits happy, order is stable)
@@ -410,12 +433,23 @@ Deno.serve(async (req) => {
         }
 
         const password = u.password ?? randomPassword();
-        const { data, error } = await admin.auth.admin.createUser({
+        // When a user_id is supplied (restore-from-backup flow) the account is
+        // recreated under its original id so previously restored rows attach.
+        const attrs: Record<string, unknown> = {
           email: u.email,
           password,
           email_confirm: true,
           user_metadata: u.display_name ? { display_name: u.display_name } : {},
-        });
+        };
+        if (u.user_id) attrs["id"] = u.user_id;
+        let { data, error } = await admin.auth.admin.createUser(
+          attrs as never,
+        );
+        if (error && u.user_id && /id|uuid/i.test(error.message ?? "")) {
+          // Backend refused the explicit id — fall back to a generated one.
+          delete attrs["id"];
+          ({ data, error } = await admin.auth.admin.createUser(attrs as never));
+        }
         if (error) {
           const exists = /already|registered|duplicate/i.test(
             error.message ?? "",
@@ -428,18 +462,23 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Trigger handles profile creation; ensure display_name is set.
-        if (data.user && u.display_name) {
-          await admin
-            .from("profiles")
-            .update({ display_name: u.display_name })
-            .eq("id", data.user.id);
+        // Trigger handles profile creation; ensure display_name / onboarding stick.
+        if (data.user && (u.display_name || u.onboarding_completed !== null)) {
+          const patch: Record<string, unknown> = {};
+          if (u.display_name) {
+            patch["display_name"] = u.display_name;
+            patch["display_name_claimed"] = true;
+          }
+          if (u.onboarding_completed !== null)
+            patch["onboarding_completed"] = u.onboarding_completed;
+          await admin.from("profiles").update(patch).eq("id", data.user.id);
         }
 
         results.push({
           email: u.email,
           status: "created",
           user_id: data.user?.id,
+          restored_id: u.user_id ? data.user?.id === u.user_id : undefined,
           password,
         });
       } catch (e) {
