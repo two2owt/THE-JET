@@ -343,6 +343,72 @@ export type Database = {
         }
         Relationships: []
       }
+      email_queue_alerts: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          metric: string
+          observed_value: number
+          queue_name: string
+          resolved_at: string | null
+          severity: string
+          status: string
+          threshold_value: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          metric: string
+          observed_value: number
+          queue_name: string
+          resolved_at?: string | null
+          severity: string
+          status?: string
+          threshold_value: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          metric?: string
+          observed_value?: number
+          queue_name?: string
+          resolved_at?: string | null
+          severity?: string
+          status?: string
+          threshold_value?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      email_queue_thresholds: {
+        Row: {
+          crit_value: number
+          enabled: boolean
+          metric: string
+          updated_at: string
+          warn_value: number
+        }
+        Insert: {
+          crit_value: number
+          enabled?: boolean
+          metric: string
+          updated_at?: string
+          warn_value: number
+        }
+        Update: {
+          crit_value?: number
+          enabled?: boolean
+          metric?: string
+          updated_at?: string
+          warn_value?: number
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -1616,6 +1682,13 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
+      check_email_queue_health: {
+        Args: never
+        Returns: {
+          opened: number
+          resolved: number
+        }[]
+      }
       claim_notification_batch: {
         Args: { _limit?: number }
         Returns: {
@@ -1669,6 +1742,17 @@ export type Database = {
       dispatch_ending_soon_favorites: { Args: never; Returns: undefined }
       email_queue_dispatch: { Args: never; Returns: undefined }
       email_queue_endpoint: { Args: never; Returns: string }
+      email_queue_metrics: {
+        Args: never
+        Returns: {
+          dlq_depth: number
+          newest_message_age_seconds: number
+          processing_lag_seconds: number
+          queue_depth: number
+          queue_name: string
+          total_enqueued: number
+        }[]
+      }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
