@@ -849,6 +849,7 @@ export type Database = {
           data_processing_consent_date: string | null
           discoverable: boolean | null
           display_name: string | null
+          display_name_claimed: boolean
           facebook_url: string | null
           gender: string | null
           id: string
@@ -876,6 +877,7 @@ export type Database = {
           data_processing_consent_date?: string | null
           discoverable?: boolean | null
           display_name?: string | null
+          display_name_claimed?: boolean
           facebook_url?: string | null
           gender?: string | null
           id: string
@@ -903,6 +905,7 @@ export type Database = {
           data_processing_consent_date?: string | null
           discoverable?: boolean | null
           display_name?: string | null
+          display_name_claimed?: boolean
           facebook_url?: string | null
           gender?: string | null
           id?: string
@@ -1647,6 +1650,15 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      claim_push_subscription: {
+        Args: {
+          _auth: string
+          _endpoint: string
+          _p256dh: string
+          _platform?: string
+        }
+        Returns: undefined
+      }
       cleanup_old_analytics_events: { Args: never; Returns: undefined }
       cleanup_old_search_history: { Args: never; Returns: undefined }
       cleanup_old_security_audit_logs: { Args: never; Returns: undefined }
@@ -1662,6 +1674,7 @@ export type Database = {
         Returns: number
       }
       ensure_email_queue_triggers: { Args: never; Returns: undefined }
+      generate_auto_handle: { Args: { _user_id: string }; Returns: string }
       get_user_id_by_email: { Args: { _email: string }; Returns: string }
       has_role: {
         Args: {
