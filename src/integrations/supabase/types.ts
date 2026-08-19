@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "13.0.5"
   }
   public: {
     Tables: {
@@ -430,114 +430,6 @@ export type Database = {
         }
         Relationships: []
       }
-      location_permission_events: {
-        Row: {
-          created_at: string
-          detail: string | null
-          duration_ms: number | null
-          fallback_used: boolean
-          id: string
-          method: string | null
-          outcome: string
-          platform: string
-          prompt_suppressed: boolean
-          surface: string | null
-          user_agent: string | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          detail?: string | null
-          duration_ms?: number | null
-          fallback_used?: boolean
-          id?: string
-          method?: string | null
-          outcome: string
-          platform?: string
-          prompt_suppressed?: boolean
-          surface?: string | null
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          detail?: string | null
-          duration_ms?: number | null
-          fallback_used?: boolean
-          id?: string
-          method?: string | null
-          outcome?: string
-          platform?: string
-          prompt_suppressed?: boolean
-          surface?: string | null
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      location_tracking_diagnostics: {
-        Row: {
-          background_enabled: boolean | null
-          created_at: string
-          last_error: string | null
-          last_error_at: string | null
-          last_skip_at: string | null
-          last_skip_reason: string | null
-          last_write_at: string | null
-          last_write_source: string | null
-          permission_checked_at: string | null
-          permission_state: string | null
-          platform: string | null
-          prompt_outcome: string | null
-          prompt_outcome_at: string | null
-          tracker_started_at: string | null
-          tracking_enabled: boolean | null
-          updated_at: string
-          user_id: string
-          write_count: number
-        }
-        Insert: {
-          background_enabled?: boolean | null
-          created_at?: string
-          last_error?: string | null
-          last_error_at?: string | null
-          last_skip_at?: string | null
-          last_skip_reason?: string | null
-          last_write_at?: string | null
-          last_write_source?: string | null
-          permission_checked_at?: string | null
-          permission_state?: string | null
-          platform?: string | null
-          prompt_outcome?: string | null
-          prompt_outcome_at?: string | null
-          tracker_started_at?: string | null
-          tracking_enabled?: boolean | null
-          updated_at?: string
-          user_id: string
-          write_count?: number
-        }
-        Update: {
-          background_enabled?: boolean | null
-          created_at?: string
-          last_error?: string | null
-          last_error_at?: string | null
-          last_skip_at?: string | null
-          last_skip_reason?: string | null
-          last_write_at?: string | null
-          last_write_source?: string | null
-          permission_checked_at?: string | null
-          permission_state?: string | null
-          platform?: string | null
-          prompt_outcome?: string | null
-          prompt_outcome_at?: string | null
-          tracker_started_at?: string | null
-          tracking_enabled?: boolean | null
-          updated_at?: string
-          user_id?: string
-          write_count?: number
-        }
-        Relationships: []
-      }
       marketing_audience_sync_log: {
         Row: {
           audience_id: string
@@ -651,50 +543,6 @@ export type Database = {
         }
         Relationships: []
       }
-      notification_deliveries: {
-        Row: {
-          channel: string
-          created_at: string
-          error: string | null
-          id: string
-          opened_at: string | null
-          queue_id: string
-          status: string
-          subscription_id: string | null
-          user_id: string | null
-        }
-        Insert: {
-          channel: string
-          created_at?: string
-          error?: string | null
-          id?: string
-          opened_at?: string | null
-          queue_id: string
-          status?: string
-          subscription_id?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          channel?: string
-          created_at?: string
-          error?: string | null
-          id?: string
-          opened_at?: string | null
-          queue_id?: string
-          status?: string
-          subscription_id?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "notification_deliveries_queue_id_fkey"
-            columns: ["queue_id"]
-            isOneToOne: false
-            referencedRelation: "notification_queue"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       notification_logs: {
         Row: {
           deal_id: string | null
@@ -746,99 +594,6 @@ export type Database = {
           },
         ]
       }
-      notification_queue: {
-        Row: {
-          attempts: number
-          audience: string
-          body: string
-          category: string
-          created_at: string
-          data: Json
-          deal_id: string | null
-          event_type: string
-          id: string
-          idempotency_key: string
-          last_error: string | null
-          locked_at: string | null
-          max_attempts: number
-          neighborhood_id: string | null
-          processed_at: string | null
-          scheduled_at: string
-          source: string
-          stats: Json
-          status: string
-          target_user_ids: string[] | null
-          title: string
-          updated_at: string
-          venue_id: string | null
-        }
-        Insert: {
-          attempts?: number
-          audience?: string
-          body: string
-          category?: string
-          created_at?: string
-          data?: Json
-          deal_id?: string | null
-          event_type: string
-          id?: string
-          idempotency_key: string
-          last_error?: string | null
-          locked_at?: string | null
-          max_attempts?: number
-          neighborhood_id?: string | null
-          processed_at?: string | null
-          scheduled_at?: string
-          source?: string
-          stats?: Json
-          status?: string
-          target_user_ids?: string[] | null
-          title: string
-          updated_at?: string
-          venue_id?: string | null
-        }
-        Update: {
-          attempts?: number
-          audience?: string
-          body?: string
-          category?: string
-          created_at?: string
-          data?: Json
-          deal_id?: string | null
-          event_type?: string
-          id?: string
-          idempotency_key?: string
-          last_error?: string | null
-          locked_at?: string | null
-          max_attempts?: number
-          neighborhood_id?: string | null
-          processed_at?: string | null
-          scheduled_at?: string
-          source?: string
-          stats?: Json
-          status?: string
-          target_user_ids?: string[] | null
-          title?: string
-          updated_at?: string
-          venue_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "notification_queue_deal_id_fkey"
-            columns: ["deal_id"]
-            isOneToOne: false
-            referencedRelation: "deals"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notification_queue_neighborhood_id_fkey"
-            columns: ["neighborhood_id"]
-            isOneToOne: false
-            referencedRelation: "neighborhoods"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -847,9 +602,8 @@ export type Database = {
           created_at: string
           data_processing_consent: boolean | null
           data_processing_consent_date: string | null
-          discoverable: boolean
+          discoverable: boolean | null
           display_name: string | null
-          display_name_claimed: boolean
           facebook_url: string | null
           gender: string | null
           id: string
@@ -875,9 +629,8 @@ export type Database = {
           created_at?: string
           data_processing_consent?: boolean | null
           data_processing_consent_date?: string | null
-          discoverable?: boolean
+          discoverable?: boolean | null
           display_name?: string | null
-          display_name_claimed?: boolean
           facebook_url?: string | null
           gender?: string | null
           id: string
@@ -903,9 +656,8 @@ export type Database = {
           created_at?: string
           data_processing_consent?: boolean | null
           data_processing_consent_date?: string | null
-          discoverable?: boolean
+          discoverable?: boolean | null
           display_name?: string | null
-          display_name_claimed?: boolean
           facebook_url?: string | null
           gender?: string | null
           id?: string
@@ -1338,39 +1090,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_notification_settings: {
-        Row: {
-          categories: Json
-          created_at: string
-          quiet_hours_enabled: boolean
-          quiet_hours_end: number
-          quiet_hours_start: number
-          timezone: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          categories?: Json
-          created_at?: string
-          quiet_hours_enabled?: boolean
-          quiet_hours_end?: number
-          quiet_hours_start?: number
-          timezone?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          categories?: Json
-          created_at?: string
-          quiet_hours_enabled?: boolean
-          quiet_hours_end?: number
-          quiet_hours_start?: number
-          timezone?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       user_preferences: {
         Row: {
           auto_reload_updates: boolean
@@ -1475,6 +1194,16 @@ export type Database = {
           display_name: string | null
           id: string | null
         }
+        Insert: {
+          avatar_url?: string | null
+          display_name?: string | null
+          id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          display_name?: string | null
+          id?: string | null
+        }
         Relationships: []
       }
       profiles_secure: {
@@ -1495,6 +1224,42 @@ export type Database = {
           tiktok_url: string | null
           twitter_url: string | null
           updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: never
+          birthdate?: never
+          created_at?: string | null
+          discoverable?: boolean | null
+          display_name?: string | null
+          facebook_url?: never
+          gender?: never
+          id?: string | null
+          instagram_url?: never
+          linkedin_url?: never
+          onboarding_completed?: boolean | null
+          pronouns?: never
+          tiktok_url?: never
+          twitter_url?: never
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: never
+          birthdate?: never
+          created_at?: string | null
+          discoverable?: boolean | null
+          display_name?: string | null
+          facebook_url?: never
+          gender?: never
+          id?: string | null
+          instagram_url?: never
+          linkedin_url?: never
+          onboarding_completed?: boolean | null
+          pronouns?: never
+          tiktok_url?: never
+          twitter_url?: never
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -1530,14 +1295,6 @@ export type Database = {
       }
     }
     Functions: {
-      admin_backfill_display_names: {
-        Args: { _dry_run?: boolean }
-        Returns: {
-          auto_handles_assigned: number
-          claimed_flags_set: number
-          dry_run: boolean
-        }[]
-      }
       admin_list_user_emails: {
         Args: never
         Returns: {
@@ -1578,63 +1335,12 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
-      claim_notification_batch: {
-        Args: { _limit?: number }
-        Returns: {
-          attempts: number
-          audience: string
-          body: string
-          category: string
-          created_at: string
-          data: Json
-          deal_id: string | null
-          event_type: string
-          id: string
-          idempotency_key: string
-          last_error: string | null
-          locked_at: string | null
-          max_attempts: number
-          neighborhood_id: string | null
-          processed_at: string | null
-          scheduled_at: string
-          source: string
-          stats: Json
-          status: string
-          target_user_ids: string[] | null
-          title: string
-          updated_at: string
-          venue_id: string | null
-        }[]
-        SetofOptions: {
-          from: "*"
-          to: "notification_queue"
-          isOneToOne: false
-          isSetofReturn: true
-        }
-      }
-      claim_push_subscription: {
-        Args: {
-          _auth: string
-          _endpoint: string
-          _p256dh: string
-          _platform?: string
-        }
-        Returns: undefined
-      }
       cleanup_old_analytics_events: { Args: never; Returns: undefined }
       cleanup_old_search_history: { Args: never; Returns: undefined }
       cleanup_old_security_audit_logs: { Args: never; Returns: undefined }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
-      }
-      discoverable_profiles_rows: {
-        Args: never
-        Returns: {
-          avatar_url: string
-          display_name: string
-          id: string
-        }[]
       }
       dispatch_ending_soon_favorites: { Args: never; Returns: undefined }
       email_queue_dispatch: { Args: never; Returns: undefined }
@@ -1644,7 +1350,6 @@ export type Database = {
         Returns: number
       }
       ensure_email_queue_triggers: { Args: never; Returns: undefined }
-      generate_auto_handle: { Args: { _user_id: string }; Returns: string }
       get_user_id_by_email: { Args: { _email: string }; Returns: string }
       has_role: {
         Args: {
@@ -1673,40 +1378,7 @@ export type Database = {
           obfuscated_lng: number
         }[]
       }
-      preflight_check_advisory_locks: {
-        Args: never
-        Returns: {
-          problem: string
-          routine_name: string
-        }[]
-      }
-      privacy_allows: {
-        Args: { _field_name: string; _privacy_settings: Json }
-        Returns: boolean
-      }
-      privacy_field_default: { Args: { _field_name: string }; Returns: boolean }
       process_location_data_retention: { Args: never; Returns: undefined }
-      profiles_secure_rows: {
-        Args: never
-        Returns: {
-          avatar_url: string
-          bio: string
-          birthdate: string
-          created_at: string
-          discoverable: boolean
-          display_name: string
-          facebook_url: string
-          gender: string
-          id: string
-          instagram_url: string
-          linkedin_url: string
-          onboarding_completed: boolean
-          pronouns: string
-          tiktok_url: string
-          twitter_url: string
-          updated_at: string
-        }[]
-      }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
