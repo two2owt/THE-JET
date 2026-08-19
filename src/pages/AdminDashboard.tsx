@@ -464,6 +464,7 @@ export default function AdminDashboard() {
                     style={{ gap: "var(--space-md)" }}
                   >
                     <EmailHealthPanel />
+                    <EmailQueueMonitorPanel />
                     <MarketingAudiencePanel />
                   </div>
                 </Suspense>
