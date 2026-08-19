@@ -541,6 +541,21 @@ export function BulkUserProvisionPanel() {
           <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"
+              variant="default"
+              size="sm"
+              disabled={running}
+              className="gap-1"
+              onClick={restorePreviewAccounts}
+            >
+              {running ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <RotateCcw className="h-3.5 w-3.5" />
+              )}
+              Restore backup accounts ({PREVIEW_ONLY_USERS.length})
+            </Button>
+            <Button
+              type="button"
               variant="outline"
               size="sm"
               disabled={running}
@@ -556,7 +571,9 @@ export function BulkUserProvisionPanel() {
               Load preview-only accounts ({PREVIEW_ONLY_USERS.length})
             </Button>
             <span className="text-xs text-muted-foreground">
-              Accounts that exist in preview but are missing from Live.
+              Restore recreates each account under its <em>original</em> user
+              id, so already-migrated data (locations, messages, favorites)
+              attaches automatically. Export the CSV — passwords show once.
             </span>
           </div>
           <Textarea
