@@ -4,7 +4,7 @@ import Auth from "@/pages/Auth";
 
 const title = "Sign In or Create an Account — JET";
 const description =
-  "Sign in to JET to discover live deals, trending venues, and real-time happy hours near you.";
+  "Sign in to JET to discover live deals and trending venues near you.";
 
 const CANONICAL_URL = `${SITE_URL}/auth`;
 
