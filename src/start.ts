@@ -4,33 +4,11 @@ import { createStart, createMiddleware } from "@tanstack/react-start";
 import { attachSupabaseAuth } from "./integrations/supabase/auth-attacher";
 import { renderErrorPage } from "./lib/error-page";
 
-// Consolidate SEO authority on the primary host. The hosting platform already
-// 308-redirects the apex (jet-around.com) to www, so redirecting www back to
-// the apex here creates an infinite redirect loop. Keep www as the served host
-// and only normalize the apex if a request ever reaches the function directly.
-const canonicalHostMiddleware = createMiddleware().server(
-  async ({ next, request }) => {
-    try {
-      const url = new URL(request.url);
-      if (url.pathname.startsWith("/lovable/")) {
-        return await next();
-      }
-      if (url.hostname === "jet-around.com") {
-        url.hostname = "www.jet-around.com";
-        return new Response(null, {
-          status: 301,
-          headers: {
-            location: url.toString(),
-            "cache-control": "public, max-age=3600",
-          },
-        });
-      }
-    } catch {
-      // Malformed URL — fall through to normal handling.
-    }
-    return await next();
-  },
-);
+// NOTE: host canonicalization is handled entirely by the hosting platform,
+// which 302-redirects www.jet-around.com -> jet-around.com. Adding an
+// apex -> www redirect here produced ERR_TOO_MANY_REDIRECTS (the two rules
+// bounced against each other and the site never loaded). Do not re-add a
+// host redirect in application code.
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
