@@ -430,6 +430,114 @@ export type Database = {
         }
         Relationships: []
       }
+      location_permission_events: {
+        Row: {
+          created_at: string
+          detail: string | null
+          duration_ms: number | null
+          fallback_used: boolean
+          id: string
+          method: string | null
+          outcome: string
+          platform: string
+          prompt_suppressed: boolean
+          surface: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          detail?: string | null
+          duration_ms?: number | null
+          fallback_used?: boolean
+          id?: string
+          method?: string | null
+          outcome: string
+          platform?: string
+          prompt_suppressed?: boolean
+          surface?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          detail?: string | null
+          duration_ms?: number | null
+          fallback_used?: boolean
+          id?: string
+          method?: string | null
+          outcome?: string
+          platform?: string
+          prompt_suppressed?: boolean
+          surface?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      location_tracking_diagnostics: {
+        Row: {
+          background_enabled: boolean | null
+          created_at: string
+          last_error: string | null
+          last_error_at: string | null
+          last_skip_at: string | null
+          last_skip_reason: string | null
+          last_write_at: string | null
+          last_write_source: string | null
+          permission_checked_at: string | null
+          permission_state: string | null
+          platform: string | null
+          prompt_outcome: string | null
+          prompt_outcome_at: string | null
+          tracker_started_at: string | null
+          tracking_enabled: boolean | null
+          updated_at: string
+          user_id: string
+          write_count: number
+        }
+        Insert: {
+          background_enabled?: boolean | null
+          created_at?: string
+          last_error?: string | null
+          last_error_at?: string | null
+          last_skip_at?: string | null
+          last_skip_reason?: string | null
+          last_write_at?: string | null
+          last_write_source?: string | null
+          permission_checked_at?: string | null
+          permission_state?: string | null
+          platform?: string | null
+          prompt_outcome?: string | null
+          prompt_outcome_at?: string | null
+          tracker_started_at?: string | null
+          tracking_enabled?: boolean | null
+          updated_at?: string
+          user_id: string
+          write_count?: number
+        }
+        Update: {
+          background_enabled?: boolean | null
+          created_at?: string
+          last_error?: string | null
+          last_error_at?: string | null
+          last_skip_at?: string | null
+          last_skip_reason?: string | null
+          last_write_at?: string | null
+          last_write_source?: string | null
+          permission_checked_at?: string | null
+          permission_state?: string | null
+          platform?: string | null
+          prompt_outcome?: string | null
+          prompt_outcome_at?: string | null
+          tracker_started_at?: string | null
+          tracking_enabled?: boolean | null
+          updated_at?: string
+          user_id?: string
+          write_count?: number
+        }
+        Relationships: []
+      }
       marketing_audience_sync_log: {
         Row: {
           audience_id: string
