@@ -48,15 +48,18 @@ export const prefetchMapbox = () => {
   if (mapboxPrefetched) return;
   mapboxPrefetched = true;
 
-  // In production, mapbox-gl is loaded from CDN via script tag
-  // Check if it's already available globally
+  // In production mapbox-gl always comes from the CDN <script> injected in
+  // __root. Importing the npm copy here would race that script and pull a
+  // SECOND ~500 kB (gzipped) copy of the library over the user's connection —
+  // a large, pointless cellular data hit. Only prefetch the bundled chunk in
+  // dev, where there is no CDN script.
+  if (!import.meta.env.DEV) return;
+
   if (typeof window !== "undefined" && (window as any).mapboxgl) {
-    if (import.meta.env.DEV)
-      console.log("Prefetch: Mapbox already loaded from CDN");
+    console.log("Prefetch: Mapbox already loaded from CDN");
     return;
   }
 
-  // Fallback: trigger the chunk download by importing the module (dev mode)
   import("mapbox-gl")
     .then(() => {
       if (import.meta.env.DEV)
