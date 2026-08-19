@@ -118,12 +118,6 @@ const EmailQueueMonitorPanel = lazy(() =>
     default: m.EmailQueueMonitorPanel,
   })),
 );
-const _MarketingAudiencePanelAlias = lazy(() =>
-  import("@/components/admin/MarketingAudiencePanel").then((m) => ({
-    default: m.MarketingAudiencePanel,
-  })),
-);
-
 type SectionId =
   | "deals"
   | "analytics"
