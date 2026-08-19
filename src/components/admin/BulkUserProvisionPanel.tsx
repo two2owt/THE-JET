@@ -46,6 +46,7 @@ type ProvisionResult = {
   user_id?: string;
   password?: string;
   invited?: boolean;
+  restored_id?: boolean;
   error?: string;
 };
 
