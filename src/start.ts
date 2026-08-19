@@ -12,6 +12,9 @@ const canonicalHostMiddleware = createMiddleware().server(
   async ({ next, request }) => {
     try {
       const url = new URL(request.url);
+      if (url.pathname.startsWith("/lovable/")) {
+        return await next();
+      }
       if (url.hostname === "jet-around.com") {
         url.hostname = "www.jet-around.com";
         return new Response(null, {
