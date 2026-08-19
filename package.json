@@ -134,7 +134,8 @@
   "version": "0.0.0",
   "packageManager": "bun@1.2.17",
   "engines": {
-    "bun": ">=1.2.0"
+    "bun": ">=1.2.0",
+    "node": "24.x"
   },
   "overrides": {
     "ws": "^8.21.3",
