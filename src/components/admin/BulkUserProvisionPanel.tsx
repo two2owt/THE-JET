@@ -327,6 +327,55 @@ export function BulkUserProvisionPanel() {
 
   const resendInvite = async (email: string, displayName: string | null) => {
     setResending(email);
+    return resendInviteInner(email, displayName);
+  };
+
+  /** Recreate every preview-only account under its original user id. */
+  const restorePreviewAccounts = async () => {
+    setRunning(true);
+    setResults([]);
+    setProgress({ done: 0, total: PREVIEW_ONLY_USERS.length });
+    const collected: ProvisionResult[] = [];
+    try {
+      for (let i = 0; i < PREVIEW_ONLY_USERS.length; i += BATCH_SIZE) {
+        const batch = PREVIEW_ONLY_USERS.slice(i, i + BATCH_SIZE).map((u) => ({
+          email: u.email,
+          display_name: u.display_name,
+          user_id: u.id,
+          onboarding_completed: u.onboarding_completed,
+          method: "password" as const,
+        }));
+        const { data, error } = await supabase.functions.invoke(
+          "admin-bulk-provision-users",
+          { body: { users: batch, defaultMethod: "password" } },
+        );
+        if (error) throw error;
+        collected.push(...((data?.results ?? []) as ProvisionResult[]));
+        setResults([...collected]);
+        setProgress({
+          done: Math.min(i + BATCH_SIZE, PREVIEW_ONLY_USERS.length),
+          total: PREVIEW_ONLY_USERS.length,
+        });
+      }
+      const created = collected.filter((r) => r.status === "created");
+      const keptId = created.filter((r) => r.restored_id).length;
+      const skipped = collected.filter((r) => r.status === "exists").length;
+      const failed = collected.filter((r) => r.status === "error").length;
+      toast.success(
+        `${created.length} restored (${keptId} kept original id) · ${skipped} already existed · ${failed} failed`,
+      );
+    } catch (err) {
+      console.error("Restore preview accounts failed", err);
+      toast.error("Restore failed");
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  const resendInviteInner = async (
+    email: string,
+    displayName: string | null,
+  ) => {
     try {
       const { data, error } = await supabase.functions.invoke(
         "admin-bulk-provision-users",
