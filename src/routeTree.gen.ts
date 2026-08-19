@@ -29,6 +29,7 @@ import { Route as ApiPublicVersionRouteImport } from './routes/api/public/versio
 import { Route as ApiPublicHooksNudgeIncompleteOnboardingRouteImport } from './routes/api/public/hooks/nudge-incomplete-onboarding'
 import { Route as ApiPublicHooksResendMarketingEventsRouteImport } from './routes/api/public/hooks/resend-marketing-events'
 import { Route as ApiPublicHooksSyncResendAudienceRouteImport } from './routes/api/public/hooks/sync-resend-audience'
+import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -134,6 +135,12 @@ const ApiPublicHooksSyncResendAudienceRoute =
     path: '/api/public/hooks/sync-resend-audience',
     getParentRoute: () => rootRouteImport,
   } as any)
+const LovableEmailQueueProcessRoute =
+  LovableEmailQueueProcessRouteImport.update({
+    id: '/lovable/email/queue/process',
+    path: '/lovable/email/queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -156,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/nudge-incomplete-onboarding': typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
   '/api/public/hooks/resend-marketing-events': typeof ApiPublicHooksResendMarketingEventsRoute
   '/api/public/hooks/sync-resend-audience': typeof ApiPublicHooksSyncResendAudienceRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -178,6 +186,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/nudge-incomplete-onboarding': typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
   '/api/public/hooks/resend-marketing-events': typeof ApiPublicHooksResendMarketingEventsRoute
   '/api/public/hooks/sync-resend-audience': typeof ApiPublicHooksSyncResendAudienceRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -201,6 +210,7 @@ export interface FileRoutesById {
   '/api/public/hooks/nudge-incomplete-onboarding': typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
   '/api/public/hooks/resend-marketing-events': typeof ApiPublicHooksResendMarketingEventsRoute
   '/api/public/hooks/sync-resend-audience': typeof ApiPublicHooksSyncResendAudienceRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -225,6 +235,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/nudge-incomplete-onboarding'
     | '/api/public/hooks/resend-marketing-events'
     | '/api/public/hooks/sync-resend-audience'
+    | '/lovable/email/queue/process'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -247,6 +258,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/nudge-incomplete-onboarding'
     | '/api/public/hooks/resend-marketing-events'
     | '/api/public/hooks/sync-resend-audience'
+    | '/lovable/email/queue/process'
   id:
     | '__root__'
     | '/'
@@ -269,6 +281,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/nudge-incomplete-onboarding'
     | '/api/public/hooks/resend-marketing-events'
     | '/api/public/hooks/sync-resend-audience'
+    | '/lovable/email/queue/process'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -292,6 +305,7 @@ export interface RootRouteChildren {
   ApiPublicHooksNudgeIncompleteOnboardingRoute: typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
   ApiPublicHooksResendMarketingEventsRoute: typeof ApiPublicHooksResendMarketingEventsRoute
   ApiPublicHooksSyncResendAudienceRoute: typeof ApiPublicHooksSyncResendAudienceRoute
+  LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -436,6 +450,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksSyncResendAudienceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -462,6 +483,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksResendMarketingEventsRoute:
     ApiPublicHooksResendMarketingEventsRoute,
   ApiPublicHooksSyncResendAudienceRoute: ApiPublicHooksSyncResendAudienceRoute,
+  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
