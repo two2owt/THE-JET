@@ -2992,6 +2992,12 @@ export const MapboxHeatmap = ({
       clusters.forEach((cluster) => {
         if (!mapboxglRef.current || !mapInstance) return;
         const count = cluster.items.length;
+        const clusterKey = `c:${cluster.lat.toFixed(4)}:${cluster.lng.toFixed(4)}:${count}:${isDarkTheme ? "d" : "l"}`;
+        const reusedCluster = prevIndex.get(clusterKey);
+        if (reusedCluster) {
+          nextIndex.set(clusterKey, reusedCluster);
+          return;
+        }
         const size = Math.min(64, 40 + Math.log2(count) * 8);
         const el = document.createElement("div");
         el.className = "venue-cluster-marker";
@@ -3037,7 +3043,7 @@ export const MapboxHeatmap = ({
         const clusterMarker = new mapboxglRef.current.Marker({ element: el })
           .setLngLat([cluster.lng, cluster.lat])
           .addTo(mapInstance);
-        markersRef.current.push(clusterMarker);
+        nextIndex.set(clusterKey, clusterMarker);
       });
 
       // Add venue markers
