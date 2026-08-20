@@ -5,6 +5,7 @@ import {
   EDGE_FUNCTION_VERSION,
 } from "../_shared/cors.ts";
 import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
+import { ErrorCode, unauthorized } from "../_shared/http.ts";
 import { buildCutoffLadder } from "../_shared/fallback-windows.ts";
 
 const FUNCTION_NAME = "get-movement-paths";
@@ -178,10 +179,7 @@ Deno.serve(async (req) => {
   // Aggregated GPS data is only available to authenticated users.
   const userId = await getAuthenticatedUserId(req);
   if (!userId) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return unauthorized();
   }
 
   // Check rate limit
@@ -213,7 +211,11 @@ Deno.serve(async (req) => {
     );
 
     return new Response(
-      JSON.stringify({ error: "Too many requests. Please try again later." }),
+      JSON.stringify({
+        success: false,
+        error: "Too many requests. Please try again later.",
+        code: ErrorCode.RATE_LIMITED,
+      }),
       {
         status: 429,
         headers: {
@@ -551,9 +553,20 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error("Error in get-movement-paths function:", error);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
-      headers: { ...rateLimitHeaders, "Content-Type": "application/json" },
-      status: 500,
-    });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Internal server error",
+        code: ErrorCode.INTERNAL_ERROR,
+        detail: (error instanceof Error ? error.message : String(error)).slice(
+          0,
+          500,
+        ),
+      }),
+      {
+        headers: { ...rateLimitHeaders, "Content-Type": "application/json" },
+        status: 500,
+      },
+    );
   }
 });

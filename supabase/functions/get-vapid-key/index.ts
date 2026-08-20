@@ -1,4 +1,5 @@
 import { corsHeaders, logVersion } from "../_shared/cors.ts";
+import { notConfigured } from "../_shared/http.ts";
 
 const FUNCTION_NAME = "get-vapid-key";
 logVersion(FUNCTION_NAME);
@@ -20,13 +21,7 @@ Deno.serve(async (req) => {
 
   if (!publicKey) {
     console.error("VITE_VAPID_PUBLIC_KEY is not configured");
-    return new Response(
-      JSON.stringify({ error: "VAPID public key not configured" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      },
-    );
+    return notConfigured("VAPID public key not configured");
   }
 
   return new Response(JSON.stringify({ publicKey }), {

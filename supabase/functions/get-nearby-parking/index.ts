@@ -1,4 +1,5 @@
 import { corsHeaders, logVersion } from "../_shared/cors.ts";
+import { internalError, invalidInput, unauthorized } from "../_shared/http.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const FUNCTION_NAME = "get-nearby-parking";
@@ -12,10 +13,7 @@ Deno.serve(async (req) => {
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return unauthorized();
     }
     const authClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -24,22 +22,13 @@ Deno.serve(async (req) => {
     const { data: claimsData, error: claimsError } =
       await authClient.auth.getClaims(authHeader.replace("Bearer ", ""));
     if (claimsError || !claimsData?.claims) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return unauthorized();
     }
 
-    const { lat, lng, radius = 500 } = await req.json();
+    const { lat, lng, radius = 500 } = await req.json().catch(() => ({}) as any);
 
     if (typeof lat !== "number" || typeof lng !== "number") {
-      return new Response(
-        JSON.stringify({ error: "lat and lng are required numbers" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
+      return invalidInput("lat and lng are required numbers");
     }
 
     const apiKey = Deno.env.get("GOOGLE_PLACES_API_KEY");
@@ -265,9 +254,6 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error("Error in get-nearby-parking:", error);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return internalError(error);
   }
 });

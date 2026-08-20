@@ -3,6 +3,7 @@ import {
   logVersion,
   EDGE_FUNCTION_VERSION,
 } from "../_shared/cors.ts";
+import { internalError, invalidInput } from "../_shared/http.ts";
 
 const FUNCTION_NAME = "get-parking-details";
 logVersion(FUNCTION_NAME);
@@ -33,16 +34,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { lat, lng, name } = await req.json();
+    const { lat, lng, name } = await req.json().catch(() => ({}) as any);
 
     if (typeof lat !== "number" || typeof lng !== "number") {
-      return new Response(
-        JSON.stringify({ error: "lat and lng are required numbers" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
+      return invalidInput("lat and lng are required numbers");
     }
 
     const apiKey = Deno.env.get("GOOGLE_PLACES_API_KEY");
@@ -153,9 +148,6 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error("Error in get-parking-details:", error);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return internalError(error);
   }
 });

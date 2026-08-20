@@ -8,6 +8,7 @@
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders, logVersion } from "../_shared/cors.ts";
+import { ErrorCode } from "../_shared/http.ts";
 import { verifyBridgeAuth } from "../_shared/notifications.ts";
 
 const FUNCTION_NAME = "notifications-enqueue";
@@ -46,20 +47,34 @@ function json(payload: unknown, status = 200) {
   });
 }
 
+/** Standard `{ error, code }` envelope, with this function's CORS headers. */
+function jsonError(
+  status: number,
+  code: string,
+  message: string,
+  detail?: string,
+) {
+  return json(
+    { success: false, error: message, code, ...(detail ? { detail } : {}) },
+    status,
+  );
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
-  if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
+  if (req.method !== "POST")
+    return jsonError(405, ErrorCode.METHOD_NOT_ALLOWED, "Method not allowed");
 
   try {
     const raw = await req.text();
     if (!(await verifyBridgeAuth(req, raw)))
-      return json({ error: "Unauthorized" }, 401);
+      return jsonError(401, ErrorCode.UNAUTHORIZED, "Unauthorized");
 
     let payload: EnqueueBody;
     try {
       payload = JSON.parse(raw) as EnqueueBody;
     } catch {
-      return json({ error: "Invalid JSON body" }, 400);
+      return jsonError(400, ErrorCode.INVALID_JSON, "Invalid JSON body");
     }
 
     const errors: string[] = [];
@@ -82,7 +97,13 @@ Deno.serve(async (req) => {
     if (audience === "favorites" && !payload.deal_id && !payload.venue_id) {
       errors.push("deal_id or venue_id required for audience=favorites");
     }
-    if (errors.length) return json({ error: errors }, 400);
+    if (errors.length)
+      return jsonError(
+        400,
+        ErrorCode.INVALID_INPUT,
+        errors.join("; "),
+        errors.join("; "),
+      );
 
     const idempotencyKey =
       payload.idempotency_key ??

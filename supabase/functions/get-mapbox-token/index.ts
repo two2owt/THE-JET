@@ -1,4 +1,5 @@
 import { corsHeaders, logVersion } from "../_shared/cors.ts";
+import { ErrorCode, forbidden, internalError } from "../_shared/http.ts";
 
 const FUNCTION_NAME = "get-mapbox-token";
 logVersion(FUNCTION_NAME);
@@ -78,21 +79,25 @@ Deno.serve(async (req) => {
 
   const ip = clientIp(req);
   if (!originAllowed(req)) {
-    return new Response(JSON.stringify({ error: "Forbidden" }), {
-      status: 403,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return forbidden();
   }
 
   if (overLimit(ip)) {
-    return new Response(JSON.stringify({ error: "Too many requests" }), {
-      status: 429,
-      headers: {
-        ...corsHeaders,
-        "Content-Type": "application/json",
-        "Retry-After": "60",
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Too many requests. Please try again later.",
+        code: ErrorCode.RATE_LIMITED,
+      }),
+      {
+        status: 429,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+          "Retry-After": "60",
+        },
       },
-    });
+    );
   }
 
   try {
@@ -118,15 +123,6 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error("Error fetching Mapbox token:", error);
 
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error occurred";
-
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 500,
-      headers: {
-        ...corsHeaders,
-        "Content-Type": "application/json",
-      },
-    });
+    return internalError(error);
   }
 });

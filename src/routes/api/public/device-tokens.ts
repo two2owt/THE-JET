@@ -35,6 +35,32 @@ function json(body: unknown, status = 200) {
   });
 }
 
+/** Same `{ error, code }` envelope the edge functions return. */
+const codeForStatus = (status: number): string => {
+  switch (status) {
+    case 400:
+      return "INVALID_INPUT";
+    case 401:
+      return "UNAUTHORIZED";
+    case 403:
+      return "FORBIDDEN";
+    case 404:
+      return "NOT_FOUND";
+    case 409:
+      return "CONFLICT";
+    case 429:
+      return "RATE_LIMITED";
+    default:
+      return status >= 500 ? "INTERNAL_ERROR" : "INVALID_INPUT";
+  }
+};
+
+const jsonError = (status: number, message: string, code?: string) =>
+  json(
+    { success: false, error: message, code: code ?? codeForStatus(status) },
+    status,
+  );
+
 async function authenticate(request: Request) {
   const url = process.env["SUPABASE_URL"];
   const key = process.env["SUPABASE_PUBLISHABLE_KEY"];
@@ -64,10 +90,10 @@ async function handle(
     return await run(await authenticate(request));
   } catch (err) {
     if (err instanceof DeviceTokenError) {
-      return json({ error: err.message }, err.status);
+      return jsonError(err.status, err.message);
     }
     console.error("[device-tokens] unexpected error", err);
-    return json({ error: "Internal error" }, 500);
+    return jsonError(500, "Internal server error", "INTERNAL_ERROR");
   }
 }
 

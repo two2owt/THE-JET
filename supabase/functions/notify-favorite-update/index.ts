@@ -1,5 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders, logVersion } from "../_shared/cors.ts";
+import {
+  internalError,
+  invalidInput,
+  unauthorized,
+} from "../_shared/http.ts";
 
 const FUNCTION_NAME = "notify-favorite-update";
 logVersion(FUNCTION_NAME);
@@ -64,23 +69,12 @@ Deno.serve(async (req) => {
       Deno.env.get("NOTIFY_ADMIN_HOOK_SECRET"),
     ].filter((s): s is string => !!s);
     if (!accepted.some((s) => authHeader === `Bearer ${s}`)) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return unauthorized();
     }
 
-    const payload = (await req.json()) as RequestPayload;
+    const payload = (await req.json().catch(() => ({}))) as RequestPayload;
     if (!payload.event_type || (!payload.deal_id && !payload.venue_id)) {
-      return new Response(
-        JSON.stringify({
-          error: "deal_id or venue_id and event_type required",
-        }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
+      return invalidInput("deal_id or venue_id and event_type required");
     }
 
     const supabase = createClient(
@@ -274,9 +268,6 @@ Deno.serve(async (req) => {
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown error";
     console.error("notify-favorite-update error:", msg);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return internalError(err);
   }
 });

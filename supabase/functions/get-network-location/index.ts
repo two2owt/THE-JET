@@ -1,5 +1,6 @@
 import { corsHeaders, logVersion } from "../_shared/cors.ts";
 import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
+import { internalError, unauthorized } from "../_shared/http.ts";
 
 const FUNCTION_NAME = "get-network-location";
 logVersion(FUNCTION_NAME);
@@ -25,7 +26,7 @@ Deno.serve(async (req) => {
 
   try {
     const userId = await getAuthenticatedUserId(req);
-    if (!userId) return json({ error: "Unauthorized" }, 401);
+    if (!userId) return unauthorized();
 
     const apiKey = Deno.env.get("GOOGLE_PLACES_API_KEY");
     if (!apiKey) return json({ location: null, error: "not_configured" });
@@ -89,6 +90,6 @@ Deno.serve(async (req) => {
     });
   } catch (err) {
     console.error(`[${FUNCTION_NAME}] failure`, err);
-    return json({ location: null, error: "internal_error" }, 500);
+    return internalError(err);
   }
 });

@@ -5,6 +5,7 @@ import {
   EDGE_FUNCTION_VERSION,
 } from "../_shared/cors.ts";
 import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
+import { ErrorCode, unauthorized } from "../_shared/http.ts";
 import { buildCutoffLadder } from "../_shared/fallback-windows.ts";
 
 const FUNCTION_NAME = "get-location-density";
@@ -129,10 +130,7 @@ Deno.serve(async (req) => {
   // Aggregated GPS data is only available to authenticated users.
   const userId = await getAuthenticatedUserId(req);
   if (!userId) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return unauthorized();
   }
 
   // Check rate limit
@@ -164,7 +162,11 @@ Deno.serve(async (req) => {
     );
 
     return new Response(
-      JSON.stringify({ error: "Too many requests. Please try again later." }),
+      JSON.stringify({
+        success: false,
+        error: "Too many requests. Please try again later.",
+        code: ErrorCode.RATE_LIMITED,
+      }),
       {
         status: 429,
         headers: {
@@ -473,9 +475,17 @@ Deno.serve(async (req) => {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error occurred";
 
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 400,
-      headers: { ...rateLimitHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Internal server error",
+        code: ErrorCode.INTERNAL_ERROR,
+        detail: errorMessage.slice(0, 500),
+      }),
+      {
+        status: 500,
+        headers: { ...rateLimitHeaders, "Content-Type": "application/json" },
+      },
+    );
   }
 });

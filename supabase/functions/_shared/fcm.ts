@@ -105,6 +105,10 @@ export interface FcmSendResult {
   /** Set when the token should be deactivated. */
   unregistered: boolean;
   error?: string;
+  /** HTTP status returned by FCM (0 when the request never left). */
+  httpStatus?: number;
+  /** `projects/<id>/messages/<id>` returned by FCM on success. */
+  messageId?: string;
 }
 
 /** Send a single notification via FCM HTTP v1. */
@@ -119,6 +123,7 @@ export async function sendFcmV1(
       ok: false,
       unregistered: false,
       error: "FCM_SERVICE_ACCOUNT_JSON not configured",
+      httpStatus: 0,
     };
 
   const accessToken = await getAccessToken(sa);
@@ -145,7 +150,15 @@ export async function sendFcmV1(
     },
   );
 
-  if (res.ok) return { ok: true, unregistered: false };
+  if (res.ok) {
+    let messageId: string | undefined;
+    try {
+      messageId = (await res.json())?.name;
+    } catch {
+      /* body is optional for our purposes */
+    }
+    return { ok: true, unregistered: false, httpStatus: res.status, messageId };
+  }
 
   const text = await res.text().catch(() => "");
   const unregistered =
@@ -156,5 +169,6 @@ export async function sendFcmV1(
     ok: false,
     unregistered,
     error: `fcm ${res.status} ${text.slice(0, 300)}`,
+    httpStatus: res.status,
   };
 }
