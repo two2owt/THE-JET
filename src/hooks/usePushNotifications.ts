@@ -369,6 +369,7 @@ export const usePushNotifications = () => {
       if (evt === "SIGNED_OUT") {
         void deactivateToken().finally(() => {
           tokenRef.current = null;
+          persistedForRef.current = null;
           setToken(null);
           setIsRegistered(false);
         });
@@ -381,7 +382,34 @@ export const usePushNotifications = () => {
       if (data.session?.user) void initializePushNotifications();
     });
 
-    return () => sub.subscription.unsubscribe();
+    // --- Resume triggers -------------------------------------------------
+    // A launch-only registration misses the common case of the shell being
+    // suspended for days: the OS can rotate the token, or the user can grant
+    // permission from system Settings, while the WebView stays alive. Re-run
+    // the silent path whenever the app comes back to the foreground.
+    const onForeground = () => {
+      if (document.visibilityState !== "visible") return;
+      void checkPermissions();
+      void initializePushNotifications();
+    };
+    document.addEventListener("visibilitychange", onForeground);
+
+    let removeResume: (() => void) | undefined;
+    void (async () => {
+      try {
+        const { App } = await import("@capacitor/app");
+        const handle = await App.addListener("resume", onForeground);
+        removeResume = () => void handle.remove();
+      } catch {
+        /* @capacitor/app unavailable — visibilitychange still covers us. */
+      }
+    })();
+
+    return () => {
+      sub.subscription.unsubscribe();
+      document.removeEventListener("visibilitychange", onForeground);
+      removeResume?.();
+    };
   }, [
     attachListeners,
     checkPermissions,
