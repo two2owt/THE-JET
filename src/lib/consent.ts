@@ -23,12 +23,13 @@ type State = Record<ConsentType, boolean>;
  * signed up, and signed in) so the Explore / Hot tab can rank deals by
  * distance immediately. It only turns off when the user explicitly disables
  * Location Tracking in Settings, which writes a `granted: false` row.
- * Everything else stays opt-in.
+ * Push notifications also use an account-level opt-out posture. Browser and
+ * device permission is still requested only from a user gesture.
  */
 const DEFAULTS: State = {
   foreground_location: true,
   background_tracking: false,
-  push_notifications: false,
+  push_notifications: true,
   messaging_analytics: false,
 };
 

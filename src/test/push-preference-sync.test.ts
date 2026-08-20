@@ -145,27 +145,33 @@ describe("push preference reconciliation (sign-in re-check flow)", () => {
     expect(state.updates.some((u) => u.payload.active === false)).toBe(true);
   });
 
-  it("deactivates stored rows when browser permission was revoked outside the app", async () => {
+  it("does not deactivate other devices when this browser has no known endpoint", async () => {
     installBrowserPush("denied");
+    pushManager.getSubscription.mockResolvedValueOnce(null);
     const { applyPushPreference } = await loadModule();
     await applyPushPreference();
 
     expect(state.rpc).not.toHaveBeenCalled();
-    expect(state.updates.some((u) => u.payload.active === false)).toBe(true);
+    expect(state.updates.some((u) => u.payload.active === false)).toBe(false);
     expect(state.audit).toContainEqual(
-      expect.objectContaining({ action: "permission_revoked" }),
+      expect.objectContaining({
+        action: "permission_revoked",
+        source: "reconcile.permission.no_local_endpoint",
+      }),
     );
   });
 
-  it("retires rotated endpoints for the same user while claiming the live one", async () => {
+  it("retires only this browser's previous endpoint while claiming the live one", async () => {
+    localStorage.setItem("jet:web-push-endpoint", "https://push.example/endpoint-old");
     const { applyPushPreference } = await loadModule();
     await applyPushPreference();
 
     const retire = state.updates.find(
-      (u) => u.table === "push_notifications" && u.filters.some(([op]) => op === "neq"),
+      (u) => u.table === "push_notifications" && u.payload.active === false,
     );
     expect(retire?.payload.active).toBe(false);
-    expect(retire?.filters).toContainEqual(["neq", "endpoint", "https://push.example/endpoint-A"]);
+    expect(retire?.filters).toContainEqual(["eq", "endpoint", "https://push.example/endpoint-old"]);
+    expect(retire?.filters.some(([op]) => op === "neq")).toBe(false);
   });
 
   it("does nothing when no user is signed in", async () => {
