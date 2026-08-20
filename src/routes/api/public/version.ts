@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+declare const __APP_BUILD_ID__: string;
+
 /**
  * Public build-provenance endpoint.
  *
