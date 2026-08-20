@@ -87,12 +87,18 @@ export async function applyPushPreference(): Promise<void> {
     !("Notification" in window)
   )
     return;
-  if (Notification.permission !== "granted") return;
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return;
+
+  // Browser-level permission was revoked (OS/site settings) since last run:
+  // reconcile the server rows so dispatch stops targeting a dead device.
+  if (Notification.permission !== "granted") {
+    await deactivateLocalSubscription(user.id);
+    return;
+  }
 
   // Opt-out model: every signed-up user is a push recipient unless they
   // explicitly turned it off. A revoked `push_notifications` consent row or a
@@ -143,21 +149,70 @@ export async function applyPushPreference(): Promise<void> {
     }
 
     const json = sub.toJSON();
+    const endpoint = json.endpoint || "";
+
+    // Retire any other web rows for this user on this account whose endpoint
+    // the browser has rotated away from, so stale endpoints stop being sent to.
+    await supabase
+      .from("push_notifications")
+      .update({ active: false })
+      .eq("user_id", user.id)
+      .eq("platform", "web")
+      .neq("endpoint", endpoint);
+
     const { error } = await supabase.rpc("claim_push_subscription", {
-      _endpoint: json.endpoint || "",
+      _endpoint: endpoint,
       _p256dh: json.keys?.p256dh || "",
       _auth: json.keys?.auth || "",
       _platform: "web",
     });
     if (error) console.warn("[push] subscription sync failed", error);
+    if (!error) {
+      try {
+        localStorage.setItem("jet:web-push-endpoint", endpoint);
+      } catch {
+        /* ignore */
+      }
+    }
   } catch (err) {
     console.warn("[push] subscription sync error", err);
   }
 }
 
+/**
+ * Throttled entry point used by launch/foreground reconciliation so rapid
+ * tab switches don't spam the backend.
+ */
+let lastReconcileAt = 0;
+let inFlight: Promise<void> | null = null;
+const RECONCILE_INTERVAL_MS = 60_000;
+
+export async function reconcilePushSubscription(force = false): Promise<void> {
+  if (inFlight) return inFlight;
+  const now = Date.now();
+  if (!force && now - lastReconcileAt < RECONCILE_INTERVAL_MS) return;
+  lastReconcileAt = now;
+  inFlight = applyPushPreference().finally(() => {
+    inFlight = null;
+  });
+  return inFlight;
+}
+
 export function usePushSubscriptionSync() {
   useEffect(() => {
-    void applyPushPreference();
+    // App launch.
+    void reconcilePushSubscription(true);
+
+    // Returning to the app (tab focus, PWA resume, native webview resume)
+    // re-checks saved preference vs the live subscription without sign-out.
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        void reconcilePushSubscription();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
+    window.addEventListener("pageshow", onVisible);
 
     const {
       data: { subscription },
@@ -168,10 +223,15 @@ export function usePushSubscriptionSync() {
         event === "USER_UPDATED"
       ) {
         // Defer so the Supabase client finishes updating its session first.
-        setTimeout(() => void applyPushPreference(), 0);
+        setTimeout(() => void reconcilePushSubscription(true), 0);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
+      window.removeEventListener("pageshow", onVisible);
+      subscription.unsubscribe();
+    };
   }, []);
 }
