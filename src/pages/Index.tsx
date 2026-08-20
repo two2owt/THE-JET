@@ -322,6 +322,31 @@ const Index = () => {
         });
         return;
       }
+      // Still unresolved — a deal deep link may point at a venue outside the
+      // currently loaded (city/active-filtered) set. Rehydrate from the deal
+      // record so the JetCard still opens instead of dead-ending.
+      const { data: dealVenue } = await supabase
+        .from("deals")
+        .select("venue_id, venue_name, venue_address, deal_type, image_url")
+        .eq("venue_id", decoded)
+        .limit(1)
+        .maybeSingle();
+      if (cancelled) return;
+      if (dealVenue?.venue_id) {
+        const name = dealVenue.venue_name || decoded;
+        setSelectedVenue({
+          id: dealVenue.venue_id,
+          name,
+          lat: selectedCity.lat,
+          lng: selectedCity.lng,
+          activity: 0,
+          category: dealVenue.deal_type || "Venue",
+          neighborhood: "",
+          address: dealVenue.venue_address || undefined,
+          imageUrl: getVenueImage(name) || dealVenue.image_url || undefined,
+        });
+        return;
+      }
       // Genuinely unresolvable — strip the stale param so a reload doesn't
       // keep retrying the miss.
       toast.error("Venue not found", {
@@ -334,7 +359,14 @@ const Index = () => {
     return () => {
       cancelled = true;
     };
-  }, [venues, venuesLoading, searchParams, setSearchParams, getVenueImage]);
+  }, [
+    venues,
+    venuesLoading,
+    searchParams,
+    setSearchParams,
+    getVenueImage,
+    selectedCity,
+  ]);
 
   useEffect(() => {
     // Don't write the URL until the initial restoration pass has run, or we
@@ -375,10 +407,15 @@ const Index = () => {
         imageUrl: dealData.image_url || getVenueImage(dealData.venue_name),
       };
 
-      // Try to find the venue in our venue list for better coordinates
-      const existingVenue = venues.find(
-        (v) => v.name.toLowerCase() === dealData.venue_name.toLowerCase(),
-      );
+      // Try to find the venue in our venue list for better coordinates.
+      // Prefer the stable id, then fall back to a name match.
+      const existingVenue =
+        venues.find((v) => v.id === dealData.venue_id) ??
+        venues.find(
+          (v) =>
+            v.name.toLowerCase() ===
+            String(dealData.venue_name ?? "").toLowerCase(),
+        );
 
       if (existingVenue) {
         setSelectedVenue({
