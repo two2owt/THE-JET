@@ -309,80 +309,66 @@ function isPointInPolygon(
   return inside;
 }
 
-// Send push notification to a specific user's devices
+/**
+ * Queue a push for a specific user through the unified notification bus.
+ *
+ * The retired Google `fcm/send` endpoint is no longer used: rows land in
+ * `notification_queue` and `notifications-dispatch` handles web push, FCM
+ * HTTP v1 delivery, quiet hours, category opt-outs, retries and receipts.
+ */
 async function sendPushToUser(
   supabase: any,
   userId: string,
   notification: { title: string; body: string; data?: Record<string, any> },
 ) {
   try {
-    // Get user's active push subscriptions
-    const { data: subscriptions, error } = await supabase
-      .from("push_subscriptions")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("active", true);
+    const data = notification.data ?? {};
+    const dealId = data.dealId ? String(data.dealId) : null;
+    const idempotencyKey = [
+      "geofence_deal",
+      userId,
+      dealId ?? "na",
+      data.neighborhoodId ?? "na",
+      new Date().toISOString().slice(0, 13), // hourly dedupe window
+    ].join(":");
 
-    if (error || !subscriptions || subscriptions.length === 0) {
-      console.log("No active push subscriptions for user:", userId);
+    const { error } = await supabase.from("notification_queue").insert({
+      idempotency_key: idempotencyKey,
+      source: "check-geofence",
+      event_type: "geofence_deal",
+      category: "deals",
+      title: notification.title,
+      body: notification.body,
+      data: {
+        venueName: data.venueName ? String(data.venueName) : "",
+        neighborhoodId: data.neighborhoodId ? String(data.neighborhoodId) : "",
+        layers: "",
+        url: dealId
+          ? `https://www.jet-around.com/?deal=${encodeURIComponent(dealId)}`
+          : "",
+      },
+      deal_id: dealId,
+      neighborhood_id: data.neighborhoodId ?? null,
+      target_user_ids: [userId],
+      audience: "users",
+      scheduled_at: new Date().toISOString(),
+    });
+
+    if (error) {
+      // 23505 = duplicate idempotency key, already queued for this window.
+      if (error.code !== "23505") {
+        console.error("Error queueing geofence push:", error.message);
+      }
       return;
     }
 
-    console.log(
-      `Sending push to ${subscriptions.length} device(s) for user ${userId}`,
-    );
-
-    const FCM_SERVER_KEY = Deno.env.get("FCM_SERVER_KEY");
-
-    for (const subscription of subscriptions) {
-      try {
-        // For FCM (Android)
-        if (FCM_SERVER_KEY && subscription.endpoint) {
-          const response = await fetch("https://fcm.googleapis.com/fcm/send", {
-            method: "POST",
-            headers: {
-              Authorization: `key=${FCM_SERVER_KEY}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              to: subscription.endpoint,
-              notification: {
-                title: notification.title,
-                body: notification.body,
-                sound: "default",
-                badge: 1,
-                click_action: "OPEN_DEAL",
-              },
-              data: notification.data || {},
-              priority: "high",
-            }),
-          });
-
-          if (!response.ok) {
-            const errorText = await response.text();
-            console.error("FCM error:", errorText);
-
-            // If token is invalid, mark subscription as inactive
-            if (
-              response.status === 404 ||
-              errorText.includes("NotRegistered")
-            ) {
-              await supabase
-                .from("push_subscriptions")
-                .update({ active: false })
-                .eq("id", subscription.id);
-              console.log(
-                "Marked invalid subscription as inactive:",
-                subscription.id,
-              );
-            }
-          } else {
-            console.log("Push sent successfully to:", subscription.id);
-          }
-        }
-      } catch (pushError) {
-        console.error("Error sending push to subscription:", pushError);
-      }
+    // Best-effort dispatcher wake; cron is the safety net.
+    try {
+      await supabase.functions.invoke("notifications-dispatch", {
+        body: { wake: true },
+      });
+    } catch (_e) {
+      /* cron will pick it up */
     }
   } catch (error) {
     console.error("Error in sendPushToUser:", error);
