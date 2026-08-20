@@ -209,6 +209,7 @@ const Index = () => {
   const { notifications, markAsRead, markAllAsRead } =
     useNotifications(dataReady);
   const unreadNotifications = notifications.filter((n) => !n.read).length;
+  const readNotifications = notifications.length - unreadNotifications;
   const [notificationFilter, setNotificationFilter] = useState<
     "all" | "unread" | "read"
   >("all");
