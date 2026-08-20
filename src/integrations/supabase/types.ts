@@ -1792,6 +1792,7 @@ export type Database = {
         Returns: boolean
       }
       dispatch_ending_soon_favorites: { Args: never; Returns: undefined }
+      display_name_available: { Args: { _name: string }; Returns: boolean }
       email_queue_dispatch: { Args: never; Returns: undefined }
       email_queue_endpoint: { Args: never; Returns: string }
       email_queue_metrics: {
