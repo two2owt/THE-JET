@@ -19,6 +19,7 @@ CREATE POLICY "Admins read realtime allowlist"
 ON public.realtime_guard_allowlist FOR SELECT TO authenticated
 USING (public.has_role(auth.uid(), 'admin'::app_role));
 
+-- idempotency-check: allow-dml
 INSERT INTO public.realtime_guard_allowlist (table_name, sensitivity, note) VALUES
   ('deals',            'public',  'Merchant deals; public SELECT policy is intended'),
   ('user_connections', 'private', 'Requester + recipient only, at any status'),

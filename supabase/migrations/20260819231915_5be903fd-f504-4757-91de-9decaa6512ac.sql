@@ -17,6 +17,7 @@ CREATE POLICY "Admins read email queue thresholds"
   ON public.email_queue_thresholds FOR SELECT TO authenticated
   USING (public.has_role(auth.uid(), 'admin'::public.app_role));
 
+-- idempotency-check: allow-dml
 INSERT INTO public.email_queue_thresholds (metric, warn_value, crit_value) VALUES
   ('queue_depth', 50, 250),
   ('processing_lag_seconds', 300, 900),

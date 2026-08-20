@@ -1,3 +1,4 @@
+-- idempotency-check: allow-dml
 DELETE FROM public.push_subscriptions a
 USING public.push_subscriptions b
 WHERE a.ctid < b.ctid
@@ -65,6 +66,7 @@ GRANT EXECUTE ON FUNCTION public.generate_auto_handle(uuid) TO authenticated, se
 ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS display_name_claimed boolean NOT NULL DEFAULT false;
 
+-- idempotency-check: allow-dml
 UPDATE public.profiles
 SET display_name = public.generate_auto_handle(id),
     display_name_claimed = false
@@ -72,6 +74,7 @@ WHERE display_name IS NULL
    OR btrim(display_name) = ''
    OR display_name LIKE '%@%';
 
+-- idempotency-check: allow-dml
 UPDATE public.profiles
 SET display_name_claimed = true
 WHERE display_name IS NOT NULL
