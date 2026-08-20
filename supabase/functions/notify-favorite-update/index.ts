@@ -55,10 +55,15 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Verify webhook secret (reuses NOTIFY_ADMIN_HOOK_SECRET)
+    // Verify webhook secret. FAVORITE_NOTIFY_HOOK_SECRET is the dedicated
+    // secret used by the database trigger/cron path; NOTIFY_ADMIN_HOOK_SECRET
+    // is still accepted for backwards compatibility with existing callers.
     const authHeader = req.headers.get("Authorization") ?? "";
-    const expected = Deno.env.get("NOTIFY_ADMIN_HOOK_SECRET");
-    if (!expected || authHeader !== `Bearer ${expected}`) {
+    const accepted = [
+      Deno.env.get("FAVORITE_NOTIFY_HOOK_SECRET"),
+      Deno.env.get("NOTIFY_ADMIN_HOOK_SECRET"),
+    ].filter((s): s is string => !!s);
+    if (!accepted.some((s) => authHeader === `Bearer ${s}`)) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
