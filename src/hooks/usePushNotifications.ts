@@ -18,7 +18,7 @@ import { useNavigate } from "@/lib/router-compat";
 import { supabase } from "@/integrations/supabase/client";
 import { resolvePushDeepLink } from "@/lib/pushDeepLink";
 import { queueDeepLink } from "@/lib/pendingDeepLink";
-import { hasConsent, setConsent } from "@/lib/consent";
+import { getExplicitConsent, setConsent } from "@/lib/consent";
 import { toast } from "sonner";
 import { registerDeviceToken } from "@/lib/device-tokens.functions";
 
@@ -77,6 +77,10 @@ export const usePushNotifications = () => {
   const [token, setToken] = useState<string | null>(null);
   const tokenRef = useRef<string | null>(null);
   const listenersRef = useRef(false);
+  /** Guards against overlapping register() calls (launch + resume + auth). */
+  const registeringRef = useRef(false);
+  /** User the current device token was last persisted for. */
+  const persistedForRef = useRef<string | null>(null);
 
   const persistToken = useCallback(
     async (deviceToken: string, platform: "ios" | "android") => {
@@ -84,6 +88,7 @@ export const usePushNotifications = () => {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) return;
+      persistedForRef.current = user.id;
 
       // Preferred path: one authenticated server call does the rotation +
       // find-or-update atomically, so a device never leaves duplicate or
@@ -264,24 +269,47 @@ export const usePushNotifications = () => {
   }, []);
 
   /**
-   * Silent re-registration path: only runs when the OS permission is ALREADY
-   * granted and the user's `push_notifications` consent row is intact. Keeps
-   * the device token fresh (APNs/FCM rotate them) without ever prompting.
+   * Silent re-registration path. Runs on every app launch, on every resume,
+   * and after each sign-in so APNs/FCM tokens reliably reach the database.
+   *
+   * Never prompts: it bails unless the OS permission is ALREADY granted. Once
+   * granted, we follow the project's opt-out posture — registration proceeds
+   * unless the user has an explicit `push_notifications: false` consent row.
+   * (A missing row means "undecided", which used to silently block every
+   * native device from ever registering a token.)
    */
   const initializePushNotifications = useCallback(async () => {
     if (!isNativeShell()) return;
+    if (registeringRef.current) return;
+    registeringRef.current = true;
     try {
       const PushNotifications = await loadPlugin();
       const perm = await PushNotifications.checkPermissions();
       setPermission(toPermission(perm.receive));
       if (perm.receive !== "granted") return;
-      if (!hasConsent("push_notifications")) return;
+      if ((await getExplicitConsent("push_notifications")) === false) return;
       await attachListeners();
       await PushNotifications.register();
+
+      // The plugin only re-emits `registration` when the OS hands back a
+      // token. On a warm resume, or when a different account signs in on the
+      // same device, no event fires — re-persist the cached token so the row
+      // is attached to the current user instead of silently going missing.
+      const cached = tokenRef.current ?? readLastToken();
+      if (cached) {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user && persistedForRef.current !== user.id) {
+          await persistToken(cached, nativePlatform());
+        }
+      }
     } catch (err) {
       console.error("[push] init failed", err);
+    } finally {
+      registeringRef.current = false;
     }
-  }, [attachListeners]);
+  }, [attachListeners, persistToken]);
 
   /** Explicit opt-in from a user gesture. Requests the OS prompt. */
   const enable = useCallback(async (): Promise<boolean> => {
@@ -341,6 +369,7 @@ export const usePushNotifications = () => {
       if (evt === "SIGNED_OUT") {
         void deactivateToken().finally(() => {
           tokenRef.current = null;
+          persistedForRef.current = null;
           setToken(null);
           setIsRegistered(false);
         });
@@ -353,7 +382,34 @@ export const usePushNotifications = () => {
       if (data.session?.user) void initializePushNotifications();
     });
 
-    return () => sub.subscription.unsubscribe();
+    // --- Resume triggers -------------------------------------------------
+    // A launch-only registration misses the common case of the shell being
+    // suspended for days: the OS can rotate the token, or the user can grant
+    // permission from system Settings, while the WebView stays alive. Re-run
+    // the silent path whenever the app comes back to the foreground.
+    const onForeground = () => {
+      if (document.visibilityState !== "visible") return;
+      void checkPermissions();
+      void initializePushNotifications();
+    };
+    document.addEventListener("visibilitychange", onForeground);
+
+    let removeResume: (() => void) | undefined;
+    void (async () => {
+      try {
+        const { App } = await import("@capacitor/app");
+        const handle = await App.addListener("resume", onForeground);
+        removeResume = () => void handle.remove();
+      } catch {
+        /* @capacitor/app unavailable — visibilitychange still covers us. */
+      }
+    })();
+
+    return () => {
+      sub.subscription.unsubscribe();
+      document.removeEventListener("visibilitychange", onForeground);
+      removeResume?.();
+    };
   }, [
     attachListeners,
     checkPermissions,
