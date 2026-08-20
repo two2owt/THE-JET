@@ -1,7 +1,6 @@
 import { Component, ErrorInfo, ReactNode } from "react";
 import { Button } from "./ui/button";
 import { AlertTriangle, RefreshCw } from "lucide-react";
-import { getSentry } from "@/lib/sentry";
 
 interface Props {
   children: ReactNode;
@@ -25,10 +24,12 @@ export class ErrorBoundary extends Component<Props, State> {
   public override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Uncaught error:", error, errorInfo);
     // Forward to Sentry so boundary-caught crashes are visible in prod monitoring.
-    // getSentry() returns null in dev — guard both sync and async paths.
+    // Imported dynamically so Sentry stays in its own chunk (a static import
+    // here would pull it into the main bundle). No-ops outside production.
     try {
-      const maybe = getSentry();
-      Promise.resolve(maybe)
+      if (!import.meta.env.PROD) return;
+      import("@/lib/sentry")
+        .then(({ getSentry }) => getSentry())
         .then((Sentry) => {
           if (!Sentry) return;
           Sentry.captureException(error, {
