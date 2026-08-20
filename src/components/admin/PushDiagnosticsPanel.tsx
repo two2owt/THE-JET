@@ -10,6 +10,7 @@ import {
   Globe,
   RefreshCw,
   Smartphone,
+  Users,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -19,6 +20,32 @@ import {
 
 const ago = (iso: string | null) =>
   iso ? `${formatDistanceToNow(new Date(iso))} ago` : "never";
+
+function CoverageStat({
+  label,
+  value,
+  hint,
+  tone,
+}: {
+  label: string;
+  value: string | number;
+  hint?: string;
+  tone?: "warn";
+}) {
+  return (
+    <div className="rounded-lg border border-border/60 p-3">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p
+        className={`font-display text-2xl ${tone === "warn" ? "text-destructive" : ""}`}
+      >
+        {value}
+      </p>
+      {hint ? (
+        <p className="text-xs text-muted-foreground">{hint}</p>
+      ) : null}
+    </div>
+  );
+}
 
 /** Admin view of push reach, last successful sends and recent failures. */
 export function PushDiagnosticsPanel() {
@@ -75,6 +102,55 @@ export function PushDiagnosticsPanel() {
           <p className="text-sm text-destructive">{error}</p>
         ) : data ? (
           <>
+            <div className="space-y-3 rounded-lg border border-border/60 bg-muted/20 p-3">
+              <div className="flex items-center justify-between gap-2">
+                <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  <Users className="h-3.5 w-3.5" /> Push coverage
+                </p>
+                <Badge variant="secondary">
+                  {data.coverage.reachRate}% of eligible users reachable
+                </Badge>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <CoverageStat
+                  label="Eligible users"
+                  value={data.coverage.eligibleUsers}
+                  hint={`${data.coverage.totalUsers} signed up · ${data.coverage.optedOutUsers} opted out`}
+                />
+                <CoverageStat
+                  label="With a registered device"
+                  value={data.coverage.usersWithDevice}
+                  hint={`${data.coverage.usersWebOnly} web · ${data.coverage.usersNativeOnly} native · ${data.coverage.usersBothChannels} both`}
+                />
+                <CoverageStat
+                  label="Eligible, no device yet"
+                  value={data.coverage.eligibleWithoutDevice}
+                  tone={data.coverage.eligibleWithoutDevice > 0 ? "warn" : undefined}
+                  hint={`${data.coverage.usersInactiveOnly} have only revoked tokens`}
+                />
+                <CoverageStat
+                  label={`Delivered (last ${data.window.hours}h)`}
+                  value={data.coverage.deliveredUsers}
+                  hint={`${data.coverage.deliveryRate}% of reachable · ${data.coverage.failedUsers} users with failures`}
+                />
+              </div>
+
+              <div className="h-2 overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full bg-primary transition-[width] duration-500"
+                  style={{
+                    width: `${Math.min(100, data.coverage.reachRate)}%`,
+                  }}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {data.coverage.optedOutWithDevice > 0
+                  ? `${data.coverage.optedOutWithDevice} opted-out user(s) still have a live token and are excluded from sends.`
+                  : "No opted-out users are holding live tokens."}
+              </p>
+            </div>
+
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="rounded-lg border border-border/60 p-3">
                 <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
