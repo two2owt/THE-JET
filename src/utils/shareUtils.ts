@@ -18,6 +18,41 @@ const withRef = (url: string, referrerId?: string | null) => {
   return `${url}${sep}ref=${encodeURIComponent(referrerId)}`;
 };
 
+/**
+ * Copy text to the clipboard across browsers. The async Clipboard API is
+ * missing on older Safari/Firefox and on non-secure origins, so fall back to
+ * a hidden textarea + execCommand which every evergreen browser still honours.
+ */
+export const copyTextToClipboard = async (text: string): Promise<boolean> => {
+  if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // fall through to the legacy path below
+    }
+  }
+
+  if (typeof document === "undefined") return false;
+
+  try {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.top = "-1000px";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+    const ok = document.execCommand("copy");
+    document.body.removeChild(textarea);
+    return ok;
+  } catch {
+    return false;
+  }
+};
+
 export const shareDeal = async (deal: Deal, userId: string | undefined) => {
   const shareUrl = withRef(
     `${window.location.origin}/?deal=${deal.id}`,
@@ -55,13 +90,8 @@ export const shareDeal = async (deal: Deal, userId: string | undefined) => {
     }
   } else {
     // Fallback: Copy to clipboard
-    try {
-      await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
-      return { success: true, method: "clipboard" };
-    } catch (error) {
-      console.error("Error copying to clipboard:", error);
-      return { success: false, method: "clipboard" };
-    }
+    const copied = await copyTextToClipboard(`${shareText}\n${shareUrl}`);
+    return { success: copied, method: "clipboard" };
   }
 };
 
@@ -91,13 +121,8 @@ export const shareVenue = async (
       return { success: false, method: "native" };
     }
   } else {
-    try {
-      await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
-      return { success: true, method: "clipboard" };
-    } catch (error) {
-      console.error("Error copying to clipboard:", error);
-      return { success: false, method: "clipboard" };
-    }
+    const copied = await copyTextToClipboard(`${shareText}\n${shareUrl}`);
+    return { success: copied, method: "clipboard" };
   }
 };
 

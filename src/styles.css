@@ -129,7 +129,9 @@ All colors MUST be HSL.
        nav. Resolves to 0 on screens that don't render the nav (auth, onboarding). */
     --nav-clearance: 0px;
     /* Main content area height - MUST match index.html shell exactly */
-    --main-height: calc(100dvh - var(--header-total-height) - var(--bottom-nav-total-height));
+    /* 100vh is the legacy fallback (Safari < 15.4, older Firefox/Edge);
+       the @supports block below upgrades it to dvh where available. */
+    --main-height: calc(100vh - var(--header-total-height) - var(--bottom-nav-total-height));
     
     /* Adaptive map UI spacing - device-aware with safe area consideration */
     /* For absolute positioned elements inside map container */
@@ -489,8 +491,8 @@ All colors MUST be HSL.
   #root {
     width: 100%;
     max-width: 100vw;
-    min-height: 100dvh;
-    height: 100dvh;
+    min-height: 100vh;
+    height: 100vh;
     overflow: hidden;
     -webkit-overflow-scrolling: touch;
     background-color: hsl(var(--background));
@@ -3040,4 +3042,17 @@ select:-webkit-autofill:active {
   .layer-loading-bar::after { animation: none; opacity: 0.6; }
   .layer-value-transition { animation: none; }
   .layer-pending { filter: none; }
+}
+
+/* Progressive upgrade: dynamic viewport units where the browser supports them.
+   Legacy browsers keep the 100vh fallbacks declared above. */
+@supports (height: 100dvh) {
+  :root {
+    --main-height: calc(100dvh - var(--header-total-height) - var(--bottom-nav-total-height));
+  }
+
+  #root {
+    min-height: 100dvh;
+    height: 100dvh;
+  }
 }

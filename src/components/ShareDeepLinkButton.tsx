@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { Check, Loader2, Share2 } from "lucide-react";
 import { toast } from "sonner";
-import { getDealDeepLink, getVenueDeepLink } from "@/utils/shareUtils";
+import {
+  copyTextToClipboard,
+  getDealDeepLink,
+  getVenueDeepLink,
+} from "@/utils/shareUtils";
 import {
   trackDeepLinkShared,
   type DeepLinkKind,
@@ -52,7 +56,8 @@ export function ShareDeepLinkButton({
         trackDeepLinkShared(kind, targetId, surface, "native");
         return;
       }
-      await navigator.clipboard.writeText(url);
+      const copied = await copyTextToClipboard(url);
+      if (!copied) throw new Error("clipboard-unavailable");
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       trackDeepLinkShared(kind, targetId, surface, "clipboard");

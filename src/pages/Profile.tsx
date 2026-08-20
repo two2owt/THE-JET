@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { copyTextToClipboard } from "@/utils/shareUtils";
 import { Navigate, useNavigate } from "@/lib/router-compat";
 import { PageLayout } from "@/components/PageLayout";
 import { ProfilePageSkeleton } from "@/components/skeletons/PageSkeletons";
@@ -300,14 +301,16 @@ export default function Profile() {
         await (navigator as any).share(shareData);
         return;
       }
-      await navigator.clipboard.writeText(url);
-      toast.success("Profile link copied");
+      if (await copyTextToClipboard(url)) {
+        toast.success("Profile link copied");
+      } else {
+        toast.error("Unable to share profile");
+      }
     } catch (err: any) {
       if (err?.name === "AbortError") return;
-      try {
-        await navigator.clipboard.writeText(url);
+      if (await copyTextToClipboard(url)) {
         toast.success("Profile link copied");
-      } catch {
+      } else {
         toast.error("Unable to share profile");
       }
     }
