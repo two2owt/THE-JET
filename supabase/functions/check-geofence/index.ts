@@ -168,7 +168,7 @@ Deno.serve(async (req) => {
       user_id: user.id,
       latitude,
       longitude,
-      accuracy,
+      accuracy: (accuracy ?? null) as number | null,
       current_neighborhood_id: currentNeighborhood?.id || null,
     });
 
@@ -275,13 +275,15 @@ Deno.serve(async (req) => {
     );
   } catch (error) {
     console.error("Error in check-geofence:", error);
+    if (error instanceof HttpError) {
+      return jsonResponse({ error: error.message }, error.status);
+    }
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error occurred";
-
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      { error: "Internal server error", detail: errorMessage },
+      500,
+    );
   }
 });
 
