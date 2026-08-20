@@ -24,6 +24,7 @@ import { Route as SocialRouteImport } from './routes/social'
 import { Route as TermsOfServiceRouteImport } from './routes/terms-of-service'
 import { Route as VerificationSuccessRouteImport } from './routes/verification-success'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable/oauth/consent'
+import { Route as ApiPublicDeviceTokensRouteImport } from './routes/api/public/device-tokens'
 import { Route as ApiPublicVersionRouteImport } from './routes/api/public/version'
 import { Route as ApiPublicHooksNudgeIncompleteOnboardingRouteImport } from './routes/api/public/hooks/nudge-incomplete-onboarding'
 import { Route as ApiPublicHooksResendMarketingEventsRouteImport } from './routes/api/public/hooks/resend-marketing-events'
@@ -107,6 +108,11 @@ const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicDeviceTokensRoute = ApiPublicDeviceTokensRouteImport.update({
+  id: '/api/public/device-tokens',
+  path: '/api/public/device-tokens',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicVersionRoute = ApiPublicVersionRouteImport.update({
   id: '/api/public/version',
   path: '/api/public/version',
@@ -163,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/terms-of-service': typeof TermsOfServiceRoute
   '/verification-success': typeof VerificationSuccessRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/api/public/device-tokens': typeof ApiPublicDeviceTokensRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/api/public/hooks/nudge-incomplete-onboarding': typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
   '/api/public/hooks/resend-marketing-events': typeof ApiPublicHooksResendMarketingEventsRoute
@@ -187,6 +194,7 @@ export interface FileRoutesByTo {
   '/terms-of-service': typeof TermsOfServiceRoute
   '/verification-success': typeof VerificationSuccessRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/api/public/device-tokens': typeof ApiPublicDeviceTokensRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/api/public/hooks/nudge-incomplete-onboarding': typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
   '/api/public/hooks/resend-marketing-events': typeof ApiPublicHooksResendMarketingEventsRoute
@@ -212,6 +220,7 @@ export interface FileRoutesById {
   '/terms-of-service': typeof TermsOfServiceRoute
   '/verification-success': typeof VerificationSuccessRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/api/public/device-tokens': typeof ApiPublicDeviceTokensRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/api/public/hooks/nudge-incomplete-onboarding': typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
   '/api/public/hooks/resend-marketing-events': typeof ApiPublicHooksResendMarketingEventsRoute
@@ -238,6 +247,7 @@ export interface FileRouteTypes {
     | '/terms-of-service'
     | '/verification-success'
     | '/.lovable/oauth/consent'
+    | '/api/public/device-tokens'
     | '/api/public/version'
     | '/api/public/hooks/nudge-incomplete-onboarding'
     | '/api/public/hooks/resend-marketing-events'
@@ -262,6 +272,7 @@ export interface FileRouteTypes {
     | '/terms-of-service'
     | '/verification-success'
     | '/.lovable/oauth/consent'
+    | '/api/public/device-tokens'
     | '/api/public/version'
     | '/api/public/hooks/nudge-incomplete-onboarding'
     | '/api/public/hooks/resend-marketing-events'
@@ -286,6 +297,7 @@ export interface FileRouteTypes {
     | '/terms-of-service'
     | '/verification-success'
     | '/.lovable/oauth/consent'
+    | '/api/public/device-tokens'
     | '/api/public/version'
     | '/api/public/hooks/nudge-incomplete-onboarding'
     | '/api/public/hooks/resend-marketing-events'
@@ -311,6 +323,7 @@ export interface RootRouteChildren {
   TermsOfServiceRoute: typeof TermsOfServiceRoute
   VerificationSuccessRoute: typeof VerificationSuccessRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
+  ApiPublicDeviceTokensRoute: typeof ApiPublicDeviceTokensRoute
   ApiPublicVersionRoute: typeof ApiPublicVersionRoute
   ApiPublicHooksNudgeIncompleteOnboardingRoute: typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
   ApiPublicHooksResendMarketingEventsRoute: typeof ApiPublicHooksResendMarketingEventsRoute
@@ -427,6 +440,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/device-tokens': {
+      id: '/api/public/device-tokens'
+      path: '/api/public/device-tokens'
+      fullPath: '/api/public/device-tokens'
+      preLoaderRoute: typeof ApiPublicDeviceTokensRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/version': {
       id: '/api/public/version'
       path: '/api/public/version'
@@ -495,6 +515,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsOfServiceRoute: TermsOfServiceRoute,
   VerificationSuccessRoute: VerificationSuccessRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
+  ApiPublicDeviceTokensRoute: ApiPublicDeviceTokensRoute,
   ApiPublicVersionRoute: ApiPublicVersionRoute,
   ApiPublicHooksNudgeIncompleteOnboardingRoute:
     ApiPublicHooksNudgeIncompleteOnboardingRoute,

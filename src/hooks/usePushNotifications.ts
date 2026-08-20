@@ -20,6 +20,7 @@ import { resolvePushDeepLink } from "@/lib/pushDeepLink";
 import { queueDeepLink } from "@/lib/pendingDeepLink";
 import { hasConsent, setConsent } from "@/lib/consent";
 import { toast } from "sonner";
+import { registerDeviceToken } from "@/lib/device-tokens.functions";
 
 export type NativePushPermission = "prompt" | "granted" | "denied";
 
@@ -83,6 +84,24 @@ export const usePushNotifications = () => {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) return;
+
+      // Preferred path: one authenticated server call does the rotation +
+      // find-or-update atomically, so a device never leaves duplicate or
+      // stale rows behind. Falls back to the direct client writes below if
+      // the RPC is unreachable (offline shell, cold worker).
+      try {
+        await registerDeviceToken({
+          data: {
+            token: deviceToken,
+            platform,
+            previousToken: readLastToken(),
+          },
+        });
+        writeLastToken(deviceToken);
+        return;
+      } catch (err) {
+        console.warn("[push] server token registration failed, falling back", err);
+      }
 
       // --- Token rotation -------------------------------------------------
       // APNs/FCM reissue device tokens (reinstall, restore, key rotation).
