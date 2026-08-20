@@ -118,10 +118,9 @@ export default function NotificationSettings() {
   const busy = saving || loading || web.isLoading || native.isLoading;
 
   return (
-    <PageLayout defaultTab="alerts" headerConfig={{ hideSearch: true }}>
+    <PageLayout defaultTab="notifications" headerConfig={{ hideSearch: true }}>
       <PageShell>
         <TabPageHeader
-          icon={Bell}
           title="Push notifications"
           subtitle="Choose whether JET can alert you about deals, favorites and messages."
         />
