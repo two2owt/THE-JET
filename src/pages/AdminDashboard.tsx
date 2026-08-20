@@ -133,6 +133,11 @@ const EmailQueueMonitorPanel = lazy(() =>
     default: m.EmailQueueMonitorPanel,
   })),
 );
+const RealtimeGuardPanel = lazy(() =>
+  import("@/components/admin/RealtimeGuardPanel").then((m) => ({
+    default: m.RealtimeGuardPanel,
+  })),
+);
 type SectionId =
   | "deals"
   | "analytics"
@@ -469,7 +474,13 @@ export default function AdminDashboard() {
               )}
               {section === "security" && (
                 <Suspense fallback={<AdminTabFallback />}>
-                  <SecurityFindingsPanel />
+                  <div
+                    className="flex flex-col"
+                    style={{ gap: "var(--space-md)" }}
+                  >
+                    <SecurityFindingsPanel />
+                    <RealtimeGuardPanel />
+                  </div>
                 </Suspense>
               )}
               {section === "email" && (
