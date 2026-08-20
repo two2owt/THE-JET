@@ -21,6 +21,7 @@ import { queueDeepLink } from "@/lib/pendingDeepLink";
 import { getExplicitConsent, setConsent } from "@/lib/consent";
 import { toast } from "sonner";
 import { registerDeviceToken } from "@/lib/device-tokens.functions";
+import { getDeviceId } from "@/lib/device-id";
 
 export type NativePushPermission = "prompt" | "granted" | "denied";
 
@@ -81,6 +82,8 @@ export const usePushNotifications = () => {
   const registeringRef = useRef(false);
   /** User the current device token was last persisted for. */
   const persistedForRef = useRef<string | null>(null);
+  /** Token value last successfully written for this device. */
+  const persistedTokenRef = useRef<string | null>(null);
 
   const persistToken = useCallback(
     async (deviceToken: string, platform: "ios" | "android") => {
@@ -89,6 +92,7 @@ export const usePushNotifications = () => {
       } = await supabase.auth.getUser();
       if (!user) return;
       persistedForRef.current = user.id;
+      const deviceId = getDeviceId();
 
       // Preferred path: one authenticated server call does the rotation +
       // find-or-update atomically, so a device never leaves duplicate or
@@ -100,9 +104,11 @@ export const usePushNotifications = () => {
             token: deviceToken,
             platform,
             previousToken: readLastToken(),
+            deviceId,
           },
         });
         writeLastToken(deviceToken);
+        persistedTokenRef.current = deviceToken;
         return;
       } catch (err) {
         console.warn("[push] server token registration failed, falling back", err);
@@ -134,6 +140,7 @@ export const usePushNotifications = () => {
             .update({
               endpoint: deviceToken,
               platform,
+              device_id: deviceId,
               active: true,
               updated_at: new Date().toISOString(),
             })
@@ -141,6 +148,15 @@ export const usePushNotifications = () => {
             .eq("user_id", user.id);
         }
       }
+
+      // Same device, token refreshed while this client was offline: drop any
+      // other row this install owns so only the newest token stays active.
+      await supabase
+        .from("push_notifications")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("device_id", deviceId)
+        .neq("endpoint", deviceToken);
 
       // No unique constraint on `endpoint` — do a manual find-or-update.
       const { data: existing } = await supabase
@@ -154,6 +170,7 @@ export const usePushNotifications = () => {
           .update({
             user_id: user.id,
             platform,
+            device_id: deviceId,
             active: true,
             updated_at: new Date().toISOString(),
           })
@@ -165,11 +182,13 @@ export const usePushNotifications = () => {
           p256dh_key: "native",
           auth_key: "native",
           platform,
+          device_id: deviceId,
           active: true,
         });
       }
 
       writeLastToken(deviceToken);
+      persistedTokenRef.current = deviceToken;
     },
     [],
   );
@@ -198,9 +217,13 @@ export const usePushNotifications = () => {
     const platform = nativePlatform();
 
     await PushNotifications.addListener("registration", async (t) => {
+      const refreshed = readLastToken() && readLastToken() !== t.value;
       tokenRef.current = t.value;
       setToken(t.value);
       setIsRegistered(true);
+      if (refreshed) {
+        console.info("[push] device token refreshed, rotating registration");
+      }
       try {
         await persistToken(t.value, platform);
       } catch (err) {
