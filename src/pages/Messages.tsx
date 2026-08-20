@@ -257,7 +257,11 @@ export default function Messages() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const { conversations, loading: convosLoading } = useConversations(user?.id);
+  const {
+    conversations,
+    loading: convosLoading,
+    refresh: refreshConversations,
+  } = useConversations(user?.id);
 
   const openChat = (friendId: string) => {
     setSearchParams({ chat: friendId });
@@ -287,7 +291,11 @@ export default function Messages() {
   }
 
   return (
-    <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
+    <PageLayout
+      defaultTab="social"
+      headerConfig={{ hideSearch: true }}
+      onPullToRefresh={refreshConversations}
+    >
       <div className="max-w-2xl mx-auto w-full h-full flex flex-col overflow-hidden">
         {activeFriendId ? (
           <ChatView

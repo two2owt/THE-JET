@@ -66,6 +66,7 @@ export default function Favorites() {
     favorites,
     loading: favoritesLoading,
     toggleVenueFavorite,
+    refetch: refetchFavorites,
   } = useFavorites(user?.id);
 
   useEffect(() => {
@@ -300,7 +301,13 @@ export default function Favorites() {
   }
 
   return (
-    <PageLayout defaultTab="favorites" headerConfig={headerConfig}>
+    <PageLayout
+      defaultTab="favorites"
+      headerConfig={headerConfig}
+      onPullToRefresh={async () => {
+        await Promise.all([refetchFavorites(), fetchFavoriteDeals()]);
+      }}
+    >
       <PageShell>
         <TabPageHeader
           title="Your Favorites"
