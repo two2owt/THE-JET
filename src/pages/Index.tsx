@@ -9,6 +9,12 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, useSearchParams } from "@/lib/router-compat";
+import {
+  trackDeepLinkOpened,
+  trackDeepLinkFallback,
+  trackDeepLinkFailed,
+  inferDeepLinkSurface,
+} from "@/lib/deepLinkAnalytics";
 import { supabase } from "@/integrations/supabase/client";
 import { type Venue } from "@/types/venue";
 import { CITIES, type City } from "@/types/cities";
