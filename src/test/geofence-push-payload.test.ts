@@ -1,6 +1,38 @@
 import { describe, it, expect } from "vitest";
-import { buildDataPayload } from "../../supabase/functions/_shared/notifications.ts";
 import { resolvePushDeepLink } from "@/lib/pushDeepLink";
+
+/**
+ * Mirror of buildDataPayload() in the notifications edge-function helper.
+ * That module targets the Deno runtime (it reads `Deno.env`), so it cannot be
+ * pulled into the app typecheck; the payload shape is duplicated here and
+ * asserted against the client-side resolver. Keep both in sync.
+ */
+function buildDataPayload(opts: {
+  queueId: string;
+  dealId?: string | null;
+  venueId?: string | null;
+  venueName?: string | null;
+  layers?: string | null;
+  url?: string | null;
+  category?: string | null;
+}): Record<string, string> {
+  const url =
+    opts.url ??
+    (opts.dealId
+      ? `https://www.jet-around.com/?deal=${encodeURIComponent(opts.dealId)}`
+      : opts.venueId
+        ? `https://www.jet-around.com/?venue=${encodeURIComponent(opts.venueId)}`
+        : "https://www.jet-around.com/");
+  return {
+    notificationId: opts.queueId,
+    dealId: opts.dealId ?? "",
+    venueId: opts.venueId ?? "",
+    venueName: opts.venueName ?? "",
+    layers: opts.layers ?? "",
+    category: opts.category ?? "deals",
+    url,
+  };
+}
 
 /**
  * Contract test for the check-geofence -> notification_queue -> dispatch ->
