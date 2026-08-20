@@ -220,6 +220,7 @@ const PageTracker = memo(function PageTracker() {
 
 function AppLayout() {
   useNativeDeepLinking();
+  useAutoReloadOnUpdate();
   usePushNotifications();
   usePendingDeepLink();
   useForegroundPushMessages();
