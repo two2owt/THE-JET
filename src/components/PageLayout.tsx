@@ -1,5 +1,8 @@
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useRef } from "react";
+import { useRouterState } from "@tanstack/react-router";
 import { BottomNav } from "./BottomNav";
+import { usePullToRefresh } from "@/hooks/usePullToRefresh";
+import { PullToRefreshIndicator } from "./PullToRefreshIndicator";
 import { useBottomNavigation, type NavTab } from "@/hooks/useBottomNavigation";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
@@ -44,6 +47,8 @@ interface PageLayoutProps {
   notificationCount?: number;
   /** Override unread message count (otherwise uses useUnreadMessages) */
   messageCount?: number;
+  /** Enables pull-to-refresh on this page's scroll container (touch only) */
+  onPullToRefresh?: () => void | Promise<unknown>;
 }
 
 /**
@@ -68,11 +73,20 @@ export function PageLayout({
   onPrefetch,
   notificationCount,
   messageCount,
+  onPullToRefresh,
 }: PageLayoutProps) {
   const { activeTab, handleTabChange } = useBottomNavigation({ defaultTab });
   const { notifications } = useNotifications();
   const { unreadCount: unreadMessages } = useUnreadMessages();
   const setHeaderConfig = useHeaderConfig();
+  const mainRef = useRef<HTMLElement | null>(null);
+  // Re-keying the content on pathname replays the enter transition, so tab
+  // switches fade instead of snapping.
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const pull = usePullToRefresh({
+    targetRef: mainRef,
+    onRefresh: onPullToRefresh,
+  });
 
   // Use provided notification count or calculate from notifications
   const unreadCount =
@@ -118,6 +132,7 @@ export function PageLayout({
     >
       <main
         role="main"
+        ref={mainRef}
         className={`main-content ${fullBleed ? "" : "page-container"} ${mainClassName}`}
         style={{
           // FIXED dimensions using centralized CSS variables
@@ -135,7 +150,23 @@ export function PageLayout({
           overflow: fullBleed ? "hidden" : "auto",
         }}
       >
-        {children}
+        <PullToRefreshIndicator
+          distance={pull.distance}
+          refreshing={pull.refreshing}
+          armed={pull.armed}
+        />
+        <div
+          key={pathname}
+          className="route-transition"
+          style={{
+            transform: pull.distance
+              ? `translate3d(0, ${pull.distance}px, 0)`
+              : undefined,
+            transition: pull.distance ? undefined : "transform 200ms ease-out",
+          }}
+        >
+          {children}
+        </div>
       </main>
 
       <BottomNav
