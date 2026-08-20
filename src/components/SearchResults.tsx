@@ -525,7 +525,7 @@ export const SearchResults = ({
           // first paint before measurement lands.
           top: box
             ? `${box.top}px`
-            : "calc(var(--header-height, 56px) + env(safe-area-inset-top, 0px) + 8px)",
+            : "calc(var(--header-height, 56px) + env(safe-area-inset-top, 0px) + 12px)",
           // Hard-anchor the bottom edge above the nav bar so the panel can
           // never sit under (or scroll behind) the footer navigation.
           bottom: box
