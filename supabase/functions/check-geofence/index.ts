@@ -12,6 +12,7 @@ class HttpError extends Error {
   constructor(
     message: string,
     readonly status: number,
+    readonly detail?: string,
   ) {
     super(message);
   }
@@ -22,6 +23,17 @@ const jsonResponse = (body: unknown, status = 200) =>
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
+
+/** Consistent client-usable error payload. Never leaks "Internal server error" as the user-facing message. */
+const errorResponse = (
+  message: string,
+  status: number,
+  detail?: string,
+) =>
+  jsonResponse(
+    { success: false, error: message, ...(detail ? { detail } : {}) },
+    status,
+  );
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
