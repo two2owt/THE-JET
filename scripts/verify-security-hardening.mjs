@@ -108,6 +108,18 @@ for (const file of migrationFiles) {
     tables.delete(m[1].toLowerCase());
   }
 
+  // ALTER TABLE public.<old> RENAME TO <new> — transfer tracked state.
+  for (const m of sql.matchAll(
+    /alter\s+table\s+(?:only\s+)?public\.([a-z0-9_]+)\s+rename\s+to\s+([a-z0-9_]+)/gi,
+  )) {
+    const oldName = m[1].toLowerCase();
+    const newName = m[2].toLowerCase();
+    if (tables.has(oldName)) {
+      tables.set(newName, tables.get(oldName));
+      tables.delete(oldName);
+    }
+  }
+
   // GRANT ... ON public.<t> TO <role>
   for (const m of sql.matchAll(
     /grant\s+[^;]*?\bon\s+(?:table\s+)?public\.([a-z0-9_]+)\s+to\s+/gi,
