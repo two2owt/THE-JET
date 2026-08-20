@@ -2091,17 +2091,35 @@ All colors MUST be HSL.
     letter-spacing: 0.01em;
   }
   .profile-stat-pill-row {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
     width: 100%;
+  }
+  /* Pills sit in equal thirds so the row never wraps 2 + 1 */
+  .profile-stat-pill {
     justify-content: center;
+    padding-left: 10px;
+    padding-right: 12px;
+    min-width: 0;
+  }
+  .profile-stat-pill-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   @media (min-width: 640px) {
     .profile-stat-pill-row { gap: 10px; }
   }
   @media (min-width: 768px) {
-    .profile-stat-pill-row { justify-content: flex-start; }
+    .profile-stat-pill-row {
+      grid-template-columns: repeat(3, minmax(0, max-content));
+      justify-content: flex-start;
+    }
+    .profile-stat-pill { justify-content: flex-start; }
+  }
+  @media (max-width: 380px) {
+    .profile-stat-pill { gap: 6px; padding-left: 8px; padding-right: 8px; }
+    .profile-stat-pill-label { font-size: 11px; }
   }
 
   /* ====================================================================
@@ -2175,6 +2193,16 @@ All colors MUST be HSL.
     transition: transform 0.15s ease;
   }
   .profile-avatar-camera:hover { transform: scale(1.05); }
+  /* Non-interactive hint shown outside edit mode so the avatar reads editable */
+  .profile-avatar-camera-hint {
+    pointer-events: none;
+    opacity: 0.75;
+    background: hsl(var(--card) / 0.9);
+    color: hsl(var(--foreground));
+    box-shadow: none;
+    width: 30px;
+    height: 30px;
+  }
   .profile-identity-text {
     display: flex;
     flex-direction: column;
