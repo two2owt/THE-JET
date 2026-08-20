@@ -12,6 +12,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import webpush from "https://esm.sh/web-push@3.6.7";
 import { corsHeaders, logVersion } from "../_shared/cors.ts";
+import { internalError, jsonResponse } from "../_shared/http.ts";
 import { sendFcmV1 } from "../_shared/fcm.ts";
 import { getServiceRoleKey } from "../_shared/supabase-keys.ts";
 import {
@@ -28,12 +29,11 @@ logVersion(FUNCTION_NAME);
 
 const BATCH_SIZE = 10;
 
-function json(payload: unknown, status = 200) {
-  return new Response(JSON.stringify(payload), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
-}
+const json = jsonResponse;
+
+/** Last 8 chars of a device token — enough to identify a device, never the token. */
+const tokenTail = (token: string) =>
+  token ? `…${token.replace(/^fcm:/, "").slice(-8)}` : null;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS")
@@ -220,6 +220,18 @@ Deno.serve(async (req) => {
         let nativeSent = 0;
         const invalid: string[] = [];
         const deliveries: Array<Record<string, unknown>> = [];
+        const nativeAudit: Array<Record<string, unknown>> = [];
+
+        const auditBase = (sub: any) => ({
+          queue_id: job.id,
+          user_id: sub.user_id,
+          subscription_id: sub.id,
+          platform: sub.platform ?? "unknown",
+          token_tail: tokenTail(sub.endpoint ?? ""),
+          category: job.category ?? null,
+          event_type: job.event_type ?? null,
+          audience: job.audience ?? null,
+        });
 
         await Promise.allSettled(
           (subs ?? []).map(async (sub: any) => {
@@ -232,6 +244,17 @@ Deno.serve(async (req) => {
                   { title: job.title, body: job.body },
                   data,
                 );
+                nativeAudit.push({
+                  ...auditBase(sub),
+                  status: res.ok
+                    ? "sent"
+                    : res.unregistered
+                      ? "unregistered"
+                      : "failed",
+                  http_status: res.httpStatus ?? null,
+                  provider_message_id: res.messageId ?? null,
+                  error: res.ok ? null : (res.error ?? "fcm failed").slice(0, 500),
+                });
                 if (!res.ok) {
                   if (res.unregistered) invalid.push(sub.id);
                   throw new Error(res.error ?? "fcm failed");
@@ -259,6 +282,15 @@ Deno.serve(async (req) => {
             } catch (err: any) {
               if (err?.statusCode === 404 || err?.statusCode === 410)
                 invalid.push(sub.id);
+              // Native failures thrown before sendFcmV1 returned (e.g. OAuth
+              // minting blew up) still need an audit row.
+              if (isNative && !nativeAudit.some((a) => a.subscription_id === sub.id)) {
+                nativeAudit.push({
+                  ...auditBase(sub),
+                  status: "failed",
+                  error: String(err?.message ?? err).slice(0, 500),
+                });
+              }
               deliveries.push({
                 queue_id: job.id,
                 user_id: sub.user_id,
@@ -279,6 +311,17 @@ Deno.serve(async (req) => {
         }
         if (deliveries.length > 0) {
           await supabase.from("notification_deliveries").insert(deliveries);
+        }
+        if (nativeAudit.length > 0) {
+          const { error: auditErr } = await supabase
+            .from("native_push_audit")
+            .insert(nativeAudit);
+          if (auditErr) {
+            console.error(
+              `[${FUNCTION_NAME}] native push audit insert failed:`,
+              auditErr.message,
+            );
+          }
         }
 
         // In-app Alerts feed — one row per eligible user, even without a device.
@@ -345,6 +388,6 @@ Deno.serve(async (req) => {
       `[${FUNCTION_NAME}]`,
       err instanceof Error ? err.message : err,
     );
-    return json({ error: "Internal server error" }, 500);
+    return internalError(err);
   }
 });
