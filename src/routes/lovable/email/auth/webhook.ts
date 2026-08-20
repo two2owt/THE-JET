@@ -33,7 +33,8 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 // Configuration
 const SITE_NAME = "jet-around"
 const SENDER_DOMAIN = "notify.www.jet-around.com"
-const ROOT_DOMAIN = "www.jet-around.com"
+// Apex host: hosting redirects www -> apex, so email links skip that hop.
+const ROOT_DOMAIN = "jet-around.com"
 const FROM_DOMAIN = "notify.www.jet-around.com"
 
 function redactEmail(email: string | null | undefined): string {

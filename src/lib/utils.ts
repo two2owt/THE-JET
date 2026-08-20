@@ -17,7 +17,10 @@ export function cn(...inputs: ClassValue[]) {
 // The live app is served from jet-around.lovable.app with jet-around.com as
 // the primary custom domain. OAuth automatically follows because Lovable-managed
 // OAuth includes every attached custom domain in the redirect allow-list.
-const PRODUCTION_URL = "https://www.jet-around.com";
+// Hosting 302-redirects www.jet-around.com -> jet-around.com, so every auth
+// email / OAuth link must already point at the apex. Sending users through an
+// extra redirect risks dropping the token fragment in stricter in-app browsers.
+const PRODUCTION_URL = "https://jet-around.com";
 
 // Exact hostnames that are safe to redirect back to as-is. Add new custom
 // domains here the same day they're attached in Project Settings → Domains
@@ -43,6 +46,10 @@ export const getAppUrl = (): string => {
     return PRODUCTION_URL;
   }
   const host = window.location.hostname.toLowerCase();
+  // Never emit the www host: it always redirects to the apex.
+  if (host === "www.jet-around.com") {
+    return PRODUCTION_URL;
+  }
   if (isAllowedHost(host)) {
     return `${window.location.protocol}//${window.location.host}`;
   }

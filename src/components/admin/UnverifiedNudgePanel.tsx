@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, MailWarning, Send } from "lucide-react";
 import { toast } from "sonner";
+import { buildAuthRedirectUrl } from "@/lib/utils";
 
 type DirectoryRow = {
   id: string;
@@ -52,7 +53,7 @@ export const UnverifiedNudgePanel = () => {
     if (!emails.length) return;
     setBusy(label);
     try {
-      const redirectTo = `${window.location.origin}/verification-success`;
+      const redirectTo = buildAuthRedirectUrl("/verification-success");
       const { data: res, error } = await supabase.functions.invoke(
         "admin-bulk-provision-users",
         {
