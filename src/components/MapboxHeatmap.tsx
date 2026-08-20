@@ -1037,6 +1037,98 @@ export const MapboxHeatmap = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dayFilter, timelapseMode]);
 
+  // ── Unified layer-toggle intents ──────────────────────────────────────
+  // Every surface that can flip a layer (Layers panel rows, collapsed
+  // quick-toggle chips, the Time-lapse pill) routes through these so the
+  // dependency cascade can never disagree between entry points.
+  //
+  // Rules:
+  //   • Heatmap off  → Time-lapse off, Live Stats off (both feed off it).
+  //   • Flow Paths on → Time-lapse off (they fight for the same channel).
+  //   • Flow Paths off → Live Stats off (stats needs the paths series).
+  //   • Live Stats on → Heatmap + Flow Paths on.
+  //   • Time-lapse on → Heatmap on, Flow Paths off (⇒ Live Stats off).
+  const applyDensityLayer = useCallback(
+    (next: boolean) => {
+      setShowDensityLayer(next);
+      if (next) {
+        setTimeFilter("all");
+        setHourFilter(undefined);
+        setDayFilter(undefined);
+        scheduleDensityRefresh();
+      } else {
+        clearDensityRefreshTimer();
+        setIsLoadingHeatmap(false);
+        setTimelapseMode(false);
+        setShowLiveStats(false);
+        setIsLoadingStats(false);
+      }
+    },
+    [scheduleDensityRefresh, clearDensityRefreshTimer],
+  );
+
+  const applyPathsLayer = useCallback(
+    (next: boolean) => {
+      setShowMovementPaths(next);
+      if (next) {
+        setTimelapseMode(false);
+        schedulePathsRefresh();
+      } else {
+        clearPathsRefreshTimer();
+        setIsLoadingPaths(false);
+        setShowLiveStats(false);
+        setIsLoadingStats(false);
+      }
+    },
+    [schedulePathsRefresh, clearPathsRefreshTimer],
+  );
+
+  const applyParkingLayer = useCallback((next: boolean) => {
+    setShowParking(next);
+    try {
+      if (map.current?.getLayer("parking-icons")) {
+        map.current.setLayoutProperty(
+          "parking-icons",
+          "visibility",
+          next ? "visible" : "none",
+        );
+      }
+    } catch {
+      /* layer may not exist yet */
+    }
+  }, []);
+
+  const applyLiveStats = useCallback(
+    (next: boolean) => {
+      setShowLiveStats(next);
+      if (next) {
+        setIsLoadingStats(true);
+        applyDensityLayer(true);
+        applyPathsLayer(true);
+        // Both "on" paths above never clear stats, but paths-on also drops
+        // Time-lapse, which is the intended mutual exclusion.
+        setShowLiveStats(true);
+      } else {
+        setIsLoadingStats(false);
+      }
+    },
+    [applyDensityLayer, applyPathsLayer],
+  );
+
+  const applyTimelapse = useCallback(
+    (next: boolean) => {
+      if (next) {
+        applyDensityLayer(true);
+        applyPathsLayer(false);
+        setTimelapseMode(true);
+        timelapse.loadHourlyData();
+      } else {
+        setTimelapseMode(false);
+      }
+    },
+    [applyDensityLayer, applyPathsLayer, timelapse],
+  );
+
   // Reset to defaults — clears localStorage and restores factory settings
   const handleResetToDefaults = useCallback(() => {
     triggerHaptic("medium");
@@ -4305,26 +4397,7 @@ export const MapboxHeatmap = ({
                   tooltip="Shows live crowd density across Charlotte. Red zones are the busiest right now; blue zones are calmer."
                   onToggle={() => {
                     triggerHaptic("medium");
-                    const newState = !showDensityLayer;
-                    setShowDensityLayer(newState);
-                    if (newState) {
-                      setTimeFilter("all");
-                      setHourFilter(undefined);
-                      setDayFilter(undefined);
-                      scheduleDensityRefresh();
-                    } else {
-                      clearDensityRefreshTimer();
-                      setIsLoadingHeatmap(false);
-                      // Time-lapse and Live Stats both consume the density
-                      // layer's data pipeline. Turning heatmap off must cascade
-                      // so users don't end up with orphaned modes running
-                      // against a hidden layer.
-                      if (timelapseMode) setTimelapseMode(false);
-                      if (showLiveStats) {
-                        setShowLiveStats(false);
-                        setIsLoadingStats(false);
-                      }
-                    }
+                    applyDensityLayer(!showDensityLayer);
                   }}
                 />
 
@@ -4357,26 +4430,7 @@ export const MapboxHeatmap = ({
                       aria-pressed={timelapseMode}
                       onClick={() => {
                         triggerHaptic("medium");
-                        const newMode = !timelapseMode;
-                        setTimelapseMode(newMode);
-                        if (newMode) {
-                          // Time-lapse renders through the density heatmap
-                          // pipeline; make sure it's on before we start
-                          // hydrating hourly buckets.
-                          if (!showDensityLayer) {
-                            setShowDensityLayer(true);
-                            scheduleDensityRefresh();
-                          }
-                          // Movement Paths animate continuously and visually
-                          // fight the time-lapse playback, so pause them while
-                          // the scrubber owns the map.
-                          if (showMovementPaths) {
-                            setShowMovementPaths(false);
-                            clearPathsRefreshTimer();
-                            setIsLoadingPaths(false);
-                          }
-                          timelapse.loadHourlyData();
-                        }
+                        applyTimelapse(!timelapseMode);
                       }}
                       style={{
                         width: "100%",
@@ -4818,18 +4872,7 @@ export const MapboxHeatmap = ({
                   tooltip="Real user movement between venues. Line thickness and glow scale with motion frequency and user frequency — brighter, thicker paths mean more people actively moving that route right now."
                   onToggle={() => {
                     triggerHaptic("medium");
-                    const next = !showMovementPaths;
-                    setShowMovementPaths(next);
-                    if (next) {
-                      // Flow Paths and Time-lapse compete for the same visual
-                      // channel (animated motion). If Time-lapse is running,
-                      // stop it so the paths can breathe.
-                      if (timelapseMode) setTimelapseMode(false);
-                      schedulePathsRefresh();
-                    } else {
-                      clearPathsRefreshTimer();
-                      setIsLoadingPaths(false);
-                    }
+                    applyPathsLayer(!showMovementPaths);
                   }}
                 />
 
@@ -4997,21 +5040,7 @@ export const MapboxHeatmap = ({
                   tooltip="Displays nearby parking options around venues so you can plan your arrival."
                   onToggle={() => {
                     triggerHaptic("medium");
-                    const newState = !showParking;
-                    setShowParking(newState);
-                    if (map.current) {
-                      try {
-                        if (map.current.getLayer("parking-icons")) {
-                          map.current.setLayoutProperty(
-                            "parking-icons",
-                            "visibility",
-                            newState ? "visible" : "none",
-                          );
-                        }
-                      } catch (e) {
-                        /* layer may not exist yet */
-                      }
-                    }
+                    applyParkingLayer(!showParking);
                   }}
                 />
 
@@ -5033,27 +5062,7 @@ export const MapboxHeatmap = ({
                   tooltip="Actionable insights from live activity: busiest hotspots right now, momentum trend vs. the last hour, top movement routes, and recent JET member check-ins to help you decide where to go next."
                   onToggle={() => {
                     triggerHaptic("medium");
-                    const next = !showLiveStats;
-                    setShowLiveStats(next);
-                    if (next) {
-                      setIsLoadingStats(true);
-                      // Live Stats derives its numbers from the density and
-                      // movement-paths data pipelines. Enable both so the
-                      // panel isn't populated by stale/zero series.
-                      if (!showDensityLayer) {
-                        setShowDensityLayer(true);
-                        setTimeFilter("all");
-                        setHourFilter(undefined);
-                        setDayFilter(undefined);
-                        scheduleDensityRefresh();
-                      }
-                      if (!showMovementPaths) {
-                        setShowMovementPaths(true);
-                        schedulePathsRefresh();
-                      }
-                    } else {
-                      setIsLoadingStats(false);
-                    }
+                    applyLiveStats(!showLiveStats);
                   }}
                 />
 
@@ -5198,17 +5207,7 @@ export const MapboxHeatmap = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   triggerHaptic("medium");
-                  const newState = !showDensityLayer;
-                  setShowDensityLayer(newState);
-                  if (newState) {
-                    setTimeFilter("all");
-                    setHourFilter(undefined);
-                    setDayFilter(undefined);
-                    scheduleDensityRefresh();
-                  } else {
-                    clearDensityRefreshTimer();
-                    setIsLoadingHeatmap(false);
-                  }
+                  applyDensityLayer(!showDensityLayer);
                 }}
                 style={{
                   width: "32px",
@@ -5249,14 +5248,7 @@ export const MapboxHeatmap = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   triggerHaptic("medium");
-                  const next = !showMovementPaths;
-                  setShowMovementPaths(next);
-                  if (next) {
-                    schedulePathsRefresh();
-                  } else {
-                    clearPathsRefreshTimer();
-                    setIsLoadingPaths(false);
-                  }
+                  applyPathsLayer(!showMovementPaths);
                 }}
                 style={{
                   width: "32px",
@@ -5297,21 +5289,7 @@ export const MapboxHeatmap = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   triggerHaptic("medium");
-                  const newState = !showParking;
-                  setShowParking(newState);
-                  if (map.current) {
-                    try {
-                      if (map.current.getLayer("parking-icons")) {
-                        map.current.setLayoutProperty(
-                          "parking-icons",
-                          "visibility",
-                          newState ? "visible" : "none",
-                        );
-                      }
-                    } catch (e) {
-                      /* layer may not exist yet */
-                    }
-                  }
+                  applyParkingLayer(!showParking);
                 }}
                 style={{
                   width: "32px",
@@ -5352,24 +5330,7 @@ export const MapboxHeatmap = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   triggerHaptic("medium");
-                  const next = !showLiveStats;
-                  setShowLiveStats(next);
-                  if (next) {
-                    setIsLoadingStats(true);
-                    if (!showDensityLayer) {
-                      setShowDensityLayer(true);
-                      setTimeFilter("all");
-                      setHourFilter(undefined);
-                      setDayFilter(undefined);
-                      scheduleDensityRefresh();
-                    }
-                    if (!showMovementPaths) {
-                      setShowMovementPaths(true);
-                      schedulePathsRefresh();
-                    }
-                  } else {
-                    setIsLoadingStats(false);
-                  }
+                  applyLiveStats(!showLiveStats);
                 }}
                 style={{
                   width: "32px",
