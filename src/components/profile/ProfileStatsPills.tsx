@@ -59,8 +59,10 @@ export function ProfileStatsPills({
           <span className="profile-stat-pill-icon" aria-hidden="true">
             <Icon className="w-3.5 h-3.5" />
           </span>
-          <span className="profile-stat-pill-value">{value}</span>
-          <span className="profile-stat-pill-label">{label}</span>
+          <span className="profile-stat-pill-text">
+            <span className="profile-stat-pill-value">{value}</span>
+            <span className="profile-stat-pill-label">{label}</span>
+          </span>
         </button>
       ))}
     </div>
