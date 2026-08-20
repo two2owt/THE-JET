@@ -84,8 +84,15 @@ export function TestPushPanel() {
       const total =
         (data as { sent?: number; total?: number } | null)?.total ?? 0;
       const errors = (data as { errors?: number } | null)?.errors ?? 0;
+      const audienceUsers =
+        (data as { audience_users?: number } | null)?.audience_users ?? 0;
+      const reachableUsers =
+        (data as { reachable_users?: number } | null)?.reachable_users ?? 0;
       toast.success(
-        `Sent ${sent}/${total} push notifications${errors ? ` · ${errors} failed` : ""}`,
+        `Sent ${sent}/${total} push notifications${errors ? ` · ${errors} failed` : ""}` +
+          (target === "all" && audienceUsers
+            ? ` · ${reachableUsers}/${audienceUsers} enabled users have a registered device`
+            : ""),
       );
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to send push";
@@ -122,11 +129,18 @@ export function TestPushPanel() {
             >
               <RadioGroupItem value={t} />
               <span className="text-sm capitalize">
-                {t === "all" ? "All subscribers" : t}
+                {t === "all" ? "All users (push enabled)" : t}
               </span>
             </label>
           ))}
         </RadioGroup>
+        {target === "all" && (
+          <p className="text-xs text-muted-foreground">
+            Targets every signed-up user who hasn’t disabled notifications.
+            Users without a registered device yet are counted but can’t be
+            delivered to.
+          </p>
+        )}
       </div>
 
       {target === "user" && (
