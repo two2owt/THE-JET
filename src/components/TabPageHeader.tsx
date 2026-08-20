@@ -21,9 +21,9 @@ export function TabPageHeader({ title, subtitle, badge }: TabPageHeaderProps) {
       }}
     >
       <div>
-        <h1 className="heading-luxe-gradient" style={{ marginBottom: "6px" }}>
+        <h2 className="heading-luxe-gradient" style={{ marginBottom: "6px" }}>
           {title}
-        </h1>
+        </h2>
         {subtitle && (
           <p
             style={{ fontSize: "14px", color: "hsl(var(--muted-foreground))" }}
