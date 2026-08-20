@@ -50,9 +50,16 @@ async function deactivateLocalSubscription(
     const registration =
       await navigator.serviceWorker.getRegistration(PUSH_SW_SCOPE);
     const sub = await registration?.pushManager.getSubscription();
-    if (sub) {
-      const endpoint = sub.endpoint;
-      await sub.unsubscribe().catch(() => undefined);
+    let endpoint = sub?.endpoint ?? null;
+    if (!endpoint) {
+      try {
+        endpoint = localStorage.getItem("jet:web-push-endpoint");
+      } catch {
+        endpoint = null;
+      }
+    }
+    if (endpoint) {
+      await sub?.unsubscribe().catch(() => undefined);
       await supabase
         .from("push_notifications")
         .update({ active: false })
@@ -60,13 +67,11 @@ async function deactivateLocalSubscription(
         .eq("endpoint", endpoint);
       await logPushAudit(userId, action, reason, { endpoint, dedupe: true });
     } else {
-      // No live browser subscription, but stale rows may still be active.
-      await supabase
-        .from("push_notifications")
-        .update({ active: false })
-        .eq("user_id", userId)
-        .eq("platform", "web");
-      await logPushAudit(userId, action, reason, { dedupe: true });
+      // This browser has no known endpoint. Never disable every web token for
+      // the account: those rows may belong to other phones or browsers.
+      await logPushAudit(userId, action, `${reason}.no_local_endpoint`, {
+        dedupe: true,
+      });
     }
     try {
       localStorage.removeItem("jet:web-push-endpoint");
@@ -162,14 +167,21 @@ export async function applyPushPreference(): Promise<void> {
     const json = sub.toJSON();
     const endpoint = json.endpoint || "";
 
-    // Retire any other web rows for this user on this account whose endpoint
-    // the browser has rotated away from, so stale endpoints stop being sent to.
-    await supabase
-      .from("push_notifications")
-      .update({ active: false })
-      .eq("user_id", user.id)
-      .eq("platform", "web")
-      .neq("endpoint", endpoint);
+    // Retire only this browser's previous endpoint when it rotates. Other web
+    // rows belong to other devices and must remain active.
+    let previousEndpoint: string | null = null;
+    try {
+      previousEndpoint = localStorage.getItem("jet:web-push-endpoint");
+    } catch {
+      previousEndpoint = null;
+    }
+    if (previousEndpoint && previousEndpoint !== endpoint) {
+      await supabase
+        .from("push_notifications")
+        .update({ active: false })
+        .eq("user_id", user.id)
+        .eq("endpoint", previousEndpoint);
+    }
 
     const { error } = await supabase.rpc("claim_push_subscription", {
       _endpoint: endpoint,
