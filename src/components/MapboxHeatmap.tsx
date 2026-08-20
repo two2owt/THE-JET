@@ -3844,12 +3844,8 @@ export const MapboxHeatmap = ({
               triggerHaptic("light");
 
               if (value === "current-location") {
-                // Immediately sync the parent's selectedCity to the already-known
-                // nearest city so data filters update without waiting for a fresh
-                // geolocate event, then always resolve a fresh fix.
-                if (detectedCity && detectedCity.id !== selectedCity.id) {
-                  onCityChange(detectedCity);
-                }
+                // Always resolve a fresh fix — the previously detected city can
+                // be stale, so the city sync happens from the new position only.
                 refreshCurrentLocation();
                 // Optimistically fly to the last known location while the fresh
                 // fix resolves.
