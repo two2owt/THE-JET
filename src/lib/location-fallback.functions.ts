@@ -30,7 +30,7 @@ export const getLocationFreshness = createServerFn({ method: "GET" })
  */
 export const writeCoarseLocationFallback = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) =>
+  .validator((data) =>
     z
       .object({
         lat: z.number().min(-90).max(90).nullable().optional(),
