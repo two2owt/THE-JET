@@ -289,6 +289,8 @@ export const MapboxHeatmap = ({
   const [retryCount, setRetryCount] = useState(0);
   const userMarker = useRef<MapboxGL.Marker | null>(null);
   const markersRef = useRef<MapboxGL.Marker[]>([]);
+  // Quantized zoom step used to re-run clustering (-1 = clustering disabled).
+  const [clusterStep, setClusterStep] = useState(-1);
   const dealMarkersRef = useRef<MapboxGL.Marker[]>([]);
   // Tracks the currently-open marker chip so we can close prior chips cleanly
   // when selection changes or the user taps elsewhere on the map.
@@ -3499,6 +3501,7 @@ export const MapboxHeatmap = ({
   useEffect(() => {
     updateMarkers();
   }, [
+    clusterStep,
     venues,
     mapLoaded,
     isLoadingVenues,
@@ -3765,10 +3768,20 @@ export const MapboxHeatmap = ({
 
     // Removed fade effect during panning - markers now stay fully visible and anchored
 
+    // Re-run the marker pass when the camera crosses a clustering step so
+    // bubbles split/merge instead of freezing at the zoom they were built at.
+    const handleZoomEnd = () => {
+      const z = mapInstance.getZoom();
+      setClusterStep(z >= CLUSTER_MAX_ZOOM ? -1 : Math.round(z * 2) / 2);
+    };
+
     mapInstance.on("zoom", handleZoom);
+    mapInstance.on("zoomend", handleZoomEnd);
+    handleZoomEnd();
 
     return () => {
       mapInstance.off("zoom", handleZoom);
+      mapInstance.off("zoomend", handleZoomEnd);
     };
   }, [mapLoaded, venues]);
 
