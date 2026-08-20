@@ -10,14 +10,20 @@ const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export const integrationEnvReady = Boolean(url && anonKey && serviceKey);
 
+// Fallbacks keep `createClient()` from throwing "supabaseKey is required" at
+// collection time in CI (no integration secrets). Suites that actually need a
+// live backend are gated behind `integrationEnvReady` and never issue requests.
+const PLACEHOLDER_URL = "http://localhost:54321";
+const PLACEHOLDER_KEY = "integration-tests-disabled";
+
 export function adminClient(): SupabaseClient {
-  return createClient(url!, serviceKey!, {
+  return createClient(url ?? PLACEHOLDER_URL, serviceKey ?? PLACEHOLDER_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
 
 export function anonClient(): SupabaseClient {
-  return createClient(url!, anonKey!, {
+  return createClient(url ?? PLACEHOLDER_URL, anonKey ?? PLACEHOLDER_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
