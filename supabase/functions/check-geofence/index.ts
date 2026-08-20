@@ -8,6 +8,21 @@ import {
 const FUNCTION_NAME = "check-geofence";
 logVersion(FUNCTION_NAME);
 
+class HttpError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+  }
+}
+
+const jsonResponse = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -38,10 +53,20 @@ Deno.serve(async (req) => {
     } = await supabaseClient.auth.getUser();
 
     if (authError || !user) {
-      throw new Error("Unauthorized");
+      throw new HttpError("Unauthorized", 401);
     }
 
-    const { latitude, longitude, accuracy } = await req.json();
+    let payload: Record<string, unknown>;
+    try {
+      payload = await req.json();
+    } catch {
+      throw new HttpError("Invalid JSON body", 400);
+    }
+    const { latitude, longitude, accuracy } = (payload ?? {}) as {
+      latitude?: unknown;
+      longitude?: unknown;
+      accuracy?: unknown;
+    };
 
     // Validate coordinate inputs
     if (
@@ -143,7 +168,7 @@ Deno.serve(async (req) => {
       user_id: user.id,
       latitude,
       longitude,
-      accuracy,
+      accuracy: (accuracy ?? null) as number | null,
       current_neighborhood_id: currentNeighborhood?.id || null,
     });
 
@@ -250,13 +275,15 @@ Deno.serve(async (req) => {
     );
   } catch (error) {
     console.error("Error in check-geofence:", error);
+    if (error instanceof HttpError) {
+      return jsonResponse({ error: error.message }, error.status);
+    }
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error occurred";
-
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      { error: "Internal server error", detail: errorMessage },
+      500,
+    );
   }
 });
 
