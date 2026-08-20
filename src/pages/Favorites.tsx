@@ -550,11 +550,13 @@ function FavoriteVenueCardInner({
   onOpen,
   onRemove,
   alertCount = 0,
+  referrerId,
 }: {
   favorite: Favorite;
   onOpen: () => void;
   onRemove: (venueId: string, dealId?: string | null) => Promise<void>;
   alertCount?: number;
+  referrerId?: string | null;
 }) {
   const [removing, setRemoving] = useState(false);
   const [imgFailed, setImgFailed] = useState(false);
@@ -660,6 +662,16 @@ function FavoriteVenueCardInner({
             <Heart className="w-4 h-4 fill-current" />
           )}
         </button>
+        {favorite.venue_id && (
+          <ShareDeepLinkButton
+            kind="venue"
+            targetId={favorite.venue_id}
+            label={favorite.venue_name}
+            referrerId={referrerId}
+            surface="favorites"
+            className="absolute top-2 right-14"
+          />
+        )}
         {alertCount > 0 && (
           <AlertBadgeButton
             count={alertCount}
