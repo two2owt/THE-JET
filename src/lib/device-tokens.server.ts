@@ -18,6 +18,12 @@ export type DeviceTokenInput = {
   platform: NativePlatform;
   /** Token this device previously registered, when APNs/FCM rotated it. */
   previousToken?: string | null;
+  /**
+   * Stable per-install identifier. Survives token rotation, so a refreshed
+   * FCM/APNs token overwrites this device's row even when the client lost
+   * track of its previous token (storage cleared, restore from backup).
+   */
+  deviceId?: string | null;
 };
 
 export type DeviceTokenRow = {
@@ -46,6 +52,10 @@ export function validateDeviceToken(input: unknown): DeviceTokenInput {
     typeof raw.previousToken === "string" && raw.previousToken.trim()
       ? raw.previousToken.trim()
       : null;
+  const deviceId =
+    typeof raw.deviceId === "string" && raw.deviceId.trim()
+      ? raw.deviceId.trim().slice(0, 128)
+      : null;
 
   if (token.length < 16 || token.length > 4096) {
     throw new DeviceTokenError(
@@ -59,7 +69,7 @@ export function validateDeviceToken(input: unknown): DeviceTokenInput {
     throw new DeviceTokenError('platform must be "ios" or "android"');
   }
 
-  return { token, platform, previousToken };
+  return { token, platform, previousToken, deviceId };
 }
 
 type Client = SupabaseClient<Database>;
@@ -73,8 +83,31 @@ export async function registerDeviceTokenFor(
   userId: string,
   input: DeviceTokenInput,
 ): Promise<{ id: string; rotatedFrom: string | null; created: boolean }> {
-  const { token, platform, previousToken } = input;
+  const { token, platform, previousToken, deviceId } = input;
   let rotatedFrom: string | null = null;
+
+  // --- Refresh by device identity ---------------------------------------
+  // FCM/APNs reissue tokens silently. The device id is the only handle that
+  // survives that, so retire every other token this install ever registered.
+  if (deviceId) {
+    const { data: sameDevice } = await supabase
+      .from("push_notifications")
+      .select("id, endpoint")
+      .eq("user_id", userId)
+      .eq("device_id", deviceId)
+      .neq("endpoint", token);
+
+    if (sameDevice && sameDevice.length > 0) {
+      await supabase
+        .from("push_notifications")
+        .delete()
+        .in(
+          "id",
+          sameDevice.map((r) => r.id),
+        );
+      rotatedFrom = sameDevice[0]?.endpoint ?? null;
+    }
+  }
 
   // --- Rotation: retire or rewrite the superseded row for this device ----
   if (previousToken && previousToken !== token) {
@@ -97,6 +130,7 @@ export async function registerDeviceTokenFor(
         .update({
           endpoint: token,
           platform,
+          device_id: deviceId ?? undefined,
           active: true,
           updated_at: new Date().toISOString(),
         })
@@ -120,6 +154,7 @@ export async function registerDeviceTokenFor(
       .from("push_notifications")
       .update({
         platform,
+        ...(deviceId ? { device_id: deviceId } : {}),
         active: true,
         updated_at: new Date().toISOString(),
       })
@@ -136,6 +171,7 @@ export async function registerDeviceTokenFor(
       p256dh_key: "native",
       auth_key: "native",
       platform,
+      device_id: deviceId,
       active: true,
     })
     .select("id")

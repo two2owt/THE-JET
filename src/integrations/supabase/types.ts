@@ -1092,6 +1092,7 @@ export type Database = {
           active: boolean | null
           auth_key: string
           created_at: string | null
+          device_id: string | null
           endpoint: string
           id: string
           p256dh_key: string
@@ -1103,6 +1104,7 @@ export type Database = {
           active?: boolean | null
           auth_key: string
           created_at?: string | null
+          device_id?: string | null
           endpoint: string
           id?: string
           p256dh_key: string
@@ -1114,6 +1116,7 @@ export type Database = {
           active?: boolean | null
           auth_key?: string
           created_at?: string | null
+          device_id?: string | null
           endpoint?: string
           id?: string
           p256dh_key?: string
