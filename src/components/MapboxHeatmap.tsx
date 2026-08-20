@@ -4397,26 +4397,7 @@ export const MapboxHeatmap = ({
                   tooltip="Shows live crowd density across Charlotte. Red zones are the busiest right now; blue zones are calmer."
                   onToggle={() => {
                     triggerHaptic("medium");
-                    const newState = !showDensityLayer;
-                    setShowDensityLayer(newState);
-                    if (newState) {
-                      setTimeFilter("all");
-                      setHourFilter(undefined);
-                      setDayFilter(undefined);
-                      scheduleDensityRefresh();
-                    } else {
-                      clearDensityRefreshTimer();
-                      setIsLoadingHeatmap(false);
-                      // Time-lapse and Live Stats both consume the density
-                      // layer's data pipeline. Turning heatmap off must cascade
-                      // so users don't end up with orphaned modes running
-                      // against a hidden layer.
-                      if (timelapseMode) setTimelapseMode(false);
-                      if (showLiveStats) {
-                        setShowLiveStats(false);
-                        setIsLoadingStats(false);
-                      }
-                    }
+                    applyDensityLayer(!showDensityLayer);
                   }}
                 />
 
@@ -4449,26 +4430,7 @@ export const MapboxHeatmap = ({
                       aria-pressed={timelapseMode}
                       onClick={() => {
                         triggerHaptic("medium");
-                        const newMode = !timelapseMode;
-                        setTimelapseMode(newMode);
-                        if (newMode) {
-                          // Time-lapse renders through the density heatmap
-                          // pipeline; make sure it's on before we start
-                          // hydrating hourly buckets.
-                          if (!showDensityLayer) {
-                            setShowDensityLayer(true);
-                            scheduleDensityRefresh();
-                          }
-                          // Movement Paths animate continuously and visually
-                          // fight the time-lapse playback, so pause them while
-                          // the scrubber owns the map.
-                          if (showMovementPaths) {
-                            setShowMovementPaths(false);
-                            clearPathsRefreshTimer();
-                            setIsLoadingPaths(false);
-                          }
-                          timelapse.loadHourlyData();
-                        }
+                        applyTimelapse(!timelapseMode);
                       }}
                       style={{
                         width: "100%",
