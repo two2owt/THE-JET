@@ -5207,17 +5207,7 @@ export const MapboxHeatmap = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   triggerHaptic("medium");
-                  const newState = !showDensityLayer;
-                  setShowDensityLayer(newState);
-                  if (newState) {
-                    setTimeFilter("all");
-                    setHourFilter(undefined);
-                    setDayFilter(undefined);
-                    scheduleDensityRefresh();
-                  } else {
-                    clearDensityRefreshTimer();
-                    setIsLoadingHeatmap(false);
-                  }
+                  applyDensityLayer(!showDensityLayer);
                 }}
                 style={{
                   width: "32px",
@@ -5258,14 +5248,7 @@ export const MapboxHeatmap = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   triggerHaptic("medium");
-                  const next = !showMovementPaths;
-                  setShowMovementPaths(next);
-                  if (next) {
-                    schedulePathsRefresh();
-                  } else {
-                    clearPathsRefreshTimer();
-                    setIsLoadingPaths(false);
-                  }
+                  applyPathsLayer(!showMovementPaths);
                 }}
                 style={{
                   width: "32px",
@@ -5306,21 +5289,7 @@ export const MapboxHeatmap = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   triggerHaptic("medium");
-                  const newState = !showParking;
-                  setShowParking(newState);
-                  if (map.current) {
-                    try {
-                      if (map.current.getLayer("parking-icons")) {
-                        map.current.setLayoutProperty(
-                          "parking-icons",
-                          "visibility",
-                          newState ? "visible" : "none",
-                        );
-                      }
-                    } catch (e) {
-                      /* layer may not exist yet */
-                    }
-                  }
+                  applyParkingLayer(!showParking);
                 }}
                 style={{
                   width: "32px",
@@ -5361,24 +5330,7 @@ export const MapboxHeatmap = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   triggerHaptic("medium");
-                  const next = !showLiveStats;
-                  setShowLiveStats(next);
-                  if (next) {
-                    setIsLoadingStats(true);
-                    if (!showDensityLayer) {
-                      setShowDensityLayer(true);
-                      setTimeFilter("all");
-                      setHourFilter(undefined);
-                      setDayFilter(undefined);
-                      scheduleDensityRefresh();
-                    }
-                    if (!showMovementPaths) {
-                      setShowMovementPaths(true);
-                      schedulePathsRefresh();
-                    }
-                  } else {
-                    setIsLoadingStats(false);
-                  }
+                  applyLiveStats(!showLiveStats);
                 }}
                 style={{
                   width: "32px",
