@@ -37,7 +37,6 @@ import {
   ExploreTabSkeleton,
 } from "@/components/skeletons/PageSkeletons";
 import { TabPageHeader } from "@/components/TabPageHeader";
-import { EnablePushButton } from "@/components/EnablePushButton";
 import { PageShell } from "@/components/PageShell";
 import { CityTransitionOverlay } from "@/components/CityTransitionOverlay";
 import { useAuth } from "@/contexts/AuthContext";
@@ -211,12 +210,14 @@ const Index = () => {
     useNotifications(dataReady);
   const unreadNotifications = notifications.filter((n) => !n.read).length;
   const [notificationFilter, setNotificationFilter] = useState<
-    "all" | "unread"
+    "all" | "unread" | "read"
   >("all");
   const visibleNotifications =
     notificationFilter === "unread"
       ? notifications.filter((n) => !n.read)
-      : notifications;
+      : notificationFilter === "read"
+        ? notifications.filter((n) => n.read)
+        : notifications;
   useAutoScrapeVenueImages(dataReady);
   const {
     deals,
@@ -915,7 +916,6 @@ const Index = () => {
                     flexWrap: "wrap",
                   }}
                 >
-                  <EnablePushButton />
                   <div
                     role="group"
                     aria-label="Filter notifications"
@@ -925,7 +925,7 @@ const Index = () => {
                       border: "1px solid hsl(var(--border) / 0.5)",
                     }}
                   >
-                    {(["all", "unread"] as const).map((mode) => (
+                    {(["all", "unread", "read"] as const).map((mode) => (
                       <button
                         key={mode}
                         type="button"
@@ -939,7 +939,9 @@ const Index = () => {
                       >
                         {mode === "all"
                           ? "All"
-                          : `Unread${unreadNotifications > 0 ? ` (${unreadNotifications})` : ""}`}
+                          : mode === "unread"
+                            ? `Unread${unreadNotifications > 0 ? ` (${unreadNotifications})` : ""}`
+                            : `Read${readNotifications > 0 ? ` (${readNotifications})` : ""}`}
                       </button>
                     ))}
                   </div>
@@ -997,7 +999,9 @@ const Index = () => {
                     >
                       {notificationFilter === "unread"
                         ? "You're all caught up"
-                        : "No notifications yet"}
+                        : notificationFilter === "read"
+                          ? "No read notifications"
+                          : "No notifications yet"}
                     </p>
                     <p
                       style={{
@@ -1007,7 +1011,9 @@ const Index = () => {
                     >
                       {notificationFilter === "unread"
                         ? "Every alert has been read"
-                        : "Enable location tracking to receive deal alerts"}
+                        : notificationFilter === "read"
+                          ? "Alerts you open will show up here"
+                          : "Enable location tracking to receive deal alerts"}
                     </p>
                   </div>
                 ) : (
