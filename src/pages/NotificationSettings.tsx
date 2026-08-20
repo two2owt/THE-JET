@@ -132,6 +132,26 @@ export default function NotificationSettings() {
     }
   };
 
+  /**
+   * Account preference is on but this browser/device has never been asked.
+   * The account stays enabled by default; the user just needs to grant the
+   * browser permission once so a token can be stored for this device.
+   */
+  const needsDevicePermission =
+    !!userId && enabled && !deviceRegistered && permission === "default";
+
+  const handleEnableThisDevice = async () => {
+    setSaving(true);
+    try {
+      if (nativeMode) await native.enable();
+      else if (web.isSupported) await web.subscribe();
+      await applyPushPreference();
+    } finally {
+      setSaving(false);
+      void load();
+    }
+  };
+
   const busy = saving || loading || web.isLoading || native.isLoading;
 
   return (
@@ -203,6 +223,24 @@ export default function NotificationSettings() {
                 onClick={() => void openNotificationSettings()}
               >
                 Open notification settings
+              </Button>
+            </div>
+          )}
+
+          {needsDevicePermission && (
+            <div className="space-y-2 rounded-lg border border-primary/30 bg-primary/5 p-3">
+              <p className="text-xs text-muted-foreground">
+                Alerts are on for your account, but this{" "}
+                {nativeMode ? "device" : "browser"} hasn’t been registered yet.
+                Allow notifications once and JET can reach you here too.
+              </p>
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => void handleEnableThisDevice()}
+                disabled={busy}
+              >
+                Enable on this {nativeMode ? "device" : "browser"}
               </Button>
             </div>
           )}
