@@ -4,6 +4,7 @@ ALTER TABLE public.realtime_guard_allowlist
 -- These four rely on server-side column filters (e.g. user_id=eq.<uid>) which
 -- require the full old row on UPDATE/DELETE. Acknowledged, so the guard only
 -- alerts when some *new* private table starts shipping full old rows.
+-- idempotency-check: allow-dml
 UPDATE public.realtime_guard_allowlist
 SET allow_replica_identity_full = true,
     note = note || ' — full old-row payloads acknowledged (needed for realtime column filters)'
@@ -11,7 +12,7 @@ WHERE table_name IN ('user_favorites', 'user_connections', 'search_history', 've
   AND allow_replica_identity_full = false;
 
 DROP FUNCTION IF EXISTS public.realtime_publication_audit();
-CREATE FUNCTION public.realtime_publication_audit()
+CREATE OR REPLACE FUNCTION public.realtime_publication_audit()
 RETURNS TABLE(
   table_name text,
   approved boolean,

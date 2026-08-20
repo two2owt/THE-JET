@@ -1,3 +1,4 @@
+-- idempotency-check: allow-dml
 UPDATE public.profiles p SET
   bio = COALESCE(v.bio, p.bio),
   birthdate = COALESCE(v.birthdate, p.birthdate),

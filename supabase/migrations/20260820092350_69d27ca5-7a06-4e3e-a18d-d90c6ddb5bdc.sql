@@ -8,6 +8,7 @@ TO authenticated
 USING (COALESCE(discoverable, true));
 
 -- Default discoverable for any legacy null rows
+-- idempotency-check: allow-dml
 UPDATE public.profiles SET discoverable = true WHERE discoverable IS NULL;
 ALTER TABLE public.profiles ALTER COLUMN discoverable SET DEFAULT true;
 
