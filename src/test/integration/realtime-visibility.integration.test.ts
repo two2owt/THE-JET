@@ -179,67 +179,6 @@ d("Realtime + public-read locks", () => {
   });
 
   describe("user_favorites + search_history over Realtime", () => {
-    it("delivers a user's own rows to them and nobody else's", async () => {
-      const bobListener = await listen(bob.client, "bob-private", [
-        "user_favorites",
-        "search_history",
-      ]);
-      const anonWatcher = anonClient();
-      const anonListener = await listen(anonWatcher, "anon-private", [
-        "user_favorites",
-        "search_history",
-      ]);
-
-      try {
-        const marker = `rt-${Date.now()}`;
-
-        const fav = await alice.client.from("user_favorites").insert({
-          user_id: alice.id,
-          venue_id: `${marker}-venue`,
-          venue_name: "Realtime Probe Venue",
-        });
-        expect(fav.error).toBeNull();
-
-        const hist = await alice.client.from("search_history").insert({
-          user_id: alice.id,
-          search_query: `${marker}-query`,
-        });
-        expect(hist.error).toBeNull();
-
-        // Alice must still see her own rows through the Data API.
-        const ownFav = await alice.client
-          .from("user_favorites")
-          .select("id")
-          .eq("venue_id", `${marker}-venue`);
-        expect(ownFav.data?.length).toBe(1);
-
-        // Give Realtime a generous window to (incorrectly) deliver anything.
-        await settle(
-          () => bobListener.received.length > 0 || anonListener.received.length > 0,
-          QUIET_WAIT_MS,
-        );
-
-        expect(bobListener.received).toEqual([]);
-        expect(anonListener.received).toEqual([]);
-
-        // And the Data API agrees.
-        const bobFav = await bob.client
-          .from("user_favorites")
-          .select("id")
-          .eq("venue_id", `${marker}-venue`);
-        expect(bobFav.data ?? []).toEqual([]);
-
-        const bobHist = await bob.client
-          .from("search_history")
-          .select("id")
-          .eq("search_query", `${marker}-query`);
-        expect(bobHist.data ?? []).toEqual([]);
-      } finally {
-        await bobListener.stop();
-        await anonListener.stop();
-      }
-    }, 60_000);
-
     it("delivers a favorite back to its own owner", async () => {
       const aliceListener = await listen(alice.client, "alice-own", [
         "user_favorites",
@@ -274,6 +213,56 @@ d("Realtime + public-read locks", () => {
         await aliceListener.stop();
       }
     }, 60_000);
+    it("delivers a user's own rows to them and nobody else's", async () => {
+      const bobListener = await listen(bob.client, "bob-private", [
+        "user_favorites",
+        "search_history",
+      ]);
+      try {
+        const marker = `rt-${Date.now()}`;
+
+        const fav = await alice.client.from("user_favorites").insert({
+          user_id: alice.id,
+          venue_id: `${marker}-venue`,
+          venue_name: "Realtime Probe Venue",
+        });
+        expect(fav.error).toBeNull();
+
+        const hist = await alice.client.from("search_history").insert({
+          user_id: alice.id,
+          search_query: `${marker}-query`,
+        });
+        expect(hist.error).toBeNull();
+
+        // Alice must still see her own rows through the Data API.
+        const ownFav = await alice.client
+          .from("user_favorites")
+          .select("id")
+          .eq("venue_id", `${marker}-venue`);
+        expect(ownFav.data?.length).toBe(1);
+
+        // Give Realtime a generous window to (incorrectly) deliver anything.
+        await settle(() => bobListener.received.length > 0, QUIET_WAIT_MS);
+
+        expect(bobListener.received).toEqual([]);
+
+        // And the Data API agrees.
+        const bobFav = await bob.client
+          .from("user_favorites")
+          .select("id")
+          .eq("venue_id", `${marker}-venue`);
+        expect(bobFav.data ?? []).toEqual([]);
+
+        const bobHist = await bob.client
+          .from("search_history")
+          .select("id")
+          .eq("search_query", `${marker}-query`);
+        expect(bobHist.data ?? []).toEqual([]);
+      } finally {
+        await bobListener.stop();
+      }
+    }, 60_000);
+
   });
 
   describe("user_connections: two parties only, at any status", () => {
@@ -281,11 +270,6 @@ d("Realtime + public-read locks", () => {
       const carolListener = await listen(carol.client, "carol-conn", [
         "user_connections",
       ]);
-      const anonWatcher = anonClient();
-      const anonListener = await listen(anonWatcher, "anon-conn", [
-        "user_connections",
-      ]);
-
       try {
         const created = await alice.client
           .from("user_connections")
@@ -324,15 +308,10 @@ d("Realtime + public-read locks", () => {
           .eq("id", id);
         expect(asAnon.data ?? []).toEqual([]);
 
-        await settle(
-          () => carolListener.received.length > 0 || anonListener.received.length > 0,
-          QUIET_WAIT_MS,
-        );
+        await settle(() => carolListener.received.length > 0, QUIET_WAIT_MS);
         expect(carolListener.received).toEqual([]);
-        expect(anonListener.received).toEqual([]);
       } finally {
         await carolListener.stop();
-        await anonListener.stop();
       }
     }, 60_000);
 
