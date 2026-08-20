@@ -150,7 +150,9 @@ export function HeaderSearch({
       <Input
         ref={inputRef}
         type="text"
-        placeholder="Search venues, deals, neighborhoods..."
+        placeholder={
+          isMobile ? "Search venues, deals…" : "Search venues, deals, neighborhoods…"
+        }
         value={query}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
