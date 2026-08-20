@@ -1,4 +1,5 @@
 import { corsHeaders, logVersion } from "../_shared/cors.ts";
+import { ErrorCode, forbidden, internalError } from "../_shared/http.ts";
 
 const FUNCTION_NAME = "get-mapbox-token";
 logVersion(FUNCTION_NAME);

@@ -7,6 +7,12 @@
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders, logVersion } from "../_shared/cors.ts";
+import {
+  internalError,
+  invalidInput,
+  invalidJson,
+  unauthorized,
+} from "../_shared/http.ts";
 import { verifyBridgeAuth } from "../_shared/notifications.ts";
 
 const FUNCTION_NAME = "merchant-send-notification";

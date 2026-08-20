@@ -5,6 +5,12 @@ import {
   logVersion,
   EDGE_FUNCTION_VERSION,
 } from "../_shared/cors.ts";
+import {
+  forbidden,
+  internalError,
+  notConfigured,
+  unauthorized,
+} from "../_shared/http.ts";
 
 const FUNCTION_NAME = "send-web-push";
 logVersion(FUNCTION_NAME);
@@ -95,15 +101,8 @@ Deno.serve(async (req) => {
 
     if (!vapidPublicKey || !vapidPrivateKey) {
       console.error("VAPID keys not configured");
-      return new Response(
-        JSON.stringify({
-          error:
-            "Push notification service not configured - VAPID keys missing",
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
+      return notConfigured(
+        "Push notification service not configured - VAPID keys missing",
       );
     }
 
@@ -112,13 +111,7 @@ Deno.serve(async (req) => {
     // Verify admin access
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: "No authorization header" }),
-        {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
+      return unauthorized("No authorization header");
     }
 
     const token = authHeader.replace("Bearer ", "");
@@ -128,10 +121,7 @@ Deno.serve(async (req) => {
     } = await supabase.auth.getUser(token);
 
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Invalid token" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return unauthorized("Invalid token");
     }
 
     // Check admin role
@@ -143,10 +133,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (!roleData) {
-      return new Response(JSON.stringify({ error: "Admin access required" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return forbidden("Admin access required");
     }
 
     const payload: WebPushPayload = await req.json();
@@ -258,10 +245,6 @@ Deno.serve(async (req) => {
     );
   } catch (err) {
     console.error("Error in send-web-push:", err);
-    const errorMessage = err instanceof Error ? err.message : "Unknown error";
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return internalError(err);
   }
 });
