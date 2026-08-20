@@ -429,6 +429,12 @@ export function ProfileSettingsPanel({
         </SectionTitle>
         <Separator />
         <div className="space-y-3 sm:space-y-4">
+          <a
+            href="/notification-settings"
+            className="block rounded-lg border border-border/60 bg-muted/20 px-3 py-2 text-xs sm:text-sm text-foreground hover:bg-muted/40 transition-colors"
+          >
+            Open the dedicated push notifications page →
+          </a>
           <div className="flex items-center justify-between gap-3">
             <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
               <label
