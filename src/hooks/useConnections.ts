@@ -183,6 +183,7 @@ export const useConnections = (userId?: string) => {
     connections,
     pendingRequests,
     loading,
+    refresh: fetchConnections,
     sendRequest,
     acceptRequest,
     removeConnection,

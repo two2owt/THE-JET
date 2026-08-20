@@ -111,6 +111,7 @@ export default function Social() {
     connections,
     pendingRequests,
     loading: connectionsLoading,
+    refresh: refreshConnections,
     sendRequest,
     acceptRequest,
     removeConnection,
@@ -375,7 +376,13 @@ export default function Social() {
   };
 
   return (
-    <PageLayout defaultTab="social" headerConfig={headerConfig}>
+    <PageLayout
+      defaultTab="social"
+      headerConfig={headerConfig}
+      onPullToRefresh={async () => {
+        await Promise.all([refreshConnections(), fetchProfiles()]);
+      }}
+    >
       <PageShell>
         <TabPageHeader
           title="Your Crew"

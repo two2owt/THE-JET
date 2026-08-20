@@ -257,7 +257,11 @@ export default function Messages() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const { conversations, loading: convosLoading } = useConversations(user?.id);
+  const {
+    conversations,
+    loading: convosLoading,
+    refresh: refreshConversations,
+  } = useConversations(user?.id);
 
   const openChat = (friendId: string) => {
     setSearchParams({ chat: friendId });
@@ -269,7 +273,11 @@ export default function Messages() {
 
   if (!user) {
     return (
-      <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
+      <PageLayout
+      defaultTab="social"
+      headerConfig={messagesHeaderConfig}
+      onPullToRefresh={refreshConversations}
+    >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg">
           <EmptyState
             icon={MessageCircle}
