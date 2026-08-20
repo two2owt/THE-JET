@@ -1667,42 +1667,6 @@ export type Database = {
           twitter_url: string | null
           updated_at: string | null
         }
-        Insert: {
-          avatar_url?: string | null
-          bio?: never
-          birthdate?: never
-          created_at?: string | null
-          discoverable?: boolean | null
-          display_name?: string | null
-          facebook_url?: never
-          gender?: never
-          id?: string | null
-          instagram_url?: never
-          linkedin_url?: never
-          onboarding_completed?: boolean | null
-          pronouns?: never
-          tiktok_url?: never
-          twitter_url?: never
-          updated_at?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          bio?: never
-          birthdate?: never
-          created_at?: string | null
-          discoverable?: boolean | null
-          display_name?: string | null
-          facebook_url?: never
-          gender?: never
-          id?: string | null
-          instagram_url?: never
-          linkedin_url?: never
-          onboarding_completed?: boolean | null
-          pronouns?: never
-          tiktok_url?: never
-          twitter_url?: never
-          updated_at?: string | null
-        }
         Relationships: []
       }
       venue_reviews_public: {
