@@ -801,29 +801,44 @@ export const MapboxHeatmap = ({
   const refreshCurrentLocation = useCallback(() => {
     setIsUsingCurrentLocation(true);
     isUsingCurrentLocationRef.current = true;
+    // Drop the previous fix so the selector never keeps showing the city the
+    // user was on before asking to be located — it shows "Locating..." until
+    // the fresh fix lands.
+    setDetectedCity(null);
+    setDetectedLocationName(null);
 
     const apply = (latitude: number, longitude: number) => {
-      if (applyGeolocationRef.current) {
-        applyGeolocationRef.current({ latitude, longitude });
-        return;
-      }
-      // Map handler not wired yet — still sync city + label.
+      // Always sync the city from the fresh fix first, so the selector and all
+      // data filters move even if the map handler is mid-teardown.
       const nearest = getNearestCity(latitude, longitude);
       setUserLocation({ lat: latitude, lng: longitude });
       setDetectedCity(nearest);
-      setDetectedLocationName(`${nearest.name}, ${nearest.state}`);
+      setDetectedLocationName((prev) =>
+        prev ?? `${nearest.name}, ${nearest.state}`,
+      );
       if (nearest.id !== selectedCityRef.current.id)
         onCityChangeRef.current(nearest);
+      if (applyGeolocationRef.current) {
+        applyGeolocationRef.current({ latitude, longitude });
+      }
     };
 
     const networkFallback = () => {
       import("@/lib/networkGeolocation")
         .then(({ getNetworkLocation }) => getNetworkLocation(true))
         .then((fix) => {
-          if (fix) apply(fix.lat, fix.lng);
+          if (fix) {
+            apply(fix.lat, fix.lng);
+          } else {
+            // No fix at all — fall back to the city the user is on rather than
+            // leaving the selector stuck on "Locating...".
+            setIsUsingCurrentLocation(false);
+            isUsingCurrentLocationRef.current = false;
+          }
         })
         .catch(() => {
-          /* no location available */
+          setIsUsingCurrentLocation(false);
+          isUsingCurrentLocationRef.current = false;
         });
     };
 
@@ -3829,12 +3844,8 @@ export const MapboxHeatmap = ({
               triggerHaptic("light");
 
               if (value === "current-location") {
-                // Immediately sync the parent's selectedCity to the already-known
-                // nearest city so data filters update without waiting for a fresh
-                // geolocate event, then always resolve a fresh fix.
-                if (detectedCity && detectedCity.id !== selectedCity.id) {
-                  onCityChange(detectedCity);
-                }
+                // Always resolve a fresh fix — the previously detected city can
+                // be stale, so the city sync happens from the new position only.
                 refreshCurrentLocation();
                 // Optimistically fly to the last known location while the fresh
                 // fix resolves.
