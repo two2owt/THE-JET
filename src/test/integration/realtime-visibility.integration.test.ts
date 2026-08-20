@@ -32,7 +32,7 @@ async function listen(
   client: SupabaseClient,
   name: string,
   tables: string[],
-): Promise<{ received: Captured[]; channel: RealtimeChannel }> {
+): Promise<{ received: Captured[]; channel: RealtimeChannel; stop: () => Promise<void> }> {
   const received: Captured[] = [];
   let channel = client.channel(`${name}-${Math.random().toString(36).slice(2)}`);
 
@@ -63,7 +63,13 @@ async function listen(
     });
   });
 
-  return { received, channel };
+  return {
+    received,
+    channel,
+    stop: async () => {
+      await client.removeChannel(channel).catch(() => {});
+    },
+  };
 }
 
 /** Resolves once `predicate` holds, or after `timeoutMs`. */
@@ -178,7 +184,8 @@ d("Realtime + public-read locks", () => {
         "user_favorites",
         "search_history",
       ]);
-      const anonListener = await listen(anonClient(), "anon-private", [
+      const anonWatcher = anonClient();
+      const anonListener = await listen(anonWatcher, "anon-private", [
         "user_favorites",
         "search_history",
       ]);
@@ -228,8 +235,8 @@ d("Realtime + public-read locks", () => {
           .eq("search_query", `${marker}-query`);
         expect(bobHist.data ?? []).toEqual([]);
       } finally {
-        await bob.client.removeChannel(bobListener.channel);
-        await anonClient().removeChannel(anonListener.channel).catch(() => {});
+        await bobListener.stop();
+        await anonListener.stop();
       }
     }, 60_000);
 
@@ -264,7 +271,7 @@ d("Realtime + public-read locks", () => {
           expect(capture.row.user_id).toBe(alice.id);
         }
       } finally {
-        await alice.client.removeChannel(aliceListener.channel);
+        await aliceListener.stop();
       }
     }, 60_000);
   });
@@ -274,7 +281,8 @@ d("Realtime + public-read locks", () => {
       const carolListener = await listen(carol.client, "carol-conn", [
         "user_connections",
       ]);
-      const anonListener = await listen(anonClient(), "anon-conn", [
+      const anonWatcher = anonClient();
+      const anonListener = await listen(anonWatcher, "anon-conn", [
         "user_connections",
       ]);
 
@@ -323,8 +331,8 @@ d("Realtime + public-read locks", () => {
         expect(carolListener.received).toEqual([]);
         expect(anonListener.received).toEqual([]);
       } finally {
-        await carol.client.removeChannel(carolListener.channel);
-        await anonClient().removeChannel(anonListener.channel).catch(() => {});
+        await carolListener.stop();
+        await anonListener.stop();
       }
     }, 60_000);
 
