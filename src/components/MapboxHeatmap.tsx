@@ -4872,18 +4872,7 @@ export const MapboxHeatmap = ({
                   tooltip="Real user movement between venues. Line thickness and glow scale with motion frequency and user frequency — brighter, thicker paths mean more people actively moving that route right now."
                   onToggle={() => {
                     triggerHaptic("medium");
-                    const next = !showMovementPaths;
-                    setShowMovementPaths(next);
-                    if (next) {
-                      // Flow Paths and Time-lapse compete for the same visual
-                      // channel (animated motion). If Time-lapse is running,
-                      // stop it so the paths can breathe.
-                      if (timelapseMode) setTimelapseMode(false);
-                      schedulePathsRefresh();
-                    } else {
-                      clearPathsRefreshTimer();
-                      setIsLoadingPaths(false);
-                    }
+                    applyPathsLayer(!showMovementPaths);
                   }}
                 />
 
@@ -5051,21 +5040,7 @@ export const MapboxHeatmap = ({
                   tooltip="Displays nearby parking options around venues so you can plan your arrival."
                   onToggle={() => {
                     triggerHaptic("medium");
-                    const newState = !showParking;
-                    setShowParking(newState);
-                    if (map.current) {
-                      try {
-                        if (map.current.getLayer("parking-icons")) {
-                          map.current.setLayoutProperty(
-                            "parking-icons",
-                            "visibility",
-                            newState ? "visible" : "none",
-                          );
-                        }
-                      } catch (e) {
-                        /* layer may not exist yet */
-                      }
-                    }
+                    applyParkingLayer(!showParking);
                   }}
                 />
 
@@ -5087,27 +5062,7 @@ export const MapboxHeatmap = ({
                   tooltip="Actionable insights from live activity: busiest hotspots right now, momentum trend vs. the last hour, top movement routes, and recent JET member check-ins to help you decide where to go next."
                   onToggle={() => {
                     triggerHaptic("medium");
-                    const next = !showLiveStats;
-                    setShowLiveStats(next);
-                    if (next) {
-                      setIsLoadingStats(true);
-                      // Live Stats derives its numbers from the density and
-                      // movement-paths data pipelines. Enable both so the
-                      // panel isn't populated by stale/zero series.
-                      if (!showDensityLayer) {
-                        setShowDensityLayer(true);
-                        setTimeFilter("all");
-                        setHourFilter(undefined);
-                        setDayFilter(undefined);
-                        scheduleDensityRefresh();
-                      }
-                      if (!showMovementPaths) {
-                        setShowMovementPaths(true);
-                        schedulePathsRefresh();
-                      }
-                    } else {
-                      setIsLoadingStats(false);
-                    }
+                    applyLiveStats(!showLiveStats);
                   }}
                 />
 
