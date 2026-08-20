@@ -166,11 +166,15 @@ export const SearchResults = ({
         ? Math.max(0, viewportH + vvTop - navRect.top)
         : 0;
 
-      const GAP_TOP = 8;
+      // Clear the header's hairline divider and any focus ring on the search
+      // pill, so the panel never visually touches or covers the header.
+      const GAP_TOP = 12;
       const GAP_BOTTOM = 12;
       // Round to whole pixels: sub-pixel churn from rubber-band scrolling or
       // safe-area settling would otherwise re-render the panel every frame.
-      const top = Math.round(headerBottom + GAP_TOP);
+      // Hard floor at the measured header bottom: even if a measurement is
+      // stale mid-transition, the panel can never render over the header.
+      const top = Math.round(Math.max(headerBottom + GAP_TOP, GAP_TOP));
       const bottom = Math.round(navHeight + GAP_BOTTOM);
       const available = Math.max(160, viewportH - top - bottom);
       // Keep the map visible around the panel on tall screens, but never
