@@ -145,6 +145,10 @@ Deno.serve(async (req) => {
       .select("*")
       .eq("active", true);
 
+    // Audience coverage stats (only meaningful for the "all users" audience)
+    let audienceUsers = 0;
+    let reachableUsers = 0;
+
     if (payload.user_ids && payload.user_ids.length > 0) {
       query = query.in("user_id", payload.user_ids);
     } else if (payload.neighborhood_id) {
@@ -158,6 +162,24 @@ Deno.serve(async (req) => {
         const userIds = locationData.map((l) => l.user_id);
         query = query.in("user_id", userIds);
       }
+    } else {
+      // "All users": every signed-up user whose notifications are enabled
+      // (opt-out model — a missing preference row counts as enabled).
+      const { data: allProfiles } = await supabase
+        .from("profiles")
+        .select("id");
+      const { data: optOutRows } = await supabase
+        .from("user_preferences")
+        .select("user_id")
+        .eq("notifications_enabled", false);
+      const optedOut = new Set(
+        (optOutRows ?? []).map((r: { user_id: string }) => r.user_id),
+      );
+      const enabledUserIds = (allProfiles ?? [])
+        .map((p: { id: string }) => p.id)
+        .filter((id: string) => !optedOut.has(id));
+      audienceUsers = enabledUserIds.length;
+      query = query.in("user_id", enabledUserIds);
     }
 
     const { data: subscriptions, error: subError } = await query;
@@ -177,7 +199,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Found ${subscriptions.length} active subscriptions`);
+    reachableUsers = new Set(subscriptions.map((s: any) => s.user_id)).size;
+    console.log(
+      `Found ${subscriptions.length} active subscriptions across ${reachableUsers} user(s)` +
+        (audienceUsers ? ` of ${audienceUsers} enabled user(s)` : ""),
+    );
 
     let sentCount = 0;
     const errors: string[] = [];
@@ -236,6 +262,8 @@ Deno.serve(async (req) => {
         message: `Notifications processed`,
         sent: sentCount,
         total: subscriptions.length,
+        audience_users: audienceUsers || undefined,
+        reachable_users: reachableUsers,
         errors: errors.length > 0 ? errors : undefined,
       }),
       {
