@@ -1054,6 +1054,39 @@ export type Database = {
         }
         Relationships: []
       }
+      push_notification_audit: {
+        Row: {
+          action: string
+          created_at: string
+          detail: Json | null
+          endpoint_tail: string | null
+          id: string
+          platform: string | null
+          source: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          detail?: Json | null
+          endpoint_tail?: string | null
+          id?: string
+          platform?: string | null
+          source: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          detail?: Json | null
+          endpoint_tail?: string | null
+          id?: string
+          platform?: string | null
+          source?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       push_notifications: {
         Row: {
           active: boolean | null
