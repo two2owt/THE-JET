@@ -182,17 +182,18 @@ export function HeaderSearch({
         autoFocus={isMobile && expanded}
         style={{
           width: "100%",
-          height: "clamp(38px, 6vw, 40px)",
-          // Never taller than the header minus breathing room top/bottom.
-          maxHeight: "calc(var(--header-height, 52px) - 10px)",
+          // Scales with the viewport but never exceeds the header's inner box.
+          height:
+            "min(clamp(34px, 5.2vw, 40px), calc(var(--header-height, 52px) - 12px))",
+          maxHeight: "calc(var(--header-height, 52px) - 12px)",
           minHeight: 0,
           boxSizing: "border-box",
-          paddingLeft: "36px",
+          paddingLeft: "34px",
           paddingRight,
           borderRadius: "9999px",
           border: "1.5px solid hsl(var(--border) / 0.5)",
           background: "hsl(var(--muted) / 0.35)",
-          fontSize: "14px",
+          fontSize: "clamp(13px, 3.4vw, 14px)",
           color: "hsl(var(--foreground))",
           outline: "none",
           transition: "background 0.2s, border-color 0.3s, box-shadow 0.3s",
