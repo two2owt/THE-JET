@@ -678,6 +678,68 @@ export type Database = {
           },
         ]
       }
+      native_push_audit: {
+        Row: {
+          attempted_at: string
+          audience: string | null
+          category: string | null
+          created_at: string
+          error: string | null
+          event_type: string | null
+          http_status: number | null
+          id: string
+          platform: string
+          provider_message_id: string | null
+          queue_id: string | null
+          status: string
+          subscription_id: string | null
+          token_tail: string | null
+          user_id: string | null
+        }
+        Insert: {
+          attempted_at?: string
+          audience?: string | null
+          category?: string | null
+          created_at?: string
+          error?: string | null
+          event_type?: string | null
+          http_status?: number | null
+          id?: string
+          platform?: string
+          provider_message_id?: string | null
+          queue_id?: string | null
+          status: string
+          subscription_id?: string | null
+          token_tail?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          attempted_at?: string
+          audience?: string | null
+          category?: string | null
+          created_at?: string
+          error?: string | null
+          event_type?: string | null
+          http_status?: number | null
+          id?: string
+          platform?: string
+          provider_message_id?: string | null
+          queue_id?: string | null
+          status?: string
+          subscription_id?: string | null
+          token_tail?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "native_push_audit_queue_id_fkey"
+            columns: ["queue_id"]
+            isOneToOne: false
+            referencedRelation: "notification_queue"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       neighborhoods: {
         Row: {
           active: boolean | null
