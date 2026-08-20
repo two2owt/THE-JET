@@ -24,7 +24,18 @@ import {
   Settings as SettingsIcon,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { EmptyState } from "@/components/EmptyState";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
@@ -35,6 +46,7 @@ import { signOutCurrentUser } from "@/lib/authSession";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { ProfileStatsPills } from "@/components/profile/ProfileStatsPills";
 import { ProfileActions } from "@/components/profile/ProfileActions";
+import { ProfileActivityFeed } from "@/components/profile/ProfileActivityFeed";
 import {
   ProfileEditForm,
   type ProfileEditFormValues,
@@ -376,7 +388,6 @@ export default function Profile() {
       />
       <PageShell padding="0px" gap="0px" className="profile-scroll">
         <ProfileHeader
-          email={user.email}
           displayName={form.displayName}
           unclaimedName={needsDisplayNameClaim(profile)}
           onClaimName={() => setIsEditing(true)}
@@ -451,9 +462,18 @@ export default function Profile() {
                       {form.bio}
                     </p>
                   ) : (
-                    <p className="text-fluid-sm text-muted-foreground italic">
-                      No bio yet. Add one in the Account tab.
-                    </p>
+                    <div className="flex flex-col items-start gap-2">
+                      <p className="text-fluid-sm text-muted-foreground italic">
+                        No bio yet.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditing(true)}
+                        className="profile-action-btn profile-action-secondary"
+                      >
+                        Add a bio
+                      </button>
+                    </div>
                   )}
 
                   {(form.gender || form.pronouns) && (
@@ -537,12 +557,10 @@ export default function Profile() {
               {/* ACTIVITY */}
               <TabsContent value="activity" className="profile-tab-content">
                 <div className="rounded-2xl border-hairline bg-card/40 backdrop-blur-xl p-fluid-md sm:p-fluid-lg">
-                  <EmptyState
-                    icon={ActivityIcon}
-                    title="No activity yet"
-                    description="When you save deals, connect with people, or get alerts, you'll see them here."
-                    actionLabel="Explore the map"
-                    onAction={() => navigate("/")}
+                  <ProfileActivityFeed
+                    favorites={favorites}
+                    connections={connections}
+                    notifications={notifications}
                   />
                 </div>
               </TabsContent>
@@ -622,6 +640,43 @@ export default function Profile() {
                       userEmail={user.email}
                     />
                   )}
+
+                  {/* Sign out lives at the bottom of Account (standard
+                      pattern) so it can't be mis-tapped next to Edit. */}
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <button
+                        type="button"
+                        className="profile-action-btn profile-action-danger w-full justify-center"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Sign Out
+                      </button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          Sign out of your account?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          You'll need to sign in again to access your profile
+                          and favorites.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="rounded-full border-primary/40 bg-transparent text-foreground hover:border-primary/70 hover:bg-primary/10 hover:text-primary">
+                          Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleSignOut}
+                          className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg shadow-destructive/20 font-semibold tracking-wide"
+                        >
+                          <LogOut className="w-4 h-4 mr-2" />
+                          Sign Out
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </TabsContent>
             </Tabs>
@@ -638,7 +693,6 @@ export default function Profile() {
             onStartEdit={() => setIsEditing(true)}
             onCancelEdit={handleCancelEdit}
             onShare={handleShareProfile}
-            onSignOut={handleSignOut}
           />
         </section>
       </PageShell>
