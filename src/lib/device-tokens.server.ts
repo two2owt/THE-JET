@@ -1,6 +1,6 @@
 /**
  * Server-only logic for registering Capacitor (APNs / FCM) device tokens into
- * `push_subscriptions`.
+ * `push_notifications`.
  *
  * Native tokens reuse the web-push table: `endpoint` holds the raw device
  * token and the `p256dh_key` / `auth_key` columns carry the literal string
@@ -79,7 +79,7 @@ export async function registerDeviceTokenFor(
   // --- Rotation: retire or rewrite the superseded row for this device ----
   if (previousToken && previousToken !== token) {
     const { data: existingNew } = await supabase
-      .from("push_subscriptions")
+      .from("push_notifications")
       .select("id")
       .eq("endpoint", token)
       .eq("user_id", userId)
@@ -87,13 +87,13 @@ export async function registerDeviceTokenFor(
 
     if (existingNew?.id) {
       await supabase
-        .from("push_subscriptions")
+        .from("push_notifications")
         .delete()
         .eq("endpoint", previousToken)
         .eq("user_id", userId);
     } else {
       const { data: moved } = await supabase
-        .from("push_subscriptions")
+        .from("push_notifications")
         .update({
           endpoint: token,
           platform,
@@ -108,7 +108,7 @@ export async function registerDeviceTokenFor(
   }
 
   const { data: existing, error: findError } = await supabase
-    .from("push_subscriptions")
+    .from("push_notifications")
     .select("id")
     .eq("endpoint", token)
     .eq("user_id", userId)
@@ -117,7 +117,7 @@ export async function registerDeviceTokenFor(
 
   if (existing?.id) {
     const { error } = await supabase
-      .from("push_subscriptions")
+      .from("push_notifications")
       .update({
         platform,
         active: true,
@@ -129,7 +129,7 @@ export async function registerDeviceTokenFor(
   }
 
   const { data: inserted, error } = await supabase
-    .from("push_subscriptions")
+    .from("push_notifications")
     .insert({
       user_id: userId,
       endpoint: token,
@@ -151,7 +151,7 @@ export async function deactivateDeviceTokenFor(
   token: string,
 ): Promise<{ deactivated: number }> {
   const { data, error } = await supabase
-    .from("push_subscriptions")
+    .from("push_notifications")
     .update({ active: false, updated_at: new Date().toISOString() })
     .eq("endpoint", token)
     .eq("user_id", userId)
@@ -166,7 +166,7 @@ export async function deactivateDeviceTokenByIdFor(
   id: string,
 ): Promise<{ deactivated: number }> {
   const { data, error } = await supabase
-    .from("push_subscriptions")
+    .from("push_notifications")
     .update({ active: false, updated_at: new Date().toISOString() })
     .eq("id", id)
     .eq("user_id", userId)
@@ -180,7 +180,7 @@ export async function listDeviceTokensFor(
   userId: string,
 ): Promise<DeviceTokenRow[]> {
   const { data, error } = await supabase
-    .from("push_subscriptions")
+    .from("push_notifications")
     .select("id, endpoint, platform, active, created_at, updated_at")
     .eq("user_id", userId)
     .in("platform", ["ios", "android"])

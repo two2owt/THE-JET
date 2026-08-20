@@ -1,7 +1,7 @@
 # Expected membership of the `supabase_realtime` publication (public schema).
 # One table per line. Both Test and Live must match this list exactly.
 # Sensitive tables (user_locations, profiles, user_consents, security_audit_logs,
-# push_subscriptions, notification_logs, deal_shares) must NEVER appear here.
+# push_notifications, notification_logs, deal_shares) must NEVER appear here.
 deals
 email_send_log
 messages

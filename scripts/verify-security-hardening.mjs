@@ -19,7 +19,7 @@
  *     "Anyone can view chat images" SELECT policy.
  *  5. supabase_realtime publication never ends up containing any of:
  *       user_locations, profiles, messages, user_consents,
- *       security_audit_logs, push_subscriptions.
+ *       security_audit_logs, push_notifications.
  *
  * Run locally: `node scripts/verify-security-hardening.mjs`
  * Used by CI in .github/workflows/security-hardening.yml.
@@ -40,7 +40,7 @@ const FORBIDDEN_REALTIME_TABLES = [
   "messages",
   "user_consents",
   "security_audit_logs",
-  "push_subscriptions",
+  "push_notifications",
 ];
 
 const errors = [];

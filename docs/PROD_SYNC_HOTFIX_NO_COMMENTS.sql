@@ -45,7 +45,7 @@ DECLARE t text;
 BEGIN
   FOREACH t IN ARRAY ARRAY[
     'user_locations','notification_logs','deal_shares','profiles',
-    'user_consents','security_audit_logs','push_subscriptions'
+    'user_consents','security_audit_logs','push_notifications'
   ] LOOP
     IF EXISTS (
       SELECT 1 FROM pg_publication_tables

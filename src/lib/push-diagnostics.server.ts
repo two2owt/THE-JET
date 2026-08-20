@@ -1,7 +1,7 @@
 /**
  * Server-only aggregation for the Admin "Push diagnostics" panel.
  *
- * Reads `push_subscriptions`, `notification_deliveries` and the parent
+ * Reads `push_notifications`, `notification_deliveries` and the parent
  * `notification_queue` rows with the service-role client. Callers MUST verify
  * the requester holds the admin role before invoking anything here.
  */
@@ -65,7 +65,7 @@ export async function collectPushDiagnostics(
 
   const [subsRes, delivRes, lastWebRes, lastNativeRes] = await Promise.all([
     admin
-      .from("push_subscriptions")
+      .from("push_notifications")
       .select("platform, active, created_at, updated_at")
       .limit(5000),
     admin

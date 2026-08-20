@@ -101,7 +101,7 @@ export const useWebPushNotifications = () => {
           if (endpoint && previous !== endpoint) {
             if (previous) {
               await supabase
-                .from("push_subscriptions")
+                .from("push_notifications")
                 .update({ active: false })
                 .eq("endpoint", previous);
             }
@@ -305,7 +305,7 @@ export const useWebPushNotifications = () => {
 
       if (user) {
         await supabase
-          .from("push_subscriptions")
+          .from("push_notifications")
           .update({ active: false })
           .eq("user_id", user.id)
           .eq("endpoint", subscription.endpoint);

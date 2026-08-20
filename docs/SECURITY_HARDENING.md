@@ -99,7 +99,7 @@ classic "Security Definer View" finding, treated as a regression.
   by `public.can_view_profile_field(profile_id, viewer_id, field)`
   plus owner-only fallback.
 - `user_favorites`, `user_preferences`, `user_locations`, `messages`,
-  `push_subscriptions`, `search_history`, `notification_logs`,
+  `push_notifications`, `search_history`, `notification_logs`,
   `venue_reviews`, `user_consents` are all scoped to
   `auth.uid() = user_id`.
 - `deals` is readable by `authenticated` when `active = true`; writes
@@ -137,7 +137,7 @@ images contain private DM content. Unauthenticated `GET` on a
 - `public.profiles`
 - `public.messages` (broadcast via app channels, not table publication)
 - `public.user_consents`, `public.security_audit_logs`,
-  `public.push_subscriptions`
+  `public.push_notifications`
 
 Tables intentionally published:
 

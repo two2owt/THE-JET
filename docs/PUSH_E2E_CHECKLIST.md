@@ -12,9 +12,9 @@ failure — later steps depend on earlier ones.
 |---|---|---|---|
 | 0.1 | `get-vapid-key` deployed to Live | `curl -s -X POST https://<live-ref>.supabase.co/functions/v1/get-vapid-key` | 200 with `{"publicKey":"B..."}`, not 404 |
 | 0.2 | VAPID pair present in Live secrets | Backend → Secrets | `VITE_VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY` both set, and the public key matches 0.1 |
-| 0.3 | Notification schema exists in Live | Query Live: `select to_regclass('public.notification_queue'), to_regclass('public.notification_deliveries'), to_regclass('public.push_subscriptions')` | All three non-null |
+| 0.3 | Notification schema exists in Live | Query Live: `select to_regclass('public.notification_queue'), to_regclass('public.notification_deliveries'), to_regclass('public.push_notifications')` | All three non-null |
 | 0.4 | `claim_push_subscription` RPC exists in Live | Query Live: `select proname from pg_proc where proname = 'claim_push_subscription'` | One row |
-| 0.5 | Unique index on endpoint | Query Live: `select indexname from pg_indexes where tablename='push_subscriptions'` | `push_subscriptions_endpoint_key` present |
+| 0.5 | Unique index on endpoint | Query Live: `select indexname from pg_indexes where tablename='push_notifications'` | `push_notifications_endpoint_key` present |
 | 0.6 | Dispatch worker scheduled | Query Live: `select jobname, schedule, active from cron.job` | `process-notification-queue` active |
 | 0.7 | Native push credential (only if testing the store build) | Backend → Secrets | `FCM_SERVICE_ACCOUNT_JSON` set |
 | 0.8 | Frontend points at Live | View source of `www.jet-around.com`, search the bundle for the project ref | Live ref, not the Test ref |
@@ -43,7 +43,7 @@ failure — later steps depend on earlier ones.
 7. Query Live:
    ```sql
    select user_id, platform, active, left(endpoint, 40) as endpoint, updated_at
-   from public.push_subscriptions
+   from public.push_notifications
    order by updated_at desc
    limit 5;
    ```
@@ -116,7 +116,7 @@ failure — later steps depend on earlier ones.
 ## Phase 7 — Opt-out must stick
 
 29. Settings → Notifications → turn the push toggle **off**.
-30. Expected: `push_subscriptions.active = false` for that endpoint, and a
+30. Expected: `push_notifications.active = false` for that endpoint, and a
     `push_notifications` consent row with `granted = false`.
 31. Reload the page several times and wait for a token refresh.
     Expected: the row stays `active = false` — the background sync must not re-subscribe.

@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
  * Keeps the browser's web-push subscription linked to the *currently signed-in*
  * user.
  *
- * Without this, a device only lands in `push_subscriptions` at the exact moment
+ * Without this, a device only lands in `push_notifications` at the exact moment
  * the user taps "Enable" while signed in. Anyone who granted permission before
  * signing in, signed in on a second account, cleared their row, or had the
  * browser rotate the endpoint would silently stop receiving pushes.
