@@ -289,6 +289,14 @@ export const MapboxHeatmap = ({
   const [retryCount, setRetryCount] = useState(0);
   const userMarker = useRef<MapboxGL.Marker | null>(null);
   const markersRef = useRef<MapboxGL.Marker[]>([]);
+  // Keyed index of every live marker (venue pins + cluster bubbles) so marker
+  // passes reconcile instead of tearing down and rebuilding the whole field.
+  // Key encodes everything that affects a marker's appearance, so an unchanged
+  // marker is reused as-is (no flicker) and a changed one is swapped in place.
+  const markerIndexRef = useRef<Map<string, MapboxGL.Marker>>(new Map());
+  // Monotonic pass id — a late rAF from a superseded pass bails out instead of
+  // duplicating markers when cities switch quickly.
+  const markerPassRef = useRef(0);
   // Quantized zoom step used to re-run clustering (-1 = clustering disabled).
   const [clusterStep, setClusterStep] = useState(-1);
   const dealMarkersRef = useRef<MapboxGL.Marker[]>([]);
@@ -2637,6 +2645,10 @@ export const MapboxHeatmap = ({
         userMarker.current.remove();
       }
       markersRef.current.forEach((marker) => marker.remove());
+      markersRef.current = [];
+      markerIndexRef.current.forEach((marker) => marker.remove());
+      markerIndexRef.current = new Map();
+      markerPassRef.current++;
       dealMarkersRef.current.forEach((marker) => marker.remove());
       map.current?.remove();
       map.current = null;
@@ -2932,11 +2944,17 @@ export const MapboxHeatmap = ({
     };
 
     // Use requestAnimationFrame for smoother updates
+    const passId = ++markerPassRef.current;
     requestAnimationFrame(() => {
-      // Clear existing markers
-      markersRef.current.forEach((marker) => marker.remove());
-      markersRef.current = [];
+      // Superseded by a newer pass (e.g. rapid city switching) — bail out so we
+      // never append a second set of markers on top of the current field.
+      if (passId !== markerPassRef.current) return;
+      if (!map.current) return;
 
+      // Markers are reconciled against this index: reused when the key matches,
+      // created when new, and removed at the end when no longer present.
+      const prevIndex = markerIndexRef.current;
+      const nextIndex = new Map<string, MapboxGL.Marker>();
       // Get current zoom level for dynamic sizing
       const currentZoom = mapInstance.getZoom();
 
@@ -2978,6 +2996,12 @@ export const MapboxHeatmap = ({
       clusters.forEach((cluster) => {
         if (!mapboxglRef.current || !mapInstance) return;
         const count = cluster.items.length;
+        const clusterKey = `c:${cluster.lat.toFixed(4)}:${cluster.lng.toFixed(4)}:${count}:${isDarkTheme ? "d" : "l"}`;
+        const reusedCluster = prevIndex.get(clusterKey);
+        if (reusedCluster) {
+          nextIndex.set(clusterKey, reusedCluster);
+          return;
+        }
         const size = Math.min(64, 40 + Math.log2(count) * 8);
         const el = document.createElement("div");
         el.className = "venue-cluster-marker";
@@ -3023,7 +3047,7 @@ export const MapboxHeatmap = ({
         const clusterMarker = new mapboxglRef.current.Marker({ element: el })
           .setLngLat([cluster.lng, cluster.lat])
           .addTo(mapInstance);
-        markersRef.current.push(clusterMarker);
+        nextIndex.set(clusterKey, clusterMarker);
       });
 
       // Add venue markers
@@ -3071,6 +3095,26 @@ export const MapboxHeatmap = ({
           activitySizeFactor *
           selectionFactor;
         const markerHeight = markerSize * 1.35;
+        // Reconciliation key: identical key => identical pin, so reuse the live
+        // marker instead of removing and re-adding it (which caused a flicker
+        // and, on overlapping passes, duplicate pins).
+        const venueKey = [
+          "v",
+          venue.id,
+          venue.lat.toFixed(5),
+          venue.lng.toFixed(5),
+          Math.round(venue.activity),
+          Math.round(markerSize),
+          isSelected ? "sel" : hasSelection ? "dim" : "on",
+          isDarkTheme ? "d" : "l",
+          venueDealCounts[venue.id] || 0,
+          String(venueOpenStatus.get(venue.id) ?? "unknown"),
+        ].join("|");
+        const reusedVenue = prevIndex.get(venueKey);
+        if (reusedVenue) {
+          nextIndex.set(venueKey, reusedVenue);
+          return;
+        }
         // Create teardrop marker element with entrance animation
         const staggerDelay = (index % 30) * 30;
         const el = document.createElement("div");
@@ -3476,8 +3520,16 @@ export const MapboxHeatmap = ({
           onVenueSelectRef.current(venue);
         });
 
-        markersRef.current.push(marker);
+        nextIndex.set(venueKey, marker);
       });
+
+      // Retire only the markers that are genuinely gone (old city, re-cluster,
+      // changed appearance). Everything reused stays mounted the whole time.
+      prevIndex.forEach((marker, key) => {
+        if (!nextIndex.has(key)) marker.remove();
+      });
+      markerIndexRef.current = nextIndex;
+      markersRef.current = Array.from(nextIndex.values());
     }); // Close requestAnimationFrame
   };
 
