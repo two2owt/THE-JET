@@ -156,7 +156,9 @@ export function HeaderSearch({
           e.currentTarget.style.background = "hsl(var(--muted) / 0.55)";
           e.currentTarget.style.borderColor = "hsl(var(--primary) / 0.5)";
           e.currentTarget.style.boxShadow =
-            "0 0 0 3px hsl(var(--primary) / 0.1), 0 0 12px hsl(var(--primary) / 0.08)";
+            // Keep the focus ring tight so it never bleeds past the header's
+            // hairline divider on short mobile headers.
+            "0 0 0 2px hsl(var(--primary) / 0.12)";
         }}
         onBlur={(e) => {
           e.currentTarget.style.background = "hsl(var(--muted) / 0.35)";
@@ -178,7 +180,11 @@ export function HeaderSearch({
         autoFocus={isMobile && expanded}
         style={{
           width: "100%",
-          height: "clamp(34px, 5vw, 40px)",
+          height: "clamp(38px, 6vw, 40px)",
+          // Never taller than the header minus breathing room top/bottom.
+          maxHeight: "calc(var(--header-height, 52px) - 10px)",
+          minHeight: 0,
+          boxSizing: "border-box",
           paddingLeft: "36px",
           paddingRight,
           borderRadius: "9999px",
