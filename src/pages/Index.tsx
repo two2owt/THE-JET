@@ -295,6 +295,12 @@ const Index = () => {
         ...match,
         imageUrl: getVenueImage(match.name) || match.imageUrl,
       });
+      trackDeepLinkOpened(
+        "venue",
+        decoded,
+        inferDeepLinkSurface(searchParams),
+        "loaded_venues",
+      );
       venueRestoredRef.current = true;
       return;
     }
@@ -315,6 +321,15 @@ const Index = () => {
       if (cancelled) return;
       if (data?.venue_id && data.venue_lat != null && data.venue_lng != null) {
         const name = data.venue_name || decoded;
+        const surface = inferDeepLinkSurface(searchParams);
+        trackDeepLinkOpened("venue", decoded, surface, "favorite_snapshot");
+        trackDeepLinkFallback(
+          "venue",
+          decoded,
+          surface,
+          "favorite_snapshot",
+          "venue_not_in_loaded_set",
+        );
         setSelectedVenue({
           id: data.venue_id,
           name,
@@ -340,6 +355,15 @@ const Index = () => {
       if (cancelled) return;
       if (dealVenue?.venue_id) {
         const name = dealVenue.venue_name || decoded;
+        const surface = inferDeepLinkSurface(searchParams);
+        trackDeepLinkOpened("venue", decoded, surface, "city_center_fallback");
+        trackDeepLinkFallback(
+          "venue",
+          decoded,
+          surface,
+          "city_center_fallback",
+          "resolved_from_deal_record",
+        );
         setSelectedVenue({
           id: dealVenue.venue_id,
           name,
@@ -358,6 +382,12 @@ const Index = () => {
       toast.error("Venue not found", {
         description: "That venue link is no longer available.",
       });
+      trackDeepLinkFailed(
+        "venue",
+        decoded,
+        inferDeepLinkSurface(searchParams),
+        "venue_not_found",
+      );
       const next = new URLSearchParams(searchParams);
       next.delete("venue");
       setSearchParams(next, { replace: true });
