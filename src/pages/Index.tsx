@@ -267,16 +267,22 @@ const Index = () => {
   // Restoration happens once venues are loaded; clearing the venue
   // strips the param.
   const venueRestoredRef = useRef(false);
+  // Tracks which `?venue=` value we've already tried to resolve, so links
+  // opened later in the session (e.g. tapping a saved deal on /favorites)
+  // get the same rehydration path as a cold load.
+  const resolvedVenueParamRef = useRef<string | null>(null);
   useEffect(() => {
-    if (venueRestoredRef.current) return;
     // Wait for the first venue load to settle, but don't require a non-empty
     // set: favorites resolve from their own snapshot when the map list misses.
     if (venuesLoading) return;
     const venueParam = searchParams.get("venue");
     if (!venueParam) {
       venueRestoredRef.current = true;
+      resolvedVenueParamRef.current = null;
       return;
     }
+    if (resolvedVenueParamRef.current === venueParam) return;
+    resolvedVenueParamRef.current = venueParam;
     const decoded = decodeURIComponent(venueParam);
     const decodedLower = decoded.toLowerCase();
     // Prefer exact id match; fall back to case-insensitive name match so
