@@ -468,8 +468,25 @@ const Index = () => {
             existingVenue.imageUrl,
           address: dealData.venue_address || existingVenue.address,
         });
+        trackDeepLinkOpened(
+          "deal",
+          _dealId,
+          inferDeepLinkSurface(window.location.search),
+          "loaded_venues",
+        );
       } else {
         setSelectedVenue(venueFromDeal);
+        const surface = inferDeepLinkSurface(window.location.search);
+        trackDeepLinkOpened("deal", _dealId, surface, "city_center_fallback");
+        trackDeepLinkFallback(
+          "deal",
+          _dealId,
+          surface,
+          "city_center_fallback",
+          dealData.venue_id
+            ? "venue_not_in_loaded_set"
+            : "deal_missing_venue_id",
+        );
       }
 
       // Scroll to JetCard
@@ -506,6 +523,16 @@ const Index = () => {
             block: "start",
           });
         }, 300);
+      } else {
+        // The `?venue=` restore effect owns the async fallback chain; record
+        // that the in-memory lookup missed so fallbacks are measurable.
+        trackDeepLinkFallback(
+          "venue",
+          venueIdOrName,
+          inferDeepLinkSurface(window.location.search),
+          "favorite_snapshot",
+          "venue_not_in_loaded_set",
+        );
       }
     },
     [venues, getVenueImage],
