@@ -10,10 +10,12 @@ const state = {
   upserts: [] as Upsert[],
 };
 
-const setConsent = vi.fn(async () => undefined);
-const applyPushPreference = vi.fn(async () => undefined);
-const webSubscribe = vi.fn(async () => undefined);
-const webUnsubscribe = vi.fn(async () => undefined);
+const { setConsent, applyPushPreference, webSubscribe, webUnsubscribe } = vi.hoisted(() => ({
+  setConsent: vi.fn(async () => undefined),
+  applyPushPreference: vi.fn(async () => undefined),
+  webSubscribe: vi.fn(async () => undefined),
+  webUnsubscribe: vi.fn(async () => undefined),
+}));
 
 function selectBuilder(rows: unknown) {
   const chain: Record<string, unknown> = {};
