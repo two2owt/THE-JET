@@ -60,7 +60,7 @@ export async function logPushAudit(
     source,
     platform,
     endpoint_tail: endpointTail(endpoint),
-    detail: detail ?? null,
+    detail: (detail ?? null) as never,
   });
   if (error) console.warn("[push] audit write failed", error);
 }
