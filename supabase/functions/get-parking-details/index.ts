@@ -4,6 +4,7 @@ import {
   EDGE_FUNCTION_VERSION,
 } from "../_shared/cors.ts";
 import { internalError, invalidInput } from "../_shared/http.ts";
+import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
 
 const FUNCTION_NAME = "get-parking-details";
 logVersion(FUNCTION_NAME);
@@ -28,9 +29,44 @@ const pricing = (level: number | null | undefined) => {
   };
 };
 
+// Simple in-memory per-caller rate limit (30 requests / minute) so a signed-in
+// account cannot burn through the paid Google Places quota.
+const RATE_LIMIT = 30;
+const WINDOW_MS = 60_000;
+const hits = new Map<string, number[]>();
+
+function rateLimitOk(key: string): boolean {
+  const now = Date.now();
+  const recent = (hits.get(key) ?? []).filter((t) => now - t < WINDOW_MS);
+  recent.push(now);
+  hits.set(key, recent);
+  return recent.length <= RATE_LIMIT;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
+
+  const userId = await getAuthenticatedUserId(req);
+  if (!userId) {
+    return new Response(
+      JSON.stringify({ error: "unauthorized", message: "Sign in required" }),
+      {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
+  }
+
+  if (!rateLimitOk(userId)) {
+    return new Response(
+      JSON.stringify({ error: "rate_limited", message: "Too many requests" }),
+      {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   }
 
   try {
