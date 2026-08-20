@@ -24,7 +24,18 @@ import {
   Settings as SettingsIcon,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { EmptyState } from "@/components/EmptyState";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
@@ -35,6 +46,7 @@ import { signOutCurrentUser } from "@/lib/authSession";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { ProfileStatsPills } from "@/components/profile/ProfileStatsPills";
 import { ProfileActions } from "@/components/profile/ProfileActions";
+import { ProfileActivityFeed } from "@/components/profile/ProfileActivityFeed";
 import {
   ProfileEditForm,
   type ProfileEditFormValues,
@@ -376,7 +388,6 @@ export default function Profile() {
       />
       <PageShell padding="0px" gap="0px" className="profile-scroll">
         <ProfileHeader
-          email={user.email}
           displayName={form.displayName}
           unclaimedName={needsDisplayNameClaim(profile)}
           onClaimName={() => setIsEditing(true)}
