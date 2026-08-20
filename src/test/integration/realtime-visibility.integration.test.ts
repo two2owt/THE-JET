@@ -359,4 +359,56 @@ d("Realtime + public-read locks", () => {
       expect(spoof.error?.code).toBe("42501");
     });
   });
+
+  /**
+   * Runs last on purpose: an unauthenticated postgres_changes subscription
+   * leaves the Realtime tenant unable to evaluate RLS for later subscribers on
+   * the same table within the run, which would make the positive delivery
+   * assertions above flaky. Keep this block at the bottom of the file.
+   */
+  describe("anonymous Realtime subscribers receive nothing", () => {
+    it("delivers no private rows to an unauthenticated listener", async () => {
+      const anonWatcher = anonClient();
+      const anonListener = await listen(anonWatcher, "anon-private", [
+        "user_favorites",
+        "search_history",
+        "user_connections",
+      ]);
+
+      try {
+        const marker = `rt-anon-${Date.now()}`;
+
+        await alice.client.from("user_favorites").insert({
+          user_id: alice.id,
+          venue_id: marker,
+          venue_name: "Anon Probe Venue",
+        });
+        await alice.client.from("search_history").insert({
+          user_id: alice.id,
+          search_query: marker,
+        });
+        await alice.client.from("user_connections").insert({
+          user_id: alice.id,
+          friend_id: bob.id,
+          status: "pending",
+        });
+
+        await settle(() => anonListener.received.length > 0, QUIET_WAIT_MS);
+        expect(anonListener.received).toEqual([]);
+
+        // The Data API tells the same story for anonymous callers.
+        const anonReader = anonClient();
+        for (const table of [
+          "user_favorites",
+          "search_history",
+          "user_connections",
+        ] as const) {
+          const { data } = await anonReader.from(table).select("id").limit(1);
+          expect(data ?? []).toEqual([]);
+        }
+      } finally {
+        await anonListener.stop();
+      }
+    }, 60_000);
+  });
 });
