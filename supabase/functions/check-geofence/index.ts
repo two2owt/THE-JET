@@ -1,39 +1,15 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { corsHeaders, logVersion } from "../_shared/cors.ts";
 import {
-  corsHeaders,
-  logVersion,
-  EDGE_FUNCTION_VERSION,
-} from "../_shared/cors.ts";
+  ErrorCode,
+  HttpError,
+  invalidInput,
+  jsonResponse,
+  toErrorResponse,
+} from "../_shared/http.ts";
 
 const FUNCTION_NAME = "check-geofence";
 logVersion(FUNCTION_NAME);
-
-class HttpError extends Error {
-  constructor(
-    message: string,
-    readonly status: number,
-    readonly detail?: string,
-  ) {
-    super(message);
-  }
-}
-
-const jsonResponse = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
-
-/** Consistent client-usable error payload. Never leaks "Internal server error" as the user-facing message. */
-const errorResponse = (
-  message: string,
-  status: number,
-  detail?: string,
-) =>
-  jsonResponse(
-    { success: false, error: message, ...(detail ? { detail } : {}) },
-    status,
-  );
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -65,14 +41,14 @@ Deno.serve(async (req) => {
     } = await supabaseClient.auth.getUser();
 
     if (authError || !user) {
-      throw new HttpError("Unauthorized", 401);
+      throw new HttpError("Unauthorized", 401, ErrorCode.UNAUTHORIZED);
     }
 
     let payload: Record<string, unknown>;
     try {
       payload = await req.json();
     } catch {
-      throw new HttpError("Invalid JSON body", 400);
+      throw new HttpError("Invalid JSON body", 400, ErrorCode.INVALID_JSON);
     }
     const { latitude, longitude, accuracy } = (payload ?? {}) as {
       latitude?: unknown;
@@ -88,10 +64,7 @@ Deno.serve(async (req) => {
       latitude > 90
     ) {
       console.error("Invalid latitude:", latitude);
-      return errorResponse(
-        "Invalid latitude. Must be a number between -90 and 90.",
-        400,
-      );
+      return invalidInput("Invalid latitude. Must be a number between -90 and 90.");
     }
 
     if (
@@ -101,9 +74,8 @@ Deno.serve(async (req) => {
       longitude > 180
     ) {
       console.error("Invalid longitude:", longitude);
-      return errorResponse(
+      return invalidInput(
         "Invalid longitude. Must be a number between -180 and 180.",
-        400,
       );
     }
 
@@ -115,9 +87,8 @@ Deno.serve(async (req) => {
         accuracy > 100000
       ) {
         console.error("Invalid accuracy:", accuracy);
-        return errorResponse(
+        return invalidInput(
           "Invalid accuracy. Must be a positive number up to 100000 meters.",
-          400,
         );
       }
     }
@@ -257,26 +228,16 @@ Deno.serve(async (req) => {
       }
     }
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        current_neighborhood: currentNeighborhood,
-        entered_new_neighborhood: enteredNewNeighborhood,
-        deals: dealsToNotify,
-        notifications_triggered: notificationsSent,
-      }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      },
-    );
+    return jsonResponse({
+      success: true,
+      current_neighborhood: currentNeighborhood,
+      entered_new_neighborhood: enteredNewNeighborhood,
+      deals: dealsToNotify,
+      notifications_triggered: notificationsSent,
+    });
   } catch (error) {
     console.error("Error in check-geofence:", error);
-    if (error instanceof HttpError) {
-      return errorResponse(error.message, error.status, error.detail);
-    }
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error occurred";
-    return errorResponse("Internal server error", 500, errorMessage);
+    return toErrorResponse(error);
   }
 });
 
