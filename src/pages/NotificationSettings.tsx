@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Bell, BellOff, BellRing, Loader2, ShieldCheck } from "lucide-react";
+import { BellOff, BellRing, History, Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { PageLayout } from "@/components/PageLayout";
 import { PageShell } from "@/components/PageShell";
@@ -14,6 +14,12 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useWebPushNotifications } from "@/hooks/useWebPushNotifications";
 import { openNotificationSettings } from "@/lib/openAppSettings";
 import { applyPushPreference } from "@/hooks/usePushSubscriptionSync";
+import {
+  fetchPushAudit,
+  logPushAudit,
+  PUSH_AUDIT_LABELS,
+  type PushAuditEntry,
+} from "@/lib/push-audit";
 
 /**
  * Standalone page where a user can see and change their push notification
@@ -28,6 +34,7 @@ export default function NotificationSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [enabled, setEnabled] = useState(false);
+  const [history, setHistory] = useState<PushAuditEntry[]>([]);
 
   const native = usePushNotifications();
   const web = useWebPushNotifications();
@@ -62,6 +69,7 @@ export default function NotificationSettings() {
     const consentOn = consentRow ? consentRow.granted === true : true;
     setEnabled(prefOn && consentOn);
     setLoading(false);
+    setHistory(await fetchPushAudit(userId));
   }, [userId]);
 
   useEffect(() => {
@@ -89,6 +97,12 @@ export default function NotificationSettings() {
       if (error) throw error;
 
       await setConsent("push_notifications", next, "settings.notifications_page");
+      await logPushAudit(
+        userId,
+        next ? "preference_enabled" : "preference_disabled",
+        "settings.notifications_page",
+        { platform: nativeMode ? "native" : "web" },
+      );
 
       if (next) {
         if (nativeMode) {
@@ -194,6 +208,44 @@ export default function NotificationSettings() {
             <p className="text-xs text-muted-foreground">
               Sign in to save your notification preference.
             </p>
+          )}
+        </Card>
+
+        <Card className="mt-4 p-4 sm:p-5 space-y-3">
+          <p className="text-sm font-medium flex items-center gap-2">
+            <History className="h-4 w-4 text-primary" />
+            Change history
+          </p>
+          {history.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              No changes recorded yet. Toggling notifications or a device
+              subscription update will show up here.
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {history.map((entry) => (
+                <li
+                  key={entry.id}
+                  className="flex items-start justify-between gap-3 rounded-lg border border-border/60 bg-muted/20 p-2.5"
+                >
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-foreground">
+                      {PUSH_AUDIT_LABELS[entry.action] ?? entry.action}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground truncate">
+                      {entry.platform ?? "web"} · {entry.source}
+                      {entry.endpoint_tail ? ` · …${entry.endpoint_tail}` : ""}
+                    </p>
+                  </div>
+                  <time
+                    dateTime={entry.created_at}
+                    className="shrink-0 text-[11px] text-muted-foreground"
+                  >
+                    {new Date(entry.created_at).toLocaleString()}
+                  </time>
+                </li>
+              ))}
+            </ul>
           )}
         </Card>
       </PageShell>
