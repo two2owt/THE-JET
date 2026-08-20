@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { afterAll, describe, expect, it } from "vitest";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { adminClient, integrationEnvReady } from "./supabase-test-clients";
 
 /**
@@ -24,7 +25,11 @@ function psql(sql: string): string {
 }
 
 d("email queue functions", () => {
-  const admin = adminClient();
+  // Vitest still evaluates the body of a skipped describe, so the client must
+  // be created lazily — otherwise a missing service key throws at collection
+  // time and fails the whole suite instead of skipping it.
+  let _admin: SupabaseClient | undefined;
+  const admin = (): SupabaseClient => (_admin ??= adminClient());
   const queue = `probe_${randomUUID().replace(/-/g, "").slice(0, 12)}`;
   const dlq = `${queue}_dlq`;
 
