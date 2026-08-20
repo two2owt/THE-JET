@@ -3769,11 +3769,15 @@ export const MapboxHeatmap = ({
 
     mapInstance.on("zoom", handleZoom);
     mapInstance.on("zoomend", handleZoomEnd);
+    // moveend also fires at the end of a city fly-to, where the zoom may not
+    // change but the marker field must be rebuilt for the new viewport.
+    mapInstance.on("moveend", handleZoomEnd);
     handleZoomEnd();
 
     return () => {
       mapInstance.off("zoom", handleZoom);
       mapInstance.off("zoomend", handleZoomEnd);
+      mapInstance.off("moveend", handleZoomEnd);
     };
   }, [mapLoaded, venues]);
 
