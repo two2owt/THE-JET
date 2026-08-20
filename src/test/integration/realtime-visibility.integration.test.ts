@@ -25,7 +25,19 @@ const d = integrationEnvReady ? describe : describe.skip;
 const REALTIME_WAIT_MS = 12_000;
 const QUIET_WAIT_MS = 6_000;
 
-type Captured = { table: string; row: Record<string, unknown> };
+type Captured = {
+  table: string;
+  eventType: string;
+  row: Record<string, unknown>;
+};
+
+/**
+ * DELETE payloads carry only the primary key (default replica identity), so
+ * they contain no readable data and cannot be RLS-filtered by Realtime.
+ * Visibility assertions therefore look at rows that actually carry data.
+ */
+const withData = (captured: Captured[]) =>
+  captured.filter((c) => c.eventType !== "DELETE");
 
 /** Subscribes to postgres_changes on `tables` and collects every row delivered. */
 async function listen(
@@ -42,7 +54,7 @@ async function listen(
       { event: "*", schema: "public", table },
       (payload) => {
         const row = (payload.new ?? payload.old ?? {}) as Record<string, unknown>;
-        received.push({ table, row });
+        received.push({ table, eventType: payload.eventType, row });
       },
     );
   }
@@ -206,7 +218,7 @@ d("Realtime + public-read locks", () => {
         );
         expect(delivered).toBe(true);
 
-        for (const capture of aliceListener.received) {
+        for (const capture of withData(aliceListener.received)) {
           expect(capture.row.user_id).toBe(alice.id);
         }
       } finally {
@@ -242,10 +254,10 @@ d("Realtime + public-read locks", () => {
         expect(ownFav.data?.length).toBe(1);
 
         // Give Realtime a generous window to (incorrectly) deliver anything.
-        await settle(() => bobListener.received.length > 0, QUIET_WAIT_MS);
+        await settle(() => withData(bobListener.received).length > 0, QUIET_WAIT_MS);
 
         expect(
-          bobListener.received,
+          withData(bobListener.received),
           `bob received rows he cannot read: ${JSON.stringify(bobListener.received)}`,
         ).toEqual([]);
 
@@ -311,8 +323,11 @@ d("Realtime + public-read locks", () => {
           .eq("id", id);
         expect(asAnon.data ?? []).toEqual([]);
 
-        await settle(() => carolListener.received.length > 0, QUIET_WAIT_MS);
-        expect(carolListener.received).toEqual([]);
+        await settle(() => withData(carolListener.received).length > 0, QUIET_WAIT_MS);
+        expect(
+          withData(carolListener.received),
+          `carol received rows she cannot read: ${JSON.stringify(carolListener.received)}`,
+        ).toEqual([]);
       } finally {
         await carolListener.stop();
       }
@@ -396,8 +411,11 @@ d("Realtime + public-read locks", () => {
           status: "pending",
         });
 
-        await settle(() => anonListener.received.length > 0, QUIET_WAIT_MS);
-        expect(anonListener.received).toEqual([]);
+        await settle(() => withData(anonListener.received).length > 0, QUIET_WAIT_MS);
+        expect(
+          withData(anonListener.received),
+          `anonymous listener received rows: ${JSON.stringify(anonListener.received)}`,
+        ).toEqual([]);
 
         // The Data API tells the same story for anonymous callers.
         const anonReader = anonClient();
