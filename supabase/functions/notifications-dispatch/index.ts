@@ -51,10 +51,7 @@ Deno.serve(async (req) => {
     if (mode === "fcm_config") {
       const auth = req.headers.get("Authorization") ?? "";
       if (auth.replace(/^Bearer\s+/i, "") !== getServiceRoleKey()) {
-        // Non-privileged callers get no report body; the result is logged
-        // server-side for operators reading function logs.
-        console.log("[fcm_config]", JSON.stringify(await describeFcmConfig()));
-        return json({ ok: true, logged: true });
+        return json({ ok: false, error: "Unauthorized" }, 401);
       }
       return json({ ok: true, fcm: await describeFcmConfig() });
     }
