@@ -491,8 +491,8 @@ All colors MUST be HSL.
   #root {
     width: 100%;
     max-width: 100vw;
-    min-height: 100dvh;
-    height: 100dvh;
+    min-height: 100vh;
+    height: 100vh;
     overflow: hidden;
     -webkit-overflow-scrolling: touch;
     background-color: hsl(var(--background));
