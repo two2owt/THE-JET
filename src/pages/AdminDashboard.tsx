@@ -73,6 +73,11 @@ const PushDiagnosticsPanel = lazy(() =>
     default: m.PushDiagnosticsPanel,
   })),
 );
+const NativePushAuditPanel = lazy(() =>
+  import("@/components/admin/NativePushAuditPanel").then((m) => ({
+    default: m.NativePushAuditPanel,
+  })),
+);
 const ManualDealSyncPanel = lazy(() =>
   import("@/components/admin/ManualDealSyncPanel").then((m) => ({
     default: m.ManualDealSyncPanel,
@@ -498,6 +503,9 @@ export default function AdminDashboard() {
                   </Suspense>
                   <Suspense fallback={<AdminTabFallback />}>
                     <PushDiagnosticsPanel />
+                  </Suspense>
+                  <Suspense fallback={<AdminTabFallback />}>
+                    <NativePushAuditPanel />
                   </Suspense>
                   <Suspense fallback={<AdminTabFallback />}>
                     <DeviceTokenPanel />
