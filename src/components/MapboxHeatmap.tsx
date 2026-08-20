@@ -2645,6 +2645,10 @@ export const MapboxHeatmap = ({
         userMarker.current.remove();
       }
       markersRef.current.forEach((marker) => marker.remove());
+      markersRef.current = [];
+      markerIndexRef.current.forEach((marker) => marker.remove());
+      markerIndexRef.current = new Map();
+      markerPassRef.current++;
       dealMarkersRef.current.forEach((marker) => marker.remove());
       map.current?.remove();
       map.current = null;
