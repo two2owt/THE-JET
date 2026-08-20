@@ -187,16 +187,16 @@ export function useProfile(userId: string | undefined) {
   const checkDisplayNameUnique = useCallback(
     async (name: string): Promise<boolean> => {
       if (!userId) return true;
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("display_name", name)
-        .neq("id", userId)
-        .limit(1);
+      // Uniqueness is checked through a narrow security-definer helper: the
+      // profiles table itself is readable only by its owner, so a direct query
+      // would always look "available".
+      const { data, error } = await supabase.rpc("display_name_available", {
+        _name: name,
+      });
       // Fail-open on transient errors — the server unique constraint
       // (23505) is the real source of truth on save.
       if (error) return true;
-      return !data || data.length === 0;
+      return data !== false;
     },
     [userId],
   );
