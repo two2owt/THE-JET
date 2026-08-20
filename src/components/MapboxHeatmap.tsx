@@ -1714,26 +1714,72 @@ export const MapboxHeatmap = ({
           if (!map.current) return;
           try {
             if (!map.current.hasImage("jet-parking-p")) {
-              const size = 64;
+              const size = 96;
               const canvas = document.createElement("canvas");
               canvas.width = size;
               canvas.height = size;
               const ctx = canvas.getContext("2d");
               if (ctx) {
+                const c = size / 2;
+                // Outer soft glow (green halo)
+                const glow = ctx.createRadialGradient(c, c, c * 0.5, c, c, c);
+                glow.addColorStop(0, "rgba(57,255,20,0.28)");
+                glow.addColorStop(1, "rgba(57,255,20,0)");
+                ctx.fillStyle = glow;
                 ctx.beginPath();
-                ctx.arc(size / 2, size / 2, size / 2 - 1, 0, Math.PI * 2);
-                ctx.fillStyle = "#39ff14";
+                ctx.arc(c, c, c, 0, Math.PI * 2);
                 ctx.fill();
+
+                // Frosted glass disc — translucent dark base with a light sheen
+                const r = c - 10;
                 ctx.beginPath();
-                ctx.arc(size / 2, size / 2, size / 2 - 6, 0, Math.PI * 2);
-                ctx.fillStyle = "#0a0a0a";
+                ctx.arc(c, c, r, 0, Math.PI * 2);
+                ctx.fillStyle = "rgba(10,10,10,0.55)";
                 ctx.fill();
+
+                const sheen = ctx.createLinearGradient(
+                  c - r,
+                  c - r,
+                  c + r,
+                  c + r,
+                );
+                sheen.addColorStop(0, "rgba(255,255,255,0.30)");
+                sheen.addColorStop(0.45, "rgba(255,255,255,0.06)");
+                sheen.addColorStop(1, "rgba(57,255,20,0.16)");
+                ctx.beginPath();
+                ctx.arc(c, c, r, 0, Math.PI * 2);
+                ctx.fillStyle = sheen;
+                ctx.fill();
+
+                // Hairline glass rim + green accent ring
+                ctx.beginPath();
+                ctx.arc(c, c, r, 0, Math.PI * 2);
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "rgba(255,255,255,0.35)";
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(c, c, r + 3.5, 0, Math.PI * 2);
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = "rgba(57,255,20,0.85)";
+                ctx.stroke();
+
+                // Top highlight arc for the glass curvature
+                ctx.beginPath();
+                ctx.arc(c, c, r - 4, Math.PI * 1.15, Math.PI * 1.85);
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = "rgba(255,255,255,0.28)";
+                ctx.stroke();
+
+                // "P" glyph
                 ctx.fillStyle = "#39ff14";
                 ctx.font =
-                  "bold 48px system-ui, -apple-system, Arial, sans-serif";
+                  "bold 52px system-ui, -apple-system, Arial, sans-serif";
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
-                ctx.fillText("P", size / 2, size / 2 + 2);
+                ctx.shadowColor = "rgba(57,255,20,0.75)";
+                ctx.shadowBlur = 10;
+                ctx.fillText("P", c, c + 2);
+                ctx.shadowBlur = 0;
                 map.current.addImage(
                   "jet-parking-p",
                   {
@@ -1741,7 +1787,7 @@ export const MapboxHeatmap = ({
                     height: size,
                     data: ctx.getImageData(0, 0, size, size).data,
                   },
-                  { pixelRatio: 2 },
+                  { pixelRatio: 3 },
                 );
               }
             }
@@ -1774,18 +1820,20 @@ export const MapboxHeatmap = ({
                   "interpolate",
                   ["linear"],
                   ["zoom"],
+                  10,
+                  0.7,
                   12,
-                  0.45,
+                  0.85,
                   14,
-                  0.6,
+                  1.05,
                   16,
-                  0.9,
-                  18,
                   1.3,
+                  18,
+                  1.6,
                 ],
                 "icon-allow-overlap": true,
                 "icon-ignore-placement": false,
-                "text-field": ["step", ["zoom"], "", 14, ["get", "name"]],
+                "text-field": ["step", ["zoom"], "", 13, ["get", "name"]],
                 "text-font": ["DIN Pro Medium", "Arial Unicode MS Regular"],
                 "text-size": 11,
                 "text-offset": [0, 1.3],
@@ -1798,18 +1846,18 @@ export const MapboxHeatmap = ({
                   "interpolate",
                   ["linear"],
                   ["zoom"],
-                  12,
-                  0.7,
-                  13,
+                  10,
                   0.85,
-                  14,
+                  11,
+                  0.95,
+                  12,
                   1,
                 ],
                 "text-color": "#39ff14",
                 "text-halo-color": "#0a0a0a",
                 "text-halo-width": 2,
               },
-              minzoom: 12,
+              minzoom: 10,
             });
             devLog("MapboxHeatmap: Parking icons layer added");
           } catch (e) {
