@@ -6,7 +6,7 @@
  * host that immediately redirects — which search engines treat as a soft
  * canonical conflict.
  */
-export const SITE_URL = "https://www.jet-around.com";
+export const SITE_URL = "https://jet-around.com";
 
 /** Absolute canonical URL for an app path (e.g. `/favorites`). */
 export const canonicalUrl = (path: string): string =>

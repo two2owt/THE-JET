@@ -8,7 +8,7 @@
 
 const args = process.argv.slice(2);
 const hostArg = args.indexOf('--host');
-const CANONICAL_HOST = hostArg > -1 ? args[hostArg + 1] : 'www.jet-around.com';
+const CANONICAL_HOST = hostArg > -1 ? args[hostArg + 1] : 'jet-around.com';
 // --origin lets the same assertions run against a local dev/preview server:
 // tags are still expected to point at the canonical production host.
 const originArg = args.indexOf('--origin');
