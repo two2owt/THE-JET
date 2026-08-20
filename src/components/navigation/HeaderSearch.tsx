@@ -118,9 +118,11 @@ export function HeaderSearch({
       data-jet-search-wrapper
       style={{
         position: "relative",
+        // Grow into free space but always yield before the sync indicator
+        // and avatar get squeezed out of the row.
         flex: "1 1 0%",
-        maxWidth: isMobile ? "none" : "clamp(240px, 42vw, 520px)",
         minWidth: 0,
+        maxWidth: isMobile ? "100%" : "clamp(200px, 36vw, 460px)",
         opacity: mounted ? 1 : 0,
         transform: mounted ? "translateY(0)" : "translateY(-6px)",
         transition: "opacity 0.4s ease-out 0.1s, transform 0.4s ease-out 0.1s",
@@ -148,7 +150,9 @@ export function HeaderSearch({
       <Input
         ref={inputRef}
         type="text"
-        placeholder="Search venues, deals, neighborhoods..."
+        placeholder={
+          isMobile ? "Search venues, deals…" : "Search venues, deals, neighborhoods…"
+        }
         value={query}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
@@ -180,17 +184,18 @@ export function HeaderSearch({
         autoFocus={isMobile && expanded}
         style={{
           width: "100%",
-          height: "clamp(38px, 6vw, 40px)",
-          // Never taller than the header minus breathing room top/bottom.
-          maxHeight: "calc(var(--header-height, 52px) - 10px)",
+          // Scales with the viewport but never exceeds the header's inner box.
+          height:
+            "min(clamp(34px, 5.2vw, 40px), calc(var(--header-height, 52px) - 12px))",
+          maxHeight: "calc(var(--header-height, 52px) - 12px)",
           minHeight: 0,
           boxSizing: "border-box",
-          paddingLeft: "36px",
+          paddingLeft: "34px",
           paddingRight,
           borderRadius: "9999px",
           border: "1.5px solid hsl(var(--border) / 0.5)",
           background: "hsl(var(--muted) / 0.35)",
-          fontSize: "14px",
+          fontSize: "clamp(13px, 3.4vw, 14px)",
           color: "hsl(var(--foreground))",
           outline: "none",
           transition: "background 0.2s, border-color 0.3s, box-shadow 0.3s",
