@@ -272,14 +272,11 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error("Error in check-geofence:", error);
     if (error instanceof HttpError) {
-      return jsonResponse({ error: error.message }, error.status);
+      return errorResponse(error.message, error.status, error.detail);
     }
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error occurred";
-    return jsonResponse(
-      { error: "Internal server error", detail: errorMessage },
-      500,
-    );
+    return errorResponse("Internal server error", 500, errorMessage);
   }
 });
 
