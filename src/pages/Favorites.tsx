@@ -490,6 +490,7 @@ export default function Favorites() {
                       }
                       onRemove={toggleVenueFavorite}
                       onOpen={() => openFavorite(f.venue_id, f.deal_id)}
+                      referrerId={user?.id}
                     />
                   ))}
                 </div>
@@ -507,13 +508,23 @@ function FavoriteVenueCard({
   onOpen,
   onRemove,
   alertCount = 0,
+  referrerId,
 }: {
   favorite: Favorite;
   onOpen: () => void;
   onRemove: (venueId: string, dealId?: string | null) => Promise<void>;
   alertCount?: number;
+  referrerId?: string | null;
 }) {
-  return <FavoriteVenueCardInner favorite={favorite} onOpen={onOpen} onRemove={onRemove} alertCount={alertCount} />;
+  return (
+    <FavoriteVenueCardInner
+      favorite={favorite}
+      onOpen={onOpen}
+      onRemove={onRemove}
+      alertCount={alertCount}
+      referrerId={referrerId}
+    />
+  );
 }
 
 /** Unread-alerts pill overlaid on a favorite card; opens that venue's JetCard. */
