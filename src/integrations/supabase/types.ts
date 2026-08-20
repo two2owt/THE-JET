@@ -1636,16 +1636,6 @@ export type Database = {
           display_name: string | null
           id: string | null
         }
-        Insert: {
-          avatar_url?: string | null
-          display_name?: string | null
-          id?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          display_name?: string | null
-          id?: string | null
-        }
         Relationships: []
       }
       profiles_secure: {
@@ -1847,6 +1837,27 @@ export type Database = {
         }[]
       }
       process_location_data_retention: { Args: never; Returns: undefined }
+      profiles_visible: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          bio: string
+          birthdate: string
+          created_at: string
+          discoverable: boolean
+          display_name: string
+          facebook_url: string
+          gender: string
+          id: string
+          instagram_url: string
+          linkedin_url: string
+          onboarding_completed: boolean
+          pronouns: string
+          tiktok_url: string
+          twitter_url: string
+          updated_at: string
+        }[]
+      }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
