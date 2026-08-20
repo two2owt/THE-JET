@@ -180,9 +180,9 @@ export function HeaderSearch({
         autoFocus={isMobile && expanded}
         style={{
           width: "100%",
-          height: "clamp(32px, 5vw, 40px)",
+          height: "clamp(38px, 6vw, 40px)",
           // Never taller than the header minus breathing room top/bottom.
-          maxHeight: "calc(var(--header-height, 52px) - 14px)",
+          maxHeight: "calc(var(--header-height, 52px) - 10px)",
           minHeight: 0,
           boxSizing: "border-box",
           paddingLeft: "36px",
