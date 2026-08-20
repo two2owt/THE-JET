@@ -3091,6 +3091,26 @@ export const MapboxHeatmap = ({
           activitySizeFactor *
           selectionFactor;
         const markerHeight = markerSize * 1.35;
+        // Reconciliation key: identical key => identical pin, so reuse the live
+        // marker instead of removing and re-adding it (which caused a flicker
+        // and, on overlapping passes, duplicate pins).
+        const venueKey = [
+          "v",
+          venue.id,
+          venue.lat.toFixed(5),
+          venue.lng.toFixed(5),
+          Math.round(venue.activity),
+          Math.round(markerSize),
+          isSelected ? "sel" : hasSelection ? "dim" : "on",
+          isDarkTheme ? "d" : "l",
+          venueDealCounts[venue.id] || 0,
+          JSON.stringify(venueOpenStatus?.[venue.id] ?? null),
+        ].join("|");
+        const reusedVenue = prevIndex.get(venueKey);
+        if (reusedVenue) {
+          nextIndex.set(venueKey, reusedVenue);
+          return;
+        }
         // Create teardrop marker element with entrance animation
         const staggerDelay = (index % 30) * 30;
         const el = document.createElement("div");
@@ -3496,8 +3516,16 @@ export const MapboxHeatmap = ({
           onVenueSelectRef.current(venue);
         });
 
-        markersRef.current.push(marker);
+        nextIndex.set(venueKey, marker);
       });
+
+      // Retire only the markers that are genuinely gone (old city, re-cluster,
+      // changed appearance). Everything reused stays mounted the whole time.
+      prevIndex.forEach((marker, key) => {
+        if (!nextIndex.has(key)) marker.remove();
+      });
+      markerIndexRef.current = nextIndex;
+      markersRef.current = Array.from(nextIndex.values());
     }); // Close requestAnimationFrame
   };
 
