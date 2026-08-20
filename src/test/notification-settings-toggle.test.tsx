@@ -54,6 +54,10 @@ vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({ session: { user: { id: "user-1" } } }),
 }));
 vi.mock("@/lib/consent", () => ({ setConsent }));
+// The audit "Change history" panel is admin-only.
+vi.mock("@/hooks/useIsAdmin", () => ({
+  useIsAdmin: () => ({ isAdmin: true, loading: false }),
+}));
 vi.mock("@/hooks/usePushSubscriptionSync", () => ({ applyPushPreference }));
 vi.mock("@/hooks/usePushNotifications", () => ({
   usePushNotifications: () => ({

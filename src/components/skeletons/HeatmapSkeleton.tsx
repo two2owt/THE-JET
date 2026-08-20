@@ -9,7 +9,7 @@ import { MapPin } from "lucide-react";
  *  - Faint gold concentric "radar" rings hinting at activity density
  *  - Soft gold-tinted shimmer sweeping diagonally (GPU transform/opacity only)
  *  - Centered MapPin halo in JET primary, ringed by a gold hairline
- *  - Reuses MapUISkeleton so the floating controls also have placeholders
+ *  - Includes inline placeholders for the floating map controls
  *
  * The container is positioned by the caller (absolute inset-0). Opacity
  * fade-out is also driven by the caller.
