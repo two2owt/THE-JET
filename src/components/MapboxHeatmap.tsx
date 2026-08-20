@@ -144,6 +144,7 @@ import {
 } from "./map/LiveStatsPanel";
 import { useDensityLayer } from "./map/hooks/useDensityLayer";
 import { useMarkerDeclutter } from "./map/hooks/useMarkerDeclutter";
+import { clusterVenues, CLUSTER_MAX_ZOOM } from "./map/venueClusters";
 import {
   useMovementPathsLayer,
   FLOW_LINE_ELEVATION_LAYOUT,
@@ -2975,7 +2976,61 @@ export const MapboxHeatmap = ({
 
       // All venues are visible; the previous Open-Now filter was removed from
       // the Layers panel — users can still see venue hours via the JetCard.
-      const visibleVenues = venues;
+      // At low zoom, dense fields collapse into cluster bubbles so the map
+      // stays readable; tapping a bubble zooms into that neighborhood.
+      const { clusters, singles } = clusterVenues(venues, currentZoom);
+      const visibleVenues = singles;
+
+      clusters.forEach((cluster) => {
+        if (!mapboxglRef.current || !mapInstance) return;
+        const count = cluster.items.length;
+        const size = Math.min(64, 40 + Math.log2(count) * 8);
+        const el = document.createElement("div");
+        el.className = "venue-cluster-marker";
+        el.setAttribute("role", "button");
+        el.setAttribute("aria-label", `${count} venues — zoom in`);
+        el.style.cssText = `
+          width: ${size}px;
+          height: ${size}px;
+          display: grid;
+          place-items: center;
+          border-radius: 9999px;
+          cursor: pointer;
+          color: ${isDarkTheme ? "#F5F5F5" : "#141414"};
+          font-weight: 700;
+          font-size: ${Math.max(12, size * 0.3)}px;
+          background: ${
+            isDarkTheme ? "rgba(20,20,20,0.62)" : "rgba(255,255,255,0.72)"
+          };
+          border: 1.5px solid rgba(201,169,97,0.65);
+          box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          opacity: 0;
+          animation: markerFadeIn 0.35s ease-out forwards;
+        `;
+        el.textContent = count > 99 ? "99+" : String(count);
+
+        el.addEventListener("click", (e) => {
+          e.stopPropagation();
+          triggerHaptic("light");
+          mapInstance.easeTo({
+            center: [cluster.lng, cluster.lat],
+            zoom: Math.min(16, mapInstance.getZoom() + 2.5),
+            duration: 600,
+          });
+        });
+
+        try {
+          if (!mapInstance.getContainer()) return;
+        } catch {
+          return;
+        }
+        const clusterMarker = new mapboxglRef.current.Marker({ element: el })
+          .setLngLat([cluster.lng, cluster.lat])
+          .addTo(mapInstance);
+        markersRef.current.push(clusterMarker);
+      });
 
       // Add venue markers
       visibleVenues.forEach((venue, index) => {
