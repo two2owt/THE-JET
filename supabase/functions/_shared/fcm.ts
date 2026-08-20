@@ -112,6 +112,81 @@ export interface FcmSendResult {
 }
 
 /** Send a single notification via FCM HTTP v1. */
+export interface FcmConfigReport {
+  configured: boolean;
+  projectId: string | null;
+  clientEmail: string | null;
+  oauthStatus: number | null;
+  /** Status of a `validate_only` probe against FCM HTTP v1. */
+  v1Status: number | null;
+  v1Error?: string;
+  /** True when HTTP v1 answered (400 INVALID_ARGUMENT on the fake token is expected). */
+  v1Enabled: boolean;
+}
+
+/**
+ * Diagnostic: confirms which Firebase project the service account targets and
+ * whether the Cloud Messaging API (V1) is enabled for it. Sends nothing —
+ * the probe uses `validate_only` with a deliberately invalid token.
+ */
+export async function describeFcmConfig(): Promise<FcmConfigReport> {
+  const sa = getServiceAccount();
+  if (!sa)
+    return {
+      configured: false,
+      projectId: null,
+      clientEmail: null,
+      oauthStatus: null,
+      v1Status: null,
+      v1Enabled: false,
+      v1Error: "FCM_SERVICE_ACCOUNT_JSON missing or malformed",
+    };
+
+  let accessToken = "";
+  try {
+    accessToken = await getAccessToken(sa);
+  } catch (e) {
+    return {
+      configured: true,
+      projectId: sa.project_id,
+      clientEmail: sa.client_email,
+      oauthStatus: 0,
+      v1Status: null,
+      v1Enabled: false,
+      v1Error: String(e).slice(0, 300),
+    };
+  }
+
+  const res = await fetch(
+    `https://fcm.googleapis.com/v1/projects/${sa.project_id}/messages:send`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        validate_only: true,
+        message: {
+          token: "DIAGNOSTIC_INVALID_TOKEN",
+          notification: { title: "diagnostic", body: "diagnostic" },
+        },
+      }),
+    },
+  );
+  const text = await res.text().catch(() => "");
+  return {
+    configured: true,
+    projectId: sa.project_id,
+    clientEmail: sa.client_email,
+    oauthStatus: 200,
+    v1Status: res.status,
+    // 403 SERVICE_DISABLED / PERMISSION_DENIED means the API is off for the project.
+    v1Enabled: res.status !== 403 && res.status !== 404,
+    v1Error: res.ok ? undefined : text.slice(0, 300),
+  };
+}
+
 export async function sendFcmV1(
   deviceToken: string,
   notification: { title: string; body: string },
