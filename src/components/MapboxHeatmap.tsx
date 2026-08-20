@@ -2236,6 +2236,16 @@ export const MapboxHeatmap = ({
               essential: true,
             });
             isInitialGeolocate = false;
+          } else if (userInitiatedRecenter && map.current) {
+            // The user explicitly asked for "Current location" (possibly after
+            // manually picking another city) — always recenter on the fresh fix
+            // so the camera matches the newly synced city.
+            map.current.flyTo({
+              center: [longitude, latitude],
+              zoom: Math.max(map.current.getZoom(), 13),
+              duration: 1200,
+              essential: true,
+            });
           }
 
           // Create or update user marker with smooth interpolation
