@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { Check, Loader2, Share2 } from "lucide-react";
 import { toast } from "sonner";
-import { getDealDeepLink, getVenueDeepLink } from "@/utils/shareUtils";
+import {
+  copyTextToClipboard,
+  getDealDeepLink,
+  getVenueDeepLink,
+} from "@/utils/shareUtils";
 import {
   trackDeepLinkShared,
   type DeepLinkKind,
