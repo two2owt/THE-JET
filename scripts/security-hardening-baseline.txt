@@ -12,7 +12,7 @@ public.messages: missing GRANT statement (first defined in 20260222223905_e34631
 public.neighborhoods: missing GRANT statement (first defined in 20251115132440_3934bfd3-34c9-4b6a-9db1-9860d9dccd27.sql). See SECURITY_HARDENING.md §2.
 public.notification_logs: missing GRANT statement (first defined in 20251115132440_3934bfd3-34c9-4b6a-9db1-9860d9dccd27.sql). See SECURITY_HARDENING.md §2.
 public.profiles: missing GRANT statement (first defined in 20251116025834_36c6d351-30be-492c-bd99-2ce9a1af1273.sql). See SECURITY_HARDENING.md §2.
-public.push_subscriptions: missing GRANT statement (first defined in 20251115132440_3934bfd3-34c9-4b6a-9db1-9860d9dccd27.sql). See SECURITY_HARDENING.md §2.
+public.push_notifications: missing GRANT statement (first defined in 20251115132440_3934bfd3-34c9-4b6a-9db1-9860d9dccd27.sql). See SECURITY_HARDENING.md §2.
 public.search_history: missing GRANT statement (first defined in 20251124024042_954375b9-5576-474e-a8bf-e1e769cbcc1d.sql). See SECURITY_HARDENING.md §2.
 public.security_audit_logs: missing GRANT statement (first defined in 20251210232557_6e2d7147-3575-4246-9b38-8093e04100bd.sql). See SECURITY_HARDENING.md §2.
 public.suppressed_emails: missing GRANT statement (first defined in 20260503080138_email_infra.sql). See SECURITY_HARDENING.md §2.

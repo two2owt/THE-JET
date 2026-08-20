@@ -141,7 +141,7 @@ Deno.serve(async (req) => {
 
     // Get subscriptions based on targeting
     let query = supabase
-      .from("push_subscriptions")
+      .from("push_notifications")
       .select("*")
       .eq("active", true);
 
@@ -223,7 +223,7 @@ Deno.serve(async (req) => {
     // Mark invalid subscriptions as inactive
     if (invalidSubscriptions.length > 0) {
       await supabase
-        .from("push_subscriptions")
+        .from("push_notifications")
         .update({ active: false })
         .in("id", invalidSubscriptions);
       console.log(

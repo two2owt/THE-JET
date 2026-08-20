@@ -38,7 +38,7 @@ const DENY_LIST = new Set([
   "profiles",
   "user_consents",
   "security_audit_logs",
-  "push_subscriptions",
+  "push_notifications",
   "notification_logs",
   "deal_shares",
 ]);

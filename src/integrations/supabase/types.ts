@@ -1054,7 +1054,7 @@ export type Database = {
         }
         Relationships: []
       }
-      push_subscriptions: {
+      push_notifications: {
         Row: {
           active: boolean | null
           auth_key: string

@@ -5,7 +5,7 @@
  *   2. Requests permission ONLY from an explicit user action (`enable()`),
  *      never automatically — App Store / Play policy plus our consent model.
  *   3. Registers with APNs/FCM, captures the device token and upserts it into
- *      `push_subscriptions` so the merchant portal fan-out
+ *      `push_notifications` so the merchant portal fan-out
  *      (merchant-send-notification / notify-favorite-update) can reach it.
  *   4. Handles foreground receipt and notification taps via the shared
  *      deep-link resolver.
@@ -110,7 +110,7 @@ export const usePushNotifications = () => {
       const previous = readLastToken();
       if (previous && previous !== deviceToken) {
         const { data: newRow } = await supabase
-          .from("push_subscriptions")
+          .from("push_notifications")
           .select("id")
           .eq("endpoint", deviceToken)
           .maybeSingle();
@@ -118,14 +118,14 @@ export const usePushNotifications = () => {
         if (newRow?.id) {
           // New token already registered — retire the superseded row.
           await supabase
-            .from("push_subscriptions")
+            .from("push_notifications")
             .delete()
             .eq("endpoint", previous)
             .eq("user_id", user.id);
         } else {
           // Rewrite the old row in place so history/ownership is preserved.
           await supabase
-            .from("push_subscriptions")
+            .from("push_notifications")
             .update({
               endpoint: deviceToken,
               platform,
@@ -139,13 +139,13 @@ export const usePushNotifications = () => {
 
       // No unique constraint on `endpoint` — do a manual find-or-update.
       const { data: existing } = await supabase
-        .from("push_subscriptions")
+        .from("push_notifications")
         .select("id")
         .eq("endpoint", deviceToken)
         .maybeSingle();
       if (existing?.id) {
         await supabase
-          .from("push_subscriptions")
+          .from("push_notifications")
           .update({
             user_id: user.id,
             platform,
@@ -154,7 +154,7 @@ export const usePushNotifications = () => {
           })
           .eq("id", existing.id);
       } else {
-        await supabase.from("push_subscriptions").insert({
+        await supabase.from("push_notifications").insert({
           user_id: user.id,
           endpoint: deviceToken,
           p256dh_key: "native",
@@ -173,7 +173,7 @@ export const usePushNotifications = () => {
     const current = tokenRef.current;
     if (!current) return;
     await supabase
-      .from("push_subscriptions")
+      .from("push_notifications")
       .update({ active: false })
       .eq("endpoint", current);
   }, []);

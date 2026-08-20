@@ -60,7 +60,7 @@ export const DeleteAccountDialog = ({ userId }: DeleteAccountDialogProps) => {
       await supabase.from("notification_logs").delete().eq("user_id", userId);
 
       // Delete push subscriptions
-      await supabase.from("push_subscriptions").delete().eq("user_id", userId);
+      await supabase.from("push_notifications").delete().eq("user_id", userId);
 
       // Delete user locations
       await supabase.from("user_locations").delete().eq("user_id", userId);
