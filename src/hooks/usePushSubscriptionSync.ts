@@ -59,7 +59,7 @@ async function deactivateLocalSubscription(
       }
     }
     if (endpoint) {
-      await sub.unsubscribe().catch(() => undefined);
+      await sub?.unsubscribe().catch(() => undefined);
       await supabase
         .from("push_notifications")
         .update({ active: false })
