@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
           userIds = (locs ?? []).map((l: any) => l.user_id);
         } else {
           const { data: subs } = await supabase
-            .from("push_subscriptions")
+            .from("push_notifications")
             .select("user_id")
             .eq("active", true);
           userIds = (subs ?? []).map((s: any) => s.user_id);
