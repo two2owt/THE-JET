@@ -1126,6 +1126,66 @@ export type Database = {
         }
         Relationships: []
       }
+      realtime_guard_alerts: {
+        Row: {
+          check_name: string
+          created_at: string
+          detail: Json
+          id: string
+          message: string
+          resolved_at: string | null
+          severity: string
+          status: string
+          target: string
+          updated_at: string
+        }
+        Insert: {
+          check_name: string
+          created_at?: string
+          detail?: Json
+          id?: string
+          message: string
+          resolved_at?: string | null
+          severity: string
+          status?: string
+          target: string
+          updated_at?: string
+        }
+        Update: {
+          check_name?: string
+          created_at?: string
+          detail?: Json
+          id?: string
+          message?: string
+          resolved_at?: string | null
+          severity?: string
+          status?: string
+          target?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      realtime_guard_allowlist: {
+        Row: {
+          created_at: string
+          note: string | null
+          sensitivity: string
+          table_name: string
+        }
+        Insert: {
+          created_at?: string
+          note?: string | null
+          sensitivity: string
+          table_name: string
+        }
+        Update: {
+          created_at?: string
+          note?: string | null
+          sensitivity?: string
+          table_name?: string
+        }
+        Relationships: []
+      }
       retention_settings: {
         Row: {
           created_at: string
@@ -1741,6 +1801,13 @@ export type Database = {
           resolved: number
         }[]
       }
+      check_realtime_guard: {
+        Args: never
+        Returns: {
+          opened: number
+          resolved: number
+        }[]
+      }
       claim_notification_batch: {
         Args: { _limit?: number }
         Returns: {
@@ -1862,12 +1929,33 @@ export type Database = {
           updated_at: string
         }[]
       }
+      raise_realtime_alert: {
+        Args: {
+          _check: string
+          _detail: Json
+          _msg: string
+          _sev: string
+          _target: string
+        }
+        Returns: undefined
+      }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
           message: Json
           msg_id: number
           read_ct: number
+        }[]
+      }
+      realtime_publication_audit: {
+        Args: never
+        Returns: {
+          approved: boolean
+          replica_identity: string
+          rls_enabled: boolean
+          sensitivity: string
+          table_name: string
+          unscoped_select_policies: string[]
         }[]
       }
     }
