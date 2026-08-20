@@ -160,6 +160,21 @@ export async function deactivateDeviceTokenFor(
   return { deactivated: data?.length ?? 0 };
 }
 
+export async function deactivateDeviceTokenByIdFor(
+  supabase: Client,
+  userId: string,
+  id: string,
+): Promise<{ deactivated: number }> {
+  const { data, error } = await supabase
+    .from("push_subscriptions")
+    .update({ active: false, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("user_id", userId)
+    .select("id");
+  if (error) throw new DeviceTokenError(error.message, 500);
+  return { deactivated: data?.length ?? 0 };
+}
+
 export async function listDeviceTokensFor(
   supabase: Client,
   userId: string,

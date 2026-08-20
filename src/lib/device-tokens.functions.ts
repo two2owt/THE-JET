@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
+  deactivateDeviceTokenByIdFor,
   deactivateDeviceTokenFor,
   listDeviceTokensFor,
   maskToken,
@@ -30,6 +31,15 @@ export const deactivateDeviceToken = createServerFn({ method: "POST" })
   }))
   .handler(async ({ data, context }) =>
     deactivateDeviceTokenFor(context.supabase, context.userId, data.token),
+  );
+
+export const deactivateDeviceTokenById = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { id: string }) => ({
+    id: String(data?.id ?? "").trim(),
+  }))
+  .handler(async ({ data, context }) =>
+    deactivateDeviceTokenByIdFor(context.supabase, context.userId, data.id),
   );
 
 export const listMyDeviceTokens = createServerFn({ method: "POST" })

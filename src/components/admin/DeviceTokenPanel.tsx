@@ -6,7 +6,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Loader2, Smartphone, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
-  deactivateDeviceToken,
+  deactivateDeviceTokenById,
   listMyDeviceTokens,
   registerDeviceToken,
 } from "@/lib/device-tokens.functions";
@@ -65,11 +65,10 @@ export function DeviceTokenPanel() {
     }
   };
 
-  const handleDeactivate = async (endpoint: string) => {
-    // Masked rows can't be deactivated by value — use the visible input.
-    setToken("");
+  const handleDeactivate = async (id: string) => {
+    // Listed tokens are masked, so deactivate by row id rather than value.
     try {
-      await deactivateDeviceToken({ data: { token: endpoint } });
+      await deactivateDeviceTokenById({ data: { id } });
       toast.success("Token deactivated");
       await refresh();
     } catch (err) {
@@ -156,7 +155,7 @@ export function DeviceTokenPanel() {
                     size="icon"
                     variant="ghost"
                     aria-label="Deactivate token"
-                    onClick={() => handleDeactivate(row.endpoint)}
+                    onClick={() => handleDeactivate(row.id)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
