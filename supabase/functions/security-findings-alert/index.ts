@@ -28,6 +28,27 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Internal/cron-only: require the service-role key (or the dedicated admin
+  // hook secret) in the Authorization header before doing any work.
+  const authHeader = req.headers.get("Authorization") ?? "";
+  const presented = authHeader.startsWith("Bearer ")
+    ? authHeader.slice("Bearer ".length).trim()
+    : "";
+  const allowed = [
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
+    Deno.env.get("NOTIFY_ADMIN_HOOK_SECRET"),
+  ].filter((v): v is string => !!v && v.length > 0);
+
+  if (!presented || !allowed.includes(presented)) {
+    return new Response(
+      JSON.stringify({ error: "unauthorized" }),
+      {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
+  }
+
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
