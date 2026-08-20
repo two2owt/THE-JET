@@ -174,6 +174,30 @@ describe("push preference reconciliation (sign-in re-check flow)", () => {
     expect(retire?.filters.some(([op]) => op === "neq")).toBe(false);
   });
 
+  it("leaves the account enabled and touches nothing when permission is undecided", async () => {
+    installBrowserPush("default");
+    const { applyPushPreference } = await loadModule();
+    await applyPushPreference();
+
+    expect(state.rpc).not.toHaveBeenCalled();
+    expect(subscription.unsubscribe).not.toHaveBeenCalled();
+    expect(state.updates.some((u) => u.payload.active === false)).toBe(false);
+    expect(
+      state.audit.some((a) => a.action === "permission_revoked"),
+    ).toBe(false);
+  });
+
+  it("keeps retiring rotated endpoints for granted browsers", async () => {
+    localStorage.setItem("jet:web-push-endpoint", "https://push.example/endpoint-old");
+    const { applyPushPreference } = await loadModule();
+    await applyPushPreference();
+
+    const retire = state.updates.find(
+      (u) => u.table === "push_notifications" && u.payload.active === false,
+    );
+    expect(retire?.payload.active).toBe(false);
+  });
+
   it("does nothing when no user is signed in", async () => {
     state.user = null;
     const { applyPushPreference } = await loadModule();
