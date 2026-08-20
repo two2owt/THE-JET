@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SectionTitle } from "@/components/ui/page-title";
 import {
@@ -11,7 +10,6 @@ import {
   MapPin,
   Heart,
   Shield,
-  ShieldCheck,
   CreditCard,
   Moon,
   Smartphone,
