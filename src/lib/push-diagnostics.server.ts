@@ -181,9 +181,12 @@ export async function collectPushDiagnostics(
 
   const audiences = new Map<string, AudienceStat>();
   const errors: DeliveryError[] = [];
+  const deliveredUserIds = new Set<string>();
+  const failedUserIds = new Set<string>();
 
   for (const row of (delivRes.data ?? []) as Array<{
     id: string;
+    user_id: string | null;
     created_at: string;
     channel: string;
     status: string;
@@ -207,6 +210,7 @@ export async function collectPushDiagnostics(
     if (row.status === "failed") {
       stat.failed += 1;
       stat.lastFailureAt = newer(stat.lastFailureAt, row.created_at);
+      if (row.user_id) failedUserIds.add(row.user_id);
       if (errors.length < 25) {
         errors.push({
           id: row.id,
@@ -220,11 +224,63 @@ export async function collectPushDiagnostics(
     } else {
       stat.sent += 1;
       stat.lastSuccessAt = newer(stat.lastSuccessAt, row.created_at);
+      if (row.user_id) deliveredUserIds.add(row.user_id);
       if (row.status === "opened" || row.opened_at) stat.opened += 1;
     }
 
     audiences.set(audience, stat);
   }
+
+  const optedOut = new Set(
+    (optOutRes.data ?? []).map((r: { user_id: string }) => r.user_id),
+  );
+  const allUserIds = (profilesRes.data ?? []).map((p: { id: string }) => p.id);
+  const eligibleUserIds = allUserIds.filter((id) => !optedOut.has(id));
+
+  let usersWithDevice = 0;
+  let usersWebOnly = 0;
+  let usersNativeOnly = 0;
+  let usersBothChannels = 0;
+  let usersInactiveOnly = 0;
+  for (const id of eligibleUserIds) {
+    const entry = deviceByUser.get(id);
+    if (!entry) continue;
+    if (entry.web || entry.native) {
+      usersWithDevice += 1;
+      if (entry.web && entry.native) usersBothChannels += 1;
+      else if (entry.web) usersWebOnly += 1;
+      else usersNativeOnly += 1;
+    } else if (entry.inactiveOnly) {
+      usersInactiveOnly += 1;
+    }
+  }
+
+  let optedOutWithDevice = 0;
+  for (const id of optedOut) {
+    const entry = deviceByUser.get(id);
+    if (entry && (entry.web || entry.native)) optedOutWithDevice += 1;
+  }
+
+  const deliveredEligible = eligibleUserIds.filter((id) =>
+    deliveredUserIds.has(id),
+  ).length;
+
+  const coverage: PushCoverage = {
+    totalUsers: allUserIds.length,
+    optedOutUsers: optedOut.size,
+    eligibleUsers: eligibleUserIds.length,
+    usersWithDevice,
+    usersWebOnly,
+    usersNativeOnly,
+    usersBothChannels,
+    usersInactiveOnly,
+    eligibleWithoutDevice: eligibleUserIds.length - usersWithDevice,
+    optedOutWithDevice,
+    deliveredUsers: deliveredEligible,
+    failedUsers: failedUserIds.size,
+    reachRate: pct(usersWithDevice, eligibleUserIds.length),
+    deliveryRate: pct(deliveredEligible, usersWithDevice),
+  };
 
   return {
     generatedAt: new Date().toISOString(),
@@ -241,5 +297,6 @@ export async function collectPushDiagnostics(
       (a, b) => b.sent + b.failed - (a.sent + a.failed),
     ),
     errors,
+    coverage,
   };
 }
