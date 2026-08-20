@@ -29,6 +29,20 @@ const pricing = (level: number | null | undefined) => {
   };
 };
 
+// Simple in-memory per-caller rate limit (30 requests / minute) so a signed-in
+// account cannot burn through the paid Google Places quota.
+const RATE_LIMIT = 30;
+const WINDOW_MS = 60_000;
+const hits = new Map<string, number[]>();
+
+function rateLimitOk(key: string): boolean {
+  const now = Date.now();
+  const recent = (hits.get(key) ?? []).filter((t) => now - t < WINDOW_MS);
+  recent.push(now);
+  hits.set(key, recent);
+  return recent.length <= RATE_LIMIT;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
