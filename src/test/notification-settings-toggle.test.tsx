@@ -169,8 +169,6 @@ describe("notification settings toggle", () => {
     expect(webSubscribe).toHaveBeenCalled();
     expect(webUnsubscribe).not.toHaveBeenCalled();
     expect(applyPushPreference).toHaveBeenCalled();
-  });
-
     await waitFor(() =>
       expect(state.audit).toContainEqual(
         expect.objectContaining({
