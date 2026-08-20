@@ -6,7 +6,7 @@
  * every request itself with the caller's Supabase bearer token and only ever
  * touches rows owned by that user (RLS applies; no service role here).
  *
- *   POST   /api/public/device-tokens  { token, platform, previousToken? }
+ *   POST   /api/public/device-tokens  { token, platform, previousToken?, deviceId? }
  *   GET    /api/public/device-tokens  -> this user's native tokens (masked)
  *   DELETE /api/public/device-tokens  { token }  -> deactivate
  */
