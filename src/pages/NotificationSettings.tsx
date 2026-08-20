@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { supabase } from "@/integrations/supabase/client";
 import { setConsent } from "@/lib/consent";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
@@ -30,6 +31,8 @@ import {
 export default function NotificationSettings() {
   const { session } = useAuth();
   const userId = session?.user?.id ?? null;
+  // Change history is an admin-only diagnostic surface.
+  const { isAdmin } = useIsAdmin();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -69,8 +72,8 @@ export default function NotificationSettings() {
     const consentOn = consentRow ? consentRow.granted === true : true;
     setEnabled(prefOn && consentOn);
     setLoading(false);
-    setHistory(await fetchPushAudit(userId));
-  }, [userId]);
+    setHistory(isAdmin ? await fetchPushAudit(userId) : []);
+  }, [userId, isAdmin]);
 
   useEffect(() => {
     void load();
@@ -211,6 +214,7 @@ export default function NotificationSettings() {
           )}
         </Card>
 
+        {isAdmin && (
         <Card className="mt-4 p-4 sm:p-5 space-y-3">
           <p className="text-sm font-medium flex items-center gap-2">
             <History className="h-4 w-4 text-primary" />
@@ -248,6 +252,7 @@ export default function NotificationSettings() {
             </ul>
           )}
         </Card>
+        )}
       </PageShell>
     </PageLayout>
   );
