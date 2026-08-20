@@ -3043,3 +3043,16 @@ select:-webkit-autofill:active {
   .layer-value-transition { animation: none; }
   .layer-pending { filter: none; }
 }
+
+/* Progressive upgrade: dynamic viewport units where the browser supports them.
+   Legacy browsers keep the 100vh fallbacks declared above. */
+@supports (height: 100dvh) {
+  :root {
+    --main-height: calc(100dvh - var(--header-total-height) - var(--bottom-nav-total-height));
+  }
+
+  #root {
+    min-height: 100dvh;
+    height: 100dvh;
+  }
+}
