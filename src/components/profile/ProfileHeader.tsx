@@ -1,8 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, Loader2, Mail, Sparkles, User } from "lucide-react";
+import { Camera, Loader2, Sparkles, User } from "lucide-react";
 
 interface ProfileHeaderProps {
-  email: string | null | undefined;
   displayName: string;
   avatarUrl: string | null | undefined;
   pronouns: string;
@@ -20,7 +19,6 @@ interface ProfileHeaderProps {
  * Stateless — parent owns edit state, avatar upload, share, and sign-out.
  */
 export function ProfileHeader({
-  email,
   displayName,
   avatarUrl,
   pronouns,
@@ -48,7 +46,7 @@ export function ProfileHeader({
               )}
             </AvatarFallback>
           </Avatar>
-          {isEditing && (
+          {isEditing ? (
             <>
               <label
                 htmlFor="avatar-upload"
@@ -70,6 +68,14 @@ export function ProfileHeader({
                 className="sr-only"
               />
             </>
+          ) : (
+            /* Affordance so the avatar reads as editable outside edit mode. */
+            <span
+              className="profile-avatar-camera profile-avatar-camera-hint"
+              aria-hidden="true"
+            >
+              <Camera className="w-4 h-4" />
+            </span>
           )}
         </div>
 
@@ -95,12 +101,6 @@ export function ProfileHeader({
             </span>
           )}
           {bio && !isEditing && <p className="profile-bio">{bio}</p>}
-          {email && (
-            <p className="inline-flex items-center gap-1.5 text-fluid-sm text-muted-foreground max-w-full">
-              <Mail className="w-3.5 h-3.5 flex-shrink-0" />
-              <span className="truncate">{email}</span>
-            </p>
-          )}
         </div>
       </div>
     </header>
