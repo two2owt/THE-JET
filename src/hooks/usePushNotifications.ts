@@ -269,24 +269,47 @@ export const usePushNotifications = () => {
   }, []);
 
   /**
-   * Silent re-registration path: only runs when the OS permission is ALREADY
-   * granted and the user's `push_notifications` consent row is intact. Keeps
-   * the device token fresh (APNs/FCM rotate them) without ever prompting.
+   * Silent re-registration path. Runs on every app launch, on every resume,
+   * and after each sign-in so APNs/FCM tokens reliably reach the database.
+   *
+   * Never prompts: it bails unless the OS permission is ALREADY granted. Once
+   * granted, we follow the project's opt-out posture — registration proceeds
+   * unless the user has an explicit `push_notifications: false` consent row.
+   * (A missing row means "undecided", which used to silently block every
+   * native device from ever registering a token.)
    */
   const initializePushNotifications = useCallback(async () => {
     if (!isNativeShell()) return;
+    if (registeringRef.current) return;
+    registeringRef.current = true;
     try {
       const PushNotifications = await loadPlugin();
       const perm = await PushNotifications.checkPermissions();
       setPermission(toPermission(perm.receive));
       if (perm.receive !== "granted") return;
-      if (!hasConsent("push_notifications")) return;
+      if ((await getExplicitConsent("push_notifications")) === false) return;
       await attachListeners();
       await PushNotifications.register();
+
+      // The plugin only re-emits `registration` when the OS hands back a
+      // token. On a warm resume, or when a different account signs in on the
+      // same device, no event fires — re-persist the cached token so the row
+      // is attached to the current user instead of silently going missing.
+      const cached = tokenRef.current ?? readLastToken();
+      if (cached) {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user && persistedForRef.current !== user.id) {
+          await persistToken(cached, nativePlatform());
+        }
+      }
     } catch (err) {
       console.error("[push] init failed", err);
+    } finally {
+      registeringRef.current = false;
     }
-  }, [attachListeners]);
+  }, [attachListeners, persistToken]);
 
   /** Explicit opt-in from a user gesture. Requests the OS prompt. */
   const enable = useCallback(async (): Promise<boolean> => {
