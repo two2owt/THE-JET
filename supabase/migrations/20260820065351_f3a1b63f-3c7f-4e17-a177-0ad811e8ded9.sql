@@ -1,0 +1,1 @@
+SELECT public.invoke_favorite_update_notify(NULL, '__probe__', 'activated');
