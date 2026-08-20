@@ -2090,6 +2090,12 @@ All colors MUST be HSL.
     color: hsl(var(--muted-foreground));
     letter-spacing: 0.01em;
   }
+  .profile-stat-pill-text {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    min-width: 0;
+  }
   .profile-stat-pill-row {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
