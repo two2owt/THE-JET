@@ -126,6 +126,32 @@ export function isConsentLoaded(): boolean {
   return loaded;
 }
 
+/**
+ * Read the user's *explicit* decision for a consent type straight from the
+ * database: `true` / `false` when a row exists, `null` when the user has never
+ * decided. Callers that treat "never decided" differently from "declined"
+ * (e.g. native push, which follows the OS permission when undecided) need this
+ * distinction — `hasConsent` collapses both into `false`.
+ */
+export async function getExplicitConsent(
+  type: ConsentType,
+): Promise<boolean | null> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+  const { data, error } = await supabase
+    .from("user_consents")
+    .select("granted")
+    .eq("user_id", user.id)
+    .eq("consent_type", type)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) return null;
+  return data ? !!data.granted : null;
+}
+
 const recentToasts = new Map<ConsentType, number>();
 
 /**
