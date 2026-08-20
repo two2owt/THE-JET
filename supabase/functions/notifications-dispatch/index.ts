@@ -13,7 +13,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import webpush from "https://esm.sh/web-push@3.6.7";
 import { corsHeaders, logVersion } from "../_shared/cors.ts";
 import { internalError, jsonResponse } from "../_shared/http.ts";
-import { sendFcmV1 } from "../_shared/fcm.ts";
+import { describeFcmConfig, sendFcmV1 } from "../_shared/fcm.ts";
 import { getServiceRoleKey } from "../_shared/supabase-keys.ts";
 import {
   buildDataPayload,
@@ -38,6 +38,24 @@ const tokenTail = (token: string) =>
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS")
     return new Response(null, { headers: corsHeaders });
+
+  // ---- Diagnostics: FCM project/API check (service-role callers only) ----
+  if (req.method === "POST") {
+    let mode: string | null = null;
+    try {
+      const cloned = await req.clone().json();
+      mode = typeof cloned?.mode === "string" ? cloned.mode : null;
+    } catch {
+      /* no body — normal cron invocation */
+    }
+    if (mode === "fcm_config") {
+      const auth = req.headers.get("Authorization") ?? "";
+      if (auth.replace(/^Bearer\s+/i, "") !== getServiceRoleKey()) {
+        return json({ ok: false, error: "Unauthorized" }, 401);
+      }
+      return json({ ok: true, fcm: await describeFcmConfig() });
+    }
+  }
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
