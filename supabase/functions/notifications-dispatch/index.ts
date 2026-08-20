@@ -107,11 +107,13 @@ Deno.serve(async (req) => {
             .eq("current_neighborhood_id", job.neighborhood_id);
           userIds = (locs ?? []).map((l: any) => l.user_id);
         } else {
-          const { data: subs } = await supabase
-            .from("push_notifications")
-            .select("user_id")
-            .eq("active", true);
-          userIds = (subs ?? []).map((s: any) => s.user_id);
+          // "All users": every signed-up user. Notification preferences and
+          // quiet hours are applied further down, so opt-outs are respected
+          // without excluding users who simply have no device registered yet.
+          const { data: allProfiles } = await supabase
+            .from("profiles")
+            .select("id");
+          userIds = (allProfiles ?? []).map((p: any) => p.id);
         }
 
         userIds = Array.from(new Set(userIds.filter(Boolean)));
