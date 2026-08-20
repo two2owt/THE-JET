@@ -4,6 +4,7 @@ import {
   EDGE_FUNCTION_VERSION,
 } from "../_shared/cors.ts";
 import { internalError, invalidInput } from "../_shared/http.ts";
+import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
 
 const FUNCTION_NAME = "get-parking-details";
 logVersion(FUNCTION_NAME);
@@ -31,6 +32,27 @@ const pricing = (level: number | null | undefined) => {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
+
+  const userId = await getAuthenticatedUserId(req);
+  if (!userId) {
+    return new Response(
+      JSON.stringify({ error: "unauthorized", message: "Sign in required" }),
+      {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
+  }
+
+  if (!rateLimitOk(userId)) {
+    return new Response(
+      JSON.stringify({ error: "rate_limited", message: "Too many requests" }),
+      {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   }
 
   try {
