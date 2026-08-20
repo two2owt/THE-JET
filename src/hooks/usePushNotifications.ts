@@ -323,7 +323,9 @@ export const usePushNotifications = () => {
         const {
           data: { user },
         } = await supabase.auth.getUser();
-        if (user && persistedForRef.current !== user.id) {
+        const staleUser = user && persistedForRef.current !== user.id;
+        const staleToken = persistedTokenRef.current !== cached;
+        if (user && (staleUser || staleToken)) {
           await persistToken(cached, nativePlatform());
         }
       }
