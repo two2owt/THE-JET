@@ -3111,3 +3111,26 @@ select:-webkit-autofill:active {
     height: 100dvh;
   }
 }
+
+/* Tab/route enter transition — replayed by re-keying on pathname in PageLayout. */
+.route-transition {
+  animation: routeFadeIn 160ms ease-out both;
+  will-change: opacity, transform;
+}
+
+@keyframes routeFadeIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-transition {
+    animation: none;
+  }
+}

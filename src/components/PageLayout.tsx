@@ -159,6 +159,7 @@ export function PageLayout({
           key={pathname}
           className="route-transition"
           style={{
+            minHeight: "100%",
             transform: pull.distance
               ? `translate3d(0, ${pull.distance}px, 0)`
               : undefined,
