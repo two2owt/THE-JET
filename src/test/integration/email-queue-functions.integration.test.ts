@@ -34,6 +34,8 @@ d("email queue functions", () => {
   const dlq = `${queue}_dlq`;
 
   afterAll(async () => {
+    // Skipped suites can still run hooks; never touch the backend without env.
+    if (!integrationEnvReady) return;
     // Drain anything the test left behind so no probe message can be picked up.
     for (const q of [queue, dlq]) {
       const { data } = await admin().rpc("read_email_batch", { queue_name: q, batch_size: 50, vt: 1 });
