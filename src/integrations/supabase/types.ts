@@ -1167,18 +1167,21 @@ export type Database = {
       }
       realtime_guard_allowlist: {
         Row: {
+          allow_replica_identity_full: boolean
           created_at: string
           note: string | null
           sensitivity: string
           table_name: string
         }
         Insert: {
+          allow_replica_identity_full?: boolean
           created_at?: string
           note?: string | null
           sensitivity: string
           table_name: string
         }
         Update: {
+          allow_replica_identity_full?: boolean
           created_at?: string
           note?: string | null
           sensitivity?: string
@@ -1952,6 +1955,7 @@ export type Database = {
         Returns: {
           approved: boolean
           replica_identity: string
+          replica_identity_acknowledged: boolean
           rls_enabled: boolean
           sensitivity: string
           table_name: string
