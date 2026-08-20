@@ -3784,8 +3784,9 @@ export const MapboxHeatmap = ({
   // Update map view when selected city changes
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
+    const mapInstance = map.current;
 
-    map.current.flyTo({
+    mapInstance.flyTo({
       center: [selectedCity.lng, selectedCity.lat],
       zoom: selectedCity.zoom,
       pitch: isMobile ? 30 : 50,
@@ -3793,10 +3794,23 @@ export const MapboxHeatmap = ({
       essential: true,
     });
 
-    // Update markers after city change animation completes
-    setTimeout(() => {
+    // Rebuild markers when the camera actually settles on the new city, so
+    // clustering is computed at the final zoom instead of a mid-flight one.
+    // A timeout fallback covers interrupted/instant camera moves.
+    let done = false;
+    const rebuild = () => {
+      if (done) return;
+      done = true;
       updateMarkers();
-    }, 2100);
+    };
+    mapInstance.once("moveend", rebuild);
+    const fallback = window.setTimeout(rebuild, 2400);
+
+    return () => {
+      done = true;
+      window.clearTimeout(fallback);
+      mapInstance.off("moveend", rebuild);
+    };
   }, [selectedCity, mapLoaded, isMobile]);
 
   // Deal markers removed - no longer displaying colored circles on map
