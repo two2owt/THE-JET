@@ -3104,7 +3104,7 @@ export const MapboxHeatmap = ({
           isSelected ? "sel" : hasSelection ? "dim" : "on",
           isDarkTheme ? "d" : "l",
           venueDealCounts[venue.id] || 0,
-          JSON.stringify(venueOpenStatus?.[venue.id] ?? null),
+          String(venueOpenStatus.get(venue.id) ?? "unknown"),
         ].join("|");
         const reusedVenue = prevIndex.get(venueKey);
         if (reusedVenue) {
