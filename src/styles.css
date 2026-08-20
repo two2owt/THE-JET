@@ -129,7 +129,9 @@ All colors MUST be HSL.
        nav. Resolves to 0 on screens that don't render the nav (auth, onboarding). */
     --nav-clearance: 0px;
     /* Main content area height - MUST match index.html shell exactly */
-    --main-height: calc(100dvh - var(--header-total-height) - var(--bottom-nav-total-height));
+    /* 100vh is the legacy fallback (Safari < 15.4, older Firefox/Edge);
+       the @supports block below upgrades it to dvh where available. */
+    --main-height: calc(100vh - var(--header-total-height) - var(--bottom-nav-total-height));
     
     /* Adaptive map UI spacing - device-aware with safe area consideration */
     /* For absolute positioned elements inside map container */
