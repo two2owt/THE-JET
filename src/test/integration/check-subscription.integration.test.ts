@@ -52,7 +52,7 @@ d("check-subscription auth contract", () => {
   });
 
   it("never returns 500 across all unauthenticated shapes", async () => {
-    const variants = [
+    const variants: Record<string, string>[] = [
       {},
       { apikey: anonKey! },
       { Authorization: "Bearer " },
