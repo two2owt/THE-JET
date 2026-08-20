@@ -244,7 +244,10 @@ d("Realtime + public-read locks", () => {
         // Give Realtime a generous window to (incorrectly) deliver anything.
         await settle(() => bobListener.received.length > 0, QUIET_WAIT_MS);
 
-        expect(bobListener.received).toEqual([]);
+        expect(
+          bobListener.received,
+          `bob received rows he cannot read: ${JSON.stringify(bobListener.received)}`,
+        ).toEqual([]);
 
         // And the Data API agrees.
         const bobFav = await bob.client
