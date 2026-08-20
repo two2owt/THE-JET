@@ -3,6 +3,7 @@ import {
   logVersion,
   EDGE_FUNCTION_VERSION,
 } from "../_shared/cors.ts";
+import { internalError, invalidInput } from "../_shared/http.ts";
 
 const FUNCTION_NAME = "get-parking-details";
 logVersion(FUNCTION_NAME);

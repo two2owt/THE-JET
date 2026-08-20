@@ -5,6 +5,7 @@ import {
   EDGE_FUNCTION_VERSION,
 } from "../_shared/cors.ts";
 import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
+import { ErrorCode, unauthorized } from "../_shared/http.ts";
 import { buildCutoffLadder } from "../_shared/fallback-windows.ts";
 
 const FUNCTION_NAME = "get-location-density";

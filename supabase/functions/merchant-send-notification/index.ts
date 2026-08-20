@@ -46,29 +46,17 @@ Deno.serve(async (req) => {
   try {
     const raw = await req.text();
     if (!(await verifyBridgeAuth(req, raw))) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...cors, "Content-Type": "application/json" },
-      });
+      return unauthorized();
     }
 
     let payload: MerchantNotificationPayload;
     try {
       payload = JSON.parse(raw) as MerchantNotificationPayload;
     } catch {
-      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
-        status: 400,
-        headers: { ...cors, "Content-Type": "application/json" },
-      });
+      return invalidJson();
     }
     if (!payload?.title || !payload?.body) {
-      return new Response(
-        JSON.stringify({ error: "title and body are required" }),
-        {
-          status: 400,
-          headers: { ...cors, "Content-Type": "application/json" },
-        },
-      );
+      return invalidInput("title and body are required");
     }
 
     const supabase = createClient(
@@ -150,9 +138,6 @@ Deno.serve(async (req) => {
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error(`[${FUNCTION_NAME}] error:`, message);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 500,
-      headers: { ...cors, "Content-Type": "application/json" },
-    });
+    return internalError(err);
   }
 });
