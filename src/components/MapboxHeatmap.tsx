@@ -1037,6 +1037,98 @@ export const MapboxHeatmap = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dayFilter, timelapseMode]);
 
+  // ── Unified layer-toggle intents ──────────────────────────────────────
+  // Every surface that can flip a layer (Layers panel rows, collapsed
+  // quick-toggle chips, the Time-lapse pill) routes through these so the
+  // dependency cascade can never disagree between entry points.
+  //
+  // Rules:
+  //   • Heatmap off  → Time-lapse off, Live Stats off (both feed off it).
+  //   • Flow Paths on → Time-lapse off (they fight for the same channel).
+  //   • Flow Paths off → Live Stats off (stats needs the paths series).
+  //   • Live Stats on → Heatmap + Flow Paths on.
+  //   • Time-lapse on → Heatmap on, Flow Paths off (⇒ Live Stats off).
+  const applyDensityLayer = useCallback(
+    (next: boolean) => {
+      setShowDensityLayer(next);
+      if (next) {
+        setTimeFilter("all");
+        setHourFilter(undefined);
+        setDayFilter(undefined);
+        scheduleDensityRefresh();
+      } else {
+        clearDensityRefreshTimer();
+        setIsLoadingHeatmap(false);
+        setTimelapseMode(false);
+        setShowLiveStats(false);
+        setIsLoadingStats(false);
+      }
+    },
+    [scheduleDensityRefresh, clearDensityRefreshTimer],
+  );
+
+  const applyPathsLayer = useCallback(
+    (next: boolean) => {
+      setShowMovementPaths(next);
+      if (next) {
+        setTimelapseMode(false);
+        schedulePathsRefresh();
+      } else {
+        clearPathsRefreshTimer();
+        setIsLoadingPaths(false);
+        setShowLiveStats(false);
+        setIsLoadingStats(false);
+      }
+    },
+    [schedulePathsRefresh, clearPathsRefreshTimer],
+  );
+
+  const applyParkingLayer = useCallback((next: boolean) => {
+    setShowParking(next);
+    try {
+      if (map.current?.getLayer("parking-icons")) {
+        map.current.setLayoutProperty(
+          "parking-icons",
+          "visibility",
+          next ? "visible" : "none",
+        );
+      }
+    } catch {
+      /* layer may not exist yet */
+    }
+  }, []);
+
+  const applyLiveStats = useCallback(
+    (next: boolean) => {
+      setShowLiveStats(next);
+      if (next) {
+        setIsLoadingStats(true);
+        applyDensityLayer(true);
+        applyPathsLayer(true);
+        // Both "on" paths above never clear stats, but paths-on also drops
+        // Time-lapse, which is the intended mutual exclusion.
+        setShowLiveStats(true);
+      } else {
+        setIsLoadingStats(false);
+      }
+    },
+    [applyDensityLayer, applyPathsLayer],
+  );
+
+  const applyTimelapse = useCallback(
+    (next: boolean) => {
+      if (next) {
+        applyDensityLayer(true);
+        applyPathsLayer(false);
+        setTimelapseMode(true);
+        timelapse.loadHourlyData();
+      } else {
+        setTimelapseMode(false);
+      }
+    },
+    [applyDensityLayer, applyPathsLayer, timelapse],
+  );
+
   // Reset to defaults — clears localStorage and restores factory settings
   const handleResetToDefaults = useCallback(() => {
     triggerHaptic("medium");
