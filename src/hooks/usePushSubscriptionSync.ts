@@ -40,7 +40,46 @@ async function getVapidPublicKey(): Promise<string> {
   }
 }
 
-async function syncSubscription(): Promise<void> {
+async function deactivateLocalSubscription(userId: string): Promise<void> {
+  try {
+    const registration =
+      await navigator.serviceWorker.getRegistration(PUSH_SW_SCOPE);
+    const sub = await registration?.pushManager.getSubscription();
+    if (sub) {
+      const endpoint = sub.endpoint;
+      await sub.unsubscribe().catch(() => undefined);
+      await supabase
+        .from("push_notifications")
+        .update({ active: false })
+        .eq("user_id", userId)
+        .eq("endpoint", endpoint);
+    } else {
+      // No live browser subscription, but stale rows may still be active.
+      await supabase
+        .from("push_notifications")
+        .update({ active: false })
+        .eq("user_id", userId)
+        .eq("platform", "web");
+    }
+    try {
+      localStorage.removeItem("jet:web-push-endpoint");
+    } catch {
+      /* ignore */
+    }
+  } catch (err) {
+    console.warn("[push] failed to deactivate subscription", err);
+  }
+}
+
+/**
+ * Reads the account's *latest* push preference and makes this device match it.
+ *
+ * Called on mount, on every sign-in, and right after the user flips the
+ * toggle in Settings. Users are opted in by default and stay enabled until
+ * they sign back in with a preference that says otherwise — at which point
+ * this deactivates the device subscription instead of silently keeping it.
+ */
+export async function applyPushPreference(): Promise<void> {
   if (typeof window === "undefined") return;
   if (
     !("serviceWorker" in navigator) ||
@@ -69,14 +108,20 @@ async function syncSubscription(): Promise<void> {
   if (consentError) return;
   const consentGranted = consentRows?.[0]?.granted === true;
   const hasConsentRecord = (consentRows?.length ?? 0) > 0;
-  if (hasConsentRecord && !consentGranted) return;
+  if (hasConsentRecord && !consentGranted) {
+    await deactivateLocalSubscription(user.id);
+    return;
+  }
 
   const { data: prefRow } = await supabase
     .from("user_preferences")
     .select("notifications_enabled")
     .eq("user_id", user.id)
     .maybeSingle();
-  if (prefRow?.notifications_enabled === false) return;
+  if (prefRow?.notifications_enabled === false) {
+    await deactivateLocalSubscription(user.id);
+    return;
+  }
 
   try {
     const registration =
@@ -112,7 +157,7 @@ async function syncSubscription(): Promise<void> {
 
 export function usePushSubscriptionSync() {
   useEffect(() => {
-    void syncSubscription();
+    void applyPushPreference();
 
     const {
       data: { subscription },
@@ -123,7 +168,7 @@ export function usePushSubscriptionSync() {
         event === "USER_UPDATED"
       ) {
         // Defer so the Supabase client finishes updating its session first.
-        setTimeout(() => void syncSubscription(), 0);
+        setTimeout(() => void applyPushPreference(), 0);
       }
     });
 
