@@ -3929,6 +3929,9 @@ export const MapboxHeatmap = ({
               } else {
                 setIsUsingCurrentLocation(false);
                 isUsingCurrentLocationRef.current = false;
+                // Drop the previously detected location so a later re-center
+                // never briefly shows the stale name before the fresh fix lands.
+                setDetectedLocationName(null);
                 const city = CITIES.find((c) => c.id === value);
                 if (city) {
                   onCityChange(city);
