@@ -18,7 +18,7 @@ import { useNavigate } from "@/lib/router-compat";
 import { supabase } from "@/integrations/supabase/client";
 import { resolvePushDeepLink } from "@/lib/pushDeepLink";
 import { queueDeepLink } from "@/lib/pendingDeepLink";
-import { hasConsent, setConsent } from "@/lib/consent";
+import { getExplicitConsent, setConsent } from "@/lib/consent";
 import { toast } from "sonner";
 import { registerDeviceToken } from "@/lib/device-tokens.functions";
 
@@ -77,6 +77,10 @@ export const usePushNotifications = () => {
   const [token, setToken] = useState<string | null>(null);
   const tokenRef = useRef<string | null>(null);
   const listenersRef = useRef(false);
+  /** Guards against overlapping register() calls (launch + resume + auth). */
+  const registeringRef = useRef(false);
+  /** User the current device token was last persisted for. */
+  const persistedForRef = useRef<string | null>(null);
 
   const persistToken = useCallback(
     async (deviceToken: string, platform: "ios" | "android") => {
@@ -84,6 +88,7 @@ export const usePushNotifications = () => {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) return;
+      persistedForRef.current = user.id;
 
       // Preferred path: one authenticated server call does the rotation +
       // find-or-update atomically, so a device never leaves duplicate or
