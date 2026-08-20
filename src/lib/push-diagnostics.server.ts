@@ -35,6 +35,24 @@ export type DeliveryError = {
   error: string;
 };
 
+/** User-level reach report: who is eligible vs who can actually be delivered to. */
+export type PushCoverage = {
+  totalUsers: number;
+  optedOutUsers: number;
+  eligibleUsers: number;
+  usersWithDevice: number;
+  usersWebOnly: number;
+  usersNativeOnly: number;
+  usersBothChannels: number;
+  usersInactiveOnly: number;
+  eligibleWithoutDevice: number;
+  optedOutWithDevice: number;
+  deliveredUsers: number;
+  failedUsers: number;
+  reachRate: number;
+  deliveryRate: number;
+};
+
 export type PushDiagnostics = {
   generatedAt: string;
   subscriptions: SubscriptionBucket[];
@@ -43,6 +61,7 @@ export type PushDiagnostics = {
   window: { hours: number; sampled: number };
   audiences: AudienceStat[];
   errors: DeliveryError[];
+  coverage: PushCoverage;
 };
 
 const WINDOW_HOURS = 72;
@@ -50,6 +69,9 @@ const SAMPLE_LIMIT = 1000;
 
 const channelFor = (platform: string): PushChannel =>
   platform === "ios" || platform === "android" ? "native" : "web";
+
+const pct = (part: number, whole: number) =>
+  whole > 0 ? Math.round((part / whole) * 1000) / 10 : 0;
 
 const newer = (a: string | null, b: string | null) =>
   !a ? b : !b ? a : a > b ? a : b;
@@ -63,15 +85,22 @@ export async function collectPushDiagnostics(
     Date.now() - WINDOW_HOURS * 60 * 60 * 1000,
   ).toISOString();
 
-  const [subsRes, delivRes, lastWebRes, lastNativeRes] = await Promise.all([
+  const [
+    subsRes,
+    delivRes,
+    lastWebRes,
+    lastNativeRes,
+    profilesRes,
+    optOutRes,
+  ] = await Promise.all([
     admin
       .from("push_notifications")
-      .select("platform, active, created_at, updated_at")
+      .select("user_id, platform, active, created_at, updated_at")
       .limit(5000),
     admin
       .from("notification_deliveries")
       .select(
-        "id, created_at, channel, status, error, opened_at, notification_queue(audience, category)",
+        "id, user_id, created_at, channel, status, error, opened_at, notification_queue(audience, category)",
       )
       .gte("created_at", since)
       .order("created_at", { ascending: false })
@@ -92,17 +121,43 @@ export async function collectPushDiagnostics(
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
+    admin.from("profiles").select("id").limit(20000),
+    admin
+      .from("user_preferences")
+      .select("user_id")
+      .eq("notifications_enabled", false)
+      .limit(20000),
   ]);
 
   if (subsRes.error) throw subsRes.error;
   if (delivRes.error) throw delivRes.error;
+  if (profilesRes.error) throw profilesRes.error;
+  if (optOutRes.error) throw optOutRes.error;
 
   const buckets = new Map<string, SubscriptionBucket>();
   const totals = { web: 0, native: 0, inactive: 0 };
+  const deviceByUser = new Map<
+    string,
+    { web: boolean; native: boolean; inactiveOnly: boolean }
+  >();
 
   for (const row of subsRes.data ?? []) {
     const platform = row.platform ?? "web";
     const channel = channelFor(platform);
+    const userId = (row as { user_id: string | null }).user_id;
+    if (userId) {
+      const entry = deviceByUser.get(userId) ?? {
+        web: false,
+        native: false,
+        inactiveOnly: true,
+      };
+      if (row.active) {
+        entry.inactiveOnly = false;
+        if (channel === "web") entry.web = true;
+        else entry.native = true;
+      }
+      deviceByUser.set(userId, entry);
+    }
     const bucket = buckets.get(platform) ?? {
       platform,
       channel,
