@@ -137,11 +137,14 @@ for (const file of files) {
 
   // Data-mutating statements outside of function bodies.
   const lines = raw.split("\n");
-  let depth = 0;
+  // Track dollar-quoted bodies, including named tags such as $function$.
+  let openTag = null;
   lines.forEach((line, i) => {
-    const dollars = (line.match(/\$\$/g) || []).length;
-    const inBody = depth % 2 === 1;
-    depth += dollars;
+    const inBody = openTag !== null;
+    for (const m of line.match(/\$[a-zA-Z_][a-zA-Z0-9_]*\$|\$\$/g) || []) {
+      if (openTag === null) openTag = m;
+      else if (openTag === m) openTag = null;
+    }
     if (inBody) return; // inside a function/DO body — runtime logic, not a migration-time backfill
     if (!dmlRe.test(line)) return;
     if ((lines[i - 1] || "").includes("idempotency-check: allow-dml")) return;
