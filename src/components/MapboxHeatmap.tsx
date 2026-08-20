@@ -873,6 +873,75 @@ export const MapboxHeatmap = ({
   // City selector search query
   const [citySearchQuery, setCitySearchQuery] = useState("");
 
+  /**
+   * Automatic city re-detection while the app is open.
+   *
+   * Only runs while the user is in "current location" mode — a manual city
+   * selection is never overridden. A new fix must be at least
+   * RE_DETECT_MIN_METERS away from the last one we acted on before we
+   * re-resolve the nearest city, so GPS jitter can't thrash the selector.
+   */
+  const lastWatchFixRef = useRef<{ lat: number; lng: number } | null>(null);
+  useEffect(() => {
+    if (!isUsingCurrentLocation) {
+      lastWatchFixRef.current = null;
+      return;
+    }
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+
+    const RE_DETECT_MIN_METERS = 2000;
+    const distanceMeters = (
+      a: { lat: number; lng: number },
+      b: { lat: number; lng: number },
+    ) => {
+      const R = 6371000;
+      const toRad = (v: number) => (v * Math.PI) / 180;
+      const dLat = toRad(b.lat - a.lat);
+      const dLng = toRad(b.lng - a.lng);
+      const h =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+      return 2 * R * Math.asin(Math.sqrt(h));
+    };
+
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        // Guard again at fire time: the user may have picked a city manually
+        // between the subscription and this callback.
+        if (!isUsingCurrentLocationRef.current) return;
+        const { latitude, longitude, accuracy } = pos.coords;
+        if (typeof accuracy === "number" && accuracy > 5000) return;
+        const next = { lat: latitude, lng: longitude };
+        const prev = lastWatchFixRef.current;
+        if (prev && distanceMeters(prev, next) < RE_DETECT_MIN_METERS) return;
+        lastWatchFixRef.current = next;
+
+        const nearest = getNearestCity(latitude, longitude);
+        setUserLocation(next);
+        if (nearest.id !== selectedCityRef.current.id) {
+          setDetectedCity(nearest);
+          setDetectedLocationName(`${nearest.name}, ${nearest.state}`);
+          onCityChangeRef.current(nearest);
+        } else {
+          setDetectedCity(nearest);
+        }
+        applyGeolocationRef.current?.({ latitude, longitude });
+      },
+      (err) => {
+        console.warn("MapboxHeatmap: location watch failed", err?.message);
+      },
+      { enableHighAccuracy: false, timeout: 20000, maximumAge: 30000 },
+    );
+
+    return () => {
+      try {
+        navigator.geolocation.clearWatch(watchId);
+      } catch {
+        /* ignore */
+      }
+    };
+  }, [isUsingCurrentLocation]);
+
   // Notify parent when detected location name changes
   useEffect(() => {
     if (onDetectedLocationNameChange) {
