@@ -2940,11 +2940,17 @@ export const MapboxHeatmap = ({
     };
 
     // Use requestAnimationFrame for smoother updates
+    const passId = ++markerPassRef.current;
     requestAnimationFrame(() => {
-      // Clear existing markers
-      markersRef.current.forEach((marker) => marker.remove());
-      markersRef.current = [];
+      // Superseded by a newer pass (e.g. rapid city switching) — bail out so we
+      // never append a second set of markers on top of the current field.
+      if (passId !== markerPassRef.current) return;
+      if (!map.current) return;
 
+      // Markers are reconciled against this index: reused when the key matches,
+      // created when new, and removed at the end when no longer present.
+      const prevIndex = markerIndexRef.current;
+      const nextIndex = new Map<string, MapboxGL.Marker>();
       // Get current zoom level for dynamic sizing
       const currentZoom = mapInstance.getZoom();
 
