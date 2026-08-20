@@ -52,7 +52,8 @@ export function ShareDeepLinkButton({
         trackDeepLinkShared(kind, targetId, surface, "native");
         return;
       }
-      await navigator.clipboard.writeText(url);
+      const copied = await copyTextToClipboard(url);
+      if (!copied) throw new Error("clipboard-unavailable");
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       trackDeepLinkShared(kind, targetId, surface, "clipboard");
