@@ -63,15 +63,15 @@ const organizationJsonLd = JSON.stringify({
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "JET",
-  url: "https://www.jet-around.com/",
-  logo: "https://www.jet-around.com/pwa-512x512.png",
+  url: "https://jet-around.com/",
+  logo: "https://jet-around.com/pwa-512x512.png",
   sameAs: ["https://twitter.com/JETaround"],
 });
 const websiteJsonLd = JSON.stringify({
   "@context": "https://schema.org",
   "@type": "WebSite",
   name: "JET",
-  url: "https://www.jet-around.com/",
+  url: "https://jet-around.com/",
 });
 
 // Sitewide fallbacks only — every content route sets its own title,

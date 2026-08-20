@@ -20,11 +20,11 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
       {
         property: "og:image",
-        content: "https://www.jet-around.com/pwa-512x512.png",
+        content: "https://jet-around.com/pwa-512x512.png",
       },
       {
         name: "twitter:image",
-        content: "https://www.jet-around.com/pwa-512x512.png",
+        content: "https://jet-around.com/pwa-512x512.png",
       },
     ],
     links: [{ rel: "canonical", href: URL }],
