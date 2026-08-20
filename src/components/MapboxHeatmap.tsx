@@ -2646,16 +2646,8 @@ export const MapboxHeatmap = ({
       cleanupMap();
     };
   }, [mapboxToken, mapboxLoaded, retryCount]);
-  useEffect(() => {
-    if (!map.current || !mapLoaded) return;
-
-    map.current.flyTo({
-      center: [selectedCity.lng, selectedCity.lat],
-      zoom: selectedCity.zoom,
-      duration: 2000,
-      essential: true,
-    });
-  }, [selectedCity, mapLoaded]);
+  // NOTE: the city fly-to lives in a single effect further below so the camera
+  // isn't animated twice (which stranded markers at an intermediate zoom).
 
   // Handle map style changes
   useEffect(() => {
