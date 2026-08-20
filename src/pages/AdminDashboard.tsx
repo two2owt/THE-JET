@@ -68,6 +68,11 @@ const DeviceTokenPanel = lazy(() =>
     default: m.DeviceTokenPanel,
   })),
 );
+const PushDiagnosticsPanel = lazy(() =>
+  import("@/components/admin/PushDiagnosticsPanel").then((m) => ({
+    default: m.PushDiagnosticsPanel,
+  })),
+);
 const ManualDealSyncPanel = lazy(() =>
   import("@/components/admin/ManualDealSyncPanel").then((m) => ({
     default: m.ManualDealSyncPanel,
@@ -490,6 +495,9 @@ export default function AdminDashboard() {
                   </Suspense>
                   <Suspense fallback={<AdminTabFallback />}>
                     <TestPushPanel />
+                  </Suspense>
+                  <Suspense fallback={<AdminTabFallback />}>
+                    <PushDiagnosticsPanel />
                   </Suspense>
                   <Suspense fallback={<AdminTabFallback />}>
                     <DeviceTokenPanel />
