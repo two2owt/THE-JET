@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { logPushAudit } from "@/lib/push-audit";
 
 /**
  * Keeps the browser's web-push subscription linked to the *currently signed-in*
@@ -40,7 +41,11 @@ async function getVapidPublicKey(): Promise<string> {
   }
 }
 
-async function deactivateLocalSubscription(userId: string): Promise<void> {
+async function deactivateLocalSubscription(
+  userId: string,
+  reason: string,
+  action: "device_disabled" | "permission_revoked" = "device_disabled",
+): Promise<void> {
   try {
     const registration =
       await navigator.serviceWorker.getRegistration(PUSH_SW_SCOPE);
@@ -53,6 +58,7 @@ async function deactivateLocalSubscription(userId: string): Promise<void> {
         .update({ active: false })
         .eq("user_id", userId)
         .eq("endpoint", endpoint);
+      await logPushAudit(userId, action, reason, { endpoint, dedupe: true });
     } else {
       // No live browser subscription, but stale rows may still be active.
       await supabase
@@ -60,6 +66,7 @@ async function deactivateLocalSubscription(userId: string): Promise<void> {
         .update({ active: false })
         .eq("user_id", userId)
         .eq("platform", "web");
+      await logPushAudit(userId, action, reason, { dedupe: true });
     }
     try {
       localStorage.removeItem("jet:web-push-endpoint");
@@ -96,7 +103,11 @@ export async function applyPushPreference(): Promise<void> {
   // Browser-level permission was revoked (OS/site settings) since last run:
   // reconcile the server rows so dispatch stops targeting a dead device.
   if (Notification.permission !== "granted") {
-    await deactivateLocalSubscription(user.id);
+    await deactivateLocalSubscription(
+      user.id,
+      "reconcile.permission",
+      "permission_revoked",
+    );
     return;
   }
 
@@ -115,7 +126,7 @@ export async function applyPushPreference(): Promise<void> {
   const consentGranted = consentRows?.[0]?.granted === true;
   const hasConsentRecord = (consentRows?.length ?? 0) > 0;
   if (hasConsentRecord && !consentGranted) {
-    await deactivateLocalSubscription(user.id);
+    await deactivateLocalSubscription(user.id, "reconcile.consent_revoked");
     return;
   }
 
@@ -125,7 +136,7 @@ export async function applyPushPreference(): Promise<void> {
     .eq("user_id", user.id)
     .maybeSingle();
   if (prefRow?.notifications_enabled === false) {
-    await deactivateLocalSubscription(user.id);
+    await deactivateLocalSubscription(user.id, "reconcile.preference_off");
     return;
   }
 
@@ -168,6 +179,10 @@ export async function applyPushPreference(): Promise<void> {
     });
     if (error) console.warn("[push] subscription sync failed", error);
     if (!error) {
+      await logPushAudit(user.id, "device_enabled", "reconcile.preference_on", {
+        endpoint,
+        dedupe: true,
+      });
       try {
         localStorage.setItem("jet:web-push-endpoint", endpoint);
       } catch {

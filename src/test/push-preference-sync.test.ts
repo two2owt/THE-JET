@@ -8,6 +8,7 @@ const state = {
   pref: { notifications_enabled: true } as { notifications_enabled: boolean | null } | null,
   updates: [] as UpdateCall[],
   rpc: vi.fn(async () => ({ error: null })),
+  audit: [] as Array<Record<string, unknown>>,
 };
 
 function selectBuilder(rows: unknown) {
@@ -45,6 +46,10 @@ vi.mock("@/integrations/supabase/client", () => ({
       select: () =>
         selectBuilder(table === "user_consents" ? state.consent : state.pref),
       update: (payload: Record<string, unknown>) => updateBuilder(table, payload),
+      insert: async (payload: Record<string, unknown>) => {
+        state.audit.push({ table, ...payload });
+        return { error: null };
+      },
     }),
   },
 }));
@@ -90,7 +95,9 @@ describe("push preference reconciliation (sign-in re-check flow)", () => {
     state.consent = [{ granted: true }];
     state.pref = { notifications_enabled: true };
     state.updates = [];
+    state.audit = [];
     state.rpc.mockClear();
+    localStorage.clear();
     pushManager.getSubscription.mockClear();
     pushManager.subscribe.mockClear();
     subscription.unsubscribe.mockClear();
@@ -108,6 +115,12 @@ describe("push preference reconciliation (sign-in re-check flow)", () => {
         _platform: "web",
       }),
     );
+    expect(state.audit).toContainEqual(
+      expect.objectContaining({
+        table: "push_notification_audit",
+        action: "device_enabled",
+      }),
+    );
   });
 
   it("does not subscribe and deactivates the device when consent is revoked", async () => {
@@ -117,6 +130,9 @@ describe("push preference reconciliation (sign-in re-check flow)", () => {
 
     expect(state.rpc).not.toHaveBeenCalled();
     expect(subscription.unsubscribe).toHaveBeenCalled();
+    expect(state.audit).toContainEqual(
+      expect.objectContaining({ action: "device_disabled" }),
+    );
     expect(state.updates.some((u) => u.table === "push_notifications" && u.payload.active === false)).toBe(true);
   });
 
@@ -136,6 +152,9 @@ describe("push preference reconciliation (sign-in re-check flow)", () => {
 
     expect(state.rpc).not.toHaveBeenCalled();
     expect(state.updates.some((u) => u.payload.active === false)).toBe(true);
+    expect(state.audit).toContainEqual(
+      expect.objectContaining({ action: "permission_revoked" }),
+    );
   });
 
   it("retires rotated endpoints for the same user while claiming the live one", async () => {

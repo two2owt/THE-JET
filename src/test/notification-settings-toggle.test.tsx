@@ -8,6 +8,8 @@ const state = {
   pref: { notifications_enabled: true } as { notifications_enabled: boolean },
   consent: [{ granted: true }] as Array<{ granted: boolean }>,
   upserts: [] as Upsert[],
+  audit: [] as Array<Record<string, unknown>>,
+  auditRows: [] as Array<Record<string, unknown>>,
 };
 
 const { setConsent, applyPushPreference, webSubscribe, webUnsubscribe } = vi.hoisted(() => ({
@@ -28,7 +30,18 @@ function selectBuilder(rows: unknown) {
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     from: (table: string) => ({
-      select: () => selectBuilder(table === "user_consents" ? state.consent : state.pref),
+      select: () =>
+        selectBuilder(
+          table === "user_consents"
+            ? state.consent
+            : table === "push_notification_audit"
+              ? state.auditRows
+              : state.pref,
+        ),
+      insert: async (payload: Record<string, unknown>) => {
+        state.audit.push(payload);
+        return { error: null };
+      },
       upsert: async (payload: Record<string, unknown>) => {
         state.upserts.push({ table, payload });
         return { error: null };
@@ -86,6 +99,8 @@ describe("notification settings toggle", () => {
     state.pref = { notifications_enabled: true };
     state.consent = [{ granted: true }];
     state.upserts = [];
+    state.audit = [];
+    state.auditRows = [];
     setConsent.mockClear();
     applyPushPreference.mockClear();
     webSubscribe.mockClear();
@@ -127,6 +142,11 @@ describe("notification settings toggle", () => {
     expect(webUnsubscribe).toHaveBeenCalled();
     expect(webSubscribe).not.toHaveBeenCalled();
     expect(applyPushPreference).toHaveBeenCalled();
+    await waitFor(() =>
+      expect(state.audit).toContainEqual(
+        expect.objectContaining({ action: "preference_disabled" }),
+      ),
+    );
   });
 
   it("turning it on persists the preference and subscribes the device", async () => {
@@ -149,5 +169,29 @@ describe("notification settings toggle", () => {
     expect(webSubscribe).toHaveBeenCalled();
     expect(webUnsubscribe).not.toHaveBeenCalled();
     expect(applyPushPreference).toHaveBeenCalled();
+    await waitFor(() =>
+      expect(state.audit).toContainEqual(
+        expect.objectContaining({
+          action: "preference_enabled",
+          source: "settings.notifications_page",
+        }),
+      ),
+    );
+  });
+
+  it("renders recorded audit history entries", async () => {
+    state.auditRows = [
+      {
+        id: "a1",
+        action: "preference_disabled",
+        source: "settings.notifications_page",
+        platform: "web",
+        endpoint_tail: "abc123",
+        detail: null,
+        created_at: new Date("2026-08-20T12:00:00Z").toISOString(),
+      },
+    ];
+    await renderPage();
+    expect(await screen.findByText(/Turned notifications off/i)).toBeInTheDocument();
   });
 });
