@@ -289,6 +289,14 @@ export const MapboxHeatmap = ({
   const [retryCount, setRetryCount] = useState(0);
   const userMarker = useRef<MapboxGL.Marker | null>(null);
   const markersRef = useRef<MapboxGL.Marker[]>([]);
+  // Keyed index of every live marker (venue pins + cluster bubbles) so marker
+  // passes reconcile instead of tearing down and rebuilding the whole field.
+  // Key encodes everything that affects a marker's appearance, so an unchanged
+  // marker is reused as-is (no flicker) and a changed one is swapped in place.
+  const markerIndexRef = useRef<Map<string, MapboxGL.Marker>>(new Map());
+  // Monotonic pass id — a late rAF from a superseded pass bails out instead of
+  // duplicating markers when cities switch quickly.
+  const markerPassRef = useRef(0);
   // Quantized zoom step used to re-run clustering (-1 = clustering disabled).
   const [clusterStep, setClusterStep] = useState(-1);
   const dealMarkersRef = useRef<MapboxGL.Marker[]>([]);
