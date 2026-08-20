@@ -9,6 +9,12 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, useSearchParams } from "@/lib/router-compat";
+import {
+  trackDeepLinkOpened,
+  trackDeepLinkFallback,
+  trackDeepLinkFailed,
+  inferDeepLinkSurface,
+} from "@/lib/deepLinkAnalytics";
 import { supabase } from "@/integrations/supabase/client";
 import { type Venue } from "@/types/venue";
 import { CITIES, type City } from "@/types/cities";
@@ -295,6 +301,12 @@ const Index = () => {
         ...match,
         imageUrl: getVenueImage(match.name) || match.imageUrl,
       });
+      trackDeepLinkOpened(
+        "venue",
+        decoded,
+        inferDeepLinkSurface(searchParams),
+        "loaded_venues",
+      );
       venueRestoredRef.current = true;
       return;
     }
@@ -315,6 +327,15 @@ const Index = () => {
       if (cancelled) return;
       if (data?.venue_id && data.venue_lat != null && data.venue_lng != null) {
         const name = data.venue_name || decoded;
+        const surface = inferDeepLinkSurface(searchParams);
+        trackDeepLinkOpened("venue", decoded, surface, "favorite_snapshot");
+        trackDeepLinkFallback(
+          "venue",
+          decoded,
+          surface,
+          "favorite_snapshot",
+          "venue_not_in_loaded_set",
+        );
         setSelectedVenue({
           id: data.venue_id,
           name,
@@ -340,6 +361,15 @@ const Index = () => {
       if (cancelled) return;
       if (dealVenue?.venue_id) {
         const name = dealVenue.venue_name || decoded;
+        const surface = inferDeepLinkSurface(searchParams);
+        trackDeepLinkOpened("venue", decoded, surface, "city_center_fallback");
+        trackDeepLinkFallback(
+          "venue",
+          decoded,
+          surface,
+          "city_center_fallback",
+          "resolved_from_deal_record",
+        );
         setSelectedVenue({
           id: dealVenue.venue_id,
           name,
@@ -358,6 +388,12 @@ const Index = () => {
       toast.error("Venue not found", {
         description: "That venue link is no longer available.",
       });
+      trackDeepLinkFailed(
+        "venue",
+        decoded,
+        inferDeepLinkSurface(searchParams),
+        "venue_not_found",
+      );
       const next = new URLSearchParams(searchParams);
       next.delete("venue");
       setSearchParams(next, { replace: true });
@@ -432,8 +468,25 @@ const Index = () => {
             existingVenue.imageUrl,
           address: dealData.venue_address || existingVenue.address,
         });
+        trackDeepLinkOpened(
+          "deal",
+          _dealId,
+          inferDeepLinkSurface(window.location.search),
+          "loaded_venues",
+        );
       } else {
         setSelectedVenue(venueFromDeal);
+        const surface = inferDeepLinkSurface(window.location.search);
+        trackDeepLinkOpened("deal", _dealId, surface, "city_center_fallback");
+        trackDeepLinkFallback(
+          "deal",
+          _dealId,
+          surface,
+          "city_center_fallback",
+          dealData.venue_id
+            ? "venue_not_in_loaded_set"
+            : "deal_missing_venue_id",
+        );
       }
 
       // Scroll to JetCard
@@ -470,6 +523,16 @@ const Index = () => {
             block: "start",
           });
         }, 300);
+      } else {
+        // The `?venue=` restore effect owns the async fallback chain; record
+        // that the in-memory lookup missed so fallbacks are measurable.
+        trackDeepLinkFallback(
+          "venue",
+          venueIdOrName,
+          inferDeepLinkSurface(window.location.search),
+          "favorite_snapshot",
+          "venue_not_in_loaded_set",
+        );
       }
     },
     [venues, getVenueImage],
