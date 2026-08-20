@@ -36,18 +36,19 @@ const sourceFiles = walk(SRC).filter((f) => !/[\\/]test[\\/]/.test(f));
 describe("realtime broadcast guard", () => {
   it("only broadcasts allow-listed ephemeral events", () => {
     const offenders: string[] = [];
+    // Matches `.on("broadcast", { event: "x" }` and `.send({ type: "broadcast", event: "x" ...`
+    const onBroadcast = /\.on\(\s*["'`]broadcast["'`]\s*,\s*\{[^}]*event:\s*["'`]([^"'`]+)["'`]/g;
+    const sendBroadcast =
+      /\.send\(\s*\{[\s\S]{0,400}?type:\s*["'`]broadcast["'`][\s\S]{0,400}?event:\s*["'`]([^"'`]+)["'`]/g;
 
     for (const file of sourceFiles) {
       const source = readFileSync(file, "utf8");
-      if (!source.includes('type: "broadcast"') && !source.includes("type: 'broadcast'")) {
-        continue;
-      }
-      const events = [...source.matchAll(/event:\s*["'`]([^"'`]+)["'`]/g)].map(
-        (m) => m[1],
-      );
-      for (const event of events) {
-        if (!ALLOWED_BROADCAST_EVENTS.includes(event)) {
-          offenders.push(`${file}: broadcast event "${event}"`);
+      for (const pattern of [onBroadcast, sendBroadcast]) {
+        pattern.lastIndex = 0;
+        for (const match of source.matchAll(pattern)) {
+          if (!ALLOWED_BROADCAST_EVENTS.includes(match[1])) {
+            offenders.push(`${file}: broadcast event "${match[1]}"`);
+          }
         }
       }
     }
