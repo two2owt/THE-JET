@@ -105,9 +105,11 @@ export async function applyPushPreference(): Promise<void> {
   } = await supabase.auth.getUser();
   if (!user) return;
 
-  // Browser-level permission was revoked (OS/site settings) since last run:
-  // reconcile the server rows so dispatch stops targeting a dead device.
-  if (Notification.permission !== "granted") {
+  // Only an explicit browser-level *block* retires this device. "default"
+  // means the user has never been asked here, and the account stays
+  // push-enabled by default — we simply can't register a token yet, so we
+  // leave every existing row alone and wait for the prompt or Settings.
+  if (Notification.permission === "denied") {
     await deactivateLocalSubscription(
       user.id,
       "reconcile.permission",
@@ -115,6 +117,7 @@ export async function applyPushPreference(): Promise<void> {
     );
     return;
   }
+  if (Notification.permission !== "granted") return;
 
   // Opt-out model: every signed-up user is a push recipient unless they
   // explicitly turned it off. A revoked `push_notifications` consent row or a
