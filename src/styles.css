@@ -2394,10 +2394,10 @@ All colors MUST be HSL.
     pointer-events: none;
   }
   .profile-tab-trigger[data-state="active"]::after {
-    width: 40%;
+    width: 100%;
   }
   @media (min-width: 640px) {
-    .profile-tab-trigger[data-state="active"]::after { width: 32%; }
+    .profile-tab-trigger[data-state="active"]::after { width: 100%; }
   }
   /* Icon inside the tab — picks up the trigger color */
   .profile-tab-trigger .profile-tab-icon {

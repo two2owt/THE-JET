@@ -363,17 +363,6 @@ export function ProfileSettingsPanel({
         <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
           <SectionTitle
             subtitle="Manage your JET subscription plan"
-            meta={
-              isAdmin && !isMonetizationEnabled() ? (
-                <Badge
-                  variant="outline"
-                  className="flex items-center gap-1 text-xs border-primary/50 text-primary shrink-0"
-                >
-                  <ShieldCheck className="w-3 h-3" />
-                  Admin Only
-                </Badge>
-              ) : undefined
-            }
             className="mb-0"
           >
             <span className="inline-flex items-center gap-2">
