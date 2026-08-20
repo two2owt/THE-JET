@@ -5118,13 +5118,18 @@ export const MapboxHeatmap = ({
                 >
                   <SheetContent
                     side="bottom"
-                    className="p-0 rounded-t-2xl border-t bg-card/95 backdrop-blur-xl"
+                    overlayClassName="bg-background/25 backdrop-blur-[2px]"
+                    className="p-0 rounded-t-2xl border-t bg-card/85 backdrop-blur-xl shadow-2xl"
                     style={{
-                      maxHeight: "85dvh",
+                      maxHeight: "min(52dvh, 420px)",
                       paddingBottom: "env(safe-area-inset-bottom)",
                     }}
                   >
-                    <SheetHeader className="px-4 pt-3 pb-2">
+                    <div
+                      aria-hidden
+                      className="mx-auto mt-2 h-1 w-10 rounded-full bg-muted-foreground/40"
+                    />
+                    <SheetHeader className="px-4 pt-2 pb-1.5">
                       <SheetTitle className="font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground text-left">
                         Map Layers
                       </SheetTitle>
@@ -5132,13 +5137,14 @@ export const MapboxHeatmap = ({
                     <div
                       style={{
                         padding:
-                          "clamp(4px, 1.2vw, 6px) clamp(12px, 3.6vw, 16px) clamp(14px, 3.6vw, 20px)",
+                          "clamp(2px, 1vw, 5px) clamp(10px, 3.2vw, 14px) clamp(12px, 3.2vw, 16px)",
                         display: "flex",
                         flexDirection: "column",
-                        gap: "clamp(8px, 2.2vw, 12px)",
+                        gap: "clamp(6px, 1.8vw, 9px)",
                         overflowY: "auto",
+                        WebkitOverflowScrolling: "touch",
                         maxHeight:
-                          "calc(85dvh - 56px - env(safe-area-inset-bottom))",
+                          "calc(min(52dvh, 420px) - 62px - env(safe-area-inset-bottom))",
                         overscrollBehavior: "contain",
                       }}
                     >
