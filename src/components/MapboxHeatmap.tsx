@@ -2646,16 +2646,8 @@ export const MapboxHeatmap = ({
       cleanupMap();
     };
   }, [mapboxToken, mapboxLoaded, retryCount]);
-  useEffect(() => {
-    if (!map.current || !mapLoaded) return;
-
-    map.current.flyTo({
-      center: [selectedCity.lng, selectedCity.lat],
-      zoom: selectedCity.zoom,
-      duration: 2000,
-      essential: true,
-    });
-  }, [selectedCity, mapLoaded]);
+  // NOTE: the city fly-to lives in a single effect further below so the camera
+  // isn't animated twice (which stranded markers at an intermediate zoom).
 
   // Handle map style changes
   useEffect(() => {
@@ -3777,19 +3769,24 @@ export const MapboxHeatmap = ({
 
     mapInstance.on("zoom", handleZoom);
     mapInstance.on("zoomend", handleZoomEnd);
+    // moveend also fires at the end of a city fly-to, where the zoom may not
+    // change but the marker field must be rebuilt for the new viewport.
+    mapInstance.on("moveend", handleZoomEnd);
     handleZoomEnd();
 
     return () => {
       mapInstance.off("zoom", handleZoom);
       mapInstance.off("zoomend", handleZoomEnd);
+      mapInstance.off("moveend", handleZoomEnd);
     };
   }, [mapLoaded, venues]);
 
   // Update map view when selected city changes
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
+    const mapInstance = map.current;
 
-    map.current.flyTo({
+    mapInstance.flyTo({
       center: [selectedCity.lng, selectedCity.lat],
       zoom: selectedCity.zoom,
       pitch: isMobile ? 30 : 50,
@@ -3797,10 +3794,23 @@ export const MapboxHeatmap = ({
       essential: true,
     });
 
-    // Update markers after city change animation completes
-    setTimeout(() => {
+    // Rebuild markers when the camera actually settles on the new city, so
+    // clustering is computed at the final zoom instead of a mid-flight one.
+    // A timeout fallback covers interrupted/instant camera moves.
+    let done = false;
+    const rebuild = () => {
+      if (done) return;
+      done = true;
       updateMarkers();
-    }, 2100);
+    };
+    mapInstance.once("moveend", rebuild);
+    const fallback = window.setTimeout(rebuild, 2400);
+
+    return () => {
+      done = true;
+      window.clearTimeout(fallback);
+      mapInstance.off("moveend", rebuild);
+    };
   }, [selectedCity, mapLoaded, isMobile]);
 
   // Deal markers removed - no longer displaying colored circles on map
