@@ -86,9 +86,27 @@ export const SubscriptionPlans = () => {
   };
 
   if (loading) {
+    // Skeleton mirrors the final 3-card grid so the card doesn't jump height.
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="space-y-6" aria-busy="true" aria-label="Loading plans">
+        <div className="grid gap-4 md:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="rounded-xl border-hairline bg-card/40 p-5 animate-pulse flex flex-col gap-4 min-h-[280px]"
+            >
+              <div className="h-10 w-10 rounded-full bg-muted/40" />
+              <div className="h-5 w-24 rounded bg-muted/40" />
+              <div className="h-3 w-32 rounded bg-muted/30" />
+              <div className="flex-1 space-y-2 pt-2">
+                <div className="h-3 w-full rounded bg-muted/25" />
+                <div className="h-3 w-5/6 rounded bg-muted/25" />
+                <div className="h-3 w-4/6 rounded bg-muted/25" />
+              </div>
+              <div className="h-10 w-full rounded-full bg-muted/30" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
