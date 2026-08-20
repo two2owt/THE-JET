@@ -36,9 +36,9 @@ d("email queue functions", () => {
   afterAll(async () => {
     // Drain anything the test left behind so no probe message can be picked up.
     for (const q of [queue, dlq]) {
-      const { data } = await admin.rpc("read_email_batch", { queue_name: q, batch_size: 50, vt: 1 });
+      const { data } = await admin().rpc("read_email_batch", { queue_name: q, batch_size: 50, vt: 1 });
       for (const msg of data ?? []) {
-        await admin.rpc("delete_email", { queue_name: q, message_id: msg.msg_id });
+        await admin().rpc("delete_email", { queue_name: q, message_id: msg.msg_id });
       }
     }
   });
@@ -69,17 +69,17 @@ d("email queue functions", () => {
   it("round-trips enqueue -> read -> move_to_dlq -> delete", async () => {
     const payload = { probe: true, message_id: `probe-${randomUUID()}` };
 
-    const enqueued = await admin.rpc("enqueue_email", { queue_name: queue, payload });
+    const enqueued = await admin().rpc("enqueue_email", { queue_name: queue, payload });
     expect(enqueued.error).toBeNull();
     expect(typeof enqueued.data).toBe("number");
 
-    const read = await admin.rpc("read_email_batch", { queue_name: queue, batch_size: 5, vt: 10 });
+    const read = await admin().rpc("read_email_batch", { queue_name: queue, batch_size: 5, vt: 10 });
     expect(read.error).toBeNull();
     const message = (read.data ?? []).find((m: any) => m.msg_id === enqueued.data);
     expect(message).toBeDefined();
     expect(message.message.message_id).toBe(payload.message_id);
 
-    const moved = await admin.rpc("move_to_dlq", {
+    const moved = await admin().rpc("move_to_dlq", {
       source_queue: queue,
       dlq_name: dlq,
       message_id: enqueued.data,
@@ -89,31 +89,31 @@ d("email queue functions", () => {
     expect(typeof moved.data).toBe("number");
 
     // Source queue no longer holds the message.
-    const afterMove = await admin.rpc("read_email_batch", { queue_name: queue, batch_size: 5, vt: 1 });
+    const afterMove = await admin().rpc("read_email_batch", { queue_name: queue, batch_size: 5, vt: 1 });
     expect((afterMove.data ?? []).some((m: any) => m.msg_id === enqueued.data)).toBe(false);
 
-    const deleted = await admin.rpc("delete_email", { queue_name: dlq, message_id: moved.data });
+    const deleted = await admin().rpc("delete_email", { queue_name: dlq, message_id: moved.data });
     expect(deleted.error).toBeNull();
     expect(deleted.data).toBe(true);
 
-    const afterDelete = await admin.rpc("read_email_batch", { queue_name: dlq, batch_size: 5, vt: 1 });
+    const afterDelete = await admin().rpc("read_email_batch", { queue_name: dlq, batch_size: 5, vt: 1 });
     expect((afterDelete.data ?? []).some((m: any) => m.msg_id === moved.data)).toBe(false);
   });
 
   it("auto-creates a missing queue instead of erroring", async () => {
     const fresh = `probe_${randomUUID().replace(/-/g, "").slice(0, 12)}`;
-    const read = await admin.rpc("read_email_batch", { queue_name: fresh, batch_size: 5, vt: 1 });
+    const read = await admin().rpc("read_email_batch", { queue_name: fresh, batch_size: 5, vt: 1 });
     expect(read.error).toBeNull();
     expect(read.data ?? []).toHaveLength(0);
 
-    const enqueued = await admin.rpc("enqueue_email", { queue_name: fresh, payload: { probe: true } });
+    const enqueued = await admin().rpc("enqueue_email", { queue_name: fresh, payload: { probe: true } });
     expect(enqueued.error).toBeNull();
-    const deleted = await admin.rpc("delete_email", { queue_name: fresh, message_id: enqueued.data });
+    const deleted = await admin().rpc("delete_email", { queue_name: fresh, message_id: enqueued.data });
     expect(deleted.data).toBe(true);
   });
 
   it("delete_email returns false for an unknown queue", async () => {
-    const missing = await admin.rpc("delete_email", {
+    const missing = await admin().rpc("delete_email", {
       queue_name: `probe_absent_${randomUUID().replace(/-/g, "").slice(0, 8)}`,
       message_id: 1,
     });
