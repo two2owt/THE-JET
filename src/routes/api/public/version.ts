@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+declare const __APP_BUILD_ID__: string;
+
 /**
  * Public build-provenance endpoint.
  *
@@ -18,6 +20,10 @@ export const Route = createFileRoute("/api/public/version")({
 
         return Response.json(
           {
+            // Changes on every deployment; clients poll this to auto-reload.
+            buildId:
+              sha ??
+              (typeof __APP_BUILD_ID__ === "string" ? __APP_BUILD_ID__ : null),
             repo: owner && repo ? `${owner}/${repo}` : repo,
             repoOwner: owner,
             repoName: repo,
@@ -39,7 +45,7 @@ export const Route = createFileRoute("/api/public/version")({
           },
           {
             headers: {
-              "cache-control": "public, max-age=0, must-revalidate",
+              "cache-control": "no-store",
             },
           },
         );

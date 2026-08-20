@@ -24,6 +24,7 @@ import { usePendingDeepLink } from "@/hooks/usePendingDeepLink";
 import { useForegroundPushMessages } from "@/hooks/useForegroundPushMessages";
 import { usePushSubscriptionSync } from "@/hooks/usePushSubscriptionSync";
 import { useViewportReflow } from "@/hooks/useViewportReflow";
+import { useAutoReloadOnUpdate } from "@/hooks/useAutoReloadOnUpdate";
 import { reportLovableError } from "@/lib/lovable-error-reporting";
 import appCss from "../styles.css?url";
 
@@ -220,6 +221,7 @@ const PageTracker = memo(function PageTracker() {
 
 function AppLayout() {
   useNativeDeepLinking();
+  useAutoReloadOnUpdate();
   usePushNotifications();
   usePendingDeepLink();
   useForegroundPushMessages();

@@ -11,6 +11,15 @@ import { loadEnv } from "vite";
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
+// Stable id for this build: the deployment commit when available, otherwise a
+// build timestamp. Client and server bundles are built together, so both get
+// the same value — the client compares it against /api/public/version to know
+// when a newer version has shipped.
+const buildId =
+  process.env["VERCEL_GIT_COMMIT_SHA"] ??
+  process.env["LOVABLE_BUILD_ID"] ??
+  Date.now().toString(36);
+
 // Server routes (email queue/webhook) need non-VITE_ env vars at runtime.
 // These are only assigned to process.env — never exposed to the client bundle.
 Object.assign(process.env, loadEnv(process.env.NODE_ENV ?? "development", rootDir, ""));
@@ -22,6 +31,9 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
+    define: {
+      __APP_BUILD_ID__: JSON.stringify(buildId),
+    },
     resolve: {
       alias: {
         "entities/lib/decode.js": path.resolve(rootDir, "node_modules/entities/lib/decode.js"),
