@@ -81,33 +81,30 @@ test("zooming out collapses markers into clusters and back", async ({
   await page.waitForSelector(VENUE, { timeout: 60_000 });
   await waitForStableMarkers(page);
 
-  // Wheel-zoom over the map centre: clicking the canvas is unreliable because
-  // floating map controls sit above it and intercept pointer events.
-  const box = await page.locator(".mapboxgl-canvas").first().boundingBox();
-  const cx = (box?.x ?? 0) + (box?.width ?? 800) / 2;
-  const cy = (box?.y ?? 0) + (box?.height ?? 600) / 2;
-  await page.mouse.move(cx, cy);
-  for (let i = 0; i < 10; i++) {
-    await page.mouse.wheel(0, 400);
-    await page.waitForTimeout(400);
+  // Use the Mapbox NavigationControl buttons: each click is a deterministic
+  // one-zoom-level step, unlike wheel deltas.
+  const zoomOut = page.locator(".mapboxgl-ctrl-zoom-out").first();
+  const zoomIn = page.locator(".mapboxgl-ctrl-zoom-in").first();
+
+  for (let i = 0; i < 6; i++) {
+    await zoomOut.click({ force: true });
+    await page.waitForTimeout(500);
+    if ((await page.locator(CLUSTER).count()) > 0) break;
+  }
+  // Below CLUSTER_MAX_ZOOM (13) pins collapse into cluster bubbles.
+  expect(await page.locator(CLUSTER).count()).toBeGreaterThan(0);
+
+  for (let i = 0; i < 8; i++) {
+    await zoomIn.click({ force: true });
+    await page.waitForTimeout(500);
+    if ((await page.locator(CLUSTER).count()) === 0) break;
   }
 
+  // Clusters are reconciled away and individual pins render again.
   await expect
     .poll(async () => page.locator(CLUSTER).count(), { timeout: 30_000 })
-    .toBeGreaterThan(0);
-
-  // Zoom back past CLUSTER_MAX_ZOOM; wheel-in steps are smaller than
-  // wheel-out steps in Mapbox, so use more of them.
-  for (let i = 0; i < 24; i++) {
-    await page.mouse.wheel(0, -400);
-    await page.waitForTimeout(250);
-  }
-
-  // Individual pins come back and the cluster bubbles are reconciled away.
-  await expect
-    .poll(async () => page.locator(VENUE).count(), { timeout: 45_000 })
-    .toBeGreaterThan(0);
-  await expect
-    .poll(async () => page.locator(CLUSTER).count(), { timeout: 45_000 })
     .toBe(0);
+  const ids = await waitForStableMarkers(page);
+  expect(ids.length).toBeGreaterThan(0);
+  expect(new Set(ids).size).toBe(ids.length);
 });
