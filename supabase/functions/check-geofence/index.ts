@@ -12,6 +12,7 @@ class HttpError extends Error {
   constructor(
     message: string,
     readonly status: number,
+    readonly detail?: string,
   ) {
     super(message);
   }
@@ -22,6 +23,17 @@ const jsonResponse = (body: unknown, status = 200) =>
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
+
+/** Consistent client-usable error payload. Never leaks "Internal server error" as the user-facing message. */
+const errorResponse = (
+  message: string,
+  status: number,
+  detail?: string,
+) =>
+  jsonResponse(
+    { success: false, error: message, ...(detail ? { detail } : {}) },
+    status,
+  );
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -76,14 +88,9 @@ Deno.serve(async (req) => {
       latitude > 90
     ) {
       console.error("Invalid latitude:", latitude);
-      return new Response(
-        JSON.stringify({
-          error: "Invalid latitude. Must be a number between -90 and 90.",
-        }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
+      return errorResponse(
+        "Invalid latitude. Must be a number between -90 and 90.",
+        400,
       );
     }
 
@@ -94,14 +101,9 @@ Deno.serve(async (req) => {
       longitude > 180
     ) {
       console.error("Invalid longitude:", longitude);
-      return new Response(
-        JSON.stringify({
-          error: "Invalid longitude. Must be a number between -180 and 180.",
-        }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
+      return errorResponse(
+        "Invalid longitude. Must be a number between -180 and 180.",
+        400,
       );
     }
 
@@ -113,15 +115,9 @@ Deno.serve(async (req) => {
         accuracy > 100000
       ) {
         console.error("Invalid accuracy:", accuracy);
-        return new Response(
-          JSON.stringify({
-            error:
-              "Invalid accuracy. Must be a positive number up to 100000 meters.",
-          }),
-          {
-            status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          },
+        return errorResponse(
+          "Invalid accuracy. Must be a positive number up to 100000 meters.",
+          400,
         );
       }
     }
@@ -276,14 +272,11 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error("Error in check-geofence:", error);
     if (error instanceof HttpError) {
-      return jsonResponse({ error: error.message }, error.status);
+      return errorResponse(error.message, error.status, error.detail);
     }
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error occurred";
-    return jsonResponse(
-      { error: "Internal server error", detail: errorMessage },
-      500,
-    );
+    return errorResponse("Internal server error", 500, errorMessage);
   }
 });
 
