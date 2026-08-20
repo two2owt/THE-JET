@@ -11,6 +11,7 @@ import {
 } from "@/lib/deepLinkAnalytics";
 import type { Venue } from "@/types/venue";
 import type { City } from "@/types/cities";
+import type { NavTab } from "@/hooks/useBottomNavigation";
 
 interface UseVenueDeepLinksOptions {
   /** Venues currently loaded for the active city. */
@@ -19,7 +20,7 @@ interface UseVenueDeepLinksOptions {
   /** Used as the coordinate fallback when a venue isn't in the loaded set. */
   selectedCity: City;
   getVenueImage: (name: string) => string | undefined;
-  setActiveTab: (tab: string) => void;
+  setActiveTab: (tab: NavTab) => void;
   /** JetCard container, scrolled into view once a deep link resolves. */
   jetCardRef: RefObject<HTMLDivElement | null>;
 }
