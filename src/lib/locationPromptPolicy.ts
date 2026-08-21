@@ -21,6 +21,8 @@ const LAST_PROMPT_AT_KEY = "location-permission-prompt-last-at";
 const LAST_SESSION_KEY = "location-permission-prompt-last-session";
 /** Legacy one-and-done flag; only honoured when the Permissions API is absent. */
 export const ASKED_KEY = "location-permission-prompt-asked";
+/** Sticky latch: platform permission was granted at some point — stop asking. */
+export const GRANTED_KEY = "location-permission-granted";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -98,6 +100,11 @@ export const shouldPromptForLocation = (opts: {
   now?: number;
 }): PromptDecision => {
   const now = opts.now ?? Date.now();
+
+  // The user already allowed location on this device — never ask again, even
+  // on a brand new sign-in. Re-grants/revokes come from the browser/OS.
+  if (read(GRANTED_KEY)) return { show: false, reason: "already granted" };
+
   const lastPromptAt = parseTs(read(LAST_PROMPT_AT_KEY));
 
   if (lastPromptAt !== null && now - lastPromptAt < MIN_REPROMPT_GAP_MS)
@@ -140,8 +147,12 @@ export const markLocationPromptDismissed = (signature: string) => {
 
 /** Call when permission ends up granted through any surface — stop asking. */
 export const markLocationPermissionResolved = (signature: string) => {
+  write(GRANTED_KEY, "1");
   remove(DISMISS_AT_KEY);
   remove(DISMISS_COUNT_KEY);
   write(LAST_SESSION_KEY, signature);
   write(ASKED_KEY, "1");
 };
+
+/** Clear the granted latch (permission revoked in browser/OS settings). */
+export const clearLocationPermissionGranted = () => remove(GRANTED_KEY);
