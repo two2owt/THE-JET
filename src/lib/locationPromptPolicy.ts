@@ -154,5 +154,11 @@ export const markLocationPermissionResolved = (signature: string) => {
   write(ASKED_KEY, "1");
 };
 
+/** Sync the granted latch with the live platform permission state. */
+export const setLocationPermissionGranted = (granted: boolean) => {
+  if (granted) write(GRANTED_KEY, "1");
+  else remove(GRANTED_KEY);
+};
+
 /** Clear the granted latch (permission revoked in browser/OS settings). */
 export const clearLocationPermissionGranted = () => remove(GRANTED_KEY);
