@@ -8,6 +8,7 @@ import {
   subscribeToPromptSuppression,
 } from "@/lib/geolocationPromptSuppression";
 import { logGeoPermissionEvent } from "@/lib/locationPermissionLog";
+import { setLocationPermissionGranted } from "@/lib/locationPromptPolicy";
 
 /** Non-standard Permissions API with one-tap request(), available in Chrome. */
 type PermissionsWithRequest = Permissions & {
@@ -39,6 +40,11 @@ export function useGeolocationPermission() {
     const prev = prevStateRef.current;
     prevStateRef.current = next;
     setRawState(next);
+    // Keep the "already allowed" latch in sync so the first-visit dialog never
+    // re-asks a user who has granted, and comes back if they revoke.
+    if (next === "granted") setLocationPermissionGranted(true);
+    else if (next === "denied" || next === "prompt")
+      setLocationPermissionGranted(false);
     if (next === "granted" || next === "denied") {
       // A real decision exists — prompting is no longer the blocker.
       clearPromptSuppression();

@@ -34,6 +34,8 @@ interface PushNotificationPromptProps {
 
 const DISMISS_KEY = "push-notification-prompt-dismissed";
 const DISMISS_DURATION = 14 * 24 * 60 * 60 * 1000; // 14 days
+/** Sticky latch: the user already allowed notifications on this device. */
+const GRANTED_KEY = "push-notification-permission-granted";
 
 /** iOS only delivers web push to apps installed to the Home Screen. */
 const isIOS = () =>
@@ -89,10 +91,23 @@ export const PushNotificationPrompt = ({
   const isBlocked = isNative
     ? nativePermission === "denied"
     : webPermission === "denied";
-  const alreadyOn = isNative ? isNativeRegistered : isWebSubscribed;
+  const permissionGranted = isNative
+    ? nativePermission === "granted"
+    : webPermission === "granted";
+  const alreadyOn =
+    permissionGranted || (isNative ? isNativeRegistered : isWebSubscribed);
+
+  // Remember the grant so a later session never re-asks, even before the
+  // permission state has resolved on that load.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (permissionGranted) localStorage.setItem(GRANTED_KEY, "1");
+  }, [permissionGranted]);
 
   useEffect(() => {
     if (!show || alreadyOn || !signedIn) return;
+    // Already allowed on this device at some point — never nag again.
+    if (localStorage.getItem(GRANTED_KEY)) return;
     // OS/browser-level block: nothing we can do in-app, so don't nag on load.
     if (isBlocked) return;
 
