@@ -122,6 +122,7 @@ import {
 } from "@/lib/mapScaleFactor";
 import { useOpenVenues } from "@/hooks/useOpenVenues";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { triggerHaptic } from "@/lib/haptics";
 import { buildVenueOpenStatus } from "@/lib/venue-open-cache";
 import { useOpenNowTick } from "@/hooks/useOpenNowTick";
@@ -1100,6 +1101,32 @@ export const MapboxHeatmap = ({
     window.addEventListener(GEO_GRANTED_EVENT, onGranted);
     return () => window.removeEventListener(GEO_GRANTED_EVENT, onGranted);
   }, [refreshCurrentLocation, scheduleDensityRefresh, schedulePathsRefresh]);
+
+  // Recenter on the user once per sign-in, but only when location is already
+  // allowed — the map stays freely browsable (and on whatever city is
+  // selected) for everyone else until they explicitly ask to be located.
+  const { session: authSession } = useAuth();
+  const signInKey = authSession?.user
+    ? `${authSession.user.id}:${authSession.user.last_sign_in_at ?? ""}`
+    : null;
+  const recenteredForSignInRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!signInKey || recenteredForSignInRef.current === signInKey) return;
+    if (typeof navigator === "undefined" || !navigator.permissions?.query)
+      return;
+    let cancelled = false;
+    navigator.permissions
+      .query({ name: "geolocation" as PermissionName })
+      .then((status) => {
+        if (cancelled || status.state !== "granted") return;
+        recenteredForSignInRef.current = signInKey;
+        refreshCurrentLocation();
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [signInKey, refreshCurrentLocation]);
 
   // Sync toggle-triggered loading states with hook loading so they stay visible
   // until the data fetch actually completes (including debounce / realtime).
