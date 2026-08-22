@@ -406,6 +406,8 @@ export const MapboxHeatmap = ({
     timelapseMode: "jet-map-timelapse-mode",
     timelapseSpeed: "jet-map-timelapse-speed",
     pathsWindow: "jet-map-paths-window",
+    heatWindow: "jet-map-heat-window",
+    heatIntensity: "jet-map-heat-intensity",
   } as const;
   const VALID_TIME_FILTERS = new Set<
     "all" | "today" | "this_week" | "this_hour"
@@ -603,6 +605,34 @@ export const MapboxHeatmap = ({
   const [pathsWindowMinutes, setPathsWindowMinutes] = useState<number | null>(
     () => getPersistedWindowMinutes(FILTER_KEYS.pathsWindow),
   );
+
+  // Heatmap time-range override (last N minutes). null → use the coarse
+  // time-range chips. Persisted so a tuned view survives a reload.
+  const [heatWindowMinutes, setHeatWindowMinutes] = useState<number | null>(
+    () => getPersistedWindowMinutes(FILTER_KEYS.heatWindow),
+  );
+  // Paint-only heat intensity multiplier (0.5 subtle → 2 punchy).
+  const [heatIntensity, setHeatIntensity] = useState<number>(() => {
+    try {
+      const raw = localStorage.getItem(FILTER_KEYS.heatIntensity);
+      const n = raw ? parseFloat(raw) : NaN;
+      if (Number.isFinite(n) && n >= 0.5 && n <= 2) return n;
+    } catch {
+      /* ignore */
+    }
+    return 1;
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem(FILTER_KEYS.heatIntensity, String(heatIntensity));
+      if (heatWindowMinutes === null)
+        localStorage.removeItem(FILTER_KEYS.heatWindow);
+      else
+        localStorage.setItem(FILTER_KEYS.heatWindow, String(heatWindowMinutes));
+    } catch {
+      /* ignore */
+    }
+  }, [heatIntensity, heatWindowMinutes, FILTER_KEYS]);
 
   // Sync active layer toggles and filter selections to URL query params for shareability
   const syncUrlParams = useCallback(() => {
@@ -1019,6 +1049,7 @@ export const MapboxHeatmap = ({
     timeFilter,
     hourOfDay: timelapseMode ? undefined : hourFilter,
     dayOfWeek: dayFilter,
+    windowMinutes: heatWindowMinutes ?? undefined,
   });
 
   const {
@@ -2897,6 +2928,7 @@ export const MapboxHeatmap = ({
       currentHour: timelapse.currentHour,
     },
     isLightBasemap: mapStyle === "light" || mapStyle === "streets",
+    intensityScale: heatIntensity,
   });
 
   // Movement paths + animated flow — extracted hook.
