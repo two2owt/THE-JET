@@ -98,16 +98,17 @@ export const PushNotificationPrompt = ({
     permissionGranted || (isNative ? isNativeRegistered : isWebSubscribed);
 
   // Remember the grant so a later session never re-asks, even before the
-  // permission state has resolved on that load.
+  // permission state has resolved on that load. If the user revokes the
+  // permission at browser/OS level the latch is dropped so priming can return.
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (permissionGranted) localStorage.setItem(GRANTED_KEY, "1");
-  }, [permissionGranted]);
+    syncPushGrantLatch(isNative ? nativePermission : webPermission);
+  }, [isNative, nativePermission, webPermission]);
 
   useEffect(() => {
     if (!show || alreadyOn || !signedIn) return;
     // Already allowed on this device at some point — never nag again.
-    if (localStorage.getItem(GRANTED_KEY)) return;
+    if (hasPushGrantLatch()) return;
     // OS/browser-level block: nothing we can do in-app, so don't nag on load.
     if (isBlocked) return;
 
