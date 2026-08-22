@@ -52,7 +52,14 @@ const flush = async () => {
     if (!userId) return; // RLS requires an owner; drop anonymous samples.
     await supabase
       .from("map_sync_latency_samples")
-      .insert(batch.map((s) => ({ ...s, user_id: userId })));
+      .insert(
+        batch.map((s) => ({
+          ...s,
+          detail: s.detail as never,
+          user_id: userId,
+        })),
+      );
+
   } catch {
     // Telemetry must never break the map.
   }
