@@ -51,6 +51,16 @@ const LEGACY_ALLOWLIST = new Set(
   ),
 );
 
+// Migrations already applied to Test/Live whose publication statements have been
+// reverted by a later guarded migration. They cannot be rewritten in place, so the
+// static replay skips their deny-list/guard findings; the live database pass below
+// stays authoritative for actual membership.
+const SUPERSEDED = new Set([
+  // added public.deal_shares; reverted by the guarded DROP in 20260822045xxx
+  "20260822041853_c258d2da-2a4f-419e-a459-dd5f417cbab4.sql",
+]);
+for (const f of SUPERSEDED) LEGACY_ALLOWLIST.add(f);
+
 const expected = new Set(
   readFileSync(EXPECTED_PATH, "utf8")
     .split("\n")
