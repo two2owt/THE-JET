@@ -197,19 +197,8 @@ export const LiveEventFeed = () => {
           });
         },
       )
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "deal_shares" },
-        (payload) => {
-          addEvent({
-            id: payload.new.id,
-            type: "share",
-            message: "Deal shared",
-            timestamp: new Date(payload.new.shared_at),
-            data: payload.new,
-          });
-        },
-      )
+      // deal_shares is deny-listed from the realtime publication (share activity is
+      // private), so share events arrive through the periodic backfill query above.
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "venue_reviews" },
