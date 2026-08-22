@@ -526,6 +526,8 @@ export function ProfileSettingsPanel({
               className="flex-shrink-0"
             />
           </div>
+          <Separator className="my-2" />
+          <NotificationCategorySettings userId={userId} disabled={!notificationsEnabled} />
         </div>
       </Card>
 
