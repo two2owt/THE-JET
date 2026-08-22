@@ -16,6 +16,9 @@ interface Params {
   /** True when the active Mapbox style is light/streets — the ramp darkens and
    *  opacifies so heat stays legible against a bright basemap. */
   isLightBasemap?: boolean;
+  /** User-tunable heat intensity multiplier (0.5 = subtle, 2 = punchy).
+   *  Scales `heatmap-intensity` and `heatmap-opacity` live without a rebuild. */
+  intensityScale?: number;
 }
 
 /**
@@ -32,6 +35,7 @@ export const useDensityLayer = ({
   timelapseMode,
   timelapse,
   isLightBasemap = false,
+  intensityScale = 1,
 }: Params) => {
   // Tracks which basemap the current layers were painted for, so a light↔dark
   // style switch forces a rebuild instead of silently reusing the old ramp.
@@ -147,17 +151,10 @@ export const useDensityLayer = ({
           10,
           1,
         ],
-        "heatmap-intensity": [
-          "interpolate",
-          ["exponential", 2],
-          ["zoom"],
-          0,
-          isMobile ? 2.2 : 2,
-          9,
-          isMobile ? 2.6 : 3,
-          15,
-          isMobile ? 4 : 5,
-        ],
+        "heatmap-intensity": buildIntensityExpression(
+          isMobile,
+          intensityScale,
+        ),
         "heatmap-color": isLightBasemap
           ? [
               // Light basemap: deeper, more opaque hues so low-density heat
@@ -236,7 +233,8 @@ export const useDensityLayer = ({
           17,
           isMobile ? 130 : 115,
         ],
-        "heatmap-opacity": [
+        "heatmap-opacity": buildOpacityExpression(isMobile, intensityScale),
+        "heatmap-opacity-unused": [
           "interpolate",
           ["cubic-bezier", 0.4, 0, 0.2, 1],
           ["zoom"],
