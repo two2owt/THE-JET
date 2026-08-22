@@ -27,7 +27,7 @@ import {
   formatDistance,
 } from "@/utils/geospatialUtils";
 import { useFavorites } from "@/hooks/useFavorites";
-import { requireConsent } from "@/lib/consent";
+import { hasConsent, subscribeConsent } from "@/lib/consent";
 
 import type { User } from "@supabase/supabase-js";
 
