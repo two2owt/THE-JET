@@ -119,20 +119,48 @@ export const measureMapSync = async <T>(
 };
 
 /**
+ * Upper bound for a *meaningful* freshness sample. Beyond this the newest
+ * stored point is simply old data (nobody moved), not a lagging pipeline.
+ */
+const FRESHNESS_WINDOW_MS = 5 * 60_000;
+
+/** Newest server point already measured, so idle refetches aren't re-sampled. */
+let lastMeasuredPointAt: number | null = null;
+
+/**
  * Latency from the freshest server-side data point to now (paint time).
- * Only recorded when the payload carried a timestamp and the clock delta is
- * plausible, so a skewed device clock can't poison the p95.
+ *
+ * Only genuinely *new* data counts. A sample is skipped when:
+ * - the payload came from a widened fallback window (data sparsity), or
+ * - the newest point is unchanged since the previous paint (idle refetch), or
+ * - the point is already older than {@link FRESHNESS_WINDOW_MS} (stale data,
+ *   not sync lag), or the clock delta is implausible.
+ *
+ * Without these guards a single idle user turns every poll into a multi-minute
+ * "sample" and the p95 climbs forever even though sync is healthy.
  */
 export const recordEndToEndFreshness = (
   newestPointAt: string | null | undefined,
-  options: { layer?: string; detail?: Record<string, unknown> } = {},
+  options: {
+    layer?: string;
+    detail?: Record<string, unknown>;
+    isFallback?: boolean | null;
+  } = {},
 ) => {
+  if (options.isFallback) return;
   if (!newestPointAt) return;
   const written = Date.parse(newestPointAt);
   if (!Number.isFinite(written)) return;
+  if (lastMeasuredPointAt !== null && written <= lastMeasuredPointAt) return;
   const delta = Date.now() - written;
-  if (delta < 0 || delta > MAX_LATENCY_MS) return;
+  if (delta < 0 || delta > FRESHNESS_WINDOW_MS) return;
+  lastMeasuredPointAt = written;
   recordMapSyncLatency("end_to_end", delta, options);
+};
+
+/** Exposed for tests. */
+export const __resetEndToEndFreshness = () => {
+  lastMeasuredPointAt = null;
 };
 
 /** Exposed for tests. */
