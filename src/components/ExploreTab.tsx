@@ -191,17 +191,32 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
     preferenceFilterEnabled,
   ]);
 
-  const getUserLocation = () => {
+  const getUserLocation = async () => {
     if (!navigator.geolocation) {
       setLocationError("Geolocation is not supported by your browser");
       return;
     }
 
-    // Runtime guard: foreground location requires explicit consent
-    if (!requireConsent("foreground_location")) {
+    // Runtime guard: foreground location requires consent. It is opt-out, so
+    // it is normally on — but if the account-level record says off while the
+    // browser permission is already granted, honour the browser grant instead
+    // of blocking (and never toast the user about it here).
+    let allowed = hasConsent("foreground_location");
+    if (!allowed && navigator.permissions?.query) {
+      try {
+        const status = await navigator.permissions.query({
+          name: "geolocation" as PermissionName,
+        });
+        allowed = status.state === "granted";
+      } catch {
+        /* permissions API unavailable — fall through to the consent value */
+      }
+    }
+    if (!allowed) {
       setLocationError("Foreground location consent is disabled");
       return;
     }
+
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
