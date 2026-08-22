@@ -4797,6 +4797,49 @@ export const MapboxHeatmap = ({
                       />
                     </button>
 
+                    {/* Heatmap refinement sliders — time range narrows the
+                    data window (refetch on release) and intensity re-paints
+                    the existing layer live. */}
+                    <LayerSliderRow
+                      label="Time range"
+                      Icon={Clock}
+                      ariaLabel="Heatmap time range window"
+                      min={0}
+                      max={HEAT_WINDOW_STEPS.length - 1}
+                      step={1}
+                      value={heatWindowIndex}
+                      onChange={(i) =>
+                        setHeatWindowMinutes(HEAT_WINDOW_STEPS[i] ?? null)
+                      }
+                      format={(i) => formatHeatWindow(HEAT_WINDOW_STEPS[i])}
+                      defaultValue={0}
+                      ticks={[
+                        { value: 0, label: "Auto" },
+                        { value: 2, label: "6h" },
+                        { value: 4, label: "24h" },
+                        { value: 6, label: "7d" },
+                      ]}
+                      loading={densityLoading}
+                      disabled={timelapseMode}
+                    />
+                    <LayerSliderRow
+                      label="Intensity"
+                      Icon={Flame}
+                      ariaLabel="Heatmap intensity"
+                      min={0.5}
+                      max={2}
+                      step={0.1}
+                      value={heatIntensity}
+                      onChange={setHeatIntensity}
+                      format={(v) => `${v.toFixed(1)}x`}
+                      defaultValue={1}
+                      ticks={[
+                        { value: 0.5, label: "Soft" },
+                        { value: 1, label: "1x" },
+                        { value: 2, label: "Max" },
+                      ]}
+                    />
+
                     {/* Time-lapse controls — glassmorphic card, sticky so playback
                     stays reachable while the layers panel scrolls (mobile
                     sheet + desktop panel). */}
