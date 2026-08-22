@@ -20,6 +20,11 @@ import {
 import { useWebPushNotifications } from "@/hooks/useWebPushNotifications";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { setConsent } from "@/lib/consent";
+import {
+  hasPushGrantLatch,
+  setPushGrantLatch,
+  syncPushGrantLatch,
+} from "@/lib/pushPermissionLatch";
 import { supabase } from "@/integrations/supabase/client";
 import { usePromptSlot, PROMPT_PRIORITY } from "@/hooks/usePromptSlot";
 import {
@@ -34,8 +39,6 @@ interface PushNotificationPromptProps {
 
 const DISMISS_KEY = "push-notification-prompt-dismissed";
 const DISMISS_DURATION = 14 * 24 * 60 * 60 * 1000; // 14 days
-/** Sticky latch: the user already allowed notifications on this device. */
-const GRANTED_KEY = "push-notification-permission-granted";
 
 /** iOS only delivers web push to apps installed to the Home Screen. */
 const isIOS = () =>
@@ -132,6 +135,7 @@ export const PushNotificationPrompt = ({
       success = await enableNative();
       setIsLoading(false);
       if (success) {
+        setPushGrantLatch();
         setIsVisible(false);
         onDismiss();
       }
@@ -154,6 +158,7 @@ export const PushNotificationPrompt = ({
 
     setIsLoading(false);
     if (success) {
+      setPushGrantLatch();
       setIsVisible(false);
       onDismiss();
     }
