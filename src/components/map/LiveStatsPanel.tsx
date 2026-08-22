@@ -387,6 +387,18 @@ export const LiveStatsPanel = ({
         </p>
       )}
 
+      {!isLoading && fallbackLabel && (
+        <p
+          className="live-stats-label"
+          style={{ ...labelStyle, opacity: 0.75 }}
+          aria-live="polite"
+        >
+          {fallbackLabel}
+        </p>
+      )}
+
+
+
       {/* Quick actions — jump to hotspot / highlight top route. */}
       {!isLoading &&
         (topHotspot || topRoute) &&
