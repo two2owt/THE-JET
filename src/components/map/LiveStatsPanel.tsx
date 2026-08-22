@@ -29,12 +29,17 @@ interface LiveStatsPanelProps {
       grid_cells: number;
       total_points: number;
       max_density: number;
+      /** True when the window was widened because no recent real data existed. */
+      is_fallback?: boolean | null;
+      fallback_window_minutes?: number | null;
     };
   } | null;
   pathData: {
     stats: {
       total_paths: number;
       unique_users: number;
+      is_fallback?: boolean | null;
+      fallback_window_minutes?: number | null;
     };
   } | null;
   showDensityLayer: boolean;
@@ -111,6 +116,32 @@ export const LiveStatsPanel = ({
   const peakDensity = densityData?.stats.max_density ?? 0;
   const routes = pathData?.stats.total_paths ?? 0;
   const people = pathData?.stats.unique_users ?? 0;
+
+  // Fallback = no real activity inside the requested window, so the backend
+  // widened it. Never mixed with live data; surfaced so it can't be mistaken
+  // for current activity.
+  const densityFallbackMinutes =
+    showDensityLayer && densityData?.stats.is_fallback
+      ? (densityData.stats.fallback_window_minutes ?? null)
+      : null;
+  const pathFallbackMinutes =
+    showMovementPaths && pathData?.stats.is_fallback
+      ? (pathData.stats.fallback_window_minutes ?? null)
+      : null;
+  const fallbackMinutes: number | null =
+    densityFallbackMinutes !== null
+      ? densityFallbackMinutes
+      : pathFallbackMinutes;
+  const isFallback =
+    (showDensityLayer && !!densityData?.stats.is_fallback) ||
+    (showMovementPaths && !!pathData?.stats.is_fallback);
+  const fallbackLabel = !isFallback
+    ? null
+    : fallbackMinutes && fallbackMinutes < 60 * 24
+      ? `Showing activity from the last ${Math.max(1, Math.round(fallbackMinutes / 60))}h`
+      : fallbackMinutes
+        ? `Showing activity from the last ${Math.max(1, Math.round(fallbackMinutes / 1440))}d`
+        : "Showing the most recent activity available";
 
   const isLoading = densityLoading || pathLoading;
 
@@ -355,6 +386,18 @@ export const LiveStatsPanel = ({
           No live activity in view yet.
         </p>
       )}
+
+      {!isLoading && fallbackLabel && (
+        <p
+          className="live-stats-label"
+          style={{ ...labelStyle, opacity: 0.75 }}
+          aria-live="polite"
+        >
+          {fallbackLabel}
+        </p>
+      )}
+
+
 
       {/* Quick actions — jump to hotspot / highlight top route. */}
       {!isLoading &&

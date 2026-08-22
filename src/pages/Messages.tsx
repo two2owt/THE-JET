@@ -50,7 +50,7 @@ function DiscoverPeopleStrip({
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    const load = async () => {
       try {
         const { data, error } = await supabase
           .from("discoverable_profiles")
@@ -67,9 +67,21 @@ function DiscoverPeopleStrip({
       } finally {
         if (!cancelled) setLoading(false);
       }
-    })();
+    };
+    void load();
+    // New sign-ups should appear without a manual reload.
+    const run = () => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      void load();
+    };
+    const poll = setInterval(run, 30000);
+    window.addEventListener("focus", run);
+    document.addEventListener("visibilitychange", run);
     return () => {
       cancelled = true;
+      clearInterval(poll);
+      window.removeEventListener("focus", run);
+      document.removeEventListener("visibilitychange", run);
     };
   }, [userId]);
 

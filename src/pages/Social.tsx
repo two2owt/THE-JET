@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useConnections } from "@/hooks/useConnections";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -122,6 +122,29 @@ export default function Social() {
       fetchProfiles();
     }
   }, [user, connections, pendingRequests]);
+
+  // Keep Discover current as people sign up: refetch when the tab regains
+  // focus and on a short poll while it is visible.
+  const fetchProfilesRef = useRef<() => void>(() => {});
+  fetchProfilesRef.current = () => {
+    if (user) void fetchProfiles();
+  };
+  useEffect(() => {
+    if (!user) return;
+    const run = () => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      fetchProfilesRef.current?.();
+    };
+    const poll = setInterval(run, 30000);
+    window.addEventListener("focus", run);
+    document.addEventListener("visibilitychange", run);
+    return () => {
+      clearInterval(poll);
+      window.removeEventListener("focus", run);
+      document.removeEventListener("visibilitychange", run);
+    };
+  }, [user]);
+
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
