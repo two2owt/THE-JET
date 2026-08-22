@@ -1,6 +1,8 @@
 import type { GeoJSONSource, Map as MapboxMap } from "mapbox-gl";
 import { devLog } from "@/lib/log";
 import { useEffect, useRef, MutableRefObject } from "react";
+import { recordMapSyncLatency } from "@/lib/mapSyncLatency";
+
 
 interface Params {
   mapRef: MutableRefObject<MapboxMap | null>;
