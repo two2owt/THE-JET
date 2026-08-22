@@ -37,6 +37,9 @@ jobs:
       - name: Migration preflight (idempotency + no live-data mutations)
         run: bun run scripts/verify-migration-idempotency.mjs
 
+      - name: Migration preflight (extracted admin backfill jobs are current)
+        run: bun run scripts/extract-migration-dml.mjs --check
+
       - name: Migration preflight (realtime publication membership)
         run: bun run scripts/verify-realtime-publication.mjs
         env:

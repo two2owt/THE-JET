@@ -373,3 +373,21 @@ Escape hatch for genuine seed rows on a brand-new table: put
 Migrations that predate this rule are grandfathered in
 `scripts/migration-idempotency-baseline.txt`; never add a new file to that
 list — fix the migration instead.
+
+### Extracting DML into admin backfill jobs
+
+`scripts/extract-migration-dml.mjs` scans every migration for top-level DML
+against `public.*` and generates an equivalent admin-gated one-off job in
+`supabase/backfills/<migration>.backfill.sql`
+(`SECURITY DEFINER`, `has_role(auth.uid(),'admin')` checked first, `EXECUTE`
+revoked from `PUBLIC`/`anon`, `_dry_run` preview mode).
+
+```bash
+bun run migrations:extract-dml          # (re)generate job files
+bun run migrations:extract-dml:check    # CI: fail if job files are stale
+```
+
+CI runs both this check and `verify-migration-idempotency.mjs`, which fails any
+migration containing `INSERT`/`UPDATE`/`DELETE`/`TRUNCATE` on `public.*` unless
+`-- idempotency-check: allow-dml` sits on the line immediately above the
+statement. New backfills belong in a generated job, not a migration.
