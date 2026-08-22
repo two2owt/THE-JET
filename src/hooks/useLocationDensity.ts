@@ -1,5 +1,7 @@
 import { useEffect, useState, useRef, useCallback, useId } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useMapDataPulse } from "@/hooks/useMapDataPulse";
+
 import {
   recordEndToEndFreshness,
   recordMapSyncLatency,
@@ -150,18 +152,28 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
     filters.windowMinutes,
   ]);
 
+  const loadDensityDataRef = useRef(loadDensityData);
+  loadDensityDataRef.current = loadDensityData;
+
   useEffect(() => {
     loadDensityData();
 
     // `user_locations` is not published to realtime (precise coordinates must
-    // never be broadcast), so poll while the tab is visible instead.
+    // never be broadcast). The pulse subscription below gives instant updates;
+    // this interval is only a safety net.
     const poll = setInterval(() => {
       if (typeof document !== "undefined" && document.hidden) return;
-      void loadDensityData();
-    }, 30000);
+      void loadDensityDataRef.current?.();
+    }, 60000);
 
     return () => clearInterval(poll);
   }, [loadDensityData, instanceId]);
+
+  // Instant refresh when new location data lands (privacy-safe heartbeat).
+  useMapDataPulse(() => {
+    void loadDensityDataRef.current?.();
+  });
+
 
   // Refetch whenever the session changes (login / refresh / logout).
   // The callback must not await Supabase calls inline — defer to a microtask

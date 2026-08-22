@@ -1,5 +1,7 @@
 import { useEffect, useState, useId, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useMapDataPulse } from "@/hooks/useMapDataPulse";
+
 
 interface MovementPathData {
   geojson: any;
@@ -124,14 +126,21 @@ export const useMovementPaths = (filters: MovementPathFilters = {}) => {
     loadPathData();
 
     // `user_locations` is intentionally NOT published to realtime (precise
-    // coordinates must not be broadcast), so refresh on an interval instead.
+    // coordinates must not be broadcast). The realtime pulse below delivers
+    // instant refreshes; this interval is just a safety net.
     const poll = setInterval(() => {
       if (typeof document !== "undefined" && document.hidden) return;
       loadPathDataRef.current?.();
-    }, 30000);
+    }, 60000);
 
     return () => clearInterval(poll);
   }, [loadPathData, instanceId]);
+
+  // Instant refresh when new location data lands (privacy-safe heartbeat).
+  useMapDataPulse(() => {
+    loadPathDataRef.current?.();
+  });
+
 
   // Re-fetch once the user signs in / token refreshes.
   useEffect(() => {
