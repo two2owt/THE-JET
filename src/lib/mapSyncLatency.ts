@@ -122,11 +122,20 @@ export const measureMapSync = async <T>(
  * Latency from the freshest server-side data point to now (paint time).
  * Only recorded when the payload carried a timestamp and the clock delta is
  * plausible, so a skewed device clock can't poison the p95.
+ *
+ * Fallback payloads are skipped: when nobody has moved recently the server
+ * widens its window and returns an intentionally old point. That is data
+ * sparsity, not sync lag, and it would otherwise dominate the p95.
  */
 export const recordEndToEndFreshness = (
   newestPointAt: string | null | undefined,
-  options: { layer?: string; detail?: Record<string, unknown> } = {},
+  options: {
+    layer?: string;
+    detail?: Record<string, unknown>;
+    isFallback?: boolean | null;
+  } = {},
 ) => {
+  if (options.isFallback) return;
   if (!newestPointAt) return;
   const written = Date.parse(newestPointAt);
   if (!Number.isFinite(written)) return;
