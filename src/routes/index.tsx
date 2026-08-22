@@ -2,9 +2,9 @@ import { SITE_URL } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import Index from "@/pages/Index";
 
-const TITLE = "JET — Find Live Deals & Events Near You in Charlotte";
+const TITLE = "JET — Find Live Deals & Events Near You";
 const DESCRIPTION =
-  "Discover trending venues and live events across Charlotte on a real-time heatmap. Your guide to what's hot right now.";
+  "Discover trending venues and live events near you in your area on a real-time heatmap. Your guide to what's hot right now.";
 const URL = SITE_URL;
 
 export const Route = createFileRoute("/")({
