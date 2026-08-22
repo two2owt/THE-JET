@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { applyRetentionSchedule } from "@/lib/admin-directory.functions";
 import { supabase } from "@/integrations/supabase/client";
 // Types are regenerated after migration approval; use a loose client cast in the meantime.
 const db = supabase as unknown as {
@@ -33,6 +35,7 @@ export function RetentionSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState<RetentionSettings | null>(null);
+  const runApplySchedule = useServerFn(applyRetentionSchedule);
   const [liveDays, setLiveDays] = useState("30");
   const [obfDays, setObfDays] = useState("7");
   const [cron, setCron] = useState("15 3 * * *");
@@ -89,11 +92,15 @@ export function RetentionSettings() {
       setSaving(false);
       return;
     }
-    const { error: rpcErr } = await db.rpc("apply_retention_schedule");
-    if (rpcErr) {
-      toast.error(`Saved values, but rescheduling failed: ${rpcErr.message}`);
-    } else {
+    try {
+      await runApplySchedule();
       toast.success("Retention settings saved and cron schedule updated.");
+    } catch (rpcErr) {
+      toast.error(
+        `Saved values, but rescheduling failed: ${
+          rpcErr instanceof Error ? rpcErr.message : "unknown error"
+        }`,
+      );
     }
     setSettings({
       live_retention_days: live,
