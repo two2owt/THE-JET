@@ -64,6 +64,26 @@ export const useDensityLayer = ({
       return;
     }
 
+    // Stage 3 of the map sync chain: how long between new density data landing
+    // in the hook and Mapbox reporting the layer fully painted (`idle`).
+    const renderStartedAt =
+      typeof performance !== "undefined" ? performance.now() : Date.now();
+    const measureRender = (mode: "update" | "rebuild") => {
+      const mapInstance = mapRef.current;
+      if (!mapInstance) return;
+      mapInstance.once("idle", () => {
+        const end =
+          typeof performance !== "undefined" ? performance.now() : Date.now();
+        recordMapSyncLatency("render", end - renderStartedAt, {
+          layer: "density",
+          detail: {
+            mode,
+            features: activeData.geojson?.features?.length ?? 0,
+          },
+        });
+      });
+    };
+
     // Data update path — reuse existing source so Mapbox interpolates paint
     // transitions instead of hard-flashing on every realtime refetch.
     const existingSource = mapRef.current.getSource<GeoJSONSource>(sourceId);
@@ -73,7 +93,9 @@ export const useDensityLayer = ({
     if (existingSource && !basemapChanged) {
       try {
         existingSource.setData(activeData.geojson);
+        measureRender("update");
         return;
+
       } catch (err) {
         console.warn("density setData failed, rebuilding:", err);
         try {
