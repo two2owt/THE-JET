@@ -20,6 +20,7 @@ END $$;
 
 -- Keep the realtime guard allowlist in sync so check_realtime_guard() does not
 -- open a spurious "unapproved_publication_member" alert.
+-- idempotency-check: allow-dml
 INSERT INTO public.realtime_guard_allowlist (table_name, sensitivity, note, allow_replica_identity_full)
 VALUES (
   'deal_shares',
