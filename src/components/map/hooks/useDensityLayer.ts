@@ -128,6 +128,8 @@ export const useDensityLayer = ({
       type: "geojson",
       data: activeData.geojson,
     });
+    measureRender("rebuild");
+
 
     mapRef.current.addLayer({
       id: layerId,
