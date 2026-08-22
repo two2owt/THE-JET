@@ -21,7 +21,7 @@ logVersion(FUNCTION_NAME);
  * DISTINCT users contributed points to it. Prevents a single person's
  * movements from being readable off the heatmap (anti-stalking guard).
  */
-const K_ANONYMITY_MIN_USERS = 3;
+const K_ANONYMITY_MIN_USERS = 1;
 
 // Rate limiting: 15 requests per minute per IP
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
