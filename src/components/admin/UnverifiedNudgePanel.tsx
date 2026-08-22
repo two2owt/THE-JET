@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { getAdminUserDirectory } from "@/lib/admin-directory.functions";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Card,
@@ -35,12 +37,13 @@ const daysAgo = (iso: string) =>
 export const UnverifiedNudgePanel = () => {
   const [busy, setBusy] = useState<string | null>(null);
 
+  const fetchDirectory = useServerFn(getAdminUserDirectory);
+
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["admin", "unverified-accounts"],
     staleTime: 30_000,
     queryFn: async (): Promise<DirectoryRow[]> => {
-      const { data, error } = await supabase.rpc("admin_user_directory");
-      if (error) throw error;
+      const data = await fetchDirectory();
       return ((data ?? []) as DirectoryRow[]).filter(
         (u) => !u.email_confirmed_at && u.email,
       );

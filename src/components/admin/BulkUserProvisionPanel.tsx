@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { getAdminUserDirectory } from "@/lib/admin-directory.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -234,8 +236,7 @@ export function BulkUserProvisionPanel() {
   const loadDirectory = async () => {
     setLoadingDirectory(true);
     try {
-      const { data, error } = await supabase.rpc("admin_user_directory");
-      if (error) throw error;
+      const data = await fetchDirectory();
       const rows = (data ?? []).map((u) => ({
         id: u.id,
         email: u.email,

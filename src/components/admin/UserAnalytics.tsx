@@ -1,4 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  getAdminUserDirectory,
+  getAdminUserSyncStatus,
+} from "@/lib/admin-directory.functions";
 import { lazy, Suspense } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -46,6 +51,9 @@ const ChartFallback = () => (
 );
 
 export const UserAnalytics = () => {
+  const fetchDirectory = useServerFn(getAdminUserDirectory);
+  const fetchSyncStatus = useServerFn(getAdminUserSyncStatus);
+
   const { data, isLoading } = useQuery({
     queryKey: ["admin-analytics"],
     queryFn: async () => {
@@ -54,11 +62,11 @@ export const UserAnalytics = () => {
       // Basic counts
       // Authoritative account list (auth users) + sync status, admin-only RPCs.
       const [directoryRes, syncRes] = await Promise.all([
-        supabase.rpc("admin_user_directory"),
-        supabase.rpc("admin_user_sync_status"),
+        fetchDirectory(),
+        fetchSyncStatus(),
       ]);
-      const directory = directoryRes.data ?? [];
-      const syncStatus = syncRes.data?.[0] ?? null;
+      const directory = directoryRes ?? [];
+      const syncStatus = syncRes ?? null;
 
       const [
         usersRes,
