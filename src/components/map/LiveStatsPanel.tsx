@@ -120,13 +120,18 @@ export const LiveStatsPanel = ({
   // Fallback = no real activity inside the requested window, so the backend
   // widened it. Never mixed with live data; surfaced so it can't be mistaken
   // for current activity.
-  const fallbackMinutes =
-    (showDensityLayer && densityData?.stats.is_fallback
+  const densityFallbackMinutes =
+    showDensityLayer && densityData?.stats.is_fallback
       ? (densityData.stats.fallback_window_minutes ?? null)
-      : null) ??
-    (showMovementPaths && pathData?.stats.is_fallback
+      : null;
+  const pathFallbackMinutes =
+    showMovementPaths && pathData?.stats.is_fallback
       ? (pathData.stats.fallback_window_minutes ?? null)
-      : null);
+      : null;
+  const fallbackMinutes: number | null =
+    densityFallbackMinutes !== null
+      ? densityFallbackMinutes
+      : pathFallbackMinutes;
   const isFallback =
     (showDensityLayer && !!densityData?.stats.is_fallback) ||
     (showMovementPaths && !!pathData?.stats.is_fallback);
