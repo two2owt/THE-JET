@@ -228,6 +228,6 @@ export function NotificationCategorySettings({
           </div>
         )}
       </div>
-    </Card>
+    </div>
   );
 }
