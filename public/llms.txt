@@ -1,6 +1,6 @@
 # JET — Live City Pulse
 
-> JET is a real-time city discovery app for Charlotte, NC that surfaces trending venues, live events, and exclusive happy-hour deals on an interactive heatmap.
+> JET is a real-time city discovery app that surfaces trending venues, live events, and exclusive happy-hour deals near you in your area on an interactive heatmap.
 
 ## Pages
 
