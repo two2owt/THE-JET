@@ -151,7 +151,8 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
   }, []);
 
   useEffect(() => {
-    getUserLocation();
+    void getUserLocation();
+
 
     // Get current user
     supabase.auth.getSession().then(({ data: { session } }) => {
