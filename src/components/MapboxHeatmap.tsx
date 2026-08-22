@@ -110,6 +110,7 @@ import {
   RotateCcw,
   Calendar,
   Loader2,
+  Flame,
 } from "lucide-react";
 import { HeatmapSkeleton } from "@/components/skeletons/HeatmapSkeleton";
 import { useLocationDensity } from "@/hooks/useLocationDensity";
@@ -406,6 +407,8 @@ export const MapboxHeatmap = ({
     timelapseMode: "jet-map-timelapse-mode",
     timelapseSpeed: "jet-map-timelapse-speed",
     pathsWindow: "jet-map-paths-window",
+    heatWindow: "jet-map-heat-window",
+    heatIntensity: "jet-map-heat-intensity",
   } as const;
   const VALID_TIME_FILTERS = new Set<
     "all" | "today" | "this_week" | "this_hour"
@@ -603,6 +606,57 @@ export const MapboxHeatmap = ({
   const [pathsWindowMinutes, setPathsWindowMinutes] = useState<number | null>(
     () => getPersistedWindowMinutes(FILTER_KEYS.pathsWindow),
   );
+
+  // Heatmap time-range override (last N minutes). null → use the coarse
+  // time-range chips. Persisted so a tuned view survives a reload.
+  const [heatWindowMinutes, setHeatWindowMinutes] = useState<number | null>(
+    () => getPersistedWindowMinutes(FILTER_KEYS.heatWindow),
+  );
+  // Discrete heatmap time-range steps. Index 0 = "Auto" (defer to the coarse
+  // time-range chips); every other index is an explicit minutes window.
+  const HEAT_WINDOW_STEPS: (number | null)[] = [
+    null,
+    60,
+    360,
+    720,
+    1440,
+    4320,
+    10080,
+    43200,
+  ];
+  const formatHeatWindow = (minutes: number | null | undefined) => {
+    if (minutes == null) return "Auto";
+    if (minutes < 60) return `${minutes}m`;
+    if (minutes < 1440) return `${Math.round(minutes / 60)}h`;
+    return `${Math.round(minutes / 1440)}d`;
+  };
+
+  // Paint-only heat intensity multiplier (0.5 subtle → 2 punchy).
+  const [heatIntensity, setHeatIntensity] = useState<number>(() => {
+    try {
+      const raw = localStorage.getItem(FILTER_KEYS.heatIntensity);
+      const n = raw ? parseFloat(raw) : NaN;
+      if (Number.isFinite(n) && n >= 0.5 && n <= 2) return n;
+    } catch {
+      /* ignore */
+    }
+    return 1;
+  });
+  const heatWindowIndex = Math.max(
+    0,
+    HEAT_WINDOW_STEPS.indexOf(heatWindowMinutes),
+  );
+  useEffect(() => {
+    try {
+      localStorage.setItem(FILTER_KEYS.heatIntensity, String(heatIntensity));
+      if (heatWindowMinutes === null)
+        localStorage.removeItem(FILTER_KEYS.heatWindow);
+      else
+        localStorage.setItem(FILTER_KEYS.heatWindow, String(heatWindowMinutes));
+    } catch {
+      /* ignore */
+    }
+  }, [heatIntensity, heatWindowMinutes, FILTER_KEYS]);
 
   // Sync active layer toggles and filter selections to URL query params for shareability
   const syncUrlParams = useCallback(() => {
@@ -1019,6 +1073,7 @@ export const MapboxHeatmap = ({
     timeFilter,
     hourOfDay: timelapseMode ? undefined : hourFilter,
     dayOfWeek: dayFilter,
+    windowMinutes: heatWindowMinutes ?? undefined,
   });
 
   const {
@@ -2897,6 +2952,7 @@ export const MapboxHeatmap = ({
       currentHour: timelapse.currentHour,
     },
     isLightBasemap: mapStyle === "light" || mapStyle === "streets",
+    intensityScale: heatIntensity,
   });
 
   // Movement paths + animated flow — extracted hook.
@@ -4764,6 +4820,49 @@ export const MapboxHeatmap = ({
                         }}
                       />
                     </button>
+
+                    {/* Heatmap refinement sliders — time range narrows the
+                    data window (refetch on release) and intensity re-paints
+                    the existing layer live. */}
+                    <LayerSliderRow
+                      label="Time range"
+                      Icon={Clock}
+                      ariaLabel="Heatmap time range window"
+                      min={0}
+                      max={HEAT_WINDOW_STEPS.length - 1}
+                      step={1}
+                      value={heatWindowIndex}
+                      onChange={(i) =>
+                        setHeatWindowMinutes(HEAT_WINDOW_STEPS[i] ?? null)
+                      }
+                      format={(i) => formatHeatWindow(HEAT_WINDOW_STEPS[i])}
+                      defaultValue={0}
+                      ticks={[
+                        { value: 0, label: "Auto" },
+                        { value: 2, label: "6h" },
+                        { value: 4, label: "24h" },
+                        { value: 6, label: "7d" },
+                      ]}
+                      loading={densityLoading}
+                      disabled={timelapseMode}
+                    />
+                    <LayerSliderRow
+                      label="Intensity"
+                      Icon={Flame}
+                      ariaLabel="Heatmap intensity"
+                      min={0.5}
+                      max={2}
+                      step={0.1}
+                      value={heatIntensity}
+                      onChange={setHeatIntensity}
+                      format={(v) => `${v.toFixed(1)}x`}
+                      defaultValue={1}
+                      ticks={[
+                        { value: 0.5, label: "Soft" },
+                        { value: 1, label: "1x" },
+                        { value: 2, label: "Max" },
+                      ]}
+                    />
 
                     {/* Time-lapse controls — glassmorphic card, sticky so playback
                     stays reachable while the layers panel scrolls (mobile

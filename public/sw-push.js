@@ -93,7 +93,17 @@ self.addEventListener("notificationclick", function (event) {
   }
 
   const notificationData = event.notification.data || {};
-  let urlToOpen = notificationData.url || "/";
+  // Normalize the payload URL to a same-origin path so a preview/staging
+  // origin never bounces the user to production on tap.
+  let urlToOpen = "/";
+  if (notificationData.url) {
+    try {
+      const parsed = new URL(notificationData.url, self.location.origin);
+      urlToOpen = parsed.pathname + parsed.search + parsed.hash;
+    } catch (e) {
+      urlToOpen = "/";
+    }
+  }
 
   // Fire-and-forget open receipt so merchant analytics can close the loop.
   // Guarded so a duplicate tap (or a re-delivered notification with the same
@@ -108,7 +118,7 @@ self.addEventListener("notificationclick", function (event) {
     }
     try {
       fetch(
-        "https://flvhduntedvorikonuvy.supabase.co/functions/v1/notifications-receipt",
+        "https://zbrscuoqmkdbmdimdnqu.supabase.co/functions/v1/notifications-receipt",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

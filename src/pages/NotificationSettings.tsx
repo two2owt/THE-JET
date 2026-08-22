@@ -15,6 +15,7 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useWebPushNotifications } from "@/hooks/useWebPushNotifications";
 import { openNotificationSettings } from "@/lib/openAppSettings";
 import { applyPushPreference } from "@/hooks/usePushSubscriptionSync";
+import { NotificationCategorySettings } from "@/components/notifications/NotificationCategorySettings";
 import {
   fetchPushAudit,
   logPushAudit,
@@ -251,6 +252,8 @@ export default function NotificationSettings() {
             </p>
           )}
         </Card>
+
+        <NotificationCategorySettings userId={userId} disabled={!enabled} />
 
         {isAdmin && (
         <Card className="mt-4 p-4 sm:p-5 space-y-3">
