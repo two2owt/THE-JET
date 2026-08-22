@@ -174,6 +174,19 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
     return () => subscription.unsubscribe();
   }, [loadUserPreferences]);
 
+  // Consents load asynchronously after sign-in; retry the location read once
+  // foreground location is confirmed on so the tab isn't stuck on the
+  // "consent is disabled" state.
+  useEffect(() => {
+    return subscribeConsent((s) => {
+      if (s.foreground_location && !userLocation) {
+        void getUserLocation();
+      }
+    });
+  }, [userLocation]);
+
+
+
   useEffect(() => {
     // Load deals only after we have attempted to get location
     // This ensures we can calculate distances properly
