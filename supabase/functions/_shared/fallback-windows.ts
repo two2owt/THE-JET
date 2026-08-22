@@ -67,3 +67,30 @@ export function buildCutoffLadder(
     (c, i) => i === 0 || minutesSince(c) > minutesSince(primaryCutoff),
   );
 }
+
+/**
+ * Live-data retention window, in minutes (30 days).
+ *
+ * `process_location_data_retention()` archives + deletes `user_locations`
+ * rows older than this, so 30 days is the full span of real user points the
+ * map layers can ever show. Treating it as the widest window makes "all time"
+ * mean exactly "every retained point from every past session/sign-in",
+ * instead of an unbounded scan that can never return more rows.
+ */
+export const RETENTION_WINDOW_MINUTES = 43_200;
+
+/** Cutoff marking the oldest point still inside the retention window. */
+export function retentionCutoff(now: Date): Date {
+  return new Date(now.getTime() - RETENTION_WINDOW_MINUTES * 60_000);
+}
+
+/**
+ * Clamps a caller-supplied `time_window_minutes` to [1, retention window].
+ * Returns null when the value is missing or unusable.
+ */
+export function clampWindowMinutes(raw: unknown): number | null {
+  if (raw === null || raw === undefined || raw === "") return null;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed < 1) return null;
+  return Math.floor(Math.min(parsed, RETENTION_WINDOW_MINUTES));
+}

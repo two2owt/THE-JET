@@ -6,7 +6,12 @@ import {
 } from "../_shared/cors.ts";
 import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
 import { ErrorCode, unauthorized } from "../_shared/http.ts";
-import { buildCutoffLadder } from "../_shared/fallback-windows.ts";
+import {
+  buildCutoffLadder,
+  clampWindowMinutes,
+  RETENTION_WINDOW_MINUTES,
+  retentionCutoff,
+} from "../_shared/fallback-windows.ts";
 
 const FUNCTION_NAME = "get-movement-paths";
 logVersion(FUNCTION_NAME);
@@ -293,17 +298,13 @@ Deno.serve(async (req) => {
     }
     const minFrequency = parseInt(url.searchParams.get("min_frequency") || "2");
     const timeWindowMinutesRaw = url.searchParams.get("time_window_minutes");
-    let timeWindowMinutes: number | null = null;
-    if (timeWindowMinutesRaw !== null) {
-      const parsed = Number(timeWindowMinutesRaw);
-      if (Number.isFinite(parsed) && parsed >= 1 && parsed <= 10080) {
-        timeWindowMinutes = Math.floor(parsed);
-      }
-    }
+    // 1 minute up to the 30-day live retention window.
+    const timeWindowMinutes = clampWindowMinutes(timeWindowMinutesRaw);
 
-    // Resolve the primary cutoff requested by the caller.
+    // Resolve the primary cutoff requested by the caller. "all" spans the full
+    // retention window, so every retained point from past sessions counts.
     const now = new Date();
-    let primaryCutoff: Date | null = null;
+    let primaryCutoff: Date | null = retentionCutoff(now);
     if (timeWindowMinutes !== null) {
       primaryCutoff = new Date(now.getTime() - timeWindowMinutes * 60_000);
     } else if (timeFilter === "today") {
@@ -480,7 +481,10 @@ Deno.serve(async (req) => {
       d === null
         ? Number.POSITIVE_INFINITY
         : Math.round((now.getTime() - d.getTime()) / 60_000);
-    const ladder: (Date | null)[] = buildCutoffLadder(now, primaryCutoff);
+    // Never widen past retention — there is nothing older left to show.
+    const ladder: (Date | null)[] = buildCutoffLadder(now, primaryCutoff).map(
+      (c) => c ?? retentionCutoff(now),
+    );
 
     let pathResult = await computePaths(ladder[0]);
     let usedCutoff = ladder[0];
@@ -537,6 +541,7 @@ Deno.serve(async (req) => {
           : 0,
       suppressed_paths: suppressedPaths,
       k_anonymity_min_users: K_ANONYMITY_MIN_USERS,
+      retention_window_minutes: RETENTION_WINDOW_MINUTES,
       is_fallback: isFallback,
       fallback_window_minutes: isFallback
         ? Number.isFinite(minutesSince(usedCutoff))

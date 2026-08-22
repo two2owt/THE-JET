@@ -6,7 +6,12 @@ import {
 } from "../_shared/cors.ts";
 import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
 import { ErrorCode, unauthorized } from "../_shared/http.ts";
-import { buildCutoffLadder } from "../_shared/fallback-windows.ts";
+import {
+  buildCutoffLadder,
+  clampWindowMinutes,
+  RETENTION_WINDOW_MINUTES,
+  retentionCutoff,
+} from "../_shared/fallback-windows.ts";
 
 const FUNCTION_NAME = "get-location-density";
 logVersion(FUNCTION_NAME);
@@ -263,17 +268,10 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Parse and validate the time-window override. Accept 1 minute to 7 days
-    // (10080 min) — anything outside that range is silently dropped so a
-    // malicious caller can't bypass the coarse `time_filter` and pull the
-    // entire location history in one call.
-    let timeWindowMinutes: number | null = null;
-    if (timeWindowMinutesRaw !== null && timeWindowMinutesRaw !== undefined) {
-      const parsed = Number(timeWindowMinutesRaw);
-      if (Number.isFinite(parsed) && parsed >= 1 && parsed <= 10080) {
-        timeWindowMinutes = Math.floor(parsed);
-      }
-    }
+    // Parse and validate the time-window override. Accept 1 minute up to the
+    // live retention window (30 days) — that is every real point we still
+    // store, so a caller can never pull more history than retention keeps.
+    const timeWindowMinutes = clampWindowMinutes(timeWindowMinutesRaw);
 
     console.log("Fetching location density with filters:", {
       timeFilter,
@@ -284,8 +282,10 @@ Deno.serve(async (req) => {
 
     const now = new Date();
 
-    // Resolve the primary cutoff requested by the caller.
-    let primaryCutoff: Date | null = null;
+    // Resolve the primary cutoff requested by the caller. "all" means the full
+    // 30-day retention window: every point from every past sign-in/session
+    // that is still retained feeds the heatmap.
+    let primaryCutoff: Date | null = retentionCutoff(now);
     if (timeWindowMinutes !== null) {
       primaryCutoff = new Date(now.getTime() - timeWindowMinutes * 60_000);
     } else if (timeFilter === "today") {
@@ -307,6 +307,7 @@ Deno.serve(async (req) => {
         now.getHours(),
       );
     }
+
 
     /** Builds the k-anonymised density grid for one cutoff. */
     const buildGrid = async (cutoff: Date | null) => {
@@ -404,7 +405,10 @@ Deno.serve(async (req) => {
       d === null
         ? Number.POSITIVE_INFINITY
         : Math.round((now.getTime() - d.getTime()) / 60_000);
-    const ladder: (Date | null)[] = buildCutoffLadder(now, primaryCutoff);
+    // Never widen past retention — there is nothing older left to show.
+    const ladder: (Date | null)[] = buildCutoffLadder(now, primaryCutoff).map(
+      (c) => c ?? retentionCutoff(now),
+    );
 
     let result = await buildGrid(ladder[0]);
     let usedCutoff = ladder[0];
@@ -477,6 +481,7 @@ Deno.serve(async (req) => {
           avg_density: avgDensity,
           suppressed_cells: suppressedCells,
           k_anonymity_min_users: K_ANONYMITY_MIN_USERS,
+          retention_window_minutes: RETENTION_WINDOW_MINUTES,
           newest_point_at: newestPointAt,
           served_at: new Date().toISOString(),
           is_fallback: isFallback,
