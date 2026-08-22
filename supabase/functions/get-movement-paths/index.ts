@@ -541,6 +541,7 @@ Deno.serve(async (req) => {
           : 0,
       suppressed_paths: suppressedPaths,
       k_anonymity_min_users: K_ANONYMITY_MIN_USERS,
+      retention_window_minutes: RETENTION_WINDOW_MINUTES,
       is_fallback: isFallback,
       fallback_window_minutes: isFallback
         ? Number.isFinite(minutesSince(usedCutoff))
