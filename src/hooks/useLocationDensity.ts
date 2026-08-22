@@ -113,6 +113,7 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
       });
       recordEndToEndFreshness(data?.stats?.newest_point_at, {
         layer: "density",
+        isFallback: data?.stats?.is_fallback ?? null,
         detail: { is_fallback: data?.stats?.is_fallback ?? null },
       });
 
