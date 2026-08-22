@@ -29,6 +29,10 @@ export function useOnboardingGate() {
     if (!session) return;
 
     const uid = session.user.id;
+    // "Skip for later" wins: never bounce a user who postponed onboarding,
+    // otherwise / -> /onboarding -> / loops right after they skip.
+    if (isOnboardingSnoozed(uid)) return;
+
     const cached = readCachedOnboardingStatus(uid);
     if (cached === true) return;
     if (cached === false) {
@@ -45,10 +49,11 @@ export function useOnboardingGate() {
         .single();
       if (cancelled || !profile) return;
       writeCachedOnboardingStatus(uid, !!profile.onboarding_completed);
-      if (!profile.onboarding_completed) {
+      if (!profile.onboarding_completed && !isOnboardingSnoozed(uid)) {
         navigate("/onboarding", { replace: true });
       }
     })();
+
 
     return () => {
       cancelled = true;
