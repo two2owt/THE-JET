@@ -604,6 +604,24 @@ export type Database = {
         }
         Relationships: []
       }
+      map_data_pulse: {
+        Row: {
+          id: boolean
+          point_count: number
+          updated_at: string
+        }
+        Insert: {
+          id?: boolean
+          point_count?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: boolean
+          point_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       map_sync_latency_alerts: {
         Row: {
           created_at: string
@@ -1971,6 +1989,7 @@ export type Database = {
         Returns: boolean
       }
       dispatch_ending_soon_favorites: { Args: never; Returns: undefined }
+      dispatch_notification_queue: { Args: never; Returns: undefined }
       display_name_available: { Args: { _name: string }; Returns: boolean }
       email_queue_dispatch: { Args: never; Returns: undefined }
       email_queue_endpoint: { Args: never; Returns: string }
