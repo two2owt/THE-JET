@@ -29,12 +29,17 @@ interface LiveStatsPanelProps {
       grid_cells: number;
       total_points: number;
       max_density: number;
+      /** True when the window was widened because no recent real data existed. */
+      is_fallback?: boolean | null;
+      fallback_window_minutes?: number | null;
     };
   } | null;
   pathData: {
     stats: {
       total_paths: number;
       unique_users: number;
+      is_fallback?: boolean | null;
+      fallback_window_minutes?: number | null;
     };
   } | null;
   showDensityLayer: boolean;
