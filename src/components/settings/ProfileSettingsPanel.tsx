@@ -504,15 +504,6 @@ export function ProfileSettingsPanel({
               </div>
             </>
           )}
-          {!isNative && (
-            <PushEnablementGuide
-              isSupported={isWebPushSupported}
-              isSubscribed={isWebPushSubscribed}
-              permission={webPushPermission}
-              isLoading={isWebPushLoading}
-              onEnable={() => handleWebPushToggle(true)}
-            />
-          )}
           <Separator className="my-2" />
           <div className="flex items-center justify-between gap-3">
             <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
