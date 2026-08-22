@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { loadConsents } from "@/lib/consent";
 import { analytics } from "@/lib/analytics";
 import { SESSION_BROADCAST_KEY } from "@/lib/authSession";
+import { flushPendingConsent } from "@/lib/pendingConsent";
 
 interface AuthContextType {
   user: User | null;
