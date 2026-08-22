@@ -63,8 +63,8 @@ export const persistSignupConsent = async (
 
   // Foreground location is opt-out (granted at signup so nearby deals work
   // immediately); background tracking follows the signup checkbox.
-  const { error: consentError } = await supabase.from("user_consents").upsert(
-    [
+  // `user_consents` is an append-only log (latest row per type wins).
+  const { error: consentError } = await supabase.from("user_consents").insert([
       {
         user_id: userId,
         consent_type: "foreground_location" as const,
@@ -83,9 +83,7 @@ export const persistSignupConsent = async (
         granted_at: consent.locationConsent ? now : null,
         revoked_at: consent.locationConsent ? null : now,
       },
-    ],
-    { onConflict: "user_id,consent_type" },
-  );
+  ]);
   if (consentError) throw consentError;
 };
 
