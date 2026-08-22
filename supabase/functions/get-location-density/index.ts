@@ -379,7 +379,21 @@ Deno.serve(async (req) => {
           cell.users.size >= K_ANONYMITY_MIN_USERS ||
           (callerId !== null && cell.users.has(callerId)),
       );
-      return { allCells, visibleCells, points: filteredLocations.length };
+      // Freshest raw point in this window — used for end-to-end sync latency.
+      let newestPointAt: string | null = null;
+      for (const loc of filteredLocations) {
+        const createdAt = (loc as { created_at?: string }).created_at;
+        if (createdAt && (!newestPointAt || createdAt > newestPointAt)) {
+          newestPointAt = createdAt;
+        }
+      }
+      return {
+        allCells,
+        visibleCells,
+        points: filteredLocations.length,
+        newestPointAt,
+      };
+
     };
 
     // Fallback ladder: when the requested window yields no visible cells the
@@ -445,11 +459,8 @@ Deno.serve(async (req) => {
 
     // Freshest raw point that fed this payload — the client uses it to compute
     // true end-to-end sync latency (DB write -> heatmap paint).
-    let newestPointAt: string | null = null;
-    for (const loc of filteredLocations) {
-      if (!newestPointAt || loc.created_at > newestPointAt)
-        newestPointAt = loc.created_at;
-    }
+    const newestPointAt = result.newestPointAt;
+
 
     console.log(
       `Processed ${features.length} density grid cells, max: ${maxDensity}, avg: ${avgDensity.toFixed(2)}`,
