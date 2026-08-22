@@ -142,6 +142,7 @@ function ResendInviteButton({
 }
 
 export function BulkUserProvisionPanel() {
+  const fetchDirectory = useServerFn(getAdminUserDirectory);
   const [directory, setDirectory] = useState<DirectoryUser[] | null>(null);
   const [loadingDirectory, setLoadingDirectory] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
