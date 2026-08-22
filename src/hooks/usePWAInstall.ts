@@ -37,7 +37,44 @@ export const usePWAInstall = () => {
 
     if (isStandalone) {
       setIsInstalled(true);
+      try {
+        localStorage.setItem(INSTALLED_KEY, "1");
+      } catch {
+        /* storage blocked */
+      }
       return;
+    }
+
+    // Persistent "already installed" latch: once the app has been added to the
+    // home screen we never re-prompt (even in a browser tab, and even after a
+    // fresh sign-in / sign-up) until the install is actually removed.
+    let latched = false;
+    try {
+      latched = localStorage.getItem(INSTALLED_KEY) === "1";
+    } catch {
+      /* storage blocked */
+    }
+    if (latched) {
+      setIsInstalled(true);
+      // Verify the install still exists where the browser can tell us.
+      // beforeinstallprompt firing below also clears the latch (Chrome only
+      // fires it when the app is not installed).
+      const getRelated = (navigator as any).getInstalledRelatedApps;
+      if (typeof getRelated === "function") {
+        getRelated
+          .call(navigator)
+          .then((apps: unknown[]) => {
+            if (!apps || apps.length === 0) {
+              try {
+                localStorage.removeItem(INSTALLED_KEY);
+              } catch {
+                /* storage blocked */
+              }
+              setIsInstalled(false);
+            }
+          })
+          .catch(() => {});
+      }
     }
 
     // Check if user has permanently dismissed the install prompt.
@@ -48,6 +85,7 @@ export const usePWAInstall = () => {
 
     // For iOS, we can't detect beforeinstallprompt, so show manual instructions
     if (iOS && mobile) {
+      if (latched) return;
       // Delay showing the prompt for better UX
       const timer = setTimeout(() => {
         setIsInstallable(true);
@@ -55,6 +93,7 @@ export const usePWAInstall = () => {
       }, 3000);
       return () => clearTimeout(timer);
     }
+
 
     const handleBeforeInstallPrompt = (e: Event) => {
       // Capture the event for later use - browser will show native prompt when we call prompt()
