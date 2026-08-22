@@ -81,6 +81,8 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
       if (filters.hourOfDay !== undefined) body.hour_of_day = filters.hourOfDay;
       if (filters.dayOfWeek !== undefined) body.day_of_week = filters.dayOfWeek;
 
+      const fetchStartedAt =
+        typeof performance !== "undefined" ? performance.now() : Date.now();
       const { data, error: functionError } = await supabase.functions.invoke(
         "get-location-density",
         {
@@ -90,8 +92,23 @@ export const useLocationDensity = (filters: DensityFilters = {}) => {
           },
         },
       );
+      const fetchEndedAt =
+        typeof performance !== "undefined" ? performance.now() : Date.now();
 
       if (functionError) throw functionError;
+
+      // Stage 2 of the sync chain: endpoint round trip. Stage 4 (end-to-end)
+      // uses the freshest raw point that fed this payload so we measure true
+      // Cloud-write -> map-visible latency, not just request time.
+      recordMapSyncLatency("fetch", fetchEndedAt - fetchStartedAt, {
+        layer: "density",
+        detail: { grid_cells: data?.stats?.grid_cells ?? null },
+      });
+      recordEndToEndFreshness(data?.stats?.newest_point_at, {
+        layer: "density",
+        detail: { is_fallback: data?.stats?.is_fallback ?? null },
+      });
+
 
       // Only update state if data actually changed
       const dataHash = JSON.stringify(data?.stats);
