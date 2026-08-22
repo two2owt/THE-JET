@@ -14,6 +14,7 @@ DROP POLICY IF EXISTS "Authenticated users can read the map pulse" ON public.map
 CREATE POLICY "Authenticated users can read the map pulse"
   ON public.map_data_pulse FOR SELECT TO authenticated USING (true);
 
+-- idempotency-check: allow-dml
 INSERT INTO public.map_data_pulse (id, updated_at, point_count)
 VALUES (true, now(), 0)
 ON CONFLICT (id) DO NOTHING;
@@ -53,6 +54,7 @@ BEGIN
   END IF;
 END $$;
 
+-- idempotency-check: allow-dml
 INSERT INTO public.realtime_guard_allowlist (table_name, sensitivity, note, allow_replica_identity_full)
 VALUES ('map_data_pulse', 'public',
         'Aggregate heartbeat only: timestamp + cumulative count, no user or coordinate data.',
