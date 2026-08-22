@@ -5,7 +5,7 @@ import { useLocationPreferences } from "@/hooks/useLocationPreferences";
 import { isNativeApp } from "@/lib/platform";
 import { createLocationSmoother, haversineMeters } from "@/lib/geo-smoothing";
 import { getNetworkLocation } from "@/lib/networkGeolocation";
-import { recordMapSyncLatency } from "@/lib/mapSyncLatency";
+import { markLocationWrite, recordMapSyncLatency } from "@/lib/mapSyncLatency";
 
 import { logGeoEvent } from "@/lib/geoDiagnostics";
 import {
@@ -277,6 +277,9 @@ export const useLocationTracker = () => {
             layer: "user_locations",
             detail: { source: "gps" },
           });
+          // Arms the end-to-end freshness timer: it stops when this point
+          // shows up in a density payload.
+          markLocationWrite(writeStartedAt);
 
           lastWriteAtRef.current = now;
           lastCoordsRef.current = { lat, lng };
@@ -366,6 +369,7 @@ export const useLocationTracker = () => {
             layer: "user_locations",
             detail: { source: "network" },
           });
+          markLocationWrite(writeStartedAt);
           lastWriteAtRef.current = Date.now();
 
           lastCoordsRef.current = { lat: fix.lat, lng: fix.lng };
