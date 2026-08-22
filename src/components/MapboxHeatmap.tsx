@@ -110,6 +110,7 @@ import {
   RotateCcw,
   Calendar,
   Loader2,
+  Flame,
 } from "lucide-react";
 import { HeatmapSkeleton } from "@/components/skeletons/HeatmapSkeleton";
 import { useLocationDensity } from "@/hooks/useLocationDensity";
@@ -611,6 +612,25 @@ export const MapboxHeatmap = ({
   const [heatWindowMinutes, setHeatWindowMinutes] = useState<number | null>(
     () => getPersistedWindowMinutes(FILTER_KEYS.heatWindow),
   );
+  // Discrete heatmap time-range steps. Index 0 = "Auto" (defer to the coarse
+  // time-range chips); every other index is an explicit minutes window.
+  const HEAT_WINDOW_STEPS: (number | null)[] = [
+    null,
+    60,
+    360,
+    720,
+    1440,
+    4320,
+    10080,
+    43200,
+  ];
+  const formatHeatWindow = (minutes: number | null | undefined) => {
+    if (minutes == null) return "Auto";
+    if (minutes < 60) return `${minutes}m`;
+    if (minutes < 1440) return `${Math.round(minutes / 60)}h`;
+    return `${Math.round(minutes / 1440)}d`;
+  };
+
   // Paint-only heat intensity multiplier (0.5 subtle → 2 punchy).
   const [heatIntensity, setHeatIntensity] = useState<number>(() => {
     try {
@@ -622,6 +642,10 @@ export const MapboxHeatmap = ({
     }
     return 1;
   });
+  const heatWindowIndex = Math.max(
+    0,
+    HEAT_WINDOW_STEPS.indexOf(heatWindowMinutes),
+  );
   useEffect(() => {
     try {
       localStorage.setItem(FILTER_KEYS.heatIntensity, String(heatIntensity));
