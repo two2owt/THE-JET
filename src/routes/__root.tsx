@@ -25,6 +25,7 @@ import { useForegroundPushMessages } from "@/hooks/useForegroundPushMessages";
 import { usePushSubscriptionSync } from "@/hooks/usePushSubscriptionSync";
 import { useViewportReflow } from "@/hooks/useViewportReflow";
 import { useAutoReloadOnUpdate } from "@/hooks/useAutoReloadOnUpdate";
+import { purgeStaleCaches } from "@/lib/staleCachePurge";
 import { reportLovableError } from "@/lib/lovable-error-reporting";
 import appCss from "../styles.css?url";
 
