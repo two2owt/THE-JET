@@ -27,7 +27,7 @@ import {
   formatDistance,
 } from "@/utils/geospatialUtils";
 import { useFavorites } from "@/hooks/useFavorites";
-import { requireConsent } from "@/lib/consent";
+import { hasConsent, subscribeConsent } from "@/lib/consent";
 
 import type { User } from "@supabase/supabase-js";
 
@@ -151,7 +151,8 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
   }, []);
 
   useEffect(() => {
-    getUserLocation();
+    void getUserLocation();
+
 
     // Get current user
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -173,6 +174,19 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
     return () => subscription.unsubscribe();
   }, [loadUserPreferences]);
 
+  // Consents load asynchronously after sign-in; retry the location read once
+  // foreground location is confirmed on so the tab isn't stuck on the
+  // "consent is disabled" state.
+  useEffect(() => {
+    return subscribeConsent((s) => {
+      if (s.foreground_location && !userLocation) {
+        void getUserLocation();
+      }
+    });
+  }, [userLocation]);
+
+
+
   useEffect(() => {
     // Load deals only after we have attempted to get location
     // This ensures we can calculate distances properly
@@ -191,17 +205,32 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
     preferenceFilterEnabled,
   ]);
 
-  const getUserLocation = () => {
+  const getUserLocation = async () => {
     if (!navigator.geolocation) {
       setLocationError("Geolocation is not supported by your browser");
       return;
     }
 
-    // Runtime guard: foreground location requires explicit consent
-    if (!requireConsent("foreground_location")) {
+    // Runtime guard: foreground location requires consent. It is opt-out, so
+    // it is normally on — but if the account-level record says off while the
+    // browser permission is already granted, honour the browser grant instead
+    // of blocking (and never toast the user about it here).
+    let allowed = hasConsent("foreground_location");
+    if (!allowed && navigator.permissions?.query) {
+      try {
+        const status = await navigator.permissions.query({
+          name: "geolocation" as PermissionName,
+        });
+        allowed = status.state === "granted";
+      } catch {
+        /* permissions API unavailable — fall through to the consent value */
+      }
+    }
+    if (!allowed) {
       setLocationError("Foreground location consent is disabled");
       return;
     }
+
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
