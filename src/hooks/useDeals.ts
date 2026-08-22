@@ -367,12 +367,19 @@ export const useDeals = (
     window.addEventListener("pageshow", handlePageShow);
     window.addEventListener("online", resync);
 
+    // A merchant-portal push landed while the app was open: the JetCard data
+    // behind it may have changed before the realtime event arrives (or the
+    // change may be on a row this client isn't subscribed to yet), so refetch.
+    const onPushRefresh = () => scheduleRefetch();
+    window.addEventListener("jet:notifications-refresh", onPushRefresh);
+
     return () => {
       cleanup();
       supabase.removeChannel(channel);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("pageshow", handlePageShow);
       window.removeEventListener("online", resync);
+      window.removeEventListener("jet:notifications-refresh", onPushRefresh);
     };
   }, [enabled, preferencesLoaded, loadDeals, loadUserPreferences]);
 
