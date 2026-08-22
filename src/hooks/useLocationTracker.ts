@@ -263,6 +263,7 @@ export const useLocationTracker = () => {
         // the gap between the geolocation callback and this insert.
         const { data } = await supabase.auth.getSession();
         if (cancelled || data.session?.user?.id !== userId) return;
+        const writeStartedAt = Date.now();
         const { error } = await supabase.from("user_locations").insert({
           user_id: userId,
           latitude: lat,
@@ -270,6 +271,11 @@ export const useLocationTracker = () => {
           accuracy: accuracy ?? null,
         });
         if (!error) {
+          recordMapSyncLatency("write", Date.now() - writeStartedAt, {
+            layer: "user_locations",
+            detail: { source: "gps" },
+          });
+
           lastWriteAtRef.current = now;
           lastCoordsRef.current = { lat, lng };
           primingRef.current = false;
