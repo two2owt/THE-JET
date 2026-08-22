@@ -14,8 +14,10 @@ BEGIN
 EXCEPTION WHEN others THEN NULL;
 END $$;
 
+-- idempotency-check: allow-dml
 DELETE FROM public.realtime_guard_allowlist WHERE table_name = 'deal_shares';
 
+-- idempotency-check: allow-dml
 UPDATE public.realtime_guard_alerts
    SET status = 'resolved', resolved_at = now(), updated_at = now()
  WHERE status = 'open' AND target = 'deal_shares';
