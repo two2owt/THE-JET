@@ -604,6 +604,108 @@ export type Database = {
         }
         Relationships: []
       }
+      map_sync_latency_alerts: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          notified_at: string | null
+          observed_p95_ms: number
+          resolved_at: string | null
+          sample_count: number
+          severity: string
+          stage: string
+          status: string
+          threshold_ms: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          notified_at?: string | null
+          observed_p95_ms: number
+          resolved_at?: string | null
+          sample_count: number
+          severity: string
+          stage: string
+          status?: string
+          threshold_ms: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          notified_at?: string | null
+          observed_p95_ms?: number
+          resolved_at?: string | null
+          sample_count?: number
+          severity?: string
+          stage?: string
+          status?: string
+          threshold_ms?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      map_sync_latency_samples: {
+        Row: {
+          created_at: string
+          detail: Json
+          id: string
+          latency_ms: number
+          layer: string
+          stage: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          detail?: Json
+          id?: string
+          latency_ms: number
+          layer?: string
+          stage: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          detail?: Json
+          id?: string
+          latency_ms?: number
+          layer?: string
+          stage?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      map_sync_latency_thresholds: {
+        Row: {
+          crit_ms: number
+          enabled: boolean
+          min_samples: number
+          stage: string
+          updated_at: string
+          warn_ms: number
+        }
+        Insert: {
+          crit_ms: number
+          enabled?: boolean
+          min_samples?: number
+          stage: string
+          updated_at?: string
+          warn_ms: number
+        }
+        Update: {
+          crit_ms?: number
+          enabled?: boolean
+          min_samples?: number
+          stage?: string
+          updated_at?: string
+          warn_ms?: number
+        }
+        Relationships: []
+      }
       marketing_audience_sync_log: {
         Row: {
           audience_id: string
@@ -1804,6 +1906,13 @@ export type Database = {
           resolved: number
         }[]
       }
+      check_map_sync_latency: {
+        Args: never
+        Returns: {
+          opened: number
+          resolved: number
+        }[]
+      }
       check_realtime_guard: {
         Args: never
         Returns: {
@@ -1893,6 +2002,18 @@ export type Database = {
       invoke_favorite_update_notify: {
         Args: { _deal_id: string; _event_type: string; _venue_id: string }
         Returns: undefined
+      }
+      map_sync_latency_metrics: {
+        Args: { _window_minutes?: number }
+        Returns: {
+          max_ms: number
+          newest_at: string
+          p50_ms: number
+          p95_ms: number
+          samples: number
+          stage: string
+          users: number
+        }[]
       }
       move_to_dlq: {
         Args: {

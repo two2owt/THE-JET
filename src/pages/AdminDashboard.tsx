@@ -138,6 +138,12 @@ const RealtimeGuardPanel = lazy(() =>
     default: m.RealtimeGuardPanel,
   })),
 );
+const MapSyncLatencyPanel = lazy(() =>
+  import("@/components/admin/MapSyncLatencyPanel").then((m) => ({
+    default: m.MapSyncLatencyPanel,
+  })),
+);
+
 type SectionId =
   | "deals"
   | "analytics"
@@ -504,8 +510,12 @@ export default function AdminDashboard() {
                     <MonetizationToggle />
                   </Suspense>
                   <Suspense fallback={<AdminTabFallback />}>
+                    <MapSyncLatencyPanel />
+                  </Suspense>
+                  <Suspense fallback={<AdminTabFallback />}>
                     <ExportUsersPanel />
                   </Suspense>
+
                   <Suspense fallback={<AdminTabFallback />}>
                     <BulkUserProvisionPanel />
                   </Suspense>

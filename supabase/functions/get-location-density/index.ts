@@ -443,6 +443,14 @@ Deno.serve(async (req) => {
         ? densityValues.reduce((a, b) => a + b, 0) / densityValues.length
         : 0;
 
+    // Freshest raw point that fed this payload — the client uses it to compute
+    // true end-to-end sync latency (DB write -> heatmap paint).
+    let newestPointAt: string | null = null;
+    for (const loc of filteredLocations) {
+      if (!newestPointAt || loc.created_at > newestPointAt)
+        newestPointAt = loc.created_at;
+    }
+
     console.log(
       `Processed ${features.length} density grid cells, max: ${maxDensity}, avg: ${avgDensity.toFixed(2)}`,
     );
@@ -458,6 +466,8 @@ Deno.serve(async (req) => {
           avg_density: avgDensity,
           suppressed_cells: suppressedCells,
           k_anonymity_min_users: K_ANONYMITY_MIN_USERS,
+          newest_point_at: newestPointAt,
+          served_at: new Date().toISOString(),
           is_fallback: isFallback,
           fallback_window_minutes: isFallback
             ? Number.isFinite(minutesSince(usedCutoff))
@@ -466,6 +476,7 @@ Deno.serve(async (req) => {
             : null,
         },
       }),
+
       {
         headers: { ...rateLimitHeaders, "Content-Type": "application/json" },
       },
