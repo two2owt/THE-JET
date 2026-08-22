@@ -117,6 +117,27 @@ export const LiveStatsPanel = ({
   const routes = pathData?.stats.total_paths ?? 0;
   const people = pathData?.stats.unique_users ?? 0;
 
+  // Fallback = no real activity inside the requested window, so the backend
+  // widened it. Never mixed with live data; surfaced so it can't be mistaken
+  // for current activity.
+  const fallbackMinutes =
+    (showDensityLayer && densityData?.stats.is_fallback
+      ? (densityData.stats.fallback_window_minutes ?? null)
+      : null) ??
+    (showMovementPaths && pathData?.stats.is_fallback
+      ? (pathData.stats.fallback_window_minutes ?? null)
+      : null);
+  const isFallback =
+    (showDensityLayer && !!densityData?.stats.is_fallback) ||
+    (showMovementPaths && !!pathData?.stats.is_fallback);
+  const fallbackLabel = !isFallback
+    ? null
+    : fallbackMinutes && fallbackMinutes < 60 * 24
+      ? `Showing activity from the last ${Math.max(1, Math.round(fallbackMinutes / 60))}h`
+      : fallbackMinutes
+        ? `Showing activity from the last ${Math.max(1, Math.round(fallbackMinutes / 1440))}d`
+        : "Showing the most recent activity available";
+
   const isLoading = densityLoading || pathLoading;
 
   const vibe = isLoading
