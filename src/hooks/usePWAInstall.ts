@@ -102,6 +102,15 @@ export const usePWAInstall = () => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
 
+      // The browser only fires this when the app is NOT installed, so any
+      // stale "installed" latch is now invalid (user removed the home-screen app).
+      try {
+        localStorage.removeItem(INSTALLED_KEY);
+      } catch {
+        /* storage blocked */
+      }
+      setIsInstalled(false);
+
       // Delay showing the prompt for better UX
       setTimeout(() => {
         setIsInstallable(true);
@@ -115,7 +124,13 @@ export const usePWAInstall = () => {
       setShowPrompt(false);
       setDeferredPrompt(null);
       setJustInstalled(true);
+      try {
+        localStorage.setItem(INSTALLED_KEY, "1");
+      } catch {
+        /* storage blocked */
+      }
     };
+
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     window.addEventListener("appinstalled", handleAppInstalled);
