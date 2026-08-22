@@ -5,6 +5,8 @@ import { useLocationPreferences } from "@/hooks/useLocationPreferences";
 import { isNativeApp } from "@/lib/platform";
 import { createLocationSmoother, haversineMeters } from "@/lib/geo-smoothing";
 import { getNetworkLocation } from "@/lib/networkGeolocation";
+import { recordMapSyncLatency } from "@/lib/mapSyncLatency";
+
 import { logGeoEvent } from "@/lib/geoDiagnostics";
 import {
   readPermissionState,
