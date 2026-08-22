@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { loadConsents } from "@/lib/consent";
 import { analytics } from "@/lib/analytics";
 import { SESSION_BROADCAST_KEY } from "@/lib/authSession";
+import { flushPendingConsent } from "@/lib/pendingConsent";
 
 interface AuthContextType {
   user: User | null;
@@ -105,6 +106,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       syncAutoReloadPreference(currentSession?.user?.id ?? null).catch(
         () => undefined,
       );
+
+      // Consent captured during signup can only be written once a real
+      // session exists (RLS), so flush it here on the first sign-in.
+      if (event === "SIGNED_IN" && currentSession?.user) {
+        void flushPendingConsent(
+          currentSession.user.id,
+          currentSession.user.email,
+        );
+      }
 
       // Funnel instrumentation — identify on sign-in, reset on sign-out.
       // Wrapped in try/catch so analytics can never break auth flow.

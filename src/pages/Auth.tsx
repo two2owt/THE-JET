@@ -34,6 +34,10 @@ import {
   isOnboardingSnoozed,
 } from "@/lib/onboardingStatus";
 import { discardCurrentAuthSession } from "@/lib/authSession";
+import {
+  rememberPendingConsent,
+  flushPendingConsent,
+} from "@/lib/pendingConsent";
 import { AuthPWAInstallPromptWrapper } from "@/components/AuthPWAInstallPromptWrapper";
 import { buildAuthRedirectUrl } from "@/lib/utils";
 import { requestGeolocationPermission } from "@/lib/requestGeolocationPermission";
@@ -646,46 +650,19 @@ const Auth = () => {
     }
 
     // Persist consent on the freshly created profile.
+    // With email confirmation on, signUp() returns no session — writing here
+    // would run as `anon` and be silently dropped by RLS. Stash it and flush
+    // on the first authenticated session instead.
     if (signUpData.user) {
-      await supabase
-        .from("profiles")
-        .update({
-          data_processing_consent: dataProcessingConsent,
-          data_processing_consent_date: new Date().toISOString(),
-          location_consent_given: locationConsent,
-          location_consent_date: locationConsent
-            ? new Date().toISOString()
-            : null,
-        })
-        .eq("id", signUpData.user.id);
-
-      // Seed granular consent records.
-      // Foreground location is opt-out: it is granted at signup so nearby
-      // deals work on the Explore / Hot tab right away. Users can turn it off
-      // any time from Settings → Location Tracking.
-      // Background tracking stays opt-in and follows the signup checkbox.
-      const now = new Date().toISOString();
-      const seedRows = [
-        {
-          user_id: signUpData.user.id,
-          consent_type: "foreground_location" as const,
-          granted: true,
-          policy_version: "2025-06",
-          source: "auth.signup",
-          granted_at: now,
-          revoked_at: null,
-        },
-        {
-          user_id: signUpData.user.id,
-          consent_type: "background_tracking" as const,
-          granted: locationConsent,
-          policy_version: "2025-06",
-          source: "auth.signup",
-          granted_at: locationConsent ? now : null,
-          revoked_at: locationConsent ? null : now,
-        },
-      ];
-      await supabase.from("user_consents").insert(seedRows);
+      rememberPendingConsent({
+        email: email.trim().toLowerCase(),
+        dataProcessingConsent,
+        locationConsent,
+        capturedAt: new Date().toISOString(),
+      });
+      if (signUpData.session) {
+        await flushPendingConsent(signUpData.user.id);
+      }
     }
 
     toast.success("Check your email!", {
