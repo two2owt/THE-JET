@@ -228,6 +228,12 @@ function AppLayout() {
   usePushSubscriptionSync();
   useViewportReflow();
 
+  // One-time purge of stale app-shell service workers / caches per build so
+  // returning web and installed home-screen users get the latest release.
+  useEffect(() => {
+    void purgeStaleCaches();
+  }, []);
+
   // ported from main.tsx — deferred, non-critical bootstrap
   useEffect(() => {
     if (typeof window === "undefined") return;
