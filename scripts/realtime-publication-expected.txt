@@ -4,6 +4,7 @@
 # push_notifications, notification_logs, deal_shares) must NEVER appear here.
 deals
 email_send_log
+map_data_pulse
 messages
 search_history
 user_connections
