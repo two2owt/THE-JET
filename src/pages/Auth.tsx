@@ -34,6 +34,10 @@ import {
   isOnboardingSnoozed,
 } from "@/lib/onboardingStatus";
 import { discardCurrentAuthSession } from "@/lib/authSession";
+import {
+  rememberPendingConsent,
+  flushPendingConsent,
+} from "@/lib/pendingConsent";
 import { AuthPWAInstallPromptWrapper } from "@/components/AuthPWAInstallPromptWrapper";
 import { buildAuthRedirectUrl } from "@/lib/utils";
 import { requestGeolocationPermission } from "@/lib/requestGeolocationPermission";
