@@ -1,5 +1,7 @@
 import { useEffect, useState, useId, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useMapDataPulse } from "@/hooks/useMapDataPulse";
+
 
 interface MovementPathData {
   geojson: any;
