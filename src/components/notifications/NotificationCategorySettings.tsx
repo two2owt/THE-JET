@@ -9,7 +9,6 @@ import {
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
