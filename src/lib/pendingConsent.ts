@@ -92,9 +92,14 @@ export const persistSignupConsent = async (
  * No-op when nothing is pending. Best-effort: keeps the stash on failure so a
  * later session can retry.
  */
-export const flushPendingConsent = async (userId: string): Promise<void> => {
+export const flushPendingConsent = async (
+  userId: string,
+  email?: string | null,
+): Promise<void> => {
   const pending = readPendingConsent();
   if (!pending) return;
+  // Never apply one person's signup consent to a different account.
+  if (email && pending.email && pending.email !== email.toLowerCase()) return;
   try {
     await persistSignupConsent(userId, pending);
     clearPendingConsent();

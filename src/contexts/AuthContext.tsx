@@ -110,7 +110,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       // Consent captured during signup can only be written once a real
       // session exists (RLS), so flush it here on the first sign-in.
       if (event === "SIGNED_IN" && currentSession?.user) {
-        void flushPendingConsent(currentSession.user.id);
+        void flushPendingConsent(
+          currentSession.user.id,
+          currentSession.user.email,
+        );
       }
 
       // Funnel instrumentation — identify on sign-in, reset on sign-out.
