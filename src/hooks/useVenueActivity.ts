@@ -296,18 +296,8 @@ export const useVenueActivity = (
           scheduleRefresh();
         },
       )
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "deal_shares",
-        },
-        () => {
-          devLog("Deal share detected, refreshing venue activity");
-          scheduleRefresh();
-        },
-      )
+      // deal_shares is deny-listed from the realtime publication; share counts
+      // refresh on the scheduled/resume refresh paths below instead.
       .subscribe();
 
     // Resume paths: tab/PWA foreground, bfcache restore (browser bookmarks,
