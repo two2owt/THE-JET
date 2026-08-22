@@ -5,7 +5,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   readCachedOnboardingStatus,
   writeCachedOnboardingStatus,
+  isOnboardingSnoozed,
 } from "@/lib/onboardingStatus";
+
 
 /**
  * Onboarding gating for the landing route.
