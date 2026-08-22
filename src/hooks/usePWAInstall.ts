@@ -6,6 +6,10 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 const DISMISS_KEY = "pwa-install-dismissed";
+/** Set once the app is added to the home screen; cleared when the browser
+ * tells us the install is gone (beforeinstallprompt / getInstalledRelatedApps). */
+export const PWA_INSTALLED_KEY = "pwa-installed";
+const INSTALLED_KEY = PWA_INSTALLED_KEY;
 
 export const usePWAInstall = () => {
   const [deferredPrompt, setDeferredPrompt] =
