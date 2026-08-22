@@ -28,7 +28,7 @@ test.describe("auth routes render the correct mode", () => {
     await expect(
       page.getByRole("heading", { name: /welcome back/i }),
     ).toBeVisible();
-    await expect(page).toHaveTitle(/sign in to jet/i);
+    await expect(page).toHaveTitle(/sign in or create an account/i);
   });
 
   test("/signin renders sign-in mode", async ({ page }) => {
