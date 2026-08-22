@@ -231,9 +231,13 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
                   subject: payload.subject,
                   html: payload.html,
                   text: payload.text,
-                  purpose: payload.purpose,
+                  purpose: payload.purpose || (payload.run_id ? undefined : 'transactional'),
                   label: payload.label,
-                  idempotency_key: payload.idempotency_key,
+                  idempotency_key:
+                    payload.idempotency_key ||
+                    (payload.run_id
+                      ? undefined
+                      : `${payload.label || queue}:${payload.message_id || msg.msg_id}`),
                   unsubscribe_token: payload.unsubscribe_token,
                   message_id: payload.message_id,
                 },
