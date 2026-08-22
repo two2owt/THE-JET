@@ -9,7 +9,6 @@ import {
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
@@ -147,7 +146,7 @@ export function NotificationCategorySettings({
   const busy = loading || saving || !!disabled;
 
   return (
-    <Card className="mt-4 p-4 sm:p-5 space-y-4">
+    <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-sm font-medium">What you get alerted about</p>
@@ -229,6 +228,6 @@ export function NotificationCategorySettings({
           </div>
         )}
       </div>
-    </Card>
+    </div>
   );
 }

@@ -33,7 +33,7 @@ import { ReportIssueDialog } from "@/components/ReportIssueDialog";
 
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useWebPushNotifications } from "@/hooks/useWebPushNotifications";
-import { PushEnablementGuide } from "@/components/settings/PushEnablementGuide";
+import { NotificationCategorySettings } from "@/components/notifications/NotificationCategorySettings";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { isMonetizationEnabled } from "@/lib/monetization";
 import { isNativeApp } from "@/lib/platform";
@@ -416,12 +416,6 @@ export function ProfileSettingsPanel({
         </SectionTitle>
         <Separator />
         <div className="space-y-3 sm:space-y-4">
-          <a
-            href="/notification-settings"
-            className="block rounded-lg border border-border/60 bg-muted/20 px-3 py-2 text-xs sm:text-sm text-foreground hover:bg-muted/40 transition-colors"
-          >
-            Open the dedicated push notifications page →
-          </a>
           <div className="flex items-center justify-between gap-3">
             <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
               <label
@@ -510,15 +504,6 @@ export function ProfileSettingsPanel({
               </div>
             </>
           )}
-          {!isNative && (
-            <PushEnablementGuide
-              isSupported={isWebPushSupported}
-              isSubscribed={isWebPushSubscribed}
-              permission={webPushPermission}
-              isLoading={isWebPushLoading}
-              onEnable={() => handleWebPushToggle(true)}
-            />
-          )}
           <Separator className="my-2" />
           <div className="flex items-center justify-between gap-3">
             <div className="space-y-0.5 sm:space-y-1 flex-1 min-w-0">
@@ -541,6 +526,8 @@ export function ProfileSettingsPanel({
               className="flex-shrink-0"
             />
           </div>
+          <Separator className="my-2" />
+          <NotificationCategorySettings userId={userId} disabled={!notificationsEnabled} />
         </div>
       </Card>
 
