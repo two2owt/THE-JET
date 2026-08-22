@@ -33,7 +33,7 @@ import { ReportIssueDialog } from "@/components/ReportIssueDialog";
 
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useWebPushNotifications } from "@/hooks/useWebPushNotifications";
-import { PushEnablementGuide } from "@/components/settings/PushEnablementGuide";
+import { NotificationCategorySettings } from "@/components/notifications/NotificationCategorySettings";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { isMonetizationEnabled } from "@/lib/monetization";
 import { isNativeApp } from "@/lib/platform";
