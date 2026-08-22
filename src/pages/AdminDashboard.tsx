@@ -510,8 +510,12 @@ export default function AdminDashboard() {
                     <MonetizationToggle />
                   </Suspense>
                   <Suspense fallback={<AdminTabFallback />}>
+                    <MapSyncLatencyPanel />
+                  </Suspense>
+                  <Suspense fallback={<AdminTabFallback />}>
                     <ExportUsersPanel />
                   </Suspense>
+
                   <Suspense fallback={<AdminTabFallback />}>
                     <BulkUserProvisionPanel />
                   </Suspense>
