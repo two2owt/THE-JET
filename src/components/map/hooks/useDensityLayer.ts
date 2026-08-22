@@ -4,6 +4,54 @@ import { useEffect, useRef, MutableRefObject } from "react";
 import { recordMapSyncLatency } from "@/lib/mapSyncLatency";
 
 
+/** Clamp the user's intensity multiplier to a safe, legible range. */
+const clampScale = (scale: number) =>
+  Number.isFinite(scale) ? Math.min(2, Math.max(0.5, scale)) : 1;
+
+/** Zoom-interpolated `heatmap-intensity`, scaled by the user's slider. */
+export const buildIntensityExpression = (isMobile: boolean, scale: number) => {
+  const s = clampScale(scale);
+  return [
+    "interpolate",
+    ["exponential", 2],
+    ["zoom"],
+    0,
+    (isMobile ? 2.2 : 2) * s,
+    9,
+    (isMobile ? 2.6 : 3) * s,
+    15,
+    (isMobile ? 4 : 5) * s,
+  ] as any;
+};
+
+/** Zoom-interpolated `heatmap-opacity`, nudged by the intensity slider so a
+ *  low setting reads as a softer wash rather than just a flatter ramp. */
+export const buildOpacityExpression = (isMobile: boolean, scale: number) => {
+  const s = clampScale(scale);
+  // Map 0.5..2 → 0.75..1 opacity multiplier (never fully transparent).
+  const o = Math.min(1, 0.75 + (s - 0.5) * (0.25 / 1.5));
+  const at = (v: number) => Math.min(1, v * o);
+  return [
+    "interpolate",
+    ["cubic-bezier", 0.4, 0, 0.2, 1],
+    ["zoom"],
+    5,
+    at(isMobile ? 0.85 : 1),
+    7,
+    at(isMobile ? 0.82 : 0.95),
+    10,
+    at(isMobile ? 0.8 : 0.92),
+    12,
+    at(isMobile ? 0.78 : 0.9),
+    14,
+    at(isMobile ? 0.74 : 0.87),
+    15,
+    at(isMobile ? 0.7 : 0.85),
+    17,
+    at(isMobile ? 0.6 : 0.75),
+  ] as any;
+};
+
 interface Params {
   mapRef: MutableRefObject<MapboxMap | null>;
   mapLoaded: boolean;
@@ -234,25 +282,6 @@ export const useDensityLayer = ({
           isMobile ? 130 : 115,
         ],
         "heatmap-opacity": buildOpacityExpression(isMobile, intensityScale),
-        "heatmap-opacity-unused": [
-          "interpolate",
-          ["cubic-bezier", 0.4, 0, 0.2, 1],
-          ["zoom"],
-          5,
-          isMobile ? 0.85 : 1,
-          7,
-          isMobile ? 0.82 : 0.95,
-          10,
-          isMobile ? 0.8 : 0.92,
-          12,
-          isMobile ? 0.78 : 0.9,
-          14,
-          isMobile ? 0.74 : 0.87,
-          15,
-          isMobile ? 0.7 : 0.85,
-          17,
-          isMobile ? 0.6 : 0.75,
-        ],
         "heatmap-radius-transition": { duration: 450, delay: 0 },
         "heatmap-opacity-transition": { duration: 600, delay: 0 },
       },
@@ -397,4 +426,26 @@ export const useDensityLayer = ({
     isMobile,
     isLightBasemap,
   ]);
+
+  // Live paint update: dragging the intensity slider re-paints in place
+  // instead of tearing down and rebuilding the whole layer set.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapLoaded || !showDensityLayer) return;
+    try {
+      if (!map.getLayer("location-density-heat")) return;
+      map.setPaintProperty(
+        "location-density-heat",
+        "heatmap-intensity",
+        buildIntensityExpression(isMobile, intensityScale),
+      );
+      map.setPaintProperty(
+        "location-density-heat",
+        "heatmap-opacity",
+        buildOpacityExpression(isMobile, intensityScale),
+      );
+    } catch {
+      /* layer not ready yet — the rebuild effect paints the right values */
+    }
+  }, [mapRef, mapLoaded, showDensityLayer, isMobile, intensityScale]);
 };
