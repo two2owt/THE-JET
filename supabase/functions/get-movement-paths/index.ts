@@ -481,7 +481,10 @@ Deno.serve(async (req) => {
       d === null
         ? Number.POSITIVE_INFINITY
         : Math.round((now.getTime() - d.getTime()) / 60_000);
-    const ladder: (Date | null)[] = buildCutoffLadder(now, primaryCutoff);
+    // Never widen past retention — there is nothing older left to show.
+    const ladder: (Date | null)[] = buildCutoffLadder(now, primaryCutoff).map(
+      (c) => c ?? retentionCutoff(now),
+    );
 
     let pathResult = await computePaths(ladder[0]);
     let usedCutoff = ladder[0];
