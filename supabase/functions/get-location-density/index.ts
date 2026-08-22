@@ -263,17 +263,10 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Parse and validate the time-window override. Accept 1 minute to 7 days
-    // (10080 min) — anything outside that range is silently dropped so a
-    // malicious caller can't bypass the coarse `time_filter` and pull the
-    // entire location history in one call.
-    let timeWindowMinutes: number | null = null;
-    if (timeWindowMinutesRaw !== null && timeWindowMinutesRaw !== undefined) {
-      const parsed = Number(timeWindowMinutesRaw);
-      if (Number.isFinite(parsed) && parsed >= 1 && parsed <= 10080) {
-        timeWindowMinutes = Math.floor(parsed);
-      }
-    }
+    // Parse and validate the time-window override. Accept 1 minute up to the
+    // live retention window (30 days) — that is every real point we still
+    // store, so a caller can never pull more history than retention keeps.
+    const timeWindowMinutes = clampWindowMinutes(timeWindowMinutesRaw);
 
     console.log("Fetching location density with filters:", {
       timeFilter,
@@ -284,8 +277,10 @@ Deno.serve(async (req) => {
 
     const now = new Date();
 
-    // Resolve the primary cutoff requested by the caller.
-    let primaryCutoff: Date | null = null;
+    // Resolve the primary cutoff requested by the caller. "all" means the full
+    // 30-day retention window: every point from every past sign-in/session
+    // that is still retained feeds the heatmap.
+    let primaryCutoff: Date | null = retentionCutoff(now);
     if (timeWindowMinutes !== null) {
       primaryCutoff = new Date(now.getTime() - timeWindowMinutes * 60_000);
     } else if (timeFilter === "today") {
@@ -307,6 +302,7 @@ Deno.serve(async (req) => {
         now.getHours(),
       );
     }
+
 
     /** Builds the k-anonymised density grid for one cutoff. */
     const buildGrid = async (cutoff: Date | null) => {
