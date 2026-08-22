@@ -61,18 +61,114 @@ const eventConfig = {
   },
 };
 
+const MAX_EVENTS = 50;
+
 export const LiveEventFeed = () => {
   const [events, setEvents] = useState<LiveEvent[]>([]);
   const [isConnected, setIsConnected] = useState(false);
-
-  const addEvent = (event: LiveEvent) => {
-    setEvents((prev) => [event, ...prev].slice(0, 50)); // Keep last 50 events
-  };
+  const channelId = useId();
 
   useEffect(() => {
-    // Subscribe to user_favorites changes
-    const favoritesChannel = supabase
-      .channel("favorites-changes")
+    let cancelled = false;
+
+    // Dedupe by id and keep the list newest-first: the initial backfill and the
+    // realtime stream can both deliver the same row when a write lands while
+    // the feed is mounting.
+    const addEvents = (incoming: LiveEvent[]) => {
+      if (cancelled || incoming.length === 0) return;
+      setEvents((prev) => {
+        const seen = new Set(prev.map((e) => e.id));
+        const fresh = incoming.filter((e) => !seen.has(e.id));
+        if (fresh.length === 0) return prev;
+        return [...fresh, ...prev]
+          .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+          .slice(0, MAX_EVENTS);
+      });
+    };
+
+    const addEvent = (event: LiveEvent) => addEvents([event]);
+
+    // Realtime only delivers rows written *after* subscribe(), so without this
+    // backfill the panel sat on "Waiting for live events..." indefinitely on
+    // every page load even though the platform was busy.
+    const backfill = async () => {
+      const limit = 15;
+      const [favorites, shares, reviews, connections, searches] =
+        await Promise.all([
+          supabase
+            .from("user_favorites")
+            .select("id, venue_name, created_at")
+            .order("created_at", { ascending: false })
+            .limit(limit),
+          supabase
+            .from("deal_shares")
+            .select("id, shared_at")
+            .order("shared_at", { ascending: false })
+            .limit(limit),
+          supabase
+            .from("venue_reviews")
+            .select("id, rating, venue_name, created_at")
+            .order("created_at", { ascending: false })
+            .limit(limit),
+          supabase
+            .from("user_connections")
+            .select("id, status, created_at, updated_at")
+            .order("updated_at", { ascending: false })
+            .limit(limit),
+          supabase
+            .from("search_history")
+            .select("id, search_query, created_at")
+            .order("created_at", { ascending: false })
+            .limit(limit),
+        ]);
+
+      const seeded: LiveEvent[] = [
+        ...(favorites.data ?? []).map((row) => ({
+          id: row.id,
+          type: "favorite" as const,
+          message: row.venue_name
+            ? `${row.venue_name} favorited`
+            : "New deal favorited",
+          timestamp: new Date(row.created_at),
+        })),
+        ...(shares.data ?? []).map((row) => ({
+          id: row.id,
+          type: "share" as const,
+          message: "Deal shared",
+          timestamp: new Date(row.shared_at),
+        })),
+        ...(reviews.data ?? []).map((row) => ({
+          id: row.id,
+          type: "review" as const,
+          message: `New ${row.rating}★ review for ${row.venue_name}`,
+          timestamp: new Date(row.created_at),
+        })),
+        ...(connections.data ?? []).map((row) => ({
+          id: row.id,
+          type: "connection" as const,
+          message:
+            row.status === "accepted"
+              ? "Friend request accepted"
+              : "New friend request sent",
+          timestamp: new Date(row.updated_at ?? row.created_at),
+        })),
+        ...(searches.data ?? []).map((row) => ({
+          id: row.id,
+          type: "search" as const,
+          message: `Searched: "${row.search_query}"`,
+          timestamp: new Date(row.created_at),
+        })),
+      ];
+
+      addEvents(seeded);
+    };
+
+    void backfill();
+
+    // One channel per feed instance: a shared static topic name collides with
+    // other subscribers and makes postgres_changes callbacks fail to bind.
+    const channel = supabase
+      .channel(`admin-live-feed-${channelId}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "user_favorites" },
@@ -80,7 +176,9 @@ export const LiveEventFeed = () => {
           addEvent({
             id: payload.new.id,
             type: "favorite",
-            message: "New deal favorited",
+            message: payload.new.venue_name
+              ? `${payload.new.venue_name} favorited`
+              : "New deal favorited",
             timestamp: new Date(payload.new.created_at),
             data: payload.new,
           });
@@ -99,13 +197,6 @@ export const LiveEventFeed = () => {
           });
         },
       )
-      .subscribe((status) => {
-        if (status === "SUBSCRIBED") setIsConnected(true);
-      });
-
-    // Subscribe to deal_shares changes
-    const sharesChannel = supabase
-      .channel("shares-changes")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "deal_shares" },
@@ -119,11 +210,6 @@ export const LiveEventFeed = () => {
           });
         },
       )
-      .subscribe();
-
-    // Subscribe to venue_reviews changes
-    const reviewsChannel = supabase
-      .channel("reviews-changes")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "venue_reviews" },
@@ -137,11 +223,6 @@ export const LiveEventFeed = () => {
           });
         },
       )
-      .subscribe();
-
-    // Subscribe to user_connections changes
-    const connectionsChannel = supabase
-      .channel("connections-changes")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "user_connections" },
@@ -170,11 +251,6 @@ export const LiveEventFeed = () => {
           }
         },
       )
-      .subscribe();
-
-    // Subscribe to search_history changes
-    const searchChannel = supabase
-      .channel("search-changes")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "search_history" },
@@ -188,35 +264,32 @@ export const LiveEventFeed = () => {
           });
         },
       )
-      .subscribe();
-
-    // Subscribe to user_locations changes
-    const locationsChannel = supabase
-      .channel("locations-changes")
+      // user_locations is deliberately NOT published to realtime (precise
+      // coordinates must never be broadcast), so the feed listens to the
+      // aggregate map_data_pulse heartbeat instead: timestamp + row count only.
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "user_locations" },
+        { event: "*", schema: "public", table: "map_data_pulse" },
         (payload) => {
+          const row = payload.new as { updated_at?: string } | null;
           addEvent({
-            id: payload.new.id,
+            id: crypto.randomUUID(),
             type: "location",
-            message: "User location updated",
-            timestamp: new Date(payload.new.created_at),
-            data: payload.new,
+            message: "User location activity recorded",
+            timestamp: row?.updated_at ? new Date(row.updated_at) : new Date(),
           });
         },
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (cancelled) return;
+        setIsConnected(status === "SUBSCRIBED");
+      });
 
     return () => {
-      supabase.removeChannel(favoritesChannel);
-      supabase.removeChannel(sharesChannel);
-      supabase.removeChannel(reviewsChannel);
-      supabase.removeChannel(connectionsChannel);
-      supabase.removeChannel(searchChannel);
-      supabase.removeChannel(locationsChannel);
+      cancelled = true;
+      supabase.removeChannel(channel);
     };
-  }, []);
+  }, [channelId]);
 
   return (
     <Card className="bg-card/50 backdrop-blur-sm border-border/50">
