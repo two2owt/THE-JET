@@ -138,6 +138,12 @@ const RealtimeGuardPanel = lazy(() =>
     default: m.RealtimeGuardPanel,
   })),
 );
+const MapSyncLatencyPanel = lazy(() =>
+  import("@/components/admin/MapSyncLatencyPanel").then((m) => ({
+    default: m.MapSyncLatencyPanel,
+  })),
+);
+
 type SectionId =
   | "deals"
   | "analytics"
