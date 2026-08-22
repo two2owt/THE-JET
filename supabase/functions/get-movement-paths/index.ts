@@ -298,17 +298,13 @@ Deno.serve(async (req) => {
     }
     const minFrequency = parseInt(url.searchParams.get("min_frequency") || "2");
     const timeWindowMinutesRaw = url.searchParams.get("time_window_minutes");
-    let timeWindowMinutes: number | null = null;
-    if (timeWindowMinutesRaw !== null) {
-      const parsed = Number(timeWindowMinutesRaw);
-      if (Number.isFinite(parsed) && parsed >= 1 && parsed <= 10080) {
-        timeWindowMinutes = Math.floor(parsed);
-      }
-    }
+    // 1 minute up to the 30-day live retention window.
+    const timeWindowMinutes = clampWindowMinutes(timeWindowMinutesRaw);
 
-    // Resolve the primary cutoff requested by the caller.
+    // Resolve the primary cutoff requested by the caller. "all" spans the full
+    // retention window, so every retained point from past sessions counts.
     const now = new Date();
-    let primaryCutoff: Date | null = null;
+    let primaryCutoff: Date | null = retentionCutoff(now);
     if (timeWindowMinutes !== null) {
       primaryCutoff = new Date(now.getTime() - timeWindowMinutes * 60_000);
     } else if (timeFilter === "today") {
