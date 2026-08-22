@@ -481,6 +481,7 @@ Deno.serve(async (req) => {
           avg_density: avgDensity,
           suppressed_cells: suppressedCells,
           k_anonymity_min_users: K_ANONYMITY_MIN_USERS,
+          retention_window_minutes: RETENTION_WINDOW_MINUTES,
           newest_point_at: newestPointAt,
           served_at: new Date().toISOString(),
           is_fallback: isFallback,
