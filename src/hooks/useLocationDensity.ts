@@ -1,5 +1,7 @@
 import { useEffect, useState, useRef, useCallback, useId } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useMapDataPulse } from "@/hooks/useMapDataPulse";
+
 import {
   recordEndToEndFreshness,
   recordMapSyncLatency,
