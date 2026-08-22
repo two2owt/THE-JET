@@ -119,25 +119,36 @@ export const measureMapSync = async <T>(
 };
 
 /**
- * Upper bound for a *meaningful* freshness sample. Beyond this the newest
- * stored point is simply old data (nobody moved), not a lagging pipeline.
+ * How long a pending local write stays eligible for a freshness sample. If the
+ * point we just wrote hasn't surfaced in a payload within this window the run
+ * is discarded rather than reported as a multi-minute latency.
  */
-const FRESHNESS_WINDOW_MS = 5 * 60_000;
+const PENDING_WRITE_TTL_MS = 90_000;
 
+/** The last location this client wrote, awaiting its first appearance. */
+let pendingWrite: { pointAt: number; ackedAt: number } | null = null;
 /** Newest server point already measured, so idle refetches aren't re-sampled. */
 let lastMeasuredPointAt: number | null = null;
 
 /**
- * Latency from the freshest server-side data point to now (paint time).
+ * Marks a location row this client just wrote as pending. Freshness is only
+ * sampled once that point (or a newer one) shows up in a density payload, so
+ * the metric measures pipeline lag rather than how long the user stood still.
+ */
+export const markLocationWrite = (pointAt: number = Date.now()) => {
+  pendingWrite = { pointAt, ackedAt: Date.now() };
+};
+
+/**
+ * Latency from a location write being acknowledged to that data being painted.
  *
- * Only genuinely *new* data counts. A sample is skipped when:
+ * A sample is skipped when:
  * - the payload came from a widened fallback window (data sparsity), or
- * - the newest point is unchanged since the previous paint (idle refetch), or
- * - the point is already older than {@link FRESHNESS_WINDOW_MS} (stale data,
- *   not sync lag), or the clock delta is implausible.
- *
- * Without these guards a single idle user turns every poll into a multi-minute
- * "sample" and the p95 climbs forever even though sync is healthy.
+ * - this client has no pending write (nothing new to observe — an idle user
+ *   polling stale data is not sync lag), or
+ * - the payload's newest point predates the pending write (not visible yet), or
+ * - the pending write is older than {@link PENDING_WRITE_TTL_MS}, or
+ * - the newest point is unchanged since the previous paint (idle refetch).
  */
 export const recordEndToEndFreshness = (
   newestPointAt: string | null | undefined,
@@ -152,16 +163,30 @@ export const recordEndToEndFreshness = (
   const written = Date.parse(newestPointAt);
   if (!Number.isFinite(written)) return;
   if (lastMeasuredPointAt !== null && written <= lastMeasuredPointAt) return;
-  const delta = Date.now() - written;
-  if (delta < 0 || delta > FRESHNESS_WINDOW_MS) return;
+
+  const pending = pendingWrite;
+  if (!pending) return;
+  const now = Date.now();
+  if (now - pending.ackedAt > PENDING_WRITE_TTL_MS) {
+    pendingWrite = null;
+    return;
+  }
+  // Allow a small clock skew between client and server timestamps.
+  if (written < pending.pointAt - 5_000) return;
+
   lastMeasuredPointAt = written;
+  pendingWrite = null;
+  const delta = now - pending.ackedAt;
+  if (delta < 0) return;
   recordMapSyncLatency("end_to_end", delta, options);
 };
 
 /** Exposed for tests. */
 export const __resetEndToEndFreshness = () => {
   lastMeasuredPointAt = null;
+  pendingWrite = null;
 };
+
 
 /** Exposed for tests. */
 export const __flushMapSyncLatency = flush;
