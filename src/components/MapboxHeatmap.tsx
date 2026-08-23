@@ -991,7 +991,8 @@ export const MapboxHeatmap = ({
         /* control not ready */
       }
     }
-  }, []);
+  }, [requestRecenter]);
+
 
   // City selector search query
   const [citySearchQuery, setCitySearchQuery] = useState("");
