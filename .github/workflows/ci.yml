@@ -76,6 +76,13 @@ jobs:
       - name: Unit tests
         run: bun run test
 
+      - name: Notify Vercel
+        uses: vercel/repository-dispatch/actions/status@v1
+        with:
+          name: 'Vercel - the-jet-main: Prod_Deploy_Check'
+
+
+
   e2e:
     name: Playwright smoke suite
     runs-on: ubuntu-latest
