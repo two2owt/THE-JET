@@ -19,6 +19,11 @@ import type { Database } from "@/integrations/supabase/types";
 import { useLockMapWhileInteracting } from "@/lib/mapInteractionLock";
 import { activityTier } from "@/lib/activity-palette";
 import { categoryIconFor } from "@/lib/category-icon";
+import {
+  categorySynonymScore,
+  resolveVenueCategory,
+} from "@/lib/venue-categories";
+
 
 type Deal = Database["public"]["Tables"]["deals"]["Row"];
 
@@ -313,12 +318,15 @@ export const SearchResults = ({
     }
 
     // --- Venues (rank by best field match across name / category / neighborhood) ---
+    // `categorySynonymScore` lets everyday words ("drinks", "nightlife",
+    // "brunch") reach the same category the marker glyph shows on the map.
     const rankedVenues = venues
       .map((v) => ({
         venue: v,
         score: Math.max(
           matchScore(v.name, q) * 3, // name weighted highest
           matchScore(v.category, q) * 2,
+          categorySynonymScore(v.category, q) * 2,
           matchScore(v.neighborhood, q) * 2,
           matchScore(v.address ?? "", q),
         ),
@@ -334,6 +342,7 @@ export const SearchResults = ({
           matchScore(d.title, q) * 3,
           matchScore(d.venue_name, q) * 2,
           matchScore(d.deal_type, q) * 2,
+          categorySynonymScore(d.deal_type, q) * 2,
           matchScore(d.description, q),
         ),
       }))
@@ -363,7 +372,10 @@ export const SearchResults = ({
       { name: string; count: number; score: number; source: "venue" | "deal" }
     >();
     for (const v of venues) {
-      const score = matchScore(v.category, q);
+      const score = Math.max(
+        matchScore(v.category, q),
+        categorySynonymScore(v.category, q),
+      );
       if (!score) continue;
       const key = v.category.toLowerCase();
       const existing = catMap.get(key);
@@ -372,7 +384,10 @@ export const SearchResults = ({
         catMap.set(key, { name: v.category, count: 1, score, source: "venue" });
     }
     for (const d of deals) {
-      const score = matchScore(d.deal_type, q);
+      const score = Math.max(
+        matchScore(d.deal_type, q),
+        categorySynonymScore(d.deal_type, q),
+      );
       if (!score) continue;
       const key = d.deal_type.toLowerCase();
       const existing = catMap.get(key);
@@ -383,6 +398,7 @@ export const SearchResults = ({
     const categories = Array.from(catMap.values()).sort(
       (a, b) => b.score - a.score || b.count - a.count,
     );
+
 
     // --- JetCards (venues + venues derived from matching deals) ---
     const jetcardsMap = new Map<string, { venue: Venue; score: number }>();
@@ -457,14 +473,23 @@ export const SearchResults = ({
 
   /** Pick the most active venue in a category and select it. */
   const handleCategorySelect = (categoryName: string) => {
+    const target = categoryName.toLowerCase();
+    const targetId = resolveVenueCategory(categoryName).id;
     const match = venues
-      .filter((v) => v.category.toLowerCase() === categoryName.toLowerCase())
+      .filter(
+        (v) =>
+          v.category.toLowerCase() === target ||
+          // Deal types don't always mirror venue category strings; fall back
+          // to the shared taxonomy bucket so the chip always lands somewhere.
+          resolveVenueCategory(v.category).id === targetId,
+      )
       .sort((a, b) => b.activity - a.activity)[0];
     if (match) {
       onVenueSelect(match);
     }
     onClose();
   };
+
 
   /** Open a deal via the app's existing ?deal= deep-link contract handled in Index.tsx. */
   /** Fall back to the deal's venue photo when the deal has no image of its own. */
@@ -705,21 +730,39 @@ export const SearchResults = ({
                   </span>
                 </h4>
                 <div className="flex flex-wrap gap-1.5">
-                  {filteredCategories.map((cat) => (
-                    <button
-                      data-search-option="true"
-                      key={`cat-${cat.source}-${cat.name}`}
-                      onClick={() => handleCategorySelect(cat.name)}
-                      className="group inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-secondary/60 hover:bg-primary/10 hover:text-primary border border-border/60 hover:border-primary/40 text-xs font-semibold text-foreground transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95"
-                    >
-                      <Tag className="w-3 h-3" />
-                      <span className="truncate max-w-[160px]">{cat.name}</span>
-                      <span className="text-[10px] font-medium text-muted-foreground tabular-nums group-hover:text-primary/80">
-                        {cat.count}
-                      </span>
-                    </button>
-                  ))}
+                  {filteredCategories.map((cat) => {
+                    // Same glyph + accent the venue wears on the map, so a
+                    // category chip and its markers read as one thing.
+                    const def = resolveVenueCategory(cat.name);
+                    const CatIcon = def.Icon;
+                    return (
+                      <button
+                        data-search-option="true"
+                        key={`cat-${cat.source}-${cat.name}`}
+                        onClick={() => handleCategorySelect(cat.name)}
+                        aria-label={`${cat.name} — ${def.label}, ${cat.count} nearby`}
+                        className="group inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-secondary/60 hover:bg-primary/10 hover:text-primary border text-xs font-semibold text-foreground transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95"
+                        style={{
+                          borderColor: `${def.dark}40`,
+                          background: `linear-gradient(150deg, ${def.dark}1A, ${def.dark}08)`,
+                        }}
+                      >
+                        <CatIcon
+                          className="w-3.5 h-3.5 flex-shrink-0"
+                          style={{ color: def.dark }}
+                          aria-hidden="true"
+                        />
+                        <span className="truncate max-w-[160px]">
+                          {cat.name}
+                        </span>
+                        <span className="text-[10px] font-medium text-muted-foreground tabular-nums group-hover:text-primary/80">
+                          {cat.count}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
+
               </section>
             )}
 
