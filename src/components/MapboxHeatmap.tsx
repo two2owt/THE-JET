@@ -3029,33 +3029,14 @@ export const MapboxHeatmap = ({
       // Get current zoom level for dynamic sizing
       const currentZoom = mapInstance.getZoom();
 
-      // Improved zoom scaling formula - larger markers for better visibility
-      let zoomFactor: number;
-      if (currentZoom < 8) {
-        // Very zoomed out - moderate size
-        zoomFactor = Math.max(0.5, currentZoom / 16);
-      } else if (currentZoom < 12) {
-        // Medium zoom - good visibility
-        zoomFactor = 0.6 + ((currentZoom - 8) / 4) * 0.4; // 0.6 to 1.0
-      } else {
-        // Zoomed in - larger markers
-        zoomFactor = 1.0 + Math.min(0.4, (currentZoom - 12) / 10); // 1.0 to 1.4
-      }
+      // Zoom scaling — larger markers for better visibility (see markerStyles).
+      const zoomFactor = markerZoomFactor(currentZoom);
 
       // Increased base size for better visibility on dark map
       const baseSize = 42 * zoomFactor;
 
-      // Direct rendering - no skeleton markers (removed per direct-rendering architecture)
-
-      // Calculate distances between venues to detect clusters
-      const getDistance = (
-        lat1: number,
-        lng1: number,
-        lat2: number,
-        lng2: number,
-      ) => {
-        return Math.sqrt(Math.pow(lat2 - lat1, 2) + Math.pow(lng2 - lng1, 2));
-      };
+      // Cheap planar distance, used to detect neighbouring venues.
+      const getDistance = planarDistance;
 
       // All venues are visible; the previous Open-Now filter was removed from
       // the Layers panel — users can still see venue hours via the JetCard.
