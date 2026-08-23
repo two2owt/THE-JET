@@ -74,7 +74,7 @@ export async function reportEdgeError(
     const header = JSON.stringify({
       event_id: eventId,
       sent_at: new Date().toISOString(),
-ețai: undefined,
+dsn: DSN,
     });
     const itemHeader = JSON.stringify({ type: "event" });
     const payload = JSON.stringify({
