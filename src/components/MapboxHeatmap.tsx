@@ -870,14 +870,6 @@ export const MapboxHeatmap = ({
   } = useMapRecenterPolicy();
 
 
-  /**
-   * True once the user has panned/zoomed/rotated the map themselves since the
-   * last explicit recenter. While this is set, passive position fixes are not
-   * allowed to change the selected city either — a city change flies the
-   * camera, which would yank the user out of the area they are looking at.
-   */
-  const userMovedCameraRef = useRef(false);
-
   // Mirror selectedCity + onCityChange so the (one-time) geolocate handler
   // can sync the parent without re-subscribing on every prop change.
   const selectedCityRef = useRef(selectedCity);
