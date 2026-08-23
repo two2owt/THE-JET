@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { copyTextToClipboard } from "@/utils/shareUtils";
-import { Navigate, useNavigate } from "@/lib/router-compat";
+import { Navigate, useNavigate, useSearchParams } from "@/lib/router-compat";
 import { PageLayout } from "@/components/PageLayout";
 import { ProfilePageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { PageShell } from "@/components/PageShell";
