@@ -105,16 +105,17 @@ export const UpgradePrompt = ({
   );
 };
 
-// Import from lightweight utility module (avoids pulling in admin UI components)
-import { isMonetizationEnabled } from "@/lib/monetization";
+// Reactive global monetization flag (server-owned, live over Realtime).
+import { useMonetization } from "@/hooks/useMonetization";
 
 // Hook to check feature access
 export const useFeatureAccess = () => {
   const { tier, loading } = useSubscription();
+  const { enabled: monetizationActive } = useMonetization();
 
   const canAccessFeature = (requiredTier: SubscriptionTier): boolean => {
     // Check monetization status (includes admin override and release date)
-    if (!isMonetizationEnabled()) return true;
+    if (!monetizationActive) return true;
 
     if (loading) return false;
 
@@ -133,7 +134,7 @@ export const useFeatureAccess = () => {
   return {
     tier,
     loading,
-    isMonetizationActive: isMonetizationEnabled(),
+    isMonetizationActive: monetizationActive,
     canAccessFeature,
     canAccessSocialFeatures,
     canAccessVIPFeatures,
