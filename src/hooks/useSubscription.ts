@@ -67,7 +67,7 @@ function normalizeTier(value: unknown): SubscriptionTier {
 }
 
 /** An expired `subscription_end` means the row is stale — treat as free. */
-function rowToState(row: {
+export function rowToState(row: {
   subscribed: boolean | null;
   tier: string | null;
   product_id: string | null;
