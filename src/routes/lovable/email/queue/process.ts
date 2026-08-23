@@ -238,8 +238,10 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
                 {
                   run_id: payload.run_id,
                   to: payload.to,
-                  from: payload.from,
-                  sender_domain: payload.sender_domain,
+                  from: (payload.from as string) || DEFAULT_FROM,
+                  sender_domain:
+                    (payload.sender_domain as string) || DEFAULT_SENDER_DOMAIN,
+
                   subject: payload.subject,
                   html: payload.html,
                   text: payload.text,
