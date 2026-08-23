@@ -3,6 +3,8 @@ import { useLocation } from "@/lib/router-compat";
 import { Header } from "@/components/Header";
 import { useLocationTracker } from "@/hooks/useLocationTracker";
 import { useColdStartLocationFallback } from "@/hooks/useColdStartLocationFallback";
+import { CheckoutReturnHandler } from "@/components/CheckoutReturnHandler";
+
 
 const LocationPermissionPrompt = lazy(() =>
   import("@/components/LocationPermissionPrompt").then((m) => ({
