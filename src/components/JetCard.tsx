@@ -270,7 +270,7 @@ export const JetCard = memo(
       await glideHaptic();
       try {
         const { analytics } = await import("@/lib/analytics");
-        analytics.dealClicked(venue.id, venue.name, "directions");
+        analytics.getDirections(venue.id, venue.name, { surface: "jetcard" });
       } catch {
         /* noop */
       }
