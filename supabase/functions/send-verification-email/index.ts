@@ -179,6 +179,8 @@ Deno.serve(async (req) => {
     // Return a clear, actionable payload so callers can notify the user
     // and offer a retry instead of a silent skip.
     console.error("Error in verification email function:", error);
+    await reportEdgeError(FUNCTION_NAME, error, { stage: "send" });
+
     return new Response(
       JSON.stringify({
         success: true,
