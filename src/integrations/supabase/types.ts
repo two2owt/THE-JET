@@ -166,6 +166,33 @@ export type Database = {
         }
         Relationships: []
       }
+      app_config_audit: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          id: string
+          key: string
+          new_value: Json
+          old_value: Json | null
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          key: string
+          new_value: Json
+          old_value?: Json | null
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          key?: string
+          new_value?: Json
+          old_value?: Json | null
+        }
+        Relationships: []
+      }
       data_retention_job_log: {
         Row: {
           completed_at: string | null
