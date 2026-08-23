@@ -93,9 +93,10 @@ class Analytics {
     }
   }
 
-  identify(userId: string, traits?: Record<string, unknown>) {
+  identify(userId: string) {
     this.userId = userId;
   }
+
 
   track(
     eventName: AnalyticsEventName | string,
