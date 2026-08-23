@@ -35,7 +35,7 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useWebPushNotifications } from "@/hooks/useWebPushNotifications";
 import { NotificationCategorySettings } from "@/components/notifications/NotificationCategorySettings";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
-import { isMonetizationEnabled } from "@/lib/monetization";
+import { useMonetization } from "@/hooks/useMonetization";
 import { isNativeApp } from "@/lib/platform";
 import {
   openLocationSettings,
@@ -92,7 +92,8 @@ export function ProfileSettingsPanel({
     resync: resyncWebPush,
   } = useWebPushNotifications();
   const { isAdmin } = useIsAdmin();
-  const showSubscriptionSection = isMonetizationEnabled() || isAdmin;
+  const { enabled: monetizationEnabled } = useMonetization();
+  const showSubscriptionSection = monetizationEnabled || isAdmin;
 
   const [preferences, setPreferences] = useState<UserPreferencesRow | null>(
     null,

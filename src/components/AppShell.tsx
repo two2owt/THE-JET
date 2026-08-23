@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import { useLocationTracker } from "@/hooks/useLocationTracker";
 import { useColdStartLocationFallback } from "@/hooks/useColdStartLocationFallback";
 import { CheckoutReturnHandler } from "@/components/CheckoutReturnHandler";
+import { useMonetizationConfigSync } from "@/hooks/useMonetization";
 
 
 const LocationPermissionPrompt = lazy(() =>
@@ -42,6 +43,10 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
   // If no fix has landed in the last 24h (GPS denied, app closed for days),
   // force one coarse network/IP write on open so the map is never empty.
   useColdStartLocationFallback();
+
+  // Global paywall flag: loaded once and kept live so an admin flipping
+  // monetization applies to every session immediately.
+  useMonetizationConfigSync();
 
   // Safety net: if a modal unmounts while open, Radix can leave
   // `pointer-events: none` stuck on <body>, freezing the whole UI (including
