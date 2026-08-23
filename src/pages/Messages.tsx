@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "@/lib/router-compat";
 import { PageLayout } from "@/components/PageLayout";
 import { EmptyState } from "@/components/EmptyState";
+import { SignedOutPreview } from "@/components/SignedOutPreview";
+
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { useConversations, type Conversation } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
