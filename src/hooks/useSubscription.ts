@@ -211,13 +211,19 @@ export const useSubscription = () => {
     }
   };
 
+  // Unique per hook instance: reusing a channel name across mounted instances
+  // makes supabase return the already-subscribed channel, and adding a
+  // postgres_changes callback after subscribe() throws.
+  const instanceId = useId();
+
   useEffect(() => {
     let cancelled = false;
     let channel: ReturnType<typeof supabase.channel> | null = null;
 
     const subscribeToRow = (userId: string) => {
+      if (channel) return;
       channel = supabase
-        .channel(`subscribers-${userId}`)
+        .channel(`subscribers-${userId}-${instanceId}`)
         .on(
           "postgres_changes",
           {
