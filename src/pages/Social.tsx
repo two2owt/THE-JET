@@ -270,7 +270,8 @@ export default function Social() {
     return (
       <PageLayout defaultTab="social" headerConfig={headerConfig}>
         <PageShell>
-          <EmptyState
+          <SignedOutPreview
+            pageTitle="Crew"
             icon={Users}
             title="Sign in to connect"
             description="Create an account to find and connect with friends, share deals, and build your social network"
@@ -279,7 +280,25 @@ export default function Social() {
               rememberPostAuthRedirect();
               navigate("/auth");
             }}
+            samples={[
+              {
+                title: "Jordan M.",
+                subtitle: "Out in South End tonight",
+                meta: "Nearby",
+              },
+              {
+                title: "Alex R.",
+                subtitle: "Shared 3 deals this week",
+                meta: "Connect",
+              },
+              {
+                title: "Sam K.",
+                subtitle: "Reviewed 12 venues",
+                meta: "New",
+              },
+            ]}
           />
+
         </PageShell>
       </PageLayout>
     );
