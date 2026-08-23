@@ -473,14 +473,23 @@ export const SearchResults = ({
 
   /** Pick the most active venue in a category and select it. */
   const handleCategorySelect = (categoryName: string) => {
+    const target = categoryName.toLowerCase();
+    const targetId = resolveVenueCategory(categoryName).id;
     const match = venues
-      .filter((v) => v.category.toLowerCase() === categoryName.toLowerCase())
+      .filter(
+        (v) =>
+          v.category.toLowerCase() === target ||
+          // Deal types don't always mirror venue category strings; fall back
+          // to the shared taxonomy bucket so the chip always lands somewhere.
+          resolveVenueCategory(v.category).id === targetId,
+      )
       .sort((a, b) => b.activity - a.activity)[0];
     if (match) {
       onVenueSelect(match);
     }
     onClose();
   };
+
 
   /** Open a deal via the app's existing ?deal= deep-link contract handled in Index.tsx. */
   /** Fall back to the deal's venue photo when the deal has no image of its own. */
