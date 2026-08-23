@@ -33,17 +33,17 @@ const CDN_LOAD_TIMEOUT = 8000; // 8 seconds
 const waitForCDNMapbox = (): Promise<MapboxGLModule | null> => {
   return new Promise((resolve) => {
     // Check immediately
-    if (typeof window !== "undefined" && (window as any).mapboxgl) {
-      resolve((window as any).mapboxgl);
+    if (typeof window !== "undefined" && window.mapboxgl) {
+      resolve(window.mapboxgl);
       return;
     }
 
     // Poll every 100ms for up to CDN_LOAD_TIMEOUT
     const startTime = Date.now();
     const checkInterval = setInterval(() => {
-      if (typeof window !== "undefined" && (window as any).mapboxgl) {
+      if (typeof window !== "undefined" && window.mapboxgl) {
         clearInterval(checkInterval);
-        resolve((window as any).mapboxgl);
+        resolve(window.mapboxgl);
       } else if (Date.now() - startTime > CDN_LOAD_TIMEOUT) {
         clearInterval(checkInterval);
         console.warn(
@@ -146,6 +146,23 @@ import {
 } from "./map/LiveStatsPanel";
 import { useDensityLayer } from "./map/hooks/useDensityLayer";
 import { useMarkerDeclutter } from "./map/hooks/useMarkerDeclutter";
+import {
+  featuresOf,
+  lineCoords,
+  numProp,
+  pointCoords,
+  type MapFeature,
+  type Position,
+} from "./map/geojson";
+import { useMapRecenterPolicy } from "./map/hooks/useMapRecenterPolicy";
+import { useMapLayerToggles } from "./map/hooks/useMapLayerToggles";
+import {
+  createClusterMarkerElement,
+  getCategoryFloral,
+  getCategoryIcon,
+  markerZoomFactor,
+  planarDistance,
+} from "./map/markerStyles";
 import { clusterVenues, CLUSTER_MAX_ZOOM } from "./map/venueClusters";
 import {
   useMovementPathsLayer,
@@ -211,14 +228,14 @@ const getPlatformSettings = (isMobile: boolean) => {
   const isAndroid = /Android/.test(navigator.userAgent);
   const isPWA = window.matchMedia("(display-mode: standalone)").matches;
   const isLowPowerMode =
-    "connection" in navigator && (navigator as any).connection?.saveData;
+    ("connection" in navigator && navigator.connection?.saveData) ?? false;
   const hasReducedMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
   ).matches;
   const isSlowConnection =
     "connection" in navigator &&
     ["slow-2g", "2g", "3g"].includes(
-      (navigator as any).connection?.effectiveType,
+      navigator.connection?.effectiveType ?? "",
     );
 
   return {
@@ -862,15 +879,13 @@ export const MapboxHeatmap = ({
    * and the underlying coordinates, but must never move the camera, because
    * the user may be deliberately browsing another city.
    */
-  const recenterIntentRef = useRef(false);
+  const {
+    recenterIntentRef,
+    userMovedCameraRef,
+    requestRecenter,
+    consumeRecenterIntent,
+  } = useMapRecenterPolicy();
 
-  /**
-   * True once the user has panned/zoomed/rotated the map themselves since the
-   * last explicit recenter. While this is set, passive position fixes are not
-   * allowed to change the selected city either — a city change flies the
-   * camera, which would yank the user out of the area they are looking at.
-   */
-  const userMovedCameraRef = useRef(false);
 
   // Mirror selectedCity + onCityChange so the (one-time) geolocate handler
   // can sync the parent without re-subscribing on every prop change.
@@ -883,31 +898,6 @@ export const MapboxHeatmap = ({
     onCityChangeRef.current = onCityChange;
   }, [onCityChange]);
 
-  /**
-   * How long an explicit recenter request stays valid. If the fix takes longer
-   * than this (permission dialog left open, GPS cold start), the request is
-   * treated as abandoned rather than firing a surprise camera move minutes
-   * later while the user is browsing somewhere else.
-   */
-  const RECENTER_INTENT_TTL_MS = 30_000;
-  const recenterIntentAtRef = useRef(0);
-
-  /** Marks an explicit user request to be taken to their own location. */
-  const requestRecenter = useCallback(() => {
-    recenterIntentRef.current = true;
-    recenterIntentAtRef.current = Date.now();
-    // A fresh recenter resets "the user is browsing elsewhere".
-    userMovedCameraRef.current = false;
-  }, []);
-
-  /** Consumes a pending recenter request; false for passive position fixes. */
-  const consumeRecenterIntent = useCallback(() => {
-    const pending =
-      recenterIntentRef.current &&
-      Date.now() - recenterIntentAtRef.current < RECENTER_INTENT_TTL_MS;
-    recenterIntentRef.current = false;
-    return pending;
-  }, []);
 
   /**
    * Always resolves a *fresh* position and pushes it through the shared
@@ -1295,132 +1285,36 @@ export const MapboxHeatmap = ({
   //   • Flow Paths off → Live Stats off (stats needs the paths series).
   //   • Live Stats on → Heatmap + Flow Paths on.
   //   • Time-lapse on → Heatmap on, Flow Paths off (⇒ Live Stats off).
-  const applyDensityLayer = useCallback(
-    (next: boolean) => {
-      setShowDensityLayer(next);
-      if (next) {
-        setTimeFilter("all");
-        setHourFilter(undefined);
-        setDayFilter(undefined);
-        scheduleDensityRefresh();
-      } else {
-        clearDensityRefreshTimer();
-        setIsLoadingHeatmap(false);
-        setTimelapseMode(false);
-        setShowLiveStats(false);
-        setIsLoadingStats(false);
-      }
-    },
-    [scheduleDensityRefresh, clearDensityRefreshTimer],
-  );
-
-  const applyPathsLayer = useCallback(
-    (next: boolean) => {
-      setShowMovementPaths(next);
-      if (next) {
-        setTimelapseMode(false);
-        schedulePathsRefresh();
-      } else {
-        clearPathsRefreshTimer();
-        setIsLoadingPaths(false);
-        setShowLiveStats(false);
-        setIsLoadingStats(false);
-      }
-    },
-    [schedulePathsRefresh, clearPathsRefreshTimer],
-  );
-
-  const applyParkingLayer = useCallback((next: boolean) => {
-    setShowParking(next);
-    try {
-      if (map.current?.getLayer("parking-icons")) {
-        map.current.setLayoutProperty(
-          "parking-icons",
-          "visibility",
-          next ? "visible" : "none",
-        );
-      }
-    } catch {
-      /* layer may not exist yet */
-    }
-  }, []);
-
-  const applyLiveStats = useCallback(
-    (next: boolean) => {
-      setShowLiveStats(next);
-      if (next) {
-        setIsLoadingStats(true);
-        applyDensityLayer(true);
-        applyPathsLayer(true);
-        // Both "on" paths above never clear stats, but paths-on also drops
-        // Time-lapse, which is the intended mutual exclusion.
-        setShowLiveStats(true);
-      } else {
-        setIsLoadingStats(false);
-      }
-    },
-    [applyDensityLayer, applyPathsLayer],
-  );
-
-  const applyTimelapse = useCallback(
-    (next: boolean) => {
-      if (next) {
-        applyDensityLayer(true);
-        applyPathsLayer(false);
-        setTimelapseMode(true);
-        timelapse.loadHourlyData();
-      } else {
-        setTimelapseMode(false);
-      }
-    },
-    [applyDensityLayer, applyPathsLayer, timelapse],
-  );
-
-  // Reset to defaults — clears localStorage and restores factory settings
-  const handleResetToDefaults = useCallback(() => {
-    triggerHaptic("medium");
-
-    // Order matters: wipe every source of persisted state BEFORE resetting
-    // React state. If we reset state first, the persistence effects fire
-    // with the new defaults and race with the localStorage clear — and any
-    // early return / thrown error would leave stale entries behind that
-    // would resurrect on the next refresh.
-    //
-    // 1. URL first — it has read-priority over localStorage on next boot.
-    clearPersistedLayerUrl();
-
-    // 2. Persisted layer toggles.
-    clearPersistedLayerState();
-
-    // 3. Persisted filter / time-lapse settings.
-    Object.values(FILTER_KEYS).forEach((key) => {
-      try {
-        localStorage.removeItem(key);
-      } catch {
-        /* ignore */
-      }
-    });
-
-    // Reset all state to defaults
-    setShowDensityLayer(false);
-    setShowParking(false);
-    setShowLiveStats(false);
-    setShowMovementPaths(false);
-    setTimeFilter("all");
-    setPathTimeFilter("all");
-    setDayFilter(undefined);
-    setHourFilter(undefined);
-    setTimelapseMode(false);
-    setMinPathFrequency(2);
-
-    // Reset data-window slider to its default
-    setPathsWindowMinutes(null);
-
-    // Reset time-lapse playback
-    if (timelapse.isPlaying) timelapse.pause();
-    timelapse.setSpeed(1);
-    timelapse.setHour(new Date().getHours());
-  }, [timelapse]);
+  const {
+    applyDensityLayer,
+    applyPathsLayer,
+    applyParkingLayer,
+    applyLiveStats,
+    applyTimelapse,
+    handleResetToDefaults,
+  } = useMapLayerToggles({
+    mapRef: map,
+    timelapse,
+    filterKeys: FILTER_KEYS,
+    setShowDensityLayer,
+    setShowMovementPaths,
+    setShowParking,
+    setShowLiveStats,
+    setTimelapseMode,
+    setIsLoadingHeatmap,
+    setIsLoadingPaths,
+    setIsLoadingStats,
+    setTimeFilter,
+    setPathTimeFilter,
+    setHourFilter,
+    setDayFilter,
+    setMinPathFrequency,
+    setPathsWindowMinutes,
+    scheduleDensityRefresh,
+    clearDensityRefreshTimer,
+    schedulePathsRefresh,
+    clearPathsRefreshTimer,
+  });
 
   // ── Scoped resets ─────────────────────────────────────────────────────
   // The heatmap no longer has its own reset button — the single "Reset to
@@ -1431,24 +1325,18 @@ export const MapboxHeatmap = ({
   // Derived "top hotspot" (max density grid cell) and "top route"
   // (max frequency movement path) for the current data window.
   const topHotspot = useMemo(() => {
-    const feats = densityData?.geojson?.features as any[] | undefined;
-    if (!feats?.length) return null;
-    let best: any = null;
+    let best: Position | null = null;
     let bestDensity = -1;
-    for (const f of feats) {
-      const d = Number(f?.properties?.density ?? 0);
-      if (
-        d > bestDensity &&
-        f?.geometry?.type === "Point" &&
-        Array.isArray(f.geometry.coordinates)
-      ) {
-        best = f;
-        bestDensity = d;
-      }
+    for (const f of featuresOf(densityData?.geojson)) {
+      const d = numProp(f, "density");
+      if (d <= bestDensity || f?.geometry?.type !== "Point") continue;
+      const coords = pointCoords(f);
+      if (!coords) continue;
+      best = coords;
+      bestDensity = d;
     }
     if (!best) return null;
-    const [lng, lat] = best.geometry.coordinates as [number, number];
-    return { lng, lat, density: bestDensity };
+    return { lng: best[0], lat: best[1], density: bestDensity };
   }, [densityData]);
 
   // ── Tap-to-inspect: heat cell details ────────────────────────────────
@@ -1465,17 +1353,14 @@ export const MapboxHeatmap = ({
     const mapInstance = map.current;
     if (!mapInstance || !mapLoaded || !showDensityLayer) return;
 
-    const handleHeatClick = (e: any) => {
-      const feats = densityData?.geojson?.features as any[] | undefined;
-      if (!feats?.length) return;
-
+    const handleHeatClick = (e: MapboxGL.MapMouseEvent) => {
       // Nearest grid cell within a finger-sized radius of the tap.
       const threshold = isMobile ? 44 : 32;
-      let best: any = null;
+      let best: { coords: Position; feature: MapFeature } | null = null;
       let bestDist = Infinity;
-      for (const feature of feats) {
-        const coords = feature?.geometry?.coordinates;
-        if (!Array.isArray(coords)) continue;
+      for (const feature of featuresOf(densityData?.geojson)) {
+        const coords = pointCoords(feature);
+        if (!coords) continue;
         const projected = mapInstance.project({
           lng: coords[0],
           lat: coords[1],
@@ -1486,7 +1371,7 @@ export const MapboxHeatmap = ({
         );
         if (dist < bestDist) {
           bestDist = dist;
-          best = feature;
+          best = { coords, feature };
         }
       }
 
@@ -1495,15 +1380,17 @@ export const MapboxHeatmap = ({
         return;
       }
 
-      const [lng, lat] = best.geometry.coordinates as [number, number];
-      const density = Number(best.properties?.density ?? 0);
+      const [lng, lat] = best.coords;
+      const density = numProp(best.feature, "density");
       triggerHaptic("light");
       setInspectedCell({
         lat,
         lng,
         density,
-        intensity: Number(
-          best.properties?.intensity ?? Math.min(density / 10, 1),
+        intensity: numProp(
+          best.feature,
+          "intensity",
+          Math.min(density / 10, 1),
         ),
       });
     };
@@ -1515,26 +1402,21 @@ export const MapboxHeatmap = ({
   }, [mapLoaded, showDensityLayer, densityData, isMobile]);
 
   const topRoute = useMemo(() => {
-    const feats = pathData?.geojson?.features as any[] | undefined;
-    if (!feats?.length) return null;
-    let best: any = null;
+    let best: MapFeature | null = null;
     let bestFreq = -1;
-    for (const f of feats) {
-      const freq = Number(f?.properties?.frequency ?? 0);
+    for (const f of featuresOf(pathData?.geojson)) {
+      const freq = numProp(f, "frequency");
       if (
         freq > bestFreq &&
         f?.geometry?.type === "LineString" &&
-        Array.isArray(f.geometry.coordinates)
+        lineCoords(f).length > 0
       ) {
         best = f;
         bestFreq = freq;
       }
     }
     if (!best) return null;
-    return {
-      frequency: bestFreq,
-      coordinates: best.geometry.coordinates as [number, number][],
-    };
+    return { frequency: bestFreq, coordinates: lineCoords(best) };
   }, [pathData]);
 
   const handleJumpToHotspot = useCallback(() => {
@@ -2791,7 +2673,7 @@ export const MapboxHeatmap = ({
     let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
     const scheduleInit = () => {
       if (cancelled) return;
-      const ric: any = (window as any).requestIdleCallback;
+      const ric: any = window.requestIdleCallback;
       if (typeof ric === "function") {
         idleHandle = ric(
           () => {
@@ -2813,8 +2695,8 @@ export const MapboxHeatmap = ({
       cancelled = true;
       cancelAnimationFrame(rafHandle1);
       cancelAnimationFrame(rafHandle2);
-      if (idleHandle != null && (window as any).cancelIdleCallback) {
-        (window as any).cancelIdleCallback(idleHandle);
+      if (idleHandle != null && window.cancelIdleCallback) {
+        window.cancelIdleCallback(idleHandle);
       }
       if (timeoutHandle) clearTimeout(timeoutHandle);
       cleanupMap();
@@ -3082,51 +2964,7 @@ export const MapboxHeatmap = ({
     // Light/streets basemaps get light glass + deeper ink; dark/satellite get dark glass.
     const isDarkTheme = !(mapStyle === "light" || mapStyle === "streets");
 
-    // Floral palette — each category maps to a botanical hue with a light-map and
-    // dark-map variant so glyphs stay legible on either basemap.
-    const getCategoryFloral = (
-      category: string,
-    ): { light: string; dark: string } => {
-      const c = (category || "").toLowerCase();
-      if (/(bar|cocktail|lounge|pub|brew|beer|wine|spirits)/.test(c))
-        return { light: "#7C4DBE", dark: "#C6A0F5" }; // wisteria
-      if (/(coffee|cafe|tea|bakery|dessert)/.test(c))
-        return { light: "#B4682E", dark: "#F0B27A" }; // marigold / calendula
-      if (/(music|concert|live|venue|night|club|dj)/.test(c))
-        return { light: "#A8286B", dark: "#F58BC0" }; // orchid
-      if (/(event|festival|theater|theatre|show|comedy)/.test(c))
-        return { light: "#B8860B", dark: "#F5D06F" }; // sunflower
-      if (/(gym|fitness|yoga|sport|run|spa)/.test(c))
-        return { light: "#2E7D6B", dark: "#7FDCC2" }; // fern / eucalyptus
-      if (/(shop|retail|store|market|boutique)/.test(c))
-        return { light: "#1E6FA8", dark: "#7FC4F2" }; // hydrangea
-      if (/(hotel|stay|lodging|resort)/.test(c))
-        return { light: "#6B5BA8", dark: "#B3AAF0" }; // lavender
-      return { light: "#C13B5A", dark: "#FF8FA3" }; // camellia / rose (food default)
-    };
-
-    // Category → Lucide SVG path map (24x24 viewBox)
-    const getCategoryIcon = (category: string): string => {
-      const c = (category || "").toLowerCase();
-      // Lucide path d-strings
-      if (/(bar|cocktail|lounge|pub|brew|beer|wine|spirits)/.test(c))
-        // wine / martini-ish (martini glass)
-        return '<path d="M8 22h8"/><path d="M12 11v11"/><path d="M19 3H5l7 8z"/>';
-      if (/(coffee|cafe|tea|bakery|dessert)/.test(c))
-        return '<path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/>';
-      if (/(music|concert|live|venue|night|club|dj)/.test(c))
-        return '<circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/><path d="M9 18V5l12-2v13"/>';
-      if (/(event|festival|theater|theatre|show|comedy)/.test(c))
-        return '<path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/>';
-      if (/(gym|fitness|yoga|sport|run|spa)/.test(c))
-        return '<path d="M6.5 6.5 17.5 17.5"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/>';
-      if (/(shop|retail|store|market|boutique)/.test(c))
-        return '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>';
-      if (/(hotel|stay|lodging|resort)/.test(c))
-        return '<path d="M2 22V8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v14"/><path d="M2 18h20"/><circle cx="8" cy="12" r="2"/>';
-      // default: utensils (food / restaurant)
-      return '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>';
-    };
+    // Category palette + glyphs live in ./map/markerStyles (pure helpers).
 
     // Use requestAnimationFrame for smoother updates
     const passId = ++markerPassRef.current;
@@ -3143,33 +2981,14 @@ export const MapboxHeatmap = ({
       // Get current zoom level for dynamic sizing
       const currentZoom = mapInstance.getZoom();
 
-      // Improved zoom scaling formula - larger markers for better visibility
-      let zoomFactor: number;
-      if (currentZoom < 8) {
-        // Very zoomed out - moderate size
-        zoomFactor = Math.max(0.5, currentZoom / 16);
-      } else if (currentZoom < 12) {
-        // Medium zoom - good visibility
-        zoomFactor = 0.6 + ((currentZoom - 8) / 4) * 0.4; // 0.6 to 1.0
-      } else {
-        // Zoomed in - larger markers
-        zoomFactor = 1.0 + Math.min(0.4, (currentZoom - 12) / 10); // 1.0 to 1.4
-      }
+      // Zoom scaling — larger markers for better visibility (see markerStyles).
+      const zoomFactor = markerZoomFactor(currentZoom);
 
       // Increased base size for better visibility on dark map
       const baseSize = 42 * zoomFactor;
 
-      // Direct rendering - no skeleton markers (removed per direct-rendering architecture)
-
-      // Calculate distances between venues to detect clusters
-      const getDistance = (
-        lat1: number,
-        lng1: number,
-        lat2: number,
-        lng2: number,
-      ) => {
-        return Math.sqrt(Math.pow(lat2 - lat1, 2) + Math.pow(lng2 - lng1, 2));
-      };
+      // Cheap planar distance, used to detect neighbouring venues.
+      const getDistance = planarDistance;
 
       // All venues are visible; the previous Open-Now filter was removed from
       // the Layers panel — users can still see venue hours via the JetCard.
@@ -3187,32 +3006,7 @@ export const MapboxHeatmap = ({
           nextIndex.set(clusterKey, reusedCluster);
           return;
         }
-        const size = Math.min(64, 40 + Math.log2(count) * 8);
-        const el = document.createElement("div");
-        el.className = "venue-cluster-marker";
-        el.setAttribute("role", "button");
-        el.setAttribute("aria-label", `${count} venues — zoom in`);
-        el.style.cssText = `
-          width: ${size}px;
-          height: ${size}px;
-          display: grid;
-          place-items: center;
-          border-radius: 9999px;
-          cursor: pointer;
-          color: ${isDarkTheme ? "#F5F5F5" : "#141414"};
-          font-weight: 700;
-          font-size: ${Math.max(12, size * 0.3)}px;
-          background: ${
-            isDarkTheme ? "rgba(20,20,20,0.62)" : "rgba(255,255,255,0.72)"
-          };
-          border: 1.5px solid rgba(201,169,97,0.65);
-          box-shadow: 0 6px 18px rgba(0,0,0,0.35);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-          opacity: 0;
-          animation: markerFadeIn 0.35s ease-out forwards;
-        `;
-        el.textContent = count > 99 ? "99+" : String(count);
+        const el = createClusterMarkerElement(count, isDarkTheme);
 
         el.addEventListener("click", (e) => {
           e.stopPropagation();

@@ -12,8 +12,8 @@ export const getMapboxTokenFromCache = (): string | null => {
 
 // Check for preloaded token from HTML shell (set before React hydration)
 const getPreloadedToken = (): string | null => {
-  if (typeof window !== "undefined" && (window as any).__mapboxToken) {
-    return (window as any).__mapboxToken;
+  if (typeof window !== "undefined" && window.__mapboxToken) {
+    return window.__mapboxToken;
   }
   return null;
 };
@@ -67,9 +67,9 @@ export const useMapboxToken = (options: UseMapboxTokenOptions = {}) => {
     }
 
     // Check if HTML shell started a fetch we can await
-    if (typeof window !== "undefined" && (window as any).__mapboxTokenPromise) {
+    if (typeof window !== "undefined" && window.__mapboxTokenPromise) {
       try {
-        await (window as any).__mapboxTokenPromise;
+        await window.__mapboxTokenPromise;
         const preloaded = getPreloadedToken();
         if (preloaded) {
           if (import.meta.env.DEV)
