@@ -125,9 +125,3 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
-
-
-      - name: Notify Vercel
-        uses: vercel/repository-dispatch/actions/status@v1
-        with:
-          name: 'Vercel - the-jet-main: Prod_Deploy_Check'
