@@ -24,10 +24,10 @@ export const SUBSCRIPTION_TIERS = {
     priceId: null,
     productId: null,
     features: [
-      "Deal discovery",
-      "Favorites & bookmarks",
-      "Search history",
-      "Location-based alerts",
+      "Discover live deals & events nearby",
+      "Save favorite venues & deals",
+      "Personalized search & recommendations",
+      "Location-based deal alerts",
     ],
   },
   jet_plus: {
@@ -37,10 +37,10 @@ export const SUBSCRIPTION_TIERS = {
     productId: "prod_TZO4ZimXhwOsHJ",
     features: [
       "Everything in JET",
-      "Friend connections",
-      "Social deal sharing",
-      "Venue reviews",
-      "Priority support",
+      "Connect with friends & see who's out",
+      "Share deals & venues with your crew",
+      "Write venue reviews & build reputation",
+      "Priority in-app support",
     ],
   },
   jetx: {
@@ -50,12 +50,12 @@ export const SUBSCRIPTION_TIERS = {
     productId: "prod_TZO4046HaI8g2t",
     features: [
       "Everything in JET+",
-      "VIP exclusive deals",
-      "Concierge service",
-      "Priority venue access",
-      "Early access to features",
+      "Unlock VIP-only deals & experiences",
+      "Skip-the-line venue access & reservations",
+      "Concierge recommendations & early features",
+      "First access to new cities & premium events",
     ],
-  },
+  }
 } as const;
 
 const VALID_TIERS: SubscriptionTier[] = ["free", "jet_plus", "jetx"];
