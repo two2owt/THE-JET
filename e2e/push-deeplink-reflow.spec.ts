@@ -57,7 +57,18 @@ test.describe("push deep link reflow on resume", () => {
 
   test("no layout jump after background + rotation", async ({ page }) => {
     await page.goto(PUSH_DEEP_LINK, { waitUntil: "domcontentloaded" });
-    await page.waitForTimeout(1500);
+    // Wait for hydration to publish the viewport variables instead of racing
+    // a fixed timeout (slow CI machines hydrate well after 1.5s).
+    await page.waitForFunction(
+      () =>
+        parseFloat(
+          getComputedStyle(document.documentElement).getPropertyValue(
+            "--viewport-dvh",
+          ),
+        ) > 0,
+      undefined,
+      { timeout: 20_000 },
+    );
 
     const initial = await readState(page);
     expect(initial.dvh).toBeCloseTo(initial.inner, 0);
