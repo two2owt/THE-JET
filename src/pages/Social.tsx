@@ -18,6 +18,8 @@ import { useNavigate } from "@/lib/router-compat";
 import { toast } from "sonner";
 import { PageLayout } from "@/components/PageLayout";
 import { EmptyState } from "@/components/EmptyState";
+import { SignedOutPreview } from "@/components/SignedOutPreview";
+
 import { ConnectionProfileDialog } from "@/components/ConnectionProfileDialog";
 import { ChatDialog } from "@/components/ChatDialog";
 import { useUnreadCounts } from "@/hooks/useMessages";
