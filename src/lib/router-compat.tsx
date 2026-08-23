@@ -60,7 +60,6 @@ export function useNavigate(): NavigateFn {
         return;
       }
       const { pathname, search, hash } = parseTo(to);
-      console.log('NAVDBG', pathname, new Error().stack);
       tsNav({
         to: pathname,
         search: search as never,
@@ -146,7 +145,6 @@ export function useSearchParams(): [
       next.forEach((v, k) => {
         searchObj[k] = v;
       });
-      console.log('SPDBG', live.pathname, JSON.stringify(searchObj), new Error().stack);
       nav({
         to: live.pathname,
         search: searchObj as never,
