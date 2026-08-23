@@ -275,7 +275,8 @@ export default function Favorites() {
     return (
       <PageLayout defaultTab="favorites" headerConfig={headerConfig}>
         <PageShell>
-          <EmptyState
+          <SignedOutPreview
+            pageTitle="Saved"
             icon={Heart}
             title="Sign in to view favorites"
             description="Create an account to save and track your favorite deals across all venues"
@@ -284,11 +285,29 @@ export default function Favorites() {
               rememberPostAuthRedirect();
               navigate("/auth");
             }}
+            samples={[
+              {
+                title: "Rooftop happy hour",
+                subtitle: "Uptown · Half-price cocktails",
+                meta: "Open",
+              },
+              {
+                title: "Late-night tacos",
+                subtitle: "NoDa · 2-for-1 until 1am",
+                meta: "Saved",
+              },
+              {
+                title: "Live jazz sessions",
+                subtitle: "South End · No cover before 9",
+                meta: "Tonight",
+              },
+            ]}
           />
         </PageShell>
       </PageLayout>
     );
   }
+
 
   if (favoritesLoading) {
     return (
