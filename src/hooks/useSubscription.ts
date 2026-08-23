@@ -154,22 +154,47 @@ export const useSubscription = () => {
     }
   }, [readFromDb]);
 
-  const createCheckout = async (priceId: string) => {
+  const createCheckout = async (
+    priceId: string,
+    opts?: { tier?: SubscriptionTier; returnPath?: string },
+  ) => {
     try {
       const { data, error } = await supabase.functions.invoke(
         "create-checkout",
-        { body: { priceId } },
+        {
+          body: {
+            priceId,
+            tier: opts?.tier,
+            returnPath: opts?.returnPath,
+          },
+        },
       );
 
       if (error) throw error;
-      if (data?.url) {
-        window.open(data.url, "_blank");
+      if (!data?.url) throw new Error("Checkout session had no URL");
+
+      // In a standalone PWA / native shell a new tab is either blocked or
+      // orphaned from the app session, so navigate in place. On the web we
+      // prefer a new tab but fall back to same-tab when the popup is blocked.
+      const standalone =
+        typeof window !== "undefined" &&
+        (window.matchMedia?.("(display-mode: standalone)").matches ||
+          (window.navigator as { standalone?: boolean }).standalone === true ||
+          Boolean((window as { Capacitor?: unknown }).Capacitor));
+
+      if (standalone) {
+        window.location.href = data.url;
+        return;
       }
+
+      const opened = window.open(data.url, "_blank", "noopener,noreferrer");
+      if (!opened) window.location.href = data.url;
     } catch (err) {
       console.error("Error creating checkout:", err);
       throw err;
     }
   };
+
 
   const openCustomerPortal = async () => {
     try {
