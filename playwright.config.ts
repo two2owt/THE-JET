@@ -28,7 +28,8 @@ export default defineConfig({
         // exposes one at /bin/chromium via PLAYWRIGHT_CHROMIUM_PATH.
         launchOptions: {
           executablePath:
-            process.env.PLAYWRIGHT_CHROMIUM_PATH || undefined,
+            process.env.PLAYWRIGHT_CHROMIUM_PATH ||
+            (process.env.CI ? undefined : "/bin/chromium"),
         },
       },
     },
