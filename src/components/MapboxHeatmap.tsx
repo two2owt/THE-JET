@@ -862,7 +862,13 @@ export const MapboxHeatmap = ({
    * and the underlying coordinates, but must never move the camera, because
    * the user may be deliberately browsing another city.
    */
-  const recenterIntentRef = useRef(false);
+  const {
+    recenterIntentRef,
+    userMovedCameraRef,
+    requestRecenter,
+    consumeRecenterIntent,
+  } = useMapRecenterPolicy();
+
 
   /**
    * True once the user has panned/zoomed/rotated the map themselves since the
