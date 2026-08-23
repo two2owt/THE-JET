@@ -1004,7 +1004,15 @@ export const MapboxHeatmap = ({
    * selection is never overridden. A new fix must be at least
    * RE_DETECT_MIN_METERS away from the last one we acted on before we
    * re-resolve the nearest city, so GPS jitter can't thrash the selector.
+   *
+   * This watcher is passive: it keeps the user's own coordinates and marker
+   * fresh, but it never recenters the camera, and it will not switch the
+   * selected city once the user has started browsing the map themselves
+   * (switching cities flies the camera, which is the same yank by another
+   * name). The moment they tap "find my location" the intent flag clears and
+   * detection resumes.
    */
+
   const lastWatchFixRef = useRef<{ lat: number; lng: number } | null>(null);
   useEffect(() => {
     if (!isUsingCurrentLocation) {
