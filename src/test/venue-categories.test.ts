@@ -13,7 +13,10 @@ describe("venue category taxonomy", () => {
     expect(resolveVenueCategory("Night Club").id).toBe("nightlife");
     expect(resolveVenueCategory("Art Gallery").id).toBe("arts");
     expect(resolveVenueCategory("Greenway Park").id).toBe("outdoors");
-    expect(resolveVenueCategory("Sports Bar").id).toBe("nightlife");
+    // "Sports Bar" is a bar first — bar beats sports in the ordered list.
+    expect(resolveVenueCategory("Sports Bar").id).toBe("bar");
+    expect(resolveVenueCategory("Stadium").id).toBe("sports");
+
   });
 
   it("falls back to food for unknown or empty categories", () => {
