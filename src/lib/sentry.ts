@@ -1,14 +1,20 @@
 /**
  * Sentry is loaded dynamically so it never lands in the main chunk.
  *
- * IMPORTANT: `VITE_SENTRY_DSN` is inlined at build time. If it is absent from
- * the production build environment, crash reporting silently no-ops and the
- * first bad release is invisible. `initSentry()` therefore logs loudly instead
- * of returning quietly, and `assertSentryConfigured()` lets CI fail a release
- * build that would ship blind.
+ * The DSN is a *publishable* credential — it ships inside every browser bundle
+ * by design and only grants the ability to send events to this project. We
+ * therefore keep the JET project DSN in source as the default so production
+ * crash reporting can never silently ship blind on a missing build variable.
+ * `VITE_SENTRY_DSN` still wins when set, so a fork or a separate environment
+ * can point at its own Sentry project without a code change.
  */
 
-const DSN = import.meta.env.VITE_SENTRY_DSN as string | undefined;
+/** JET's Sentry project (creative-breakroom-llc-s2 / jet-around). */
+const DEFAULT_DSN =
+  "https://7ccf8418e29c6b170be8765548d80e18@o4511957624553472.ingest.us.sentry.io/4511957744680960";
+
+const DSN =
+  (import.meta.env.VITE_SENTRY_DSN as string | undefined) || DEFAULT_DSN;
 
 /** True when a DSN is present and Sentry will actually report. */
 export const isSentryConfigured = () => Boolean(DSN);
@@ -19,11 +25,10 @@ export const initSentry = async () => {
   if (!import.meta.env.PROD) return;
 
   if (!DSN) {
-    // Loud, once, in production only. A missing DSN is a deploy misconfig,
-    // not a normal state.
+    // Should be unreachable now that a default ships in source, but a bad
+    // override should still be loud rather than silently disabling reporting.
     console.error(
-      "[observability] VITE_SENTRY_DSN is not set in this production build — " +
-        "crash reporting is DISABLED. Add the DSN to the build environment.",
+      "[observability] No Sentry DSN resolved — crash reporting is DISABLED.",
     );
     return;
   }
