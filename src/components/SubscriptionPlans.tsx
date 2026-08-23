@@ -112,8 +112,24 @@ export const SubscriptionPlans = () => {
     );
   }
 
+  const tierTaglines: Record<SubscriptionTier, string> = {
+    free: "Discover what's happening near you",
+    jet_plus: "Connect and share with your crew",
+    jetx: "VIP access to exclusive experiences",
+  };
+
   return (
     <div className="space-y-6">
+      <div className="text-center space-y-2">
+        <h3 className="text-lg font-semibold tracking-tight">
+          Choose your JET experience
+        </h3>
+        <p className="text-sm text-muted-foreground max-w-md mx-auto">
+          Start free, unlock social features with JET+, or go VIP with JETx for
+          exclusive deals and priority access.
+        </p>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-3">
         {(Object.keys(SUBSCRIPTION_TIERS) as SubscriptionTier[]).map(
           (tierKey) => {
@@ -152,7 +168,10 @@ export const SubscriptionPlans = () => {
                     {tierIcons[tierKey]}
                   </div>
                   <CardTitle className="text-xl">{tier.name}</CardTitle>
-                  <CardDescription>
+                  <p className="text-xs text-primary font-medium mt-1">
+                    {tierTaglines[tierKey]}
+                  </p>
+                  <CardDescription className="pt-2">
                     {tier.price === 0 ? (
                       <span className="text-2xl font-bold text-foreground">
                         Free
