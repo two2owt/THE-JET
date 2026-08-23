@@ -8,6 +8,18 @@ const DEFAULT_SEND_DELAY_MS = 200
 const DEFAULT_AUTH_TTL_MINUTES = 15
 const DEFAULT_TRANSACTIONAL_TTL_MINUTES = 60
 
+// Messages enqueued from Postgres (alerting, triggers) carry no sender fields,
+// which made the send API reject them with 400 missing_parameter "from" on every
+// attempt until they dead-lettered. Fall back to the project's verified sender.
+const DEFAULT_SENDER_DOMAIN = 'notify.www.jet-around.com'
+const DEFAULT_FROM = `JET <noreply@${DEFAULT_SENDER_DOMAIN}>`
+
+// A 403 is usually a permanent config error, but domain verification can flap
+// transiently. Give those messages a couple of retries before dead-lettering,
+// otherwise a momentary blip permanently drops real user email.
+const MAX_FORBIDDEN_RETRIES = 2
+
+
 // Check if an error is a rate-limit (429) response.
 // Uses EmailAPIError.status when available (email-js >=0.x with structured errors),
 // falls back to parsing the error message for older versions.
@@ -226,8 +238,10 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
                 {
                   run_id: payload.run_id,
                   to: payload.to,
-                  from: payload.from,
-                  sender_domain: payload.sender_domain,
+                  from: (payload.from as string) || DEFAULT_FROM,
+                  sender_domain:
+                    (payload.sender_domain as string) || DEFAULT_SENDER_DOMAIN,
+
                   subject: payload.subject,
                   html: payload.html,
                   text: payload.text,
@@ -295,12 +309,16 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
                 return Response.json({ processed: totalProcessed, stopped: 'rate_limited' })
               }
 
-              // 403s are permanent configuration or authorization failures for this
-              // message, so move straight to DLQ and stop processing the rest of the batch.
+              // 403s are usually permanent, but domain verification can flap.
+              // Retry a bounded number of times before dead-lettering, and never
+              // abort the rest of the batch on one bad message (head-of-line block).
               if (isForbidden(error)) {
-                await moveToDlq(supabase, queue, msg, errorMsg.slice(0, 1000))
-                return Response.json({ processed: totalProcessed, stopped: 'forbidden' })
+                if (failedAttempts + 1 >= MAX_FORBIDDEN_RETRIES) {
+                  await moveToDlq(supabase, queue, msg, errorMsg.slice(0, 1000))
+                  continue
+                }
               }
+
 
               // Log non-429 failures to track real retry attempts.
               await supabase.from('email_send_log').insert({
