@@ -1401,26 +1401,21 @@ export const MapboxHeatmap = ({
   }, [mapLoaded, showDensityLayer, densityData, isMobile]);
 
   const topRoute = useMemo(() => {
-    const feats = pathData?.geojson?.features as any[] | undefined;
-    if (!feats?.length) return null;
-    let best: any = null;
+    let best: MapFeature | null = null;
     let bestFreq = -1;
-    for (const f of feats) {
-      const freq = Number(f?.properties?.frequency ?? 0);
+    for (const f of featuresOf(pathData?.geojson)) {
+      const freq = numProp(f, "frequency");
       if (
         freq > bestFreq &&
         f?.geometry?.type === "LineString" &&
-        Array.isArray(f.geometry.coordinates)
+        lineCoords(f).length > 0
       ) {
         best = f;
         bestFreq = freq;
       }
     }
     if (!best) return null;
-    return {
-      frequency: bestFreq,
-      coordinates: best.geometry.coordinates as [number, number][],
-    };
+    return { frequency: bestFreq, coordinates: lineCoords(best) };
   }, [pathData]);
 
   const handleJumpToHotspot = useCallback(() => {
