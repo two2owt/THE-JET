@@ -702,6 +702,7 @@ export type Database = {
           crit_ms: number
           enabled: boolean
           min_samples: number
+          min_users: number
           stage: string
           updated_at: string
           warn_ms: number
@@ -710,6 +711,7 @@ export type Database = {
           crit_ms: number
           enabled?: boolean
           min_samples?: number
+          min_users?: number
           stage: string
           updated_at?: string
           warn_ms: number
@@ -718,6 +720,7 @@ export type Database = {
           crit_ms?: number
           enabled?: boolean
           min_samples?: number
+          min_users?: number
           stage?: string
           updated_at?: string
           warn_ms?: number
