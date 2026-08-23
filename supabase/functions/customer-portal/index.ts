@@ -6,6 +6,8 @@ import {
   EDGE_FUNCTION_VERSION,
 } from "../_shared/cors.ts";
 import { getServiceRoleKey } from "../_shared/supabase-keys.ts";
+import { reportEdgeError } from "../_shared/observability.ts";
+
 
 const FUNCTION_NAME = "customer-portal";
 logVersion(FUNCTION_NAME);
