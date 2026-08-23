@@ -8,6 +8,8 @@ import {
   logVersion,
   EDGE_FUNCTION_VERSION,
 } from "../_shared/cors.ts";
+import { reportEdgeError } from "../_shared/observability.ts";
+
 
 const FUNCTION_NAME = "send-verification-email";
 
