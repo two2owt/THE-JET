@@ -94,6 +94,10 @@ export function useViewportReflow(): void {
       rafId = requestAnimationFrame(applyMeasurements);
     };
 
+    // Publish a synchronous best-guess immediately so consumers (and the very
+    // first paint after hydration) never read an empty custom property while
+    // the rAF-batched precise measurement is still pending.
+    applyMeasurements();
     // Initial measurement: no transition suppression needed on first paint.
     schedule(false);
 

@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { copyTextToClipboard } from "@/utils/shareUtils";
-import { Navigate, useNavigate, useSearchParams } from "@/lib/router-compat";
+import { useNavigate, useSearchParams } from "@/lib/router-compat";
 import { PageLayout } from "@/components/PageLayout";
 import { ProfilePageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { PageShell } from "@/components/PageShell";
@@ -133,6 +133,15 @@ export default function Profile() {
   const navigate = useNavigate();
   const { isAdmin } = useIsAdmin();
   const { user, isLoading: isAuthLoading } = useAuth();
+  // Bounce signed-out visitors exactly once. Rendering <Navigate> here re-fired
+  // the navigation on every render and tripped React's update-depth limit.
+  const authRedirectedRef = useRef(false);
+  useEffect(() => {
+    if (isAuthLoading || user || authRedirectedRef.current) return;
+    authRedirectedRef.current = true;
+    rememberPostAuthRedirect();
+    navigate("/auth", { replace: true });
+  }, [isAuthLoading, user, navigate]);
   // Stable header config so PageLayout effect doesn't churn.
   const headerConfig = useMemo(() => ({ hideSearch: true }), []);
   const {
@@ -367,8 +376,7 @@ export default function Profile() {
     );
   }
   if (!user) {
-    rememberPostAuthRedirect();
-    return <Navigate to="/auth" replace />;
+    return null;
   }
 
   const hasAnySocial = !!(
