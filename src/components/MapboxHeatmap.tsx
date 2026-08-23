@@ -4244,6 +4244,11 @@ export const MapboxHeatmap = ({
               } else {
                 setIsUsingCurrentLocation(false);
                 isUsingCurrentLocationRef.current = false;
+                // The user is deliberately looking at another city — cancel any
+                // in-flight recenter request so a late fix can't yank them back.
+                recenterIntentRef.current = false;
+                userMovedCameraRef.current = true;
+
                 // Drop the previously detected location so a later re-center
                 // never briefly shows the stale name before the fresh fix lands.
                 setDetectedLocationName(null);
