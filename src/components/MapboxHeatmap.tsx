@@ -1317,24 +1317,18 @@ export const MapboxHeatmap = ({
   // Derived "top hotspot" (max density grid cell) and "top route"
   // (max frequency movement path) for the current data window.
   const topHotspot = useMemo(() => {
-    const feats = densityData?.geojson?.features as any[] | undefined;
-    if (!feats?.length) return null;
-    let best: any = null;
+    let best: Position | null = null;
     let bestDensity = -1;
-    for (const f of feats) {
-      const d = Number(f?.properties?.density ?? 0);
-      if (
-        d > bestDensity &&
-        f?.geometry?.type === "Point" &&
-        Array.isArray(f.geometry.coordinates)
-      ) {
-        best = f;
-        bestDensity = d;
-      }
+    for (const f of featuresOf(densityData?.geojson)) {
+      const d = numProp(f, "density");
+      if (d <= bestDensity || f?.geometry?.type !== "Point") continue;
+      const coords = pointCoords(f);
+      if (!coords) continue;
+      best = coords;
+      bestDensity = d;
     }
     if (!best) return null;
-    const [lng, lat] = best.geometry.coordinates as [number, number];
-    return { lng, lat, density: bestDensity };
+    return { lng: best[0], lat: best[1], density: bestDensity };
   }, [densityData]);
 
   // ── Tap-to-inspect: heat cell details ────────────────────────────────
