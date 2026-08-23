@@ -30,9 +30,10 @@ Deno.serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { priceId } = await req.json();
+    const { priceId, tier, returnPath } = await req.json();
     if (!priceId) throw new Error("Price ID is required");
-    logStep("Price ID received", { priceId });
+    logStep("Price ID received", { priceId, tier });
+
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
