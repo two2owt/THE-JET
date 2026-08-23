@@ -274,7 +274,7 @@ export const useSubscription = () => {
       if (channel) supabase.removeChannel(channel);
       authSub.unsubscribe();
     };
-  }, [readFromDb]);
+  }, [readFromDb, instanceId]);
 
   return {
     subscription,
