@@ -1353,7 +1353,7 @@ export const MapboxHeatmap = ({
     const mapInstance = map.current;
     if (!mapInstance || !mapLoaded || !showDensityLayer) return;
 
-    const handleHeatClick = (e: mapboxgl.MapMouseEvent) => {
+    const handleHeatClick = (e: MapboxGL.MapMouseEvent) => {
       // Nearest grid cell within a finger-sized radius of the tap.
       const threshold = isMobile ? 44 : 32;
       let best: { coords: Position; feature: MapFeature } | null = null;
