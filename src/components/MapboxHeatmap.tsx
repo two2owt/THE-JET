@@ -3073,32 +3073,7 @@ export const MapboxHeatmap = ({
           nextIndex.set(clusterKey, reusedCluster);
           return;
         }
-        const size = Math.min(64, 40 + Math.log2(count) * 8);
-        const el = document.createElement("div");
-        el.className = "venue-cluster-marker";
-        el.setAttribute("role", "button");
-        el.setAttribute("aria-label", `${count} venues — zoom in`);
-        el.style.cssText = `
-          width: ${size}px;
-          height: ${size}px;
-          display: grid;
-          place-items: center;
-          border-radius: 9999px;
-          cursor: pointer;
-          color: ${isDarkTheme ? "#F5F5F5" : "#141414"};
-          font-weight: 700;
-          font-size: ${Math.max(12, size * 0.3)}px;
-          background: ${
-            isDarkTheme ? "rgba(20,20,20,0.62)" : "rgba(255,255,255,0.72)"
-          };
-          border: 1.5px solid rgba(201,169,97,0.65);
-          box-shadow: 0 6px 18px rgba(0,0,0,0.35);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-          opacity: 0;
-          animation: markerFadeIn 0.35s ease-out forwards;
-        `;
-        el.textContent = count > 99 ? "99+" : String(count);
+        const el = createClusterMarkerElement(count, isDarkTheme);
 
         el.addEventListener("click", (e) => {
           e.stopPropagation();
