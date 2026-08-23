@@ -146,6 +146,14 @@ import {
 } from "./map/LiveStatsPanel";
 import { useDensityLayer } from "./map/hooks/useDensityLayer";
 import { useMarkerDeclutter } from "./map/hooks/useMarkerDeclutter";
+import {
+  featuresOf,
+  lineCoords,
+  numProp,
+  pointCoords,
+  type MapFeature,
+  type Position,
+} from "./map/geojson";
 import { useMapRecenterPolicy } from "./map/hooks/useMapRecenterPolicy";
 import { useMapLayerToggles } from "./map/hooks/useMapLayerToggles";
 import {
