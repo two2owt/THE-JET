@@ -884,18 +884,49 @@ export const MapboxHeatmap = ({
   }, [onCityChange]);
 
   /**
+   * How long an explicit recenter request stays valid. If the fix takes longer
+   * than this (permission dialog left open, GPS cold start), the request is
+   * treated as abandoned rather than firing a surprise camera move minutes
+   * later while the user is browsing somewhere else.
+   */
+  const RECENTER_INTENT_TTL_MS = 30_000;
+  const recenterIntentAtRef = useRef(0);
+
+  /** Marks an explicit user request to be taken to their own location. */
+  const requestRecenter = useCallback(() => {
+    recenterIntentRef.current = true;
+    recenterIntentAtRef.current = Date.now();
+    // A fresh recenter resets "the user is browsing elsewhere".
+    userMovedCameraRef.current = false;
+  }, []);
+
+  /** Consumes a pending recenter request; false for passive position fixes. */
+  const consumeRecenterIntent = useCallback(() => {
+    const pending =
+      recenterIntentRef.current &&
+      Date.now() - recenterIntentAtRef.current < RECENTER_INTENT_TTL_MS;
+    recenterIntentRef.current = false;
+    return pending;
+  }, []);
+
+  /**
    * Always resolves a *fresh* position and pushes it through the shared
    * geolocation handler so the city selector label, detected city, and all
    * data filters follow where the user actually is. Falls back to a
    * network (IP/WiFi) fix when GPS is denied or times out, and finally to a
    * nearest-city sync so the dropdown never stays stale.
+   *
+   * Only ever called from an explicit user action (or the once-per-sign-in
+   * locate), so it arms the recenter intent that permits a camera move.
    */
   const refreshCurrentLocation = useCallback(() => {
+    requestRecenter();
     setIsUsingCurrentLocation(true);
     isUsingCurrentLocationRef.current = true;
     // Drop the previous fix so the selector never keeps showing the city the
     // user was on before asking to be located — it shows "Locating..." until
     // the fresh fix lands.
+
     setDetectedCity(null);
     setDetectedLocationName(null);
 
