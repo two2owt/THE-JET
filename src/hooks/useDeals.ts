@@ -216,7 +216,9 @@ export const useDeals = (
   const loadDeals = useCallback(async () => {
     try {
       // Check for prefetched data from index.html early load script
-      const prefetchedDeals = window.__PREFETCHED_DATA__?.deals;
+      const prefetchedDeals = window.__PREFETCHED_DATA__?.deals as
+        | Deal[]
+        | undefined;
 
       if (
         prefetchedDeals &&

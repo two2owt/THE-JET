@@ -5,7 +5,7 @@
  * `navigator.connection` without an `as any` escape hatch on every access.
  */
 
-import type * as MapboxGL from "mapbox-gl";
+type MapboxGLModule = typeof import("mapbox-gl").default;
 
 declare global {
   /** Subset of the Network Information API we branch on. */
@@ -22,7 +22,7 @@ declare global {
 
   interface Window {
     /** Mapbox GL loaded from the CDN script tag (version-pinned). */
-    mapboxgl?: typeof MapboxGL;
+    mapboxgl?: MapboxGLModule;
     /** Cached Mapbox access token (see lib/mapboxTokenCache). */
     __mapboxToken?: string;
     /** In-flight token fetch, shared across concurrent callers. */

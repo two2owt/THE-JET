@@ -228,14 +228,14 @@ const getPlatformSettings = (isMobile: boolean) => {
   const isAndroid = /Android/.test(navigator.userAgent);
   const isPWA = window.matchMedia("(display-mode: standalone)").matches;
   const isLowPowerMode =
-    "connection" in navigator && navigator.connection?.saveData;
+    ("connection" in navigator && navigator.connection?.saveData) ?? false;
   const hasReducedMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
   ).matches;
   const isSlowConnection =
     "connection" in navigator &&
     ["slow-2g", "2g", "3g"].includes(
-      navigator.connection?.effectiveType,
+      navigator.connection?.effectiveType ?? "",
     );
 
   return {
@@ -1353,7 +1353,7 @@ export const MapboxHeatmap = ({
     const mapInstance = map.current;
     if (!mapInstance || !mapLoaded || !showDensityLayer) return;
 
-    const handleHeatClick = (e: MapboxGL.MapMouseEvent) => {
+    const handleHeatClick = (e: mapboxgl.MapMouseEvent) => {
       // Nearest grid cell within a finger-sized radius of the tap.
       const threshold = isMobile ? 44 : 32;
       let best: { coords: Position; feature: MapFeature } | null = null;
