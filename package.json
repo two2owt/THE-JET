@@ -22,7 +22,8 @@
     "test:e2e:ui": "playwright test --ui",
     "test:smoke:density": "deno test --allow-env --allow-net --allow-read supabase/functions/get-location-density/index.test.ts",
     "format": "prettier --write .",
-    "test:integration": "vitest run --config vitest.integration.config.ts"
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "verify:observability": "node scripts/verify-observability.mjs"
   },
   "dependencies": {
     "@capacitor-community/background-geolocation": "^1.2.26",
