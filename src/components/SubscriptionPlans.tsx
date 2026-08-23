@@ -1,3 +1,4 @@
+import { ANALYTICS_EVENTS } from "@/lib/analyticsEvents";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,7 +46,7 @@ export const SubscriptionPlans = () => {
     setCheckoutLoading(tierKey);
     try {
       const { analytics } = await import("@/lib/analytics");
-      analytics.track("Subscription Checkout Started", {
+      analytics.track(ANALYTICS_EVENTS.BEGIN_CHECKOUT, {
         tier: tierKey,
         price_id: tierInfo.priceId,
         current_tier: currentTier,
@@ -59,7 +60,7 @@ export const SubscriptionPlans = () => {
     } catch (error) {
       try {
         const { analytics } = await import("@/lib/analytics");
-        analytics.track("Subscription Checkout Failed", { tier: tierKey });
+        analytics.track(ANALYTICS_EVENTS.CHECKOUT_FAILED, { tier: tierKey });
       } catch {
         /* noop */
       }

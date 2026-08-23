@@ -16,6 +16,8 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { logVersion } from "../_shared/cors.ts";
 import { getServiceRoleKey } from "../_shared/supabase-keys.ts";
+import { reportEdgeError } from "../_shared/observability.ts";
+
 
 const FUNCTION_NAME = "stripe-webhook";
 logVersion(FUNCTION_NAME);
@@ -153,7 +155,11 @@ Deno.serve(async (req) => {
     );
   } catch (err) {
     log("signature_verification_failed", { err: String(err) });
+    await reportEdgeError(FUNCTION_NAME, err, {
+      stage: "signature_verification",
+    });
     return new Response("Invalid signature", { status: 400 });
+
   }
 
   try {
@@ -177,7 +183,13 @@ Deno.serve(async (req) => {
     });
   } catch (err) {
     log("handler_error", { type: event.type, err: String(err) });
+    await reportEdgeError(FUNCTION_NAME, err, {
+      stage: "event_handler",
+      event_type: event.type,
+      event_id: event.id,
+    });
     // Return 500 so Stripe retries.
     return new Response("Handler error", { status: 500 });
+
   }
 });

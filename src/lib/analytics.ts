@@ -1,5 +1,11 @@
 import { supabase } from "@/integrations/supabase/client";
 import { hasConsent } from "@/lib/consent";
+import {
+  ANALYTICS_EVENTS,
+  MESSAGING_EVENT_PREFIXES,
+  type AnalyticsEventName,
+} from "@/lib/analyticsEvents";
+
 
 // Generate a simple session ID for grouping events
 const getSessionId = (): string => {
@@ -87,14 +93,15 @@ class Analytics {
     }
   }
 
-  identify(userId: string, traits?: Record<string, unknown>) {
+  identify(userId: string) {
     this.userId = userId;
-    if (traits) {
-      this.track("User Identified", traits);
-    }
   }
 
-  track(eventName: string, properties?: Record<string, unknown>) {
+
+  track(
+    eventName: AnalyticsEventName | string,
+    properties?: Record<string, unknown>,
+  ) {
     // Runtime guard: messaging-category events require explicit
     // messaging_analytics consent. Silently drop otherwise.
     const category =
@@ -103,7 +110,9 @@ class Analytics {
         : "";
     const isMessaging =
       category === "messaging" ||
-      /^(Message|Chat|Conversation)\b/i.test(eventName);
+      MESSAGING_EVENT_PREFIXES.some((prefix) =>
+        eventName.toLowerCase().startsWith(prefix),
+      );
     if (isMessaging && !hasConsent("messaging_analytics")) {
       return;
     }
@@ -120,7 +129,7 @@ class Analytics {
   }
 
   pageView(pageName: string, properties?: Record<string, unknown>) {
-    this.track("Page Viewed", {
+    this.track(ANALYTICS_EVENTS.PAGE_VIEW, {
       page: pageName,
       ...properties,
     });
@@ -131,40 +140,79 @@ class Analytics {
     dealName: string,
     properties?: Record<string, unknown>,
   ) {
-    this.track("Deal Viewed", {
+    this.track(ANALYTICS_EVENTS.VIEW_DEAL, {
       deal_id: dealId,
       deal_name: dealName,
       ...properties,
     });
   }
 
-  dealClicked(dealId: string, dealName: string, action: string) {
-    this.track("Deal Clicked", {
-      deal_id: dealId,
-      deal_name: dealName,
-      action,
+  /**
+   * Favouriting is its own funnel step, so it gets its own event name rather
+   * than riding on a generic "deal clicked" with an `action` discriminator.
+   */
+  favoriteDeal(
+    venueId: string,
+    venueName: string,
+    favorited: boolean,
+    properties?: Record<string, unknown>,
+  ) {
+    this.track(
+      favorited
+        ? ANALYTICS_EVENTS.FAVORITE_DEAL
+        : ANALYTICS_EVENTS.UNFAVORITE_DEAL,
+      { venue_id: venueId, venue_name: venueName, ...properties },
+    );
+  }
+
+  shareDeal(
+    venueId: string,
+    venueName: string,
+    properties?: Record<string, unknown>,
+  ) {
+    this.track(ANALYTICS_EVENTS.SHARE_DEAL, {
+      venue_id: venueId,
+      venue_name: venueName,
+      ...properties,
+    });
+  }
+
+  getDirections(
+    venueId: string,
+    venueName: string,
+    properties?: Record<string, unknown>,
+  ) {
+    this.track(ANALYTICS_EVENTS.GET_DIRECTIONS, {
+      venue_id: venueId,
+      venue_name: venueName,
+      ...properties,
     });
   }
 
   buttonClicked(buttonName: string, location: string) {
-    this.track("Button Clicked", {
+    this.track(ANALYTICS_EVENTS.SELECT_CONTENT, {
       button: buttonName,
       location,
     });
   }
 
   searchPerformed(query: string, resultsCount: number) {
-    this.track("Search Performed", {
+    this.track(ANALYTICS_EVENTS.SEARCH_PERFORMED, {
       query,
       results_count: resultsCount,
     });
   }
 
   authEvent(event: "signup" | "login" | "logout") {
-    this.track("Auth Event", {
-      event,
-    });
+    const name =
+      event === "signup"
+        ? ANALYTICS_EVENTS.SIGN_UP
+        : event === "login"
+          ? ANALYTICS_EVENTS.SIGN_IN
+          : ANALYTICS_EVENTS.SIGN_OUT;
+    this.track(name);
   }
+
 
   reset() {
     this.userId = null;

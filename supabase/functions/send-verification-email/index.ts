@@ -8,8 +8,11 @@ import {
   logVersion,
   EDGE_FUNCTION_VERSION,
 } from "../_shared/cors.ts";
+import { reportEdgeError } from "../_shared/observability.ts";
+
 
 const FUNCTION_NAME = "send-verification-email";
+
 logVersion(FUNCTION_NAME);
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY") as string);
@@ -179,6 +182,8 @@ Deno.serve(async (req) => {
     // Return a clear, actionable payload so callers can notify the user
     // and offer a retry instead of a silent skip.
     console.error("Error in verification email function:", error);
+    await reportEdgeError(FUNCTION_NAME, error, { stage: "send" });
+
     return new Response(
       JSON.stringify({
         success: true,

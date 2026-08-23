@@ -24,9 +24,12 @@ export default defineConfig({
         ...devices["Desktop Chrome"],
         // Use the system Chromium that ships in the sandbox; the bundled
         // browser revision Playwright expects isn't pre-installed.
+        // On CI the Playwright-managed Chromium is used; locally the sandbox
+        // exposes one at /bin/chromium via PLAYWRIGHT_CHROMIUM_PATH.
         launchOptions: {
           executablePath:
-            process.env.PLAYWRIGHT_CHROMIUM_PATH ?? "/bin/chromium",
+            process.env.PLAYWRIGHT_CHROMIUM_PATH ||
+            (process.env.CI ? undefined : "/bin/chromium"),
         },
       },
     },

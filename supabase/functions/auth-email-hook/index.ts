@@ -12,6 +12,8 @@ import { MagicLinkEmail } from "../_shared/email-templates/magic-link.tsx";
 import { RecoveryEmail } from "../_shared/email-templates/recovery.tsx";
 import { EmailChangeEmail } from "../_shared/email-templates/email-change.tsx";
 import { ReauthenticationEmail } from "../_shared/email-templates/reauthentication.tsx";
+import { reportEdgeError } from "../_shared/observability.ts";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -356,7 +358,9 @@ Deno.serve(async (req) => {
     return await handleWebhook(req);
   } catch (error) {
     console.error("Webhook handler error:", error);
+    await reportEdgeError("auth-email-hook", error, { stage: "webhook" });
     const message = error instanceof Error ? error.message : "Unknown error";
+
     return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

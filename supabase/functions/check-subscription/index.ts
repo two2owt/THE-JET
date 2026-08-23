@@ -6,6 +6,8 @@ import {
   EDGE_FUNCTION_VERSION,
 } from "../_shared/cors.ts";
 import { getServiceRoleKey } from "../_shared/supabase-keys.ts";
+import { reportEdgeError } from "../_shared/observability.ts";
+
 
 const FUNCTION_NAME = "check-subscription";
 logVersion(FUNCTION_NAME);
@@ -170,6 +172,8 @@ Deno.serve(async (req) => {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: errorMessage });
+    await reportEdgeError(FUNCTION_NAME, error, { stage: "check_subscription" });
+
     return new Response(JSON.stringify({ error: "Internal server error" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
