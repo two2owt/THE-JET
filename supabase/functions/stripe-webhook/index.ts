@@ -155,7 +155,11 @@ Deno.serve(async (req) => {
     );
   } catch (err) {
     log("signature_verification_failed", { err: String(err) });
+    await reportEdgeError(FUNCTION_NAME, err, {
+      stage: "signature_verification",
+    });
     return new Response("Invalid signature", { status: 400 });
+
   }
 
   try {
