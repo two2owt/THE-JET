@@ -846,6 +846,32 @@ export const MapboxHeatmap = ({
   useEffect(() => {
     isUsingCurrentLocationRef.current = isUsingCurrentLocation;
   }, [isUsingCurrentLocation]);
+
+  /**
+   * Explicit "take me to my location" intent.
+   *
+   * The camera may only be recentered on the user when this is true. It is set
+   * by the three actions the user can actually perform to ask for it:
+   *   - the first locate after sign-in / sign-up,
+   *   - the map's "find my location" button,
+   *   - picking "Use my location" in the city dropdown.
+   *
+   * Everything else that produces a position fix — the Mapbox geolocate
+   * control's continuous tracking watch, and our own background city
+   * re-detection watcher — is passive. Passive fixes update the user marker
+   * and the underlying coordinates, but must never move the camera, because
+   * the user may be deliberately browsing another city.
+   */
+  const recenterIntentRef = useRef(false);
+
+  /**
+   * True once the user has panned/zoomed/rotated the map themselves since the
+   * last explicit recenter. While this is set, passive position fixes are not
+   * allowed to change the selected city either — a city change flies the
+   * camera, which would yank the user out of the area they are looking at.
+   */
+  const userMovedCameraRef = useRef(false);
+
   // Mirror selectedCity + onCityChange so the (one-time) geolocate handler
   // can sync the parent without re-subscribing on every prop change.
   const selectedCityRef = useRef(selectedCity);
