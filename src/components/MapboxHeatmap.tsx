@@ -1050,14 +1050,18 @@ export const MapboxHeatmap = ({
 
         const nearest = getNearestCity(latitude, longitude);
         setUserLocation(next);
+        setDetectedCity(nearest);
         if (nearest.id !== selectedCityRef.current.id) {
-          setDetectedCity(nearest);
           setDetectedLocationName(`${nearest.name}, ${nearest.state}`);
-          onCityChangeRef.current(nearest);
-        } else {
-          setDetectedCity(nearest);
+          // Only follow the user into a new city while they are not actively
+          // looking at somewhere else — a city change triggers a camera fly.
+          if (!userMovedCameraRef.current) {
+            onCityChangeRef.current(nearest);
+          }
         }
+        // Passive fix: updates the marker/coordinates, never the camera.
         applyGeolocationRef.current?.({ latitude, longitude });
+
       },
       (err) => {
         console.warn("MapboxHeatmap: location watch failed", err?.message);
