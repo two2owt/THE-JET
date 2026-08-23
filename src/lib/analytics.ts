@@ -1,5 +1,11 @@
 import { supabase } from "@/integrations/supabase/client";
 import { hasConsent } from "@/lib/consent";
+import {
+  ANALYTICS_EVENTS,
+  MESSAGING_EVENT_PREFIXES,
+  type AnalyticsEventName,
+} from "@/lib/analyticsEvents";
+
 
 // Generate a simple session ID for grouping events
 const getSessionId = (): string => {
