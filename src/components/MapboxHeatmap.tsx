@@ -1351,17 +1351,14 @@ export const MapboxHeatmap = ({
     const mapInstance = map.current;
     if (!mapInstance || !mapLoaded || !showDensityLayer) return;
 
-    const handleHeatClick = (e: any) => {
-      const feats = densityData?.geojson?.features as any[] | undefined;
-      if (!feats?.length) return;
-
+    const handleHeatClick = (e: MapboxGL.MapMouseEvent) => {
       // Nearest grid cell within a finger-sized radius of the tap.
       const threshold = isMobile ? 44 : 32;
-      let best: any = null;
+      let best: { coords: Position; feature: MapFeature } | null = null;
       let bestDist = Infinity;
-      for (const feature of feats) {
-        const coords = feature?.geometry?.coordinates;
-        if (!Array.isArray(coords)) continue;
+      for (const feature of featuresOf(densityData?.geojson)) {
+        const coords = pointCoords(feature);
+        if (!coords) continue;
         const projected = mapInstance.project({
           lng: coords[0],
           lat: coords[1],
@@ -1372,7 +1369,7 @@ export const MapboxHeatmap = ({
         );
         if (dist < bestDist) {
           bestDist = dist;
-          best = feature;
+          best = { coords, feature };
         }
       }
 
@@ -1381,15 +1378,17 @@ export const MapboxHeatmap = ({
         return;
       }
 
-      const [lng, lat] = best.geometry.coordinates as [number, number];
-      const density = Number(best.properties?.density ?? 0);
+      const [lng, lat] = best.coords;
+      const density = numProp(best.feature, "density");
       triggerHaptic("light");
       setInspectedCell({
         lat,
         lng,
         density,
-        intensity: Number(
-          best.properties?.intensity ?? Math.min(density / 10, 1),
+        intensity: numProp(
+          best.feature,
+          "intensity",
+          Math.min(density / 10, 1),
         ),
       });
     };
