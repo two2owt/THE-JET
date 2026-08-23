@@ -2303,6 +2303,17 @@ export const MapboxHeatmap = ({
         geolocateControlRef.current = geolocateControl;
         if (geolocateControl) {
           map.current.addControl(geolocateControl, "top-right");
+          // Tapping the control's button is the "find my location" gesture, and
+          // is the only geolocate path from this control that may move the
+          // camera. Its subsequent tracking updates are passive.
+          const geolocateButton = (geolocateControl as any)._geolocateButton as
+            | HTMLElement
+            | undefined;
+          geolocateButton?.addEventListener("click", () => {
+            requestRecenter();
+            setIsUsingCurrentLocation(true);
+            isUsingCurrentLocationRef.current = true;
+          });
           // Swallow the Mapbox "Geolocation support is not available" warning
           // in iframe/permission-limited environments without breaking the map.
           geolocateControl.on("error", (e: any) => {
@@ -2312,6 +2323,17 @@ export const MapboxHeatmap = ({
             );
           });
         }
+
+        // Track deliberate camera movement. While the user is panning/zooming
+        // around — including into another city — no passive position fix is
+        // allowed to pull them back or switch the selected city.
+        const markUserCameraMove = (e: any) => {
+          if (e?.originalEvent) userMovedCameraRef.current = true;
+        };
+        map.current.on("dragstart", markUserCameraMove);
+        map.current.on("zoomstart", markUserCameraMove);
+        map.current.on("rotatestart", markUserCameraMove);
+
 
         // Create custom marker element for user location
         const createUserMarker = () => {
