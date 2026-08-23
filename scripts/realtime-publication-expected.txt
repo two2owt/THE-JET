@@ -7,6 +7,7 @@ email_send_log
 map_data_pulse
 messages
 search_history
+subscribers
 user_connections
 user_favorites
 venue_reviews
