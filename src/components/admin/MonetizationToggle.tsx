@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DollarSign, AlertTriangle } from "lucide-react";
+import { DollarSign, AlertTriangle, History, Lock } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import {
   Card,
