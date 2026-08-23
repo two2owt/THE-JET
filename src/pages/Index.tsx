@@ -311,7 +311,20 @@ const Index = () => {
         position: "relative",
       }}
     >
+      {/* Screen readers should hear the tab context change, since all tabs
+          share the "/" route and its single <h1>. */}
+      <h1 className="sr-only">
+        {activeTab === "map"
+          ? "JET — Real-time heatmap of live deals, events, and trending venues near you"
+          : activeTab === "explore"
+            ? "Explore live deals near you"
+            : activeTab === "notifications"
+              ? "Alerts"
+              : "JET"}
+      </h1>
+
       {/* FULL-SCREEN MAP LAYER - only on map tab */}
+
       {activeTab === "map" && (
         <MapSurface
           mapboxToken={mapboxToken}

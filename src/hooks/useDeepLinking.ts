@@ -39,8 +39,10 @@ export const useDeepLinking = (handlers?: DeepLinkHandler) => {
           .single();
 
         if (error || !deal) {
-          toast.error("Deal not found", {
-            description: "This deal may have expired or been removed",
+          // Push traffic often lands on a deal that has already been pulled.
+          // Say so, and point at the live map instead of failing silently.
+          toast("That deal has ended", {
+            description: "Here's what's live nearby right now.",
           });
           // Clear the deal param
           searchParams.delete("deal");
@@ -54,13 +56,20 @@ export const useDeepLinking = (handlers?: DeepLinkHandler) => {
         const startsAt = new Date(deal.starts_at);
 
         if (!deal.active || expiresAt < now || startsAt > now) {
-          toast.error("Deal expired", {
-            description: "This deal is no longer available",
-          });
+          toast(
+            startsAt > now ? "That deal hasn't started yet" : "That deal has ended",
+            {
+              description:
+                startsAt > now
+                  ? `Starts ${startsAt.toLocaleString()} at ${deal.venue_name}.`
+                  : "Here's what's live nearby right now.",
+            },
+          );
           searchParams.delete("deal");
           setSearchParams(searchParams);
           return;
         }
+
 
         // Call the handler if provided (read via ref so this callback is stable).
         handlersRef.current?.onDealOpen?.(dealId, deal);

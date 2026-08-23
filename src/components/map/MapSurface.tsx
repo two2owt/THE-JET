@@ -117,7 +117,7 @@ export function MapSurface({
         className="absolute left-1/2 -translate-x-1/2 z-30 pointer-events-none flex justify-center"
         style={{ top: "calc(var(--map-ui-inset-top, 0.75rem) + 3.5rem)" }}
       >
-        <LocationStatusBanner />
+        <LocationStatusBanner cityName={selectedCity?.name} />
       </div>
     </div>
   );
