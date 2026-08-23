@@ -183,7 +183,12 @@ Deno.serve(async (req) => {
     });
   } catch (err) {
     log("handler_error", { type: event.type, err: String(err) });
-    // Return 500 so Stripe retries.
+    await reportEdgeError(FUNCTION_NAME, err, {
+      stage: "event_handler",
+      event_type: event.type,
+      event_id: event.id,
+    });
+
     return new Response("Handler error", { status: 500 });
   }
 });
