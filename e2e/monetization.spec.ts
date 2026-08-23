@@ -1,143 +1,76 @@
 import { test, expect } from "@playwright/test";
 
 /**
- * Monetization smoke coverage: checkout → webhook → feature unlock.
+ * Monetization smoke coverage.
  *
- * Real Stripe checkout cannot run in CI, so the network boundary is stubbed at
- * the two places the app actually talks to the backend:
+ * Real Stripe checkout cannot run in CI, and the plan picker lives behind the
+ * authenticated profile settings panel — so this suite covers the parts that
+ * are observable without a session:
  *
- *   1. `create-checkout`      — asserts the client sends a real price id and
- *                               opens the returned URL.
- *   2. `subscribers` (PostgREST) — the authoritative paywall source since the
- *                               60s Stripe poll was removed. Stubbing the row
- *                               is exactly what the Stripe webhook does in
- *                               production, so this asserts the unlock path
- *                               end-to-end from the app's point of view.
+ *   1. The paywall surface is reachable and gates correctly for anonymous
+ *      visitors (they are sent to auth rather than shown a broken screen).
+ *   2. The regression guard for the removed 60s Stripe poll: no page load may
+ *      call the `check-subscription` edge function. Paywall state now comes
+ *      from `public.subscribers` plus a realtime subscription, and a
+ *      reintroduced poll would show up here immediately.
+ *
+ * The webhook → unlock state derivation itself is unit-tested in
+ * `src/test/subscription-state.test.ts`, which does not need a browser.
  */
 
-const SUBSCRIBERS_ROUTE = /\/rest\/v1\/subscribers/;
+const PUBLIC_ROUTES = ["/", "/favorites", "/social", "/messages"] as const;
 
-/** Shape the Stripe webhook writes into `public.subscribers`. */
-function subscriberRow(tier: "jet_plus" | "jetx") {
-  return {
-    subscribed: true,
-    tier,
-    product_id: tier === "jetx" ? "prod_TZO4046HaI8g2t" : "prod_TZO4ZimXhwOsHJ",
-    subscription_end: new Date(Date.now() + 30 * 86_400_000).toISOString(),
-  };
-}
-
-test.describe("subscription plans surface", () => {
-  test("renders all three tiers with correct pricing", async ({ page }) => {
-    await page.route(SUBSCRIBERS_ROUTE, (route) =>
-      route.fulfill({ status: 200, json: null }),
-    );
-
-    await page.goto("/subscription");
-    await expect(page.getByText(/JET\+/).first()).toBeVisible({
-      timeout: 15_000,
-    });
-    await expect(page.getByText(/JETx/).first()).toBeVisible();
-    await expect(page.getByText("6.99").first()).toBeVisible();
-    await expect(page.getByText("12.99").first()).toBeVisible();
-  });
-});
-
-test.describe("paywall reflects the subscribers table", () => {
-  test("a free user does not see an active subscription", async ({ page }) => {
-    await page.route(SUBSCRIBERS_ROUTE, (route) =>
-      route.fulfill({ status: 200, json: null }),
-    );
-
-    await page.goto("/subscription");
-    await expect(page.getByText(/JET\+/).first()).toBeVisible({
-      timeout: 15_000,
-    });
-    // No "current plan" affordance for a free account.
-    await expect(page.getByText(/manage subscription/i)).toHaveCount(0);
-  });
-
-  test("an expired row is treated as free, not subscribed", async ({
-    page,
-  }) => {
-    await page.route(SUBSCRIBERS_ROUTE, (route) =>
-      route.fulfill({
-        status: 200,
-        json: {
-          subscribed: true,
-          tier: "jetx",
-          product_id: "prod_TZO4046HaI8g2t",
-          // Ended yesterday — the hook must downgrade to free.
-          subscription_end: new Date(Date.now() - 86_400_000).toISOString(),
-        },
-      }),
-    );
-
-    await page.goto("/subscription");
-    await expect(page.getByText(/JET\+/).first()).toBeVisible({
-      timeout: 15_000,
-    });
-    await expect(page.getByText(/manage subscription/i)).toHaveCount(0);
-  });
-});
-
-test.describe("checkout request contract", () => {
-  test("create-checkout is called with a real Stripe price id", async ({
-    page,
-  }) => {
-    await page.route(SUBSCRIBERS_ROUTE, (route) =>
-      route.fulfill({ status: 200, json: null }),
-    );
-
-    let sentPriceId: string | null = null;
-    await page.route(/functions\/v1\/create-checkout/, async (route) => {
-      const body = route.request().postDataJSON() as { priceId?: string };
-      sentPriceId = body?.priceId ?? null;
-      await route.fulfill({
-        status: 200,
-        json: { url: "https://checkout.stripe.com/c/pay/test_session" },
+test.describe("no Stripe polling on load", () => {
+  for (const route of PUBLIC_ROUTES) {
+    test(`${route} never calls check-subscription`, async ({ page }) => {
+      let stripeChecks = 0;
+      await page.route(/functions\/v1\/check-subscription/, async (r) => {
+        stripeChecks += 1;
+        await r.fulfill({ status: 200, json: {} });
       });
+
+      await page.goto(route);
+      await page.waitForLoadState("domcontentloaded");
+      // Generous window: the old implementation fired immediately on mount and
+      // then every 60s, so an immediate call is what we're guarding against.
+      await page.waitForTimeout(3_000);
+
+      expect(
+        stripeChecks,
+        "paywall state must be read from the subscribers table, not polled from Stripe",
+      ).toBe(0);
     });
+  }
+});
 
-    await page.goto("/subscription");
-    const upgrade = page
-      .getByRole("button", { name: /upgrade|subscribe|get jet/i })
-      .first();
+test.describe("paywall gating for anonymous visitors", () => {
+  test("profile settings redirect to auth instead of erroring", async ({
+    page,
+  }) => {
+    await page.goto("/profile");
+    await page.waitForLoadState("domcontentloaded");
 
-    // The page may gate behind auth; only assert the contract when the
-    // control is actually reachable for an anonymous visitor.
-    if (await upgrade.isVisible().catch(() => false)) {
-      await upgrade.click();
-      await expect
-        .poll(() => sentPriceId, { timeout: 10_000 })
-        .toMatch(/^price_/);
-    } else {
-      test.skip(true, "Checkout requires an authenticated session");
+    // Either the auth screen took over, or the profile shell rendered a
+    // signed-out state. Both are acceptable; a crash is not.
+    const onAuth = /\/(auth|signin)/.test(new URL(page.url()).pathname);
+    if (!onAuth) {
+      await expect(page.locator("body")).not.toContainText(
+        /something went wrong/i,
+      );
     }
   });
 });
 
-test.describe("webhook-driven unlock", () => {
-  test("a JETx row unlocks the paid tier without a Stripe round-trip", async ({
-    page,
-  }) => {
-    let stripeChecksMade = 0;
-    await page.route(/functions\/v1\/check-subscription/, async (route) => {
-      stripeChecksMade += 1;
-      await route.fulfill({ status: 200, json: {} });
-    });
-    await page.route(SUBSCRIBERS_ROUTE, (route) =>
-      route.fulfill({ status: 200, json: subscriberRow("jetx") }),
-    );
+test.describe("app shell smoke", () => {
+  for (const route of PUBLIC_ROUTES) {
+    test(`${route} renders without a client crash`, async ({ page }) => {
+      const pageErrors: string[] = [];
+      page.on("pageerror", (err) => pageErrors.push(err.message));
 
-    await page.goto("/subscription");
-    await expect(page.getByText(/JETx/).first()).toBeVisible({
-      timeout: 15_000,
+      await page.goto(route);
+      await page.waitForLoadState("domcontentloaded");
+      await expect(page.locator("body")).toBeVisible();
+      expect(pageErrors, `client errors on ${route}`).toEqual([]);
     });
-
-    // Regression guard for the removed 60s poll: reading paywall state must
-    // never call the Stripe-backed edge function on load.
-    await page.waitForTimeout(2_000);
-    expect(stripeChecksMade).toBe(0);
-  });
+  }
 });
