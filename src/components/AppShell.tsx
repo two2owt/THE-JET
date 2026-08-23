@@ -67,6 +67,9 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
 
   return (
     <div className="app-wrapper">
+      {/* Resumes / completes Stripe upgrade flows on any route */}
+      <CheckoutReturnHandler />
+
       {showChrome && (
         <>
           <Header />
