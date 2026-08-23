@@ -216,7 +216,7 @@ export const useDeals = (
   const loadDeals = useCallback(async () => {
     try {
       // Check for prefetched data from index.html early load script
-      const prefetchedDeals = (window as any).__PREFETCHED_DATA__?.deals;
+      const prefetchedDeals = window.__PREFETCHED_DATA__?.deals;
 
       if (
         prefetchedDeals &&
@@ -237,7 +237,7 @@ export const useDeals = (
         setLoading(false);
 
         // Clear prefetched data to avoid stale data on refresh
-        delete (window as any).__PREFETCHED_DATA__?.deals;
+        delete window.__PREFETCHED_DATA__?.deals;
 
         // Still fetch fresh data in background for updates
         const { data } = await supabase

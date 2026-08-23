@@ -33,17 +33,17 @@ const CDN_LOAD_TIMEOUT = 8000; // 8 seconds
 const waitForCDNMapbox = (): Promise<MapboxGLModule | null> => {
   return new Promise((resolve) => {
     // Check immediately
-    if (typeof window !== "undefined" && (window as any).mapboxgl) {
-      resolve((window as any).mapboxgl);
+    if (typeof window !== "undefined" && window.mapboxgl) {
+      resolve(window.mapboxgl);
       return;
     }
 
     // Poll every 100ms for up to CDN_LOAD_TIMEOUT
     const startTime = Date.now();
     const checkInterval = setInterval(() => {
-      if (typeof window !== "undefined" && (window as any).mapboxgl) {
+      if (typeof window !== "undefined" && window.mapboxgl) {
         clearInterval(checkInterval);
-        resolve((window as any).mapboxgl);
+        resolve(window.mapboxgl);
       } else if (Date.now() - startTime > CDN_LOAD_TIMEOUT) {
         clearInterval(checkInterval);
         console.warn(
@@ -228,14 +228,14 @@ const getPlatformSettings = (isMobile: boolean) => {
   const isAndroid = /Android/.test(navigator.userAgent);
   const isPWA = window.matchMedia("(display-mode: standalone)").matches;
   const isLowPowerMode =
-    "connection" in navigator && (navigator as any).connection?.saveData;
+    "connection" in navigator && navigator.connection?.saveData;
   const hasReducedMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
   ).matches;
   const isSlowConnection =
     "connection" in navigator &&
     ["slow-2g", "2g", "3g"].includes(
-      (navigator as any).connection?.effectiveType,
+      navigator.connection?.effectiveType,
     );
 
   return {
@@ -2673,7 +2673,7 @@ export const MapboxHeatmap = ({
     let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
     const scheduleInit = () => {
       if (cancelled) return;
-      const ric: any = (window as any).requestIdleCallback;
+      const ric: any = window.requestIdleCallback;
       if (typeof ric === "function") {
         idleHandle = ric(
           () => {
@@ -2695,8 +2695,8 @@ export const MapboxHeatmap = ({
       cancelled = true;
       cancelAnimationFrame(rafHandle1);
       cancelAnimationFrame(rafHandle2);
-      if (idleHandle != null && (window as any).cancelIdleCallback) {
-        (window as any).cancelIdleCallback(idleHandle);
+      if (idleHandle != null && window.cancelIdleCallback) {
+        window.cancelIdleCallback(idleHandle);
       }
       if (timeoutHandle) clearTimeout(timeoutHandle);
       cleanupMap();

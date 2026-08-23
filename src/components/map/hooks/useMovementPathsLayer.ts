@@ -779,7 +779,7 @@ export const useMovementPathsLayer = ({
    */
   useEffect(() => {
     const map = mapRef.current;
-    const mapboxgl = mapboxglRef?.current ?? (window as any).mapboxgl;
+    const mapboxgl = mapboxglRef?.current ?? window.mapboxgl;
     if (!map || !mapLoaded || !showMovementPaths || !mapboxgl) return;
 
     const lineLayerId = "movement-paths-line";
