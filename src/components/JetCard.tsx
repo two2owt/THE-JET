@@ -155,11 +155,10 @@ export const JetCard = memo(
       }
       try {
         const { analytics } = await import("@/lib/analytics");
-        analytics.dealClicked(
-          venue.id,
-          venue.name,
-          favorited ? "unfavorite" : "favorite",
-        );
+        analytics.favoriteDeal(venue.id, venue.name, !favorited, {
+          surface: "jetcard",
+        });
+
       } catch {
         /* noop */
       }
