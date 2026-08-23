@@ -55,22 +55,86 @@ function getWebPlatform(): "ios" | "android" | "web" {
  * granted geolocation, nothing is being collected, so we surface that clearly
  * with a one-tap way to fix it.
  */
-export const LocationStatusBanner = ({ className }: { className?: string }) => {
+export const LocationStatusBanner = ({
+  className,
+  cityName,
+}: {
+  className?: string;
+  /** City the map fell back to when we have no fix — shown in the chip. */
+  cityName?: string;
+}) => {
   const { session } = useAuth();
   const { locationTrackingEnabled, isLoading } = useLocationPreferences();
   const { permission, isGranted, isBlocked, promptSuppressed, mustUseSettings, request } =
     useGeolocationPermission();
   const [dismissed, setDismissed] = useState(false);
+  const [chipHidden, setChipHidden] = useState(false);
   const [requesting, setRequesting] = useState(false);
   const [showSteps, setShowSteps] = useState(false);
 
   const unsupported = permission === "unsupported";
   const undetermined = permission === "unknown";
 
+  // Nothing is being collected: permission is missing/blocked. This is true
+  // for signed-out visitors too, and it's the case where the map silently
+  // parks on the fallback city.
+  const locationUnavailable = !undetermined && !unsupported && !isGranted;
+
+  const requestLocation = async () => {
+    setRequesting(true);
+    try {
+      await request("map_banner");
+    } finally {
+      setRequesting(false);
+    }
+  };
+
+  // Compact chip: signed-out visitors, or after the full banner is dismissed.
+  // Closes the loop on a silent denial — "showing <city>" plus a way back.
+  if ((!session?.user || dismissed) && locationUnavailable && !chipHidden) {
+    return (
+      <div
+        className={`pointer-events-auto flex items-center gap-2 rounded-full border border-border/60 bg-background/85 px-3 py-1.5 shadow-card backdrop-blur-xl ${className ?? ""}`}
+        role="status"
+        aria-live="polite"
+      >
+        <MapPinOff className="h-3.5 w-3.5 flex-shrink-0 text-primary" />
+        <span className="text-[11px] leading-none text-muted-foreground">
+          Location off
+          {cityName ? ` — showing ${cityName}` : ""}
+        </span>
+        <button
+          type="button"
+          onClick={() => {
+            if (mustUseSettings) {
+              setChipHidden(true);
+              setDismissed(false);
+              return;
+            }
+            void requestLocation();
+          }}
+          disabled={requesting}
+          className="text-[11px] font-semibold leading-none text-primary underline-offset-2 hover:underline disabled:opacity-60"
+        >
+          {mustUseSettings ? "How to enable" : "Enable"}
+        </button>
+        <button
+          type="button"
+          aria-label="Dismiss location notice"
+          onClick={() => setChipHidden(true)}
+          className="-mr-1 rounded-full p-1 text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      </div>
+    );
+  }
+
   if (
     !session?.user ||
     isLoading ||
     dismissed ||
+    chipHidden ||
     undetermined ||
     (isGranted && locationTrackingEnabled)
   )
@@ -79,6 +143,7 @@ export const LocationStatusBanner = ({ className }: { className?: string }) => {
   // Tracking preference is off and permission is granted: nothing to warn about
   // beyond the settings toggle, keep the map clean.
   if (!locationTrackingEnabled && isGranted) return null;
+
 
   const title = unsupported
     ? "Location unavailable on this device"
