@@ -188,7 +188,8 @@ Deno.serve(async (req) => {
       event_type: event.type,
       event_id: event.id,
     });
-
+    // Return 500 so Stripe retries.
     return new Response("Handler error", { status: 500 });
+
   }
 });
