@@ -309,12 +309,16 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
                 return Response.json({ processed: totalProcessed, stopped: 'rate_limited' })
               }
 
-              // 403s are permanent configuration or authorization failures for this
-              // message, so move straight to DLQ and stop processing the rest of the batch.
+              // 403s are usually permanent, but domain verification can flap.
+              // Retry a bounded number of times before dead-lettering, and never
+              // abort the rest of the batch on one bad message (head-of-line block).
               if (isForbidden(error)) {
-                await moveToDlq(supabase, queue, msg, errorMsg.slice(0, 1000))
-                return Response.json({ processed: totalProcessed, stopped: 'forbidden' })
+                if (failedAttempts + 1 >= MAX_FORBIDDEN_RETRIES) {
+                  await moveToDlq(supabase, queue, msg, errorMsg.slice(0, 1000))
+                  continue
+                }
               }
+
 
               // Log non-429 failures to track real retry attempts.
               await supabase.from('email_send_log').insert({
