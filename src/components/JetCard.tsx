@@ -294,7 +294,7 @@ export const JetCard = memo(
       await glideHaptic();
       try {
         const { analytics } = await import("@/lib/analytics");
-        analytics.dealClicked(venue.id, venue.name, "share");
+        analytics.shareDeal(venue.id, venue.name, { surface: "jetcard" });
       } catch {
         /* noop */
       }
