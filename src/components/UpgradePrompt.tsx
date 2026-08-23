@@ -107,36 +107,55 @@ export const UpgradePrompt = ({
 
 // Reactive global monetization flag (server-owned, live over Realtime).
 import { useMonetization } from "@/hooks/useMonetization";
+import { useVerifiedTier } from "@/hooks/useVerifiedTier";
 
-// Hook to check feature access
+const TIER_ORDER: Record<SubscriptionTier, number> = {
+  free: 0,
+  jet_plus: 1,
+  jetx: 2,
+};
+
+/**
+ * Feature gating.
+ *
+ * The UI answer is only a hint: the effective tier is re-derived server-side
+ * (`public.effective_subscription_tier`) and the gated write surfaces
+ * (connections, deal shares, venue reviews) additionally enforce
+ * `public.has_feature_access('jet_plus')` inside their RLS policies. Tampering
+ * with client state therefore cannot unlock a paid capability.
+ */
 export const useFeatureAccess = () => {
-  const { tier, loading } = useSubscription();
+  const { tier: clientTier, loading } = useSubscription();
   const { enabled: monetizationActive } = useMonetization();
+  const { verifiedTier, verifying } = useVerifiedTier();
+
+  // Take the stricter of the two answers until the server has confirmed.
+  const effectiveTier: SubscriptionTier =
+    verifiedTier === null
+      ? "free"
+      : TIER_ORDER[verifiedTier] <= TIER_ORDER[clientTier]
+        ? verifiedTier
+        : clientTier;
 
   const canAccessFeature = (requiredTier: SubscriptionTier): boolean => {
-    // Check monetization status (includes admin override and release date)
+    // Monetization off = everything unlocked (matches the server function).
     if (!monetizationActive) return true;
 
-    if (loading) return false;
+    if (loading || verifying) return false;
 
-    const tierOrder: Record<SubscriptionTier, number> = {
-      free: 0,
-      jet_plus: 1,
-      jetx: 2,
-    };
-
-    return tierOrder[tier] >= tierOrder[requiredTier];
+    return TIER_ORDER[effectiveTier] >= TIER_ORDER[requiredTier];
   };
 
   const canAccessSocialFeatures = () => canAccessFeature("jet_plus");
   const canAccessVIPFeatures = () => canAccessFeature("jetx");
 
   return {
-    tier,
-    loading,
+    tier: effectiveTier,
+    loading: loading || verifying,
     isMonetizationActive: monetizationActive,
     canAccessFeature,
     canAccessSocialFeatures,
     canAccessVIPFeatures,
   };
 };
+

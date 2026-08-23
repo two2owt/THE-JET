@@ -2042,6 +2042,10 @@ export type Database = {
       dispatch_ending_soon_favorites: { Args: never; Returns: undefined }
       dispatch_notification_queue: { Args: never; Returns: undefined }
       display_name_available: { Args: { _name: string }; Returns: boolean }
+      effective_subscription_tier: {
+        Args: { _user_id?: string }
+        Returns: string
+      }
       email_queue_dispatch: { Args: never; Returns: undefined }
       email_queue_endpoint: { Args: never; Returns: string }
       email_queue_metrics: {
@@ -2062,6 +2066,10 @@ export type Database = {
       ensure_email_queue_triggers: { Args: never; Returns: undefined }
       generate_auto_handle: { Args: { _user_id: string }; Returns: string }
       get_user_id_by_email: { Args: { _email: string }; Returns: string }
+      has_feature_access: {
+        Args: { _required: string; _user_id?: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
