@@ -31,14 +31,26 @@ export const MonetizationToggle = () => {
   // reflects what every other user's device is seeing right now.
   const { enabled, hydrated } = useMonetization();
   const setMonetization = useSetMonetization();
+  const { isAdmin, loading: adminLoading } = useIsAdmin();
+  const { entries: auditEntries, refresh: refreshAudit } = useMonetizationAudit(
+    isAdmin && !adminLoading,
+  );
   const [isSaving, setIsSaving] = useState(false);
   const override: MonetizationOverride = enabled ? "enabled" : "disabled";
+  const canEdit = isAdmin && !adminLoading;
 
   const handleToggle = async (value: MonetizationOverride) => {
     if (isSaving || value === override) return;
+    if (!canEdit) {
+      toast.error("Admin access required", {
+        description: "Only admins can change monetization for all users.",
+      });
+      return;
+    }
     setIsSaving(true);
     try {
       await setMonetization(value === "enabled");
+      void refreshAudit();
       toast.success(`Monetization ${value}`, {
         description: `Feature gating is now ${value} for all users and devices.`,
       });
