@@ -8,6 +8,18 @@ const DEFAULT_SEND_DELAY_MS = 200
 const DEFAULT_AUTH_TTL_MINUTES = 15
 const DEFAULT_TRANSACTIONAL_TTL_MINUTES = 60
 
+// Messages enqueued from Postgres (alerting, triggers) carry no sender fields,
+// which made the send API reject them with 400 missing_parameter "from" on every
+// attempt until they dead-lettered. Fall back to the project's verified sender.
+const DEFAULT_SENDER_DOMAIN = 'notify.www.jet-around.com'
+const DEFAULT_FROM = `JET <noreply@${DEFAULT_SENDER_DOMAIN}>`
+
+// A 403 is usually a permanent config error, but domain verification can flap
+// transiently. Give those messages a couple of retries before dead-lettering,
+// otherwise a momentary blip permanently drops real user email.
+const MAX_FORBIDDEN_RETRIES = 2
+
+
 // Check if an error is a rate-limit (429) response.
 // Uses EmailAPIError.status when available (email-js >=0.x with structured errors),
 // falls back to parsing the error message for older versions.
