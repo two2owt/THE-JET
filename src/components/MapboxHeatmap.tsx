@@ -846,6 +846,32 @@ export const MapboxHeatmap = ({
   useEffect(() => {
     isUsingCurrentLocationRef.current = isUsingCurrentLocation;
   }, [isUsingCurrentLocation]);
+
+  /**
+   * Explicit "take me to my location" intent.
+   *
+   * The camera may only be recentered on the user when this is true. It is set
+   * by the three actions the user can actually perform to ask for it:
+   *   - the first locate after sign-in / sign-up,
+   *   - the map's "find my location" button,
+   *   - picking "Use my location" in the city dropdown.
+   *
+   * Everything else that produces a position fix — the Mapbox geolocate
+   * control's continuous tracking watch, and our own background city
+   * re-detection watcher — is passive. Passive fixes update the user marker
+   * and the underlying coordinates, but must never move the camera, because
+   * the user may be deliberately browsing another city.
+   */
+  const recenterIntentRef = useRef(false);
+
+  /**
+   * True once the user has panned/zoomed/rotated the map themselves since the
+   * last explicit recenter. While this is set, passive position fixes are not
+   * allowed to change the selected city either — a city change flies the
+   * camera, which would yank the user out of the area they are looking at.
+   */
+  const userMovedCameraRef = useRef(false);
+
   // Mirror selectedCity + onCityChange so the (one-time) geolocate handler
   // can sync the parent without re-subscribing on every prop change.
   const selectedCityRef = useRef(selectedCity);
@@ -858,18 +884,49 @@ export const MapboxHeatmap = ({
   }, [onCityChange]);
 
   /**
+   * How long an explicit recenter request stays valid. If the fix takes longer
+   * than this (permission dialog left open, GPS cold start), the request is
+   * treated as abandoned rather than firing a surprise camera move minutes
+   * later while the user is browsing somewhere else.
+   */
+  const RECENTER_INTENT_TTL_MS = 30_000;
+  const recenterIntentAtRef = useRef(0);
+
+  /** Marks an explicit user request to be taken to their own location. */
+  const requestRecenter = useCallback(() => {
+    recenterIntentRef.current = true;
+    recenterIntentAtRef.current = Date.now();
+    // A fresh recenter resets "the user is browsing elsewhere".
+    userMovedCameraRef.current = false;
+  }, []);
+
+  /** Consumes a pending recenter request; false for passive position fixes. */
+  const consumeRecenterIntent = useCallback(() => {
+    const pending =
+      recenterIntentRef.current &&
+      Date.now() - recenterIntentAtRef.current < RECENTER_INTENT_TTL_MS;
+    recenterIntentRef.current = false;
+    return pending;
+  }, []);
+
+  /**
    * Always resolves a *fresh* position and pushes it through the shared
    * geolocation handler so the city selector label, detected city, and all
    * data filters follow where the user actually is. Falls back to a
    * network (IP/WiFi) fix when GPS is denied or times out, and finally to a
    * nearest-city sync so the dropdown never stays stale.
+   *
+   * Only ever called from an explicit user action (or the once-per-sign-in
+   * locate), so it arms the recenter intent that permits a camera move.
    */
   const refreshCurrentLocation = useCallback(() => {
+    requestRecenter();
     setIsUsingCurrentLocation(true);
     isUsingCurrentLocationRef.current = true;
     // Drop the previous fix so the selector never keeps showing the city the
     // user was on before asking to be located — it shows "Locating..." until
     // the fresh fix lands.
+
     setDetectedCity(null);
     setDetectedLocationName(null);
 
@@ -934,7 +991,8 @@ export const MapboxHeatmap = ({
         /* control not ready */
       }
     }
-  }, []);
+  }, [requestRecenter]);
+
 
   // City selector search query
   const [citySearchQuery, setCitySearchQuery] = useState("");
@@ -946,7 +1004,15 @@ export const MapboxHeatmap = ({
    * selection is never overridden. A new fix must be at least
    * RE_DETECT_MIN_METERS away from the last one we acted on before we
    * re-resolve the nearest city, so GPS jitter can't thrash the selector.
+   *
+   * This watcher is passive: it keeps the user's own coordinates and marker
+   * fresh, but it never recenters the camera, and it will not switch the
+   * selected city once the user has started browsing the map themselves
+   * (switching cities flies the camera, which is the same yank by another
+   * name). The moment they tap "find my location" the intent flag clears and
+   * detection resumes.
    */
+
   const lastWatchFixRef = useRef<{ lat: number; lng: number } | null>(null);
   useEffect(() => {
     if (!isUsingCurrentLocation) {
@@ -984,14 +1050,18 @@ export const MapboxHeatmap = ({
 
         const nearest = getNearestCity(latitude, longitude);
         setUserLocation(next);
+        setDetectedCity(nearest);
         if (nearest.id !== selectedCityRef.current.id) {
-          setDetectedCity(nearest);
           setDetectedLocationName(`${nearest.name}, ${nearest.state}`);
-          onCityChangeRef.current(nearest);
-        } else {
-          setDetectedCity(nearest);
+          // Only follow the user into a new city while they are not actively
+          // looking at somewhere else — a city change triggers a camera fly.
+          if (!userMovedCameraRef.current) {
+            onCityChangeRef.current(nearest);
+          }
         }
+        // Passive fix: updates the marker/coordinates, never the camera.
         applyGeolocationRef.current?.({ latitude, longitude });
+
       },
       (err) => {
         console.warn("MapboxHeatmap: location watch failed", err?.message);
@@ -2233,6 +2303,17 @@ export const MapboxHeatmap = ({
         geolocateControlRef.current = geolocateControl;
         if (geolocateControl) {
           map.current.addControl(geolocateControl, "top-right");
+          // Tapping the control's button is the "find my location" gesture, and
+          // is the only geolocate path from this control that may move the
+          // camera. Its subsequent tracking updates are passive.
+          const geolocateButton = (geolocateControl as any)._geolocateButton as
+            | HTMLElement
+            | undefined;
+          geolocateButton?.addEventListener("click", () => {
+            requestRecenter();
+            setIsUsingCurrentLocation(true);
+            isUsingCurrentLocationRef.current = true;
+          });
           // Swallow the Mapbox "Geolocation support is not available" warning
           // in iframe/permission-limited environments without breaking the map.
           geolocateControl.on("error", (e: any) => {
@@ -2242,6 +2323,17 @@ export const MapboxHeatmap = ({
             );
           });
         }
+
+        // Track deliberate camera movement. While the user is panning/zooming
+        // around — including into another city — no passive position fix is
+        // allowed to pull them back or switch the selected city.
+        const markUserCameraMove = (e: any) => {
+          if (e?.originalEvent) userMovedCameraRef.current = true;
+        };
+        map.current.on("dragstart", markUserCameraMove);
+        map.current.on("zoomstart", markUserCameraMove);
+        map.current.on("rotatestart", markUserCameraMove);
+
 
         // Create custom marker element for user location
         const createUserMarker = () => {
@@ -2385,34 +2477,43 @@ export const MapboxHeatmap = ({
             onNearestCityDetected(nearestCity);
           }
 
-          // A geolocate event after the initial auto-locate means the user tapped
-          // "center on map". Treat that as switching back to current-location mode
-          // so the city selector label and all data filters follow where they are.
-          const userInitiatedRecenter = !isInitialGeolocate;
+          // The Mapbox geolocate control keeps a watch running once it has been
+          // triggered, so it emits a `geolocate` event on every position update.
+          // Those are passive — only a pending explicit request (find-my-location
+          // button, "Use my location", first locate after sign-in) may move the
+          // camera or flip the mode back to current-location.
+          const userInitiatedRecenter = consumeRecenterIntent();
           if (userInitiatedRecenter) {
             setIsUsingCurrentLocation(true);
             isUsingCurrentLocationRef.current = true;
+            userMovedCameraRef.current = false;
           }
 
           // Keep the parent's selectedCity in sync with the nearest detected city
           // so data filters (deals, density, paths) match the user's location.
+          // Skipped while the user is browsing elsewhere, since a city change
+          // flies the camera.
           if (
-            (isUsingCurrentLocationRef.current || userInitiatedRecenter) &&
+            (userInitiatedRecenter ||
+              (isUsingCurrentLocationRef.current &&
+                !userMovedCameraRef.current)) &&
             nearestCity.id !== selectedCityRef.current.id
           ) {
             onCityChangeRef.current(nearestCity);
           }
 
-          // Only fly to user location on initial load (default behavior)
-          // After that, users can pan/zoom freely without being pulled back
+          // Camera moves happen only on the very first locate of the session or
+          // when the user explicitly asked to be taken to their location.
           if (isInitialGeolocate && map.current) {
-            map.current.flyTo({
-              center: [longitude, latitude],
-              zoom: Math.max(map.current.getZoom(), 13),
-              duration: 1500,
-              essential: true,
-            });
             isInitialGeolocate = false;
+            if (!userMovedCameraRef.current) {
+              map.current.flyTo({
+                center: [longitude, latitude],
+                zoom: Math.max(map.current.getZoom(), 13),
+                duration: 1500,
+                essential: true,
+              });
+            }
           } else if (userInitiatedRecenter && map.current) {
             // The user explicitly asked for "Current location" (possibly after
             // manually picking another city) — always recenter on the fresh fix
@@ -2424,6 +2525,7 @@ export const MapboxHeatmap = ({
               essential: true,
             });
           }
+
 
           // Create or update user marker with smooth interpolation
           if (!userMarker.current && map.current && mapboxglRef.current) {
@@ -4142,6 +4244,11 @@ export const MapboxHeatmap = ({
               } else {
                 setIsUsingCurrentLocation(false);
                 isUsingCurrentLocationRef.current = false;
+                // The user is deliberately looking at another city — cancel any
+                // in-flight recenter request so a late fix can't yank them back.
+                recenterIntentRef.current = false;
+                userMovedCameraRef.current = true;
+
                 // Drop the previously detected location so a later re-center
                 // never briefly shows the stale name before the fresh fix lands.
                 setDetectedLocationName(null);
