@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -61,6 +62,11 @@ const MessagesRoute = MessagesRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
@@ -160,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/favorites': typeof FavoritesRoute
   '/messages': typeof MessagesRoute
   '/onboarding': typeof OnboardingRoute
+  '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -185,6 +192,7 @@ export interface FileRoutesByTo {
   '/favorites': typeof FavoritesRoute
   '/messages': typeof MessagesRoute
   '/onboarding': typeof OnboardingRoute
+  '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -211,6 +219,7 @@ export interface FileRoutesById {
   '/favorites': typeof FavoritesRoute
   '/messages': typeof MessagesRoute
   '/onboarding': typeof OnboardingRoute
+  '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -238,6 +247,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/messages'
     | '/onboarding'
+    | '/pricing'
     | '/privacy-policy'
     | '/profile'
     | '/reset-password'
@@ -263,6 +273,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/messages'
     | '/onboarding'
+    | '/pricing'
     | '/privacy-policy'
     | '/profile'
     | '/reset-password'
@@ -288,6 +299,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/messages'
     | '/onboarding'
+    | '/pricing'
     | '/privacy-policy'
     | '/profile'
     | '/reset-password'
@@ -314,6 +326,7 @@ export interface RootRouteChildren {
   FavoritesRoute: typeof FavoritesRoute
   MessagesRoute: typeof MessagesRoute
   OnboardingRoute: typeof OnboardingRoute
+  PricingRoute: typeof PricingRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -375,6 +388,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy-policy': {
@@ -506,6 +526,7 @@ const rootRouteChildren: RootRouteChildren = {
   FavoritesRoute: FavoritesRoute,
   MessagesRoute: MessagesRoute,
   OnboardingRoute: OnboardingRoute,
+  PricingRoute: PricingRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
