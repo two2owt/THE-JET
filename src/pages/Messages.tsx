@@ -289,7 +289,8 @@ export default function Messages() {
     return (
       <PageLayout defaultTab="social" headerConfig={{ hideSearch: true }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-fluid-lg">
-          <EmptyState
+          <SignedOutPreview
+            pageTitle="Messages"
             icon={MessageCircle}
             title="Sign in to message"
             description="Create an account to chat with your friends"
@@ -298,7 +299,25 @@ export default function Messages() {
               rememberPostAuthRedirect();
               navigate("/auth");
             }}
+            samples={[
+              {
+                title: "Jordan M.",
+                subtitle: "Sent you a venue · 2m ago",
+                meta: "New",
+              },
+              {
+                title: "Alex R.",
+                subtitle: "\"Meet at the rooftop?\"",
+                meta: "1h",
+              },
+              {
+                title: "Sam K.",
+                subtitle: "Shared a deal with you",
+                meta: "Yesterday",
+              },
+            ]}
           />
+
         </div>
       </PageLayout>
     );
