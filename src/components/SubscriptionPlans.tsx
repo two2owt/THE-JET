@@ -1,4 +1,3 @@
-import { ANALYTICS_EVENTS } from "@/lib/analyticsEvents";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,8 +15,8 @@ import {
   SUBSCRIPTION_TIERS,
   SubscriptionTier,
 } from "@/hooks/useSubscription";
+import { useUpgradeFlow } from "@/hooks/useUpgradeFlow";
 import { toast } from "sonner";
-import { canPurchaseSubscription } from "@/lib/platform";
 
 const tierIcons: Record<SubscriptionTier, React.ReactNode> = {
   free: <Zap className="w-6 h-6" />,
@@ -28,49 +27,17 @@ const tierIcons: Record<SubscriptionTier, React.ReactNode> = {
 export const SubscriptionPlans = () => {
   const {
     tier: currentTier,
-    createCheckout,
     openCustomerPortal,
     isSubscribed,
     loading,
   } = useSubscription();
-  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const { startUpgrade, pendingTier, canPurchase } = useUpgradeFlow();
   const [portalLoading, setPortalLoading] = useState(false);
-  // App Store policy: hide all subscription CTAs inside the iOS native shell.
-  // Web and Android keep full Stripe checkout flow.
-  const canPurchase = canPurchaseSubscription();
+  const checkoutLoading = pendingTier;
 
-  const handleSubscribe = async (tierKey: SubscriptionTier) => {
-    const tierInfo = SUBSCRIPTION_TIERS[tierKey];
-    if (!tierInfo.priceId) return;
+  const handleSubscribe = (tierKey: SubscriptionTier) =>
+    startUpgrade(tierKey, "plans_grid");
 
-    setCheckoutLoading(tierKey);
-    try {
-      const { analytics } = await import("@/lib/analytics");
-      analytics.track(ANALYTICS_EVENTS.BEGIN_CHECKOUT, {
-        tier: tierKey,
-        price_id: tierInfo.priceId,
-        current_tier: currentTier,
-      });
-    } catch {
-      /* noop */
-    }
-    try {
-      await createCheckout(tierInfo.priceId);
-      toast.success("Redirecting to checkout...");
-    } catch (error) {
-      try {
-        const { analytics } = await import("@/lib/analytics");
-        analytics.track(ANALYTICS_EVENTS.CHECKOUT_FAILED, { tier: tierKey });
-      } catch {
-        /* noop */
-      }
-      toast.error("Failed to start checkout", {
-        description: "Please try again or contact support.",
-      });
-    } finally {
-      setCheckoutLoading(null);
-    }
-  };
 
   const handleManageSubscription = async () => {
     setPortalLoading(true);

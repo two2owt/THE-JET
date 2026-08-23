@@ -30,9 +30,10 @@ Deno.serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { priceId } = await req.json();
+    const { priceId, tier, returnPath } = await req.json();
     if (!priceId) throw new Error("Price ID is required");
-    logStep("Price ID received", { priceId });
+    logStep("Price ID received", { priceId, tier });
+
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
@@ -65,6 +66,20 @@ Deno.serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://jet-around.com";
 
+    // Only same-origin, absolute in-app paths may be used as a return target.
+    const safePath =
+      typeof returnPath === "string" &&
+      returnPath.startsWith("/") &&
+      !returnPath.startsWith("//")
+        ? returnPath
+        : "/profile?tab=account";
+    const buildReturnUrl = (status: string) => {
+      const url = new URL(safePath, origin);
+      url.searchParams.set("checkout", status);
+      if (typeof tier === "string") url.searchParams.set("tier", tier);
+      return url.toString();
+    };
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
@@ -75,12 +90,15 @@ Deno.serve(async (req) => {
         },
       ],
       mode: "subscription",
-      success_url: `${origin}/settings?subscription=success`,
-      cancel_url: `${origin}/settings?subscription=canceled`,
+      allow_promotion_codes: true,
+      success_url: buildReturnUrl("success"),
+      cancel_url: buildReturnUrl("canceled"),
       metadata: {
         user_id: user.id,
+        tier: typeof tier === "string" ? tier : "",
       },
     });
+
 
     logStep("Checkout session created", {
       sessionId: session.id,

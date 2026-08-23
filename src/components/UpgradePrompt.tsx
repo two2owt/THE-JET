@@ -12,8 +12,7 @@ import {
   SubscriptionTier,
   SUBSCRIPTION_TIERS,
 } from "@/hooks/useSubscription";
-import { useState } from "react";
-import { canPurchaseSubscription } from "@/lib/platform";
+import { useUpgradeFlow } from "@/hooks/useUpgradeFlow";
 
 interface UpgradePromptProps {
   requiredTier: SubscriptionTier;
@@ -28,24 +27,16 @@ export const UpgradePrompt = ({
   isOpen,
   onClose,
 }: UpgradePromptProps) => {
-  const { createCheckout } = useSubscription();
-  const [loading, setLoading] = useState(false);
+  const { startUpgrade, pendingTier, canPurchase } = useUpgradeFlow();
+  const loading = pendingTier === requiredTier;
   const tierInfo = SUBSCRIPTION_TIERS[requiredTier];
-  const canPurchase = canPurchaseSubscription();
 
   const handleUpgrade = async () => {
     if (!tierInfo.priceId) return;
-
-    setLoading(true);
-    try {
-      await createCheckout(tierInfo.priceId);
-      onClose();
-    } catch (error) {
-      console.error("Error creating checkout:", error);
-    } finally {
-      setLoading(false);
-    }
+    await startUpgrade(requiredTier, `paywall:${featureName}`);
+    onClose();
   };
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
