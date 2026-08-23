@@ -17,6 +17,8 @@ import {
   isMonetizationEnabled,
 } from "@/lib/monetization";
 import { useMonetization, useSetMonetization } from "@/hooks/useMonetization";
+import { useMonetizationAudit } from "@/hooks/useMonetizationAudit";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 export {
   isMonetizationEnabled,
