@@ -32,13 +32,7 @@ export const Route = createFileRoute("/")({
 });
 
 function HomeRoute() {
-  return (
-    <>
-      <h1 className="sr-only">
-        JET — Real-time heatmap of live deals, events, and trending venues near
-        you
-      </h1>
-      <Index />
-    </>
-  );
+  // The <h1> lives in <Index /> so it can follow the active tab.
+  return <Index />;
 }
+
