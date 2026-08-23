@@ -2455,34 +2455,43 @@ export const MapboxHeatmap = ({
             onNearestCityDetected(nearestCity);
           }
 
-          // A geolocate event after the initial auto-locate means the user tapped
-          // "center on map". Treat that as switching back to current-location mode
-          // so the city selector label and all data filters follow where they are.
-          const userInitiatedRecenter = !isInitialGeolocate;
+          // The Mapbox geolocate control keeps a watch running once it has been
+          // triggered, so it emits a `geolocate` event on every position update.
+          // Those are passive — only a pending explicit request (find-my-location
+          // button, "Use my location", first locate after sign-in) may move the
+          // camera or flip the mode back to current-location.
+          const userInitiatedRecenter = consumeRecenterIntent();
           if (userInitiatedRecenter) {
             setIsUsingCurrentLocation(true);
             isUsingCurrentLocationRef.current = true;
+            userMovedCameraRef.current = false;
           }
 
           // Keep the parent's selectedCity in sync with the nearest detected city
           // so data filters (deals, density, paths) match the user's location.
+          // Skipped while the user is browsing elsewhere, since a city change
+          // flies the camera.
           if (
-            (isUsingCurrentLocationRef.current || userInitiatedRecenter) &&
+            (userInitiatedRecenter ||
+              (isUsingCurrentLocationRef.current &&
+                !userMovedCameraRef.current)) &&
             nearestCity.id !== selectedCityRef.current.id
           ) {
             onCityChangeRef.current(nearestCity);
           }
 
-          // Only fly to user location on initial load (default behavior)
-          // After that, users can pan/zoom freely without being pulled back
+          // Camera moves happen only on the very first locate of the session or
+          // when the user explicitly asked to be taken to their location.
           if (isInitialGeolocate && map.current) {
-            map.current.flyTo({
-              center: [longitude, latitude],
-              zoom: Math.max(map.current.getZoom(), 13),
-              duration: 1500,
-              essential: true,
-            });
             isInitialGeolocate = false;
+            if (!userMovedCameraRef.current) {
+              map.current.flyTo({
+                center: [longitude, latitude],
+                zoom: Math.max(map.current.getZoom(), 13),
+                duration: 1500,
+                essential: true,
+              });
+            }
           } else if (userInitiatedRecenter && map.current) {
             // The user explicitly asked for "Current location" (possibly after
             // manually picking another city) — always recenter on the fresh fix
@@ -2494,6 +2503,7 @@ export const MapboxHeatmap = ({
               essential: true,
             });
           }
+
 
           // Create or update user marker with smooth interpolation
           if (!userMarker.current && map.current && mapboxglRef.current) {
