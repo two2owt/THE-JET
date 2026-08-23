@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { DollarSign, AlertTriangle } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -14,9 +14,9 @@ import { toast } from "sonner";
 import {
   type MonetizationOverride,
   getMonetizationOverride,
-  setMonetizationOverride,
   isMonetizationEnabled,
 } from "@/lib/monetization";
+import { useMonetization, useSetMonetization } from "@/hooks/useMonetization";
 
 export {
   isMonetizationEnabled,
@@ -25,19 +25,28 @@ export {
 };
 
 export const MonetizationToggle = () => {
-  const [override, setOverride] = useState<MonetizationOverride>("disabled");
+  // Global, server-owned flag: reading it live means the badge below always
+  // reflects what every other user's device is seeing right now.
+  const { enabled, hydrated } = useMonetization();
+  const setMonetization = useSetMonetization();
+  const [isSaving, setIsSaving] = useState(false);
+  const override: MonetizationOverride = enabled ? "enabled" : "disabled";
 
-  useEffect(() => {
-    setOverride(getMonetizationOverride());
-  }, []);
-
-  const handleToggle = (value: MonetizationOverride) => {
-    setOverride(value);
-    setMonetizationOverride(value);
-    toast.success(`Monetization ${value}`, {
-      description: `Feature gating is now ${value}`,
-    });
-    window.location.reload();
+  const handleToggle = async (value: MonetizationOverride) => {
+    if (isSaving || value === override) return;
+    setIsSaving(true);
+    try {
+      await setMonetization(value === "enabled");
+      toast.success(`Monetization ${value}`, {
+        description: `Feature gating is now ${value} for all users and devices.`,
+      });
+    } catch {
+      toast.error("Couldn't update monetization", {
+        description: "Only admins can change this setting. Please try again.",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -55,7 +64,9 @@ export const MonetizationToggle = () => {
               </CardDescription>
             </div>
           </div>
-          {override === "enabled" ? (
+          {!hydrated ? (
+            <Badge variant="outline">Loading…</Badge>
+          ) : override === "enabled" ? (
             <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
               Active
             </Badge>
@@ -72,7 +83,7 @@ export const MonetizationToggle = () => {
                 ? "border-primary bg-primary/5"
                 : "border-border/50 bg-background/50 backdrop-blur-sm hover:border-primary/50"
             }`}
-            onClick={() => handleToggle("enabled")}
+            onClick={() => void handleToggle("enabled")}
           >
             <div>
               <p className="font-medium text-foreground">Enabled</p>
@@ -80,7 +91,7 @@ export const MonetizationToggle = () => {
                 Subscription gating is active
               </p>
             </div>
-            <Switch checked={override === "enabled"} />
+            <Switch checked={override === "enabled"} disabled={isSaving} />
           </div>
 
           <div
@@ -89,7 +100,7 @@ export const MonetizationToggle = () => {
                 ? "border-primary bg-primary/5"
                 : "border-border/50 bg-background/50 backdrop-blur-sm hover:border-primary/50"
             }`}
-            onClick={() => handleToggle("disabled")}
+            onClick={() => void handleToggle("disabled")}
           >
             <div>
               <p className="font-medium text-foreground">Disabled</p>
@@ -97,7 +108,7 @@ export const MonetizationToggle = () => {
                 All features accessible to everyone
               </p>
             </div>
-            <Switch checked={override === "disabled"} />
+            <Switch checked={override === "disabled"} disabled={isSaving} />
           </div>
         </div>
 
