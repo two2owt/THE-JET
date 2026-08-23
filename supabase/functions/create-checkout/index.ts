@@ -6,6 +6,8 @@ import {
   EDGE_FUNCTION_VERSION,
 } from "../_shared/cors.ts";
 import { getPublishableKey } from "../_shared/supabase-keys.ts";
+import { reportEdgeError } from "../_shared/observability.ts";
+
 
 const FUNCTION_NAME = "create-checkout";
 logVersion(FUNCTION_NAME);
