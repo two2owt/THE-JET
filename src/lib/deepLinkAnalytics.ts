@@ -1,3 +1,4 @@
+import { ANALYTICS_EVENTS } from "@/lib/analyticsEvents";
 import { analytics } from "@/lib/analytics";
 
 /**
@@ -31,7 +32,7 @@ export function trackDeepLinkShared(
   surface: DeepLinkSurface,
   method: "native" | "clipboard" | "failed",
 ) {
-  analytics.track("Deep Link Shared", { ...base(kind, id, surface), method });
+  analytics.track(ANALYTICS_EVENTS.DEEP_LINK_SHARED, { ...base(kind, id, surface), method });
 }
 
 /** A deep link resolved to a JetCard. */
@@ -41,7 +42,7 @@ export function trackDeepLinkOpened(
   surface: DeepLinkSurface,
   resolution: DeepLinkResolution,
 ) {
-  analytics.track("Deep Link Opened", {
+  analytics.track(ANALYTICS_EVENTS.DEEP_LINK_OPENED, {
     ...base(kind, id, surface),
     resolution,
     fallback: resolution !== "loaded_venues",
@@ -56,7 +57,7 @@ export function trackDeepLinkFallback(
   resolution: DeepLinkResolution,
   reason: string,
 ) {
-  analytics.track("Deep Link Fallback", {
+  analytics.track(ANALYTICS_EVENTS.DEEP_LINK_FALLBACK, {
     ...base(kind, id, surface),
     resolution,
     reason,
@@ -70,7 +71,7 @@ export function trackDeepLinkFailed(
   surface: DeepLinkSurface,
   reason: string,
 ) {
-  analytics.track("Deep Link Failed", { ...base(kind, id, surface), reason });
+  analytics.track(ANALYTICS_EVENTS.DEEP_LINK_FAILED, { ...base(kind, id, surface), reason });
 }
 
 /**

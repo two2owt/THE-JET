@@ -9,6 +9,7 @@ import {
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { loadConsents } from "@/lib/consent";
+import { ANALYTICS_EVENTS } from "@/lib/analyticsEvents";
 import { analytics } from "@/lib/analytics";
 import { SESSION_BROADCAST_KEY } from "@/lib/authSession";
 import { flushPendingConsent } from "@/lib/pendingConsent";
@@ -126,7 +127,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
               ?.provider ?? "email";
           // Single canonical sign-in event — "Auth Event"/login was a
           // duplicate of this and doubled every row in analytics_events.
-          analytics.track("Auth Signed In", { provider });
+          analytics.track(ANALYTICS_EVENTS.SIGN_IN, { provider });
         } else if (event === "SIGNED_OUT") {
           analytics.authEvent("logout");
           analytics.reset();
