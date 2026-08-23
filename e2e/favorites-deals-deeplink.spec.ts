@@ -30,7 +30,8 @@ for (const link of links) {
     const url = new URL(page.url());
     expect(url.pathname).toBe("/");
     // The map surface is mounted.
-    await expect(page.locator("#root")).toBeVisible();
+    // TanStack Start hydrates directly into <body> — there is no #root wrapper.
+    await expect(page.locator("body")).toBeVisible();
     // Layer state from the push payload survives the cold load.
     if (link.url.includes("layers=")) {
       expect(url.searchParams.get("layers")).toContain("density");
