@@ -318,12 +318,15 @@ export const SearchResults = ({
     }
 
     // --- Venues (rank by best field match across name / category / neighborhood) ---
+    // `categorySynonymScore` lets everyday words ("drinks", "nightlife",
+    // "brunch") reach the same category the marker glyph shows on the map.
     const rankedVenues = venues
       .map((v) => ({
         venue: v,
         score: Math.max(
           matchScore(v.name, q) * 3, // name weighted highest
           matchScore(v.category, q) * 2,
+          categorySynonymScore(v.category, q) * 2,
           matchScore(v.neighborhood, q) * 2,
           matchScore(v.address ?? "", q),
         ),
@@ -339,6 +342,7 @@ export const SearchResults = ({
           matchScore(d.title, q) * 3,
           matchScore(d.venue_name, q) * 2,
           matchScore(d.deal_type, q) * 2,
+          categorySynonymScore(d.deal_type, q) * 2,
           matchScore(d.description, q),
         ),
       }))
@@ -368,7 +372,10 @@ export const SearchResults = ({
       { name: string; count: number; score: number; source: "venue" | "deal" }
     >();
     for (const v of venues) {
-      const score = matchScore(v.category, q);
+      const score = Math.max(
+        matchScore(v.category, q),
+        categorySynonymScore(v.category, q),
+      );
       if (!score) continue;
       const key = v.category.toLowerCase();
       const existing = catMap.get(key);
@@ -377,7 +384,10 @@ export const SearchResults = ({
         catMap.set(key, { name: v.category, count: 1, score, source: "venue" });
     }
     for (const d of deals) {
-      const score = matchScore(d.deal_type, q);
+      const score = Math.max(
+        matchScore(d.deal_type, q),
+        categorySynonymScore(d.deal_type, q),
+      );
       if (!score) continue;
       const key = d.deal_type.toLowerCase();
       const existing = catMap.get(key);
@@ -388,6 +398,7 @@ export const SearchResults = ({
     const categories = Array.from(catMap.values()).sort(
       (a, b) => b.score - a.score || b.count - a.count,
     );
+
 
     // --- JetCards (venues + venues derived from matching deals) ---
     const jetcardsMap = new Map<string, { venue: Venue; score: number }>();
