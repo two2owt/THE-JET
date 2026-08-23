@@ -721,21 +721,39 @@ export const SearchResults = ({
                   </span>
                 </h4>
                 <div className="flex flex-wrap gap-1.5">
-                  {filteredCategories.map((cat) => (
-                    <button
-                      data-search-option="true"
-                      key={`cat-${cat.source}-${cat.name}`}
-                      onClick={() => handleCategorySelect(cat.name)}
-                      className="group inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-secondary/60 hover:bg-primary/10 hover:text-primary border border-border/60 hover:border-primary/40 text-xs font-semibold text-foreground transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95"
-                    >
-                      <Tag className="w-3 h-3" />
-                      <span className="truncate max-w-[160px]">{cat.name}</span>
-                      <span className="text-[10px] font-medium text-muted-foreground tabular-nums group-hover:text-primary/80">
-                        {cat.count}
-                      </span>
-                    </button>
-                  ))}
+                  {filteredCategories.map((cat) => {
+                    // Same glyph + accent the venue wears on the map, so a
+                    // category chip and its markers read as one thing.
+                    const def = resolveVenueCategory(cat.name);
+                    const CatIcon = def.Icon;
+                    return (
+                      <button
+                        data-search-option="true"
+                        key={`cat-${cat.source}-${cat.name}`}
+                        onClick={() => handleCategorySelect(cat.name)}
+                        aria-label={`${cat.name} — ${def.label}, ${cat.count} nearby`}
+                        className="group inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-secondary/60 hover:bg-primary/10 hover:text-primary border text-xs font-semibold text-foreground transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95"
+                        style={{
+                          borderColor: `${def.dark}40`,
+                          background: `linear-gradient(150deg, ${def.dark}1A, ${def.dark}08)`,
+                        }}
+                      >
+                        <CatIcon
+                          className="w-3.5 h-3.5 flex-shrink-0"
+                          style={{ color: def.dark }}
+                          aria-hidden="true"
+                        />
+                        <span className="truncate max-w-[160px]">
+                          {cat.name}
+                        </span>
+                        <span className="text-[10px] font-medium text-muted-foreground tabular-nums group-hover:text-primary/80">
+                          {cat.count}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
+
               </section>
             )}
 
