@@ -146,7 +146,16 @@ export default function Profile() {
   } = useProfile(user?.id);
   const [form, setForm] = useState<ProfileEditFormValues>(EMPTY_FORM);
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>("about");
+  // `?tab=account` deep-links straight to the subscription surface, which is
+  // where Stripe returns the user after checkout.
+  const [tabParams] = useSearchParams();
+  const requestedTab = tabParams.get("tab");
+  const [activeTab, setActiveTab] = useState<string>(
+    requestedTab === "activity" || requestedTab === "account"
+      ? requestedTab
+      : "about",
+  );
+
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [isCropOpen, setIsCropOpen] = useState(false);
   // Inline field-level validation errors for the profile form.
