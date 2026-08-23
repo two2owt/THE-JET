@@ -10,6 +10,7 @@ import {
 } from "../_shared/cors.ts";
 
 const FUNCTION_NAME = "send-verification-email";
+
 logVersion(FUNCTION_NAME);
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY") as string);
