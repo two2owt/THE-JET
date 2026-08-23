@@ -6,6 +6,7 @@ import { DealCard } from "@/components/DealCard";
 import { useNavigate } from "@/lib/router-compat";
 import { PageLayout } from "@/components/PageLayout";
 import { EmptyState } from "@/components/EmptyState";
+import { SignedOutPreview } from "@/components/SignedOutPreview";
 import { VirtualGrid } from "@/components/ui/virtual-list";
 import { FavoritesPageSkeleton } from "@/components/skeletons/PageSkeletons";
 import { PageShell } from "@/components/PageShell";
