@@ -19,6 +19,11 @@ import type { Database } from "@/integrations/supabase/types";
 import { useLockMapWhileInteracting } from "@/lib/mapInteractionLock";
 import { activityTier } from "@/lib/activity-palette";
 import { categoryIconFor } from "@/lib/category-icon";
+import {
+  categorySynonymScore,
+  resolveVenueCategory,
+} from "@/lib/venue-categories";
+
 
 type Deal = Database["public"]["Tables"]["deals"]["Row"];
 
