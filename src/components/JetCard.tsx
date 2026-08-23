@@ -32,6 +32,7 @@ import type { Venue } from "./MapboxHeatmap";
 import { UpgradePrompt, useFeatureAccess } from "./UpgradePrompt";
 import { shareVenue } from "@/utils/shareUtils";
 import { useAuth } from "@/contexts/AuthContext";
+import { ANALYTICS_EVENTS } from "@/lib/analyticsEvents";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useNavigate } from "@/lib/router-compat";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
@@ -282,7 +283,7 @@ export const JetCard = memo(
         setShowUpgradePrompt(true);
         try {
           const { analytics } = await import("@/lib/analytics");
-          analytics.track("Upgrade Prompt Shown", {
+          analytics.track(ANALYTICS_EVENTS.UPGRADE_PROMPT_SHOWN, {
             source: "jetcard_share",
             venue_id: venue.id,
           });
