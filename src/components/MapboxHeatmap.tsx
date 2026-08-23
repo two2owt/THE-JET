@@ -146,6 +146,15 @@ import {
 } from "./map/LiveStatsPanel";
 import { useDensityLayer } from "./map/hooks/useDensityLayer";
 import { useMarkerDeclutter } from "./map/hooks/useMarkerDeclutter";
+import { useMapRecenterPolicy } from "./map/hooks/useMapRecenterPolicy";
+import { useMapLayerToggles } from "./map/hooks/useMapLayerToggles";
+import {
+  createClusterMarkerElement,
+  getCategoryFloral,
+  getCategoryIcon,
+  markerZoomFactor,
+  planarDistance,
+} from "./map/markerStyles";
 import { clusterVenues, CLUSTER_MAX_ZOOM } from "./map/venueClusters";
 import {
   useMovementPathsLayer,
