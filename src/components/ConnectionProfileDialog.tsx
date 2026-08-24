@@ -64,8 +64,11 @@ export function ConnectionProfileDialog({
 
   // Live-update the open profile when that user edits it.
   useProfilePulse((pulse) => {
-    if (pulse.profile_id === connectionId) void fetchProfile();
+    if (pulse.profile_id === connectionId || pulse.event === "resync") {
+      void fetchProfile();
+    }
   }, isOpen && !!connectionId);
+
 
   const fetchProfile = async () => {
     if (!connectionId) return;
