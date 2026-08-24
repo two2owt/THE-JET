@@ -115,6 +115,8 @@ export const SearchResults = ({
     top: number;
     bottom: number;
     maxHeight: number;
+    right: number;
+    width: number | null;
   } | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
