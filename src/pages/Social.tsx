@@ -662,6 +662,7 @@ export default function Social() {
             border: "none",
             cursor: "pointer",
             overflow: "hidden",
+            marginBottom: "24px",
           }}
         >
           <span
