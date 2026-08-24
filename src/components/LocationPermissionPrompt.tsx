@@ -15,12 +15,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { refreshConsents } from "@/lib/consent";
 import { usePromptSlot, PROMPT_PRIORITY } from "@/hooks/usePromptSlot";
 import {
+  isFirstVisitForSignIn,
   markLocationPermissionResolved,
   markLocationPromptDismissed,
   markLocationPromptShown,
   sessionSignature,
   shouldPromptForLocation,
 } from "@/lib/locationPromptPolicy";
+
 import { recordPromptOutcome } from "@/lib/locationDiagnostics";
 import { useDeferredPromptTrigger } from "@/hooks/useDeferredPromptTrigger";
 import { logGeoPermissionEvent } from "@/lib/locationPermissionLog";
