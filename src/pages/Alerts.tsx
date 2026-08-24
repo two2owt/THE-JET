@@ -18,7 +18,7 @@ const NotificationsTab = lazy(() =>
  */
 export default function Alerts() {
   const navigate = useNavigate();
-  const headerConfig = useMemo(() => ({}), []);
+  const headerConfig = useMemo(() => ({ hideSearch: true }), []);
   const { notifications, markAsRead, markAllAsRead } = useNotifications(true);
 
   const handleVenueClick = useCallback(
