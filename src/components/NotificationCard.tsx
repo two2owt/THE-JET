@@ -1,8 +1,10 @@
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useMemo } from "react";
 import { MapPin, Clock, Gift, TrendingUp } from "lucide-react";
 import type { DealWithNeighborhood } from "@/mobile-app-snippets/useDealSyncRealtime";
-import { resolveDealCategory } from "@/lib/dealCategory";
-import { getDealExpiry } from "@/lib/dealExpiry";
+import {
+  DealMetaBadges,
+  useDealPresentation,
+} from "@/components/deals/DealBadges";
 
 export interface Notification {
   id: string;
