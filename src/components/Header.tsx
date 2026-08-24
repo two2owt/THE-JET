@@ -135,15 +135,6 @@ export const Header = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlSearchParams]);
 
-  useEffect(() => {
-    try {
-      if (searchExpanded)
-        window.sessionStorage.setItem(SEARCH_EXPANDED_KEY, "1");
-      else window.sessionStorage.removeItem(SEARCH_EXPANDED_KEY);
-    } catch {
-      /* storage disabled — ignore */
-    }
-  }, [searchExpanded]);
 
   // Reset search state when navigating to a different page so old queries
   // and dropdowns don't leak into the next view.
