@@ -52,6 +52,17 @@ export const NotificationCard = memo(
     const dealType = linkedDeal?.deal_type?.trim() || null;
     const CategoryIcon = category?.Icon;
 
+    // Live countdown off the merchant's `expires_at`, refreshed each minute.
+    const [nowTs, setNowTs] = useState(() => Date.now());
+    useEffect(() => {
+      if (!linkedDeal?.expires_at) return;
+      const id = setInterval(() => setNowTs(Date.now()), 60_000);
+      return () => clearInterval(id);
+    }, [linkedDeal?.expires_at]);
+    const expiry = linkedDeal
+      ? getDealExpiry(linkedDeal.expires_at, nowTs)
+      : null;
+
     const handleClick = () => {
       if (enriched.venue && onVenueClick) {
         onVenueClick(enriched.venue);
