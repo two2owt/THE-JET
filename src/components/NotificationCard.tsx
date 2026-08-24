@@ -8,6 +8,8 @@ export interface Notification {
   title: string;
   message: string;
   venue?: string;
+  /** Deal this alert refers to, when known. */
+  dealId?: string;
   timestamp: string;
   sentAt?: string;
   distance?: string;
@@ -16,6 +18,7 @@ export interface Notification {
 
 interface NotificationCardProps {
   notification: Notification;
+  deals?: DealWithNeighborhood[];
   onVenueClick?: (venue: string) => void;
   onRead?: () => void;
 }
