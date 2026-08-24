@@ -139,12 +139,13 @@ export function HeaderSearch({
       >
         <Search
           style={{
-            width: 16,
-            height: 16,
+            width: "var(--header-icon-size, 16px)",
+            height: "var(--header-icon-size, 16px)",
             color: "hsl(var(--muted-foreground) / 0.6)",
           }}
         />
       </div>
+
 
       <Input
         ref={inputRef}
