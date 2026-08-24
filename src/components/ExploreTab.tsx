@@ -304,8 +304,8 @@ export const ExploreTab = ({
   const getUserLocation = async () => {
     // A cached coarse fix is good enough for distance sorting, and it means a
     // tab switch renders distances immediately instead of waiting on the GPS.
-    const cached = lastKnownLocation;
-    if (cached && Date.now() - cached.at < LOCATION_CACHE_TTL_MS) {
+    const cached = freshCachedLocation();
+    if (cached) {
       setUserLocation({ lat: cached.lat, lng: cached.lng });
       setLocationError(null);
       return;
