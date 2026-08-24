@@ -320,7 +320,12 @@ export const Header = () => {
           height: "100%",
           maxWidth: "1280px",
           margin: "0 auto",
-          padding: "0 var(--header-pad-x, 12px)",
+          paddingTop: 0,
+          paddingBottom: 0,
+          paddingLeft:
+            "calc(var(--header-pad-x, 12px) + var(--safe-area-inset-left))",
+          paddingRight:
+            "calc(var(--header-pad-x, 12px) + var(--safe-area-inset-right))",
           gap: "var(--header-control-gap, 8px)",
           overflow: "hidden",
         }}
