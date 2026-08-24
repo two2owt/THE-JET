@@ -77,6 +77,9 @@ test("switching cities re-renders venue markers without duplicates", async ({
 test("zooming out collapses markers into clusters and back", async ({
   page,
 }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem("jet-map-selected-city", "chicago");
+  });
   await page.goto("/");
   await expect(page.getByLabel("Select city location")).toBeVisible({
     timeout: 30_000,
