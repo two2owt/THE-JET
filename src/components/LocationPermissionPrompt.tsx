@@ -131,9 +131,10 @@ export const LocationPermissionPrompt = () => {
       // dismissals, embedded webview, etc.). Asking again does nothing, so we
       // stay quiet and let the map banner point at the settings flow instead.
       if (isPromptSuppressed()) return;
-      // Small delay so we don't compete with first paint / other prompts.
-      // Signed-in users get asked promptly so tracking can start right away.
-      const delay = userId ? 900 : 2500;
+      // The trigger already waited for paint + first interaction, so this is
+      // just enough of a beat to let that interaction (tap, scroll) finish
+      // before a dialog takes over the screen.
+      const delay = userId ? 400 : 900;
       const timer = window.setTimeout(() => {
         // Re-check at fire time: permission may have been granted during the
         // delay (map locate button, signup consent), which would otherwise
