@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { Map as MapIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LocationStatusBanner } from "@/components/map/LocationStatusBanner";
+import { HeatmapSkeleton } from "@/components/skeletons/HeatmapSkeleton";
 import type { Venue } from "@/types/venue";
 import type { City } from "@/types/cities";
 
@@ -55,7 +56,16 @@ export function MapSurface({
   onDetectedLocationNameChange,
 }: MapSurfaceProps) {
   return (
-    <div className="absolute inset-0 w-full h-full" style={{ zIndex: 0 }}>
+    <div
+      className="absolute inset-0 w-full h-full"
+      style={{ zIndex: 0 }}
+      data-map-container=""
+    >
+      {/* Paints on the very first frame (before hydration, before the token
+          resolves, before the GL bundle downloads) so the viewport has a real
+          LCP candidate instead of an empty box. The map canvas covers it. */}
+      {!(hydrated && mapboxToken) && !mapboxError && <HeatmapSkeleton />}
+
       {mapboxError && !mapboxLoading && (
         <div
           className="absolute inset-0 z-10 flex items-center justify-center"
@@ -93,7 +103,7 @@ export function MapSurface({
 
       <div className="absolute inset-0 w-full h-full">
         {hydrated && mapboxToken && (
-          <Suspense fallback={null}>
+          <Suspense fallback={<HeatmapSkeleton />}>
             <MapboxHeatmap
               onVenueSelect={onVenueSelect}
               onParkingSelect={onParkingSelect}
