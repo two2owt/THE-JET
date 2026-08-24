@@ -30,7 +30,11 @@ import { useVenueActivity } from "@/hooks/useVenueActivity";
 import { useBottomNavigation } from "@/hooks/useBottomNavigation";
 import { useMapPanelInset } from "@/hooks/useMapPanelInset";
 import { useSearchParams } from "@/lib/router-compat";
-import { getCategoryById } from "@/lib/venue-categories";
+import {
+  getCategoryById,
+  resolveVenueCategory,
+} from "@/lib/venue-categories";
+import { analytics } from "@/lib/analytics";
 // Extracted concerns: onboarding gating, city launches, deep-link routing
 import { useOnboardingGate } from "@/hooks/useOnboardingGate";
 import { useCitySelection } from "@/hooks/useCitySelection";
