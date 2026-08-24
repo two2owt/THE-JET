@@ -84,8 +84,12 @@ export function HeaderSyncIndicator({
         flexShrink: 0,
         display: "inline-flex",
         alignItems: "center",
+        justifyContent: "center",
         gap: 6,
-        height: "clamp(30px, 4.4vw, 36px)",
+        // Shared nav-header control height keeps this level with the search
+        // pill and the avatar on every breakpoint.
+        height: "var(--header-control-height, 36px)",
+        minWidth: "var(--header-control-height, 36px)",
         padding: "0 10px",
         borderRadius: 9999,
         border: "1px solid hsl(var(--border) / 0.5)",
@@ -95,8 +99,9 @@ export function HeaderSyncIndicator({
         color: isLive ? neon : "hsl(var(--muted-foreground))",
         borderColor: accentOn ? "hsl(120 100% 54% / 0.45)" : undefined,
         boxShadow: accentOn ? "0 0 10px hsl(120 100% 54% / 0.22)" : undefined,
-        fontSize: 12,
+        fontSize: "calc(var(--header-font-size, 13px) - 1px)",
         lineHeight: 1,
+
         whiteSpace: "nowrap",
         cursor: onRefresh ? "pointer" : "default",
         opacity: mounted ? (isLoading ? 0.75 : 1) : 0,
