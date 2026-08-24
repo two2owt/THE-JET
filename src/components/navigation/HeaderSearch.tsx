@@ -20,8 +20,6 @@ export interface HeaderSearchProps {
   mounted: boolean;
   /** True when the viewport is mobile-sized. */
   isMobile: boolean;
-  /** Mobile: whether the input is expanded (full-width) vs. icon-only. */
-  expanded: boolean;
   /** Current query string (controlled by parent). */
   query: string;
   /** Whether the results dropdown is visible. */
@@ -42,8 +40,8 @@ export interface HeaderSearchProps {
   onQueryChange: (next: string) => void;
   onClear: () => void;
   onCloseResults: () => void;
-  onCollapse: () => void;
 }
+
 
 /**
  * Header search pill — pure presentation. All state lives in the parent
