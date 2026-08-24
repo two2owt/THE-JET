@@ -3,9 +3,15 @@ import { isDealExpired } from "@/lib/dealExpiry";
 import { useMinuteClock } from "@/hooks/useMinuteClock";
 import { usePersistentViewState } from "@/hooks/usePersistentViewState";
 
-import { Bell } from "lucide-react";
+import { Bell, History } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 import { TabPageHeader } from "@/components/TabPageHeader";
+import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBanner";
+import {
+  AlertDetailsDialog,
+  type AlertDetailsTarget,
+} from "@/components/notifications/AlertDetailsDialog";
+import type { AlertDeal } from "@/hooks/useNotifications";
 import type { Venue } from "@/types/venue";
 import type { DealWithNeighborhood } from "@/mobile-app-snippets/useDealSyncRealtime";
 
@@ -19,6 +25,10 @@ type Filter = "all" | "unread" | "read";
 
 interface NotificationsTabProps {
   notifications: any[];
+  /** Alerts whose linked deal has already ended (shown only when toggled on). */
+  expiredNotifications?: any[];
+  /** Deal rows keyed by id — powers the details modal, expired deals included. */
+  dealById?: Record<string, AlertDeal>;
   deals?: DealWithNeighborhood[];
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
@@ -26,12 +36,15 @@ interface NotificationsTabProps {
 }
 
 /**
- * Alerts tab: filter chips (all / unread / read), bulk mark-as-read, and the
- * notification list. Filter state is local to the tab; the notification data
- * itself stays owned by `useNotifications` in the page.
+ * Alerts tab: filter chips (all / unread / read), an opt-in "expired" toggle,
+ * bulk mark-as-read, the notification list, and the alert details modal. Filter
+ * state is local to the tab; the notification data itself stays owned by
+ * `useNotifications` in the page.
  */
 export function NotificationsTab({
   notifications,
+  expiredNotifications = [],
+  dealById = {},
   deals,
   markAsRead,
   markAllAsRead,
@@ -41,6 +54,12 @@ export function NotificationsTab({
     "alerts:filter",
     "all",
   );
+  const [showExpired, setShowExpired] = usePersistentViewState<boolean>(
+    "alerts:showExpired",
+    false,
+  );
+  const [detailsFor, setDetailsFor] = useState<AlertDetailsTarget | null>(null);
+
 
   // Re-evaluate expiry on each minute boundary (shared app-wide clock, paused
   // while the tab is hidden) so an alert drops off without a reload.
