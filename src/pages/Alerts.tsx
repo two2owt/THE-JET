@@ -4,6 +4,7 @@ import { PageLayout } from "@/components/PageLayout";
 import { PageShell } from "@/components/PageShell";
 import { NotificationsTabSkeleton } from "@/components/skeletons/PageSkeletons";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useDealSyncRealtime } from "@/mobile-app-snippets/useDealSyncRealtime";
 import type { Venue } from "@/types/venue";
 
 const NotificationsTab = lazy(() =>
