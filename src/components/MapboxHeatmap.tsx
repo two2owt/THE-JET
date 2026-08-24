@@ -4298,7 +4298,7 @@ export const MapboxHeatmap = ({
                   htmlFor="map-city-search"
                   className="block px-0.5 pb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground truncate"
                 >
-                  Search any US city
+                  Search Any City
                 </label>
                 <div className="relative">
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
@@ -4320,11 +4320,17 @@ export const MapboxHeatmap = ({
                         e.preventDefault();
                         e.stopPropagation();
                         void confirmCitySearch();
+                        return;
+                      }
+                      if (e.key === "Escape") {
+                        // Let users exit the search field and close the city menu.
+                        setCitySearchQuery("");
+                        setRemoteCities([]);
                       }
                     }}
                     placeholder="City or city, state"
                     className="h-9 pl-8 pr-16 text-[13px] sm:text-sm rounded-lg bg-card/60 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-primary/50"
-                    aria-label="Search any US city, then press Enter"
+                    aria-label="Search City"
                   />
                   <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
                     {citySearchQuery && (
