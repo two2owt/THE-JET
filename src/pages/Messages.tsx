@@ -78,7 +78,11 @@ function DiscoverPeopleStrip({
         if (!cancelled) setLoading(false);
       }
     };
+    reloadRef.current = () => {
+      void load();
+    };
     void load();
+
     // New sign-ups should appear without a manual reload.
     const run = () => {
       if (typeof document !== "undefined" && document.hidden) return;
