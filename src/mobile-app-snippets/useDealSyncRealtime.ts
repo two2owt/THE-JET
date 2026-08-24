@@ -136,16 +136,18 @@ export function useDealSyncRealtime(options: DealSyncOptions = {}) {
 
   const fetchDeals = useCallback(async () => {
     try {
-      setLoading(true);
+      // Only surface the skeleton when there is nothing cached to show;
+      // otherwise revalidate silently behind the existing list.
+      if (!dealCache.get(cacheKey)?.length) setLoading(true);
       setError(null);
       const data = await fetchDealsWithNeighborhoods(activeOnly);
       setDeals(data);
     } catch (err) {
-      setError(err as Error);
+      if (!dealCache.get(cacheKey)?.length) setError(err as Error);
     } finally {
       setLoading(false);
     }
-  }, [activeOnly]);
+  }, [activeOnly, cacheKey, setDeals]);
 
   useEffect(() => {
     if (fetchOnMount) {
