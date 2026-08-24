@@ -217,8 +217,8 @@ interface MapboxHeatmapProps {
   resetUIKey?: number; // Incremented when tab changes to reset collapsed UI state
   isTokenLoading?: boolean; // True while the mapbox token is being fetched
   /** Active venue category id (shared taxonomy) or null for "All". */
-  categoryFilter?: string | null;
-  onCategoryFilterChange?: (next: string | null) => void;
+  categoryFilter?: string[];
+  onCategoryFilterChange?: (next: string[]) => void;
 }
 
 /**
@@ -293,7 +293,7 @@ export const MapboxHeatmap = ({
   isLoadingVenues = false,
   selectedVenue,
   resetUIKey,
-  categoryFilter = null,
+  categoryFilter = EMPTY_CATEGORY_FILTER,
   onCategoryFilterChange,
 }: MapboxHeatmapProps) => {
   // Filter venues by Google Places opening hours against the device's local
@@ -318,9 +318,9 @@ export const MapboxHeatmap = ({
   // chip narrows the whole map surface rather than jumping to a single card.
   const venues = useMemo(
     () =>
-      categoryFilter
-        ? openVenues.filter(
-            (v) => resolveVenueCategory(v.category).id === categoryFilter,
+      categoryFilter.length > 0
+        ? openVenues.filter((v) =>
+            categoryFilter.includes(resolveVenueCategory(v.category).id),
           )
         : openVenues,
     [openVenues, categoryFilter],
