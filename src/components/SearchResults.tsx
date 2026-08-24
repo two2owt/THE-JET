@@ -651,12 +651,18 @@ export const SearchResults = ({
             : "calc(var(--header-height, 56px) + env(safe-area-inset-top, 0px) + 12px)",
           // Hard-anchor the bottom edge above the nav bar so the panel can
           // never sit under (or scroll behind) the footer navigation.
-          bottom: box
-            ? `${box.bottom}px`
-            : "calc(var(--bottom-nav-total-height, 80px) + env(safe-area-inset-bottom, 0px) + 12px)",
-          maxHeight: box
-            ? `${box.maxHeight}px`
-            : "min(calc(100dvh - var(--header-height, 56px) - var(--bottom-nav-total-height, 80px) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 24px), 52dvh, 480px)",
+          // Collapsed: release the bottom anchor so the card shrinks to its
+          // header and the map + layer toggles below are fully usable.
+          bottom: collapsed
+            ? "auto"
+            : box
+              ? `${box.bottom}px`
+              : "calc(var(--bottom-nav-total-height, 80px) + env(safe-area-inset-bottom, 0px) + 12px)",
+          maxHeight: collapsed
+            ? "none"
+            : box
+              ? `${box.maxHeight}px`
+              : "min(calc(100dvh - var(--header-height, 56px) - var(--bottom-nav-total-height, 80px) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 24px), 52dvh, 480px)",
           // Right-anchored on tablet/desktop so the map stays visible to the
           // left; the measured gutter matches the map control column.
           ...(box?.width
@@ -683,18 +689,42 @@ export const SearchResults = ({
                   aria-live="polite"
                 >
                   {totalCount} {totalCount === 1 ? "result" : "results"}
+                  {collapsed ? " · hidden" : ""}
                 </p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close search results"
-              className="w-9 h-9 rounded-full bg-secondary/60 hover:bg-primary/10 hover:text-primary text-foreground flex items-center justify-center transition-colors active:scale-95 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 flex-shrink-0"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setCollapsed((v) => !v)}
+                aria-label={
+                  collapsed ? "Show search results" : "Hide search results"
+                }
+                aria-expanded={!collapsed}
+                aria-controls="jet-search-results-list"
+                title={collapsed ? "Show results" : "Hide results"}
+                className="h-9 min-w-9 px-2 gap-1 rounded-full bg-secondary/60 hover:bg-primary/10 hover:text-primary text-foreground flex items-center justify-center transition-colors active:scale-95 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+              >
+                {collapsed ? (
+                  <ChevronDown className="w-4 h-4" />
+                ) : (
+                  <ChevronUp className="w-4 h-4" />
+                )}
+                <span className="hidden sm:inline text-[11px] font-semibold">
+                  {collapsed ? "Show" : "Hide"}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close search results"
+                className="w-9 h-9 rounded-full bg-secondary/60 hover:bg-primary/10 hover:text-primary text-foreground flex items-center justify-center transition-colors active:scale-95 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 flex-shrink-0"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
+
 
           {/* Scrollable body */}
           <CardContent
