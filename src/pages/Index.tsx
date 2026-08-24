@@ -159,23 +159,43 @@ const Index = () => {
   } = useVenueActivity(dataReady, selectedCity);
   // Category filter lives in the URL (`?cat=bar`) so a chip tap, a search
   // "Categories" chip and a shared link all land on the same filtered map.
+  // The URL is the single source of truth: refreshes and deep links restore
+  // the filter, and each chip tap pushes a history entry so browser
+  // back/forward walks the filter history instead of leaving the map stuck.
   const [searchParams, setSearchParams] = useSearchParams();
   const catParam = searchParams.get("cat");
   const categoryFilter = catParam && getCategoryById(catParam) ? catParam : null;
   const handleCategoryFilterChange = useCallback(
     (next: string | null) => {
+      // Re-selecting the live filter would push a duplicate entry that back
+      // has to chew through, so ignore no-op changes.
+      if (next === categoryFilter) return;
+      setSearchParams((prev) => {
+        const p = new URLSearchParams(prev);
+        if (next) p.set("cat", next);
+        else p.delete("cat");
+        return p;
+      });
+    },
+    [setSearchParams, categoryFilter],
+  );
+
+  // An unknown/stale `?cat=` value (renamed taxonomy id, hand-typed URL)
+  // renders as "All"; drop it from the URL so what's shown matches the link
+  // the user would copy. Replace, never push — this isn't a user action.
+  useEffect(() => {
+    if (catParam && !categoryFilter) {
       setSearchParams(
         (prev) => {
           const p = new URLSearchParams(prev);
-          if (next) p.set("cat", next);
-          else p.delete("cat");
+          p.delete("cat");
           return p;
         },
         { replace: true },
       );
-    },
-    [setSearchParams],
-  );
+    }
+  }, [catParam, categoryFilter, setSearchParams]);
+
 
   const jetCardRef = useRef<HTMLDivElement>(null);
 
