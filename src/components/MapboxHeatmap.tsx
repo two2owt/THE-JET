@@ -6295,18 +6295,17 @@ export const MapboxHeatmap = ({
                     >
                       <div
                         style={{
-                          width: "8px",
-                          height: "8px",
+                          width: "9px",
+                          height: "9px",
                           flexShrink: 0,
                           borderRadius: "50%",
-                          // Glassmorphic tier dot: frosted highlight over the
-                          // tier colour plus an outer glow for legibility.
-                          background: `radial-gradient(circle at 32% 28%, hsl(0 0% 100% / 0.55), ${tier.color} 65%)`,
-                          backdropFilter: "blur(3px)",
-                          WebkitBackdropFilter: "blur(3px)",
-                          boxShadow: `0 0 0 1.5px ${casingFor(mapStyle === "light" || mapStyle === "streets")}, 0 0 8px ${tier.color}, inset 0 0 3px hsl(0 0% 100% / 0.35)`,
+                          // Flat tier colour with a soft glow — no frosted rim
+                          // or casing ring so it reads cleanly at 9px.
+                          background: tier.color,
+                          boxShadow: `0 0 5px ${tier.color}, 0 0 11px ${tier.color}80`,
                         }}
                       />
+
                       <span
                         style={{
                           fontSize: "9px",
