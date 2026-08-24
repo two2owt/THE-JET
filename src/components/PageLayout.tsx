@@ -66,6 +66,31 @@ const defaultVenues: Venue[] = [];
 const defaultDeals: Deal[] = [];
 const defaultOnVenueSelect = () => {};
 
+/**
+ * Warm the destination tab's lazy chunk on hover / touch-start. Without this,
+ * every tab switch paid a module fetch before its first paint — the "Deals is
+ * lagging" symptom. Each import is memoised by the bundler, so repeat hovers
+ * are free.
+ */
+const warmed = new Set<string>();
+const prefetchTabChunk = (tab: NavTab) => {
+  if (warmed.has(tab)) return;
+  warmed.add(tab);
+  switch (tab) {
+    case "map":
+      void import("@/components/MapboxHeatmap");
+      break;
+    case "deals":
+      void import("@/components/ExploreTab");
+      break;
+    case "notifications":
+      void import("@/components/notifications/NotificationsTab");
+      break;
+    default:
+      break;
+  }
+};
+
 export function PageLayout({
   children,
   defaultTab = "map",
@@ -181,7 +206,7 @@ export function PageLayout({
         onTabChange={handleTabChange}
         notificationCount={unreadCount}
         messageCount={msgBadge}
-        onPrefetch={onPrefetch}
+        onPrefetch={onPrefetch ?? prefetchTabChunk}
       />
     </div>
   );
