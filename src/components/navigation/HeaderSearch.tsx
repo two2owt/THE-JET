@@ -100,17 +100,16 @@ export function HeaderSearch({
     }
   };
 
-  const showClear = query.length > 0;
-  const showCollapse = isMobile && expanded;
+  const hasQuery = query.length > 0;
+  const canCollapse = isMobile && expanded;
+  // A single trailing dismiss control — it clears the query first, then closes
+  // the expanded search, matching the Escape key behaviour above.
+  const showDismiss = hasQuery || canCollapse;
+  const dismissLabel = hasQuery ? "Clear search" : "Close search";
+  const handleDismiss = hasQuery ? onClear : onCollapse;
 
-  // Reserve room for the trailing controls so the caret never sits under them.
-  const paddingRight = showCollapse
-    ? showClear
-      ? "80px"
-      : "44px"
-    : showClear
-      ? "44px"
-      : "16px";
+  // Reserve room for the trailing control so the caret never sits under it.
+  const paddingRight = showDismiss ? "44px" : "16px";
 
   return (
     <div
