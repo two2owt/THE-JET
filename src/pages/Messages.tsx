@@ -51,7 +51,12 @@ function DiscoverPeopleStrip({
   const [people, setPeople] = useState<DiscoverableProfile[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const reloadRef = useRef<() => void>(() => {});
+  // Instant refresh when anyone edits their profile or a new user signs up.
+  useProfilePulse(() => reloadRef.current?.(), !!userId);
+
   useEffect(() => {
+
     let cancelled = false;
     const load = async () => {
       try {
