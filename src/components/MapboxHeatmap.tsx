@@ -4184,7 +4184,7 @@ export const MapboxHeatmap = ({
                   )}
               </div>
             </SelectTrigger>
-            <SelectContent className="min-w-[240px] py-2">
+            <SelectContent className="w-[min(88vw,320px)] min-w-[220px] py-2">
               {/* Search input — stops keystrokes from Select's typeahead */}
               <div
                 className="px-2 pb-2 sticky top-0 z-10 bg-popover"
@@ -4211,31 +4211,97 @@ export const MapboxHeatmap = ({
                 onPointerDown={(e) => e.stopPropagation()}
                 onPointerMove={(e) => e.stopPropagation()}
               >
+                <label
+                  htmlFor="map-city-search"
+                  className="block px-0.5 pb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground truncate"
+                >
+                  Search any US city
+                </label>
                 <div className="relative">
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
                   <Input
+                    id="map-city-search"
                     type="text"
                     inputMode="search"
+                    enterKeyHint="search"
                     autoComplete="off"
                     spellCheck={false}
                     value={citySearchQuery}
-                    onChange={(e) => setCitySearchQuery(e.target.value)}
-                    placeholder="Search cities..."
-                    className="h-9 pl-8 pr-8 text-sm rounded-lg bg-card/60 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-primary/50"
-                    aria-label="Search cities"
+                    onChange={(e) => {
+                      setCitySearchQuery(e.target.value);
+                      if (remoteCities.length) setRemoteCities([]);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        // Confirmed input only — never geocode while typing.
+                        e.preventDefault();
+                        e.stopPropagation();
+                        void confirmCitySearch();
+                      }
+                    }}
+                    placeholder="City or city, state"
+                    className="h-9 pl-8 pr-16 text-[13px] sm:text-sm rounded-lg bg-card/60 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-primary/50"
+                    aria-label="Search any US city, then press Enter"
                   />
-                  {citySearchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => setCitySearchQuery("")}
-                      aria-label="Clear search"
-                      className="absolute right-1.5 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  )}
+                  <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                    {citySearchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCitySearchQuery("");
+                          setRemoteCities([]);
+                        }}
+                        aria-label="Clear search"
+                        className="h-6 w-6 flex items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                    {citySearchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => void confirmCitySearch()}
+                        aria-label="Go to searched city"
+                        className="h-6 px-2 flex items-center justify-center rounded-md text-[10px] font-semibold uppercase tracking-[0.1em] text-primary bg-primary/10 hover:bg-primary/20 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors"
+                      >
+                        Go
+                      </button>
+                    )}
+                  </div>
                 </div>
+                {citySearchQuery && (
+                  <p className="px-0.5 pt-1 text-[10px] text-muted-foreground truncate">
+                    {isSearchingRemoteCity
+                      ? "Searching US cities…"
+                      : "Press Enter to jump the map"}
+                  </p>
+                )}
               </div>
+              {remoteCities.length > 0 && (
+                <>
+                  <div className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    Results for “{remoteCitySearchTerm}”
+                  </div>
+                  {remoteCities.map((city) => (
+                    <SelectItem
+                      key={city.id}
+                      value={city.id}
+                      className="py-2.5 px-2.5 my-0.5 rounded-lg focus:bg-primary/10"
+                    >
+                      <div className="flex items-center gap-2 w-full min-w-0">
+                        <span className="font-display font-bold text-[13px] sm:text-sm text-foreground truncate min-w-0 flex-1">
+                          {city.name}
+                        </span>
+                        <span className="text-[10px] sm:text-[11px] font-semibold uppercase text-muted-foreground flex-shrink-0">
+                          {city.state}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                  <div className="h-px bg-border/60 my-1.5 mx-2" />
+                </>
+              )}
+
               {!citySearchQuery && (
                 <SelectItem
                   value="current-location"
