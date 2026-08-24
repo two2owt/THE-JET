@@ -124,37 +124,27 @@ export function EmailHealthPanel() {
     load();
   }, [load]);
 
-  // Near-real-time: stream inserts, and poll as a safety net.
+  // email_send_log holds recipient PII and is deliberately NOT published to
+  // Realtime, so this panel polls instead of streaming row changes.
   useEffect(() => {
-    const channel = supabase
-      .channel("admin-email-send-log")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "email_send_log" },
-        (payload) => {
-          const row = payload.new as LogRow;
-          setRows((prev) => [row, ...prev].slice(0, 1000));
-          setLastUpdated(new Date());
-          if (
-            PROBLEM_STATUSES.includes(row.status) &&
-            !alerted.current.has(row.id)
-          ) {
-            alerted.current.add(row.id);
-            toast.error(`Email ${row.status}: ${row.template_name}`, {
-              description:
-                row.error_message?.slice(0, 120) ?? row.recipient_email,
-            });
-          }
-        },
-      )
-      .subscribe((s) => setLive(s === "SUBSCRIBED"));
-
-    const poll = window.setInterval(load, 30_000);
+    setLive(false);
+    const poll = window.setInterval(load, 15_000);
     return () => {
-      supabase.removeChannel(channel);
       window.clearInterval(poll);
     };
   }, [load]);
+
+  // Surface newly observed problem rows from the polled snapshot.
+  useEffect(() => {
+    for (const row of rows) {
+      if (PROBLEM_STATUSES.includes(row.status) && !alerted.current.has(row.id)) {
+        alerted.current.add(row.id);
+        toast.error(`Email ${row.status}: ${row.template_name}`, {
+          description: row.error_message?.slice(0, 120) ?? row.recipient_email,
+        });
+      }
+    }
+  }, [rows]);
 
   const deduped = useMemo(() => dedupe(rows), [rows]);
 
