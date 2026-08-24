@@ -518,11 +518,14 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
-              paddingLeft: "40px",
+              paddingLeft: "44px",
               borderRadius: "12px",
               backgroundColor: "hsl(var(--muted) / 0.5)",
               border: "1px solid hsl(var(--border) / 0.4)",
               transition: "all 0.2s",
+              textOverflow: "ellipsis",
+              overflow: "hidden",
+              whiteSpace: "nowrap",
             }}
             aria-label="Search venues, deals, or categories"
           />

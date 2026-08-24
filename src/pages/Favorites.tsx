@@ -365,7 +365,8 @@ export default function Favorites() {
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search saved venues and deals"
                   aria-label="Search favorites"
-                  className="pl-9 pr-9 h-11"
+                  className="pr-9 h-11 placeholder:text-ellipsis placeholder:overflow-hidden placeholder:whitespace-nowrap"
+                  style={{ paddingLeft: "40px" }}
                 />
                 {query && (
                   <button
