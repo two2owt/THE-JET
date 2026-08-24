@@ -12,22 +12,37 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AlertsRouteImport } from './routes/alerts'
-import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ConfirmRouteImport } from './routes/confirm'
 import { Route as DealsRouteImport } from './routes/deals'
+import { Route as EmailConfirmedRouteImport } from './routes/email-confirmed'
 import { Route as FavoritesRouteImport } from './routes/favorites'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as RedeemRouteImport } from './routes/redeem'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as ResetRouteImport } from './routes/reset'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SignInRouteImport } from './routes/sign-in'
+import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as SigninRouteImport } from './routes/signin'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SocialRouteImport } from './routes/social'
 import { Route as TermsOfServiceRouteImport } from './routes/terms-of-service'
+import { Route as UpdatePasswordRouteImport } from './routes/update-password'
 import { Route as VerificationSuccessRouteImport } from './routes/verification-success'
+import { Route as VerifyRouteImport } from './routes/verify'
+import { Route as AuthIndexRouteImport } from './routes/auth/index'
+import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
+import { Route as AuthConfirmRouteImport } from './routes/auth/confirm'
+import { Route as AuthResetRouteImport } from './routes/auth/reset'
+import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
+import { Route as AuthVerifyRouteImport } from './routes/auth/verify'
 import { Route as DevPresenceRouteImport } from './routes/dev/presence'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable/oauth/consent'
 import { Route as ApiPublicDeviceTokensRouteImport } from './routes/api/public/device-tokens'
@@ -54,9 +69,9 @@ const AlertsRoute = AlertsRouteImport.update({
   path: '/alerts',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const ConfirmRoute = ConfirmRouteImport.update({
+  id: '/confirm',
+  path: '/confirm',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DealsRoute = DealsRouteImport.update({
@@ -64,9 +79,24 @@ const DealsRoute = DealsRouteImport.update({
   path: '/deals',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EmailConfirmedRoute = EmailConfirmedRouteImport.update({
+  id: '/email-confirmed',
+  path: '/email-confirmed',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FavoritesRoute = FavoritesRouteImport.update({
   id: '/favorites',
   path: '/favorites',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MessagesRoute = MessagesRouteImport.update({
@@ -99,6 +129,16 @@ const RedeemRoute = RedeemRouteImport.update({
   path: '/redeem',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetRoute = ResetRouteImport.update({
+  id: '/reset',
+  path: '/reset',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -107,6 +147,16 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignInRoute = SignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignUpRoute = SignUpRouteImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SigninRoute = SigninRouteImport.update({
@@ -129,9 +179,49 @@ const TermsOfServiceRoute = TermsOfServiceRouteImport.update({
   path: '/terms-of-service',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UpdatePasswordRoute = UpdatePasswordRouteImport.update({
+  id: '/update-password',
+  path: '/update-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const VerificationSuccessRoute = VerificationSuccessRouteImport.update({
   id: '/verification-success',
   path: '/verification-success',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyRoute = VerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthIndexRoute = AuthIndexRouteImport.update({
+  id: '/auth/',
+  path: '/auth/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthConfirmRoute = AuthConfirmRouteImport.update({
+  id: '/auth/confirm',
+  path: '/auth/confirm',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthResetRoute = AuthResetRouteImport.update({
+  id: '/auth/reset',
+  path: '/auth/reset',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
+  id: '/auth/reset-password',
+  path: '/auth/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthVerifyRoute = AuthVerifyRouteImport.update({
+  id: '/auth/verify',
+  path: '/auth/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DevPresenceRoute = DevPresenceRouteImport.update({
@@ -193,23 +283,38 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/alerts': typeof AlertsRoute
-  '/auth': typeof AuthRoute
+  '/confirm': typeof ConfirmRoute
   '/deals': typeof DealsRoute
+  '/email-confirmed': typeof EmailConfirmedRoute
   '/favorites': typeof FavoritesRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/profile': typeof ProfileRoute
   '/redeem': typeof RedeemRoute
+  '/register': typeof RegisterRoute
+  '/reset': typeof ResetRoute
   '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/social': typeof SocialRoute
   '/terms-of-service': typeof TermsOfServiceRoute
+  '/update-password': typeof UpdatePasswordRoute
   '/verification-success': typeof VerificationSuccessRoute
+  '/verify': typeof VerifyRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/auth/confirm': typeof AuthConfirmRoute
+  '/auth/reset': typeof AuthResetRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/auth/verify': typeof AuthVerifyRoute
   '/dev/presence': typeof DevPresenceRoute
+  '/auth/': typeof AuthIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/device-tokens': typeof ApiPublicDeviceTokensRoute
   '/api/public/version': typeof ApiPublicVersionRoute
@@ -224,23 +329,38 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/alerts': typeof AlertsRoute
-  '/auth': typeof AuthRoute
+  '/confirm': typeof ConfirmRoute
   '/deals': typeof DealsRoute
+  '/email-confirmed': typeof EmailConfirmedRoute
   '/favorites': typeof FavoritesRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/profile': typeof ProfileRoute
   '/redeem': typeof RedeemRoute
+  '/register': typeof RegisterRoute
+  '/reset': typeof ResetRoute
   '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/social': typeof SocialRoute
   '/terms-of-service': typeof TermsOfServiceRoute
+  '/update-password': typeof UpdatePasswordRoute
   '/verification-success': typeof VerificationSuccessRoute
+  '/verify': typeof VerifyRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/auth/confirm': typeof AuthConfirmRoute
+  '/auth/reset': typeof AuthResetRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/auth/verify': typeof AuthVerifyRoute
   '/dev/presence': typeof DevPresenceRoute
+  '/auth': typeof AuthIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/device-tokens': typeof ApiPublicDeviceTokensRoute
   '/api/public/version': typeof ApiPublicVersionRoute
@@ -256,23 +376,38 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/alerts': typeof AlertsRoute
-  '/auth': typeof AuthRoute
+  '/confirm': typeof ConfirmRoute
   '/deals': typeof DealsRoute
+  '/email-confirmed': typeof EmailConfirmedRoute
   '/favorites': typeof FavoritesRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/profile': typeof ProfileRoute
   '/redeem': typeof RedeemRoute
+  '/register': typeof RegisterRoute
+  '/reset': typeof ResetRoute
   '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/social': typeof SocialRoute
   '/terms-of-service': typeof TermsOfServiceRoute
+  '/update-password': typeof UpdatePasswordRoute
   '/verification-success': typeof VerificationSuccessRoute
+  '/verify': typeof VerifyRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/auth/confirm': typeof AuthConfirmRoute
+  '/auth/reset': typeof AuthResetRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/auth/verify': typeof AuthVerifyRoute
   '/dev/presence': typeof DevPresenceRoute
+  '/auth/': typeof AuthIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/device-tokens': typeof ApiPublicDeviceTokensRoute
   '/api/public/version': typeof ApiPublicVersionRoute
@@ -289,23 +424,38 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/alerts'
-    | '/auth'
+    | '/confirm'
     | '/deals'
+    | '/email-confirmed'
     | '/favorites'
+    | '/forgot-password'
+    | '/login'
     | '/messages'
     | '/onboarding'
     | '/pricing'
     | '/privacy-policy'
     | '/profile'
     | '/redeem'
+    | '/register'
+    | '/reset'
     | '/reset-password'
     | '/settings'
+    | '/sign-in'
+    | '/sign-up'
     | '/signin'
     | '/signup'
     | '/social'
     | '/terms-of-service'
+    | '/update-password'
     | '/verification-success'
+    | '/verify'
+    | '/auth/callback'
+    | '/auth/confirm'
+    | '/auth/reset'
+    | '/auth/reset-password'
+    | '/auth/verify'
     | '/dev/presence'
+    | '/auth/'
     | '/.lovable/oauth/consent'
     | '/api/public/device-tokens'
     | '/api/public/version'
@@ -320,23 +470,38 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/alerts'
-    | '/auth'
+    | '/confirm'
     | '/deals'
+    | '/email-confirmed'
     | '/favorites'
+    | '/forgot-password'
+    | '/login'
     | '/messages'
     | '/onboarding'
     | '/pricing'
     | '/privacy-policy'
     | '/profile'
     | '/redeem'
+    | '/register'
+    | '/reset'
     | '/reset-password'
     | '/settings'
+    | '/sign-in'
+    | '/sign-up'
     | '/signin'
     | '/signup'
     | '/social'
     | '/terms-of-service'
+    | '/update-password'
     | '/verification-success'
+    | '/verify'
+    | '/auth/callback'
+    | '/auth/confirm'
+    | '/auth/reset'
+    | '/auth/reset-password'
+    | '/auth/verify'
     | '/dev/presence'
+    | '/auth'
     | '/.lovable/oauth/consent'
     | '/api/public/device-tokens'
     | '/api/public/version'
@@ -351,23 +516,38 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/alerts'
-    | '/auth'
+    | '/confirm'
     | '/deals'
+    | '/email-confirmed'
     | '/favorites'
+    | '/forgot-password'
+    | '/login'
     | '/messages'
     | '/onboarding'
     | '/pricing'
     | '/privacy-policy'
     | '/profile'
     | '/redeem'
+    | '/register'
+    | '/reset'
     | '/reset-password'
     | '/settings'
+    | '/sign-in'
+    | '/sign-up'
     | '/signin'
     | '/signup'
     | '/social'
     | '/terms-of-service'
+    | '/update-password'
     | '/verification-success'
+    | '/verify'
+    | '/auth/callback'
+    | '/auth/confirm'
+    | '/auth/reset'
+    | '/auth/reset-password'
+    | '/auth/verify'
     | '/dev/presence'
+    | '/auth/'
     | '/.lovable/oauth/consent'
     | '/api/public/device-tokens'
     | '/api/public/version'
@@ -383,23 +563,38 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   AlertsRoute: typeof AlertsRoute
-  AuthRoute: typeof AuthRoute
+  ConfirmRoute: typeof ConfirmRoute
   DealsRoute: typeof DealsRoute
+  EmailConfirmedRoute: typeof EmailConfirmedRoute
   FavoritesRoute: typeof FavoritesRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
+  LoginRoute: typeof LoginRoute
   MessagesRoute: typeof MessagesRoute
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   ProfileRoute: typeof ProfileRoute
   RedeemRoute: typeof RedeemRoute
+  RegisterRoute: typeof RegisterRoute
+  ResetRoute: typeof ResetRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SettingsRoute: typeof SettingsRoute
+  SignInRoute: typeof SignInRoute
+  SignUpRoute: typeof SignUpRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
   SocialRoute: typeof SocialRoute
   TermsOfServiceRoute: typeof TermsOfServiceRoute
+  UpdatePasswordRoute: typeof UpdatePasswordRoute
   VerificationSuccessRoute: typeof VerificationSuccessRoute
+  VerifyRoute: typeof VerifyRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
+  AuthConfirmRoute: typeof AuthConfirmRoute
+  AuthResetRoute: typeof AuthResetRoute
+  AuthResetPasswordRoute: typeof AuthResetPasswordRoute
+  AuthVerifyRoute: typeof AuthVerifyRoute
   DevPresenceRoute: typeof DevPresenceRoute
+  AuthIndexRoute: typeof AuthIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   ApiPublicDeviceTokensRoute: typeof ApiPublicDeviceTokensRoute
   ApiPublicVersionRoute: typeof ApiPublicVersionRoute
@@ -434,11 +629,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AlertsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/confirm': {
+      id: '/confirm'
+      path: '/confirm'
+      fullPath: '/confirm'
+      preLoaderRoute: typeof ConfirmRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/deals': {
@@ -448,11 +643,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DealsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/email-confirmed': {
+      id: '/email-confirmed'
+      path: '/email-confirmed'
+      fullPath: '/email-confirmed'
+      preLoaderRoute: typeof EmailConfirmedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/favorites': {
       id: '/favorites'
       path: '/favorites'
       fullPath: '/favorites'
       preLoaderRoute: typeof FavoritesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/messages': {
@@ -497,6 +713,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RedeemRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset': {
+      id: '/reset'
+      path: '/reset'
+      fullPath: '/reset'
+      preLoaderRoute: typeof ResetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -509,6 +739,20 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-in': {
+      id: '/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof SignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-up': {
+      id: '/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof SignUpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signin': {
@@ -539,11 +783,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsOfServiceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/update-password': {
+      id: '/update-password'
+      path: '/update-password'
+      fullPath: '/update-password'
+      preLoaderRoute: typeof UpdatePasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/verification-success': {
       id: '/verification-success'
       path: '/verification-success'
       fullPath: '/verification-success'
       preLoaderRoute: typeof VerificationSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify': {
+      id: '/verify'
+      path: '/verify'
+      fullPath: '/verify'
+      preLoaderRoute: typeof VerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/': {
+      id: '/auth/'
+      path: '/auth'
+      fullPath: '/auth/'
+      preLoaderRoute: typeof AuthIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/confirm': {
+      id: '/auth/confirm'
+      path: '/auth/confirm'
+      fullPath: '/auth/confirm'
+      preLoaderRoute: typeof AuthConfirmRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/reset': {
+      id: '/auth/reset'
+      path: '/auth/reset'
+      fullPath: '/auth/reset'
+      preLoaderRoute: typeof AuthResetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/reset-password': {
+      id: '/auth/reset-password'
+      path: '/auth/reset-password'
+      fullPath: '/auth/reset-password'
+      preLoaderRoute: typeof AuthResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/verify': {
+      id: '/auth/verify'
+      path: '/auth/verify'
+      fullPath: '/auth/verify'
+      preLoaderRoute: typeof AuthVerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dev/presence': {
@@ -623,23 +923,38 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AlertsRoute: AlertsRoute,
-  AuthRoute: AuthRoute,
+  ConfirmRoute: ConfirmRoute,
   DealsRoute: DealsRoute,
+  EmailConfirmedRoute: EmailConfirmedRoute,
   FavoritesRoute: FavoritesRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
+  LoginRoute: LoginRoute,
   MessagesRoute: MessagesRoute,
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   ProfileRoute: ProfileRoute,
   RedeemRoute: RedeemRoute,
+  RegisterRoute: RegisterRoute,
+  ResetRoute: ResetRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SettingsRoute: SettingsRoute,
+  SignInRoute: SignInRoute,
+  SignUpRoute: SignUpRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
   SocialRoute: SocialRoute,
   TermsOfServiceRoute: TermsOfServiceRoute,
+  UpdatePasswordRoute: UpdatePasswordRoute,
   VerificationSuccessRoute: VerificationSuccessRoute,
+  VerifyRoute: VerifyRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
+  AuthConfirmRoute: AuthConfirmRoute,
+  AuthResetRoute: AuthResetRoute,
+  AuthResetPasswordRoute: AuthResetPasswordRoute,
+  AuthVerifyRoute: AuthVerifyRoute,
   DevPresenceRoute: DevPresenceRoute,
+  AuthIndexRoute: AuthIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   ApiPublicDeviceTokensRoute: ApiPublicDeviceTokensRoute,
   ApiPublicVersionRoute: ApiPublicVersionRoute,

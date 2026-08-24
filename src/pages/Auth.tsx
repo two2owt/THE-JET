@@ -209,6 +209,31 @@ const Auth = () => {
 
     if (!isRecoveryEntry) return;
 
+    // Supabase reports bad/expired links in the URL hash
+    // (#error=access_denied&error_code=otp_expired&error_description=...).
+    // Surface that reason instead of waiting 3s for a generic failure.
+    if (hash.includes("error")) {
+      const hashParams = new URLSearchParams(hash.replace(/^#/, ""));
+      const errorCode = hashParams.get("error_code");
+      const errorDescription = hashParams
+        .get("error_description")
+        ?.replace(/\+/g, " ");
+      toast.error(
+        errorCode === "otp_expired"
+          ? "This reset link has expired"
+          : "This reset link is no longer valid",
+        {
+          description:
+            errorDescription ??
+            "Request a new password reset link and try again.",
+        },
+      );
+      navigate("/auth", { replace: true });
+      return;
+    }
+
+
+
     let settled = false;
     const enterResetMode = () => {
       if (settled) return;
