@@ -118,9 +118,10 @@ export const Header = () => {
     if (!queryRestoredRef.current) return;
     const current = urlSearchParams.get("q") ?? "";
     if (current === debouncedQuery) return;
-    // Deep-linked `?q=` arriving before the debounce settles: adopt it instead
-    // of clearing it.
-    if (!debouncedQuery && current && current !== searchQuery) return;
+    // The debounce lags state by 300ms, so an empty `debouncedQuery` while
+    // `searchQuery` still holds text means the query hasn't settled yet —
+    // clearing `?q=` here would eat a deep-linked query.
+    if (!debouncedQuery && searchQuery) return;
     const next = new URLSearchParams(urlSearchParams);
     if (debouncedQuery) next.set("q", debouncedQuery);
     else next.delete("q");
