@@ -118,8 +118,10 @@ export function useSearchParams(): [
   const loc = tsLocation();
   const nav = tsNavigate();
   const router = useRouter();
+  // TanStack's `searchStr` carries a leading "?"; feeding that straight into
+  // URLSearchParams yields a bogus "?q" key, so strip it first.
   const params = useMemo(
-    () => new URLSearchParams(loc.searchStr ?? ""),
+    () => new URLSearchParams((loc.searchStr ?? "").replace(/^\?+/, "")),
     [loc.searchStr],
   );
   const setParams = useCallback(
@@ -134,7 +136,9 @@ export function useSearchParams(): [
       // snapshot — react-router passes call-time params, and chained updates
       // within one tick must see each other's writes.
       const live = router.state.location;
-      const current = new URLSearchParams(live.searchStr ?? "");
+      const current = new URLSearchParams(
+        (live.searchStr ?? "").replace(/^\?+/, ""),
+      );
       const next =
         typeof init === "function"
           ? init(current)
