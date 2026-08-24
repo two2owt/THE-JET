@@ -114,7 +114,11 @@ interface ExploreTabProps {
 }
 
 export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
-  const [searchQuery, setSearchQuery] = useState("");
+  // Persisted per tab so leaving /deals and coming back restores the view.
+  const [searchQuery, setSearchQuery] = usePersistentViewState(
+    "deals:query",
+    "",
+  );
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [filteredDeals, setFilteredDeals] = useState<Deal[]>([]);
