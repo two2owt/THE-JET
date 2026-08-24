@@ -160,10 +160,38 @@ export const NotificationCard = memo(
               {enriched.message}
             </p>
 
-            <DealMetaBadges
-              presentation={presentation}
-              className="mb-1 sm:mb-2"
-            />
+            <div className="flex flex-wrap items-center gap-1.5 mb-1 sm:mb-2">
+              <DealMetaBadges presentation={presentation} />
+              {expired && (
+                <span
+                  className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                  style={{
+                    background: "hsl(var(--muted) / 0.7)",
+                    border: "1px solid hsl(var(--border) / 0.6)",
+                    color: "hsl(var(--muted-foreground))",
+                  }}
+                >
+                  Ended
+                </span>
+              )}
+              {onShowDetails && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onShowDetails();
+                  }}
+                  className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold text-primary hover:bg-primary/10 transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50"
+                  style={{ minHeight: "24px" }}
+                  aria-label={`View details for "${enriched.title}"`}
+                >
+                  <Info className="w-3 h-3" aria-hidden="true" />
+                  Details
+                </button>
+              )}
+            </div>
+
+
 
 
             <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-muted-foreground">
