@@ -532,7 +532,7 @@ export const SearchResults = ({
         minZoom: 14.5,
       });
     }
-    onVenueSelect(venue);
+    selectVenueWithFocus(venue);
   };
 
   /** Areas frame every venue in the neighborhood, then open the busiest one. */
@@ -596,7 +596,7 @@ export const SearchResults = ({
           (v) => v.name.toLowerCase() === (deal.venue_name ?? "").toLowerCase(),
         );
     if (venueMatch) {
-      onVenueSelect(venueMatch);
+      selectVenueWithFocus(venueMatch);
     } else {
       navigate(`/?deal=${deal.id}`);
     }
@@ -715,7 +715,7 @@ export const SearchResults = ({
                       data-search-option="true"
                       key={venue.id}
                       onClick={() => {
-                        onVenueSelect(venue);
+                        selectVenueWithFocus(venue);
                         onClose();
                       }}
                       className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-hidden focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"
@@ -869,7 +869,7 @@ export const SearchResults = ({
                       data-search-option="true"
                       key={venue.id}
                       onClick={() => {
-                        onVenueSelect(venue);
+                        selectVenueWithFocus(venue);
                         onClose();
                       }}
                       className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-hidden focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"
