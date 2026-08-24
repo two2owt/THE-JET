@@ -6069,13 +6069,17 @@ export const MapboxHeatmap = ({
                 <div
                   key={tier.id}
                   style={{
-                    width: "8px",
-                    height: "8px",
+                    width: "9px",
+                    height: "9px",
+                    flexShrink: 0,
                     borderRadius: "50%",
+                    // Matches the expanded Activity legend: flat tier colour
+                    // with a soft glow, no frosted rim or casing ring.
                     background: tier.color,
-                    boxShadow: `0 0 0 1.5px ${casingFor(mapStyle === "light" || mapStyle === "streets")}`,
+                    boxShadow: `0 0 5px ${tier.color}, 0 0 11px ${tier.color}80`,
                   }}
                 />
+
               ))}
             </div>
             <ChevronUp
