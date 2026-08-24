@@ -39,6 +39,12 @@ import { MapSurface } from "@/components/map/MapSurface";
 import { MapCardPortal } from "@/components/map/MapCardPortal";
 import { JetCardSkeleton } from "@/components/skeletons/JetCardSkeleton";
 
+const LocationPermissionPrompt = lazy(() =>
+  import("@/components/LocationPermissionPrompt").then((m) => ({
+    default: m.LocationPermissionPrompt,
+  })),
+);
+
 // Lazy load interaction-triggered components - not needed for first paint
 const JetCard = lazy(() =>
   import("@/components/JetCard").then((m) => ({ default: m.JetCard })),
