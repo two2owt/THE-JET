@@ -150,8 +150,14 @@ export const ExploreTab = ({
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [userPreferences, setUserPreferences] =
     useState<UserPreferences | null>(null);
+  // Show-all is the default: every active merchant deal is listed regardless of
+  // whether the user currently sits inside the merchant's broadcast radius.
+  // (Push notifications still respect the merchant geofence.)
   const [preferenceFilterEnabled, setPreferenceFilterEnabled] =
-    usePersistentViewState("deals:prefFilter", true);
+    usePersistentViewState("deals:prefFilter", false);
+  // Opt-in client-side radius filter, toggled from the location badge.
+  const [locationFilterEnabled, setLocationFilterEnabled] =
+    usePersistentViewState("deals:locFilter", false);
 
   const { isFavorite, toggleFavorite } = useFavorites(user?.id);
 
