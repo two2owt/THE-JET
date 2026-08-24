@@ -479,13 +479,15 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
               marginTop: "8px",
             }}
           >
-            {userLocation && (
+            {(userLocation !== null || locationError !== null) && (
               <Badge
-                variant="secondary"
-                className="text-xs flex items-center gap-1"
+                variant={userLocation ? "secondary" : "outline"}
+                className={`text-xs flex items-center gap-1 ${
+                  userLocation ? "text-emerald-400 border-emerald-400/30" : "text-slate-400"
+                }`}
               >
                 <Navigation className="w-3 h-3" />
-                Location Active
+                {userLocation ? "Location Active" : "Location Inactive"}
               </Badge>
             )}
             {userPreferences?.categories &&
