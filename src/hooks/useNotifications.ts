@@ -70,6 +70,11 @@ const mapNotificationLogToNotification = (
 
 export const useNotifications = (enabled: boolean = true) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  // `expires_at` for every deal referenced by a loaded alert. Alerts whose deal
+  // has lapsed are hidden everywhere (list AND badge) without a reload.
+  const [dealExpiry, setDealExpiry] = useState<Record<string, string | null>>(
+    {},
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const instanceId = useId();
