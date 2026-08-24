@@ -24,12 +24,24 @@ interface NotificationCardProps {
 }
 
 export const NotificationCard = memo(
-  ({ notification, onVenueClick, onRead }: NotificationCardProps) => {
+  ({ notification, deals, onVenueClick, onRead }: NotificationCardProps) => {
+    const enriched = useMemo(() => {
+      if (!notification.dealId || !deals?.length) return notification;
+      const deal = deals.find((d) => d.id === notification.dealId);
+      if (!deal) return notification;
+      return {
+        ...notification,
+        title: deal.title || notification.title,
+        message: deal.description || notification.message,
+        venue: deal.venue_name || notification.venue,
+      };
+    }, [notification, deals]);
+
     const handleClick = () => {
-      if (notification.venue && onVenueClick) {
-        onVenueClick(notification.venue);
+      if (enriched.venue && onVenueClick) {
+        onVenueClick(enriched.venue);
       }
-      if (onRead && !notification.read) {
+      if (onRead && !enriched.read) {
         onRead();
       }
     };
