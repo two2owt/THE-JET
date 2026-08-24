@@ -22,6 +22,8 @@ export interface ProfilePulse {
 export function useProfilePulse(
   onPulse: (pulse: ProfilePulse) => void,
   enabled = true,
+  /** Coalescing window in ms for bursts of edits on the same profile. */
+  debounceMs = 400,
 ) {
   const instanceId = useId();
   const handlerRef = useRef(onPulse);
@@ -30,16 +32,32 @@ export function useProfilePulse(
   useEffect(() => {
     if (!enabled) return;
 
-    // Pulses that land while the tab is hidden are queued (deduped by
-    // profile) and flushed when the tab becomes visible again, so a
-    // background view is never left showing stale profile data.
+    // Pulses are always buffered (deduped by profile, latest wins) and
+    // flushed on a trailing debounce. This collapses rapid successive
+    // profile edits — and pulses that land while the tab is hidden — into
+    // a single refetch/re-render per profile.
     const pending = new Map<string, ProfilePulse>();
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const clearTimer = () => {
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+    };
 
     const flush = () => {
+      clearTimer();
       if (!pending.size) return;
+      if (typeof document !== "undefined" && document.hidden) return;
       const queued = [...pending.values()];
       pending.clear();
       queued.forEach((p) => handlerRef.current?.(p));
+    };
+
+    const schedule = () => {
+      clearTimer();
+      timer = setTimeout(flush, Math.max(0, debounceMs));
     };
 
     const onVisibility = () => {
@@ -62,22 +80,22 @@ export function useProfilePulse(
             event: row.event === "created" ? "created" : "updated",
             updated_at: row.updated_at ?? new Date().toISOString(),
           };
-          if (typeof document !== "undefined" && document.hidden) {
-            pending.set(pulse.profile_id, pulse);
-            return;
-          }
-          handlerRef.current?.(pulse);
+          pending.set(pulse.profile_id, pulse);
+          if (typeof document !== "undefined" && document.hidden) return;
+          schedule();
         },
       )
       .subscribe();
 
     return () => {
+      clearTimer();
       if (typeof document !== "undefined") {
         document.removeEventListener("visibilitychange", onVisibility);
       }
       pending.clear();
       void supabase.removeChannel(channel);
     };
-  }, [enabled, instanceId]);
+  }, [enabled, instanceId, debounceMs]);
 }
+
 
