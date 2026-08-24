@@ -666,7 +666,7 @@ export const SearchResults = ({
         minZoom: 14.5,
       });
     }
-    selectVenueWithFocus(venue);
+    onVenueSelect(venue);
   };
 
   /** Areas frame every venue in the neighborhood, then open the busiest one. */
