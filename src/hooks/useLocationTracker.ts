@@ -6,6 +6,8 @@ import { isNativeApp } from "@/lib/platform";
 import { createLocationSmoother, haversineMeters } from "@/lib/geo-smoothing";
 import { getNetworkLocation } from "@/lib/networkGeolocation";
 import { markLocationWrite, recordMapSyncLatency } from "@/lib/mapSyncLatency";
+import { withRlsRetry } from "@/lib/rlsRetry";
+
 
 import { logGeoEvent } from "@/lib/geoDiagnostics";
 import {
@@ -361,12 +363,15 @@ export const useLocationTracker = () => {
         const { data } = await supabase.auth.getSession();
         if (cancelled || data.session?.user?.id !== userId) return;
         const writeStartedAt = Date.now();
-        const { error } = await supabase.from("user_locations").insert({
-          user_id: userId,
-          latitude: fix.lat,
-          longitude: fix.lng,
-          accuracy: fix.accuracy ?? null,
-        });
+        const { error } = await withRlsRetry(() =>
+          supabase.from("user_locations").insert({
+            user_id: userId,
+            latitude: fix.lat,
+            longitude: fix.lng,
+            accuracy: fix.accuracy ?? null,
+          }),
+        );
+
         if (!error) {
           recordMapSyncLatency("write", Date.now() - writeStartedAt, {
             layer: "user_locations",
