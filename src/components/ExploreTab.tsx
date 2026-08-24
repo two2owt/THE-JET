@@ -106,7 +106,7 @@ interface Deal {
     name: string;
     center_lat: number;
     center_lng: number;
-  };
+  } | null;
   distance?: number; // Distance from user in km
 }
 
