@@ -4370,10 +4370,15 @@ export const MapboxHeatmap = ({
                 if (filtered.length === 0) {
                   return (
                     <div className="px-3 py-6 text-center text-xs text-muted-foreground">
-                      No cities match “{citySearchQuery}”
+                      {remoteCities.length > 0
+                        ? `No saved cities match “${citySearchQuery}”`
+                        : isSearchingRemoteCity
+                          ? "Searching US cities…"
+                          : `No saved cities match “${citySearchQuery}” — press Enter to search all US cities`}
                     </div>
                   );
                 }
+
                 return filtered.map((city) => {
                   const distanceMiles = userLocation
                     ? kmToMiles(city.distanceKm)
