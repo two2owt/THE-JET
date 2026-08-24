@@ -17,6 +17,7 @@ import { Badge } from "./ui/badge";
 import type { Venue } from "./MapboxHeatmap";
 import type { Database } from "@/integrations/supabase/types";
 import { useLockMapWhileInteracting } from "@/lib/mapInteractionLock";
+import { requestMapFocus } from "@/lib/mapFocusBus";
 import { activityTier } from "@/lib/activity-palette";
 import { categoryIconFor } from "@/lib/category-icon";
 import {
