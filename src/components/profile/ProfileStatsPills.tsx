@@ -37,7 +37,7 @@ export function ProfileStatsPills({
     {
       icon: Users,
       label: "Connections",
-      shortLabel: "Crew",
+      shortLabel: "Social",
       value: connectionsCount,
       to: "/social",
     },

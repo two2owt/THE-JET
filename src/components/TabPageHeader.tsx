@@ -1,5 +1,5 @@
 /**
- * TabPageHeader — shared header for non-map tabs (Hot, Alerts, Saved, Crew).
+ * TabPageHeader — shared header for non-map tabs (Hot, Alerts, Saved, Social).
  * Guarantees identical typography, gradient, and subtitle spacing across tabs.
  */
 interface TabPageHeaderProps {
