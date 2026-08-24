@@ -50,6 +50,7 @@ export const Header = () => {
       }
     } catch {
       /* storage disabled — ignore */
+      console.log("DBGrestore", window.location.search, restored);
     } finally {
       queryRestoredRef.current = true;
     }
