@@ -162,7 +162,6 @@ export function NotificationsTab({
           notification={notification}
           deals={deals}
           expired={isExpired}
-          expiresAt={expiresAtOf(notification)}
           onVenueClick={onVenueClick}
           onRead={() => markAsRead(notification.id)}
           onMarkRead={() => markAsRead(notification.id)}
@@ -171,6 +170,7 @@ export function NotificationsTab({
       </Suspense>
     </div>
   );
+
 
   return (
     <PageShell>
