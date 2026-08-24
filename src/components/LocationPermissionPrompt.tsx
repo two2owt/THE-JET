@@ -60,8 +60,13 @@ export const LocationPermissionPrompt = () => {
   // Only ever render while this prompt owns the global dialog slot, so it can
   // never stack with the push / PWA prompts.
   const hasSlot = usePromptSlot("location", PROMPT_PRIORITY.location, open);
+  // Never ask on first load: wait until the map has painted AND the user has
+  // interacted for the first time. Keeps the dialog out of the LCP path and
+  // means the very first thing a visitor sees is the map, not a permission ask.
+  const triggerReady = useDeferredPromptTrigger();
 
   useEffect(() => {
+    if (!triggerReady) return;
     let cancelled = false;
 
     const maybeShow = async () => {
