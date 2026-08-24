@@ -2,7 +2,7 @@ import { SITE_URL } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import Social from "@/pages/Social";
 
-const title = "Your Social — JET";
+const title = "Social — JET";
 const description =
   "Find friends on JET, share deals, and see where your crew is going out.";
 

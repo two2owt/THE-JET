@@ -441,7 +441,7 @@ export default function Social() {
     >
       <PageShell>
         <TabPageHeader
-          title="Your Social"
+          title="Social"
           subtitle="Friends, requests, and people to discover"
         />
         {/* Search users — only matches signed-up, discoverable end users. */}
