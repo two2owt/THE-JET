@@ -205,8 +205,10 @@ const Onboarding = () => {
               categories: Array.isArray(raw?.categories) ? raw.categories : [],
             } as PreferencesData);
           }
-          if (hasStep2) setStep(3);
-          else if (hasStep1) setStep(2);
+          // The flow always begins at Step 1 so the user reviews (and can
+          // edit) every field; saved values are prefilled above. Resuming
+          // mid-flow is only skipped via "Skip for later".
+          void hasStep1;
         }
       } finally {
         if (!cancelled) setIsCheckingAuth(false);
@@ -432,10 +434,12 @@ const Onboarding = () => {
 
       if (userId) writeCachedOnboardingStatus(userId, true);
       if (userId) clearOnboardingSnooze(userId);
-      toast.success("Welcome to JET Charlotte!", {
-        description: "Let's discover what's hot",
+      toast.success("Welcome to JET!", {
+        description: "Here's your live map",
       });
-      navigate(consumePostAuthRedirect("/"), { replace: true });
+      // Finishing onboarding always lands on the map.
+      consumePostAuthRedirect("/");
+      navigate("/", { replace: true });
     } catch (error: any) {
       toast.error("Failed to complete onboarding", {
         description: error.message,
@@ -471,7 +475,7 @@ const Onboarding = () => {
       title: "Tune your",
       titleAccent: "Taste",
       description:
-        "Pick the categories you love so we can curate Charlotte for you.",
+        "Pick the categories you love so we can curate your area for you.",
     },
     {
       num: 3,
@@ -479,7 +483,7 @@ const Onboarding = () => {
       title: "You're",
       titleAccent: "All Set",
       description: savedPreferences
-        ? "Based on your preferences, we'll surface the best of Charlotte."
+        ? "Based on your preferences, we'll surface the best of your area."
         : "You can set your taste preferences any time from your profile.",
     },
   ] as const;
@@ -523,7 +527,7 @@ const Onboarding = () => {
   }
 
   return (
-    <div className="relative flex flex-1 min-h-0 w-full flex-col overflow-y-auto overscroll-contain bg-background px-fluid-sm sm:px-fluid-md pt-[max(env(safe-area-inset-top,0px),var(--space-md))] pb-[max(env(safe-area-inset-bottom,0px),var(--space-md))]">
+    <div className="relative flex flex-1 min-h-0 w-full flex-col justify-center overflow-y-auto overscroll-contain bg-background px-fluid-sm sm:px-fluid-md pt-[max(env(safe-area-inset-top,0px),var(--space-md))] pb-[max(env(safe-area-inset-bottom,0px),var(--space-md))]">
       {/* Ambient corner glow accents */}
       <div
         className="pointer-events-none absolute -top-32 -left-32 h-80 w-80 rounded-full bg-primary/10 blur-[140px]"
@@ -548,7 +552,7 @@ const Onboarding = () => {
           </div>
         )}
         {/* Glassmorphic Card */}
-        <div className="flex flex-col gap-[clamp(1.25rem,4vw,2rem)] rounded-[28px] xs:rounded-[32px] sm:rounded-[40px] border border-white/10 bg-card/60 p-[clamp(1.25rem,5vw,2rem)] shadow-2xl backdrop-blur-3xl">
+        <div className="flex max-h-[calc(100dvh-clamp(4rem,12vh,7rem))] flex-col gap-[clamp(0.875rem,3.5vw,2rem)] overflow-y-auto overscroll-contain rounded-[28px] xs:rounded-[32px] sm:rounded-[40px] border border-white/10 bg-card/60 p-[clamp(1rem,4.5vw,2rem)] shadow-2xl backdrop-blur-3xl">
           {/* Top row: back affordance */}
           <div className="flex h-5 items-center justify-between">
             {step > 1 ? (
@@ -858,8 +862,8 @@ const Onboarding = () => {
                     <h3 className="heading-luxe-card mb-fluid-xs">All Set!</h3>
                     <p className="text-fluid-sm text-muted-foreground">
                       {savedPreferences
-                        ? "Based on your preferences, we'll show you the best deals in Charlotte"
-                        : "You're ready to explore Charlotte. Add your taste preferences whenever you like for a more personal feed."}
+                        ? "Based on your preferences, we'll show you the best deals in your area"
+                        : "You're ready to explore your area. Add your taste preferences whenever you like for a more personal feed."}
                     </p>
                     {!savedPreferences && (
                       <button
@@ -914,7 +918,7 @@ const Onboarding = () => {
                 {isLoading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
-                  "Go to Dashboard"
+                  "Go to the Map"
                 )}
               </Button>
             </div>
