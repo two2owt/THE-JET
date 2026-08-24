@@ -162,7 +162,7 @@ export function HeaderSearch({
         ref={inputRef}
         type="text"
         placeholder={
-          isMobile ? "Search venues, deals…" : "Search venues, deals, neighborhoods…"
+          isMobile ? "Search" : "Search venues, deals, neighborhoods…"
         }
         value={query}
         onChange={handleChange}
