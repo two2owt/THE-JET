@@ -260,6 +260,11 @@ export function HeaderSearch({
             onVenueSelect={handleVenueSelect}
             onClose={handleCloseResults}
             isVisible={showResults}
+            isLoading={isLoading}
+            isSearching={isSearching}
+            error={error}
+            onRetry={onRetry}
+
           />
         </Suspense>
       )}
