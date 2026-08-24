@@ -18,6 +18,28 @@ import {
 import type { Database } from "@/integrations/supabase/types";
 
 type NotificationLog = Database["public"]["Tables"]["notification_logs"]["Row"];
+type DealRow = Database["public"]["Tables"]["deals"]["Row"];
+
+/**
+ * The deal fields an alert needs: venue, terms, and the exact end time. Fetched
+ * for every alert (expired deals included) so the details modal never depends
+ * on the live, active-only deal sync.
+ */
+export type AlertDeal = Pick<
+  DealRow,
+  | "id"
+  | "title"
+  | "description"
+  | "deal_type"
+  | "venue_id"
+  | "venue_name"
+  | "venue_address"
+  | "starts_at"
+  | "expires_at"
+  | "active_days"
+  | "website_url"
+>;
+
 
 export interface Notification {
   id: string;
