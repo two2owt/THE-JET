@@ -60,7 +60,6 @@ export function useNavigate(): NavigateFn {
         return;
       }
       const { pathname, search, hash } = parseTo(to);
-      console.log("DBG navigate", to, new Error().stack?.split("\n").slice(1,8).join(" | "));
       tsNav({
         to: pathname,
         search: search as never,
@@ -150,7 +149,6 @@ export function useSearchParams(): [
       next.forEach((v, k) => {
         searchObj[k] = v;
       });
-      console.log("DBG setParams", JSON.stringify(searchObj), new Error().stack?.split("\n").slice(1,8).join(" | "));
       nav({
         to: live.pathname,
         search: searchObj as never,
