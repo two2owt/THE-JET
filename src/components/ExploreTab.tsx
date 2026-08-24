@@ -112,9 +112,17 @@ interface Deal {
 
 interface ExploreTabProps {
   onVenueSelect?: (venueName: string) => void;
+  deals?: Deal[];
+  dealsLoading?: boolean;
+  dealsError?: Error | null;
 }
 
-export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
+export const ExploreTab = ({
+  onVenueSelect,
+  deals: dealsProp,
+  dealsLoading: dealsLoadingProp,
+  dealsError: dealsErrorProp,
+}: ExploreTabProps) => {
   // Persisted per tab so leaving /deals and coming back restores the view.
   const [searchQuery, setSearchQuery] = usePersistentViewState(
     "deals:query",
