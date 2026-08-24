@@ -194,5 +194,5 @@ export function useProfilePulse(
       pending.clear();
       teardown();
     };
-  }, [enabled, instanceId, debounceMs]);
+  }, [enabled, instanceId, debounceMs, profileId]);
 }
