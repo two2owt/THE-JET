@@ -4125,29 +4125,14 @@ export const MapboxHeatmap = ({
                   });
                 }
               } else {
-                setIsUsingCurrentLocation(false);
-                isUsingCurrentLocationRef.current = false;
-                // The user is deliberately looking at another city — cancel any
-                // in-flight recenter request so a late fix can't yank them back.
-                recenterIntentRef.current = false;
-                userMovedCameraRef.current = true;
-
-                // Drop the previously detected location so a later re-center
-                // never briefly shows the stale name before the fresh fix lands.
-                setDetectedLocationName(null);
-                const city = CITIES.find((c) => c.id === value);
+                const city =
+                  CITIES.find((c) => c.id === value) ??
+                  remoteCities.find((c) => c.id === value);
                 if (city) {
-                  onCityChange(city);
-                  // Fly to selected city
-                  if (map.current) {
-                    map.current.flyTo({
-                      center: [city.lng, city.lat],
-                      zoom: city.zoom,
-                      duration: 1500,
-                      essential: true,
-                    });
-                  }
+                  selectCityAndFly(city);
+                  setRemoteCities([]);
                 }
+
               }
             }}
           >
