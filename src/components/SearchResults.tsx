@@ -994,12 +994,20 @@ export const SearchResults = ({
                   {filteredVenues.map((venue) => (
                     <button
                       data-search-option="true"
+                      data-result-venue-id={String(venue.id)}
                       key={venue.id}
+                      onPointerEnter={() =>
+                        setMapHighlight(String(venue.id), "list")
+                      }
                       onClick={() => {
                         selectVenueWithFocus(venue);
                         onClose();
                       }}
-                      className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-hidden focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"
+                      className={`w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-hidden focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group ${
+                        highlightId === String(venue.id)
+                          ? "bg-primary/10 ring-1 ring-primary/40"
+                          : ""
+                      }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <ResultThumb
