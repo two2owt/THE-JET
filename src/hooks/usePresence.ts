@@ -180,6 +180,7 @@ export function usePresence(currentUserId?: string) {
 
   return useMemo(() => {
     const now = Date.now();
+    if (import.meta.env.DEV) console.log('[presence] recompute', tick, currentUserId, statusFor(state, currentUserId, now));
     return {
       /** Status of an arbitrary user id (friends on the social page). */
       getStatus: (userId: string | null | undefined): PresenceStatus =>
