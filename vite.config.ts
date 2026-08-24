@@ -5,6 +5,7 @@
 //     React/TanStack dedupe, error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadEnv } from "vite";
@@ -18,11 +19,22 @@ const rootDir = path.dirname(fileURLToPath(import.meta.url));
 const buildId =
   process.env["VERCEL_GIT_COMMIT_SHA"] ??
   process.env["LOVABLE_BUILD_ID"] ??
+  process.env["GITHUB_SHA"] ??
   Date.now().toString(36);
+
+// Human-readable release version for Sentry. Falls back to the build id so
+// every release is tagged even when no git SHA is available.
+const releaseVersion = process.env["VITE_APP_VERSION"] ?? buildId;
 
 // Server routes (email queue/webhook) need non-VITE_ env vars at runtime.
 // These are only assigned to process.env — never exposed to the client bundle.
 Object.assign(process.env, loadEnv(process.env.NODE_ENV ?? "development", rootDir, ""));
+
+// Source-map upload is gated on the Sentry auth token so local dev builds and
+// PRs from forks do not fail when the secret is unavailable.
+const sentryAuthToken = process.env["SENTRY_AUTH_TOKEN"];
+const enableSentrySourceMaps =
+  Boolean(sentryAuthToken) && process.env["NODE_ENV"] !== "test";
 
 export default defineConfig({
   tanstackStart: {
@@ -33,6 +45,13 @@ export default defineConfig({
   vite: {
     define: {
       __APP_BUILD_ID__: JSON.stringify(buildId),
+      "import.meta.env.VITE_APP_VERSION": JSON.stringify(releaseVersion),
+    },
+    build: {
+      // Generate source maps for production so Sentry can symbolicate stacks.
+      // `hidden` keeps the `//# sourceMappingURL` comment out of shipped JS,
+      // avoiding browser-network fetch attempts for maps that live in Sentry.
+      sourcemap: enableSentrySourceMaps ? "hidden" : true,
     },
     resolve: {
       alias: {
@@ -41,5 +60,21 @@ export default defineConfig({
         entities: path.resolve(rootDir, "node_modules/entities"),
       },
     },
+    plugins: enableSentrySourceMaps
+      ? [
+          sentryVitePlugin({
+            authToken: sentryAuthToken,
+            org: "creative-breakroom-llc-s2",
+            project: "jet-around",
+            release: { name: releaseVersion },
+            // Only upload the browser bundle source maps; the server bundle is
+            // built by nitro and its maps are not useful for client stack traces.
+            sourcemaps: {
+              assets: [path.resolve(rootDir, "dist/client/**")],
+              ignore: ["dist/server/**", "node_modules/**"],
+            },
+          }),
+        ]
+      : [],
   },
 });
