@@ -6,7 +6,6 @@ import { usePersistentViewState } from "@/hooks/usePersistentViewState";
 import { Bell, History } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 import { TabPageHeader } from "@/components/TabPageHeader";
-import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBanner";
 import {
   AlertDetailsDialog,
   type AlertDetailsTarget,
@@ -174,7 +173,6 @@ export function NotificationsTab({
 
   return (
     <PageShell>
-      <EmailVerificationBanner />
       <TabPageHeader
 
         title="Notifications"

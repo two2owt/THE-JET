@@ -17,6 +17,7 @@ import { Route as DealsRouteImport } from './routes/deals'
 import { Route as EmailConfirmedRouteImport } from './routes/email-confirmed'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as LinkExpiredRouteImport } from './routes/link-expired'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -45,6 +46,7 @@ import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-passw
 import { Route as AuthVerifyRouteImport } from './routes/auth/verify'
 import { Route as DevPresenceRouteImport } from './routes/dev/presence'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable/oauth/consent'
+import { Route as ApiPublicAuthRedirectLogRouteImport } from './routes/api/public/auth-redirect-log'
 import { Route as ApiPublicDeviceTokensRouteImport } from './routes/api/public/device-tokens'
 import { Route as ApiPublicVersionRouteImport } from './routes/api/public/version'
 import { Route as ApiPublicHooksNudgeIncompleteOnboardingRouteImport } from './routes/api/public/hooks/nudge-incomplete-onboarding'
@@ -92,6 +94,11 @@ const FavoritesRoute = FavoritesRouteImport.update({
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LinkExpiredRoute = LinkExpiredRouteImport.update({
+  id: '/link-expired',
+  path: '/link-expired',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -234,6 +241,12 @@ const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAuthRedirectLogRoute =
+  ApiPublicAuthRedirectLogRouteImport.update({
+    id: '/api/public/auth-redirect-log',
+    path: '/api/public/auth-redirect-log',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicDeviceTokensRoute = ApiPublicDeviceTokensRouteImport.update({
   id: '/api/public/device-tokens',
   path: '/api/public/device-tokens',
@@ -288,6 +301,7 @@ export interface FileRoutesByFullPath {
   '/email-confirmed': typeof EmailConfirmedRoute
   '/favorites': typeof FavoritesRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/link-expired': typeof LinkExpiredRoute
   '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
   '/onboarding': typeof OnboardingRoute
@@ -316,6 +330,7 @@ export interface FileRoutesByFullPath {
   '/dev/presence': typeof DevPresenceRoute
   '/auth/': typeof AuthIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/api/public/auth-redirect-log': typeof ApiPublicAuthRedirectLogRoute
   '/api/public/device-tokens': typeof ApiPublicDeviceTokensRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/api/public/hooks/nudge-incomplete-onboarding': typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
@@ -334,6 +349,7 @@ export interface FileRoutesByTo {
   '/email-confirmed': typeof EmailConfirmedRoute
   '/favorites': typeof FavoritesRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/link-expired': typeof LinkExpiredRoute
   '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
   '/onboarding': typeof OnboardingRoute
@@ -362,6 +378,7 @@ export interface FileRoutesByTo {
   '/dev/presence': typeof DevPresenceRoute
   '/auth': typeof AuthIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/api/public/auth-redirect-log': typeof ApiPublicAuthRedirectLogRoute
   '/api/public/device-tokens': typeof ApiPublicDeviceTokensRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/api/public/hooks/nudge-incomplete-onboarding': typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
@@ -381,6 +398,7 @@ export interface FileRoutesById {
   '/email-confirmed': typeof EmailConfirmedRoute
   '/favorites': typeof FavoritesRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/link-expired': typeof LinkExpiredRoute
   '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
   '/onboarding': typeof OnboardingRoute
@@ -409,6 +427,7 @@ export interface FileRoutesById {
   '/dev/presence': typeof DevPresenceRoute
   '/auth/': typeof AuthIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/api/public/auth-redirect-log': typeof ApiPublicAuthRedirectLogRoute
   '/api/public/device-tokens': typeof ApiPublicDeviceTokensRoute
   '/api/public/version': typeof ApiPublicVersionRoute
   '/api/public/hooks/nudge-incomplete-onboarding': typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
@@ -429,6 +448,7 @@ export interface FileRouteTypes {
     | '/email-confirmed'
     | '/favorites'
     | '/forgot-password'
+    | '/link-expired'
     | '/login'
     | '/messages'
     | '/onboarding'
@@ -457,6 +477,7 @@ export interface FileRouteTypes {
     | '/dev/presence'
     | '/auth/'
     | '/.lovable/oauth/consent'
+    | '/api/public/auth-redirect-log'
     | '/api/public/device-tokens'
     | '/api/public/version'
     | '/api/public/hooks/nudge-incomplete-onboarding'
@@ -475,6 +496,7 @@ export interface FileRouteTypes {
     | '/email-confirmed'
     | '/favorites'
     | '/forgot-password'
+    | '/link-expired'
     | '/login'
     | '/messages'
     | '/onboarding'
@@ -503,6 +525,7 @@ export interface FileRouteTypes {
     | '/dev/presence'
     | '/auth'
     | '/.lovable/oauth/consent'
+    | '/api/public/auth-redirect-log'
     | '/api/public/device-tokens'
     | '/api/public/version'
     | '/api/public/hooks/nudge-incomplete-onboarding'
@@ -521,6 +544,7 @@ export interface FileRouteTypes {
     | '/email-confirmed'
     | '/favorites'
     | '/forgot-password'
+    | '/link-expired'
     | '/login'
     | '/messages'
     | '/onboarding'
@@ -549,6 +573,7 @@ export interface FileRouteTypes {
     | '/dev/presence'
     | '/auth/'
     | '/.lovable/oauth/consent'
+    | '/api/public/auth-redirect-log'
     | '/api/public/device-tokens'
     | '/api/public/version'
     | '/api/public/hooks/nudge-incomplete-onboarding'
@@ -568,6 +593,7 @@ export interface RootRouteChildren {
   EmailConfirmedRoute: typeof EmailConfirmedRoute
   FavoritesRoute: typeof FavoritesRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
+  LinkExpiredRoute: typeof LinkExpiredRoute
   LoginRoute: typeof LoginRoute
   MessagesRoute: typeof MessagesRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -596,6 +622,7 @@ export interface RootRouteChildren {
   DevPresenceRoute: typeof DevPresenceRoute
   AuthIndexRoute: typeof AuthIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
+  ApiPublicAuthRedirectLogRoute: typeof ApiPublicAuthRedirectLogRoute
   ApiPublicDeviceTokensRoute: typeof ApiPublicDeviceTokensRoute
   ApiPublicVersionRoute: typeof ApiPublicVersionRoute
   ApiPublicHooksNudgeIncompleteOnboardingRoute: typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
@@ -662,6 +689,13 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/link-expired': {
+      id: '/link-expired'
+      path: '/link-expired'
+      fullPath: '/link-expired'
+      preLoaderRoute: typeof LinkExpiredRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -860,6 +894,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/auth-redirect-log': {
+      id: '/api/public/auth-redirect-log'
+      path: '/api/public/auth-redirect-log'
+      fullPath: '/api/public/auth-redirect-log'
+      preLoaderRoute: typeof ApiPublicAuthRedirectLogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/device-tokens': {
       id: '/api/public/device-tokens'
       path: '/api/public/device-tokens'
@@ -928,6 +969,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmailConfirmedRoute: EmailConfirmedRoute,
   FavoritesRoute: FavoritesRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
+  LinkExpiredRoute: LinkExpiredRoute,
   LoginRoute: LoginRoute,
   MessagesRoute: MessagesRoute,
   OnboardingRoute: OnboardingRoute,
@@ -956,6 +998,7 @@ const rootRouteChildren: RootRouteChildren = {
   DevPresenceRoute: DevPresenceRoute,
   AuthIndexRoute: AuthIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
+  ApiPublicAuthRedirectLogRoute: ApiPublicAuthRedirectLogRoute,
   ApiPublicDeviceTokensRoute: ApiPublicDeviceTokensRoute,
   ApiPublicVersionRoute: ApiPublicVersionRoute,
   ApiPublicHooksNudgeIncompleteOnboardingRoute:
