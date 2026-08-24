@@ -725,12 +725,17 @@ export const SearchResults = ({
             </div>
           </div>
 
-
-          {/* Scrollable body */}
+          {/* Scrollable body — kept mounted while collapsed so scroll position
+              and any pending measurements survive the toggle. */}
           <CardContent
             ref={listRef}
-            className="p-3 sm:p-4 pb-4 space-y-4 overflow-y-auto overscroll-contain flex-1 min-h-0"
+            id="jet-search-results-list"
+            hidden={collapsed}
+            className={`p-3 sm:p-4 pb-4 space-y-4 overflow-y-auto overscroll-contain flex-1 min-h-0 ${
+              collapsed ? "hidden" : ""
+            }`}
           >
+
             {!hasResults && (
               <div className="text-center py-10">
                 <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3">
