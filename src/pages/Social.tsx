@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useConnections } from "@/hooks/useConnections";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useProfilePulse } from "@/hooks/useProfilePulse";
+
 import {
   Users,
   UserPlus,
