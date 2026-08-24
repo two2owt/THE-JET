@@ -266,12 +266,15 @@ export const useLocationTracker = () => {
         const { data } = await supabase.auth.getSession();
         if (cancelled || data.session?.user?.id !== userId) return;
         const writeStartedAt = Date.now();
-        const { error } = await supabase.from("user_locations").insert({
-          user_id: userId,
-          latitude: lat,
-          longitude: lng,
-          accuracy: accuracy ?? null,
-        });
+        const { error } = await withRlsRetry(() =>
+          supabase.from("user_locations").insert({
+            user_id: userId,
+            latitude: lat,
+            longitude: lng,
+            accuracy: accuracy ?? null,
+          }),
+        );
+
         if (!error) {
           recordMapSyncLatency("write", Date.now() - writeStartedAt, {
             layer: "user_locations",
