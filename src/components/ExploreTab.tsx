@@ -896,6 +896,10 @@ export const ExploreTab = ({
                       {deal.description}
                     </p>
 
+                    <div className="mb-2">
+                      <DealCategoryBadge presentation={getDealPresentation(deal)} />
+                    </div>
+
                     <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-1 text-muted-foreground">
                         <MapPin className="w-3 h-3" />
