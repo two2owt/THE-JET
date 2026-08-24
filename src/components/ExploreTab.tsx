@@ -230,12 +230,16 @@ export const ExploreTab = ({
 
 
   useEffect(() => {
+    // Skip internal fetch when deals are supplied from the page-level
+    // realtime hook.
+    if (dealsProp !== undefined) return;
+
     // Load deals only after we have attempted to get location
     // This ensures we can calculate distances properly
     if (userLocation !== null || locationError !== null) {
       loadDeals();
     }
-  }, [userLocation, locationError]);
+  }, [userLocation, locationError, dealsProp]);
 
   useEffect(() => {
     filterDeals();
