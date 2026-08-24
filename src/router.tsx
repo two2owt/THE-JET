@@ -30,5 +30,10 @@ export const getRouter = () => {
     defaultPendingMinMs: 400,
   });
 
+  if (typeof window !== "undefined") {
+    router.subscribe("onBeforeNavigate", (e: any) =>
+      console.log("DBG beforeNav", JSON.stringify(e.toLocation?.href), new Error().stack?.split("\n").slice(1,9).join(" | ")),
+    );
+  }
   return router;
 };
