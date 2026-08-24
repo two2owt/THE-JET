@@ -1,4 +1,5 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { isDealExpired } from "@/lib/dealExpiry";
 import { usePersistentViewState } from "@/hooks/usePersistentViewState";
 import { Bell } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
@@ -39,14 +40,34 @@ export function NotificationsTab({
     "all",
   );
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
-  const readCount = notifications.length - unreadCount;
+  // Re-evaluate expiry every 30s so an alert drops off without a reload.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Alerts tied to a deal that has passed its merchant `expires_at` are removed
+  // outright. Alerts with no linked deal (or a deal not in the synced list) are
+  // left alone — we can't prove those are stale.
+  const live = useMemo(() => {
+    if (!deals?.length) return notifications;
+    const dealById = new Map(deals.map((d) => [d.id, d]));
+    return notifications.filter((n) => {
+      const deal = n?.dealId ? dealById.get(n.dealId) : null;
+      if (!deal) return true;
+      return !isDealExpired(deal.expires_at, now);
+    });
+  }, [notifications, deals, now]);
+
+  const unreadCount = live.filter((n) => !n.read).length;
+  const readCount = live.length - unreadCount;
   const visible =
     filter === "unread"
-      ? notifications.filter((n) => !n.read)
+      ? live.filter((n) => !n.read)
       : filter === "read"
-        ? notifications.filter((n) => n.read)
-        : notifications;
+        ? live.filter((n) => n.read)
+        : live;
 
   return (
     <PageShell>
