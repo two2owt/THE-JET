@@ -52,12 +52,50 @@ const DealDetailCard = lazy(() =>
 );
 
 /**
- * Module-level last-known position. Survives unmounts, so switching away from
- * /deals and back does not re-run a geolocation request before the list can
- * show distances.
+ * Last-known position, kept both in module scope (survives tab unmounts) and
+ * in localStorage (survives reloads and cold deep-link entries). The list is
+ * never allowed to wait on GPS: a cached fix is applied synchronously and any
+ * live fix simply refines distances afterwards.
  */
 const LOCATION_CACHE_TTL_MS = 5 * 60 * 1000;
-let lastKnownLocation: { lat: number; lng: number; at: number } | null = null;
+const LOCATION_CACHE_KEY = "jet:last-location";
+
+type CachedFix = { lat: number; lng: number; at: number };
+
+const readPersistedLocation = (): CachedFix | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(LOCATION_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as CachedFix;
+    if (
+      typeof parsed?.lat !== "number" ||
+      typeof parsed?.lng !== "number" ||
+      typeof parsed?.at !== "number"
+    )
+      return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+};
+
+let lastKnownLocation: CachedFix | null = readPersistedLocation();
+
+const rememberLocation = (fix: CachedFix) => {
+  lastKnownLocation = fix;
+  try {
+    window.localStorage.setItem(LOCATION_CACHE_KEY, JSON.stringify(fix));
+  } catch {
+    /* storage full or blocked — module cache still applies */
+  }
+};
+
+const freshCachedLocation = (): CachedFix | null =>
+  lastKnownLocation && Date.now() - lastKnownLocation.at < LOCATION_CACHE_TTL_MS
+    ? lastKnownLocation
+    : null;
+
 
 interface UserPreferences {
   categories?: string[];
