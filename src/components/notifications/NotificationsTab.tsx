@@ -4,6 +4,7 @@ import { Bell } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 import { TabPageHeader } from "@/components/TabPageHeader";
 import type { Venue } from "@/types/venue";
+import type { DealWithNeighborhood } from "@/mobile-app-snippets/useDealSyncRealtime";
 
 const NotificationCard = lazy(() =>
   import("@/components/NotificationCard").then((m) => ({
