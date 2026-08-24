@@ -1220,13 +1220,22 @@ export const MapboxHeatmap = ({
   // Recenter on the user once per sign-in, but only when location is already
   // allowed — the map stays freely browsable (and on whatever city is
   // selected) for everyone else until they explicitly ask to be located.
+  // The "already recentered" marker is persisted, because a plain reload or
+  // remount must NOT count as a new sign-in (last_sign_in_at is unchanged).
   const { session: authSession } = useAuth();
   const signInKey = authSession?.user
     ? `${authSession.user.id}:${authSession.user.last_sign_in_at ?? ""}`
     : null;
-  const recenteredForSignInRef = useRef<string | null>(null);
+  const SIGN_IN_RECENTER_KEY = "jet-recentered-for-sign-in";
   useEffect(() => {
-    if (!signInKey || recenteredForSignInRef.current === signInKey) return;
+    if (!signInKey) return;
+    let stored: string | null = null;
+    try {
+      stored = window.localStorage.getItem(SIGN_IN_RECENTER_KEY);
+    } catch {
+      // Storage may be unavailable; fall through and treat as not recentered.
+    }
+    if (stored === signInKey) return;
     if (typeof navigator === "undefined" || !navigator.permissions?.query)
       return;
     let cancelled = false;
@@ -1234,7 +1243,11 @@ export const MapboxHeatmap = ({
       .query({ name: "geolocation" as PermissionName })
       .then((status) => {
         if (cancelled || status.state !== "granted") return;
-        recenteredForSignInRef.current = signInKey;
+        try {
+          window.localStorage.setItem(SIGN_IN_RECENTER_KEY, signInKey);
+        } catch {
+          // Best-effort persistence.
+        }
         refreshCurrentLocation();
       })
       .catch(() => {});
@@ -1242,6 +1255,7 @@ export const MapboxHeatmap = ({
       cancelled = true;
     };
   }, [signInKey, refreshCurrentLocation]);
+
 
   // Sync toggle-triggered loading states with hook loading so they stay visible
   // until the data fetch actually completes (including debounce / realtime).
