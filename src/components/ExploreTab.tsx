@@ -17,6 +17,7 @@ import {
   Navigation,
   Heart,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
