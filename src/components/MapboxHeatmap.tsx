@@ -164,6 +164,8 @@ import {
   markerZoomFactor,
   planarDistance,
 } from "./map/markerStyles";
+import { resolveVenueCategory } from "@/lib/venue-categories";
+import { CategoryFilterBar } from "./map/CategoryFilterBar";
 import { clusterVenues, CLUSTER_MAX_ZOOM } from "./map/venueClusters";
 import {
   useMovementPathsLayer,
@@ -4106,6 +4108,16 @@ export const MapboxHeatmap = ({
           // and creates a containing block that traps fixed-position children
         }}
       />
+
+      {/* Category filter chips — filters the markers themselves; a JetCard
+          only opens when the user taps a marker that survived the filter. */}
+      {controlsReady && onCategoryFilterChange && (
+        <CategoryFilterBar
+          value={categoryFilter}
+          onChange={onCategoryFilterChange}
+          counts={categoryCounts}
+        />
+      )}
 
       {/* Unified Top-Left Controls: Location + Map Style in one compact row */}
       {controlsReady && (
