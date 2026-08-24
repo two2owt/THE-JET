@@ -301,6 +301,18 @@ export const DealDetailCard = memo(({ deal, onClose }: DealDetailCardProps) => {
           </Button>
         </div>
 
+        {/* Redemption QR */}
+        {user && (
+          <Button
+            onClick={() => setShowRedeem(true)}
+            variant="outline"
+            className="w-full border-primary/40 hover:border-primary hover:bg-primary/5 font-semibold rounded-xl"
+          >
+            <QrCode className="w-4 h-4 mr-2" />
+            Show redemption QR
+          </Button>
+        )}
+
         {/* Website Link */}
         {deal.website_url && (
           <Button
@@ -321,6 +333,19 @@ export const DealDetailCard = memo(({ deal, onClose }: DealDetailCardProps) => {
           venue={directionsVenue}
         />
       </Suspense>
+
+      {showRedeem && (
+        <Suspense fallback={null}>
+          <RedemptionQRDialog
+            open={showRedeem}
+            onOpenChange={setShowRedeem}
+            dealId={deal.id}
+            dealTitle={deal.title}
+            venueName={deal.venue_name}
+          />
+        </Suspense>
+      )}
+
     </div>
   );
 });
