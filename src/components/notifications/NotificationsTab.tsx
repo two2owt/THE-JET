@@ -16,6 +16,7 @@ type Filter = "all" | "unread" | "read";
 
 interface NotificationsTabProps {
   notifications: any[];
+  deals?: DealWithNeighborhood[];
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   onVenueClick: (venue: Venue | string) => void;
