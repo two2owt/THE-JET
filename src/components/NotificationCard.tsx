@@ -25,20 +25,27 @@ export interface Notification {
 interface NotificationCardProps {
   notification: Notification;
   deals?: DealWithNeighborhood[];
+  /** The linked deal has already ended — shown only in the opt-in expired list. */
+  expired?: boolean;
   onVenueClick?: (venue: string) => void;
   onRead?: () => void;
   /** Explicit "mark as read" action, independent of opening the venue. */
   onMarkRead?: () => void;
+  /** Opens the alert details modal (venue, terms, exact expiry). */
+  onShowDetails?: () => void;
 }
 
 export const NotificationCard = memo(
   ({
     notification,
     deals,
+    expired = false,
     onVenueClick,
     onRead,
     onMarkRead,
+    onShowDetails,
   }: NotificationCardProps) => {
+
     // The deal this alert points at, when it is still live in the synced list.
     const linkedDeal = useMemo(() => {
       if (!notification.dealId || !deals?.length) return null;
