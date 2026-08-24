@@ -189,6 +189,8 @@ import {
   kmToMiles,
 } from "@/types/cities";
 import { getCachedReverseGeocode } from "@/utils/reverseGeocode";
+import { searchUsCities, type GeocodedCity } from "@/utils/forwardGeocode";
+
 import locationPuckIcon from "@/assets/location-puck.png";
 
 // Re-export Venue type for backwards compatibility
@@ -987,6 +989,75 @@ export const MapboxHeatmap = ({
 
   // City selector search query
   const [citySearchQuery, setCitySearchQuery] = useState("");
+  // Cities resolved from Mapbox when the query doesn't match the curated list.
+  // Only populated after the user confirms with Enter (or the Go button).
+  const [remoteCities, setRemoteCities] = useState<GeocodedCity[]>([]);
+  const [isSearchingRemoteCity, setIsSearchingRemoteCity] = useState(false);
+  const [remoteCitySearchTerm, setRemoteCitySearchTerm] = useState("");
+  const remoteSearchAbortRef = useRef<AbortController | null>(null);
+
+  /** Switch the map to an explicitly chosen city (curated or geocoded). */
+  const selectCityAndFly = (city: City) => {
+    setIsUsingCurrentLocation(false);
+    isUsingCurrentLocationRef.current = false;
+    recenterIntentRef.current = false;
+    userMovedCameraRef.current = true;
+    setDetectedLocationName(null);
+    onCityChange(city);
+    if (map.current) {
+      map.current.flyTo({
+        center: [city.lng, city.lat],
+        zoom: city.zoom,
+        duration: 1500,
+        essential: true,
+      });
+    }
+  };
+
+  /**
+   * Confirmed city search (Enter / Go). Prefers an exact curated match, then
+   * falls back to Mapbox geocoding across major US cities.
+   */
+  const confirmCitySearch = async () => {
+    const q = citySearchQuery.trim();
+    if (!q) return;
+
+    const lower = q.toLowerCase();
+    const localMatch =
+      CITIES.find((c) => `${c.name}, ${c.state}`.toLowerCase() === lower) ??
+      CITIES.find((c) => c.name.toLowerCase() === lower) ??
+      CITIES.find(
+        (c) =>
+          c.name.toLowerCase().startsWith(lower) ||
+          `${c.name}, ${c.state}`.toLowerCase().includes(lower),
+      );
+    if (localMatch) {
+      triggerHaptic("light");
+      selectCityAndFly(localMatch);
+      setCitySearchQuery("");
+      setRemoteCities([]);
+      return;
+    }
+
+    remoteSearchAbortRef.current?.abort();
+    const controller = new AbortController();
+    remoteSearchAbortRef.current = controller;
+    setIsSearchingRemoteCity(true);
+    setRemoteCitySearchTerm(q);
+    const results = await searchUsCities(q, mapboxToken, 5, controller.signal);
+    if (controller.signal.aborted) return;
+    setIsSearchingRemoteCity(false);
+    setRemoteCities(results);
+    if (results.length === 1) {
+      triggerHaptic("light");
+      selectCityAndFly(results[0]);
+      setCitySearchQuery("");
+      setRemoteCities([]);
+    }
+  };
+
+
+
 
   /**
    * Automatic city re-detection while the app is open.
@@ -4025,7 +4096,12 @@ export const MapboxHeatmap = ({
               isUsingCurrentLocation ? "current-location" : selectedCity.id
             }
             onOpenChange={(open) => {
-              if (!open) setCitySearchQuery("");
+              if (!open) {
+                setCitySearchQuery("");
+                setRemoteCities([]);
+                setIsSearchingRemoteCity(false);
+              }
+
               // Notify floating panels (e.g. SearchResults) to recalc position
               if (typeof window !== "undefined") {
                 window.dispatchEvent(
@@ -4054,29 +4130,14 @@ export const MapboxHeatmap = ({
                   });
                 }
               } else {
-                setIsUsingCurrentLocation(false);
-                isUsingCurrentLocationRef.current = false;
-                // The user is deliberately looking at another city — cancel any
-                // in-flight recenter request so a late fix can't yank them back.
-                recenterIntentRef.current = false;
-                userMovedCameraRef.current = true;
-
-                // Drop the previously detected location so a later re-center
-                // never briefly shows the stale name before the fresh fix lands.
-                setDetectedLocationName(null);
-                const city = CITIES.find((c) => c.id === value);
+                const city =
+                  CITIES.find((c) => c.id === value) ??
+                  remoteCities.find((c) => c.id === value);
                 if (city) {
-                  onCityChange(city);
-                  // Fly to selected city
-                  if (map.current) {
-                    map.current.flyTo({
-                      center: [city.lng, city.lat],
-                      zoom: city.zoom,
-                      duration: 1500,
-                      essential: true,
-                    });
-                  }
+                  selectCityAndFly(city);
+                  setRemoteCities([]);
                 }
+
               }
             }}
           >
@@ -4128,7 +4189,7 @@ export const MapboxHeatmap = ({
                   )}
               </div>
             </SelectTrigger>
-            <SelectContent className="min-w-[240px] py-2">
+            <SelectContent className="w-[min(88vw,320px)] min-w-[220px] py-2">
               {/* Search input — stops keystrokes from Select's typeahead */}
               <div
                 className="px-2 pb-2 sticky top-0 z-10 bg-popover"
@@ -4155,31 +4216,97 @@ export const MapboxHeatmap = ({
                 onPointerDown={(e) => e.stopPropagation()}
                 onPointerMove={(e) => e.stopPropagation()}
               >
+                <label
+                  htmlFor="map-city-search"
+                  className="block px-0.5 pb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground truncate"
+                >
+                  Search any US city
+                </label>
                 <div className="relative">
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
                   <Input
+                    id="map-city-search"
                     type="text"
                     inputMode="search"
+                    enterKeyHint="search"
                     autoComplete="off"
                     spellCheck={false}
                     value={citySearchQuery}
-                    onChange={(e) => setCitySearchQuery(e.target.value)}
-                    placeholder="Search cities..."
-                    className="h-9 pl-8 pr-8 text-sm rounded-lg bg-card/60 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-primary/50"
-                    aria-label="Search cities"
+                    onChange={(e) => {
+                      setCitySearchQuery(e.target.value);
+                      if (remoteCities.length) setRemoteCities([]);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        // Confirmed input only — never geocode while typing.
+                        e.preventDefault();
+                        e.stopPropagation();
+                        void confirmCitySearch();
+                      }
+                    }}
+                    placeholder="City or city, state"
+                    className="h-9 pl-8 pr-16 text-[13px] sm:text-sm rounded-lg bg-card/60 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-primary/50"
+                    aria-label="Search any US city, then press Enter"
                   />
-                  {citySearchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => setCitySearchQuery("")}
-                      aria-label="Clear search"
-                      className="absolute right-1.5 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  )}
+                  <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                    {citySearchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCitySearchQuery("");
+                          setRemoteCities([]);
+                        }}
+                        aria-label="Clear search"
+                        className="h-6 w-6 flex items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                    {citySearchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => void confirmCitySearch()}
+                        aria-label="Go to searched city"
+                        className="h-6 px-2 flex items-center justify-center rounded-md text-[10px] font-semibold uppercase tracking-[0.1em] text-primary bg-primary/10 hover:bg-primary/20 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors"
+                      >
+                        Go
+                      </button>
+                    )}
+                  </div>
                 </div>
+                {citySearchQuery && (
+                  <p className="px-0.5 pt-1 text-[10px] text-muted-foreground truncate">
+                    {isSearchingRemoteCity
+                      ? "Searching US cities…"
+                      : "Press Enter to jump the map"}
+                  </p>
+                )}
               </div>
+              {remoteCities.length > 0 && (
+                <>
+                  <div className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    Results for “{remoteCitySearchTerm}”
+                  </div>
+                  {remoteCities.map((city) => (
+                    <SelectItem
+                      key={city.id}
+                      value={city.id}
+                      className="py-2.5 px-2.5 my-0.5 rounded-lg focus:bg-primary/10"
+                    >
+                      <div className="flex items-center gap-2 w-full min-w-0">
+                        <span className="font-display font-bold text-[13px] sm:text-sm text-foreground truncate min-w-0 flex-1">
+                          {city.name}
+                        </span>
+                        <span className="text-[10px] sm:text-[11px] font-semibold uppercase text-muted-foreground flex-shrink-0">
+                          {city.state}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                  <div className="h-px bg-border/60 my-1.5 mx-2" />
+                </>
+              )}
+
               {!citySearchQuery && (
                 <SelectItem
                   value="current-location"
@@ -4243,10 +4370,15 @@ export const MapboxHeatmap = ({
                 if (filtered.length === 0) {
                   return (
                     <div className="px-3 py-6 text-center text-xs text-muted-foreground">
-                      No cities match “{citySearchQuery}”
+                      {remoteCities.length > 0
+                        ? `No saved cities match “${citySearchQuery}”`
+                        : isSearchingRemoteCity
+                          ? "Searching US cities…"
+                          : `No saved cities match “${citySearchQuery}” — press Enter to search all US cities`}
                     </div>
                   );
                 }
+
                 return filtered.map((city) => {
                   const distanceMiles = userLocation
                     ? kmToMiles(city.distanceKm)
