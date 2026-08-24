@@ -51,7 +51,6 @@ export interface HeaderSearchProps {
 export function HeaderSearch({
   mounted,
   isMobile,
-  expanded,
   query,
   showResults,
   venues,
@@ -64,8 +63,8 @@ export function HeaderSearch({
   onQueryChange,
   onClear,
   onCloseResults,
-  onCollapse,
 }: HeaderSearchProps) {
+
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
