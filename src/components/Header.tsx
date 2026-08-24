@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams, useLocation } from "@/lib/router-compat";
-import { Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSearchHistory } from "@/hooks/useSearchHistory";
 import { useHeaderContext } from "@/contexts/HeaderContext";
@@ -11,6 +10,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { HeaderUserMenu } from "./navigation/HeaderUserMenu";
 import { HeaderSearch } from "./navigation/HeaderSearch";
 import { HeaderSyncIndicator } from "./navigation/HeaderSyncIndicator";
+
 
 export const Header = () => {
   const navigate = useNavigate();
