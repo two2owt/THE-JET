@@ -70,26 +70,9 @@ interface UserPreferences {
   activityInArea?: boolean;
 }
 
-// Map deal_type values to preference categories
-const dealTypeToCategory: Record<string, string> = {
-  food: "Food",
-  Food: "Food",
-  restaurant: "Food",
-  dining: "Food",
-  drinks: "Drinks",
-  Drinks: "Drinks",
-  bar: "Drinks",
-  cocktail: "Drinks",
-  coffee: "Drinks",
-  nightlife: "Nightlife",
-  Nightlife: "Nightlife",
-  club: "Nightlife",
-  lounge: "Nightlife",
-  events: "Events",
-  Events: "Events",
-  concert: "Events",
-  festival: "Events",
-};
+// Deal → preference bucket resolution lives in @/lib/dealCategory: merchant
+// deal_type is only "offer" / "event" / "special", so the bucket is inferred
+// from the venue taxonomy behind the deal's text.
 
 interface Deal {
   id: string;
