@@ -159,6 +159,10 @@ export const SearchResults = ({
   onVenueSelect,
   onClose,
   isVisible,
+  isLoading = false,
+  isSearching = false,
+  error = null,
+  onRetry,
 }: SearchResultsProps) => {
   const navigate = useNavigate();
   // Measured layout box (in px) so the panel never relies on dvh/env() support
