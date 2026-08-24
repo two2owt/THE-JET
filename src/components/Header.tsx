@@ -35,6 +35,15 @@ export const Header = () => {
   const SEARCH_QUERY_KEY = "jet-header-search-query";
   const SEARCH_EXPANDED_KEY = "jet-header-search-expanded";
   const [searchQuery, setSearchQuery] = useState<string>("");
+  // Guards the URL sync below: until the initial restore has run (and the
+  // debounce has caught up), an empty `searchQuery` must not wipe a `?q=`
+  // that arrived via a deep link or redirect.
+  const queryRestoredRef = useRef(false);
+  // Flipped the first time the user actually edits the field. Until then the
+  // URL sync below may only add `?q=` — never remove one, because an empty
+  // `searchQuery` at that stage just means the restore hasn't committed yet
+  // (effects in the mount commit run before the state they set is applied).
+  const userEditedQueryRef = useRef(false);
   useEffect(() => {
     try {
       const url = new URLSearchParams(window.location.search).get("q");
@@ -46,6 +55,8 @@ export const Header = () => {
       }
     } catch {
       /* storage disabled — ignore */
+    } finally {
+      queryRestoredRef.current = true;
     }
   }, []);
   const [showResults, setShowResults] = useState(false);
@@ -109,13 +120,18 @@ export const Header = () => {
 
   // Sync debounced query to the URL so results don't churn while typing.
   useEffect(() => {
+    if (!queryRestoredRef.current) return;
     const current = urlSearchParams.get("q") ?? "";
     if (current === debouncedQuery) return;
+    // The debounce lags state by 300ms, so an empty `debouncedQuery` while
+    // `searchQuery` still holds text means the query hasn't settled yet —
+    // clearing `?q=` here would eat a deep-linked query.
+    if (!debouncedQuery && (searchQuery || !userEditedQueryRef.current)) return;
     const next = new URLSearchParams(urlSearchParams);
     if (debouncedQuery) next.set("q", debouncedQuery);
     else next.delete("q");
     setUrlSearchParams(next, { replace: true });
-  }, [debouncedQuery, urlSearchParams, setUrlSearchParams]);
+  }, [debouncedQuery, urlSearchParams, setUrlSearchParams, searchQuery]);
 
   // React to external URL changes (back/forward, deep links) by syncing the
   // query state in the opposite direction.
@@ -142,9 +158,25 @@ export const Header = () => {
   // Reset search state when navigating to a different page so old queries
   // and dropdowns don't leak into the next view.
   const prevPathnameRef = useRef(location.pathname);
+  // A `?q=` present on the very first render came from a deep link (or a
+  // legacy `?tab=` redirect), not from typing — never clear that one.
+  const initialQueryRef = useRef<string | null>(null);
+  if (initialQueryRef.current === null) {
+    initialQueryRef.current =
+      typeof window !== "undefined"
+        ? (new URLSearchParams(window.location.search).get("q") ?? "")
+        : "";
+  }
   useEffect(() => {
     if (prevPathnameRef.current === location.pathname) return;
     prevPathnameRef.current = location.pathname;
+
+    const urlQuery = urlSearchParams.get("q") ?? "";
+    if (urlQuery && urlQuery === initialQueryRef.current) {
+      // Hydration/redirect settling on the deep-linked query — keep it.
+      return;
+    }
+    initialQueryRef.current = "";
 
     setSearchQuery("");
     setShowResults(false);
@@ -193,6 +225,7 @@ export const Header = () => {
   // Debounced "save-to-history" — fires once typing pauses for 1s.
   const handleQueryChange = useCallback(
     (next: string) => {
+      userEditedQueryRef.current = true;
       setSearchQuery(next);
       setShowResults(next.trim().length > 0);
       if (historyDebounceRef.current) {
@@ -218,6 +251,7 @@ export const Header = () => {
 
   const handleCloseResults = useCallback(() => setShowResults(false), []);
   const handleClearSearch = useCallback(() => {
+    userEditedQueryRef.current = true;
     setSearchQuery("");
     setShowResults(false);
   }, []);
