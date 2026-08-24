@@ -60,10 +60,13 @@ export function HeaderSyncIndicator({
 
   if (!lastUpdated && !onRefresh) return null;
 
+  // The "Arrived" prefix is dropped on narrow phones so the pill (and the
+  // search field beside it) always fit — the timestamp itself always shows.
+  const labelPrefix = isLoading || !lastUpdated ? "" : "Arrived ";
   const label = isLoading
     ? "Syncing…"
     : lastUpdated
-      ? `Arrived ${formatRelative(lastUpdated)}`
+      ? formatRelative(lastUpdated)
       : "Sync";
   const title = lastUpdated
     ? `Arrived ${lastUpdated.toLocaleTimeString()} — click to refresh`
@@ -147,6 +150,7 @@ export function HeaderSyncIndicator({
             : undefined,
         }}
       >
+        {labelPrefix && <span className="hidden sm:inline">{labelPrefix}</span>}
         {label}
       </span>
     </button>
