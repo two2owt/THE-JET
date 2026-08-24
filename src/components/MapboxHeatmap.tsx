@@ -1,4 +1,5 @@
 import { devLog } from "@/lib/log";
+import { useMapStylePreference } from "@/lib/mapStylePreference";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { storeLastKnownLocation } from "@/lib/tile-prefetch";
 import { GEO_GRANTED_EVENT } from "@/lib/geolocationGrantEvent";
