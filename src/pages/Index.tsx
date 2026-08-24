@@ -162,9 +162,8 @@ const Index = () => {
     refresh: refreshVenues,
     lastUpdated: venuesLastUpdated,
   } = useVenueActivity(dataReady, selectedCity);
-  const { justInstalled, clearJustInstalled } = usePWAInstall();
-  const [showPushPrompt, setShowPushPrompt] = useState(false);
   const jetCardRef = useRef<HTMLDivElement>(null);
+
   const parkingCardRef = useRef<HTMLDivElement>(null);
   // Swipe-to-dismiss JetCard only on touch-first viewports (< md).
   const isMobile = !useBreakpointUp("md");
