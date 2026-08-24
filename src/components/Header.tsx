@@ -416,9 +416,10 @@ export const Header = () => {
           />
         )}
 
-        {/* Spacer always pushes the sync indicator and avatar to the far
-            right, whether or not the search pill is rendered. */}
-        <div style={{ flex: "1 1 0%", minWidth: 0 }} />
+        {/* Spacer pushes the sync indicator and avatar to the far right when
+            the search pill is hidden. When search is shown, it collapses so
+            the search input can grow into the available space. */}
+        <div style={{ flex: showSearchBar ? "0 1 0%" : "1 1 0%", minWidth: 0 }} />
 
         {/* Sync indicator — between search and avatar */}
         <HeaderSyncIndicator
