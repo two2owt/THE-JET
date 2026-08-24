@@ -216,52 +216,38 @@ export function useDealSyncRealtime(options: DealSyncOptions = {}) {
   useEffect(() => {
     if (!realtime) return undefined;
 
-    const channel = supabase
-      .channel(`deal-sync-${channelId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "deals",
-        },
-        (payload) => {
-          const event = payload.eventType;
+    return subscribeToDealChanges((payload) => {
+      const event = payload.eventType;
 
-          if (event === "INSERT") {
-            const newDeal = payload.new as Deal;
-            if (activeOnly && !isActiveDeal(newDeal)) return;
-            void applySingleDealUpdate(newDeal.id);
-            return;
-          }
+      if (event === "INSERT") {
+        const newDeal = payload.new as Deal;
+        if (activeOnly && !isActiveDeal(newDeal)) return;
+        void applySingleDealUpdate(newDeal.id);
+        return;
+      }
 
-          if (event === "UPDATE") {
-            const updated = payload.new as Deal;
+      if (event === "UPDATE") {
+        const updated = payload.new as Deal;
 
-            if (activeOnly && !isActiveDeal(updated)) {
-              // Treat deactivation the same as a delete.
-              setDeals((prev) => prev.filter((d) => d.id !== updated.id));
-              return;
-            }
+        if (activeOnly && !isActiveDeal(updated)) {
+          // Treat deactivation the same as a delete.
+          setDeals((prev) => prev.filter((d) => d.id !== updated.id));
+          return;
+        }
 
-            // Fetch the full deal with neighborhoods and patch it in place.
-            // If the deal was previously inactive, this also adds it to the list.
-            void applySingleDealUpdate(updated.id);
-            return;
-          }
+        // Fetch the full deal with neighborhoods and patch it in place.
+        // If the deal was previously inactive, this also adds it to the list.
+        void applySingleDealUpdate(updated.id);
+        return;
+      }
 
-          if (event === "DELETE") {
-            const deleted = payload.old as Deal;
-            setDeals((prev) => prev.filter((d) => d.id !== deleted.id));
-          }
-        },
-      )
-      .subscribe();
+      if (event === "DELETE") {
+        const deleted = payload.old as Deal;
+        setDeals((prev) => prev.filter((d) => d.id !== deleted.id));
+      }
+    });
+  }, [realtime, activeOnly, applySingleDealUpdate, setDeals]);
 
-    return () => {
-      void supabase.removeChannel(channel);
-    };
-  }, [realtime, activeOnly, channelId, applySingleDealUpdate]);
 
   return {
     deals,
