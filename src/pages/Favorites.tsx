@@ -61,7 +61,7 @@ export default function Favorites() {
     "recent" | "name" | "venue" | "expiring"
   >("recent");
   const [filter, setFilter] = useState<"all" | "venues" | "deals">("all");
-  const headerConfig = useMemo(() => ({}), []);
+  const headerConfig = useMemo(() => ({ hideSearch: true }), []);
 
   const {
     favorites,

@@ -26,7 +26,7 @@ const PushNotificationPrompt = lazy(() =>
  */
 export default function Deals() {
   const navigate = useNavigate();
-  const headerConfig = useMemo(() => ({}), []);
+  const headerConfig = useMemo(() => ({ hideSearch: true }), []);
   const [pushDismissed, setPushDismissed] = useState(false);
 
   const handleVenueSelect = useCallback(
