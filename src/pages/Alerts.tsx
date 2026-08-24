@@ -4,6 +4,7 @@ import { PageLayout } from "@/components/PageLayout";
 import { PageShell } from "@/components/PageShell";
 import { NotificationsTabSkeleton } from "@/components/skeletons/PageSkeletons";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useDealSyncRealtime } from "@/mobile-app-snippets/useDealSyncRealtime";
 import type { Venue } from "@/types/venue";
 
 const NotificationsTab = lazy(() =>
@@ -21,6 +22,7 @@ export default function Alerts() {
   const navigate = useNavigate();
   const headerConfig = useMemo(() => ({ hideSearch: true }), []);
   const { notifications, markAsRead, markAllAsRead } = useNotifications(true);
+  const { deals } = useDealSyncRealtime();
 
   const handleVenueClick = useCallback(
     (venue: Venue | string) => {
@@ -37,6 +39,7 @@ export default function Alerts() {
         <Suspense fallback={<NotificationsTabSkeleton />}>
           <NotificationsTab
             notifications={notifications}
+            deals={deals}
             markAsRead={markAsRead}
             markAllAsRead={markAllAsRead}
             onVenueClick={handleVenueClick}

@@ -2,9 +2,9 @@ import { useEffect, useState, useCallback, useId, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
-type Deal = Database["public"]["Tables"]["deals"]["Row"];
+export type Deal = Database["public"]["Tables"]["deals"]["Row"];
 
-type DealWithNeighborhood = Deal & {
+export type DealWithNeighborhood = Deal & {
   neighborhoods?: {
     id: string;
     name: string;

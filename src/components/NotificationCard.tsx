@@ -1,5 +1,6 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { MapPin, Clock, Gift, TrendingUp } from "lucide-react";
+import type { DealWithNeighborhood } from "@/mobile-app-snippets/useDealSyncRealtime";
 
 export interface Notification {
   id: string;
@@ -7,6 +8,8 @@ export interface Notification {
   title: string;
   message: string;
   venue?: string;
+  /** Deal this alert refers to, when known. */
+  dealId?: string;
   timestamp: string;
   sentAt?: string;
   distance?: string;
@@ -15,26 +18,39 @@ export interface Notification {
 
 interface NotificationCardProps {
   notification: Notification;
+  deals?: DealWithNeighborhood[];
   onVenueClick?: (venue: string) => void;
   onRead?: () => void;
 }
 
 export const NotificationCard = memo(
-  ({ notification, onVenueClick, onRead }: NotificationCardProps) => {
+  ({ notification, deals, onVenueClick, onRead }: NotificationCardProps) => {
+    const enriched = useMemo(() => {
+      if (!notification.dealId || !deals?.length) return notification;
+      const deal = deals.find((d) => d.id === notification.dealId);
+      if (!deal) return notification;
+      return {
+        ...notification,
+        title: deal.title || notification.title,
+        message: deal.description || notification.message,
+        venue: deal.venue_name || notification.venue,
+      };
+    }, [notification, deals]);
+
     const handleClick = () => {
-      if (notification.venue && onVenueClick) {
-        onVenueClick(notification.venue);
+      if (enriched.venue && onVenueClick) {
+        onVenueClick(enriched.venue);
       }
-      if (onRead && !notification.read) {
+      if (onRead && !enriched.read) {
         onRead();
       }
     };
 
     // Tapping any alert is meaningful: it either opens the JetCard or at least
     // marks the alert read.
-    const interactive = Boolean(onVenueClick || (onRead && !notification.read));
+    const interactive = Boolean(onVenueClick || (onRead && !enriched.read));
     const getIcon = () => {
-      switch (notification.type) {
+      switch (enriched.type) {
         case "offer":
           return <Gift className="w-5 h-5 text-primary" />;
         case "event":
@@ -45,7 +61,7 @@ export const NotificationCard = memo(
     };
 
     const getGradient = () => {
-      switch (notification.type) {
+      switch (enriched.type) {
         case "offer":
           return "from-primary/10 to-primary-glow/10";
         case "event":
@@ -55,8 +71,8 @@ export const NotificationCard = memo(
       }
     };
 
-    const absoluteTime = notification.sentAt
-      ? new Date(notification.sentAt).toLocaleString(undefined, {
+    const absoluteTime = enriched.sentAt
+      ? new Date(enriched.sentAt).toLocaleString(undefined, {
           weekday: "short",
           month: "short",
           day: "numeric",
@@ -69,7 +85,7 @@ export const NotificationCard = memo(
       <div
         className={`bg-gradient-to-r ${getGradient()} rounded-lg sm:rounded-xl p-3 sm:p-4 border border-border/50 hover-scale transition-all touch-manipulation ${
           interactive ? "cursor-pointer active:scale-[0.98]" : ""
-        } ${notification.read ? "opacity-60" : ""}`}
+        } ${enriched.read ? "opacity-60" : ""}`}
         onClick={handleClick}
         role={interactive ? "button" : undefined}
         tabIndex={interactive ? 0 : undefined}
@@ -91,23 +107,23 @@ export const NotificationCard = memo(
 
           <div className="flex-1 min-w-0">
             <h4 className="text-xs sm:text-sm font-bold text-foreground mb-0.5 sm:mb-1">
-              {notification.title}
+              {enriched.title}
             </h4>
             <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 sm:mb-2">
-              {notification.message}
+              {enriched.message}
             </p>
 
             <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-muted-foreground">
-              {notification.venue && (
+              {enriched.venue && (
                 <div className="flex items-center gap-0.5 sm:gap-1">
                   <MapPin className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                  <span className="truncate">{notification.venue}</span>
+                  <span className="truncate">{enriched.venue}</span>
                 </div>
               )}
 
-              {notification.distance && (
+              {enriched.distance && (
                 <span className="text-primary font-medium flex-shrink-0">
-                  {notification.distance}
+                  {enriched.distance}
                 </span>
               )}
             </div>
@@ -116,12 +132,12 @@ export const NotificationCard = memo(
           <div className="flex flex-col items-end gap-1 flex-shrink-0">
             <time
               className="text-[10px] sm:text-xs text-muted-foreground"
-              {...(notification.sentAt ? { dateTime: notification.sentAt } : {})}
+              {...(enriched.sentAt ? { dateTime: enriched.sentAt } : {})}
               title={absoluteTime}
             >
-              {notification.timestamp}
+              {enriched.timestamp}
             </time>
-            {!notification.read && (
+            {!enriched.read && (
               <span
                 className="inline-block rounded-full bg-primary"
                 style={{

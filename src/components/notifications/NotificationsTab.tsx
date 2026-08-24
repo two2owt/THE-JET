@@ -4,6 +4,7 @@ import { Bell } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 import { TabPageHeader } from "@/components/TabPageHeader";
 import type { Venue } from "@/types/venue";
+import type { DealWithNeighborhood } from "@/mobile-app-snippets/useDealSyncRealtime";
 
 const NotificationCard = lazy(() =>
   import("@/components/NotificationCard").then((m) => ({
@@ -15,6 +16,7 @@ type Filter = "all" | "unread" | "read";
 
 interface NotificationsTabProps {
   notifications: any[];
+  deals?: DealWithNeighborhood[];
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   onVenueClick: (venue: Venue | string) => void;
@@ -27,6 +29,7 @@ interface NotificationsTabProps {
  */
 export function NotificationsTab({
   notifications,
+  deals,
   markAsRead,
   markAllAsRead,
   onVenueClick,
@@ -163,6 +166,7 @@ export function NotificationsTab({
             <Suspense fallback={null}>
               <NotificationCard
                 notification={notification}
+                deals={deals}
                 onVenueClick={onVenueClick}
                 onRead={() => markAsRead(notification.id)}
               />
