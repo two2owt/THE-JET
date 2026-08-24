@@ -182,22 +182,26 @@ export const useNotifications = (enabled: boolean = true) => {
 
       setNotifications(merged);
 
-      // One small lookup for the deals these alerts point at, so expiry can be
-      // enforced client-side on the minute clock (no polling).
+      // One lookup for the deals these alerts point at, so expiry can be
+      // enforced client-side on the minute clock (no polling) and the details
+      // modal can show venue + terms + exact end time for expired deals too.
       const dealIds = Array.from(
         new Set(merged.map((n) => n.dealId).filter(Boolean) as string[]),
       );
       if (dealIds.length) {
         const { data: dealRows } = await supabase
           .from("deals")
-          .select("id, expires_at")
+          .select(
+            "id, title, description, deal_type, venue_id, venue_name, venue_address, starts_at, expires_at, active_days, website_url",
+          )
           .in("id", dealIds);
-        const next: Record<string, string | null> = {};
-        for (const row of dealRows ?? []) next[row.id] = row.expires_at;
-        setDealExpiry(next);
+        const next: Record<string, AlertDeal> = {};
+        for (const row of (dealRows ?? []) as AlertDeal[]) next[row.id] = row;
+        setDealById(next);
       } else {
-        setDealExpiry({});
+        setDealById({});
       }
+
       setError(null);
     } catch (err) {
       console.error("Error loading notifications:", err);
