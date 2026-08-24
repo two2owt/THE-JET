@@ -17,6 +17,7 @@ import {
   Navigation,
   Heart,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
@@ -52,12 +53,50 @@ const DealDetailCard = lazy(() =>
 );
 
 /**
- * Module-level last-known position. Survives unmounts, so switching away from
- * /deals and back does not re-run a geolocation request before the list can
- * show distances.
+ * Last-known position, kept both in module scope (survives tab unmounts) and
+ * in localStorage (survives reloads and cold deep-link entries). The list is
+ * never allowed to wait on GPS: a cached fix is applied synchronously and any
+ * live fix simply refines distances afterwards.
  */
 const LOCATION_CACHE_TTL_MS = 5 * 60 * 1000;
-let lastKnownLocation: { lat: number; lng: number; at: number } | null = null;
+const LOCATION_CACHE_KEY = "jet:last-location";
+
+type CachedFix = { lat: number; lng: number; at: number };
+
+const readPersistedLocation = (): CachedFix | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(LOCATION_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as CachedFix;
+    if (
+      typeof parsed?.lat !== "number" ||
+      typeof parsed?.lng !== "number" ||
+      typeof parsed?.at !== "number"
+    )
+      return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+};
+
+let lastKnownLocation: CachedFix | null = readPersistedLocation();
+
+const rememberLocation = (fix: CachedFix) => {
+  lastKnownLocation = fix;
+  try {
+    window.localStorage.setItem(LOCATION_CACHE_KEY, JSON.stringify(fix));
+  } catch {
+    /* storage full or blocked — module cache still applies */
+  }
+};
+
+const freshCachedLocation = (): CachedFix | null =>
+  lastKnownLocation && Date.now() - lastKnownLocation.at < LOCATION_CACHE_TTL_MS
+    ? lastKnownLocation
+    : null;
+
 
 interface UserPreferences {
   categories?: string[];
@@ -142,10 +181,15 @@ export const ExploreTab = ({
     string[]
   >("deals:categories", []);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  // Seed from the persisted fix so a cold load / deep-link entry can render
+  // distances immediately instead of blocking on a GPS round-trip.
   const [userLocation, setUserLocation] = useState<{
     lat: number;
     lng: number;
-  } | null>(null);
+  } | null>(() => {
+    const cached = freshCachedLocation();
+    return cached ? { lat: cached.lat, lng: cached.lng } : null;
+  });
   const [locationError, setLocationError] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
@@ -241,12 +285,10 @@ export const ExploreTab = ({
     // realtime hook.
     if (dealsProp !== undefined) return;
 
-    // Load deals only after we have attempted to get location
-    // This ensures we can calculate distances properly
-    if (userLocation !== null || locationError !== null) {
-      loadDeals();
-    }
-  }, [userLocation, locationError, dealsProp]);
+    // Never gate the list on a location fix: fetch immediately and let
+    // distances fill in when (or if) a position arrives.
+    loadDeals();
+  }, [dealsProp]);
 
   useEffect(() => {
     filterDeals();
@@ -263,8 +305,8 @@ export const ExploreTab = ({
   const getUserLocation = async () => {
     // A cached coarse fix is good enough for distance sorting, and it means a
     // tab switch renders distances immediately instead of waiting on the GPS.
-    const cached = lastKnownLocation;
-    if (cached && Date.now() - cached.at < LOCATION_CACHE_TTL_MS) {
+    const cached = freshCachedLocation();
+    if (cached) {
       setUserLocation({ lat: cached.lat, lng: cached.lng });
       setLocationError(null);
       return;
@@ -298,11 +340,11 @@ export const ExploreTab = ({
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        lastKnownLocation = {
+        rememberLocation({
           lat: position.coords.latitude,
           lng: position.coords.longitude,
           at: Date.now(),
-        };
+        });
         setUserLocation({
           lat: position.coords.latitude,
           lng: position.coords.longitude,
@@ -774,7 +816,33 @@ export const ExploreTab = ({
           ))}
         </div>
 
+        {/* Sync fallback — the list never blanks out while data refreshes. */}
+        {isLoading && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="flex items-center gap-2 rounded-xl border border-border/50 bg-card/70 px-3 py-2 text-xs text-muted-foreground backdrop-blur-sm"
+          >
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            {filteredDeals.length > 0
+              ? "Syncing latest deals…"
+              : "Loading live deals…"}
+          </div>
+        )}
+
+        {isLoading && filteredDeals.length === 0 && (
+          <div className="space-y-3" aria-hidden="true">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="h-[112px] animate-pulse rounded-xl border border-border/40 bg-card/60"
+              />
+            ))}
+          </div>
+        )}
+
         {/* No Results */}
+
         {!isLoading &&
           filteredDeals.length === 0 &&
           (searchQuery || selectedCategories.length > 0) && (
@@ -834,7 +902,7 @@ export const ExploreTab = ({
           )}
 
         {/* Deals Grid - Uses virtual scrolling for large lists */}
-        {!isLoading && filteredDeals.length > 0 && (
+        {filteredDeals.length > 0 && (
           <VirtualList
             items={filteredDeals}
             estimateSize={112}
