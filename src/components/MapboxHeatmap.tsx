@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { storeLastKnownLocation } from "@/lib/tile-prefetch";
 import { GEO_GRANTED_EVENT } from "@/lib/geolocationGrantEvent";
 import { subscribeMapInteractionLock } from "@/lib/mapInteractionLock";
+import { subscribeMapFocus } from "@/lib/mapFocusBus";
 import {
   verifyMapboxVersion,
   EXPECTED_MAPBOX_VERSION,
