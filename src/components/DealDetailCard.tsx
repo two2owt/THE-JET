@@ -70,6 +70,8 @@ interface DealDetailCardProps {
 export const DealDetailCard = memo(({ deal, onClose }: DealDetailCardProps) => {
   const [user, setUser] = useState<any>(null);
   const [showDirections, setShowDirections] = useState(false);
+  const [showRedeem, setShowRedeem] = useState(false);
+
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
