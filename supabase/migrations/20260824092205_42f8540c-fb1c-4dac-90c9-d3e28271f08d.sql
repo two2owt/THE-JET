@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.bump_profile_pulse_from_social() FROM PUBLIC, anon, authenticated;
