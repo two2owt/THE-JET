@@ -1,5 +1,7 @@
 import { devLog } from "@/lib/log";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
+import { isDealExpired } from "@/lib/dealExpiry";
+import { useMinuteClock } from "@/hooks/useMinuteClock";
 import { supabase } from "@/integrations/supabase/client";
 import { syncNotificationRead } from "@/lib/notificationRead";
 import {
@@ -68,6 +70,11 @@ const mapNotificationLogToNotification = (
 
 export const useNotifications = (enabled: boolean = true) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  // `expires_at` for every deal referenced by a loaded alert. Alerts whose deal
+  // has lapsed are hidden everywhere (list AND badge) without a reload.
+  const [dealExpiry, setDealExpiry] = useState<Record<string, string | null>>(
+    {},
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const instanceId = useId();
@@ -96,7 +103,7 @@ export const useNotifications = (enabled: boolean = true) => {
         supabase
           .from("notification_deliveries")
           .select(
-            "id, status, opened_at, created_at, queue_id, notification_queue(title, body, category, venue_id)",
+            "id, status, opened_at, created_at, queue_id, notification_queue(title, body, category, venue_id, deal_id)",
           )
           .eq("user_id", session.user.id)
           .order("created_at", { ascending: false })
@@ -120,6 +127,7 @@ export const useNotifications = (enabled: boolean = true) => {
           body: string;
           category: string;
           venue_id: string | null;
+          deal_id: string | null;
         } | null;
       };
 
@@ -137,6 +145,7 @@ export const useNotifications = (enabled: boolean = true) => {
             title: queuedNotification.title,
             message: queuedNotification.body,
             venue: queuedNotification.venue_id ?? undefined,
+            dealId: queuedNotification.deal_id ?? undefined,
             timestamp: relativeTime(delivery.created_at),
             sentAt: delivery.created_at,
             read:
@@ -171,6 +180,23 @@ export const useNotifications = (enabled: boolean = true) => {
         .map(({ _sortKey, ...n }) => n);
 
       setNotifications(merged);
+
+      // One small lookup for the deals these alerts point at, so expiry can be
+      // enforced client-side on the minute clock (no polling).
+      const dealIds = Array.from(
+        new Set(merged.map((n) => n.dealId).filter(Boolean) as string[]),
+      );
+      if (dealIds.length) {
+        const { data: dealRows } = await supabase
+          .from("deals")
+          .select("id, expires_at")
+          .in("id", dealIds);
+        const next: Record<string, string | null> = {};
+        for (const row of dealRows ?? []) next[row.id] = row.expires_at;
+        setDealExpiry(next);
+      } else {
+        setDealExpiry({});
+      }
       setError(null);
     } catch (err) {
       console.error("Error loading notifications:", err);
@@ -231,6 +257,21 @@ export const useNotifications = (enabled: boolean = true) => {
     }
   };
 
+  // Re-evaluate expiry on each minute boundary (shared clock, paused while the
+  // tab is hidden). Expired alerts disappear from lists and stop counting
+  // toward the unread badge automatically.
+  const hasExpiries = Object.values(dealExpiry).some(Boolean);
+  const now = useMinuteClock(hasExpiries);
+  const liveNotifications = useMemo(
+    () =>
+      notifications.filter((n) => {
+        const expiresAt = n.dealId ? dealExpiry[n.dealId] : null;
+        if (!expiresAt) return true;
+        return !isDealExpired(expiresAt, now);
+      }),
+    [notifications, dealExpiry, now],
+  );
+
   useEffect(() => {
     // Skip initialization if disabled (deferred loading)
     if (!enabled) return;
@@ -288,7 +329,7 @@ export const useNotifications = (enabled: boolean = true) => {
   }, [enabled, instanceId]);
 
   return {
-    notifications,
+    notifications: liveNotifications,
     loading,
     error,
     refresh: loadNotifications,
