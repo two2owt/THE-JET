@@ -125,7 +125,6 @@ export const Header = () => {
     const next = new URLSearchParams(urlSearchParams);
     if (debouncedQuery) next.set("q", debouncedQuery);
     else next.delete("q");
-    console.log("DBG sync-clear", debouncedQuery, searchQuery, String(next));
     setUrlSearchParams(next, { replace: true });
   }, [debouncedQuery, urlSearchParams, setUrlSearchParams, searchQuery]);
 
@@ -185,7 +184,6 @@ export const Header = () => {
     }
     const next = new URLSearchParams(urlSearchParams);
     if (next.has("q")) {
-      console.log("DBG path-reset", location.pathname);
       next.delete("q");
       setUrlSearchParams(next, { replace: true });
     }
