@@ -30,26 +30,54 @@ export function useProfilePulse(
   useEffect(() => {
     if (!enabled) return;
 
+    // Pulses that land while the tab is hidden are queued (deduped by
+    // profile) and flushed when the tab becomes visible again, so a
+    // background view is never left showing stale profile data.
+    const pending = new Map<string, ProfilePulse>();
+
+    const flush = () => {
+      if (!pending.size) return;
+      const queued = [...pending.values()];
+      pending.clear();
+      queued.forEach((p) => handlerRef.current?.(p));
+    };
+
+    const onVisibility = () => {
+      if (typeof document !== "undefined" && !document.hidden) flush();
+    };
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", onVisibility);
+    }
+
     const channel = supabase
       .channel(`profile-pulse-${instanceId}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "profile_pulse" },
         (payload) => {
-          if (typeof document !== "undefined" && document.hidden) return;
           const row = payload.new as Partial<ProfilePulse> | null;
           if (!row?.profile_id) return;
-          handlerRef.current?.({
+          const pulse: ProfilePulse = {
             profile_id: row.profile_id,
             event: row.event === "created" ? "created" : "updated",
             updated_at: row.updated_at ?? new Date().toISOString(),
-          });
+          };
+          if (typeof document !== "undefined" && document.hidden) {
+            pending.set(pulse.profile_id, pulse);
+            return;
+          }
+          handlerRef.current?.(pulse);
         },
       )
       .subscribe();
 
     return () => {
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", onVisibility);
+      }
+      pending.clear();
       void supabase.removeChannel(channel);
     };
   }, [enabled, instanceId]);
 }
+
