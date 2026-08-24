@@ -27,6 +27,7 @@ import {
 import { format, isToday, isYesterday } from "date-fns";
 import { ConversationRowsSkeleton } from "@/components/skeletons/PageSkeletons";
 import { ConnectionProfileDialog } from "@/components/ConnectionProfileDialog";
+import { JET_MARK_SRC } from "@/lib/jet-mark";
 
 interface DiscoverableProfile {
   id: string;
@@ -160,7 +161,7 @@ function DiscoverPeopleStrip({
 }
 
 /* ─── Shared adaptive style tokens (mirrors Social page) ─── */
-const DEFAULT_AVATAR_SRC = "/jet-email-logo.png";
+const DEFAULT_AVATAR_SRC = JET_MARK_SRC;
 
 const convoCardStyle: React.CSSProperties = {
   gap: "clamp(10px, 3vw, 14px)",

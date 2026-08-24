@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "@/lib/router-compat";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { JET_MARK_SRC } from "@/lib/jet-mark";
 
 /**
  * Default avatar artwork — the JET mark. Served from `public/` so it doesn't
  * need bundler resolution and is shared with other surfaces (JetCard, email).
  * Used for both signed-out users and signed-in users who haven't set an avatar.
  */
-const DEFAULT_AVATAR_SRC = "/jet-email-logo.png";
+const DEFAULT_AVATAR_SRC = JET_MARK_SRC;
 
 interface HeaderUserMenuProps {
   /** Whether the parent header has finished its mount transition */
