@@ -19,8 +19,8 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { supabase } from "@/integrations/supabase/client";
 import { signOutCurrentUser } from "@/lib/authSession";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
 import { JET_MARK_SRC } from "@/lib/jet-mark";
+import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
