@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback , useId } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useProfilePulse } from "@/hooks/useProfilePulse";
 import type { Database } from "@/integrations/supabase/types";
 
 type Deal = Database["public"]["Tables"]["deals"]["Row"];
@@ -289,6 +290,11 @@ export const useDeals = (
       setLoading(false);
     }
   }, [filterDealsByPreferences, userPreferences]);
+
+  // Own-profile edits (preference changes) must re-filter deals instantly.
+  useProfilePulse(() => {
+    void loadUserPreferences();
+  }, enabled);
 
   // Re-filter when preferences change
   useEffect(() => {
