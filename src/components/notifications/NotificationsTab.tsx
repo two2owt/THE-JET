@@ -166,6 +166,7 @@ export function NotificationsTab({
             <Suspense fallback={null}>
               <NotificationCard
                 notification={notification}
+                deals={deals}
                 onVenueClick={onVenueClick}
                 onRead={() => markAsRead(notification.id)}
               />
