@@ -1,6 +1,7 @@
 import { memo, useMemo } from "react";
 import { MapPin, Clock, Gift, TrendingUp } from "lucide-react";
 import type { DealWithNeighborhood } from "@/mobile-app-snippets/useDealSyncRealtime";
+import { resolveDealCategory } from "@/lib/dealCategory";
 
 export interface Notification {
   id: string;
@@ -25,17 +26,31 @@ interface NotificationCardProps {
 
 export const NotificationCard = memo(
   ({ notification, deals, onVenueClick, onRead }: NotificationCardProps) => {
+    // The deal this alert points at, when it is still live in the synced list.
+    const linkedDeal = useMemo(() => {
+      if (!notification.dealId || !deals?.length) return null;
+      return deals.find((d) => d.id === notification.dealId) ?? null;
+    }, [notification.dealId, deals]);
+
     const enriched = useMemo(() => {
-      if (!notification.dealId || !deals?.length) return notification;
-      const deal = deals.find((d) => d.id === notification.dealId);
-      if (!deal) return notification;
+      if (!linkedDeal) return notification;
       return {
         ...notification,
-        title: deal.title || notification.title,
-        message: deal.description || notification.message,
-        venue: deal.venue_name || notification.venue,
+        title: linkedDeal.title || notification.title,
+        message: linkedDeal.description || notification.message,
+        venue: linkedDeal.venue_name || notification.venue,
       };
-    }, [notification, deals]);
+    }, [notification, linkedDeal]);
+
+    // Merchant-supplied promotion type ("offer" / "event" / "special") plus
+    // the venue category resolved from the deal's own content, so the alert
+    // reads the same way the JetCard and /deals row do.
+    const category = useMemo(
+      () => (linkedDeal ? resolveDealCategory(linkedDeal) : null),
+      [linkedDeal],
+    );
+    const dealType = linkedDeal?.deal_type?.trim() || null;
+    const CategoryIcon = category?.Icon;
 
     const handleClick = () => {
       if (enriched.venue && onVenueClick) {
@@ -50,6 +65,17 @@ export const NotificationCard = memo(
     // marks the alert read.
     const interactive = Boolean(onVenueClick || (onRead && !enriched.read));
     const getIcon = () => {
+      // Prefer the linked deal's own category glyph so the alert matches the
+      // JetCard / map marker for the same venue.
+      if (CategoryIcon) {
+        return (
+          <CategoryIcon
+            className="w-5 h-5"
+            style={{ color: category?.dark }}
+            aria-hidden="true"
+          />
+        );
+      }
       switch (enriched.type) {
         case "offer":
           return <Gift className="w-5 h-5 text-primary" />;
@@ -112,6 +138,30 @@ export const NotificationCard = memo(
             <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 sm:mb-2">
               {enriched.message}
             </p>
+
+            {(dealType || category) && (
+              <div className="flex flex-wrap items-center gap-1 mb-1 sm:mb-2">
+                {dealType && (
+                  <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide text-primary">
+                    {dealType}
+                  </span>
+                )}
+                {category && (
+                  <span
+                    className="inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[9px] sm:text-[10px] font-medium"
+                    style={{
+                      color: category.dark,
+                      borderColor: `${category.dark}55`,
+                      backgroundColor: `${category.dark}1a`,
+                    }}
+                  >
+                    <category.Icon className="w-2.5 h-2.5" aria-hidden="true" />
+                    {category.label}
+                  </span>
+                )}
+              </div>
+            )}
+
 
             <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-muted-foreground">
               {enriched.venue && (
