@@ -35,6 +35,10 @@ export const Header = () => {
   const SEARCH_QUERY_KEY = "jet-header-search-query";
   const SEARCH_EXPANDED_KEY = "jet-header-search-expanded";
   const [searchQuery, setSearchQuery] = useState<string>("");
+  // Guards the URL sync below: until the initial restore has run (and the
+  // debounce has caught up), an empty `searchQuery` must not wipe a `?q=`
+  // that arrived via a deep link or redirect.
+  const queryRestoredRef = useRef(false);
   useEffect(() => {
     try {
       const url = new URLSearchParams(window.location.search).get("q");
@@ -46,6 +50,8 @@ export const Header = () => {
       }
     } catch {
       /* storage disabled — ignore */
+    } finally {
+      queryRestoredRef.current = true;
     }
   }, []);
   const [showResults, setShowResults] = useState(false);
