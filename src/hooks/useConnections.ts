@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { isRlsViolation, withRlsRetry } from "@/lib/rlsRetry";
+
 
 interface Profile {
   id: string;
@@ -92,17 +94,34 @@ export const useConnections = (userId?: string) => {
     if (!userId) return { success: false, error: "User not authenticated" };
 
     try {
-      const { data, error } = await supabase
-        .from("user_connections")
-        .insert({
-          user_id: userId,
-          friend_id: friendId,
-          status: "pending",
-        })
-        .select()
-        .single();
+      const { data, error } = await withRlsRetry(() =>
+        supabase
+          .from("user_connections")
+          .insert({
+            user_id: userId,
+            friend_id: friendId,
+            status: "pending",
+          })
+          .select()
+          .single(),
+      );
 
-      if (error) throw error;
+      if (error) {
+        // The INSERT policy also enforces a 10-per-hour rate limit, so an RLS
+        // rejection here is either an expired session or too many requests.
+        if (isRlsViolation(error)) {
+          return {
+            success: false,
+            error: new Error(
+              "Couldn't send that request — you may have hit the hourly limit or your session expired. Try again in a bit.",
+            ),
+          };
+        }
+        throw error;
+      }
+
+
+
 
       // Send email notification (fire and forget - don't block on this).
       // Display names are resolved server-side.
