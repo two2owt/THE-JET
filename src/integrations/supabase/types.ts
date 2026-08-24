@@ -2057,6 +2057,15 @@ export type Database = {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
       }
+      discoverable_people: {
+        Args: { _limit?: number }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          id: string
+          preference_tags: string[]
+        }[]
+      }
       dispatch_ending_soon_favorites: { Args: never; Returns: undefined }
       dispatch_notification_queue: { Args: never; Returns: undefined }
       display_name_available: { Args: { _name: string }; Returns: boolean }
