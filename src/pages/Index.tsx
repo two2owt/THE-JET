@@ -72,14 +72,9 @@ const AuthPWAInstallPromptWrapper = lazy(() =>
     default: m.AuthPWAInstallPromptWrapper,
   })),
 );
-const PushNotificationPrompt = lazy(() =>
-  import("@/components/PushNotificationPrompt").then((m) => ({
-    default: m.PushNotificationPrompt,
-  })),
-);
 
 const Index = () => {
-  const { session } = useAuth();
+
 
   // Redirects signed-in users who haven't finished onboarding.
   useOnboardingGate();
