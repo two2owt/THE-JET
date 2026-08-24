@@ -22,7 +22,7 @@ export const isRlsViolation = (error: PgError): boolean => {
  * refreshed, so we surface the original error instead of looping.
  */
 export const withRlsRetry = async <T extends { error: PgError }>(
-  run: () => Promise<T>,
+  run: () => PromiseLike<T>,
 ): Promise<T> => {
   const first = await run();
   if (!isRlsViolation(first.error)) return first;
