@@ -439,35 +439,9 @@ export const ExploreTab = ({
     setSearchQuery("");
   };
 
-  const getDealIcon = (dealType: string) => {
-    switch (dealType) {
-      case "offer":
-        return "🎉";
-      case "event":
-        return "🎵";
-      case "special":
-        return "⭐";
-      default:
-        return "💎";
-    }
-  };
-
-  const getTimeRemaining = (expiresAt: string) => {
-    const now = new Date();
-    const expires = new Date(expiresAt);
-    const diff = expires.getTime() - now.getTime();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const days = Math.floor(hours / 24);
-
-    if (days > 0) {
-      return `${days}d left`;
-    }
-    if (hours > 0) {
-      return `${hours}h left`;
-    }
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    return `${minutes}m left`;
-  };
+  // Deal type, category and end-date all come from the shared presentation
+  // layer so /deals rows match JetCards and alert cards exactly.
+  const getDealIcon = (deal: Deal) => getDealPresentation(deal).typeEmoji;
 
   const handleDealClick = (deal: Deal) => {
     setSelectedDeal(deal);
