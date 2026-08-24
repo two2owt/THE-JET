@@ -204,24 +204,26 @@ export default function Messages() {
       headerConfig={{ hideSearch: true }}
       onPullToRefresh={refreshConversations}
     >
-      <div className="max-w-2xl mx-auto w-full h-full flex flex-col overflow-hidden">
-        {activeFriendId ? (
-          <ChatView
-            userId={user.id}
-            friendId={activeFriendId}
-            conversations={conversations}
-            onBack={closeChat}
-          />
-        ) : (
-          <ConversationList
-            userId={user.id}
-            conversations={conversations}
-            loading={convosLoading}
-            onSelect={openChat}
-            onDiscoverSelect={setDiscoverProfileId}
-          />
-        )}
-      </div>
+      <PageShell fullHeight>
+        <div className="max-w-2xl mx-auto w-full h-full flex flex-col overflow-hidden">
+          {activeFriendId ? (
+            <ChatView
+              userId={user.id}
+              friendId={activeFriendId}
+              conversations={conversations}
+              onBack={closeChat}
+            />
+          ) : (
+            <ConversationList
+              userId={user.id}
+              conversations={conversations}
+              loading={convosLoading}
+              onSelect={openChat}
+              onDiscoverSelect={setDiscoverProfileId}
+            />
+          )}
+        </div>
+      </PageShell>
       <ConnectionProfileDialog
         connectionId={discoverProfileId}
         isOpen={Boolean(discoverProfileId)}
