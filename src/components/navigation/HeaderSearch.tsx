@@ -184,20 +184,19 @@ export function HeaderSearch({
         autoFocus={isMobile && expanded}
         style={{
           width: "100%",
-          // Scales with the viewport but never exceeds the header's inner box.
-          height:
-            "min(clamp(34px, 5.2vw, 40px), calc(var(--header-height, 52px) - 12px))",
-          maxHeight: "calc(var(--header-height, 52px) - 12px)",
+          // One shared control height across the whole nav header.
+          height: "var(--header-control-height, 36px)",
+          maxHeight: "var(--header-control-height, 36px)",
           minHeight: 0,
           boxSizing: "border-box",
           // Extra left padding keeps the placeholder text clear of the
           // magnifying-glass icon on narrow mobile viewports.
-          paddingLeft: "40px",
+          paddingLeft: "calc(20px + var(--header-icon-size, 16px))",
           paddingRight,
           borderRadius: "9999px",
           border: "1.5px solid hsl(var(--border) / 0.5)",
           background: "hsl(var(--muted) / 0.35)",
-          fontSize: "clamp(13px, 3.4vw, 14px)",
+          fontSize: "var(--header-font-size, 13px)",
           color: "hsl(var(--foreground))",
           outline: "none",
           // Prevent long placeholders from visually running under the icon.
