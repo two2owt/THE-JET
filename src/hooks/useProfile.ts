@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { autoHandle } from "@/lib/display-name";
+import { useProfilePulse } from "@/hooks/useProfilePulse";
 
 export interface Profile {
   id: string;
@@ -80,6 +81,13 @@ export function useProfile(userId: string | undefined) {
       return data as Profile;
     },
   });
+
+  // Cross-device instant sync: any write to this user's profile row bumps the
+  // heartbeat, so other open sessions refetch immediately.
+  useProfilePulse((pulse) => {
+    if (!userId || pulse.profile_id !== userId) return;
+    void queryClient.invalidateQueries({ queryKey: key });
+  }, !!userId);
 
   const updateProfile = useMutation({
     mutationFn: async (input: UpdateProfileInput) => {
