@@ -37,7 +37,10 @@ async function waitForStableMarkers(page: Page, timeout = 60_000) {
 }
 
 async function selectCity(page: Page, label: RegExp) {
-  await page.getByLabel("Select city location").click();
+  const cityButton = page.getByLabel("Select city location");
+  await cityButton.waitFor({ state: "attached" });
+  await page.waitForSelector('[data-hydrated="true"]', { timeout: 30_000 });
+  await cityButton.click({ timeout: 30_000 });
   await page.getByRole("option", { name: label }).first().click();
 }
 
