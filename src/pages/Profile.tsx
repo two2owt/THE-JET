@@ -51,10 +51,7 @@ import {
   ProfileEditForm,
   type ProfileEditFormValues,
 } from "@/components/profile/ProfileEditForm";
-import {
-  parseSocialInput,
-  type SocialPlatform,
-} from "@/lib/socialHandles";
+import { parseSocialLink, type SocialPlatform } from "@/lib/socialHandles";
 
 const profileSchema = z.object({
   display_name: z
