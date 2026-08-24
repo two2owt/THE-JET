@@ -130,6 +130,20 @@ export const SearchResults = ({
   const q = query.trim().toLowerCase();
   const shouldShow = isVisible && q.length > 0;
 
+  // Collapsed = header bar only, so the whole map (and the bottom-right layer
+  // toggles) stays reachable without losing the current query or scroll list.
+  const [collapsed, setCollapsed] = useState(false);
+  // A new search always reopens the list — collapsing is a "get out of my way"
+  // gesture for the current results, not a sticky preference.
+  useEffect(() => {
+    setCollapsed(false);
+  }, [q]);
+  useEffect(() => {
+    if (!shouldShow) setCollapsed(false);
+  }, [shouldShow]);
+
+
+
   // Keep the panel mounted through its closing transition, and only flip the
   // "entered" flag on the frame after mount so the browser has a start value
   // to animate from (no first-frame jump).
