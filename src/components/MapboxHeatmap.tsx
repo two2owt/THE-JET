@@ -1061,6 +1061,7 @@ export const MapboxHeatmap = ({
   // Only populated after the user confirms with Enter (or the Go button).
   const [remoteCities, setRemoteCities] = useState<GeocodedCity[]>([]);
   const [isSearchingRemoteCity, setIsSearchingRemoteCity] = useState(false);
+  const [cityMenuOpen, setCityMenuOpen] = useState(false);
   const [remoteCitySearchTerm, setRemoteCitySearchTerm] = useState("");
   const remoteSearchAbortRef = useRef<AbortController | null>(null);
 
