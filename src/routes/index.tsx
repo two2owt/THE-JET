@@ -9,12 +9,17 @@ const URL = SITE_URL;
 
 export const Route = createFileRoute("/")({
   component: HomeRoute,
-  // The deals feed used to live at `/?tab=explore`. Keep old links, shared
-  // URLs, and push payloads working by forwarding them to the real page.
+  // The deals feed and alerts used to live at `/?tab=...`. Keep old links,
+  // shared URLs, and push payloads working by forwarding to the real pages.
   beforeLoad: ({ search }) => {
-    if ((search as Record<string, unknown>)?.tab === "explore") {
+    const tab = (search as Record<string, unknown>)?.tab;
+    if (tab === "explore" || tab === "notifications") {
       const { tab: _tab, ...rest } = search as Record<string, unknown>;
-      throw redirect({ to: "/deals", search: rest, replace: true });
+      throw redirect({
+        to: tab === "explore" ? "/deals" : "/alerts",
+        search: rest,
+        replace: true,
+      });
     }
   },
   head: () => ({

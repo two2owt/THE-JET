@@ -26,11 +26,7 @@ export function useBottomNavigation(options: UseBottomNavigationOptions = {}) {
     if (location.pathname === "/favorites") return "favorites";
     if (location.pathname === "/social") return "social";
     if (location.pathname === "/deals") return "deals";
-
-    // Otherwise check URL params for Index page tabs
-    const searchParams = new URLSearchParams(location.search);
-    const tabParam = searchParams.get("tab");
-    if (tabParam === "notifications") return "notifications";
+    if (location.pathname === "/alerts") return "notifications";
 
     return defaultTab;
   }, [location.pathname, location.search, defaultTab]);
@@ -67,8 +63,10 @@ export function useBottomNavigation(options: UseBottomNavigationOptions = {}) {
           navigate(`/deals${params.toString() ? `?${params.toString()}` : ""}`);
           return;
         case "notifications":
-          params.set("tab", "notifications");
-          break;
+          // `tab` only addresses Index sub-tabs — don't drag it onto /alerts.
+          params.delete("tab");
+          navigate(`/alerts${params.toString() ? `?${params.toString()}` : ""}`);
+          return;
         case "favorites":
           // `tab` only addresses Index sub-tabs — don't drag it onto other pages.
           params.delete("tab");
