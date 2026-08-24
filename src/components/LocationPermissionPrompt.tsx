@@ -162,7 +162,7 @@ export const LocationPermissionPrompt = () => {
       cancelled = true;
       Promise.resolve(cleanup).then((fn) => typeof fn === "function" && fn());
     };
-  }, [signature, userId]);
+  }, [signature, userId, triggerReady]);
 
   const recordConsent = async (granted: boolean) => {
     if (!session?.user?.id) return;
