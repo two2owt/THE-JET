@@ -86,6 +86,9 @@ interface Deal {
   title: string;
   description: string;
   venue_name: string;
+  /** Stable merchant venue id — preferred for deep links. */
+  venue_id?: string | null;
+
   deal_type: string;
   expires_at: string;
   image_url: string | null;
