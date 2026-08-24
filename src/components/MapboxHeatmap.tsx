@@ -4147,15 +4147,18 @@ export const MapboxHeatmap = ({
         }}
       />
 
-      {/* Category filter chips — filters the markers themselves; a JetCard
-          only opens when the user taps a marker that survived the filter. */}
-      {controlsReady && onCategoryFilterChange && (
-        <CategoryFilterBar
-          value={categoryFilter}
-          onChange={onCategoryFilterChange}
-          counts={categoryCounts}
-        />
-      )}
+      {/* Category filter chips — hidden by default. Category selection starts
+          in the header search results; once a category is active (`?cat=`) the
+          row appears so the user can refine or clear the filter on the map. */}
+      {controlsReady &&
+        onCategoryFilterChange &&
+        categoryFilter.length > 0 && (
+          <CategoryFilterBar
+            value={categoryFilter}
+            onChange={onCategoryFilterChange}
+            counts={categoryCounts}
+          />
+        )}
 
       {/* Unified Top-Left Controls: Location + Map Style in one compact row */}
       {controlsReady && (
