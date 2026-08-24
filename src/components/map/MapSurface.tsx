@@ -149,6 +149,8 @@ export function MapSurface({
               isLoadingVenues={venuesLoading}
               selectedVenue={selectedVenue}
               resetUIKey={resetUIKey}
+              categoryFilter={categoryFilter}
+              onCategoryFilterChange={onCategoryFilterChange}
               isTokenLoading={false}
             />
           </Suspense>
