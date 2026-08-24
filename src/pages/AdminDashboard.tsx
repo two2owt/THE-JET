@@ -25,6 +25,7 @@ import {
   Archive,
   ShieldAlert,
   MailWarning,
+  TicketCheck,
 } from "lucide-react";
 
 // Lazy-loaded admin sections (UserAnalytics pulls in recharts ~200KB)
@@ -143,6 +144,11 @@ const PermissionPromptPanel = lazy(() =>
     default: m.PermissionPromptPanel,
   })),
 );
+const RedemptionsPanel = lazy(() =>
+  import("@/components/admin/RedemptionsPanel").then((m) => ({
+    default: m.RedemptionsPanel,
+  })),
+);
 const MapSyncLatencyPanel = lazy(() =>
   import("@/components/admin/MapSyncLatencyPanel").then((m) => ({
     default: m.MapSyncLatencyPanel,
@@ -151,6 +157,7 @@ const MapSyncLatencyPanel = lazy(() =>
 
 type SectionId =
   | "deals"
+  | "redemptions"
   | "analytics"
   | "funnel"
   | "areas"
@@ -172,6 +179,12 @@ const SECTIONS: SectionDef[] = [
     label: "Deals",
     description: "Manage merchant deals and JET Bridge sync.",
     icon: Tag,
+  },
+  {
+    id: "redemptions",
+    label: "Redemptions",
+    description: "QR redemption codes issued, scanned, and per-deal totals.",
+    icon: TicketCheck,
   },
   {
     id: "analytics",
@@ -448,6 +461,11 @@ export default function AdminDashboard() {
                     <ManualDealSyncPanel />
                     <DealManagement />
                   </div>
+                </Suspense>
+              )}
+              {section === "redemptions" && (
+                <Suspense fallback={<AdminTabFallback />}>
+                  <RedemptionsPanel />
                 </Suspense>
               )}
               {section === "analytics" && (
