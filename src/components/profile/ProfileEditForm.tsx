@@ -18,6 +18,7 @@ import {
   Twitter,
   Video,
 } from "lucide-react";
+import { parseSocialLink, type SocialPlatform } from "@/lib/socialHandles";
 
 export const GENDER_OPTIONS = [
   { value: "woman", label: "Woman" },
@@ -76,30 +77,35 @@ export function ProfileEditForm({
   const socialFields = [
     {
       key: "instagramUrl" as const,
+      platform: "instagram" as SocialPlatform,
       icon: Instagram,
       label: "Instagram",
       placeholder: "@handle or profile URL",
     },
     {
       key: "twitterUrl" as const,
+      platform: "twitter" as SocialPlatform,
       icon: Twitter,
       label: "Twitter / X",
       placeholder: "@handle or profile URL",
     },
     {
       key: "facebookUrl" as const,
+      platform: "facebook" as SocialPlatform,
       icon: Facebook,
       label: "Facebook",
       placeholder: "@handle or profile URL",
     },
     {
       key: "linkedinUrl" as const,
+      platform: "linkedin" as SocialPlatform,
       icon: Linkedin,
       label: "LinkedIn",
       placeholder: "@handle or profile URL",
     },
     {
       key: "tiktokUrl" as const,
+      platform: "tiktok" as SocialPlatform,
       icon: Video,
       label: "TikTok",
       placeholder: "@handle or profile URL",
