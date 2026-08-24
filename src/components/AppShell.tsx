@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import { useLocationTracker } from "@/hooks/useLocationTracker";
 import { useColdStartLocationFallback } from "@/hooks/useColdStartLocationFallback";
 import { CheckoutReturnHandler } from "@/components/CheckoutReturnHandler";
+import { AuthTokenFreshnessGuard } from "@/components/auth/AuthTokenFreshnessGuard";
 import { useMonetizationConfigSync } from "@/hooks/useMonetization";
 
 
