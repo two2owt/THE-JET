@@ -39,7 +39,14 @@ export function useProfilePulse(
   enabled = true,
   /** Coalescing window in ms for bursts of edits on the same profile. */
   debounceMs = 400,
+  /**
+   * Narrows the realtime stream server-side to a single profile. Use it on
+   * surfaces that only render one person so the socket never carries other
+   * users' heartbeats. RLS still applies on top of this filter.
+   */
+  profileId?: string,
 ) {
+
   const instanceId = useId();
   const handlerRef = useRef(onPulse);
   handlerRef.current = onPulse;
