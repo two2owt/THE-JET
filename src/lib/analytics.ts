@@ -189,6 +189,65 @@ class Analytics {
     });
   }
 
+  /**
+   * The chip row became visible. Fired once per session+route so impressions
+   * count "the user saw the filter", not "the map re-rendered".
+   */
+  categoryFilterImpression(
+    availableCategories: string[],
+    totalMatches: number,
+  ) {
+    this.track(ANALYTICS_EVENTS.CATEGORY_FILTER_IMPRESSION, {
+      available_categories: availableCategories,
+      available_count: availableCategories.length,
+      total_matches: totalMatches,
+    });
+  }
+
+  /** A chip tap. `selected` false means the bucket was toggled back off. */
+  categoryFilterSelected(
+    categoryId: string,
+    selected: boolean,
+    activeCategories: string[],
+    matchCount: number,
+  ) {
+    this.track(ANALYTICS_EVENTS.CATEGORY_FILTER_SELECTED, {
+      category_id: categoryId,
+      selected,
+      active_categories: activeCategories,
+      active_count: activeCategories.length,
+      match_count: matchCount,
+    });
+  }
+
+  /** The "All" chip cleared an active multi-select. */
+  categoryFilterCleared(previousCategories: string[]) {
+    this.track(ANALYTICS_EVENTS.CATEGORY_FILTER_CLEARED, {
+      previous_categories: previousCategories,
+      previous_count: previousCategories.length,
+    });
+  }
+
+  /**
+   * A JetCard was opened while a category filter was active — the conversion
+   * step that tells us whether filtering actually leads to a tap.
+   */
+  categoryFilteredVenueOpened(
+    venueId: string,
+    venueName: string,
+    venueCategoryId: string,
+    activeCategories: string[],
+  ) {
+    this.track(ANALYTICS_EVENTS.CATEGORY_FILTERED_VENUE_OPENED, {
+      venue_id: venueId,
+      venue_name: venueName,
+      venue_category_id: venueCategoryId,
+      active_categories: activeCategories,
+      active_count: activeCategories.length,
+      matches_filter: activeCategories.includes(venueCategoryId),
+    });
+  }
+
   buttonClicked(buttonName: string, location: string) {
     this.track(ANALYTICS_EVENTS.SELECT_CONTENT, {
       button: buttonName,

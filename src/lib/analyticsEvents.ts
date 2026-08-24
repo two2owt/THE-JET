@@ -27,6 +27,10 @@ export const ANALYTICS_EVENTS = {
   // --- Discovery -----------------------------------------------------------
   SEARCH_PERFORMED: "search_performed",
   VIEW_DEAL: "view_deal",
+  CATEGORY_FILTER_IMPRESSION: "category_filter_impression",
+  CATEGORY_FILTER_SELECTED: "category_filter_selected",
+  CATEGORY_FILTER_CLEARED: "category_filter_cleared",
+  CATEGORY_FILTERED_VENUE_OPENED: "category_filtered_venue_opened",
 
   // --- Engagement ----------------------------------------------------------
   FAVORITE_DEAL: "favorite_deal",
