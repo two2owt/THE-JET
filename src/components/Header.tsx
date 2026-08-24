@@ -390,7 +390,38 @@ export const Header = () => {
                 whiteSpace: "nowrap",
               }}
             >
-              JET
+            JET
+            </span>
+          </div>
+        )}
+
+        {/* Page title — shown only when the global search is hidden so the
+            header band stays informative on /deals, /alerts, /favorites, etc. */}
+        {pageTitle && !(isMobile && searchExpanded) && (
+          <div
+            aria-hidden="true"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              flexShrink: 0,
+              height: "var(--header-control-height, 36px)",
+              padding: "0 2px",
+              opacity: mounted ? 1 : 0,
+              transform: mounted ? "translateX(0)" : "translateX(-6px)",
+              transition: "opacity 0.4s ease-out, transform 0.4s ease-out",
+            }}
+          >
+            <span
+              style={{
+                fontSize: "var(--header-font-size, 13px)",
+                fontWeight: 600,
+                lineHeight: 1,
+                color: "hsl(var(--foreground))",
+                letterSpacing: "-0.01em",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {pageTitle}
             </span>
           </div>
         )}
