@@ -41,6 +41,7 @@ import { useVenuePhoto } from "@/hooks/useVenuePhoto";
 import { useLockMapWhileInteracting } from "@/lib/mapInteractionLock";
 import type { Venue as DirectionsVenue } from "@/types/venue";
 import { activityTier, type ActivityTierId } from "@/lib/activity-palette";
+import { JET_MARK_SRC } from "@/lib/jet-mark";
 
 const DirectionsDialog = lazy(() => import("./DirectionsDialog"));
 
@@ -425,7 +426,7 @@ export const JetCard = memo(
                 // Swap to the centered JET-mark placeholder rather than the
                 // generic stretched placeholder.svg so the card stays on-brand.
                 const img = e.currentTarget;
-                img.src = "/jet-email-logo.png";
+                img.src = JET_MARK_SRC;
                 img.alt = "JET";
                 img.style.objectFit = "contain";
                 img.style.padding = "clamp(12px, 4%, 22px)";
@@ -450,7 +451,7 @@ export const JetCard = memo(
               }}
             >
               <img
-                src="/jet-email-logo.png"
+                src={JET_MARK_SRC}
                 alt=""
                 loading="lazy"
                 style={{
@@ -469,7 +470,7 @@ export const JetCard = memo(
             placeholder (which is the same mark, centered) isn't duplicated. */}
           {heroImage && (
             <img
-              src="/jet-email-logo.png"
+              src={JET_MARK_SRC}
               alt="JET"
               style={{
                 position: "absolute",

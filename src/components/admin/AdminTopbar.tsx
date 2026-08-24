@@ -19,6 +19,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { supabase } from "@/integrations/supabase/client";
 import { signOutCurrentUser } from "@/lib/authSession";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { JET_MARK_SRC } from "@/lib/jet-mark";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -28,7 +29,7 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 
-const DEFAULT_AVATAR = "/jet-email-logo.png";
+const DEFAULT_AVATAR = JET_MARK_SRC;
 
 interface SearchItem {
   id: string;
