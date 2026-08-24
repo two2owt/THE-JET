@@ -100,17 +100,16 @@ export function HeaderSearch({
     }
   };
 
-  const showClear = query.length > 0;
-  const showCollapse = isMobile && expanded;
+  const hasQuery = query.length > 0;
+  const canCollapse = isMobile && expanded;
+  // A single trailing dismiss control — it clears the query first, then closes
+  // the expanded search, matching the Escape key behaviour above.
+  const showDismiss = hasQuery || canCollapse;
+  const dismissLabel = hasQuery ? "Clear search" : "Close search";
+  const handleDismiss = hasQuery ? onClear : onCollapse;
 
-  // Reserve room for the trailing controls so the caret never sits under them.
-  const paddingRight = showCollapse
-    ? showClear
-      ? "80px"
-      : "44px"
-    : showClear
-      ? "44px"
-      : "16px";
+  // Reserve room for the trailing control so the caret never sits under it.
+  const paddingRight = showDismiss ? "44px" : "16px";
 
   return (
     <div
@@ -202,15 +201,15 @@ export function HeaderSearch({
         }}
       />
 
-      {showClear && (
+      {showDismiss && (
         <IconButton
           size="bare"
-          ariaLabel="Clear search"
-          onClick={onClear}
+          ariaLabel={dismissLabel}
+          onClick={handleDismiss}
           className="rounded-full hover:bg-muted/80 transition-colors"
           style={{
             position: "absolute",
-            right: showCollapse ? "44px" : "8px",
+            right: "8px",
             top: "50%",
             transform: "translateY(-50%)",
             zIndex: 10,
@@ -223,34 +222,8 @@ export function HeaderSearch({
         >
           <X
             style={{
-              width: 12,
-              height: 12,
-              color: "hsl(var(--muted-foreground))",
-            }}
-          />
-        </IconButton>
-      )}
-
-      {showCollapse && (
-        <IconButton
-          size="bare"
-          ariaLabel="Close search"
-          onClick={onCollapse}
-          className="rounded-full hover:bg-muted/60 transition-colors"
-          style={{
-            position: "absolute",
-            right: "8px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            zIndex: 10,
-            width: 28,
-            height: 28,
-          }}
-        >
-          <X
-            style={{
-              width: 14,
-              height: 14,
+              width: 13,
+              height: 13,
               color: "hsl(var(--muted-foreground))",
             }}
           />
