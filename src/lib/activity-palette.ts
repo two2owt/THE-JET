@@ -88,22 +88,20 @@ export function activityLegendTiers(): Array<{
 }
 
 /**
- * Shared swatch styling for legend marks. A fixed casing ring + soft glow so
- * the dot reads the same way in the collapsed pill and the expanded legend, on
- * any map style. The swatch is sized for a comfortable tap/click target while
- * the casing ring stays subtle and consistent regardless of basemap.
+ * Shared swatch styling for legend marks. Fixed casing ring + soft glow so the
+ * dot reads the same way in the collapsed pill and the expanded legend, on any
+ * map style.
  */
-export function legendSwatchStyle(color: string, size = 18) {
+export function legendSwatchStyle(color: string, size = 9) {
   return {
     width: `${size}px`,
     height: `${size}px`,
     flexShrink: 0,
     borderRadius: "50%",
     background: color,
-    // Subtle light casing ring that pops against the dark glass legend panel
-    // and stays identical on light, dark, auto, streets, and satellite basemaps.
-    border: "2px solid rgba(255, 255, 255, 0.28)",
-    boxSizing: "border-box",
-    boxShadow: `0 0 0 1px rgba(0, 0, 0, 0.25), 0 0 5px ${color}, 0 0 11px ${color}80`,
+    // No outer casing ring — the swatch reads as a clean saturated dot on
+    // every basemap (light, dark, auto, streets, satellite).
+    border: "none",
+    boxShadow: `0 0 5px ${color}, 0 0 11px ${color}80`,
   } as const;
 }
