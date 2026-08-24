@@ -30,6 +30,18 @@ const releaseVersion = process.env["VITE_APP_VERSION"] ?? buildId;
 // These are only assigned to process.env — never exposed to the client bundle.
 Object.assign(process.env, loadEnv(process.env.NODE_ENV ?? "development", rootDir, ""));
 
+// The generated Supabase client reads VITE_SUPABASE_PUBLISHABLE_KEY. Some
+// environments (CI, older setups) only define VITE_SUPABASE_ANON_KEY, so treat
+// it as an alias and keep both names populated to avoid a mismatch.
+const supabaseKey =
+  process.env["VITE_SUPABASE_PUBLISHABLE_KEY"]?.trim() ||
+  process.env["VITE_SUPABASE_ANON_KEY"]?.trim() ||
+  "";
+if (supabaseKey) {
+  process.env["VITE_SUPABASE_PUBLISHABLE_KEY"] = supabaseKey;
+  process.env["VITE_SUPABASE_ANON_KEY"] = supabaseKey;
+}
+
 // Source-map upload is gated on the Sentry auth token so local dev builds and
 // PRs from forks do not fail when the secret is unavailable.
 const sentryAuthToken = process.env["SENTRY_AUTH_TOKEN"];
