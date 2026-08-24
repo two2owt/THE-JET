@@ -66,27 +66,15 @@ export const useFavorites = (userId: string | undefined) => {
   useEffect(() => {
     fetchFavorites();
 
-    // Set up real-time subscription for favorites changes
     if (!userId) return;
 
-    const channel = supabase
-      .channel(`favorites-${userId}-${instanceId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "user_favorites",
-          filter: `user_id=eq.${userId}`,
-        },
-        () => {
-          // Refetch on any change to ensure consistency across devices
-          fetchFavorites();
-        },
-      )
-      .subscribe();
+    // user_favorites is user-scoped data and is intentionally NOT published to
+    // Realtime. Cross-device consistency comes from optimistic local updates
+    // plus a refetch on tab focus and a slow background poll.
+    const poll = window.setInterval(() => {
+      if (document.visibilityState === "visible") fetchFavorites();
+    }, 60_000);
 
-    // Listen for visibility changes to refresh on tab focus
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
         fetchFavorites();
@@ -95,10 +83,10 @@ export const useFavorites = (userId: string | undefined) => {
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      supabase.removeChannel(channel);
+      window.clearInterval(poll);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [userId, fetchFavorites, instanceId]);
+  }, [userId, fetchFavorites]);
 
   const isFavorite = (dealId: string) => {
     return favorites.some((fav) => fav.deal_id === dealId);
