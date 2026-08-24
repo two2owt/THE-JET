@@ -93,5 +93,6 @@ if (typeof window !== "undefined") {
     reset: resetPresenceThresholds,
     setStatus: setPresenceOverride,
     _listeners: () => listeners.size,
+    _overrides: getPresenceOverrides,
   };
 }
