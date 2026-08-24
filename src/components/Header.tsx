@@ -35,6 +35,34 @@ export const Header = () => {
   // the URL is rewritten externally without preserving the param.
   const SEARCH_QUERY_KEY = "jet-header-search-query";
   const [searchQuery, setSearchQuery] = useState<string>("");
+  // Guards the URL sync below: until the initial restore has run (and the
+  // debounce has caught up), an empty `searchQuery` must not wipe a `?q=`
+  // that arrived via a deep link or redirect.
+  const queryRestoredRef = useRef(false);
+  // Flipped the first time the user actually edits the field. Until then the
+  // URL sync below may only add `?q=` — never remove one, because an empty
+  // `searchQuery` at that stage just means the restore hasn't committed yet
+  // (effects in the mount commit run before the state they set is applied).
+  const userEditedQueryRef = useRef(false);
+  useEffect(() => {
+    try {
+      const url = new URLSearchParams(window.location.search).get("q");
+      const restored =
+        url || window.sessionStorage.getItem(SEARCH_QUERY_KEY) || "";
+      if (restored) {
+        setSearchQuery(restored);
+        setShowResults(restored.trim().length > 0);
+      }
+    } catch {
+      /* storage disabled — ignore */
+    } finally {
+      queryRestoredRef.current = true;
+    }
+  }, []);
+  const [showResults, setShowResults] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const mountedRef = useRef(false);
+
 
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const [userEmail, setUserEmail] = useState<string | undefined>(undefined);
