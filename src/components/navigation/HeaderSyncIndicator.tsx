@@ -6,6 +6,11 @@ interface HeaderSyncIndicatorProps {
   onRefresh?: () => void;
   isLoading?: boolean;
   mounted: boolean;
+  /**
+   * Terminal-clock accent (bold phosphor green, monospace) — enabled only on
+   * the map / homepage so the rest of the nav header keeps its default tone.
+   */
+  terminalAccent?: boolean;
 }
 
 function formatRelative(date: Date): string {
@@ -30,6 +35,7 @@ export function HeaderSyncIndicator({
   onRefresh,
   isLoading,
   mounted,
+  terminalAccent = false,
 }: HeaderSyncIndicatorProps) {
   // Tick every 15s so the relative timestamp stays fresh without thrashing.
   // Also heal immediately when the tab returns to the foreground or the window
@@ -62,7 +68,10 @@ export function HeaderSyncIndicator({
   const title = lastUpdated
     ? `Arrived ${lastUpdated.toLocaleTimeString()} — click to refresh`
     : "Refresh";
-  const neon = "hsl(140 100% 55%)";
+  // tty-clock / peaclock style bold phosphor green (ANSI bright green).
+  const neon = terminalAccent ? "hsl(120 100% 54%)" : "hsl(140 100% 55%)";
+  const isLive = Boolean(lastUpdated) && !isLoading;
+  const accentOn = terminalAccent && isLive;
 
   return (
     <button
@@ -83,8 +92,9 @@ export function HeaderSyncIndicator({
         background: "hsl(var(--muted) / 0.3)",
         backdropFilter: "blur(10px)",
         WebkitBackdropFilter: "blur(10px)",
-        color:
-          lastUpdated && !isLoading ? neon : "hsl(var(--muted-foreground))",
+        color: isLive ? neon : "hsl(var(--muted-foreground))",
+        borderColor: accentOn ? "hsl(120 100% 54% / 0.45)" : undefined,
+        boxShadow: accentOn ? "0 0 10px hsl(120 100% 54% / 0.22)" : undefined,
         fontSize: 12,
         lineHeight: 1,
         whiteSpace: "nowrap",
@@ -97,28 +107,38 @@ export function HeaderSyncIndicator({
       onMouseEnter={(e) => {
         if (!onRefresh || isLoading) return;
         e.currentTarget.style.background = "hsl(var(--muted) / 0.5)";
-        e.currentTarget.style.borderColor = "hsl(var(--gold) / 0.4)";
+        e.currentTarget.style.borderColor = accentOn
+          ? "hsl(120 100% 54% / 0.7)"
+          : "hsl(var(--gold) / 0.4)";
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.background = "hsl(var(--muted) / 0.3)";
-        e.currentTarget.style.borderColor = "hsl(var(--border) / 0.5)";
+        e.currentTarget.style.borderColor = accentOn
+          ? "hsl(120 100% 54% / 0.45)"
+          : "hsl(var(--border) / 0.5)";
       }}
     >
       <RefreshCw
         size={12}
         style={{
           animation: isLoading ? "spin 1s linear infinite" : undefined,
-          color: lastUpdated && !isLoading ? neon : "hsl(var(--gold) / 0.9)",
+          color: isLive ? neon : "hsl(var(--gold) / 0.9)",
         }}
       />
       <span
         className="hidden sm:inline"
         style={{
-          fontWeight: lastUpdated && !isLoading ? 700 : 500,
-          textShadow:
-            lastUpdated && !isLoading
-              ? `0 0 8px hsl(140 100% 55% / 0.55)`
-              : undefined,
+          fontWeight: isLive ? 700 : 500,
+          fontFamily: accentOn
+            ? "ui-monospace, SFMono-Regular, Menlo, monospace"
+            : undefined,
+          letterSpacing: accentOn ? "0.02em" : undefined,
+          fontVariantNumeric: accentOn ? "tabular-nums" : undefined,
+          textShadow: isLive
+            ? accentOn
+              ? "0 0 10px hsl(120 100% 54% / 0.7)"
+              : "0 0 8px hsl(140 100% 55% / 0.55)"
+            : undefined,
         }}
       >
         {label}
