@@ -36,7 +36,7 @@ export function CategoryFilterBar({
     <div
       role="group"
       aria-label="Filter map by category"
-      className="pointer-events-auto flex items-center gap-1.5 overflow-x-auto no-scrollbar pr-3"
+      className="pointer-events-auto flex items-center gap-1.5 overflow-x-auto scrollbar-hide pr-3"
       style={{
         position: "absolute",
         top: "calc(var(--map-ui-inset-top, 0.75rem) + 52px)",
