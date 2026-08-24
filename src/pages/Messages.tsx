@@ -10,7 +10,7 @@ import { SignedOutPreview } from "@/components/SignedOutPreview";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { useConversations, type Conversation } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
-import { useProfilePulse } from "@/hooks/useProfilePulse";
+
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
