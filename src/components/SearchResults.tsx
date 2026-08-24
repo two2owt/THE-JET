@@ -115,6 +115,8 @@ export const SearchResults = ({
     top: number;
     bottom: number;
     maxHeight: number;
+    right: number;
+    width: number | null;
   } | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
@@ -171,16 +173,48 @@ export const SearchResults = ({
         ? Math.max(0, viewportH + vvTop - navRect.top)
         : 0;
 
+      const viewportW = vv?.width ?? window.innerWidth;
+      const isWide = viewportW >= 640;
+
+      // Right-hand map overlays we must not cover: the top-right map control
+      // stack (zoom/compass) sets our ceiling, the bottom-right layers FAB
+      // cluster sets our floor. Both are measured live so the panel adapts to
+      // whatever is actually rendered on this device.
+      const topCtrl = document.querySelector<HTMLElement>(
+        ".mapboxgl-ctrl-top-right .mapboxgl-ctrl",
+      );
+      const topCtrlRect = topCtrl?.getBoundingClientRect();
+      const layersEl = document.querySelector<HTMLElement>(
+        "[data-jet-map-layers]",
+      );
+      const layersRect = layersEl?.getBoundingClientRect();
+
       // Clear the header's hairline divider and any focus ring on the search
       // pill, so the panel never visually touches or covers the header.
       const GAP_TOP = 12;
       const GAP_BOTTOM = 12;
+      const GAP_CTRL = 10;
       // Round to whole pixels: sub-pixel churn from rubber-band scrolling or
       // safe-area settling would otherwise re-render the panel every frame.
       // Hard floor at the measured header bottom: even if a measurement is
       // stale mid-transition, the panel can never render over the header.
-      const top = Math.round(Math.max(headerBottom + GAP_TOP, GAP_TOP));
-      const bottom = Math.round(navHeight + GAP_BOTTOM);
+      const top = Math.round(
+        Math.max(
+          headerBottom + GAP_TOP,
+          GAP_TOP,
+          isWide && topCtrlRect && topCtrlRect.height > 0
+            ? topCtrlRect.bottom + GAP_CTRL
+            : 0,
+        ),
+      );
+      const bottom = Math.round(
+        Math.max(
+          navHeight + GAP_BOTTOM,
+          isWide && layersRect && layersRect.height > 0
+            ? viewportH + vvTop - layersRect.top + GAP_CTRL
+            : 0,
+        ),
+      );
       const available = Math.max(160, viewportH - top - bottom);
       // Keep the map visible around the panel on tall screens, but never
       // exceed the space actually left between header and footer nav.
@@ -188,13 +222,34 @@ export const SearchResults = ({
         Math.min(available, Math.max(240, viewportH * 0.52), 480),
       );
 
+      // Align the panel's right edge with the map control gutter so the
+      // stack (controls -> results -> layers) reads as one column.
+      const gutter =
+        isWide && layersRect
+          ? Math.max(8, Math.round(viewportW - layersRect.right))
+          : 16;
+      const right = isWide ? gutter : 8;
+      // Adaptive width: never eat more than ~38% of a wide viewport so the
+      // map stays readable beside the results.
+      const width = isWide
+        ? Math.round(
+            Math.min(
+              420,
+              Math.max(300, viewportW * 0.38),
+              Math.max(280, viewportW - gutter * 2 - 24),
+            ),
+          )
+        : null;
+
       setBox((prev) =>
         prev &&
         prev.top === top &&
         prev.bottom === bottom &&
-        prev.maxHeight === maxHeight
+        prev.maxHeight === maxHeight &&
+        prev.right === right &&
+        prev.width === width
           ? prev
-          : { top, bottom, maxHeight },
+          : { top, bottom, maxHeight, right, width },
       );
     };
 
@@ -526,7 +581,7 @@ export const SearchResults = ({
         role="dialog"
         aria-label="Search results"
         aria-hidden={!entered}
-        className={`fixed left-2 right-2 sm:left-auto sm:right-4 z-[9999] sm:w-[420px] sm:max-w-[min(420px,calc(100vw-2rem))] will-change-transform motion-reduce:transition-none ${
+        className={`fixed left-2 right-2 sm:left-auto z-[9999] sm:w-[420px] sm:max-w-[min(420px,calc(100vw-2rem))] will-change-transform motion-reduce:transition-none ${
           entered
             ? "opacity-100 translate-y-0 scale-100"
             : "opacity-0 -translate-y-1 scale-[0.985] pointer-events-none"
@@ -551,6 +606,11 @@ export const SearchResults = ({
           maxHeight: box
             ? `${box.maxHeight}px`
             : "min(calc(100dvh - var(--header-height, 56px) - var(--bottom-nav-total-height, 80px) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 24px), 52dvh, 480px)",
+          // Right-anchored on tablet/desktop so the map stays visible to the
+          // left; the measured gutter matches the map control column.
+          ...(box?.width
+            ? { right: `${box.right}px`, left: "auto", width: `${box.width}px` }
+            : {}),
         }}
       >
         <Card className="flex flex-col h-full max-h-full overflow-hidden shadow-glow w-full bg-card/95 backdrop-blur-xl border-primary/20 rounded-2xl">
