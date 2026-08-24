@@ -150,8 +150,14 @@ export const ExploreTab = ({
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [userPreferences, setUserPreferences] =
     useState<UserPreferences | null>(null);
+  // Show-all is the default: every active merchant deal is listed regardless of
+  // whether the user currently sits inside the merchant's broadcast radius.
+  // (Push notifications still respect the merchant geofence.)
   const [preferenceFilterEnabled, setPreferenceFilterEnabled] =
-    usePersistentViewState("deals:prefFilter", true);
+    usePersistentViewState("deals:prefFilter", false);
+  // Opt-in client-side radius filter, toggled from the location badge.
+  const [locationFilterEnabled, setLocationFilterEnabled] =
+    usePersistentViewState("deals:locFilter", false);
 
   const { isFavorite, toggleFavorite } = useFavorites(user?.id);
 
@@ -249,6 +255,8 @@ export const ExploreTab = ({
     selectedCategories,
     userPreferences,
     preferenceFilterEnabled,
+    locationFilterEnabled,
+    userLocation,
   ]);
 
   const getUserLocation = async () => {
@@ -396,18 +404,17 @@ export const ExploreTab = ({
       }
     }
 
-    // Apply location-based filter if user location is available
+    // Optional client-side radius filter. Off by default so every active
+    // merchant deal stays visible even when the user is outside the merchant's
+    // broadcast radius (that radius only governs push notifications).
     if (userLocation) {
-      filtered = filtered.filter((deal) => {
-        // Only show deals with distance data
-        if (deal.distance === undefined) {
-          return false;
-        }
-
-        // Get dynamic radius based on neighborhood
-        const radius = getDynamicRadius(deal.neighborhoods?.name);
-        return deal.distance <= radius;
-      });
+      if (locationFilterEnabled) {
+        filtered = filtered.filter((deal) => {
+          if (deal.distance === undefined) return false;
+          const radius = getDynamicRadius(deal.neighborhoods?.name);
+          return deal.distance <= radius;
+        });
+      }
 
       // Sort by distance (closest first)
       filtered.sort((a, b) => {
@@ -539,23 +546,61 @@ export const ExploreTab = ({
           >
             {(userLocation !== null || locationError !== null) && (
               <Badge
-                variant={userLocation ? "secondary" : "outline"}
+                variant={locationFilterEnabled ? "default" : userLocation ? "secondary" : "outline"}
+                role={userLocation ? "button" : undefined}
+                tabIndex={userLocation ? 0 : undefined}
+                aria-pressed={userLocation ? locationFilterEnabled : undefined}
+                title={
+                  userLocation
+                    ? "Toggle nearby-only filtering. Off shows every active merchant deal."
+                    : undefined
+                }
+                onClick={
+                  userLocation
+                    ? () => setLocationFilterEnabled(!locationFilterEnabled)
+                    : undefined
+                }
+                onKeyDown={
+                  userLocation
+                    ? (e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setLocationFilterEnabled(!locationFilterEnabled);
+                        }
+                      }
+                    : undefined
+                }
                 className={`text-xs flex items-center gap-1 ${
-                  userLocation ? "text-emerald-400 border-emerald-400/30" : "text-slate-400"
+                  userLocation
+                    ? `cursor-pointer ${locationFilterEnabled ? "" : "text-emerald-400 border-emerald-400/30"}`
+                    : "text-slate-400"
                 }`}
               >
                 <Navigation className="w-3 h-3" />
-                {userLocation ? "Location Active" : "Location Inactive"}
+                {!userLocation
+                  ? "Location Inactive"
+                  : locationFilterEnabled
+                    ? "Nearby Only"
+                    : "Location Active"}
               </Badge>
             )}
             {userPreferences?.categories &&
               userPreferences.categories.length > 0 && (
                 <Badge
                   variant={preferenceFilterEnabled ? "default" : "outline"}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={preferenceFilterEnabled}
                   className="text-xs flex items-center gap-1 cursor-pointer"
                   onClick={() =>
                     setPreferenceFilterEnabled(!preferenceFilterEnabled)
                   }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setPreferenceFilterEnabled(!preferenceFilterEnabled);
+                    }
+                  }}
                 >
                   <Sparkles className="w-3 h-3" />
                   {preferenceFilterEnabled ? "Personalized" : "Show All"}
@@ -773,11 +818,27 @@ export const ExploreTab = ({
           selectedCategories.length === 0 && (
             <EmptyState
               icon={MapPin}
-              title="No deals nearby"
+              title={locationFilterEnabled ? "No deals nearby" : "No deals match your filters"}
               description={
-                userLocation
-                  ? "No merchants are broadcasting to your current location right now. Check back soon."
-                  : "Enable location services to receive merchant broadcasts near you."
+                locationFilterEnabled
+                  ? "Nothing is within your radius right now. Turn off nearby-only to see every active merchant deal."
+                  : preferenceFilterEnabled
+                    ? "No active deals match your saved preferences. Switch to Show All to see everything."
+                    : "No active deals to show right now. Check back soon."
+              }
+              actionLabel={
+                locationFilterEnabled
+                  ? "Show all deals"
+                  : preferenceFilterEnabled
+                    ? "Show all deals"
+                    : undefined
+              }
+              onAction={
+                locationFilterEnabled
+                  ? () => setLocationFilterEnabled(false)
+                  : preferenceFilterEnabled
+                    ? () => setPreferenceFilterEnabled(false)
+                    : undefined
               }
             />
 
