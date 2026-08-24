@@ -1,20 +1,20 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  getPresenceOverrides,
+  getPresenceThresholds,
+  subscribePresenceConfig,
+} from "@/lib/presenceConfig";
 
 /**
  * Presence status buckets shown as the coloured dot on avatars.
- *   • "active"  — green:  user is connected and interacted in the last 5 min
- *   • "recent"  — yellow: user is connected but idle, or left very recently
- *   • "away"    — red:    not connected right now
+ *   • "active"  — green:  seen within the configured active window
+ *   • "recent"  — yellow: connected but idle, or seen within the recent window
+ *   • "away"    — red:    older than the recent window / not connected
+ *
+ * Timing windows are configurable — see `src/lib/presenceConfig.ts`.
  */
 export type PresenceStatus = "active" | "recent" | "away";
-
-/** Idle threshold: interaction older than this downgrades green → yellow. */
-const IDLE_MS = 5 * 60 * 1000;
-/** Grace window after a user disconnects before green/yellow → red. */
-const RECENT_MS = 15 * 60 * 1000;
-/** How often we re-broadcast our own heartbeat while the tab is active. */
-const HEARTBEAT_MS = 60 * 1000;
 
 const CHANNEL = "presence:jet";
 
@@ -44,7 +44,10 @@ function emit() {
   shared.listeners.forEach((l) => l(snapshot));
 }
 
-function subscribe(userId: string | undefined, listener: (s: PresenceState) => void) {
+function subscribe(
+  userId: string | undefined,
+  listener: (s: PresenceState) => void,
+) {
   if (!shared) {
     shared = {
       refCount: 0,
@@ -93,7 +96,7 @@ function subscribe(userId: string | undefined, listener: (s: PresenceState) => v
       if (!userId) return;
       void channel.track({ user_id: userId, at: lastActivity });
       emit();
-    }, HEARTBEAT_MS);
+    }, getPresenceThresholds().heartbeatMs);
 
     const events = ["pointerdown", "keydown", "visibilitychange"] as const;
     events.forEach((e) =>
@@ -122,14 +125,22 @@ function subscribe(userId: string | undefined, listener: (s: PresenceState) => v
   };
 }
 
-function statusFor(state: PresenceState, userId: string | null | undefined, now: number): PresenceStatus {
+function statusFor(
+  state: PresenceState,
+  userId: string | null | undefined,
+  now: number,
+): PresenceStatus {
   if (!userId) return "away";
+  const override = getPresenceOverrides()[userId];
+  if (override) return override;
+
+  const { activeMs, recentMs } = getPresenceThresholds();
   const seen = state.seen[userId];
   if (state.online.has(userId)) {
-    if (!seen || now - seen <= IDLE_MS) return "active";
+    if (!seen || now - seen <= activeMs) return "active";
     return "recent";
   }
-  if (seen && now - seen <= RECENT_MS) return "recent";
+  if (seen && now - seen <= recentMs) return "recent";
   return "away";
 }
 
@@ -143,18 +154,33 @@ export function usePresence(currentUserId?: string) {
     online: new Set(),
   });
   const [tick, setTick] = useState(0);
-  const stateRef = useRef(state);
-  stateRef.current = state;
+  // The first client render must match the SSR markup exactly: React does not
+  // patch attribute-level hydration mismatches, which would freeze the dot on
+  // its server-rendered colour. Everyone starts "away" until after mount.
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     return subscribe(currentUserId, setState);
   }, [currentUserId]);
 
-  // Re-evaluate buckets on a timer so green decays to yellow/red on its own.
+  // Re-evaluate buckets on a timer so green decays to yellow/red on its own,
+  // and immediately whenever the timing config or overrides change.
   useEffect(() => {
-    const id = setInterval(() => setTick((t) => t + 1), 30 * 1000);
-    return () => clearInterval(id);
+    const bump = () => setTick((t) => t + 1);
+    const unsubscribe = subscribePresenceConfig(bump);
+    let id = setInterval(bump, getPresenceThresholds().refreshMs);
+    const reschedule = () => {
+      clearInterval(id);
+      id = setInterval(bump, getPresenceThresholds().refreshMs);
+    };
+    const unsubscribeReschedule = subscribePresenceConfig(reschedule);
+    return () => {
+      clearInterval(id);
+      unsubscribe();
+      unsubscribeReschedule();
+    };
   }, []);
 
   return useMemo(() => {
@@ -162,11 +188,11 @@ export function usePresence(currentUserId?: string) {
     return {
       /** Status of an arbitrary user id (friends on the social page). */
       getStatus: (userId: string | null | undefined): PresenceStatus =>
-        statusFor(state, userId, now),
+        hydrated ? statusFor(state, userId, now) : "away",
       /** Status of the signed-in user (header avatar). */
-      selfStatus: statusFor(state, currentUserId, now),
+      selfStatus: hydrated ? statusFor(state, currentUserId, now) : "away",
       onlineCount: state.online.size,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, currentUserId, tick]);
+  }, [state, currentUserId, tick, hydrated]);
 }

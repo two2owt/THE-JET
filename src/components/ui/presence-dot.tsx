@@ -1,10 +1,7 @@
 import type { CSSProperties } from "react";
 import type { PresenceStatus } from "@/hooks/usePresence";
 
-const TOKENS: Record<
-  PresenceStatus,
-  { hsl: string; label: string }
-> = {
+const TOKENS: Record<PresenceStatus, { hsl: string; label: string }> = {
   active: { hsl: "142 84% 50%", label: "Active now" },
   recent: { hsl: "45 96% 55%", label: "Recently active" },
   away: { hsl: "0 84% 58%", label: "Inactive" },
@@ -16,6 +13,8 @@ export interface PresenceDotProps {
   size?: number;
   /** Absolutely position the dot over the bottom-right of a relative parent. */
   overlay?: boolean;
+  /** Optional owner id — surfaced for e2e assertions. */
+  userId?: string;
   style?: CSSProperties;
 }
 
@@ -27,6 +26,7 @@ export function PresenceDot({
   status,
   size = 12,
   overlay = true,
+  userId,
   style,
 }: PresenceDotProps) {
   const { hsl, label } = TOKENS[status];
@@ -35,6 +35,9 @@ export function PresenceDot({
       role="img"
       aria-label={label}
       title={label}
+      data-testid="presence-dot"
+      data-presence-status={status}
+      data-presence-user={userId}
       style={{
         position: overlay ? "absolute" : "relative",
         // Offset slightly outside the avatar edge for maximum visibility.
