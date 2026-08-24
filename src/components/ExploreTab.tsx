@@ -776,17 +776,11 @@ export const ExploreTab = ({
               title="No deals nearby"
               description={
                 userLocation
-                  ? "There are no deals within your current radius. Try expanding your search area or checking back later."
-                  : "Enable location services to see deals near you, or browse all available deals below."
+                  ? "No merchants are broadcasting to your current location right now. Check back soon."
+                  : "Enable location services to receive merchant broadcasts near you."
               }
-              actionLabel={
-                userLocation ? "Disable location filter" : "Show all deals"
-              }
-              onAction={() => {
-                // Show all deals by temporarily clearing location
-                setFilteredDeals(deals);
-              }}
             />
+
           )}
 
         {/* Deals Grid - Uses virtual scrolling for large lists */}
