@@ -6,6 +6,11 @@ import { GEO_GRANTED_EVENT } from "@/lib/geolocationGrantEvent";
 import { subscribeMapInteractionLock } from "@/lib/mapInteractionLock";
 import { subscribeMapFocus } from "@/lib/mapFocusBus";
 import {
+  applyMapHighlightToDom,
+  setMapHighlight,
+  subscribeMapHighlight,
+} from "@/lib/mapHighlightBus";
+import {
   verifyMapboxVersion,
   EXPECTED_MAPBOX_VERSION,
 } from "@/lib/mapbox-version";
