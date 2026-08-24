@@ -326,11 +326,14 @@ export function NotificationsTab({
 
       <AlertDetailsDialog
         open={detailsFor !== null}
-        onOpenChange={(open) => !open && setDetailsFor(null)}
-        notification={detailsFor}
-        deal={detailsFor?.dealId ? dealById[detailsFor.dealId] : undefined}
-        onVenueClick={onVenueClick}
+        onOpenChange={(open) => {
+          if (!open) setDetailsFor(null);
+        }}
+        alert={detailsFor}
+        deal={detailsFor?.dealId ? dealById[detailsFor.dealId] : null}
+        onViewVenue={onVenueClick}
       />
+
     </PageShell>
   );
 
