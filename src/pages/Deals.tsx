@@ -3,6 +3,7 @@ import { useNavigate } from "@/lib/router-compat";
 import { PageLayout } from "@/components/PageLayout";
 import { PageShell } from "@/components/PageShell";
 import { ExploreTabSkeleton } from "@/components/skeletons/PageSkeletons";
+import { useDealSyncRealtime } from "@/mobile-app-snippets/useDealSyncRealtime";
 
 const ExploreTab = lazy(() =>
   import("@/components/ExploreTab").then((m) => ({ default: m.ExploreTab })),
@@ -13,6 +14,7 @@ const PushNotificationPrompt = lazy(() =>
     default: m.PushNotificationPrompt,
   })),
 );
+
 
 /**
  * Deals tab — its own route (`/deals`) instead of a `?tab=` sub-view of the
@@ -28,6 +30,7 @@ export default function Deals() {
   const navigate = useNavigate();
   const headerConfig = useMemo(() => ({ hideSearch: true }), []);
   const [pushDismissed, setPushDismissed] = useState(false);
+  const { deals, loading, error } = useDealSyncRealtime();
 
   const handleVenueSelect = useCallback(
     (venueName: string) => {
@@ -41,9 +44,15 @@ export default function Deals() {
       <PageShell>
         <h1 className="sr-only">Live deals near you</h1>
         <Suspense fallback={<ExploreTabSkeleton />}>
-          <ExploreTab onVenueSelect={handleVenueSelect} />
+          <ExploreTab
+            deals={deals}
+            dealsLoading={loading}
+            dealsError={error}
+            onVenueSelect={handleVenueSelect}
+          />
         </Suspense>
       </PageShell>
+
 
       <Suspense fallback={null}>
         <PushNotificationPrompt

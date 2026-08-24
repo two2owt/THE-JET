@@ -106,24 +106,37 @@ interface Deal {
     name: string;
     center_lat: number;
     center_lng: number;
-  };
+  } | null;
   distance?: number; // Distance from user in km
 }
 
 interface ExploreTabProps {
   onVenueSelect?: (venueName: string) => void;
+  deals?: Deal[];
+  dealsLoading?: boolean;
+  dealsError?: Error | null;
 }
 
-export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
+export const ExploreTab = ({
+  onVenueSelect,
+  deals: dealsProp,
+  dealsLoading: dealsLoadingProp,
+  dealsError: dealsErrorProp,
+}: ExploreTabProps) => {
   // Persisted per tab so leaving /deals and coming back restores the view.
   const [searchQuery, setSearchQuery] = usePersistentViewState(
     "deals:query",
     "",
   );
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  const [deals, setDeals] = useState<Deal[]>([]);
+  const [deals, setDeals] = useState<Deal[]>(dealsProp || []);
   const [filteredDeals, setFilteredDeals] = useState<Deal[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(
+    dealsProp === undefined ? true : dealsLoadingProp ?? false,
+  );
+  const [dealsError, setDealsError] = useState<Error | null>(
+    dealsErrorProp || null,
+  );
   const [selectedCategories, setSelectedCategories] = usePersistentViewState<
     string[]
   >("deals:categories", []);
@@ -141,6 +154,21 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
     usePersistentViewState("deals:prefFilter", true);
 
   const { isFavorite, toggleFavorite } = useFavorites(user?.id);
+
+  // Sync local deal state with the prop when provided (realtime hook).
+  useEffect(() => {
+    if (dealsProp !== undefined) {
+      setDeals(dealsProp);
+      setIsLoading(dealsLoadingProp ?? false);
+      setDealsError(dealsErrorProp || null);
+    }
+  }, [dealsProp, dealsLoadingProp, dealsErrorProp]);
+
+  // Update available categories whenever the deal list changes.
+  useEffect(() => {
+    const categories = [...new Set(deals.map((d) => d.deal_type))].sort();
+    setAvailableCategories(categories);
+  }, [deals]);
 
   const loadUserPreferences = useCallback(async (userId: string) => {
     try {
@@ -202,12 +230,16 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
 
 
   useEffect(() => {
+    // Skip internal fetch when deals are supplied from the page-level
+    // realtime hook.
+    if (dealsProp !== undefined) return;
+
     // Load deals only after we have attempted to get location
     // This ensures we can calculate distances properly
     if (userLocation !== null || locationError !== null) {
       loadDeals();
     }
-  }, [userLocation, locationError]);
+  }, [userLocation, locationError, dealsProp]);
 
   useEffect(() => {
     filterDeals();
@@ -274,6 +306,7 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
   const loadDeals = async () => {
     try {
       setIsLoading(true);
+      setDealsError(null);
       const { data, error } = await supabase
         .from("deals")
         .select(
@@ -309,19 +342,36 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
       });
 
       setDeals(dealsWithDistance as unknown as Deal[]);
-
-      // Extract unique categories
-      const categories = [
-        ...new Set((data || []).map((d) => d.deal_type)),
-      ].sort();
-      setAvailableCategories(categories);
     } catch (error) {
       console.error("Error loading deals:", error);
+      setDealsError(error as Error);
       toast.error("Failed to load deals");
     } finally {
       setIsLoading(false);
     }
   };
+
+  const recalculateDealDistances = useCallback(() => {
+    if (!userLocation) return;
+    setDeals((prev) =>
+      prev.map((deal) => {
+        if (deal.neighborhoods) {
+          const distance = calculateDistance(
+            userLocation.lat,
+            userLocation.lng,
+            deal.neighborhoods.center_lat,
+            deal.neighborhoods.center_lng,
+          );
+          return { ...deal, distance };
+        }
+        return deal;
+      }),
+    );
+  }, [userLocation]);
+
+  useEffect(() => {
+    recalculateDealDistances();
+  }, [userLocation, recalculateDealDistances]);
 
   const filterDeals = () => {
     let filtered = [...deals];
