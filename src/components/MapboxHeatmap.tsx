@@ -987,6 +987,13 @@ export const MapboxHeatmap = ({
 
   // City selector search query
   const [citySearchQuery, setCitySearchQuery] = useState("");
+  // Cities resolved from Mapbox when the query doesn't match the curated list.
+  // Only populated after the user confirms with Enter (or the Go button).
+  const [remoteCities, setRemoteCities] = useState<GeocodedCity[]>([]);
+  const [isSearchingRemoteCity, setIsSearchingRemoteCity] = useState(false);
+  const [remoteCitySearchTerm, setRemoteCitySearchTerm] = useState("");
+  const remoteSearchAbortRef = useRef<AbortController | null>(null);
+
 
   /**
    * Automatic city re-detection while the app is open.
