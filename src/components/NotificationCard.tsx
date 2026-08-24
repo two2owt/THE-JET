@@ -139,6 +139,30 @@ export const NotificationCard = memo(
               {enriched.message}
             </p>
 
+            {(dealType || category) && (
+              <div className="flex flex-wrap items-center gap-1 mb-1 sm:mb-2">
+                {dealType && (
+                  <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide text-primary">
+                    {dealType}
+                  </span>
+                )}
+                {category && (
+                  <span
+                    className="inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[9px] sm:text-[10px] font-medium"
+                    style={{
+                      color: category.dark,
+                      borderColor: `${category.dark}55`,
+                      backgroundColor: `${category.dark}1a`,
+                    }}
+                  >
+                    <category.Icon className="w-2.5 h-2.5" aria-hidden="true" />
+                    {category.label}
+                  </span>
+                )}
+              </div>
+            )}
+
+
             <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-muted-foreground">
               {enriched.venue && (
                 <div className="flex items-center gap-0.5 sm:gap-1">
