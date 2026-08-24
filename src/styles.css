@@ -372,6 +372,12 @@ All colors MUST be HSL.
   :root {
     --header-height: 52px;
     --bottom-nav-height: 60px;
+    --header-control-height: 36px;
+    --header-control-gap: 8px;
+    --header-pad-x: 12px;
+    --header-icon-size: 16px;
+    --header-font-size: 13px;
+    --header-logo-size: 18px;
     --map-ui-inset-top: 0.75rem;
     --map-ui-inset-right: calc(0.75rem + env(safe-area-inset-right, 0px));
     --map-ui-inset-bottom: 0.75rem;
