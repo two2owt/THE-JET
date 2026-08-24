@@ -131,7 +131,7 @@ export function MapSurface({
       )}
 
       <div className="absolute inset-0 w-full h-full">
-        {hydrated && mapboxToken && (
+        {hydrated && mapboxToken && inView && (
           <Suspense fallback={<HeatmapSkeleton />}>
             <MapboxHeatmap
               onVenueSelect={onVenueSelect}
