@@ -138,6 +138,11 @@ const RealtimeGuardPanel = lazy(() =>
     default: m.RealtimeGuardPanel,
   })),
 );
+const PermissionPromptPanel = lazy(() =>
+  import("@/components/admin/PermissionPromptPanel").then((m) => ({
+    default: m.PermissionPromptPanel,
+  })),
+);
 const MapSyncLatencyPanel = lazy(() =>
   import("@/components/admin/MapSyncLatencyPanel").then((m) => ({
     default: m.MapSyncLatencyPanel,
@@ -452,6 +457,7 @@ export default function AdminDashboard() {
                     style={{ gap: "var(--space-md)" }}
                   >
                     <UserAnalytics />
+                    <PermissionPromptPanel />
                     <UnverifiedNudgePanel />
                     <DisplayNameBackfillPanel />
                   </div>

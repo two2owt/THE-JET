@@ -30,6 +30,12 @@ import {
   isPromptSuppressed,
   recordPromptAttempt,
 } from "@/lib/geolocationPromptSuppression";
+import {
+  trackPromptAccepted,
+  trackPromptDenied,
+  trackPromptImpression,
+  trackPromptSnoozed,
+} from "@/lib/permissionPromptAnalytics";
 
 /**
  * Module-level latch: guarantees only one prompt instance can ever open per
@@ -157,6 +163,7 @@ export const LocationPermissionPrompt = () => {
           surface: "first_visit_prompt",
           method: "ui",
         });
+        trackPromptImpression("location", { surface: "first_visit_prompt" });
         setOpen(true);
       }, delay);
       return () => {
@@ -233,6 +240,14 @@ export const LocationPermissionPrompt = () => {
       durationMs: Date.now() - startedAt,
       promptSuppressed: result.deniedError && Date.now() - startedAt < 500,
     });
+    if (granted) {
+      trackPromptAccepted("location", { surface: "first_visit_prompt" });
+    } else {
+      trackPromptDenied("location", {
+        surface: "first_visit_prompt",
+        browser_denied: result.deniedError,
+      });
+    }
     setLoading(false);
     setOpen(false);
 
@@ -249,6 +264,7 @@ export const LocationPermissionPrompt = () => {
   };
 
   const handleDismiss = () => {
+    trackPromptSnoozed("location", { surface: "first_visit_prompt" });
     markLocationPromptDismissed(signature);
     recordPromptOutcome("dismissed");
     logGeoPermissionEvent({

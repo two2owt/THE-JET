@@ -458,6 +458,7 @@ export const Header = () => {
             onRefresh={onRefresh}
             isLoading={isLoading}
             mounted={mounted}
+            terminalAccent={location.pathname === "/"}
           />
         )}
 
