@@ -129,6 +129,15 @@ export const shouldPromptForLocation = (opts: {
   return { show: true };
 };
 
+/**
+ * True when this sign-in (sign-up or sign-in) has not been prompted yet on
+ * this device. The location ask is scoped to that first authenticated visit —
+ * we never interrupt an anonymous visitor or a returning session mid-browse.
+ */
+export const isFirstVisitForSignIn = (signature: string): boolean =>
+  signature !== "anon" && read(LAST_SESSION_KEY) !== signature;
+
+
 /** Call when the dialog actually opens. */
 export const markLocationPromptShown = (signature: string) => {
   write(LAST_PROMPT_AT_KEY, Date.now().toString());

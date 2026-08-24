@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useMemo } from "react";
+import { lazy, Suspense, useCallback, useMemo, useState } from "react";
 import { useNavigate } from "@/lib/router-compat";
 import { PageLayout } from "@/components/PageLayout";
 import { PageShell } from "@/components/PageShell";
@@ -8,14 +8,26 @@ const ExploreTab = lazy(() =>
   import("@/components/ExploreTab").then((m) => ({ default: m.ExploreTab })),
 );
 
+const PushNotificationPrompt = lazy(() =>
+  import("@/components/PushNotificationPrompt").then((m) => ({
+    default: m.PushNotificationPrompt,
+  })),
+);
+
 /**
  * Deals tab — its own route (`/deals`) instead of a `?tab=` sub-view of the
  * map at `/`. Selecting a deal's venue hands off to the map via the standard
  * `?venue=` deep link, so the JetCard opens with its marker in context.
+ *
+ * This is also the only surface that primes push notifications: the ask lands
+ * on the first visit here, where deal alerts are self-evidently the point.
+ * The prompt self-gates on sign-in, prior grant, browser block and a 14-day
+ * dismissal snooze.
  */
 export default function Deals() {
   const navigate = useNavigate();
   const headerConfig = useMemo(() => ({}), []);
+  const [pushDismissed, setPushDismissed] = useState(false);
 
   const handleVenueSelect = useCallback(
     (venueName: string) => {
@@ -32,6 +44,13 @@ export default function Deals() {
           <ExploreTab onVenueSelect={handleVenueSelect} />
         </Suspense>
       </PageShell>
+
+      <Suspense fallback={null}>
+        <PushNotificationPrompt
+          show={!pushDismissed}
+          onDismiss={() => setPushDismissed(true)}
+        />
+      </Suspense>
     </PageLayout>
   );
 }

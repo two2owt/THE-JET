@@ -15,7 +15,6 @@ import { type Venue } from "@/types/venue";
 // Critical path: BottomNav is always visible
 import { BottomNav } from "@/components/BottomNav";
 import { useHeaderConfig } from "@/contexts/HeaderContext";
-import { useAuth } from "@/contexts/AuthContext";
 
 // Hooks must be imported synchronously (React rules)
 import { useMapboxToken } from "@/hooks/useMapboxToken";
@@ -28,7 +27,6 @@ import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { useAutoScrapeVenueImages } from "@/hooks/useAutoScrapeVenueImages";
 import { useDeals } from "@/hooks/useDeals";
 import { useVenueActivity } from "@/hooks/useVenueActivity";
-import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useBottomNavigation } from "@/hooks/useBottomNavigation";
 import { useMapPanelInset } from "@/hooks/useMapPanelInset";
 // Extracted concerns: onboarding gating, city launches, deep-link routing
@@ -72,14 +70,9 @@ const AuthPWAInstallPromptWrapper = lazy(() =>
     default: m.AuthPWAInstallPromptWrapper,
   })),
 );
-const PushNotificationPrompt = lazy(() =>
-  import("@/components/PushNotificationPrompt").then((m) => ({
-    default: m.PushNotificationPrompt,
-  })),
-);
 
 const Index = () => {
-  const { session } = useAuth();
+
 
   // Redirects signed-in users who haven't finished onboarding.
   useOnboardingGate();
@@ -162,9 +155,8 @@ const Index = () => {
     refresh: refreshVenues,
     lastUpdated: venuesLastUpdated,
   } = useVenueActivity(dataReady, selectedCity);
-  const { justInstalled, clearJustInstalled } = usePWAInstall();
-  const [showPushPrompt, setShowPushPrompt] = useState(false);
   const jetCardRef = useRef<HTMLDivElement>(null);
+
   const parkingCardRef = useRef<HTMLDivElement>(null);
   // Swipe-to-dismiss JetCard only on touch-first viewports (< md).
   const isMobile = !useBreakpointUp("md");
@@ -468,18 +460,9 @@ const Index = () => {
         <AuthPWAInstallPromptWrapper showSignUpCtaForAnonymous />
       </Suspense>
 
-      {/* Push opt-in — shown after PWA install and to any signed-in visitor who
-          hasn't subscribed yet (the prompt handles its own dismissal /
-          permission / platform checks internally). */}
-      <Suspense fallback={null}>
-        <PushNotificationPrompt
-          show={justInstalled || showPushPrompt || !!session?.user}
-          onDismiss={() => {
-            clearJustInstalled();
-            setShowPushPrompt(false);
-          }}
-        />
-      </Suspense>
+      {/* Push opt-in lives on the Deals tab (`/deals`) — the moment the ask is
+          contextual — not here on the map. */}
+
     </div>
   );
 };
