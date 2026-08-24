@@ -1,4 +1,4 @@
-import { ReactNode, Suspense, lazy, memo, useEffect } from "react";
+import { ReactNode, memo, useEffect } from "react";
 import { useLocation } from "@/lib/router-compat";
 import { Header } from "@/components/Header";
 import { useLocationTracker } from "@/hooks/useLocationTracker";
