@@ -461,8 +461,13 @@ export default function Social() {
               placeholder="Search people by name"
               aria-label="Search users by display name"
               style={{
-                paddingLeft: "36px",
-                paddingRight: searchQuery ? "36px" : "12px",
+                // Keep placeholder text clear of the search icon and any
+                // trailing clear button.
+                paddingLeft: "40px",
+                paddingRight: searchQuery ? "40px" : "12px",
+                textOverflow: "ellipsis",
+                overflow: "hidden",
+                whiteSpace: "nowrap",
               }}
             />
             {searchQuery && (
