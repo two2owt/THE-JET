@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { autoHandle } from "@/lib/display-name";
 import { useProfilePulse } from "@/hooks/useProfilePulse";
+import { toast } from "sonner";
 
 export interface Profile {
   id: string;
@@ -87,6 +88,14 @@ export function useProfile(userId: string | undefined) {
   useProfilePulse((pulse) => {
     if (!userId || pulse.profile_id !== userId) return;
     void queryClient.invalidateQueries({ queryKey: key });
+    if (pulse.event === "updated") {
+      // Shared id keeps this from stacking with the settings "Settings saved"
+      // toast or with a burst of heartbeats from a multi-field save.
+      toast.success("Profile updated", {
+        id: "profile-updated",
+        description: "Synced across your open sessions.",
+      });
+    }
   }, !!userId);
 
   const updateProfile = useMutation({
