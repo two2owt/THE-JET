@@ -125,6 +125,19 @@ All colors MUST be HSL.
     --bottom-nav-height: 60px;
     --header-total-height: calc(var(--header-height) + var(--safe-area-inset-top));
     --bottom-nav-total-height: calc(var(--bottom-nav-height) + var(--safe-area-inset-bottom));
+
+    /* ---- Nav header control scale -------------------------------------
+       Every interactive element in the nav header (search pill, sync chip,
+       avatar) shares ONE height so the row reads as a single band, and one
+       gap/padding/icon/font scale so nothing crowds or overflows. Override
+       per breakpoint below — never per component. */
+    --header-control-height: 36px;
+    --header-control-gap: 8px;
+    --header-pad-x: 12px;
+    --header-icon-size: 16px;
+    --header-font-size: 13px;
+    --header-logo-size: 18px;
+
     /* Clearance applied by fixed/overlay UI so nothing hides behind the footer
        nav. Resolves to 0 on screens that don't render the nav (auth, onboarding). */
     --nav-clearance: 0px;
