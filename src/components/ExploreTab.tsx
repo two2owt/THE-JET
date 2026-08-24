@@ -339,11 +339,11 @@ export const ExploreTab = ({
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        lastKnownLocation = {
+        rememberLocation({
           lat: position.coords.latitude,
           lng: position.coords.longitude,
           at: Date.now(),
-        };
+        });
         setUserLocation({
           lat: position.coords.latitude,
           lng: position.coords.longitude,
