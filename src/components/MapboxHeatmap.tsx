@@ -4171,10 +4171,9 @@ export const MapboxHeatmap = ({
           }}
         >
           <Select
-            value={
-              isUsingCurrentLocation ? "current-location" : selectedCity.id
-            }
+            open={cityMenuOpen}
             onOpenChange={(open) => {
+              setCityMenuOpen(open);
               if (!open) {
                 setCitySearchQuery("");
                 setRemoteCities([]);
@@ -4190,6 +4189,9 @@ export const MapboxHeatmap = ({
                 );
               }
             }}
+            value={
+              isUsingCurrentLocation ? "current-location" : selectedCity.id
+            }
             onValueChange={(value) => {
               // Haptic feedback for city selection
               triggerHaptic("light");
