@@ -65,6 +65,17 @@ export const NotificationCard = memo(
     // marks the alert read.
     const interactive = Boolean(onVenueClick || (onRead && !enriched.read));
     const getIcon = () => {
+      // Prefer the linked deal's own category glyph so the alert matches the
+      // JetCard / map marker for the same venue.
+      if (CategoryIcon) {
+        return (
+          <CategoryIcon
+            className="w-5 h-5"
+            style={{ color: category?.dark }}
+            aria-hidden="true"
+          />
+        );
+      }
       switch (enriched.type) {
         case "offer":
           return <Gift className="w-5 h-5 text-primary" />;
