@@ -996,6 +996,68 @@ export const MapboxHeatmap = ({
   const [remoteCitySearchTerm, setRemoteCitySearchTerm] = useState("");
   const remoteSearchAbortRef = useRef<AbortController | null>(null);
 
+  /** Switch the map to an explicitly chosen city (curated or geocoded). */
+  const selectCityAndFly = (city: City) => {
+    setIsUsingCurrentLocation(false);
+    isUsingCurrentLocationRef.current = false;
+    recenterIntentRef.current = false;
+    userMovedCameraRef.current = true;
+    setDetectedLocationName(null);
+    onCityChange(city);
+    if (map.current) {
+      map.current.flyTo({
+        center: [city.lng, city.lat],
+        zoom: city.zoom,
+        duration: 1500,
+        essential: true,
+      });
+    }
+  };
+
+  /**
+   * Confirmed city search (Enter / Go). Prefers an exact curated match, then
+   * falls back to Mapbox geocoding across major US cities.
+   */
+  const confirmCitySearch = async () => {
+    const q = citySearchQuery.trim();
+    if (!q) return;
+
+    const lower = q.toLowerCase();
+    const localMatch =
+      CITIES.find((c) => `${c.name}, ${c.state}`.toLowerCase() === lower) ??
+      CITIES.find((c) => c.name.toLowerCase() === lower) ??
+      CITIES.find(
+        (c) =>
+          c.name.toLowerCase().startsWith(lower) ||
+          `${c.name}, ${c.state}`.toLowerCase().includes(lower),
+      );
+    if (localMatch) {
+      triggerHaptic("light");
+      selectCityAndFly(localMatch);
+      setCitySearchQuery("");
+      setRemoteCities([]);
+      return;
+    }
+
+    remoteSearchAbortRef.current?.abort();
+    const controller = new AbortController();
+    remoteSearchAbortRef.current = controller;
+    setIsSearchingRemoteCity(true);
+    setRemoteCitySearchTerm(q);
+    const results = await searchUsCities(q, mapboxToken, 5, controller.signal);
+    if (controller.signal.aborted) return;
+    setIsSearchingRemoteCity(false);
+    setRemoteCities(results);
+    if (results.length === 1) {
+      triggerHaptic("light");
+      selectCityAndFly(results[0]);
+      setCitySearchQuery("");
+      setRemoteCities([]);
+    }
+  };
+
+
+
 
   /**
    * Automatic city re-detection while the app is open.
