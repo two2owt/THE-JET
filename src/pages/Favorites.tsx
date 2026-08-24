@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { usePersistentViewState } from "@/hooks/usePersistentViewState";
 import { supabase } from "@/integrations/supabase/client";
 import { useFavorites, type Favorite } from "@/hooks/useFavorites";
 import { Heart, Compass, MapPin, Loader2, AlertTriangle } from "lucide-react";
@@ -56,11 +57,13 @@ export default function Favorites() {
   const { user, isLoading: authLoading } = useAuth();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loadError, setLoadError] = useState(false);
-  const [query, setQuery] = useState("");
-  const [sortBy, setSortBy] = useState<
+  const [query, setQuery] = usePersistentViewState("favorites:query", "");
+  const [sortBy, setSortBy] = usePersistentViewState<
     "recent" | "name" | "venue" | "expiring"
-  >("recent");
-  const [filter, setFilter] = useState<"all" | "venues" | "deals">("all");
+  >("favorites:sort", "recent");
+  const [filter, setFilter] = usePersistentViewState<
+    "all" | "venues" | "deals"
+  >("favorites:filter", "all");
   const headerConfig = useMemo(() => ({ hideSearch: true }), []);
 
   const {

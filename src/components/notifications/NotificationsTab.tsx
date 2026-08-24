@@ -1,4 +1,5 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense } from "react";
+import { usePersistentViewState } from "@/hooks/usePersistentViewState";
 import { Bell } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 import { TabPageHeader } from "@/components/TabPageHeader";
@@ -30,7 +31,10 @@ export function NotificationsTab({
   markAllAsRead,
   onVenueClick,
 }: NotificationsTabProps) {
-  const [filter, setFilter] = useState<Filter>("all");
+  const [filter, setFilter] = usePersistentViewState<Filter>(
+    "alerts:filter",
+    "all",
+  );
 
   const unreadCount = notifications.filter((n) => !n.read).length;
   const readCount = notifications.length - unreadCount;
