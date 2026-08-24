@@ -265,17 +265,33 @@ export const useNotifications = (enabled: boolean = true) => {
   // Re-evaluate expiry on each minute boundary (shared clock, paused while the
   // tab is hidden). Expired alerts disappear from lists and stop counting
   // toward the unread badge automatically.
-  const hasExpiries = Object.values(dealExpiry).some(Boolean);
+  const hasExpiries = Object.values(dealById).some((d) => Boolean(d?.expires_at));
   const now = useMinuteClock(hasExpiries);
+  const expiredIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const n of notifications) {
+      const expiresAt = n.dealId ? dealById[n.dealId]?.expires_at : null;
+      if (expiresAt && isDealExpired(expiresAt, now)) ids.add(n.id);
+    }
+    return ids;
+  }, [notifications, dealById, now]);
+
   const liveNotifications = useMemo(
-    () =>
-      notifications.filter((n) => {
-        const expiresAt = n.dealId ? dealExpiry[n.dealId] : null;
-        if (!expiresAt) return true;
-        return !isDealExpired(expiresAt, now);
-      }),
-    [notifications, dealExpiry, now],
+    () => notifications.filter((n) => !expiredIds.has(n.id)),
+    [notifications, expiredIds],
   );
+  const expiredNotifications = useMemo(
+    () => notifications.filter((n) => expiredIds.has(n.id)),
+    [notifications, expiredIds],
+  );
+  // The badge counts only alerts that are BOTH unread and unexpired. Read state
+  // is durable (local ledger + backend), expiry is derived from the deal rows,
+  // so this holds across reloads.
+  const unreadCount = useMemo(
+    () => liveNotifications.filter((n) => !n.read).length,
+    [liveNotifications],
+  );
+
 
   useEffect(() => {
     // Skip initialization if disabled (deferred loading)
