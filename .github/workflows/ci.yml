@@ -105,19 +105,36 @@ jobs:
         run: bunx playwright install --with-deps chromium
 
       - name: Start dev server
-        run: bun run dev &
+        run: |
+          # nohup + detached stdio so the server survives this step's shell,
+          # and its output lands in a file we can print if startup fails.
+          nohup bun run dev > /tmp/dev-server.log 2>&1 &
+          echo $! > /tmp/dev-server.pid
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
       - name: Wait for dev server
         run: |
           for i in $(seq 1 60); do
             curl -sf -o /dev/null http://localhost:8080/ && exit 0
+            # Fail fast when the server already died instead of waiting 2 min.
+            if [ -f /tmp/dev-server.pid ] && ! kill -0 "$(cat /tmp/dev-server.pid)" 2>/dev/null; then
+              echo "dev server process exited during startup" >&2
+              break
+            fi
             sleep 2
           done
           echo "dev server never became ready" >&2
+          echo "----- dev server log -----" >&2
+          cat /tmp/dev-server.log >&2 || true
+          echo "----- curl diagnostics -----" >&2
+          curl -v http://localhost:8080/ >&2 || true
           exit 1
+
 
       - name: Run Playwright tests
         run: bunx playwright test
