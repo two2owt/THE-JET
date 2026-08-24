@@ -2035,6 +2035,13 @@ export const MapboxHeatmap = ({
       ringTimer = window.setTimeout(clearRing, 2900);
     };
 
+    // List -> map highlight: re-stamp the marker DOM whenever the highlighted
+    // venue changes (the bus applies it directly; this covers late mounts).
+    const unsubscribeHighlight = subscribeMapHighlight(() => {
+      applyMapHighlightToDom();
+    });
+    applyMapHighlightToDom();
+
     const unsubscribe = subscribeMapFocus((request) => {
       const m = map.current;
       if (!m) return;
