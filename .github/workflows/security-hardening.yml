@@ -16,8 +16,8 @@ jobs:
     name: Verify Supabase grants, RLS, and SECURITY DEFINER REVOKEs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version-file: ".nvmrc"
       - name: Verify migrations match docs/SECURITY_HARDENING.md
