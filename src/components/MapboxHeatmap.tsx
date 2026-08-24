@@ -4329,6 +4329,7 @@ export const MapboxHeatmap = ({
                         // Let users exit the search field and close the city menu.
                         setCitySearchQuery("");
                         setRemoteCities([]);
+                        setCityMenuOpen(false);
                       }
                     }}
                     placeholder="City or city, state"
