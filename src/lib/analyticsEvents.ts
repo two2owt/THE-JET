@@ -41,6 +41,12 @@ export const ANALYTICS_EVENTS = {
   CHECKOUT_FAILED: "checkout_failed",
   SUBSCRIPTION_ACTIVE: "subscription_active",
 
+  // --- Permission priming --------------------------------------------------
+  PERMISSION_PROMPT_SHOWN: "permission_prompt_shown",
+  PERMISSION_PROMPT_ACCEPTED: "permission_prompt_accepted",
+  PERMISSION_PROMPT_DENIED: "permission_prompt_denied",
+  PERMISSION_PROMPT_SNOOZED: "permission_prompt_snoozed",
+
   // --- Distribution --------------------------------------------------------
   DEEP_LINK_SHARED: "deep_link_shared",
   DEEP_LINK_OPENED: "deep_link_opened",
