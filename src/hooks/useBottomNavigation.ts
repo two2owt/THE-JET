@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { useNavigate, useLocation } from "@/lib/router-compat";
 
 export type NavTab =
