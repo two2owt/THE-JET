@@ -16,6 +16,8 @@ interface HeaderConfig {
   deals: Deal[];
   onVenueSelect: (venue: Venue | string) => void;
   isLoading?: boolean;
+  /** Message describing a failed venue/deal load (surfaced in search). */
+  error?: string | null;
   lastUpdated?: Date | null;
   onRefresh?: () => void;
   cityName?: string;
@@ -31,6 +33,7 @@ const defaultConfig: HeaderConfig = {
   deals: [],
   onVenueSelect: () => {},
   isLoading: false,
+  error: null,
   lastUpdated: null,
   onRefresh: undefined,
   cityName: undefined,
