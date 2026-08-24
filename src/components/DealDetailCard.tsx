@@ -7,7 +7,9 @@ import {
   X,
   ExternalLink,
   Navigation,
+  QrCode,
 } from "lucide-react";
+
 import { Button } from "./ui/button";
 import { OptimizedImage } from "./ui/optimized-image";
 import { toast } from "sonner";
