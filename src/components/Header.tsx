@@ -44,7 +44,6 @@ export const Header = () => {
       const url = new URLSearchParams(window.location.search).get("q");
       const restored =
         url || window.sessionStorage.getItem(SEARCH_QUERY_KEY) || "";
-      console.log("DBGrestore", performance.now()|0, window.location.search, JSON.stringify(restored));
       if (restored) {
         setSearchQuery(restored);
         setShowResults(restored.trim().length > 0);
@@ -126,7 +125,6 @@ export const Header = () => {
     const next = new URLSearchParams(urlSearchParams);
     if (debouncedQuery) next.set("q", debouncedQuery);
     else next.delete("q");
-    console.log("DBGsync", performance.now()|0, window.location.search, debouncedQuery, searchQuery, String(next));
     setUrlSearchParams(next, { replace: true });
   }, [debouncedQuery, urlSearchParams, setUrlSearchParams, searchQuery]);
 
@@ -186,7 +184,6 @@ export const Header = () => {
     }
     const next = new URLSearchParams(urlSearchParams);
     if (next.has("q")) {
-      console.log("DBGreset", location.pathname);
       next.delete("q");
       setUrlSearchParams(next, { replace: true });
     }
