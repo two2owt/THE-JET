@@ -30,6 +30,7 @@ export default function Deals() {
   const navigate = useNavigate();
   const headerConfig = useMemo(() => ({ hideSearch: true }), []);
   const [pushDismissed, setPushDismissed] = useState(false);
+  const { deals, loading, error } = useDealSyncRealtime();
 
   const handleVenueSelect = useCallback(
     (venueName: string) => {
@@ -43,9 +44,15 @@ export default function Deals() {
       <PageShell>
         <h1 className="sr-only">Live deals near you</h1>
         <Suspense fallback={<ExploreTabSkeleton />}>
-          <ExploreTab onVenueSelect={handleVenueSelect} />
+          <ExploreTab
+            deals={deals}
+            dealsLoading={loading}
+            dealsError={error}
+            onVenueSelect={handleVenueSelect}
+          />
         </Suspense>
       </PageShell>
+
 
       <Suspense fallback={null}>
         <PushNotificationPrompt
