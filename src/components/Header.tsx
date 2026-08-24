@@ -235,25 +235,19 @@ export const Header = () => {
     setSearchQuery("");
     setShowResults(false);
   }, []);
-  const handleCollapseSearch = useCallback(() => {
-    setSearchExpanded(false);
-    // Keep the query so re-opening search restores the prior context that
-    // matches the currently open JetCard / map filters.
-    setShowResults(false);
-  }, []);
 
   // Wrap the context's onVenueSelect so picking a result from the dropdown
-  // closes the results panel (and collapses the mobile pill) so the JetCard
-  // is unobstructed — but keeps the query intact so it stays consistent
-  // with the venue/marker currently open on the map.
+  // closes the results panel so the JetCard is unobstructed — but keeps the
+  // query intact so it stays consistent with the venue/marker currently open
+  // on the map.
   const handleVenueSelectFromSearch = useCallback(
     (venue: Parameters<typeof onVenueSelect>[0]) => {
       onVenueSelect(venue);
       setShowResults(false);
-      setSearchExpanded(false);
     },
     [onVenueSelect],
   );
+
 
   const showSearchBar = !hideSearch && (!isMobile || searchExpanded);
   const showSearchIcon = !hideSearch && isMobile && !searchExpanded;
