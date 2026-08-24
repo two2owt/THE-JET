@@ -36,10 +36,7 @@ import { useOnboardingGate } from "@/hooks/useOnboardingGate";
 import { useCitySelection } from "@/hooks/useCitySelection";
 import { useVenueDeepLinks } from "@/hooks/useVenueDeepLinks";
 
-import {
-  NotificationsTabSkeleton,
-  ExploreTabSkeleton,
-} from "@/components/skeletons/PageSkeletons";
+import { NotificationsTabSkeleton } from "@/components/skeletons/PageSkeletons";
 import { PageShell } from "@/components/PageShell";
 import { CityTransitionOverlay } from "@/components/CityTransitionOverlay";
 import { MapSurface } from "@/components/map/MapSurface";
@@ -57,9 +54,6 @@ const NotificationsTab = lazy(() =>
   import("@/components/notifications/NotificationsTab").then((m) => ({
     default: m.NotificationsTab,
   })),
-);
-const ExploreTab = lazy(() =>
-  import("@/components/ExploreTab").then((m) => ({ default: m.ExploreTab })),
 );
 const DirectionsDialog = lazy(() => import("@/components/DirectionsDialog"));
 const ShareToFriendDialog = lazy(() =>
@@ -316,11 +310,9 @@ const Index = () => {
       <h1 className="sr-only">
         {activeTab === "map"
           ? "JET — Real-time heatmap of live deals, events, and trending venues near you"
-          : activeTab === "explore"
-            ? "Explore live deals near you"
-            : activeTab === "notifications"
-              ? "Alerts"
-              : "JET"}
+          : activeTab === "notifications"
+            ? "Alerts"
+            : "JET"}
       </h1>
 
       {/* FULL-SCREEN MAP LAYER - only on map tab */}
@@ -428,14 +420,6 @@ const Index = () => {
               />
             </Suspense>
           )}
-
-          {activeTab === "explore" && (
-            <PageShell>
-              <Suspense fallback={<ExploreTabSkeleton />}>
-                <ExploreTab onVenueSelect={handleVenueSelect} />
-              </Suspense>
-            </PageShell>
-          )}
         </main>
       )}
 
@@ -445,6 +429,7 @@ const Index = () => {
         onTabChange={handleTabChange}
         onPrefetch={(tab) => {
           if (tab === "map") import("@/components/MapboxHeatmap");
+          if (tab === "deals") import("@/components/ExploreTab");
         }}
         notificationCount={unreadNotifications}
         messageCount={unreadMessages}

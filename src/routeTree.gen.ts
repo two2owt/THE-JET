@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as DealsRouteImport } from './routes/deals'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -48,6 +49,11 @@ const AdminRoute = AdminRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DealsRoute = DealsRouteImport.update({
+  id: '/deals',
+  path: '/deals',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FavoritesRoute = FavoritesRouteImport.update({
@@ -169,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/deals': typeof DealsRoute
   '/favorites': typeof FavoritesRoute
   '/messages': typeof MessagesRoute
   '/onboarding': typeof OnboardingRoute
@@ -196,6 +203,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/deals': typeof DealsRoute
   '/favorites': typeof FavoritesRoute
   '/messages': typeof MessagesRoute
   '/onboarding': typeof OnboardingRoute
@@ -224,6 +232,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
+  '/deals': typeof DealsRoute
   '/favorites': typeof FavoritesRoute
   '/messages': typeof MessagesRoute
   '/onboarding': typeof OnboardingRoute
@@ -253,6 +262,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/deals'
     | '/favorites'
     | '/messages'
     | '/onboarding'
@@ -280,6 +290,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/deals'
     | '/favorites'
     | '/messages'
     | '/onboarding'
@@ -307,6 +318,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/deals'
     | '/favorites'
     | '/messages'
     | '/onboarding'
@@ -335,6 +347,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
+  DealsRoute: typeof DealsRoute
   FavoritesRoute: typeof FavoritesRoute
   MessagesRoute: typeof MessagesRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -380,6 +393,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/deals': {
+      id: '/deals'
+      path: '/deals'
+      fullPath: '/deals'
+      preLoaderRoute: typeof DealsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/favorites': {
@@ -543,6 +563,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
+  DealsRoute: DealsRoute,
   FavoritesRoute: FavoritesRoute,
   MessagesRoute: MessagesRoute,
   OnboardingRoute: OnboardingRoute,
