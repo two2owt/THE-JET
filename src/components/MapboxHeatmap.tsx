@@ -3687,6 +3687,8 @@ export const MapboxHeatmap = ({
         // synthetic mouseenter/mouseleave that would compete with touchstart.
         el.addEventListener("pointerenter", (e) => {
           if ((e as PointerEvent).pointerType !== "mouse") return;
+          // Publish so the search results list scrolls this venue into view.
+          setMapHighlight(String(venue.id ?? ""), "map");
           el.style.zIndex = "300";
           pinEl.style.transform = isSelected ? "scale(1.2)" : "scale(1.15)";
           teardropEl.style.boxShadow = `
