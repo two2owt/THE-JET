@@ -50,15 +50,41 @@ export function NotificationsTab({
   // Alerts tied to a deal that has passed its merchant `expires_at` are removed
   // outright. Alerts with no linked deal (or a deal not in the synced list) are
   // left alone — we can't prove those are stale.
+  //
+  // Ordering is urgency-first: alerts whose deal expires soonest come first, so
+  // the thing about to lapse is at the top. Alerts with no known expiry sort
+  // after those, newest first, and sent time breaks any tie.
   const live = useMemo(() => {
-    if (!deals?.length) return notifications;
-    const dealById = new Map(deals.map((d) => [d.id, d]));
-    return notifications.filter((n) => {
+    const dealById = new Map((deals ?? []).map((d) => [d.id, d]));
+    const expiryOf = (n: { dealId?: string }): number | null => {
       const deal = n?.dealId ? dealById.get(n.dealId) : null;
-      if (!deal) return true;
-      return !isDealExpired(deal.expires_at, now);
+      if (!deal?.expires_at) return null;
+      const at = new Date(deal.expires_at).getTime();
+      return Number.isFinite(at) ? at : null;
+    };
+    const sentOf = (n: { sentAt?: string; timestamp?: string }): number => {
+      const at = n?.sentAt ? new Date(n.sentAt).getTime() : NaN;
+      return Number.isFinite(at) ? at : 0;
+    };
+
+    const kept = dealById.size
+      ? notifications.filter((n) => {
+          const deal = n?.dealId ? dealById.get(n.dealId) : null;
+          if (!deal) return true;
+          return !isDealExpired(deal.expires_at, now);
+        })
+      : notifications;
+
+    return [...kept].sort((a, b) => {
+      const ea = expiryOf(a);
+      const eb = expiryOf(b);
+      if (ea !== null && eb !== null && ea !== eb) return ea - eb;
+      if (ea !== null && eb === null) return -1;
+      if (ea === null && eb !== null) return 1;
+      return sentOf(b) - sentOf(a);
     });
   }, [notifications, deals, now]);
+
 
   const unreadCount = live.filter((n) => !n.read).length;
   const readCount = live.length - unreadCount;
