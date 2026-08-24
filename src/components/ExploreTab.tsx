@@ -255,6 +255,8 @@ export const ExploreTab = ({
     selectedCategories,
     userPreferences,
     preferenceFilterEnabled,
+    locationFilterEnabled,
+    userLocation,
   ]);
 
   const getUserLocation = async () => {
