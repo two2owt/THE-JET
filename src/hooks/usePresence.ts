@@ -154,6 +154,11 @@ export function usePresence(currentUserId?: string) {
     online: new Set(),
   });
   const [tick, setTick] = useState(0);
+  // The first client render must match the SSR markup exactly: React does not
+  // patch attribute-level hydration mismatches, which would freeze the dot on
+  // its server-rendered colour. Everyone starts "away" until after mount.
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -180,15 +185,14 @@ export function usePresence(currentUserId?: string) {
 
   return useMemo(() => {
     const now = Date.now();
-    if (import.meta.env.DEV) console.log('[presence] recompute', tick, currentUserId, statusFor(state, currentUserId, now));
     return {
       /** Status of an arbitrary user id (friends on the social page). */
       getStatus: (userId: string | null | undefined): PresenceStatus =>
-        statusFor(state, userId, now),
+        hydrated ? statusFor(state, userId, now) : "away",
       /** Status of the signed-in user (header avatar). */
-      selfStatus: statusFor(state, currentUserId, now),
+      selfStatus: hydrated ? statusFor(state, currentUserId, now) : "away",
       onlineCount: state.online.size,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, currentUserId, tick]);
+  }, [state, currentUserId, tick, hydrated]);
 }
