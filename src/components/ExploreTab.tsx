@@ -818,11 +818,27 @@ export const ExploreTab = ({
           selectedCategories.length === 0 && (
             <EmptyState
               icon={MapPin}
-              title="No deals nearby"
+              title={locationFilterEnabled ? "No deals nearby" : "No deals match your filters"}
               description={
-                userLocation
-                  ? "No merchants are broadcasting to your current location right now. Check back soon."
-                  : "Enable location services to receive merchant broadcasts near you."
+                locationFilterEnabled
+                  ? "Nothing is within your radius right now. Turn off nearby-only to see every active merchant deal."
+                  : preferenceFilterEnabled
+                    ? "No active deals match your saved preferences. Switch to Show All to see everything."
+                    : "No active deals to show right now. Check back soon."
+              }
+              actionLabel={
+                locationFilterEnabled
+                  ? "Show all deals"
+                  : preferenceFilterEnabled
+                    ? "Show all deals"
+                    : undefined
+              }
+              onAction={
+                locationFilterEnabled
+                  ? () => setLocationFilterEnabled(false)
+                  : preferenceFilterEnabled
+                    ? () => setPreferenceFilterEnabled(false)
+                    : undefined
               }
             />
 
