@@ -201,15 +201,15 @@ export function HeaderSearch({
         }}
       />
 
-      {showClear && (
+      {showDismiss && (
         <IconButton
           size="bare"
-          ariaLabel="Clear search"
-          onClick={onClear}
+          ariaLabel={dismissLabel}
+          onClick={handleDismiss}
           className="rounded-full hover:bg-muted/80 transition-colors"
           style={{
             position: "absolute",
-            right: showCollapse ? "44px" : "8px",
+            right: "8px",
             top: "50%",
             transform: "translateY(-50%)",
             zIndex: 10,
@@ -222,34 +222,8 @@ export function HeaderSearch({
         >
           <X
             style={{
-              width: 12,
-              height: 12,
-              color: "hsl(var(--muted-foreground))",
-            }}
-          />
-        </IconButton>
-      )}
-
-      {showCollapse && (
-        <IconButton
-          size="bare"
-          ariaLabel="Close search"
-          onClick={onCollapse}
-          className="rounded-full hover:bg-muted/60 transition-colors"
-          style={{
-            position: "absolute",
-            right: "8px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            zIndex: 10,
-            width: 28,
-            height: 28,
-          }}
-        >
-          <X
-            style={{
-              width: 14,
-              height: 14,
+              width: 13,
+              height: 13,
               color: "hsl(var(--muted-foreground))",
             }}
           />
