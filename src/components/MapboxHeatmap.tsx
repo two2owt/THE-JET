@@ -199,6 +199,10 @@ import locationPuckIcon from "@/assets/location-puck.png";
 export type { Venue } from "@/types/venue";
 import type { Venue } from "@/types/venue";
 
+/** Stable empty selection so the default prop doesn't churn memo deps. */
+const EMPTY_CATEGORY_FILTER: string[] = [];
+
+
 interface MapboxHeatmapProps {
   onVenueSelect: (venue: Venue) => void;
   onParkingSelect?: (parking: {
