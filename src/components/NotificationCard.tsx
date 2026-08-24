@@ -1,5 +1,5 @@
 import { memo, useMemo } from "react";
-import { MapPin, Clock, Gift, TrendingUp, Check } from "lucide-react";
+import { MapPin, Clock, Gift, TrendingUp, Check, Info } from "lucide-react";
 import type { DealWithNeighborhood } from "@/mobile-app-snippets/useDealSyncRealtime";
 import {
   DealMetaBadges,
