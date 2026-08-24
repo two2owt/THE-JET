@@ -88,42 +88,34 @@ export function HeaderSyncIndicator({
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: 6,
+        gap: 4,
         // Shared nav-header control height keeps this level with the search
         // pill and the avatar on every breakpoint.
         height: "var(--header-control-height, 36px)",
         minWidth: "var(--header-control-height, 36px)",
-        padding: "0 10px",
+        padding: "0 8px",
         borderRadius: 9999,
-        border: "1px solid hsl(var(--border) / 0.5)",
-        background: "hsl(var(--muted) / 0.3)",
+        border: "none",
+        background: "hsl(var(--muted) / 0.2)",
         backdropFilter: "blur(10px)",
         WebkitBackdropFilter: "blur(10px)",
         color: isLive ? neon : "hsl(var(--muted-foreground))",
-        borderColor: accentOn ? "hsl(120 100% 54% / 0.45)" : undefined,
         boxShadow: accentOn ? "0 0 10px hsl(120 100% 54% / 0.22)" : undefined,
-        fontSize: "calc(var(--header-font-size, 13px) - 1px)",
+        fontSize: "var(--header-font-size, 13px)",
         lineHeight: 1,
-
         whiteSpace: "nowrap",
         cursor: onRefresh ? "pointer" : "default",
         opacity: mounted ? (isLoading ? 0.75 : 1) : 0,
         transform: mounted ? "translateY(0)" : "translateY(-4px)",
         transition:
-          "opacity 0.3s ease-out 0.1s, transform 0.3s ease-out 0.1s, background 0.2s, border-color 0.2s",
+          "opacity 0.3s ease-out 0.1s, transform 0.3s ease-out 0.1s, background 0.2s",
       }}
       onMouseEnter={(e) => {
         if (!onRefresh || isLoading) return;
-        e.currentTarget.style.background = "hsl(var(--muted) / 0.5)";
-        e.currentTarget.style.borderColor = accentOn
-          ? "hsl(120 100% 54% / 0.7)"
-          : "hsl(var(--gold) / 0.4)";
+        e.currentTarget.style.background = "hsl(var(--muted) / 0.4)";
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.background = "hsl(var(--muted) / 0.3)";
-        e.currentTarget.style.borderColor = accentOn
-          ? "hsl(120 100% 54% / 0.45)"
-          : "hsl(var(--border) / 0.5)";
+        e.currentTarget.style.background = "hsl(var(--muted) / 0.2)";
       }}
     >
       <RefreshCw
