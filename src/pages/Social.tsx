@@ -32,6 +32,8 @@ import {
 } from "@/components/skeletons/PageSkeletons";
 import { SectionTitle } from "@/components/ui/page-title";
 import { useAuth } from "@/contexts/AuthContext";
+import { PresenceDot } from "@/components/ui/presence-dot";
+import { usePresence } from "@/hooks/usePresence";
 import { TabPageHeader } from "@/components/TabPageHeader";
 import { Input } from "@/components/ui/input";
 
@@ -89,6 +91,7 @@ interface Profile {
 export default function Social() {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
+  const { getStatus } = usePresence(user?.id);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Profile[]>([]);
@@ -542,17 +545,26 @@ export default function Social() {
                         }}
                         onClick={() => setSelectedProfileId(profile.id)}
                       >
-                        <Avatar className={avatarClass}>
-                          <AvatarImage
-                            src={profile.avatar_url || undefined}
-                            alt={profile.display_name || "User"}
-                          />
-                          <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary">
-                            {profile.display_name?.charAt(0)?.toUpperCase() || (
-                              <Users style={{ width: "50%", height: "50%" }} />
-                            )}
-                          </AvatarFallback>
-                        </Avatar>
+                        <span
+                          style={{
+                            position: "relative",
+                            display: "inline-flex",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <Avatar className={avatarClass}>
+                            <AvatarImage
+                              src={profile.avatar_url || undefined}
+                              alt={profile.display_name || "User"}
+                            />
+                            <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary">
+                              {profile.display_name?.charAt(0)?.toUpperCase() || (
+                                <Users style={{ width: "50%", height: "50%" }} />
+                              )}
+                            </AvatarFallback>
+                          </Avatar>
+                          <PresenceDot status={getStatus(profile.id)} size={13} />
+                        </span>
                         <div
                           style={{
                             minWidth: 0,
@@ -771,19 +783,28 @@ export default function Social() {
                       }}
                       onClick={() => setSelectedProfileId(friendId)}
                     >
-                      <Avatar className={avatarClass}>
-                        <AvatarImage
-                          src={connection.profile?.avatar_url || undefined}
-                          alt={connection.profile?.display_name || "Friend"}
-                        />
-                        <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary">
-                          {connection.profile?.display_name
-                            ?.charAt(0)
-                            ?.toUpperCase() || (
-                            <Users style={{ width: "50%", height: "50%" }} />
-                          )}
-                        </AvatarFallback>
-                      </Avatar>
+                      <span
+                        style={{
+                          position: "relative",
+                          display: "inline-flex",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Avatar className={avatarClass}>
+                          <AvatarImage
+                            src={connection.profile?.avatar_url || undefined}
+                            alt={connection.profile?.display_name || "Friend"}
+                          />
+                          <AvatarFallback className="bg-gradient-to-br from-primary/15 to-accent/15 text-primary">
+                            {connection.profile?.display_name
+                              ?.charAt(0)
+                              ?.toUpperCase() || (
+                              <Users style={{ width: "50%", height: "50%" }} />
+                            )}
+                          </AvatarFallback>
+                        </Avatar>
+                        <PresenceDot status={getStatus(friendId)} size={13} />
+                      </span>
                       <div
                         style={{
                           minWidth: 0,
@@ -906,17 +927,26 @@ export default function Social() {
                   return (
                     <div key={profile.id} style={cardStyle}>
                       <div style={identityWrap}>
-                        <Avatar className={avatarClass}>
-                          <AvatarImage
-                            src={profile.avatar_url || undefined}
-                            alt={profile.display_name || "User"}
-                          />
-                          <AvatarFallback className="bg-gradient-to-br from-accent/15 to-primary/15 text-accent">
-                            {profile.display_name?.charAt(0)?.toUpperCase() || (
-                              <Users style={{ width: "50%", height: "50%" }} />
-                            )}
-                          </AvatarFallback>
-                        </Avatar>
+                        <span
+                          style={{
+                            position: "relative",
+                            display: "inline-flex",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <Avatar className={avatarClass}>
+                            <AvatarImage
+                              src={profile.avatar_url || undefined}
+                              alt={profile.display_name || "User"}
+                            />
+                            <AvatarFallback className="bg-gradient-to-br from-accent/15 to-primary/15 text-accent">
+                              {profile.display_name?.charAt(0)?.toUpperCase() || (
+                                <Users style={{ width: "50%", height: "50%" }} />
+                              )}
+                            </AvatarFallback>
+                          </Avatar>
+                          <PresenceDot status={getStatus(profile.id)} size={13} />
+                        </span>
                         <div
                           style={{
                             minWidth: 0,
