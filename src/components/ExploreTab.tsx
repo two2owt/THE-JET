@@ -826,7 +826,7 @@ export const ExploreTab = ({
                       fallback={
                         <div className="w-20 h-20 flex items-center justify-center bg-gradient-to-br from-primary/20 via-accent/20 to-secondary/20 rounded-lg flex-shrink-0">
                           <span className="text-3xl">
-                            {getDealIcon(deal.deal_type)}
+                            {getDealIcon(deal)}
                           </span>
                         </div>
                       }
@@ -834,7 +834,7 @@ export const ExploreTab = ({
                   ) : (
                     <div className="w-20 h-20 flex items-center justify-center bg-gradient-to-br from-primary/20 via-accent/20 to-secondary/20 rounded-lg flex-shrink-0">
                       <span className="text-3xl">
-                        {getDealIcon(deal.deal_type)}
+                        {getDealIcon(deal)}
                       </span>
                     </div>
                   )}
@@ -879,7 +879,10 @@ export const ExploreTab = ({
                             }`}
                           />
                         </Button>
-                        <Badge variant="secondary">{deal.deal_type}</Badge>
+                        <DealTypeBadge
+                          presentation={getDealPresentation(deal)}
+                          size="md"
+                        />
                       </div>
                     </div>
 
@@ -899,10 +902,7 @@ export const ExploreTab = ({
                             {formatDistance(deal.distance)}
                           </span>
                         )}
-                        <div className="flex items-center gap-1 text-primary font-medium">
-                          <Clock className="w-3 h-3" />
-                          {getTimeRemaining(deal.expires_at)}
-                        </div>
+                        <DealExpiryBadge presentation={getDealPresentation(deal)} />
                       </div>
                     </div>
                   </div>
