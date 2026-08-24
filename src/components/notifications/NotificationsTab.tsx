@@ -1,4 +1,5 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { isDealExpired } from "@/lib/dealExpiry";
 import { usePersistentViewState } from "@/hooks/usePersistentViewState";
 import { Bell } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
