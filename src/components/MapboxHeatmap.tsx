@@ -4096,7 +4096,12 @@ export const MapboxHeatmap = ({
               isUsingCurrentLocation ? "current-location" : selectedCity.id
             }
             onOpenChange={(open) => {
-              if (!open) setCitySearchQuery("");
+              if (!open) {
+                setCitySearchQuery("");
+                setRemoteCities([]);
+                setIsSearchingRemoteCity(false);
+              }
+
               // Notify floating panels (e.g. SearchResults) to recalc position
               if (typeof window !== "undefined") {
                 window.dispatchEvent(
