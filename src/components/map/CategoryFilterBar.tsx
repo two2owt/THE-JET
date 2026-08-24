@@ -1,5 +1,7 @@
+import { useEffect, useRef } from "react";
 import { CATEGORY_FILTER_IDS, getCategoryById } from "@/lib/venue-categories";
 import { triggerHaptic } from "@/lib/haptics";
+import { analytics } from "@/lib/analytics";
 
 interface CategoryFilterBarProps {
   /** Active category ids; an empty array shows every venue. */
@@ -30,18 +32,42 @@ export function CategoryFilterBar({
     (sum, id) => sum + (counts[id] ?? 0),
     0,
   );
+  // Impression: fire once per session + route once the row has real chips, so
+  // the number means "users who saw the filter", not "map re-rendered".
+  const impressionSent = useRef(false);
+  const availableKey = available.join(",");
+  useEffect(() => {
+    if (impressionSent.current || available.length === 0) return;
+    const key = `cat_filter_impression:${window.location.pathname}`;
+    try {
+      if (sessionStorage.getItem(key)) {
+        impressionSent.current = true;
+        return;
+      }
+      sessionStorage.setItem(key, "1");
+    } catch {
+      /* private mode — still record the impression once per mount */
+    }
+    impressionSent.current = true;
+    analytics.categoryFilterImpression(available, total);
+    // availableKey/total are snapshot inputs for the single impression.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [availableKey]);
+
   if (available.length === 0) return null;
 
   /** Toggle one bucket in/out of the multi-select; null clears everything. */
   const select = (id: string | null) => {
     triggerHaptic("light");
     if (id === null) {
+      if (value.length > 0) analytics.categoryFilterCleared(value);
       onChange([]);
       return;
     }
-    onChange(
-      value.includes(id) ? value.filter((v) => v !== id) : [...value, id],
-    );
+    const wasActive = value.includes(id);
+    const next = wasActive ? value.filter((v) => v !== id) : [...value, id];
+    analytics.categoryFilterSelected(id, !wasActive, next, counts[id] ?? 0);
+    onChange(next);
   };
 
   return (
