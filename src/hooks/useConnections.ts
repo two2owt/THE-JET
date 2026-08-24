@@ -37,6 +37,9 @@ export const useConnections = (userId?: string) => {
   // the moment any profile is edited.
   const fetchRef = useRef<() => void>(() => {});
   useProfilePulse(() => fetchRef.current?.(), !!userId);
+  fetchRef.current = () => {
+    if (userId) void fetchConnections();
+  };
 
   const fetchConnections = async () => {
     try {
