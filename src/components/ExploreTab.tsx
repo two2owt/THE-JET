@@ -180,10 +180,15 @@ export const ExploreTab = ({
     string[]
   >("deals:categories", []);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  // Seed from the persisted fix so a cold load / deep-link entry can render
+  // distances immediately instead of blocking on a GPS round-trip.
   const [userLocation, setUserLocation] = useState<{
     lat: number;
     lng: number;
-  } | null>(null);
+  } | null>(() => {
+    const cached = freshCachedLocation();
+    return cached ? { lat: cached.lat, lng: cached.lng } : null;
+  });
   const [locationError, setLocationError] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
