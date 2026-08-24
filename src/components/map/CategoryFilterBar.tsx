@@ -104,7 +104,7 @@ export function CategoryFilterBar({
           <button
             key={id}
             type="button"
-            onClick={() => select(active ? null : id)}
+            onClick={() => select(id)}
             aria-pressed={active}
             aria-label={`${def.label} — ${counts[id] ?? 0} ${(counts[id] ?? 0) === 1 ? "match" : "matches"}`}
             className="shrink-0 inline-flex items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition-colors active:scale-95 backdrop-blur-xl"

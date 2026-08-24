@@ -164,37 +164,50 @@ const Index = () => {
   // back/forward walks the filter history instead of leaving the map stuck.
   const [searchParams, setSearchParams] = useSearchParams();
   const catParam = searchParams.get("cat");
-  const categoryFilter = catParam && getCategoryById(catParam) ? catParam : null;
+  // `?cat=bar,coffee` — a comma-separated multi-select. Unknown ids are
+  // dropped; order is de-duped and stable so links stay canonical.
+  const categoryFilter = useMemo(() => {
+    if (!catParam) return [] as string[];
+    const seen = new Set<string>();
+    for (const raw of catParam.split(",")) {
+      const id = raw.trim();
+      if (id && getCategoryById(id)) seen.add(id);
+    }
+    return Array.from(seen);
+  }, [catParam]);
+  const catKey = categoryFilter.join(",");
   const handleCategoryFilterChange = useCallback(
-    (next: string | null) => {
+    (next: string[]) => {
+      const nextKey = Array.from(new Set(next)).join(",");
       // Re-selecting the live filter would push a duplicate entry that back
       // has to chew through, so ignore no-op changes.
-      if (next === categoryFilter) return;
+      if (nextKey === catKey) return;
       setSearchParams((prev) => {
         const p = new URLSearchParams(prev);
-        if (next) p.set("cat", next);
+        if (nextKey) p.set("cat", nextKey);
         else p.delete("cat");
         return p;
       });
     },
-    [setSearchParams, categoryFilter],
+    [setSearchParams, catKey],
   );
 
-  // An unknown/stale `?cat=` value (renamed taxonomy id, hand-typed URL)
-  // renders as "All"; drop it from the URL so what's shown matches the link
-  // the user would copy. Replace, never push — this isn't a user action.
+  // Unknown/stale ids (renamed taxonomy, hand-typed URL) are ignored when
+  // rendering; rewrite the URL so what's shown matches the link the user
+  // would copy. Replace, never push — this isn't a user action.
   useEffect(() => {
-    if (catParam && !categoryFilter) {
+    if (catParam !== null && catParam !== catKey) {
       setSearchParams(
         (prev) => {
           const p = new URLSearchParams(prev);
-          p.delete("cat");
+          if (catKey) p.set("cat", catKey);
+          else p.delete("cat");
           return p;
         },
         { replace: true },
       );
     }
-  }, [catParam, categoryFilter, setSearchParams]);
+  }, [catParam, catKey, setSearchParams]);
 
 
   const jetCardRef = useRef<HTMLDivElement>(null);
