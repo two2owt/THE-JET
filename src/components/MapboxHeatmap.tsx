@@ -1,4 +1,5 @@
 import { devLog } from "@/lib/log";
+import { useMapStylePreference } from "@/lib/mapStylePreference";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { storeLastKnownLocation } from "@/lib/tile-prefetch";
 import { GEO_GRANTED_EVENT } from "@/lib/geolocationGrantEvent";
@@ -636,6 +637,8 @@ export const MapboxHeatmap = ({
   ): "light" | "dark" =>
     preset === "dawn" || preset === "day" ? "light" : "dark";
 
+  // User preference from Profile > Appearance: light / dark / auto (clock).
+  const [mapStylePreference] = useMapStylePreference();
   const [mapStyle, setMapStyle] = useState<
     "light" | "dark" | "streets" | "satellite"
   >(() => styleForTimeOfDay(getTimeOfDayPreset()));
@@ -645,14 +648,20 @@ export const MapboxHeatmap = ({
   // Once the user picks a style manually, stop auto-switching for the session.
   const manualStyleOverride = useRef(false);
 
-  // Re-evaluate time of day every minute and swap the base style at dawn/dusk.
+  // Re-evaluate time of day every minute and swap the base style at dawn/dusk
+  // when the user's preference is "auto". Explicit light/dark preferences pin
+  // the basemap until the user changes it (or picks a style on the map).
   useEffect(() => {
+    manualStyleOverride.current = false;
     const tick = () => {
       const preset = getTimeOfDayPreset();
       setLightPreset(preset);
       if (!manualStyleOverride.current) {
         setMapStyle((prev) => {
-          const next = styleForTimeOfDay(preset);
+          const next =
+            mapStylePreference === "auto"
+              ? styleForTimeOfDay(preset)
+              : mapStylePreference;
           return prev === next ? prev : next;
         });
       }
@@ -660,7 +669,7 @@ export const MapboxHeatmap = ({
     tick();
     const id = window.setInterval(tick, 60_000);
     return () => window.clearInterval(id);
-  }, []);
+  }, [mapStylePreference]);
   const [show3DTerrain, setShow3DTerrain] = useState(false);
 
   // Time-lapse mode state

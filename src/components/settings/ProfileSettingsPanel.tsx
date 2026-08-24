@@ -17,6 +17,8 @@ import {
   Save,
   Radio,
   RefreshCw,
+  Sun,
+  SunMoon,
 } from "lucide-react";
 import { openNotificationSettings } from "@/lib/openAppSettings";
 import { Settings2 } from "lucide-react";
@@ -41,6 +43,27 @@ import {
   openLocationSettings,
   requestBackgroundPermission,
 } from "@/lib/nativeBackgroundGeolocation";
+import {
+  autoMapStyleForNow,
+  useMapStylePreference,
+  type MapStylePreference,
+} from "@/lib/mapStylePreference";
+
+const MAP_STYLE_OPTIONS: {
+  value: MapStylePreference;
+  label: string;
+  description: string;
+  Icon: typeof Sun;
+}[] = [
+  { value: "light", label: "Light", description: "Bright basemap", Icon: Sun },
+  { value: "dark", label: "Dark", description: "Night basemap", Icon: Moon },
+  {
+    value: "auto",
+    label: "Auto",
+    description: "Follows your clock",
+    Icon: SunMoon,
+  },
+];
 
 const preferencesSchema = z.object({
   notifications_enabled: z.boolean(),
@@ -74,6 +97,7 @@ export function ProfileSettingsPanel({
   userId,
   userEmail,
 }: ProfileSettingsPanelProps) {
+  const [mapStylePreference, setMapStylePreference] = useMapStylePreference();
   const {
     isRegistered: isPushRegistered,
     isNative,
@@ -532,10 +556,10 @@ export function ProfileSettingsPanel({
         </div>
       </Card>
 
-      {/* Appearance */}
+      {/* Appearance — map basemap style */}
       <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
         <SectionTitle
-          subtitle="JET ships in a single, signature dark luxe theme."
+          subtitle="Choose how the map renders. Auto follows your device clock."
           className="mb-0"
         >
           <span className="inline-flex items-center gap-2">
@@ -544,18 +568,47 @@ export function ProfileSettingsPanel({
           </span>
         </SectionTitle>
         <div className="divider-luxe" />
-        <div className="flex items-center gap-3 p-3 sm:p-4 rounded-xl border-hairline bg-popover/40">
-          <div className="shrink-0 w-9 h-9 rounded-full bg-gradient-gold/10 ring-1 ring-gold/30 flex items-center justify-center">
-            <Moon className="w-4 h-4 text-gold" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground">Dark Luxe</p>
-            <p className="text-xs text-muted-foreground">
-              Near-black surfaces, hairline borders, soft ambient glow.
-            </p>
-          </div>
-          <span className="dot-gold" aria-hidden="true" />
+        <div
+          className="grid grid-cols-3 gap-2 sm:gap-3"
+          role="radiogroup"
+          aria-label="Map style"
+        >
+          {MAP_STYLE_OPTIONS.map(({ value, label, description, Icon }) => {
+            const active = mapStylePreference === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => setMapStylePreference(value)}
+                className={`flex flex-col items-center gap-1.5 rounded-xl border p-3 min-h-[88px] justify-center text-center transition-colors ${
+                  active
+                    ? "border-gold/60 bg-gold/10"
+                    : "border-hairline bg-popover/40 hover:bg-popover/60"
+                }`}
+              >
+                <Icon
+                  className={`w-5 h-5 ${active ? "text-gold" : "text-muted-foreground"}`}
+                />
+                <span className="text-xs sm:text-sm font-medium text-foreground">
+                  {label}
+                </span>
+                <span className="text-[10px] leading-tight text-muted-foreground">
+                  {description}
+                </span>
+              </button>
+            );
+          })}
         </div>
+        <p className="text-[10px] sm:text-xs text-muted-foreground">
+          Auto currently shows the{" "}
+          <span className="text-foreground font-medium">
+            {autoMapStyleForNow()}
+          </span>{" "}
+          map based on your phone&apos;s time. App chrome stays in the signature
+          dark luxe theme.
+        </p>
       </Card>
 
       {/* App Updates */}
@@ -717,6 +770,9 @@ export function ProfileSettingsPanel({
         </div>
       </Card>
 
+      {/* Account */}
+      <AccountSection userId={userId} currentEmail={userEmail ?? undefined} />
+
       {/* Support */}
       <Card className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6 bg-card/90 backdrop-blur-sm shadow-card">
         <SectionTitle subtitle="Need help or found an issue?" className="mb-0">
@@ -727,9 +783,6 @@ export function ProfileSettingsPanel({
           <ReportIssueDialog />
         </div>
       </Card>
-
-      {/* Account */}
-      <AccountSection userId={userId} currentEmail={userEmail ?? undefined} />
 
       {/* Save notification/location toggles */}
       {hasUnsavedChanges && (

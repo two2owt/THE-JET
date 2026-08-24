@@ -66,9 +66,11 @@ export function ConnectionProfileDialog({
 
     setLoading(true);
     try {
-      // Use profiles_secure view - privacy settings are already applied at database level
+      // Use the discoverable_profiles view: the database already enforces
+      // discoverability (undiscoverable users are only visible to accepted
+      // connections) and per-field privacy settings.
       const { data, error } = await supabase
-        .from("profiles_secure")
+        .from("discoverable_profiles")
         .select(
           "id, display_name, avatar_url, bio, birthdate, gender, pronouns, instagram_url, twitter_url, facebook_url, linkedin_url, tiktok_url",
         )
@@ -222,8 +224,9 @@ export function ConnectionProfileDialog({
               )}
           </div>
         ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            Profile not found
+          <div className="text-center py-8 text-muted-foreground text-sm">
+            This profile isn't discoverable. Connect with this person to see
+            their profile information.
           </div>
         )}
       </DialogContent>
