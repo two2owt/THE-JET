@@ -17,6 +17,8 @@ import {
   Save,
   Radio,
   RefreshCw,
+  Sun,
+  SunMoon,
 } from "lucide-react";
 import { openNotificationSettings } from "@/lib/openAppSettings";
 import { Settings2 } from "lucide-react";
@@ -41,6 +43,27 @@ import {
   openLocationSettings,
   requestBackgroundPermission,
 } from "@/lib/nativeBackgroundGeolocation";
+import {
+  autoMapStyleForNow,
+  useMapStylePreference,
+  type MapStylePreference,
+} from "@/lib/mapStylePreference";
+
+const MAP_STYLE_OPTIONS: {
+  value: MapStylePreference;
+  label: string;
+  description: string;
+  Icon: typeof Sun;
+}[] = [
+  { value: "light", label: "Light", description: "Bright basemap", Icon: Sun },
+  { value: "dark", label: "Dark", description: "Night basemap", Icon: Moon },
+  {
+    value: "auto",
+    label: "Auto",
+    description: "Follows your clock",
+    Icon: SunMoon,
+  },
+];
 
 const preferencesSchema = z.object({
   notifications_enabled: z.boolean(),
@@ -74,6 +97,7 @@ export function ProfileSettingsPanel({
   userId,
   userEmail,
 }: ProfileSettingsPanelProps) {
+  const [mapStylePreference, setMapStylePreference] = useMapStylePreference();
   const {
     isRegistered: isPushRegistered,
     isNative,
