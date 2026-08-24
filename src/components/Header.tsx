@@ -161,10 +161,8 @@ export const Header = () => {
 
     setSearchQuery("");
     setShowResults(false);
-    setSearchExpanded(false);
     try {
       window.sessionStorage.removeItem(SEARCH_QUERY_KEY);
-      window.sessionStorage.removeItem(SEARCH_EXPANDED_KEY);
     } catch {
       /* storage disabled — ignore */
     }
@@ -174,6 +172,7 @@ export const Header = () => {
       setUrlSearchParams(next, { replace: true });
     }
   }, [location.pathname, urlSearchParams, setUrlSearchParams]);
+
 
   useEffect(() => {
     let cancelled = false;
