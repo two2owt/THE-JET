@@ -171,6 +171,18 @@ export const NotificationCard = memo(
                     {category.label}
                   </span>
                 )}
+                {expiry && (
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[9px] sm:text-[10px] font-semibold ${
+                      expiry.expired
+                        ? "border-destructive/40 bg-destructive/10 text-destructive"
+                        : "border-warm/40 bg-warm/10 text-warm"
+                    }`}
+                  >
+                    <Clock className="w-2.5 h-2.5" aria-hidden="true" />
+                    {expiry.expired ? "Expired" : `Expires in ${expiry.label.replace(" left", "")}`}
+                  </span>
+                )}
               </div>
             )}
 
