@@ -151,7 +151,7 @@ export const NotificationCard = memo(
               {enriched.message}
             </p>
 
-            {(dealType || category) && (
+    {(dealType || category || expiry) && (
               <div className="flex flex-wrap items-center gap-1 mb-1 sm:mb-2">
                 {dealType && (
                   <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide text-primary">
