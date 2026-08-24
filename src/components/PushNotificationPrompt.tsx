@@ -28,6 +28,12 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { usePromptSlot, PROMPT_PRIORITY } from "@/hooks/usePromptSlot";
 import {
+  trackPromptAccepted,
+  trackPromptDenied,
+  trackPromptImpression,
+  trackPromptSnoozed,
+} from "@/lib/permissionPromptAnalytics";
+import {
   canOpenOsNotificationSettings,
   openNotificationSettings,
 } from "@/lib/openAppSettings";
@@ -122,9 +128,14 @@ export const PushNotificationPrompt = ({
       localStorage.removeItem(DISMISS_KEY);
     }
 
-    const timer = setTimeout(() => setIsVisible(true), 1500);
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+      trackPromptImpression("push", {
+        surface: isNative ? "native_prompt" : "web_prompt",
+      });
+    }, 1500);
     return () => clearTimeout(timer);
-  }, [show, alreadyOn, signedIn, isBlocked]);
+  }, [show, alreadyOn, signedIn, isBlocked, isNative]);
 
   const handleEnable = async () => {
     setIsLoading(true);
@@ -134,6 +145,8 @@ export const PushNotificationPrompt = ({
       // enable() prompts the OS and records consent once granted.
       success = await enableNative();
       setIsLoading(false);
+      if (success) trackPromptAccepted("push", { surface: "native_prompt" });
+      else trackPromptDenied("push", { surface: "native_prompt" });
       if (success) {
         setPushGrantLatch();
         setIsVisible(false);
@@ -157,6 +170,8 @@ export const PushNotificationPrompt = ({
     }
 
     setIsLoading(false);
+    if (success) trackPromptAccepted("push", { surface: "web_prompt" });
+    else trackPromptDenied("push", { surface: "web_prompt" });
     if (success) {
       setPushGrantLatch();
       setIsVisible(false);
@@ -165,6 +180,11 @@ export const PushNotificationPrompt = ({
   };
 
   const handleDismiss = () => {
+    if (isVisible) {
+      trackPromptSnoozed("push", {
+        surface: isNative ? "native_prompt" : "web_prompt",
+      });
+    }
     setIsVisible(false);
     localStorage.setItem(DISMISS_KEY, Date.now().toString());
     onDismiss();
