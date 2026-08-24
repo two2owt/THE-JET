@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useLocation } from "@/lib/router-compat";
 
 export type NavTab =
-  "map" | "explore" | "notifications" | "favorites" | "social";
+  "map" | "deals" | "notifications" | "favorites" | "social";
 
 interface UseBottomNavigationOptions {
   /** The default tab when on this page */
@@ -25,11 +25,11 @@ export function useBottomNavigation(options: UseBottomNavigationOptions = {}) {
     // If we're on a dedicated page, use that as the tab
     if (location.pathname === "/favorites") return "favorites";
     if (location.pathname === "/social") return "social";
+    if (location.pathname === "/deals") return "deals";
 
     // Otherwise check URL params for Index page tabs
     const searchParams = new URLSearchParams(location.search);
     const tabParam = searchParams.get("tab");
-    if (tabParam === "explore") return "explore";
     if (tabParam === "notifications") return "notifications";
 
     return defaultTab;
@@ -61,9 +61,11 @@ export function useBottomNavigation(options: UseBottomNavigationOptions = {}) {
         case "map":
           params.delete("tab");
           break;
-        case "explore":
-          params.set("tab", "explore");
-          break;
+        case "deals":
+          // `tab` only addresses Index sub-tabs — don't drag it onto /deals.
+          params.delete("tab");
+          navigate(`/deals${params.toString() ? `?${params.toString()}` : ""}`);
+          return;
         case "notifications":
           params.set("tab", "notifications");
           break;
