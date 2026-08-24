@@ -99,7 +99,9 @@ export function legendSwatchStyle(color: string, size = 9) {
     flexShrink: 0,
     borderRadius: "50%",
     background: color,
-    border: "1px solid rgba(255, 255, 255, 0.55)",
-    boxShadow: `0 0 5px ${color}, 0 0 11px ${color}80, 0 1px 2px rgba(0,0,0,0.45)`,
+    // No outer casing ring — the swatch reads as a clean saturated dot on
+    // every basemap (light, dark, auto, streets, satellite).
+    border: "none",
+    boxShadow: `0 0 5px ${color}, 0 0 11px ${color}80`,
   } as const;
 }

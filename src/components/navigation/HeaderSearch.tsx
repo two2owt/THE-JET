@@ -130,7 +130,7 @@ export function HeaderSearch({
         flex: "1 1 0%",
         minWidth: 0,
         maxWidth: isMobile
-          ? "clamp(120px, 30vw, 200px)"
+          ? "clamp(104px, 26vw, 180px)"
           : "clamp(200px, 36vw, 460px)",
         opacity: mounted ? 1 : 0,
         transform: mounted ? "translateY(0)" : "translateY(-6px)",

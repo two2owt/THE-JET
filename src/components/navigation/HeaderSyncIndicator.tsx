@@ -133,7 +133,6 @@ export function HeaderSyncIndicator({
         }}
       />
       <span
-        className="hidden sm:inline"
         style={{
           fontWeight: isLive ? 700 : 500,
           fontFamily: accentOn
