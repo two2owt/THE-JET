@@ -43,26 +43,12 @@ export const NotificationCard = memo(
       };
     }, [notification, linkedDeal]);
 
-    // Merchant-supplied promotion type ("offer" / "event" / "special") plus
-    // the venue category resolved from the deal's own content, so the alert
-    // reads the same way the JetCard and /deals row do.
-    const category = useMemo(
-      () => (linkedDeal ? resolveDealCategory(linkedDeal) : null),
-      [linkedDeal],
-    );
-    const dealType = linkedDeal?.deal_type?.trim() || null;
+    // Deal type / venue category / live countdown all come from the shared
+    // presentation layer, so the alert reads exactly like the JetCard and the
+    // /deals row for the same merchant deal.
+    const presentation = useDealPresentation(linkedDeal);
+    const category = presentation?.category ?? null;
     const CategoryIcon = category?.Icon;
-
-    // Live countdown off the merchant's `expires_at`, refreshed each minute.
-    const [nowTs, setNowTs] = useState(() => Date.now());
-    useEffect(() => {
-      if (!linkedDeal?.expires_at) return;
-      const id = setInterval(() => setNowTs(Date.now()), 60_000);
-      return () => clearInterval(id);
-    }, [linkedDeal?.expires_at]);
-    const expiry = linkedDeal
-      ? getDealExpiry(linkedDeal.expires_at, nowTs)
-      : null;
 
     const handleClick = () => {
       if (enriched.venue && onVenueClick) {
