@@ -4402,10 +4402,6 @@ export const MapboxHeatmap = ({
                   }}
                 >
                   <div className="flex items-center gap-3 w-full min-w-0">
-                    <span
-                      className="w-2 h-2 bg-primary rounded-full animate-pulse flex-shrink-0"
-                      aria-hidden="true"
-                    />
                     <div className="flex flex-col min-w-0 flex-1">
                       <span
                         className="font-display font-bold text-sm text-foreground truncate"
