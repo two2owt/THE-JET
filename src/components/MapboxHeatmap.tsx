@@ -9,6 +9,7 @@ import {
   type TileRetryController,
 } from "@/lib/mapTileRetry";
 import type * as MapboxGL from "mapbox-gl";
+import { markMapPainted } from "@/lib/mapPaintSignal";
 import type { FeatureCollection, Geometry } from "geojson";
 import {
   LAYER_KEYS as SHARED_LAYER_KEYS,
