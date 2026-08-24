@@ -11,6 +11,10 @@ export interface DealExpiry {
   expired: boolean;
   /** Short human label, e.g. "3d left" or "Expired". */
   label: string;
+  /** Spelled-out variant for roomy surfaces, e.g. "3 days left". */
+  longLabel: string;
+  /** Sentence used on badges, e.g. "Expires in 3d" or "Expired". */
+  badgeLabel: string;
   /** Milliseconds until expiry (negative once expired). */
   msRemaining: number;
 }
