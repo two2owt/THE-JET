@@ -25,7 +25,7 @@ BEGIN
     );
   END IF;
 
-  -- from 20260824082317_01db8f88-025d-4992-baaa-63f88798a419.sql:30
+  -- from 20260824082317_01db8f88-025d-4992-baaa-63f88798a419.sql:32
   UPDATE public.realtime_guard_allowlist
   SET sensitivity = 'private',
       note = 'Heartbeat only (profile id + created/updated flag + timestamp). Reads scoped to self, accepted connections and discoverable profiles.'

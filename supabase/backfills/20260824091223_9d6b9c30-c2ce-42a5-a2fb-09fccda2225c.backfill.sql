@@ -25,7 +25,7 @@ BEGIN
     );
   END IF;
 
-  -- from 20260824091223_9d6b9c30-c2ce-42a5-a2fb-09fccda2225c.sql:63
+  -- from 20260824091223_9d6b9c30-c2ce-42a5-a2fb-09fccda2225c.sql:65
   UPDATE public.realtime_guard_allowlist
   SET sensitivity = 'private',
       note = 'Heartbeat only (profile id + created/updated flag + timestamp). All authenticated users can read because /social surfaces every signed-up user.'

@@ -2,12 +2,10 @@
 # One table per line. Both Test and Live must match this list exactly.
 # Sensitive tables (user_locations, profiles, user_consents, security_audit_logs,
 # push_notifications, notification_logs, deal_shares) must NEVER appear here.
+app_config
 deals
-email_send_log
 map_data_pulse
 messages
-search_history
+profile_pulse
 subscribers
-user_connections
-user_favorites
 venue_reviews

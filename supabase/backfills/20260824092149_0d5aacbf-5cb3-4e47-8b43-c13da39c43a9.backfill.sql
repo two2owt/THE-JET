@@ -25,7 +25,7 @@ BEGIN
     );
   END IF;
 
-  -- from 20260824092149_0d5aacbf-5cb3-4e47-8b43-c13da39c43a9.sql:26
+  -- from 20260824092149_0d5aacbf-5cb3-4e47-8b43-c13da39c43a9.sql:27
   INSERT INTO public.profile_pulse (profile_id, event, updated_at)
   SELECT p.id, 'updated', now() FROM public.profiles p
   ON CONFLICT (profile_id) DO NOTHING;

@@ -25,7 +25,7 @@ BEGIN
     );
   END IF;
 
-  -- from 20260824080519_3e63d36e-1fd9-41a6-ab36-f40f0b350980.sql:37
+  -- from 20260824080519_3e63d36e-1fd9-41a6-ab36-f40f0b350980.sql:48
   INSERT INTO public.realtime_guard_allowlist (table_name, sensitivity, note, allow_replica_identity_full)
   VALUES ('profile_pulse', 'public', 'Heartbeat only: profile id + created/updated flag + timestamp. No profile content.', false)
   ON CONFLICT (table_name) DO NOTHING;

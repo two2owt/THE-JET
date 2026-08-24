@@ -25,7 +25,7 @@ BEGIN
     );
   END IF;
 
-  -- from 20260824091250_64b53a7c-959d-4603-8e7a-47cc36e496a1.sql:52
+  -- from 20260824091250_64b53a7c-959d-4603-8e7a-47cc36e496a1.sql:53
   INSERT INTO public.social_handles (user_id, platform, handle, url)
   SELECT
     p.id,
