@@ -468,18 +468,9 @@ const Index = () => {
         <AuthPWAInstallPromptWrapper showSignUpCtaForAnonymous />
       </Suspense>
 
-      {/* Push opt-in — shown after PWA install and to any signed-in visitor who
-          hasn't subscribed yet (the prompt handles its own dismissal /
-          permission / platform checks internally). */}
-      <Suspense fallback={null}>
-        <PushNotificationPrompt
-          show={justInstalled || showPushPrompt || !!session?.user}
-          onDismiss={() => {
-            clearJustInstalled();
-            setShowPushPrompt(false);
-          }}
-        />
-      </Suspense>
+      {/* Push opt-in lives on the Deals tab (`/deals`) — the moment the ask is
+          contextual — not here on the map. */}
+
     </div>
   );
 };
