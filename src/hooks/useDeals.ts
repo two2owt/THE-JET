@@ -35,26 +35,6 @@ interface UserPreferences {
   activityInArea?: boolean;
 }
 
-// Map deal_type values to preference categories
-const dealTypeToCategory: Record<string, string> = {
-  food: "Food",
-  Food: "Food",
-  restaurant: "Food",
-  dining: "Food",
-  drinks: "Drinks",
-  Drinks: "Drinks",
-  bar: "Drinks",
-  cocktail: "Drinks",
-  coffee: "Drinks",
-  nightlife: "Nightlife",
-  Nightlife: "Nightlife",
-  club: "Nightlife",
-  lounge: "Nightlife",
-  events: "Events",
-  Events: "Events",
-  concert: "Events",
-  festival: "Events",
-};
 
 // Cache deals for offline page
 const cacheDealsForOffline = (deals: Deal[]) => {
