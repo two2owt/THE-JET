@@ -3,6 +3,7 @@ import { useNavigate } from "@/lib/router-compat";
 import { PageLayout } from "@/components/PageLayout";
 import { PageShell } from "@/components/PageShell";
 import { ExploreTabSkeleton } from "@/components/skeletons/PageSkeletons";
+import { useDealSyncRealtime } from "@/mobile-app-snippets/useDealSyncRealtime";
 
 const ExploreTab = lazy(() =>
   import("@/components/ExploreTab").then((m) => ({ default: m.ExploreTab })),
@@ -13,6 +14,7 @@ const PushNotificationPrompt = lazy(() =>
     default: m.PushNotificationPrompt,
   })),
 );
+
 
 /**
  * Deals tab — its own route (`/deals`) instead of a `?tab=` sub-view of the
