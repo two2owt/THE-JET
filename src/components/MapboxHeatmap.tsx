@@ -214,6 +214,9 @@ interface MapboxHeatmapProps {
   selectedVenue?: Venue | null;
   resetUIKey?: number; // Incremented when tab changes to reset collapsed UI state
   isTokenLoading?: boolean; // True while the mapbox token is being fetched
+  /** Active venue category id (shared taxonomy) or null for "All". */
+  categoryFilter?: string | null;
+  onCategoryFilterChange?: (next: string | null) => void;
 }
 
 /**
@@ -288,12 +291,38 @@ export const MapboxHeatmap = ({
   isLoadingVenues = false,
   selectedVenue,
   resetUIKey,
+  categoryFilter = null,
+  onCategoryFilterChange,
 }: MapboxHeatmapProps) => {
   // Filter venues by Google Places opening hours against the device's local
   // time. Markers (and the underlying heatmap source) automatically refresh
   // every minute as venues open/close. Venues without parseable hours stay
   // visible (fail-open) so unknown data doesn't blank out the map.
-  const venues = useOpenVenues(allVenues);
+  const openVenues = useOpenVenues(allVenues);
+
+  // How many venues sit in each taxonomy bucket right now — drives the chip
+  // row (empty categories are hidden) and always reflects the *unfiltered*
+  // set so users can switch categories without clearing first.
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const v of openVenues) {
+      const id = resolveVenueCategory(v.category).id;
+      counts[id] = (counts[id] ?? 0) + 1;
+    }
+    return counts;
+  }, [openVenues]);
+
+  // Category filtering happens here, above the marker/heatmap pipeline, so a
+  // chip narrows the whole map surface rather than jumping to a single card.
+  const venues = useMemo(
+    () =>
+      categoryFilter
+        ? openVenues.filter(
+            (v) => resolveVenueCategory(v.category).id === categoryFilter,
+          )
+        : openVenues,
+    [openVenues, categoryFilter],
+  );
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapboxGL.Map | null>(null);
   const mapboxglRef = useRef<MapboxGLModule | null>(null);
