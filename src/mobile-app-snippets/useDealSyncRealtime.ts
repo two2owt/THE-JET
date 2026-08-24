@@ -179,7 +179,6 @@ export function useDealSyncRealtime(options: DealSyncOptions = {}) {
 
           if (event === "UPDATE") {
             const updated = payload.new as Deal;
-            const previous = payload.old as Deal;
 
             if (activeOnly && !isActiveDeal(updated)) {
               // Treat deactivation the same as a delete.
@@ -187,12 +186,8 @@ export function useDealSyncRealtime(options: DealSyncOptions = {}) {
               return;
             }
 
-            // If the active status changed from inactive to active, it's a new
-            // deal for this view.
-            const isNewlyActive = !previous.active && updated.active;
-            if (isNewlyActive) {
-              setDeals((prev) => [updated, ...prev.filter((d) => d.id !== updated.id)]);
-            }
+            // Fetch the full deal with neighborhoods and patch it in place.
+            // If the deal was previously inactive, this also adds it to the list.
             void applySingleDealUpdate(updated.id);
             return;
           }
