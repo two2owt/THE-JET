@@ -404,18 +404,17 @@ export const ExploreTab = ({
       }
     }
 
-    // Apply location-based filter if user location is available
+    // Optional client-side radius filter. Off by default so every active
+    // merchant deal stays visible even when the user is outside the merchant's
+    // broadcast radius (that radius only governs push notifications).
     if (userLocation) {
-      filtered = filtered.filter((deal) => {
-        // Only show deals with distance data
-        if (deal.distance === undefined) {
-          return false;
-        }
-
-        // Get dynamic radius based on neighborhood
-        const radius = getDynamicRadius(deal.neighborhoods?.name);
-        return deal.distance <= radius;
-      });
+      if (locationFilterEnabled) {
+        filtered = filtered.filter((deal) => {
+          if (deal.distance === undefined) return false;
+          const radius = getDynamicRadius(deal.neighborhoods?.name);
+          return deal.distance <= radius;
+        });
+      }
 
       // Sort by distance (closest first)
       filtered.sort((a, b) => {
