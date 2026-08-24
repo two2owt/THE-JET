@@ -145,16 +145,38 @@ export function NotificationsTab({
   const unreadCount = live.filter((n) => !n.read).length;
   const readCount = live.length - unreadCount;
 
-  const visible =
-    filter === "unread"
-      ? live.filter((n) => !n.read)
-      : filter === "read"
-        ? live.filter((n) => n.read)
-        : live;
+  const matchesFilter = (n: any) =>
+    filter === "unread" ? !n.read : filter === "read" ? n.read : true;
+
+  const visibleLive = live.filter(matchesFilter);
+  const visibleExpired = showExpired ? expired.filter(matchesFilter) : [];
+  const visibleCount = visibleLive.length + visibleExpired.length;
+
+  const renderCard = (notification: any, isExpired: boolean) => (
+    <div
+      key={notification.id}
+      className={isExpired ? "opacity-70" : undefined}
+    >
+      <Suspense fallback={null}>
+        <NotificationCard
+          notification={notification}
+          deals={deals}
+          expired={isExpired}
+          expiresAt={expiresAtOf(notification)}
+          onVenueClick={onVenueClick}
+          onRead={() => markAsRead(notification.id)}
+          onMarkRead={() => markAsRead(notification.id)}
+          onShowDetails={() => setDetailsFor(notification)}
+        />
+      </Suspense>
+    </div>
+  );
 
   return (
     <PageShell>
+      <EmailVerificationBanner />
       <TabPageHeader
+
         title="Notifications"
         subtitle="Stay updated with nearby deals and events"
         badge={
