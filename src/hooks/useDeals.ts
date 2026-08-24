@@ -1,6 +1,10 @@
 import { useEffect, useState, useCallback , useId } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfilePulse } from "@/hooks/useProfilePulse";
+import {
+  dealMatchesPreferences,
+  resolveDealPreferenceBucket,
+} from "@/lib/dealCategory";
 import type { Database } from "@/integrations/supabase/types";
 
 type Deal = Database["public"]["Tables"]["deals"]["Row"];
