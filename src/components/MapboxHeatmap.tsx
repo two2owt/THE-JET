@@ -1013,13 +1013,33 @@ export const MapboxHeatmap = ({
       const nearest = getNearestCity(latitude, longitude);
       setUserLocation({ lat: latitude, lng: longitude });
       setDetectedCity(nearest);
-      setDetectedLocationName((prev) =>
-        prev ?? `${nearest.name}, ${nearest.state}`,
-      );
+      // Immediate label from the nearest curated city, then upgrade it to the
+      // real metro name so the trigger always reflects where the user actually
+      // is — even if they had manually picked another city beforehand.
+      setDetectedLocationName(`${nearest.name}, ${nearest.state}`);
+      getCachedReverseGeocode(latitude, longitude, mapboxToken)
+        .then((geocoded) => {
+          if (geocoded && isUsingCurrentLocationRef.current) {
+            setDetectedLocationName(geocoded.fullName);
+          }
+        })
+        .catch(() => {
+          /* keep the nearest-city label */
+        });
       if (nearest.id !== selectedCityRef.current.id)
         onCityChangeRef.current(nearest);
       if (applyGeolocationRef.current) {
         applyGeolocationRef.current({ latitude, longitude });
+      }
+      // The user explicitly asked to be located, so always bring the camera to
+      // the fresh fix instead of leaving it on the previously picked city.
+      if (map.current) {
+        map.current.flyTo({
+          center: [longitude, latitude],
+          zoom: Math.max(map.current.getZoom(), 13),
+          duration: 1200,
+          essential: true,
+        });
       }
     };
 
@@ -1068,7 +1088,14 @@ export const MapboxHeatmap = ({
         /* control not ready */
       }
     }
-  }, [requestRecenter]);
+  }, [requestRecenter, mapboxToken]);
+
+  // Stable handle so the map-init effect can call the latest refresh logic
+  // without re-creating the map.
+  const refreshCurrentLocationRef = useRef(refreshCurrentLocation);
+  useEffect(() => {
+    refreshCurrentLocationRef.current = refreshCurrentLocation;
+  }, [refreshCurrentLocation]);
 
 
   // City selector search query
@@ -2466,6 +2493,11 @@ export const MapboxHeatmap = ({
             requestRecenter();
             setIsUsingCurrentLocation(true);
             isUsingCurrentLocationRef.current = true;
+            userMovedCameraRef.current = false;
+            // Resolve a fresh fix directly too: when the control is already in
+            // its tracking state it won't re-emit `geolocate`, which would
+            // otherwise leave the city selector stuck on a manually picked city.
+            refreshCurrentLocationRef.current?.();
           });
           // Swallow the Mapbox "Geolocation support is not available" warning
           // in iframe/permission-limited environments without breaking the map.
