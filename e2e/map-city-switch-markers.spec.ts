@@ -37,7 +37,10 @@ async function waitForStableMarkers(page: Page, timeout = 60_000) {
 }
 
 async function selectCity(page: Page, label: RegExp) {
-  await page.getByLabel("Select city location").click();
+  const cityButton = page.getByLabel("Select city location");
+  await cityButton.waitFor({ state: "attached" });
+  await page.waitForSelector('[data-hydrated="true"]', { timeout: 30_000 });
+  await cityButton.click({ timeout: 30_000 });
   await page.getByRole("option", { name: label }).first().click();
 }
 
@@ -74,6 +77,9 @@ test("switching cities re-renders venue markers without duplicates", async ({
 test("zooming out collapses markers into clusters and back", async ({
   page,
 }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem("jet-map-selected-city", "chicago");
+  });
   await page.goto("/");
   await expect(page.getByLabel("Select city location")).toBeVisible({
     timeout: 30_000,
