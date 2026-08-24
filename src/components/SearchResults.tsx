@@ -17,6 +17,7 @@ import { Badge } from "./ui/badge";
 import type { Venue } from "./MapboxHeatmap";
 import type { Database } from "@/integrations/supabase/types";
 import { useLockMapWhileInteracting } from "@/lib/mapInteractionLock";
+import { requestMapFocus } from "@/lib/mapFocusBus";
 import { activityTier } from "@/lib/activity-palette";
 import { categoryIconFor } from "@/lib/category-icon";
 import {
@@ -515,13 +516,47 @@ export const SearchResults = ({
     filteredCategories.length;
   const hasResults = totalCount > 0;
 
-  /** Pick the best venue in a neighborhood (sorted by activity), then select it on the map. */
+  /**
+   * Selecting any result opens its JetCard *and* asks the map to centre and
+   * pulse the matching marker. The focus request only moves the camera — layer
+   * visibility (heatmap / flow paths) is untouched, so the density surface
+   * stays readable underneath.
+   */
+  const selectVenueWithFocus = (venue: Venue) => {
+    if (Number.isFinite(venue.lng) && Number.isFinite(venue.lat)) {
+      requestMapFocus({
+        kind: "point",
+        lng: venue.lng,
+        lat: venue.lat,
+        id: venue.id,
+        minZoom: 14.5,
+      });
+    }
+    selectVenueWithFocus(venue);
+  };
+
+  /** Areas frame every venue in the neighborhood, then open the busiest one. */
   const handleAreaSelect = (areaName: string) => {
-    const match = venues
+    const inArea = venues
       .filter((v) => v.neighborhood.toLowerCase() === areaName.toLowerCase())
-      .sort((a, b) => b.activity - a.activity)[0];
-    if (match) {
-      onVenueSelect(match);
+      .sort((a, b) => b.activity - a.activity);
+    const coords = inArea.filter(
+      (v) => Number.isFinite(v.lng) && Number.isFinite(v.lat),
+    );
+    if (coords.length > 1) {
+      const lngs = coords.map((v) => v.lng);
+      const lats = coords.map((v) => v.lat);
+      requestMapFocus({
+        kind: "bounds",
+        bounds: [
+          [Math.min(...lngs), Math.min(...lats)],
+          [Math.max(...lngs), Math.max(...lats)],
+        ],
+        maxZoom: 15,
+      });
+      onVenueSelect(coords[0]);
+    } else if (inArea[0]) {
+      selectVenueWithFocus(inArea[0]);
     }
     onClose();
   };
@@ -561,7 +596,7 @@ export const SearchResults = ({
           (v) => v.name.toLowerCase() === (deal.venue_name ?? "").toLowerCase(),
         );
     if (venueMatch) {
-      onVenueSelect(venueMatch);
+      selectVenueWithFocus(venueMatch);
     } else {
       navigate(`/?deal=${deal.id}`);
     }
@@ -680,7 +715,7 @@ export const SearchResults = ({
                       data-search-option="true"
                       key={venue.id}
                       onClick={() => {
-                        onVenueSelect(venue);
+                        selectVenueWithFocus(venue);
                         onClose();
                       }}
                       className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-hidden focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"
@@ -834,7 +869,7 @@ export const SearchResults = ({
                       data-search-option="true"
                       key={venue.id}
                       onClick={() => {
-                        onVenueSelect(venue);
+                        selectVenueWithFocus(venue);
                         onClose();
                       }}
                       className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-hidden focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"

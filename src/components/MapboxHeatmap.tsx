@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { storeLastKnownLocation } from "@/lib/tile-prefetch";
 import { GEO_GRANTED_EVENT } from "@/lib/geolocationGrantEvent";
 import { subscribeMapInteractionLock } from "@/lib/mapInteractionLock";
+import { subscribeMapFocus } from "@/lib/mapFocusBus";
 import {
   verifyMapboxVersion,
   EXPECTED_MAPBOX_VERSION,
@@ -1978,6 +1979,98 @@ export const MapboxHeatmap = ({
     selectedVenue?.lat,
     selectedVenue?.lng,
   ]);
+
+  // Explicit focus requests (currently: tapping a search result). Unlike the
+  // passive reveal above, this always centres the target and pulses a ring so
+  // the user can see where they landed. Only the camera moves — no layer is
+  // toggled or hidden, so the heatmap stays fully visible underneath.
+  useEffect(() => {
+    if (!mapLoaded) return;
+    let ringMarker: { remove: () => void } | null = null;
+    let ringTimer = 0;
+
+    const clearRing = () => {
+      if (ringTimer) window.clearTimeout(ringTimer);
+      ringTimer = 0;
+      try {
+        ringMarker?.remove();
+      } catch {
+        /* already detached */
+      }
+      ringMarker = null;
+    };
+
+    const pulseAt = (lng: number, lat: number) => {
+      const gl = mapboxglRef.current;
+      const m = map.current;
+      if (!gl || !m) return;
+      clearRing();
+      const el = document.createElement("div");
+      el.setAttribute("aria-hidden", "true");
+      el.style.cssText = [
+        "width:22px",
+        "height:22px",
+        "border-radius:999px",
+        "pointer-events:none",
+        "border:2px solid hsl(var(--primary))",
+        "box-shadow:0 0 18px hsl(var(--primary) / 0.55)",
+        "background:hsl(var(--primary) / 0.14)",
+      ].join(";");
+      ringMarker = new gl.Marker({ element: el }).setLngLat([lng, lat]).addTo(m);
+      if (!platformSettings.current.hasReducedMotion) {
+        // GPU-only animation (transform + opacity) so the pulse never costs layout.
+        el.animate?.(
+          [
+            { transform: "scale(0.6)", opacity: 0.9 },
+            { transform: "scale(3.2)", opacity: 0 },
+          ],
+          { duration: 1400, iterations: 2, easing: "cubic-bezier(0.22,1,0.36,1)" },
+        );
+      }
+      ringTimer = window.setTimeout(clearRing, 2900);
+    };
+
+    const unsubscribe = subscribeMapFocus((request) => {
+      const m = map.current;
+      if (!m) return;
+      const duration = platformSettings.current.hasReducedMotion ? 0 : 850;
+      try {
+        if (request.kind === "bounds") {
+          m.fitBounds(request.bounds, {
+            maxZoom: request.maxZoom ?? 15,
+            duration,
+            essential: true,
+            // Respect the padding already reserved for header/nav/JetCard.
+            padding: 0,
+          } as never);
+          return;
+        }
+        // Mark the venue as already revealed so the passive reveal effect
+        // doesn't queue a second, competing camera move.
+        if (request.id) revealedVenueRef.current = request.id;
+        m.flyTo({
+          center: [request.lng, request.lat],
+          // Zoom in only when we're further out than the requested floor —
+          // never pull the user back out of a closer view.
+          zoom: Math.max(m.getZoom(), request.minZoom ?? 14.5),
+          bearing: m.getBearing(),
+          pitch: m.getPitch(),
+          duration,
+          essential: true,
+        });
+        pulseAt(request.lng, request.lat);
+      } catch {
+        /* map not ready */
+      }
+    });
+
+    return () => {
+      unsubscribe();
+      clearRing();
+    };
+  }, [mapLoaded]);
+
+
 
   // Suspend map drag / scroll-zoom while the user interacts with an overlay
   // panel (JetCard, search results), and restore it when they leave/close it.
