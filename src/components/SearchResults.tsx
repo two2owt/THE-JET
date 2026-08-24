@@ -581,7 +581,7 @@ export const SearchResults = ({
         role="dialog"
         aria-label="Search results"
         aria-hidden={!entered}
-        className={`fixed left-2 right-2 sm:left-auto sm:right-4 z-[9999] sm:w-[420px] sm:max-w-[min(420px,calc(100vw-2rem))] will-change-transform motion-reduce:transition-none ${
+        className={`fixed left-2 right-2 sm:left-auto z-[9999] sm:w-[420px] sm:max-w-[min(420px,calc(100vw-2rem))] will-change-transform motion-reduce:transition-none ${
           entered
             ? "opacity-100 translate-y-0 scale-100"
             : "opacity-0 -translate-y-1 scale-[0.985] pointer-events-none"
@@ -606,6 +606,11 @@ export const SearchResults = ({
           maxHeight: box
             ? `${box.maxHeight}px`
             : "min(calc(100dvh - var(--header-height, 56px) - var(--bottom-nav-total-height, 80px) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 24px), 52dvh, 480px)",
+          // Right-anchored on tablet/desktop so the map stays visible to the
+          // left; the measured gutter matches the map control column.
+          ...(box?.width
+            ? { right: `${box.right}px`, left: "auto", width: `${box.width}px` }
+            : {}),
         }}
       >
         <Card className="flex flex-col h-full max-h-full overflow-hidden shadow-glow w-full bg-card/95 backdrop-blur-xl border-primary/20 rounded-2xl">
