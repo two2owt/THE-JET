@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { autoHandle } from "@/lib/display-name";
 import { useProfilePulse } from "@/hooks/useProfilePulse";
-import { toast } from "sonner";
 
 export interface Profile {
   id: string;
