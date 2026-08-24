@@ -18,6 +18,7 @@ import {
   Twitter,
   Video,
 } from "lucide-react";
+import { parseSocialLink, type SocialPlatform } from "@/lib/socialHandles";
 
 export const GENDER_OPTIONS = [
   { value: "woman", label: "Woman" },
@@ -76,30 +77,35 @@ export function ProfileEditForm({
   const socialFields = [
     {
       key: "instagramUrl" as const,
+      platform: "instagram" as SocialPlatform,
       icon: Instagram,
       label: "Instagram",
       placeholder: "@handle or profile URL",
     },
     {
       key: "twitterUrl" as const,
+      platform: "twitter" as SocialPlatform,
       icon: Twitter,
       label: "Twitter / X",
       placeholder: "@handle or profile URL",
     },
     {
       key: "facebookUrl" as const,
+      platform: "facebook" as SocialPlatform,
       icon: Facebook,
       label: "Facebook",
       placeholder: "@handle or profile URL",
     },
     {
       key: "linkedinUrl" as const,
+      platform: "linkedin" as SocialPlatform,
       icon: Linkedin,
       label: "LinkedIn",
       placeholder: "@handle or profile URL",
     },
     {
       key: "tiktokUrl" as const,
+      platform: "tiktok" as SocialPlatform,
       icon: Video,
       label: "TikTok",
       placeholder: "@handle or profile URL",
@@ -256,24 +262,54 @@ export function ProfileEditForm({
             <span className="dot-gold shrink-0" />
             <span className="heading-luxe-eyebrow">Social Media Handles</span>
           </div>
-          {socialFields.map(({ key, icon: Icon, label, placeholder }) => (
-            <div key={key} className="profile-social-row">
-              <span
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground shrink-0"
-                style={{ minWidth: "92px" }}
-              >
-                <Icon className="w-4 h-4" />
-                {label}
-              </span>
-              <Input
-                value={values[key]}
-                onChange={(e) => setValue(key, e.target.value)}
-                placeholder={placeholder}
-                className="profile-input w-full"
-                aria-label={`${label} handle or URL`}
-              />
-            </div>
-          ))}
+          {socialFields.map(({ key, icon: Icon, label, placeholder, platform }) => {
+            const parsed = parseSocialLink(platform, values[key]);
+            const error =
+              fieldErrors[key] ??
+              (parsed.status === "error" ? parsed.error : undefined);
+            return (
+              <div key={key} className="flex flex-col gap-1">
+                <div className="profile-social-row">
+                  <span
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground shrink-0"
+                    style={{ minWidth: "92px" }}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {label}
+                  </span>
+                  <Input
+                    value={values[key]}
+                    onChange={(e) => {
+                      setValue(key, e.target.value);
+                      if (fieldErrors[key]) clearFieldError(key);
+                    }}
+                    placeholder={placeholder}
+                    className="profile-input w-full"
+                    aria-label={`${label} handle or URL`}
+                    aria-invalid={!!error}
+                    aria-describedby={error ? `${key}-error` : undefined}
+                  />
+                </div>
+                {error ? (
+                  <p
+                    id={`${key}-error`}
+                    role="alert"
+                    className="text-xs text-destructive"
+                    style={{ paddingLeft: "100px" }}
+                  >
+                    {error}
+                  </p>
+                ) : parsed.status === "ok" ? (
+                  <p
+                    className="text-xs text-muted-foreground"
+                    style={{ paddingLeft: "100px" }}
+                  >
+                    Saves as @{parsed.handle}
+                  </p>
+                ) : null}
+              </div>
+            );
+          })}
         </div>
 
         {/* Save */}
