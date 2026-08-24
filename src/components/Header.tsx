@@ -279,6 +279,23 @@ export const Header = () => {
   const showSearchBar = !hideSearch && (!isMobile || searchExpanded);
   const showSearchIcon = !hideSearch && isMobile && !searchExpanded;
 
+  // When the global search bar is hidden (e.g. /deals, /alerts, /favorites),
+  // show a subtle page identifier in the header so the band doesn't look
+  // empty and users always know which tab they are on.
+  const pageTitle = useMemo(() => {
+    if (!hideSearch) return null;
+    const titles: Record<string, string> = {
+      "/deals": "Deals",
+      "/alerts": "Alerts",
+      "/favorites": "Saved",
+      "/social": "Crew",
+      "/messages": "Messages",
+      "/profile": "Profile",
+      "/admin": "Admin",
+    };
+    return titles[location.pathname] || null;
+  }, [hideSearch, location.pathname]);
+
   return (
     <header
       className="fixed top-0 left-0 right-0 z-[60]"
