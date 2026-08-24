@@ -256,24 +256,54 @@ export function ProfileEditForm({
             <span className="dot-gold shrink-0" />
             <span className="heading-luxe-eyebrow">Social Media Handles</span>
           </div>
-          {socialFields.map(({ key, icon: Icon, label, placeholder }) => (
-            <div key={key} className="profile-social-row">
-              <span
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground shrink-0"
-                style={{ minWidth: "92px" }}
-              >
-                <Icon className="w-4 h-4" />
-                {label}
-              </span>
-              <Input
-                value={values[key]}
-                onChange={(e) => setValue(key, e.target.value)}
-                placeholder={placeholder}
-                className="profile-input w-full"
-                aria-label={`${label} handle or URL`}
-              />
-            </div>
-          ))}
+          {socialFields.map(({ key, icon: Icon, label, placeholder, platform }) => {
+            const parsed = parseSocialLink(platform, values[key]);
+            const error =
+              fieldErrors[key] ??
+              (parsed.status === "error" ? parsed.error : undefined);
+            return (
+              <div key={key} className="flex flex-col gap-1">
+                <div className="profile-social-row">
+                  <span
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground shrink-0"
+                    style={{ minWidth: "92px" }}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {label}
+                  </span>
+                  <Input
+                    value={values[key]}
+                    onChange={(e) => {
+                      setValue(key, e.target.value);
+                      if (fieldErrors[key]) clearFieldError(key);
+                    }}
+                    placeholder={placeholder}
+                    className="profile-input w-full"
+                    aria-label={`${label} handle or URL`}
+                    aria-invalid={!!error}
+                    aria-describedby={error ? `${key}-error` : undefined}
+                  />
+                </div>
+                {error ? (
+                  <p
+                    id={`${key}-error`}
+                    role="alert"
+                    className="text-xs text-destructive"
+                    style={{ paddingLeft: "100px" }}
+                  >
+                    {error}
+                  </p>
+                ) : parsed.status === "ok" ? (
+                  <p
+                    className="text-xs text-muted-foreground"
+                    style={{ paddingLeft: "100px" }}
+                  >
+                    Saves as @{parsed.handle}
+                  </p>
+                ) : null}
+              </div>
+            );
+          })}
         </div>
 
         {/* Save */}
