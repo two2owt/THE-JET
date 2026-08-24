@@ -177,6 +177,7 @@ import { HeatFilterChips } from "./map/HeatFilterChips";
 import {
   activityColor,
   activityLegendTiers,
+  legendSwatchStyle,
   activityTier,
   casingFor,
 } from "@/lib/activity-palette";
@@ -6184,21 +6185,10 @@ export const MapboxHeatmap = ({
             </span>
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               {/* Same palette the venue markers use, resolved for this basemap. */}
-              {activityLegendTiers(
-                mapStyle === "light" || mapStyle === "streets",
-              ).map((tier) => (
+              {activityLegendTiers().map((tier) => (
                 <div
                   key={tier.id}
-                  style={{
-                    width: "9px",
-                    height: "9px",
-                    flexShrink: 0,
-                    borderRadius: "50%",
-                    // Matches the expanded Activity legend: flat tier colour
-                    // with a soft glow, no frosted rim or casing ring.
-                    background: tier.color,
-                    boxShadow: `0 0 5px ${tier.color}, 0 0 11px ${tier.color}80`,
-                  }}
+                  style={legendSwatchStyle(tier.color)}
                 />
 
               ))}
@@ -6409,9 +6399,7 @@ export const MapboxHeatmap = ({
                     alignItems: "center",
                   }}
                 >
-                  {activityLegendTiers(
-                    mapStyle === "light" || mapStyle === "streets",
-                  ).map((tier) => (
+                  {activityLegendTiers().map((tier) => (
                     <div
                       key={tier.id}
                       style={{
@@ -6421,16 +6409,7 @@ export const MapboxHeatmap = ({
                       }}
                     >
                       <div
-                        style={{
-                          width: "9px",
-                          height: "9px",
-                          flexShrink: 0,
-                          borderRadius: "50%",
-                          // Flat tier colour with a soft glow — no frosted rim
-                          // or casing ring so it reads cleanly at 9px.
-                          background: tier.color,
-                          boxShadow: `0 0 5px ${tier.color}, 0 0 11px ${tier.color}80`,
-                        }}
+                        style={legendSwatchStyle(tier.color)}
                       />
 
                       <span
