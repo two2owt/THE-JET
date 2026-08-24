@@ -280,7 +280,7 @@ export default function Favorites() {
       <PageLayout defaultTab="favorites" headerConfig={headerConfig}>
         <PageShell>
           <SignedOutPreview
-            pageTitle="Saved"
+            pageTitle="Favorites"
             icon={Heart}
             title="Sign in to view favorites"
             description="Create an account to save and track your favorite deals across all venues"
