@@ -91,14 +91,6 @@ export function useProfile(userId: string | undefined) {
     // A resync means the socket dropped and pulses were missed — refetch.
     if (!isMine && pulse.event !== "resync") return;
     void queryClient.invalidateQueries({ queryKey: key });
-    if (isMine && pulse.event === "updated") {
-      // Shared id keeps this from stacking with the settings "Settings saved"
-      // toast or with a burst of heartbeats from a multi-field save.
-      toast.success("Profile updated", {
-        id: "profile-updated",
-        description: "Synced across your open sessions.",
-      });
-    }
   }, !!userId);
 
 
