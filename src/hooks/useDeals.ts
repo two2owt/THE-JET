@@ -124,15 +124,10 @@ export const useDeals = (
       const selectedCategories = prefs.categories;
 
       return allDeals.filter((deal) => {
-        const dealCategory =
-          dealTypeToCategory[deal.deal_type] || deal.deal_type;
+        const dealCategory = resolveDealPreferenceBucket(deal);
 
         // Check if deal matches any selected category
-        const matchesCategory = selectedCategories.some(
-          (cat) => cat.toLowerCase() === dealCategory.toLowerCase(),
-        );
-
-        if (!matchesCategory) return false;
+        if (!dealMatchesPreferences(deal, selectedCategories)) return false;
 
         // Additional filtering based on subcategory preferences
         const dealType = deal.deal_type.toLowerCase();
