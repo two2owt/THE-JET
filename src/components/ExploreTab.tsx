@@ -284,12 +284,10 @@ export const ExploreTab = ({
     // realtime hook.
     if (dealsProp !== undefined) return;
 
-    // Load deals only after we have attempted to get location
-    // This ensures we can calculate distances properly
-    if (userLocation !== null || locationError !== null) {
-      loadDeals();
-    }
-  }, [userLocation, locationError, dealsProp]);
+    // Never gate the list on a location fix: fetch immediately and let
+    // distances fill in when (or if) a position arrives.
+    loadDeals();
+  }, [dealsProp]);
 
   useEffect(() => {
     filterDeals();
