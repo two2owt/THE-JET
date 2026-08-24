@@ -372,7 +372,14 @@ export const useNotifications = (enabled: boolean = true) => {
   }, [enabled, instanceId]);
 
   return {
+    /** Unexpired alerts only — what the inbox and the badge are built from. */
     notifications: liveNotifications,
+    /** Alerts whose linked deal has already ended (opt-in "Show expired"). */
+    expiredNotifications,
+    /** Unread AND unexpired count — the single source for the nav badge. */
+    unreadCount,
+    /** Deal rows keyed by id, for alert details (venue, terms, expires_at). */
+    dealById,
     loading,
     error,
     refresh: loadNotifications,
@@ -380,3 +387,4 @@ export const useNotifications = (enabled: boolean = true) => {
     markAllAsRead,
   };
 };
+
