@@ -15,7 +15,6 @@ import { type Venue } from "@/types/venue";
 // Critical path: BottomNav is always visible
 import { BottomNav } from "@/components/BottomNav";
 import { useHeaderConfig } from "@/contexts/HeaderContext";
-import { useAuth } from "@/contexts/AuthContext";
 
 // Hooks must be imported synchronously (React rules)
 import { useMapboxToken } from "@/hooks/useMapboxToken";
@@ -28,7 +27,6 @@ import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { useAutoScrapeVenueImages } from "@/hooks/useAutoScrapeVenueImages";
 import { useDeals } from "@/hooks/useDeals";
 import { useVenueActivity } from "@/hooks/useVenueActivity";
-import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useBottomNavigation } from "@/hooks/useBottomNavigation";
 import { useMapPanelInset } from "@/hooks/useMapPanelInset";
 // Extracted concerns: onboarding gating, city launches, deep-link routing
