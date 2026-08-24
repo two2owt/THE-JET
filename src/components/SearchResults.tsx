@@ -184,7 +184,7 @@ export const SearchResults = ({
   }, []);
 
   useEffect(() => {
-    return subscribeMapHighlight(({ venueId, source }) => {
+    return subscribeMapHighlight(({ venueId, source }: MapHighlight) => {
       setHighlightId(venueId);
       if (source !== "map" || !venueId) return;
       if (Date.now() < suppressAutoScrollUntil.current) return;
