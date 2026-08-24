@@ -10,6 +10,10 @@ import {
   Star,
   ChevronDown,
   ChevronUp,
+  Loader2,
+  AlertTriangle,
+  RotateCw,
+
 } from "lucide-react";
 import { createPortal } from "react-dom";
 import {
@@ -49,7 +53,41 @@ interface SearchResultsProps {
   onVenueSelect: (venue: Venue) => void;
   onClose: () => void;
   isVisible: boolean;
+  /** Underlying venue/deal data is still loading. */
+  isLoading?: boolean;
+  /** The user is still typing (query hasn't settled through the debounce). */
+  isSearching?: boolean;
+  /** Data fetch failed — shows the error state with a retry affordance. */
+  error?: string | null;
+  /** Retry handler for the error state (usually the header's refresh). */
+  onRetry?: () => void;
 }
+
+/** Placeholder rows shown while the venue/deal dataset is still loading. */
+const ResultSkeletons = ({ rows = 4 }: { rows?: number }) => (
+  <div className="space-y-1.5" aria-hidden="true">
+    {Array.from({ length: rows }).map((_, i) => (
+      <div
+        key={i}
+        className="flex items-center gap-3 p-2.5 rounded-xl bg-secondary/30 animate-pulse"
+        style={{ animationDelay: `${i * 70}ms` }}
+      >
+        <div className="w-12 h-12 rounded-lg bg-muted/60 flex-shrink-0" />
+        <div className="flex-1 min-w-0 space-y-2">
+          <div
+            className="h-3 rounded-full bg-muted/60"
+            style={{ width: `${70 - i * 8}%` }}
+          />
+          <div
+            className="h-2.5 rounded-full bg-muted/40"
+            style={{ width: `${45 - i * 5}%` }}
+          />
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
 
 /** Lightweight relevance score: 3 = exact, 2 = prefix, 1 = substring, 0 = no match. */
 const matchScore = (haystack: string | null | undefined, q: string): number => {
@@ -121,6 +159,10 @@ export const SearchResults = ({
   onVenueSelect,
   onClose,
   isVisible,
+  isLoading = false,
+  isSearching = false,
+  error = null,
+  onRetry,
 }: SearchResultsProps) => {
   const navigate = useNavigate();
   // Measured layout box (in px) so the panel never relies on dvh/env() support
@@ -607,6 +649,18 @@ export const SearchResults = ({
     filteredAreas.length +
     filteredCategories.length;
   const hasResults = totalCount > 0;
+  // Panel status: error wins, then "still working", then empty.
+  const hasError = Boolean(error);
+  const busy = (isLoading || isSearching) && !hasError;
+  const showSkeletons = busy && !hasResults;
+  const showEmpty = !hasError && !busy && !hasResults;
+  const statusLabel = hasError
+    ? "Couldn’t load results"
+    : showSkeletons
+      ? "Searching…"
+      : `${totalCount} ${totalCount === 1 ? "result" : "results"}${
+          busy ? " · updating" : ""
+        }`;
 
   /**
    * Selecting any result opens its JetCard *and* asks the map to centre and
@@ -624,7 +678,7 @@ export const SearchResults = ({
         minZoom: 14.5,
       });
     }
-    selectVenueWithFocus(venue);
+    onVenueSelect(venue);
   };
 
   /** Areas frame every venue in the neighborhood, then open the busiest one. */
@@ -750,8 +804,18 @@ export const SearchResults = ({
           {/* Sticky header */}
           <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border/60 bg-card/95 backdrop-blur-xl">
             <div className="flex items-center gap-2 min-w-0">
-              <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <SearchIcon className="w-3.5 h-3.5 text-primary" />
+              <div
+                className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                  hasError ? "bg-destructive/10" : "bg-primary/10"
+                }`}
+              >
+                {hasError ? (
+                  <AlertTriangle className="w-3.5 h-3.5 text-destructive" />
+                ) : busy ? (
+                  <Loader2 className="w-3.5 h-3.5 text-primary animate-spin motion-reduce:animate-none" />
+                ) : (
+                  <SearchIcon className="w-3.5 h-3.5 text-primary" />
+                )}
               </div>
               <div className="min-w-0">
                 <h3
@@ -761,13 +825,17 @@ export const SearchResults = ({
                   “{displayQuery}”
                 </h3>
                 <p
-                  className="text-[11px] font-medium text-muted-foreground tabular-nums"
+                  className={`text-[11px] font-medium tabular-nums ${
+                    hasError ? "text-destructive" : "text-muted-foreground"
+                  }`}
                   aria-live="polite"
+                  role="status"
                 >
-                  {totalCount} {totalCount === 1 ? "result" : "results"}
+                  {statusLabel}
                   {collapsed ? " · hidden" : ""}
                 </p>
               </div>
+
             </div>
             <div className="flex items-center gap-1.5 flex-shrink-0">
               <button
@@ -813,19 +881,57 @@ export const SearchResults = ({
             }`}
           >
 
-            {!hasResults && (
+            {hasError && (
+              <div className="text-center py-9 px-2">
+                <div className="w-12 h-12 rounded-full bg-destructive/10 border border-destructive/25 flex items-center justify-center mx-auto mb-3">
+                  <AlertTriangle className="w-5 h-5 text-destructive" />
+                </div>
+                <p className="text-sm font-semibold text-foreground">
+                  Search couldn’t reach the map data
+                </p>
+                <p className="text-xs text-muted-foreground mt-1 max-w-[34ch] mx-auto">
+                  {error}
+                </p>
+                {onRetry && (
+                  <button
+                    type="button"
+                    onClick={onRetry}
+                    className="mt-4 inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold transition-colors active:scale-95 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                  >
+                    <RotateCw className="w-3.5 h-3.5" />
+                    Try again
+                  </button>
+                )}
+              </div>
+            )}
+
+            {showSkeletons && (
+              <div className="space-y-3" role="status" aria-live="polite">
+                <span className="sr-only">Searching venues and deals…</span>
+                <div className="flex items-center gap-1.5 heading-luxe-eyebrow px-1">
+                  <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
+                  Searching
+                </div>
+                <ResultSkeletons rows={4} />
+              </div>
+            )}
+
+            {showEmpty && (
               <div className="text-center py-10">
                 <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3">
                   <SearchIcon className="w-5 h-5 text-muted-foreground" />
                 </div>
                 <p className="text-sm font-semibold text-foreground">
-                  No results found
+                  No matches for “{displayQuery}”
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Try a venue, area, category, or deal
+                  {venues.length === 0 && deals.length === 0
+                    ? "Nothing is loaded for this area yet — try another city or refresh."
+                    : "Try a venue, area, category, or deal"}
                 </p>
               </div>
             )}
+
 
             {/* JetCards — venues + deal-backed venues for direct card access */}
             {filteredJetcards.length > 0 && (

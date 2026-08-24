@@ -24,6 +24,7 @@ export const Header = () => {
     lastUpdated,
     onRefresh,
     isLoading,
+    error: headerError,
   } = useHeaderContext();
   // "Mobile" header chrome = anything narrower than the `md` breakpoint
   // (phones + small foldables). Tablets in portrait already get the full
@@ -438,6 +439,10 @@ export const Header = () => {
             showResults={showResults && debouncedQuery.trim().length > 0}
             venues={venues}
             deals={deals}
+            isLoading={isLoading}
+            isSearching={searchQuery.trim() !== debouncedQuery.trim()}
+            error={headerError ?? null}
+            onRetry={onRefresh}
             onVenueSelect={handleVenueSelectFromSearch}
             onQueryChange={handleQueryChange}
             onClear={handleClearSearch}

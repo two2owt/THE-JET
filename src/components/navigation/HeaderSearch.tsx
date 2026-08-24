@@ -29,6 +29,14 @@ export interface HeaderSearchProps {
   /** Data passed through to SearchResults. */
   venues: Venue[];
   deals: Deal[];
+  /** Underlying dataset is still loading. */
+  isLoading?: boolean;
+  /** Query is still settling through the debounce. */
+  isSearching?: boolean;
+  /** Failed data load message, shown as the panel's error state. */
+  error?: string | null;
+  /** Retry handler for the error state. */
+  onRetry?: () => void;
   onVenueSelect: (venue: Venue | string) => void;
   /** Setters / handlers wired from parent. */
   onQueryChange: (next: string) => void;
@@ -50,6 +58,10 @@ export function HeaderSearch({
   showResults,
   venues,
   deals,
+  isLoading = false,
+  isSearching = false,
+  error = null,
+  onRetry,
   onVenueSelect,
   onQueryChange,
   onClear,
@@ -248,6 +260,11 @@ export function HeaderSearch({
             onVenueSelect={handleVenueSelect}
             onClose={handleCloseResults}
             isVisible={showResults}
+            isLoading={isLoading}
+            isSearching={isSearching}
+            error={error}
+            onRetry={onRetry}
+
           />
         </Suspense>
       )}
