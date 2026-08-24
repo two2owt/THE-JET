@@ -109,7 +109,9 @@ export function HeaderSearch({
   const handleDismiss = hasQuery ? onClear : onCollapse;
 
   // Reserve room for the trailing control so the caret never sits under it.
-  const paddingRight = showDismiss ? "44px" : "16px";
+  const paddingRight = showDismiss
+    ? "calc(var(--header-control-height, 36px) + 8px)"
+    : "16px";
 
   return (
     <div
