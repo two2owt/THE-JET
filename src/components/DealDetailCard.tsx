@@ -26,6 +26,10 @@ import type { Venue } from "@/types/venue";
 import { openExternalUrl } from "@/lib/open-external";
 
 const DirectionsDialog = lazy(() => import("./DirectionsDialog"));
+const RedemptionQRDialog = lazy(
+  () => import("./deals/RedemptionQRDialog"),
+);
+
 
 // Defer haptics import - only loaded when user interacts
 const triggerHaptic = async () => {
