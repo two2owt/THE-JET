@@ -806,6 +806,7 @@ export const SearchResults = ({
           <CardContent
             ref={listRef}
             id="jet-search-results-list"
+            onScroll={handleListScroll}
             hidden={collapsed}
             className={`p-3 sm:p-4 pb-4 space-y-4 overflow-y-auto overscroll-contain flex-1 min-h-0 ${
               collapsed ? "hidden" : ""
