@@ -4,6 +4,7 @@ import { ChatImage } from "@/components/chat/ChatImage";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "@/lib/router-compat";
 import { PageLayout } from "@/components/PageLayout";
+import { PageShell } from "@/components/PageShell";
 import { EmptyState } from "@/components/EmptyState";
 import { SignedOutPreview } from "@/components/SignedOutPreview";
 
