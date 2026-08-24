@@ -3,7 +3,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { storeLastKnownLocation } from "@/lib/tile-prefetch";
 import { GEO_GRANTED_EVENT } from "@/lib/geolocationGrantEvent";
 import { subscribeMapInteractionLock } from "@/lib/mapInteractionLock";
-import { verifyMapboxVersion } from "@/lib/mapbox-version";
+import {
+  verifyMapboxVersion,
+  EXPECTED_MAPBOX_VERSION,
+} from "@/lib/mapbox-version";
 import {
   createTileRetryController,
   type TileRetryController,
