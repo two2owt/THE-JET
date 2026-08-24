@@ -41,7 +41,7 @@ export function ProfileStatsPills({
       icon: Bell,
       label: "Alerts",
       value: unreadAlertsCount,
-      to: "/?tab=notifications",
+      to: "/alerts",
     },
   ];
 

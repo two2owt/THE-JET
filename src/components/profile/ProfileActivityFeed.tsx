@@ -84,7 +84,7 @@ export function ProfileActivityFeed({
         title: n.title,
         subtitle: n.message,
         at: n.sentAt ? new Date(n.sentAt).getTime() : 0,
-        to: "/?tab=notifications",
+        to: "/alerts",
       })),
     ];
     return merged

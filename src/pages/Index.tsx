@@ -34,7 +34,6 @@ import { useOnboardingGate } from "@/hooks/useOnboardingGate";
 import { useCitySelection } from "@/hooks/useCitySelection";
 import { useVenueDeepLinks } from "@/hooks/useVenueDeepLinks";
 
-import { NotificationsTabSkeleton } from "@/components/skeletons/PageSkeletons";
 import { CityTransitionOverlay } from "@/components/CityTransitionOverlay";
 import { MapSurface } from "@/components/map/MapSurface";
 import { MapCardPortal } from "@/components/map/MapCardPortal";
@@ -46,11 +45,6 @@ const JetCard = lazy(() =>
 );
 const ParkingCard = lazy(() =>
   import("@/components/ParkingCard").then((m) => ({ default: m.ParkingCard })),
-);
-const NotificationsTab = lazy(() =>
-  import("@/components/notifications/NotificationsTab").then((m) => ({
-    default: m.NotificationsTab,
-  })),
 );
 const DirectionsDialog = lazy(() => import("@/components/DirectionsDialog"));
 const ShareToFriendDialog = lazy(() =>
@@ -139,8 +133,8 @@ const Index = () => {
     };
   }, []);
 
-  const { notifications, markAsRead, markAllAsRead } =
-    useNotifications(dataReady);
+  // Only the unread badge is needed here — the alerts list lives at /alerts.
+  const { notifications } = useNotifications(dataReady);
   const unreadNotifications = notifications.filter((n) => !n.read).length;
   useAutoScrapeVenueImages(dataReady);
   const {
@@ -296,14 +290,9 @@ const Index = () => {
         position: "relative",
       }}
     >
-      {/* Screen readers should hear the tab context change, since all tabs
-          share the "/" route and its single <h1>. */}
       <h1 className="sr-only">
-        {activeTab === "map"
-          ? "JET — Real-time heatmap of live deals, events, and trending venues near you"
-          : activeTab === "notifications"
-            ? "Alerts"
-            : "JET"}
+        JET — Real-time heatmap of live deals, events, and trending venues near
+        you
       </h1>
 
       {/* FULL-SCREEN MAP LAYER - only on map tab */}
@@ -382,37 +371,6 @@ const Index = () => {
       <Suspense fallback={null}>
         <OfflineBanner />
       </Suspense>
-
-      {/* Main Content Area - For non-map tabs, overlaid on map background */}
-      {activeTab !== "map" && (
-        <main
-          role="main"
-          id="main-content"
-          className="page-fade-in page-container max-w-7xl mx-auto bg-gradient-to-b from-background via-background to-muted/30 dot-grid-pattern"
-          style={{
-            height: "var(--main-height)",
-            minHeight: "var(--main-height)",
-            maxHeight: "var(--main-height)",
-            contain: "style",
-            boxSizing: "border-box",
-            width: "100%",
-            zIndex: 1,
-            position: "relative",
-            overflow: "auto",
-          }}
-        >
-          {activeTab === "notifications" && (
-            <Suspense fallback={<NotificationsTabSkeleton />}>
-              <NotificationsTab
-                notifications={notifications}
-                markAsRead={markAsRead}
-                markAllAsRead={markAllAsRead}
-                onVenueClick={handleVenueSelect}
-              />
-            </Suspense>
-          )}
-        </main>
-      )}
 
       {/* Bottom Navigation - Fixed on bottom, overlays map with glass effect */}
       <BottomNav
