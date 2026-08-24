@@ -4417,11 +4417,12 @@ export const MapboxHeatmap = ({
                         width: 9,
                         height: 9,
                         borderRadius: "9999px",
-                        background:
-                          "radial-gradient(circle at 32% 28%, hsl(0 0% 100% / 0.6), hsl(var(--primary)) 65%)",
-                        boxShadow: "0 0 8px hsl(var(--primary) / 0.8)",
+                        background: "hsl(var(--primary))",
+                        boxShadow:
+                          "0 0 6px hsl(var(--primary) / 0.9), 0 0 12px hsl(var(--primary) / 0.5)",
                         animation: "pulse 1.8s ease-in-out infinite",
                       }}
+
                     />
                     <div className="flex flex-col min-w-0 flex-1">
                       <span
