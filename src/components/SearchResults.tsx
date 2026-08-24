@@ -649,6 +649,18 @@ export const SearchResults = ({
     filteredAreas.length +
     filteredCategories.length;
   const hasResults = totalCount > 0;
+  // Panel status: error wins, then "still working", then empty.
+  const hasError = Boolean(error);
+  const busy = (isLoading || isSearching) && !hasError;
+  const showSkeletons = busy && !hasResults;
+  const showEmpty = !hasError && !busy && !hasResults;
+  const statusLabel = hasError
+    ? "Couldn’t load results"
+    : showSkeletons
+      ? "Searching…"
+      : `${totalCount} ${totalCount === 1 ? "result" : "results"}${
+          busy ? " · updating" : ""
+        }`;
 
   /**
    * Selecting any result opens its JetCard *and* asks the map to centre and
