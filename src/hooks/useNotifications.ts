@@ -18,6 +18,28 @@ import {
 import type { Database } from "@/integrations/supabase/types";
 
 type NotificationLog = Database["public"]["Tables"]["notification_logs"]["Row"];
+type DealRow = Database["public"]["Tables"]["deals"]["Row"];
+
+/**
+ * The deal fields an alert needs: venue, terms, and the exact end time. Fetched
+ * for every alert (expired deals included) so the details modal never depends
+ * on the live, active-only deal sync.
+ */
+export type AlertDeal = Pick<
+  DealRow,
+  | "id"
+  | "title"
+  | "description"
+  | "deal_type"
+  | "venue_id"
+  | "venue_name"
+  | "venue_address"
+  | "starts_at"
+  | "expires_at"
+  | "active_days"
+  | "website_url"
+>;
+
 
 export interface Notification {
   id: string;
@@ -70,11 +92,12 @@ const mapNotificationLogToNotification = (
 
 export const useNotifications = (enabled: boolean = true) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  // `expires_at` for every deal referenced by a loaded alert. Alerts whose deal
-  // has lapsed are hidden everywhere (list AND badge) without a reload.
-  const [dealExpiry, setDealExpiry] = useState<Record<string, string | null>>(
-    {},
-  );
+  // Detail row for every deal referenced by a loaded alert. Alerts whose deal
+  // has lapsed are hidden everywhere (list AND badge) without a reload, and the
+  // alert details modal reads venue / terms / exact `expires_at` from here —
+  // including for expired deals, which the live deal sync no longer carries.
+  const [dealById, setDealById] = useState<Record<string, AlertDeal>>({});
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const instanceId = useId();
@@ -181,22 +204,26 @@ export const useNotifications = (enabled: boolean = true) => {
 
       setNotifications(merged);
 
-      // One small lookup for the deals these alerts point at, so expiry can be
-      // enforced client-side on the minute clock (no polling).
+      // One lookup for the deals these alerts point at, so expiry can be
+      // enforced client-side on the minute clock (no polling) and the details
+      // modal can show venue + terms + exact end time for expired deals too.
       const dealIds = Array.from(
         new Set(merged.map((n) => n.dealId).filter(Boolean) as string[]),
       );
       if (dealIds.length) {
         const { data: dealRows } = await supabase
           .from("deals")
-          .select("id, expires_at")
+          .select(
+            "id, title, description, deal_type, venue_id, venue_name, venue_address, starts_at, expires_at, active_days, website_url",
+          )
           .in("id", dealIds);
-        const next: Record<string, string | null> = {};
-        for (const row of dealRows ?? []) next[row.id] = row.expires_at;
-        setDealExpiry(next);
+        const next: Record<string, AlertDeal> = {};
+        for (const row of (dealRows ?? []) as AlertDeal[]) next[row.id] = row;
+        setDealById(next);
       } else {
-        setDealExpiry({});
+        setDealById({});
       }
+
       setError(null);
     } catch (err) {
       console.error("Error loading notifications:", err);
@@ -260,17 +287,33 @@ export const useNotifications = (enabled: boolean = true) => {
   // Re-evaluate expiry on each minute boundary (shared clock, paused while the
   // tab is hidden). Expired alerts disappear from lists and stop counting
   // toward the unread badge automatically.
-  const hasExpiries = Object.values(dealExpiry).some(Boolean);
+  const hasExpiries = Object.values(dealById).some((d) => Boolean(d?.expires_at));
   const now = useMinuteClock(hasExpiries);
+  const expiredIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const n of notifications) {
+      const expiresAt = n.dealId ? dealById[n.dealId]?.expires_at : null;
+      if (expiresAt && isDealExpired(expiresAt, now)) ids.add(n.id);
+    }
+    return ids;
+  }, [notifications, dealById, now]);
+
   const liveNotifications = useMemo(
-    () =>
-      notifications.filter((n) => {
-        const expiresAt = n.dealId ? dealExpiry[n.dealId] : null;
-        if (!expiresAt) return true;
-        return !isDealExpired(expiresAt, now);
-      }),
-    [notifications, dealExpiry, now],
+    () => notifications.filter((n) => !expiredIds.has(n.id)),
+    [notifications, expiredIds],
   );
+  const expiredNotifications = useMemo(
+    () => notifications.filter((n) => expiredIds.has(n.id)),
+    [notifications, expiredIds],
+  );
+  // The badge counts only alerts that are BOTH unread and unexpired. Read state
+  // is durable (local ledger + backend), expiry is derived from the deal rows,
+  // so this holds across reloads.
+  const unreadCount = useMemo(
+    () => liveNotifications.filter((n) => !n.read).length,
+    [liveNotifications],
+  );
+
 
   useEffect(() => {
     // Skip initialization if disabled (deferred loading)
@@ -329,7 +372,14 @@ export const useNotifications = (enabled: boolean = true) => {
   }, [enabled, instanceId]);
 
   return {
+    /** Unexpired alerts only — what the inbox and the badge are built from. */
     notifications: liveNotifications,
+    /** Alerts whose linked deal has already ended (opt-in "Show expired"). */
+    expiredNotifications,
+    /** Unread AND unexpired count — the single source for the nav badge. */
+    unreadCount,
+    /** Deal rows keyed by id, for alert details (venue, terms, expires_at). */
+    dealById,
     loading,
     error,
     refresh: loadNotifications,
@@ -337,3 +387,4 @@ export const useNotifications = (enabled: boolean = true) => {
     markAllAsRead,
   };
 };
+

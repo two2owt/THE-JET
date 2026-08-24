@@ -21,7 +21,14 @@ const NotificationsTab = lazy(() =>
 export default function Alerts() {
   const navigate = useNavigate();
   const headerConfig = useMemo(() => ({ hideSearch: true }), []);
-  const { notifications, markAsRead, markAllAsRead } = useNotifications(true);
+  const {
+    notifications,
+    expiredNotifications,
+    dealById,
+    markAsRead,
+    markAllAsRead,
+  } = useNotifications(true);
+
   const { deals } = useDealSyncRealtime();
 
   const handleVenueClick = useCallback(
@@ -41,7 +48,10 @@ export default function Alerts() {
         <Suspense fallback={<NotificationsTabSkeleton />}>
           <NotificationsTab
             notifications={notifications}
+            expiredNotifications={expiredNotifications}
+            dealById={dealById}
             deals={deals}
+
             markAsRead={markAsRead}
             markAllAsRead={markAllAsRead}
             onVenueClick={handleVenueClick}

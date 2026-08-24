@@ -3,9 +3,15 @@ import { isDealExpired } from "@/lib/dealExpiry";
 import { useMinuteClock } from "@/hooks/useMinuteClock";
 import { usePersistentViewState } from "@/hooks/usePersistentViewState";
 
-import { Bell } from "lucide-react";
+import { Bell, History } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 import { TabPageHeader } from "@/components/TabPageHeader";
+import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBanner";
+import {
+  AlertDetailsDialog,
+  type AlertDetailsTarget,
+} from "@/components/notifications/AlertDetailsDialog";
+import type { AlertDeal } from "@/hooks/useNotifications";
 import type { Venue } from "@/types/venue";
 import type { DealWithNeighborhood } from "@/mobile-app-snippets/useDealSyncRealtime";
 
@@ -19,6 +25,10 @@ type Filter = "all" | "unread" | "read";
 
 interface NotificationsTabProps {
   notifications: any[];
+  /** Alerts whose linked deal has already ended (shown only when toggled on). */
+  expiredNotifications?: any[];
+  /** Deal rows keyed by id — powers the details modal, expired deals included. */
+  dealById?: Record<string, AlertDeal>;
   deals?: DealWithNeighborhood[];
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
@@ -26,12 +36,15 @@ interface NotificationsTabProps {
 }
 
 /**
- * Alerts tab: filter chips (all / unread / read), bulk mark-as-read, and the
- * notification list. Filter state is local to the tab; the notification data
- * itself stays owned by `useNotifications` in the page.
+ * Alerts tab: filter chips (all / unread / read), an opt-in "expired" toggle,
+ * bulk mark-as-read, the notification list, and the alert details modal. Filter
+ * state is local to the tab; the notification data itself stays owned by
+ * `useNotifications` in the page.
  */
 export function NotificationsTab({
   notifications,
+  expiredNotifications = [],
+  dealById = {},
   deals,
   markAsRead,
   markAllAsRead,
@@ -41,67 +54,129 @@ export function NotificationsTab({
     "alerts:filter",
     "all",
   );
+  const [showExpired, setShowExpired] = usePersistentViewState<boolean>(
+    "alerts:showExpired",
+    false,
+  );
+  const [detailsFor, setDetailsFor] = useState<AlertDetailsTarget | null>(null);
+
 
   // Re-evaluate expiry on each minute boundary (shared app-wide clock, paused
   // while the tab is hidden) so an alert drops off without a reload.
   const hasExpiries = useMemo(
-    () => (deals ?? []).some((d) => Boolean(d?.expires_at)),
-    [deals],
+    () =>
+      (deals ?? []).some((d) => Boolean(d?.expires_at)) ||
+      Object.values(dealById).some((d) => Boolean(d?.expires_at)),
+    [deals, dealById],
   );
   const now = useMinuteClock(hasExpiries);
 
+  // Expiry / terms come from `dealById` (every alert's deal, expired included)
+  // and fall back to the live active-only deal sync.
+  const expiresAtOf = useMemo(() => {
+    const syncedById = new Map((deals ?? []).map((d) => [d.id, d]));
+    return (n: { dealId?: string }): string | null => {
+      if (!n?.dealId) return null;
+      return (
+        dealById[n.dealId]?.expires_at ??
+        syncedById.get(n.dealId)?.expires_at ??
+        null
+      );
+    };
+  }, [deals, dealById]);
 
   // Alerts tied to a deal that has passed its merchant `expires_at` are removed
-  // outright. Alerts with no linked deal (or a deal not in the synced list) are
-  // left alone — we can't prove those are stale.
+  // outright. Alerts with no linked deal (or an unknown deal) are left alone —
+  // we can't prove those are stale.
   //
   // Ordering is urgency-first: alerts whose deal expires soonest come first, so
   // the thing about to lapse is at the top. Alerts with no known expiry sort
   // after those, newest first, and sent time breaks any tie.
-  const live = useMemo(() => {
-    const dealById = new Map((deals ?? []).map((d) => [d.id, d]));
-    const expiryOf = (n: { dealId?: string }): number | null => {
-      const deal = n?.dealId ? dealById.get(n.dealId) : null;
-      if (!deal?.expires_at) return null;
-      const at = new Date(deal.expires_at).getTime();
-      return Number.isFinite(at) ? at : null;
+  const sortAlerts = useMemo(() => {
+    const timeOf = (n: { dealId?: string }): number | null => {
+      const at = expiresAtOf(n);
+      if (!at) return null;
+      const ms = new Date(at).getTime();
+      return Number.isFinite(ms) ? ms : null;
     };
-    const sentOf = (n: { sentAt?: string; timestamp?: string }): number => {
+    const sentOf = (n: { sentAt?: string }): number => {
       const at = n?.sentAt ? new Date(n.sentAt).getTime() : NaN;
       return Number.isFinite(at) ? at : 0;
     };
+    return (rows: any[]) =>
+      [...rows].sort((a, b) => {
+        const ea = timeOf(a);
+        const eb = timeOf(b);
+        if (ea !== null && eb !== null && ea !== eb) return ea - eb;
+        if (ea !== null && eb === null) return -1;
+        if (ea === null && eb !== null) return 1;
+        return sentOf(b) - sentOf(a);
+      });
+  }, [expiresAtOf]);
 
-    const kept = dealById.size
-      ? notifications.filter((n) => {
-          const deal = n?.dealId ? dealById.get(n.dealId) : null;
-          if (!deal) return true;
-          return !isDealExpired(deal.expires_at, now);
-        })
-      : notifications;
+  const live = useMemo(
+    () =>
+      sortAlerts(
+        notifications.filter((n) => {
+          const at = expiresAtOf(n);
+          return at ? !isDealExpired(at, now) : true;
+        }),
+      ),
+    [notifications, expiresAtOf, sortAlerts, now],
+  );
 
-    return [...kept].sort((a, b) => {
-      const ea = expiryOf(a);
-      const eb = expiryOf(b);
-      if (ea !== null && eb !== null && ea !== eb) return ea - eb;
-      if (ea !== null && eb === null) return -1;
-      if (ea === null && eb !== null) return 1;
-      return sentOf(b) - sentOf(a);
+  // Expired alerts are reviewable but never counted: most recently ended first.
+  const expired = useMemo(() => {
+    const endedOf = (n: any) => {
+      const at = expiresAtOf(n);
+      const ms = at ? new Date(at).getTime() : NaN;
+      return Number.isFinite(ms) ? ms : 0;
+    };
+    const fromLive = notifications.filter((n) => {
+      const at = expiresAtOf(n);
+      return at ? isDealExpired(at, now) : false;
     });
-  }, [notifications, deals, now]);
+    const byId = new Map<string, any>();
+    for (const n of [...expiredNotifications, ...fromLive]) byId.set(n.id, n);
+    return [...byId.values()].sort((a, b) => endedOf(b) - endedOf(a));
+  }, [expiredNotifications, notifications, expiresAtOf, now]);
 
-
+  // The badge and the chip counts only ever describe unexpired alerts.
   const unreadCount = live.filter((n) => !n.read).length;
   const readCount = live.length - unreadCount;
-  const visible =
-    filter === "unread"
-      ? live.filter((n) => !n.read)
-      : filter === "read"
-        ? live.filter((n) => n.read)
-        : live;
+
+  const matchesFilter = (n: any) =>
+    filter === "unread" ? !n.read : filter === "read" ? n.read : true;
+
+  const visibleLive = live.filter(matchesFilter);
+  const visibleExpired = showExpired ? expired.filter(matchesFilter) : [];
+  const visibleCount = visibleLive.length + visibleExpired.length;
+
+  const renderCard = (notification: any, isExpired: boolean) => (
+    <div
+      key={notification.id}
+      className={isExpired ? "opacity-70" : undefined}
+    >
+      <Suspense fallback={null}>
+        <NotificationCard
+          notification={notification}
+          deals={deals}
+          expired={isExpired}
+          onVenueClick={onVenueClick}
+          onRead={() => markAsRead(notification.id)}
+          onMarkRead={() => markAsRead(notification.id)}
+          onShowDetails={() => setDetailsFor(notification)}
+        />
+      </Suspense>
+    </div>
+  );
+
 
   return (
     <PageShell>
+      <EmailVerificationBanner />
       <TabPageHeader
+
         title="Notifications"
         subtitle="Stay updated with nearby deals and events"
         badge={
@@ -162,19 +237,43 @@ export function NotificationsTab({
             </button>
           ))}
         </div>
-        {unreadCount > 0 && (
-          <button
-            type="button"
-            onClick={markAllAsRead}
-            className="text-xs font-semibold text-primary hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 rounded-md px-2 py-1"
-            aria-label="Mark all notifications as read"
-          >
-            Mark all as read
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {expired.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowExpired((v) => !v)}
+              aria-pressed={showExpired}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold rounded-full px-2.5 py-1.5 transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50"
+              style={{
+                minHeight: "32px",
+                background: showExpired
+                  ? "hsl(var(--muted) / 0.7)"
+                  : "transparent",
+                border: "1px solid hsl(var(--border) / 0.6)",
+                color: showExpired
+                  ? "hsl(var(--foreground))"
+                  : "hsl(var(--muted-foreground))",
+              }}
+            >
+              <History className="w-3.5 h-3.5" aria-hidden="true" />
+              {showExpired ? "Hide" : "Show"} expired ({expired.length})
+            </button>
+          )}
+          {unreadCount > 0 && (
+            <button
+              type="button"
+              onClick={markAllAsRead}
+              className="text-xs font-semibold text-primary hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 rounded-md px-2 py-1"
+              aria-label="Mark all notifications as read"
+            >
+              Mark all as read
+            </button>
+          )}
+        </div>
       </div>
 
-      {visible.length === 0 ? (
+      {visibleCount === 0 ? (
+
         <div
           className="text-center rounded-2xl"
           style={{
@@ -212,20 +311,30 @@ export function NotificationsTab({
           </p>
         </div>
       ) : (
-        visible.map((notification) => (
-          <div key={notification.id}>
-            <Suspense fallback={null}>
-              <NotificationCard
-                notification={notification}
-                deals={deals}
-                onVenueClick={onVenueClick}
-                onRead={() => markAsRead(notification.id)}
-                onMarkRead={() => markAsRead(notification.id)}
-              />
-            </Suspense>
-          </div>
-        ))
+        <>
+          {visibleLive.map((n) => renderCard(n, false))}
+          {visibleExpired.length > 0 && (
+            <>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mt-4 mb-2 px-1">
+                Expired
+              </p>
+              {visibleExpired.map((n) => renderCard(n, true))}
+            </>
+          )}
+        </>
       )}
+
+      <AlertDetailsDialog
+        open={detailsFor !== null}
+        onOpenChange={(open) => {
+          if (!open) setDetailsFor(null);
+        }}
+        alert={detailsFor}
+        deal={detailsFor?.dealId ? dealById[detailsFor.dealId] : null}
+        onViewVenue={onVenueClick}
+      />
+
     </PageShell>
   );
+
 }
