@@ -75,12 +75,18 @@ export const LocationPermissionPrompt = () => {
       if (typeof navigator === "undefined" || !("geolocation" in navigator))
         return;
       if (promptShownFor === signature) return;
+      // Scoped ask: signed-in users only, and only on the first visit that
+      // follows a sign-up / sign-in. Anonymous visitors and returning sessions
+      // are never interrupted — they use the map's "Location off / Enable"
+      // banner instead.
+      if (!userId || !isFirstVisitForSignIn(signature)) return;
 
       const permissionsApiAvailable = Boolean(navigator.permissions?.query);
       const decision = shouldPromptForLocation({
         signature,
         permissionsApiAvailable,
       });
+
       if (!decision.show) {
         if (import.meta.env.DEV)
           console.debug("[location-prompt] suppressed:", decision.reason);
