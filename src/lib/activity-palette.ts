@@ -67,13 +67,39 @@ export function casingFor(isLightBasemap: boolean): string {
   return isLightBasemap ? "rgba(10, 10, 10, 0.55)" : "rgba(255, 255, 255, 0.5)";
 }
 
-/** Legend swatches, ordered high -> low, resolved for the current basemap. */
-export function activityLegendTiers(
-  isLightBasemap: boolean,
-): Array<{ id: ActivityTierId; label: string; color: string }> {
+/**
+ * Legend swatches, ordered high -> low.
+ *
+ * The legend renders inside the app's own dark glass panel, never directly on
+ * the basemap, so its swatches deliberately do NOT follow the basemap. They
+ * always use the dark-surface fills, which keeps the legend marks identical
+ * across light, dark, auto, streets and satellite styles.
+ */
+export function activityLegendTiers(): Array<{
+  id: ActivityTierId;
+  label: string;
+  color: string;
+}> {
   return ACTIVITY_TIERS.map((tier) => ({
     id: tier.id,
     label: tier.label,
-    color: isLightBasemap ? tier.light : tier.dark,
+    color: tier.dark,
   }));
+}
+
+/**
+ * Shared swatch styling for legend marks. Fixed casing ring + soft glow so the
+ * dot reads the same way in the collapsed pill and the expanded legend, on any
+ * map style.
+ */
+export function legendSwatchStyle(color: string, size = 9) {
+  return {
+    width: `${size}px`,
+    height: `${size}px`,
+    flexShrink: 0,
+    borderRadius: "50%",
+    background: color,
+    border: "1px solid rgba(255, 255, 255, 0.55)",
+    boxShadow: `0 0 5px ${color}, 0 0 11px ${color}80, 0 1px 2px rgba(0,0,0,0.45)`,
+  } as const;
 }
