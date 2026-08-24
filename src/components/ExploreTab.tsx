@@ -30,6 +30,7 @@ import {
 import { useFavorites } from "@/hooks/useFavorites";
 import { useProfilePulse } from "@/hooks/useProfilePulse";
 import { hasConsent, subscribeConsent } from "@/lib/consent";
+import { dealMatchesPreferences } from "@/lib/dealCategory";
 
 import type { User } from "@supabase/supabase-js";
 
