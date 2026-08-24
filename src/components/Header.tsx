@@ -330,8 +330,8 @@ export const Header = () => {
           height: "100%",
           maxWidth: "1280px",
           margin: "0 auto",
-          padding: "0 clamp(12px, 2vw, 32px)",
-          gap: "clamp(8px, 1.5vw, 16px)",
+          padding: "0 var(--header-pad-x, 12px)",
+          gap: "var(--header-control-gap, 8px)",
           overflow: "hidden",
         }}
       >
@@ -344,11 +344,12 @@ export const Header = () => {
             style={{
               display: "flex",
               alignItems: "center",
+              justifyContent: "center",
               flexShrink: 0,
-              height: "var(--touch-target-min, 44px)",
-              paddingLeft: "2px",
-              paddingRight: "clamp(8px, 1.5vw, 14px)",
-              marginRight: "clamp(4px, 1vw, 8px)",
+              // Matches every other control in the row so the band reads level.
+              height: "var(--header-control-height, 36px)",
+              minWidth: "var(--header-control-height, 36px)",
+              padding: "0 2px",
               cursor: "pointer",
               userSelect: "none",
               opacity: mounted ? 1 : 0,
@@ -358,7 +359,7 @@ export const Header = () => {
           >
             <span
               style={{
-                fontSize: "clamp(16px, 2.6vw, 22px)",
+                fontSize: "var(--header-logo-size, 18px)",
                 lineHeight: 1,
                 fontWeight: 800,
                 letterSpacing: "-0.025em",
@@ -387,16 +388,16 @@ export const Header = () => {
               minWidth: 0,
               display: "flex",
               alignItems: "center",
-              gap: "10px",
-              height: "clamp(34px, 5vw, 40px)",
-              padding: "0 16px",
+              gap: "8px",
+              height: "var(--header-control-height, 36px)",
+              padding: "0 14px",
               borderRadius: "9999px",
               border: "1.5px solid hsl(var(--border) / 0.5)",
               background: "hsl(var(--muted) / 0.35)",
               backdropFilter: "blur(12px)",
               WebkitBackdropFilter: "blur(12px)",
               color: "hsl(var(--muted-foreground))",
-              fontSize: "14px",
+              fontSize: "var(--header-font-size, 13px)",
               textAlign: "left",
               cursor: "pointer",
               opacity: mounted ? 1 : 0,
@@ -407,8 +408,8 @@ export const Header = () => {
           >
             <Search
               style={{
-                width: 16,
-                height: 16,
+                width: "var(--header-icon-size, 16px)",
+                height: "var(--header-icon-size, 16px)",
                 color: "hsl(var(--muted-foreground) / 0.7)",
                 flexShrink: 0,
               }}
@@ -425,6 +426,7 @@ export const Header = () => {
             </span>
           </button>
         )}
+
 
         {/* Search bar — expands to fill remaining space */}
         {showSearchBar && (

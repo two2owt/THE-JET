@@ -125,6 +125,19 @@ All colors MUST be HSL.
     --bottom-nav-height: 60px;
     --header-total-height: calc(var(--header-height) + var(--safe-area-inset-top));
     --bottom-nav-total-height: calc(var(--bottom-nav-height) + var(--safe-area-inset-bottom));
+
+    /* ---- Nav header control scale -------------------------------------
+       Every interactive element in the nav header (search pill, sync chip,
+       avatar) shares ONE height so the row reads as a single band, and one
+       gap/padding/icon/font scale so nothing crowds or overflows. Override
+       per breakpoint below — never per component. */
+    --header-control-height: 36px;
+    --header-control-gap: 8px;
+    --header-pad-x: 12px;
+    --header-icon-size: 16px;
+    --header-font-size: 13px;
+    --header-logo-size: 18px;
+
     /* Clearance applied by fixed/overlay UI so nothing hides behind the footer
        nav. Resolves to 0 on screens that don't render the nav (auth, onboarding). */
     --nav-clearance: 0px;
@@ -334,6 +347,12 @@ All colors MUST be HSL.
   :root {
     --header-height: 48px;
     --bottom-nav-height: 56px;
+    --header-control-height: 32px;
+    --header-control-gap: 6px;
+    --header-pad-x: 10px;
+    --header-icon-size: 15px;
+    --header-font-size: 12px;
+    --header-logo-size: 16px;
     --map-ui-inset-top: 0.5rem;
     --map-ui-inset-right: calc(0.5rem + env(safe-area-inset-right, 0px));
     --map-ui-inset-bottom: 0.5rem;
@@ -353,6 +372,12 @@ All colors MUST be HSL.
   :root {
     --header-height: 52px;
     --bottom-nav-height: 60px;
+    --header-control-height: 36px;
+    --header-control-gap: 8px;
+    --header-pad-x: 12px;
+    --header-icon-size: 16px;
+    --header-font-size: 13px;
+    --header-logo-size: 18px;
     --map-ui-inset-top: 0.75rem;
     --map-ui-inset-right: calc(0.75rem + env(safe-area-inset-right, 0px));
     --map-ui-inset-bottom: 0.75rem;
@@ -367,6 +392,12 @@ All colors MUST be HSL.
   :root {
     --header-height: 56px;
     --bottom-nav-height: 64px;
+    --header-control-height: 40px;
+    --header-control-gap: 10px;
+    --header-pad-x: 16px;
+    --header-icon-size: 17px;
+    --header-font-size: 13.5px;
+    --header-logo-size: 20px;
     --map-ui-inset-top: 1rem;
     --map-ui-inset-right: calc(1rem + env(safe-area-inset-right, 0px));
     --map-ui-inset-bottom: 1rem;
@@ -386,6 +417,12 @@ All colors MUST be HSL.
   :root {
     --header-height: 60px;
     --bottom-nav-height: 68px;
+    --header-control-height: 42px;
+    --header-control-gap: 12px;
+    --header-pad-x: 20px;
+    --header-icon-size: 18px;
+    --header-font-size: 14px;
+    --header-logo-size: 21px;
     --map-ui-inset-top: 1.25rem;
     --map-ui-inset-right: calc(1.25rem + env(safe-area-inset-right, 0px));
     --map-ui-inset-bottom: 1.25rem;
@@ -403,6 +440,12 @@ All colors MUST be HSL.
   :root {
     --header-height: 64px;
     --bottom-nav-height: 72px;
+    --header-control-height: 44px;
+    --header-control-gap: 14px;
+    --header-pad-x: 24px;
+    --header-icon-size: 18px;
+    --header-font-size: 14px;
+    --header-logo-size: 22px;
     --map-ui-inset-top: 1.5rem;
     --map-ui-inset-right: calc(1.5rem + env(safe-area-inset-right, 0px));
     --map-ui-inset-bottom: 1.5rem;

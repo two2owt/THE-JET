@@ -109,7 +109,9 @@ export function HeaderSearch({
   const handleDismiss = hasQuery ? onClear : onCollapse;
 
   // Reserve room for the trailing control so the caret never sits under it.
-  const paddingRight = showDismiss ? "44px" : "16px";
+  const paddingRight = showDismiss
+    ? "calc(var(--header-control-height, 36px) + 8px)"
+    : "16px";
 
   return (
     <div
@@ -139,12 +141,13 @@ export function HeaderSearch({
       >
         <Search
           style={{
-            width: 16,
-            height: 16,
+            width: "var(--header-icon-size, 16px)",
+            height: "var(--header-icon-size, 16px)",
             color: "hsl(var(--muted-foreground) / 0.6)",
           }}
         />
       </div>
+
 
       <Input
         ref={inputRef}
@@ -183,20 +186,19 @@ export function HeaderSearch({
         autoFocus={isMobile && expanded}
         style={{
           width: "100%",
-          // Scales with the viewport but never exceeds the header's inner box.
-          height:
-            "min(clamp(34px, 5.2vw, 40px), calc(var(--header-height, 52px) - 12px))",
-          maxHeight: "calc(var(--header-height, 52px) - 12px)",
+          // One shared control height across the whole nav header.
+          height: "var(--header-control-height, 36px)",
+          maxHeight: "var(--header-control-height, 36px)",
           minHeight: 0,
           boxSizing: "border-box",
           // Extra left padding keeps the placeholder text clear of the
           // magnifying-glass icon on narrow mobile viewports.
-          paddingLeft: "40px",
+          paddingLeft: "calc(20px + var(--header-icon-size, 16px))",
           paddingRight,
           borderRadius: "9999px",
           border: "1.5px solid hsl(var(--border) / 0.5)",
           background: "hsl(var(--muted) / 0.35)",
-          fontSize: "clamp(13px, 3.4vw, 14px)",
+          fontSize: "var(--header-font-size, 13px)",
           color: "hsl(var(--foreground))",
           outline: "none",
           // Prevent long placeholders from visually running under the icon.
@@ -215,12 +217,12 @@ export function HeaderSearch({
           className="rounded-full hover:bg-muted/80 transition-colors"
           style={{
             position: "absolute",
-            right: "8px",
+            right: "6px",
             top: "50%",
             transform: "translateY(-50%)",
             zIndex: 10,
-            width: 28,
-            height: 28,
+            width: "calc(var(--header-control-height, 36px) - 10px)",
+            height: "calc(var(--header-control-height, 36px) - 10px)",
             background: "hsl(var(--muted) / 0.6)",
             border: "none",
             cursor: "pointer",
@@ -228,11 +230,12 @@ export function HeaderSearch({
         >
           <X
             style={{
-              width: 13,
-              height: 13,
+              width: "calc(var(--header-icon-size, 16px) - 3px)",
+              height: "calc(var(--header-icon-size, 16px) - 3px)",
               color: "hsl(var(--muted-foreground))",
             }}
           />
+
         </IconButton>
       )}
 
