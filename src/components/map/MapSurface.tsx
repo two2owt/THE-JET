@@ -35,6 +35,8 @@ interface MapSurfaceProps {
   onCityChange: (city: City) => void;
   onNearestCityDetected: (city: City) => void;
   onDetectedLocationNameChange: (name: string | null) => void;
+  categoryFilter: string | null;
+  onCategoryFilterChange: (next: string | null) => void;
 }
 
 /**
@@ -57,6 +59,8 @@ export function MapSurface({
   onCityChange,
   onNearestCityDetected,
   onDetectedLocationNameChange,
+  categoryFilter,
+  onCategoryFilterChange,
 }: MapSurfaceProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   // The ~500 kB GL chunk is only fetched once this surface is actually on
