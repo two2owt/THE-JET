@@ -875,7 +875,7 @@ export const ExploreTab = ({
           )}
 
         {/* Deals Grid - Uses virtual scrolling for large lists */}
-        {!isLoading && filteredDeals.length > 0 && (
+        {filteredDeals.length > 0 && (
           <VirtualList
             items={filteredDeals}
             estimateSize={112}
