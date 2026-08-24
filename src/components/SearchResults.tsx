@@ -804,8 +804,18 @@ export const SearchResults = ({
           {/* Sticky header */}
           <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border/60 bg-card/95 backdrop-blur-xl">
             <div className="flex items-center gap-2 min-w-0">
-              <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <SearchIcon className="w-3.5 h-3.5 text-primary" />
+              <div
+                className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                  hasError ? "bg-destructive/10" : "bg-primary/10"
+                }`}
+              >
+                {hasError ? (
+                  <AlertTriangle className="w-3.5 h-3.5 text-destructive" />
+                ) : busy ? (
+                  <Loader2 className="w-3.5 h-3.5 text-primary animate-spin motion-reduce:animate-none" />
+                ) : (
+                  <SearchIcon className="w-3.5 h-3.5 text-primary" />
+                )}
               </div>
               <div className="min-w-0">
                 <h3
@@ -815,13 +825,17 @@ export const SearchResults = ({
                   “{displayQuery}”
                 </h3>
                 <p
-                  className="text-[11px] font-medium text-muted-foreground tabular-nums"
+                  className={`text-[11px] font-medium tabular-nums ${
+                    hasError ? "text-destructive" : "text-muted-foreground"
+                  }`}
                   aria-live="polite"
+                  role="status"
                 >
-                  {totalCount} {totalCount === 1 ? "result" : "results"}
+                  {statusLabel}
                   {collapsed ? " · hidden" : ""}
                 </p>
               </div>
+
             </div>
             <div className="flex items-center gap-1.5 flex-shrink-0">
               <button
