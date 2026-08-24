@@ -390,13 +390,9 @@ export const ExploreTab = ({
       userPreferences?.categories &&
       userPreferences.categories.length > 0
     ) {
-      const filteredByPreference = filtered.filter((deal) => {
-        const dealCategory =
-          dealTypeToCategory[deal.deal_type] || deal.deal_type;
-        return userPreferences.categories!.some(
-          (cat) => cat.toLowerCase() === dealCategory.toLowerCase(),
-        );
-      });
+      const filteredByPreference = filtered.filter((deal) =>
+        dealMatchesPreferences(deal, userPreferences.categories),
+      );
 
       // Only apply preference filter if it leaves some results, otherwise show all
       if (filteredByPreference.length > 0) {
