@@ -19,8 +19,8 @@ export interface PresenceDotProps {
 }
 
 /**
- * Glassmorphic presence dot — frosted core, saturated inner fill and a soft
- * outer glow so it stays legible over photos, maps and dark surfaces.
+ * Presence dot — flat saturated fill with a soft outer glow. No frosted rim or
+ * ring borders, so it sits flush against avatars at any size.
  */
 export function PresenceDot({
   status,
@@ -40,19 +40,18 @@ export function PresenceDot({
       data-presence-user={userId}
       style={{
         position: overlay ? "absolute" : "relative",
-        // Offset slightly outside the avatar edge for maximum visibility.
-        bottom: overlay ? -1 : undefined,
-        right: overlay ? -1 : undefined,
+        // Sit flat on the avatar's bottom-right edge — no negative offset so
+        // nothing is clipped by rounded parents.
+        bottom: overlay ? 0 : undefined,
+        right: overlay ? 0 : undefined,
         width: size,
         height: size,
         borderRadius: "9999px",
         display: "inline-block",
         boxSizing: "border-box",
-        background: `radial-gradient(circle at 32% 28%, hsl(0 0% 100% / 0.55), hsl(${hsl} / 0.95) 62%)`,
-        border: `1.5px solid hsl(var(--background) / 0.9)`,
-        backdropFilter: "blur(4px)",
-        WebkitBackdropFilter: "blur(4px)",
-        boxShadow: `0 0 0 1px hsl(${hsl} / 0.5), 0 0 ${size}px hsl(${hsl} / 0.75), inset 0 0 ${Math.round(size / 2)}px hsl(0 0% 100% / 0.25)`,
+        background: `hsl(${hsl})`,
+        border: "none",
+        boxShadow: `0 0 ${Math.round(size * 0.5)}px hsl(${hsl} / 0.85), 0 0 ${Math.round(size * 1.2)}px hsl(${hsl} / 0.45)`,
         zIndex: 2,
         pointerEvents: "none",
         ...style,
@@ -60,3 +59,4 @@ export function PresenceDot({
     />
   );
 }
+
