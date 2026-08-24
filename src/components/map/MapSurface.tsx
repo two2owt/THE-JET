@@ -58,8 +58,32 @@ export function MapSurface({
   onNearestCityDetected,
   onDetectedLocationNameChange,
 }: MapSurfaceProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  // The ~500 kB GL chunk is only fetched once this surface is actually on
+  // screen, and never before the page load event — identical behaviour on
+  // mobile and desktop, both of which render this same surface.
+  const inView = useInViewAfterPaint(containerRef, {
+    enabled: hydrated && Boolean(mapboxToken),
+  });
+
+  // If the surface never comes into view, still warm the chunk during idle so
+  // a later scroll/tab switch renders instantly instead of waiting on network.
+  useEffect(() => {
+    if (!hydrated || inView || typeof window === "undefined") return;
+    const warm = () => void importMapboxHeatmap().catch(() => {});
+    const id =
+      "requestIdleCallback" in window
+        ? window.requestIdleCallback(warm, { timeout: 8000 })
+        : window.setTimeout(warm, 6000);
+    return () => {
+      if ("cancelIdleCallback" in window) window.cancelIdleCallback(id);
+      else window.clearTimeout(id);
+    };
+  }, [hydrated, inView]);
+
   return (
     <div
+      ref={containerRef}
       className="absolute inset-0 w-full h-full"
       style={{ zIndex: 0 }}
       data-map-container=""
