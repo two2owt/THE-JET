@@ -22,12 +22,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 22
         uses: actions/setup-node@v5
         with:
-          node-version: '20'
-        env:
-          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+          node-version: '22'
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -139,12 +137,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 22
         uses: actions/setup-node@v5
         with:
-          node-version: '20'
-        env:
-          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+          node-version: '22'
 
       - uses: oven-sh/setup-bun@v2
         with:
