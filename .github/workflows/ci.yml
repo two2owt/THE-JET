@@ -34,23 +34,36 @@ jobs:
           bun-version: 1.2.17
 
       - name: CI preflight (required Supabase environment variables)
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
         run: |
-          MISSING=0
-          if [ -z "${{ secrets.VITE_SUPABASE_URL }}" ]; then
-            echo "❌ CI preflight failed: VITE_SUPABASE_URL is not set." >&2
-            echo "   Add it to Settings → Secrets and variables → Actions." >&2
-            MISSING=1
+          MISSING=""
+          # Treat whitespace-only secrets as missing.
+          is_blank() { [ -z "$(printf '%s' "$1" | tr -d '[:space:]')" ]; }
+
+          if is_blank "$VITE_SUPABASE_URL"; then
+            MISSING="$MISSING VITE_SUPABASE_URL"
           fi
-          if [ -z "${{ secrets.VITE_SUPABASE_ANON_KEY }}" ] && [ -z "${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}" ]; then
-            echo "❌ CI preflight failed: neither VITE_SUPABASE_PUBLISHABLE_KEY nor VITE_SUPABASE_ANON_KEY is set." >&2
-            echo "   Add one of them to Settings → Secrets and variables → Actions." >&2
-            MISSING=1
+          if is_blank "$VITE_SUPABASE_PUBLISHABLE_KEY" && is_blank "$VITE_SUPABASE_ANON_KEY"; then
+            MISSING="$MISSING VITE_SUPABASE_PUBLISHABLE_KEY(or VITE_SUPABASE_ANON_KEY)"
           fi
-          if [ "$MISSING" -ne 0 ]; then
-            echo "❌ CI preflight failed: required Supabase secrets are missing." >&2
+          if is_blank "$VITE_SUPABASE_PROJECT_ID"; then
+            echo "::warning::VITE_SUPABASE_PROJECT_ID is not set (optional, used by tooling)."
+          fi
+
+          if [ -n "$MISSING" ]; then
+            echo "::error::CI preflight failed. Missing or empty repository secrets:" >&2
+            for name in $MISSING; do
+              echo "   - $name" >&2
+            done
+            echo "   Add them at Settings -> Secrets and variables -> Actions -> New repository secret." >&2
+            echo "   Note: a secret that exists but is empty still counts as missing." >&2
             exit 1
           fi
-          echo "✅ CI preflight passed: Supabase environment variables are configured."
+          echo "CI preflight passed: Supabase environment variables are configured."
 
       - name: Migration preflight (advisory lock signatures)
         run: bun run scripts/preflight-advisory-locks.mjs
@@ -138,23 +151,36 @@ jobs:
           bun-version: 1.2.17
 
       - name: CI preflight (required Supabase environment variables)
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
         run: |
-          MISSING=0
-          if [ -z "${{ secrets.VITE_SUPABASE_URL }}" ]; then
-            echo "❌ CI preflight failed: VITE_SUPABASE_URL is not set." >&2
-            echo "   Add it to Settings → Secrets and variables → Actions." >&2
-            MISSING=1
+          MISSING=""
+          # Treat whitespace-only secrets as missing.
+          is_blank() { [ -z "$(printf '%s' "$1" | tr -d '[:space:]')" ]; }
+
+          if is_blank "$VITE_SUPABASE_URL"; then
+            MISSING="$MISSING VITE_SUPABASE_URL"
           fi
-          if [ -z "${{ secrets.VITE_SUPABASE_ANON_KEY }}" ] && [ -z "${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}" ]; then
-            echo "❌ CI preflight failed: neither VITE_SUPABASE_PUBLISHABLE_KEY nor VITE_SUPABASE_ANON_KEY is set." >&2
-            echo "   Add one of them to Settings → Secrets and variables → Actions." >&2
-            MISSING=1
+          if is_blank "$VITE_SUPABASE_PUBLISHABLE_KEY" && is_blank "$VITE_SUPABASE_ANON_KEY"; then
+            MISSING="$MISSING VITE_SUPABASE_PUBLISHABLE_KEY(or VITE_SUPABASE_ANON_KEY)"
           fi
-          if [ "$MISSING" -ne 0 ]; then
-            echo "❌ CI preflight failed: required Supabase secrets are missing." >&2
+          if is_blank "$VITE_SUPABASE_PROJECT_ID"; then
+            echo "::warning::VITE_SUPABASE_PROJECT_ID is not set (optional, used by tooling)."
+          fi
+
+          if [ -n "$MISSING" ]; then
+            echo "::error::CI preflight failed. Missing or empty repository secrets:" >&2
+            for name in $MISSING; do
+              echo "   - $name" >&2
+            done
+            echo "   Add them at Settings -> Secrets and variables -> Actions -> New repository secret." >&2
+            echo "   Note: a secret that exists but is empty still counts as missing." >&2
             exit 1
           fi
-          echo "✅ CI preflight passed: Supabase environment variables are configured."
+          echo "CI preflight passed: Supabase environment variables are configured."
 
       - name: Install dependencies (lockfile must be in sync)
         run: bun install --frozen-lockfile
