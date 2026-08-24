@@ -14,6 +14,10 @@ import { toast } from "sonner";
 import { shareDeal } from "@/utils/shareUtils";
 import { useFavorites } from "@/hooks/useFavorites";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  DealMetaBadges,
+  useDealPresentation,
+} from "@/components/deals/DealBadges";
 import { cn } from "@/lib/utils";
 import type { Venue } from "@/types/venue";
 
@@ -160,31 +164,9 @@ export const DealDetailCard = memo(({ deal, onClose }: DealDetailCardProps) => {
     });
   };
 
-  const getTimeRemaining = (expiresAt: string) => {
-    const now = new Date();
-    const expires = new Date(expiresAt);
-    const diff = expires.getTime() - now.getTime();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const days = Math.floor(hours / 24);
-
-    if (days > 0) return `${days} day${days > 1 ? "s" : ""} left`;
-    if (hours > 0) return `${hours} hour${hours > 1 ? "s" : ""} left`;
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    return `${minutes} minute${minutes > 1 ? "s" : ""} left`;
-  };
-
-  const getDealIcon = (dealType: string) => {
-    switch (dealType) {
-      case "offer":
-        return "🎉";
-      case "event":
-        return "🎵";
-      case "special":
-        return "⭐";
-      default:
-        return "💎";
-    }
-  };
+  // Shared presentation layer: same type label, category and countdown the
+  // /deals list and alert cards render.
+  const presentation = useDealPresentation(deal)!;
 
   return (
     <div className="bg-card rounded-xl sm:rounded-2xl overflow-hidden border border-border shadow-[var(--shadow-card)] transition-all duration-300 relative">
@@ -217,7 +199,7 @@ export const DealDetailCard = memo(({ deal, onClose }: DealDetailCardProps) => {
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-6xl">{getDealIcon(deal.deal_type)}</span>
+            <span className="text-6xl">{presentation.typeEmoji}</span>
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
@@ -243,8 +225,8 @@ export const DealDetailCard = memo(({ deal, onClose }: DealDetailCardProps) => {
             getDealTypeColor(deal.deal_type),
           )}
         >
-          <span className="text-[10px] sm:text-xs font-semibold capitalize">
-            {deal.deal_type}
+          <span className="text-[10px] sm:text-xs font-semibold">
+            {presentation.typeLabel}
           </span>
         </div>
       </div>
@@ -279,6 +261,9 @@ export const DealDetailCard = memo(({ deal, onClose }: DealDetailCardProps) => {
         {/* Description */}
         <p className="text-sm text-muted-foreground">{deal.description}</p>
 
+        {/* Type / category / end-date, shared with /deals and alerts */}
+        <DealMetaBadges presentation={presentation} size="md" />
+
         {/* Deal Info */}
         <div className="bg-gradient-to-r from-primary/10 via-accent/10 to-secondary/10 rounded-xl p-4 border border-primary/20">
           <div className="flex items-start gap-3">
@@ -287,7 +272,7 @@ export const DealDetailCard = memo(({ deal, onClose }: DealDetailCardProps) => {
             </div>
             <div className="flex-1">
               <p className="text-sm font-bold text-foreground mb-1">
-                {getTimeRemaining(deal.expires_at)}
+                {presentation.expiry?.longLabel ?? "No end date"}
               </p>
               <p className="text-xs text-muted-foreground">
                 Valid until {formatDate(deal.expires_at)}

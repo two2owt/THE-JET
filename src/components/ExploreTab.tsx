@@ -31,6 +31,12 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { useProfilePulse } from "@/hooks/useProfilePulse";
 import { hasConsent, subscribeConsent } from "@/lib/consent";
 import { dealMatchesPreferences } from "@/lib/dealCategory";
+import { getDealPresentation } from "@/lib/dealPresentation";
+import {
+  DealCategoryBadge,
+  DealExpiryBadge,
+  DealTypeBadge,
+} from "@/components/deals/DealBadges";
 
 import type { User } from "@supabase/supabase-js";
 
@@ -439,35 +445,9 @@ export const ExploreTab = ({
     setSearchQuery("");
   };
 
-  const getDealIcon = (dealType: string) => {
-    switch (dealType) {
-      case "offer":
-        return "🎉";
-      case "event":
-        return "🎵";
-      case "special":
-        return "⭐";
-      default:
-        return "💎";
-    }
-  };
-
-  const getTimeRemaining = (expiresAt: string) => {
-    const now = new Date();
-    const expires = new Date(expiresAt);
-    const diff = expires.getTime() - now.getTime();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const days = Math.floor(hours / 24);
-
-    if (days > 0) {
-      return `${days}d left`;
-    }
-    if (hours > 0) {
-      return `${hours}h left`;
-    }
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    return `${minutes}m left`;
-  };
+  // Deal type, category and end-date all come from the shared presentation
+  // layer so /deals rows match JetCards and alert cards exactly.
+  const getDealIcon = (deal: Deal) => getDealPresentation(deal).typeEmoji;
 
   const handleDealClick = (deal: Deal) => {
     setSelectedDeal(deal);
@@ -852,7 +832,7 @@ export const ExploreTab = ({
                       fallback={
                         <div className="w-20 h-20 flex items-center justify-center bg-gradient-to-br from-primary/20 via-accent/20 to-secondary/20 rounded-lg flex-shrink-0">
                           <span className="text-3xl">
-                            {getDealIcon(deal.deal_type)}
+                            {getDealIcon(deal)}
                           </span>
                         </div>
                       }
@@ -860,7 +840,7 @@ export const ExploreTab = ({
                   ) : (
                     <div className="w-20 h-20 flex items-center justify-center bg-gradient-to-br from-primary/20 via-accent/20 to-secondary/20 rounded-lg flex-shrink-0">
                       <span className="text-3xl">
-                        {getDealIcon(deal.deal_type)}
+                        {getDealIcon(deal)}
                       </span>
                     </div>
                   )}
@@ -905,13 +885,20 @@ export const ExploreTab = ({
                             }`}
                           />
                         </Button>
-                        <Badge variant="secondary">{deal.deal_type}</Badge>
+                        <DealTypeBadge
+                          presentation={getDealPresentation(deal)}
+                          size="md"
+                        />
                       </div>
                     </div>
 
                     <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
                       {deal.description}
                     </p>
+
+                    <div className="mb-2">
+                      <DealCategoryBadge presentation={getDealPresentation(deal)} />
+                    </div>
 
                     <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-1 text-muted-foreground">
@@ -925,10 +912,7 @@ export const ExploreTab = ({
                             {formatDistance(deal.distance)}
                           </span>
                         )}
-                        <div className="flex items-center gap-1 text-primary font-medium">
-                          <Clock className="w-3 h-3" />
-                          {getTimeRemaining(deal.expires_at)}
-                        </div>
+                        <DealExpiryBadge presentation={getDealPresentation(deal)} />
                       </div>
                     </div>
                   </div>
