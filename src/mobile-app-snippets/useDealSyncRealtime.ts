@@ -1,5 +1,9 @@
-import { useEffect, useState, useCallback, useId, useRef } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type {
+  RealtimeChannel,
+  RealtimePostgresChangesPayload,
+} from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
 export type Deal = Database["public"]["Tables"]["deals"]["Row"];
@@ -115,6 +119,61 @@ const inFlight = new Map<string, Promise<DealWithNeighborhood[]>>();
  */
 const DEAL_CACHE_TTL_MS = 60_000;
 
+type DealChangePayload = RealtimePostgresChangesPayload<Deal>;
+type DealChangeListener = (payload: DealChangePayload) => void;
+
+/**
+ * ONE shared `deals` realtime channel for the whole app. Previously every
+ * mount opened its own channel, so each tab switch paid a subscribe/unsubscribe
+ * handshake before live updates resumed. Listeners fan out from the shared
+ * channel instead, and the channel lingers briefly after the last listener
+ * leaves so a quick tab round-trip reuses it.
+ */
+const dealListeners = new Set<DealChangeListener>();
+let sharedDealChannel: RealtimeChannel | null = null;
+let dealChannelTeardown: ReturnType<typeof setTimeout> | null = null;
+const CHANNEL_LINGER_MS = 15_000;
+
+function subscribeToDealChanges(listener: DealChangeListener): () => void {
+  dealListeners.add(listener);
+
+  if (dealChannelTeardown) {
+    clearTimeout(dealChannelTeardown);
+    dealChannelTeardown = null;
+  }
+
+  if (!sharedDealChannel) {
+    sharedDealChannel = supabase
+      .channel("deal-sync-shared")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "deals" },
+        (payload) => {
+          dealListeners.forEach((fn) => {
+            try {
+              fn(payload as DealChangePayload);
+            } catch (err) {
+              console.error("Deal realtime listener failed:", err);
+            }
+          });
+        },
+      )
+      .subscribe();
+  }
+
+  return () => {
+    dealListeners.delete(listener);
+    if (dealListeners.size > 0 || dealChannelTeardown) return;
+    dealChannelTeardown = setTimeout(() => {
+      dealChannelTeardown = null;
+      if (dealListeners.size === 0 && sharedDealChannel) {
+        void supabase.removeChannel(sharedDealChannel);
+        sharedDealChannel = null;
+      }
+    }, CHANNEL_LINGER_MS);
+  };
+}
+
 export function useDealSyncRealtime(options: DealSyncOptions = {}) {
   const { activeOnly = true, fetchOnMount = true, realtime = true } = options;
 
@@ -138,7 +197,6 @@ export function useDealSyncRealtime(options: DealSyncOptions = {}) {
   }, [cacheKey]);
   const [loading, setLoading] = useState(fetchOnMount && !cached);
   const [error, setError] = useState<Error | null>(null);
-  const channelId = useId().replace(/[^a-zA-Z0-9]/g, "");
 
   // Track in-flight single-deal fetches so bursts of realtime events don't
   // fire redundant requests.
