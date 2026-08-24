@@ -106,7 +106,21 @@ export const useConnections = (userId?: string) => {
           .single(),
       );
 
-      if (error) throw error;
+      if (error) {
+        // The INSERT policy also enforces a 10-per-hour rate limit, so an RLS
+        // rejection here is either an expired session or too many requests.
+        if (isRlsViolation(error)) {
+          return {
+            success: false,
+            error: new Error(
+              "Couldn't send that request — you may have hit the hourly limit or your session expired. Try again in a bit.",
+            ),
+          };
+        }
+        throw error;
+      }
+
+
 
 
       // Send email notification (fire and forget - don't block on this).
