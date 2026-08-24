@@ -91,7 +91,9 @@ export function MapSurface({
       {/* Paints on the very first frame (before hydration, before the token
           resolves, before the GL bundle downloads) so the viewport has a real
           LCP candidate instead of an empty box. The map canvas covers it. */}
-      {!(hydrated && mapboxToken) && !mapboxError && <HeatmapSkeleton />}
+      {!(hydrated && mapboxToken && inView) && !mapboxError && (
+        <HeatmapSkeleton />
+      )}
 
       {mapboxError && !mapboxLoading && (
         <div
