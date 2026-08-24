@@ -25,17 +25,31 @@ interface NotificationCardProps {
 
 export const NotificationCard = memo(
   ({ notification, deals, onVenueClick, onRead }: NotificationCardProps) => {
+    // The deal this alert points at, when it is still live in the synced list.
+    const linkedDeal = useMemo(() => {
+      if (!notification.dealId || !deals?.length) return null;
+      return deals.find((d) => d.id === notification.dealId) ?? null;
+    }, [notification.dealId, deals]);
+
     const enriched = useMemo(() => {
-      if (!notification.dealId || !deals?.length) return notification;
-      const deal = deals.find((d) => d.id === notification.dealId);
-      if (!deal) return notification;
+      if (!linkedDeal) return notification;
       return {
         ...notification,
-        title: deal.title || notification.title,
-        message: deal.description || notification.message,
-        venue: deal.venue_name || notification.venue,
+        title: linkedDeal.title || notification.title,
+        message: linkedDeal.description || notification.message,
+        venue: linkedDeal.venue_name || notification.venue,
       };
-    }, [notification, deals]);
+    }, [notification, linkedDeal]);
+
+    // Merchant-supplied promotion type ("offer" / "event" / "special") plus
+    // the venue category resolved from the deal's own content, so the alert
+    // reads the same way the JetCard and /deals row do.
+    const category = useMemo(
+      () => (linkedDeal ? resolveDealCategory(linkedDeal) : null),
+      [linkedDeal],
+    );
+    const dealType = linkedDeal?.deal_type?.trim() || null;
+    const CategoryIcon = category?.Icon;
 
     const handleClick = () => {
       if (enriched.venue && onVenueClick) {
