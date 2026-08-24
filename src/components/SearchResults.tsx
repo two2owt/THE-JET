@@ -515,13 +515,47 @@ export const SearchResults = ({
     filteredCategories.length;
   const hasResults = totalCount > 0;
 
-  /** Pick the best venue in a neighborhood (sorted by activity), then select it on the map. */
+  /**
+   * Selecting any result opens its JetCard *and* asks the map to centre and
+   * pulse the matching marker. The focus request only moves the camera — layer
+   * visibility (heatmap / flow paths) is untouched, so the density surface
+   * stays readable underneath.
+   */
+  const selectVenueWithFocus = (venue: Venue) => {
+    if (Number.isFinite(venue.lng) && Number.isFinite(venue.lat)) {
+      requestMapFocus({
+        kind: "point",
+        lng: venue.lng,
+        lat: venue.lat,
+        id: venue.id,
+        minZoom: 14.5,
+      });
+    }
+    onVenueSelect(venue);
+  };
+
+  /** Areas frame every venue in the neighborhood, then open the busiest one. */
   const handleAreaSelect = (areaName: string) => {
-    const match = venues
+    const inArea = venues
       .filter((v) => v.neighborhood.toLowerCase() === areaName.toLowerCase())
-      .sort((a, b) => b.activity - a.activity)[0];
-    if (match) {
-      onVenueSelect(match);
+      .sort((a, b) => b.activity - a.activity);
+    const coords = inArea.filter(
+      (v) => Number.isFinite(v.lng) && Number.isFinite(v.lat),
+    );
+    if (coords.length > 1) {
+      const lngs = coords.map((v) => v.lng);
+      const lats = coords.map((v) => v.lat);
+      requestMapFocus({
+        kind: "bounds",
+        bounds: [
+          [Math.min(...lngs), Math.min(...lats)],
+          [Math.max(...lngs), Math.max(...lats)],
+        ],
+        maxZoom: 15,
+      });
+      onVenueSelect(coords[0]);
+    } else if (inArea[0]) {
+      selectVenueWithFocus(inArea[0]);
     }
     onClose();
   };
