@@ -1,4 +1,8 @@
 import { useEffect } from "react";
+import {
+  logAuthRedirectEvent,
+  urlCarriesAuthTokens,
+} from "@/lib/authRedirectLog";
 
 /**
  * Renders nothing and forwards the visitor to a real auth route, preserving
@@ -15,7 +19,7 @@ import { useEffect } from "react";
  */
 export const AuthAliasRedirect = ({ to }: { to: string }) => {
   useEffect(() => {
-    const { search, hash } = window.location;
+    const { search, hash, pathname } = window.location;
     // Merge the alias' query string into the target, keeping target params.
     const target = new URL(to, window.location.origin);
     if (search) {
@@ -24,8 +28,29 @@ export const AuthAliasRedirect = ({ to }: { to: string }) => {
       });
     }
     if (hash) target.hash = hash;
+
+    // Diagnostics: record the hop, and shout if auth material went missing —
+    // that is the exact shape of "the reset link signed me out" reports.
+    const carriedTokens = urlCarriesAuthTokens(search, hash);
+    const preservedTokens = urlCarriesAuthTokens(
+      target.search,
+      target.hash ?? "",
+    );
+    logAuthRedirectEvent({
+      stage:
+        carriedTokens && !preservedTokens ? "alias_token_loss" : "alias_redirect",
+      from: pathname,
+      to: target.pathname,
+      detail: carriedTokens
+        ? preservedTokens
+          ? "auth tokens preserved through alias"
+          : "auth tokens LOST while rewriting alias URL"
+        : "no auth tokens on alias URL",
+    });
+
     window.location.replace(target.toString());
   }, [to]);
+
 
   return (
     <div

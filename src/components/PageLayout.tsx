@@ -3,6 +3,8 @@ import { useRouterState } from "@tanstack/react-router";
 import { BottomNav } from "./BottomNav";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { PullToRefreshIndicator } from "./PullToRefreshIndicator";
+import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBanner";
+
 import { useBottomNavigation, type NavTab } from "@/hooks/useBottomNavigation";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
@@ -166,7 +168,11 @@ export function PageLayout({
             transition: pull.distance ? undefined : "transform 200ms ease-out",
           }}
         >
+          {/* Unverified-email prompt, on every standard page. Skipped on
+              full-bleed pages (the map) where it would cover the canvas. */}
+          {!fullBleed && <EmailVerificationBanner />}
           {children}
+
         </div>
       </main>
 

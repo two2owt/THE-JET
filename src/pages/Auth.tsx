@@ -6,6 +6,8 @@ import {
   Link,
 } from "@/lib/router-compat";
 import { supabase } from "@/integrations/supabase/client";
+import { logAuthRedirectEvent } from "@/lib/authRedirectLog";
+
 import { IconButton } from "@/components/ui/icon-button";
 import { AuthButton } from "@/components/auth/AuthButton";
 import { Input } from "@/components/ui/input";
@@ -211,26 +213,32 @@ const Auth = () => {
 
     // Supabase reports bad/expired links in the URL hash
     // (#error=access_denied&error_code=otp_expired&error_description=...).
-    // Surface that reason instead of waiting 3s for a generic failure.
+    // Send the user to the dedicated recovery screen instead of a toast that
+    // vanishes and leaves them on a form they can't use.
     if (hash.includes("error")) {
       const hashParams = new URLSearchParams(hash.replace(/^#/, ""));
-      const errorCode = hashParams.get("error_code");
+      const errorCode =
+        hashParams.get("error_code") ?? hashParams.get("error") ?? null;
       const errorDescription = hashParams
         .get("error_description")
         ?.replace(/\+/g, " ");
-      toast.error(
-        errorCode === "otp_expired"
-          ? "This reset link has expired"
-          : "This reset link is no longer valid",
-        {
-          description:
-            errorDescription ??
-            "Request a new password reset link and try again.",
-        },
+      logAuthRedirectEvent({
+        stage: "recovery_link_error",
+        from: location.pathname,
+        to: "/link-expired",
+        errorCode,
+        errorDescription: errorDescription ?? null,
+        detail: "recovery link rejected by Supabase",
+      });
+      navigate(
+        `/link-expired?flow=recovery${
+          errorCode ? `&reason=${encodeURIComponent(errorCode)}` : ""
+        }`,
+        { replace: true },
       );
-      navigate("/auth", { replace: true });
       return;
     }
+
 
 
 
