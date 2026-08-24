@@ -125,13 +125,11 @@ export function HeaderSearch({
       data-jet-search-wrapper
       style={{
         position: "relative",
-        // Grow into free space but always yield before the sync indicator
-        // and avatar get squeezed out of the row.
+        // Grow into all available free space; the sync indicator and avatar
+        // are flex-shrink:0 so the search yields to them rather than overlapping.
         flex: "1 1 0%",
-        minWidth: 0,
-        maxWidth: isMobile
-          ? "clamp(148px, 46vw, 248px)"
-          : "clamp(240px, 44vw, 540px)",
+        minWidth: isMobile ? "120px" : "200px",
+        maxWidth: isMobile ? "none" : "560px",
         opacity: mounted ? 1 : 0,
         transform: mounted ? "translateY(0)" : "translateY(-6px)",
         transition: "opacity 0.4s ease-out 0.1s, transform 0.4s ease-out 0.1s",
