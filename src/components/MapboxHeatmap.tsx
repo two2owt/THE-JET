@@ -3,7 +3,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { storeLastKnownLocation } from "@/lib/tile-prefetch";
 import { GEO_GRANTED_EVENT } from "@/lib/geolocationGrantEvent";
 import { subscribeMapInteractionLock } from "@/lib/mapInteractionLock";
-import { verifyMapboxVersion } from "@/lib/mapbox-version";
+import {
+  verifyMapboxVersion,
+  EXPECTED_MAPBOX_VERSION,
+} from "@/lib/mapbox-version";
 import {
   createTileRetryController,
   type TileRetryController,
@@ -22,15 +25,22 @@ import {
 // Type alias for the mapbox-gl default export
 type MapboxGLModule = typeof import("mapbox-gl").default;
 
-// In production, mapbox-gl is loaded from CDN as window.mapboxgl
-// In development, we use the npm package for HMR
+// Mapbox GL JS is pinned to EXPECTED_MAPBOX_VERSION. The CDN runtime is the
+// only accepted source in production; the bundled npm copy is a dev-only
+// convenience for HMR. Any runtime reporting a different version is rejected
+// outright so a stale cached script (an old preview build, a warm service
+// worker) can never render an outdated map.
 let mapboxglModule: MapboxGLModule | null = null;
 let mapboxLoadPromise: Promise<MapboxGLModule> | null = null;
 
-// CDN load timeout - wait for CDN script to load before falling back
+// CDN load timeout - how long to wait for the pinned CDN script.
 const CDN_LOAD_TIMEOUT = 8000; // 8 seconds
 
-// Wait for CDN mapbox-gl to be available with timeout
+const isPinnedVersion = (candidate: unknown): boolean =>
+  (candidate as { version?: unknown } | null)?.version ===
+  EXPECTED_MAPBOX_VERSION;
+
+// Wait for the pinned CDN mapbox-gl to be available with a timeout.
 const waitForCDNMapbox = (): Promise<MapboxGLModule | null> => {
   return new Promise((resolve) => {
     // Check immediately
@@ -48,7 +58,8 @@ const waitForCDNMapbox = (): Promise<MapboxGLModule | null> => {
       } else if (Date.now() - startTime > CDN_LOAD_TIMEOUT) {
         clearInterval(checkInterval);
         console.warn(
-          "MapboxHeatmap: CDN load timeout, falling back to bundled version",
+          "MapboxHeatmap: CDN load timeout waiting for GL JS " +
+            EXPECTED_MAPBOX_VERSION,
         );
         resolve(null);
       }
@@ -61,37 +72,59 @@ const loadMapboxGL = async (): Promise<MapboxGLModule> => {
 
   if (!mapboxLoadPromise) {
     mapboxLoadPromise = (async () => {
-      // First, try to use CDN version (production)
+      // Preferred (and in production, only) source: the pinned CDN runtime.
       const cdnMapbox = await waitForCDNMapbox();
       if (cdnMapbox) {
-        devLog("MapboxHeatmap: Using CDN mapbox-gl");
         verifyMapboxVersion(cdnMapbox, "cdn");
-        mapboxglModule = cdnMapbox;
-        return mapboxglModule;
+        if (isPinnedVersion(cdnMapbox)) {
+          devLog("MapboxHeatmap: Using CDN mapbox-gl");
+          mapboxglModule = cdnMapbox;
+          return mapboxglModule;
+        }
+        // A stale global (old cached script / previous preview build) is never
+        // acceptable — drop it rather than rendering an outdated map.
+        console.error(
+          `MapboxHeatmap: Ignoring stale window.mapboxgl runtime; expected ${EXPECTED_MAPBOX_VERSION}.`,
+        );
+        if (typeof window !== "undefined") {
+          delete (window as { mapboxgl?: unknown }).mapboxgl;
+        }
       }
 
-      // Fallback to dynamic import (development or if CDN fails)
-      devLog("MapboxHeatmap: Loading mapbox-gl via import");
-      try {
-        const m = await import("mapbox-gl");
-        // Also load the CSS in dev
-        await import("mapbox-gl/dist/mapbox-gl.css");
-        verifyMapboxVersion(m.default, "bundle");
-        mapboxglModule = m.default;
-        return m.default;
-      } catch (importError) {
-        console.error(
-          "MapboxHeatmap: Failed to import mapbox-gl:",
-          importError,
-        );
-        throw new Error(
-          "Failed to load map library. Please check your connection and refresh.",
-        );
+      // Dev-only fallback: the bundled npm copy, which HMR can serve.
+      if (import.meta.env.DEV) {
+        devLog("MapboxHeatmap: Loading mapbox-gl via import (dev)");
+        try {
+          const m = await import("mapbox-gl");
+          await import("mapbox-gl/dist/mapbox-gl.css");
+          verifyMapboxVersion(m.default, "bundle");
+          if (!isPinnedVersion(m.default)) {
+            throw new Error(
+              `Bundled mapbox-gl is not ${EXPECTED_MAPBOX_VERSION}. Re-pin the npm dependency.`,
+            );
+          }
+          mapboxglModule = m.default;
+          return m.default;
+        } catch (importError) {
+          console.error(
+            "MapboxHeatmap: Failed to import mapbox-gl:",
+            importError,
+          );
+        }
       }
+
+      throw new Error(
+        "Failed to load the current map library. Please refresh to get the latest version.",
+      );
     })();
+    // Let a later attempt retry instead of caching the rejection forever.
+    mapboxLoadPromise.catch(() => {
+      mapboxLoadPromise = null;
+    });
   }
   return mapboxLoadPromise;
 };
+
 import {
   MapPin,
   Layers,
