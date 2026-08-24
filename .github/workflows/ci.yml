@@ -33,6 +33,25 @@ jobs:
         with:
           bun-version: 1.2.17
 
+      - name: CI preflight (required Supabase environment variables)
+        run: |
+          MISSING=0
+          if [ -z "${{ secrets.VITE_SUPABASE_URL }}" ]; then
+            echo "❌ CI preflight failed: VITE_SUPABASE_URL is not set." >&2
+            echo "   Add it to Settings → Secrets and variables → Actions." >&2
+            MISSING=1
+          fi
+          if [ -z "${{ secrets.VITE_SUPABASE_ANON_KEY }}" ] && [ -z "${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}" ]; then
+            echo "❌ CI preflight failed: neither VITE_SUPABASE_PUBLISHABLE_KEY nor VITE_SUPABASE_ANON_KEY is set." >&2
+            echo "   Add one of them to Settings → Secrets and variables → Actions." >&2
+            MISSING=1
+          fi
+          if [ "$MISSING" -ne 0 ]; then
+            echo "❌ CI preflight failed: required Supabase secrets are missing." >&2
+            exit 1
+          fi
+          echo "✅ CI preflight passed: Supabase environment variables are configured."
+
       - name: Migration preflight (advisory lock signatures)
         run: bun run scripts/preflight-advisory-locks.mjs
 
@@ -117,6 +136,25 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.2.17
+
+      - name: CI preflight (required Supabase environment variables)
+        run: |
+          MISSING=0
+          if [ -z "${{ secrets.VITE_SUPABASE_URL }}" ]; then
+            echo "❌ CI preflight failed: VITE_SUPABASE_URL is not set." >&2
+            echo "   Add it to Settings → Secrets and variables → Actions." >&2
+            MISSING=1
+          fi
+          if [ -z "${{ secrets.VITE_SUPABASE_ANON_KEY }}" ] && [ -z "${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}" ]; then
+            echo "❌ CI preflight failed: neither VITE_SUPABASE_PUBLISHABLE_KEY nor VITE_SUPABASE_ANON_KEY is set." >&2
+            echo "   Add one of them to Settings → Secrets and variables → Actions." >&2
+            MISSING=1
+          fi
+          if [ "$MISSING" -ne 0 ]; then
+            echo "❌ CI preflight failed: required Supabase secrets are missing." >&2
+            exit 1
+          fi
+          echo "✅ CI preflight passed: Supabase environment variables are configured."
 
       - name: Install dependencies (lockfile must be in sync)
         run: bun install --frozen-lockfile
