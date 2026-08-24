@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import { usePersistentViewState } from "@/hooks/usePersistentViewState";
 import { supabase } from "@/integrations/supabase/client";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Input } from "./ui/input";
@@ -123,7 +124,9 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [filteredDeals, setFilteredDeals] = useState<Deal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = usePersistentViewState<
+    string[]
+  >("deals:categories", []);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [userLocation, setUserLocation] = useState<{
     lat: number;
@@ -134,7 +137,8 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [userPreferences, setUserPreferences] =
     useState<UserPreferences | null>(null);
-  const [preferenceFilterEnabled, setPreferenceFilterEnabled] = useState(true);
+  const [preferenceFilterEnabled, setPreferenceFilterEnabled] =
+    usePersistentViewState("deals:prefFilter", true);
 
   const { isFavorite, toggleFavorite } = useFavorites(user?.id);
 
