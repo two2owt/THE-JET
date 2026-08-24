@@ -190,8 +190,8 @@ d("Realtime + public-read locks", () => {
     });
   });
 
-  describe("user_favorites + search_history over Realtime", () => {
-    it("delivers a favorite back to its own owner", async () => {
+  describe("user_favorites + search_history are not broadcast over Realtime", () => {
+    it("does not deliver a favorite over Realtime even to its own owner", async () => {
       const aliceListener = await listen(alice.client, "alice-own", [
         "user_favorites",
       ]);
@@ -209,23 +209,30 @@ d("Realtime + public-read locks", () => {
           .single();
         expect(fav.error).toBeNull();
 
-        const delivered = await settle(
+        // Wait for a payload that should never arrive now that these tables
+        // are removed from the supabase_realtime publication.
+        await settle(
           () =>
             aliceListener.received.some(
               (c) => c.table === "user_favorites" && c.row.venue_id === marker,
             ),
           REALTIME_WAIT_MS,
         );
-        expect(delivered).toBe(true);
 
-        for (const capture of withData(aliceListener.received)) {
-          expect(capture.row.user_id).toBe(alice.id);
-        }
+        expect(
+          withData(aliceListener.received),
+          `alice received favorites over Realtime after publication removal: ${JSON.stringify(aliceListener.received)}`,
+        ).toEqual([]);
       } finally {
         await aliceListener.stop();
       }
     }, 60_000);
-    it("delivers a user's own rows to them and nobody else's", async () => {
+
+    it("delivers a user's own rows through the Data API but not over Realtime", async () => {
+      const aliceListener = await listen(alice.client, "alice-private", [
+        "user_favorites",
+        "search_history",
+      ]);
       const bobListener = await listen(bob.client, "bob-private", [
         "user_favorites",
         "search_history",
@@ -254,8 +261,17 @@ d("Realtime + public-read locks", () => {
         expect(ownFav.data?.length).toBe(1);
 
         // Give Realtime a generous window to (incorrectly) deliver anything.
-        await settle(() => withData(bobListener.received).length > 0, QUIET_WAIT_MS);
+        await settle(
+          () =>
+            withData(aliceListener.received).length > 0 ||
+            withData(bobListener.received).length > 0,
+          QUIET_WAIT_MS,
+        );
 
+        expect(
+          withData(aliceListener.received),
+          `alice received her own rows over Realtime after publication removal: ${JSON.stringify(aliceListener.received)}`,
+        ).toEqual([]);
         expect(
           withData(bobListener.received),
           `bob received rows he cannot read: ${JSON.stringify(bobListener.received)}`,
@@ -274,10 +290,10 @@ d("Realtime + public-read locks", () => {
           .eq("search_query", `${marker}-query`);
         expect(bobHist.data ?? []).toEqual([]);
       } finally {
+        await aliceListener.stop();
         await bobListener.stop();
       }
     }, 60_000);
-
   });
 
   describe("user_connections: two parties only, at any status", () => {
