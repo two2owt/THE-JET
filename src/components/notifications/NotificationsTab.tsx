@@ -237,19 +237,43 @@ export function NotificationsTab({
             </button>
           ))}
         </div>
-        {unreadCount > 0 && (
-          <button
-            type="button"
-            onClick={markAllAsRead}
-            className="text-xs font-semibold text-primary hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 rounded-md px-2 py-1"
-            aria-label="Mark all notifications as read"
-          >
-            Mark all as read
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {expired.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowExpired((v) => !v)}
+              aria-pressed={showExpired}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold rounded-full px-2.5 py-1.5 transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50"
+              style={{
+                minHeight: "32px",
+                background: showExpired
+                  ? "hsl(var(--muted) / 0.7)"
+                  : "transparent",
+                border: "1px solid hsl(var(--border) / 0.6)",
+                color: showExpired
+                  ? "hsl(var(--foreground))"
+                  : "hsl(var(--muted-foreground))",
+              }}
+            >
+              <History className="w-3.5 h-3.5" aria-hidden="true" />
+              {showExpired ? "Hide" : "Show"} expired ({expired.length})
+            </button>
+          )}
+          {unreadCount > 0 && (
+            <button
+              type="button"
+              onClick={markAllAsRead}
+              className="text-xs font-semibold text-primary hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 rounded-md px-2 py-1"
+              aria-label="Mark all notifications as read"
+            >
+              Mark all as read
+            </button>
+          )}
+        </div>
       </div>
 
-      {visible.length === 0 ? (
+      {visibleCount === 0 ? (
+
         <div
           className="text-center rounded-2xl"
           style={{
