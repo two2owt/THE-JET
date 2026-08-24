@@ -189,8 +189,8 @@ export function HeaderSearch({
         autoCorrect="off"
         spellCheck={false}
         inputMode="search"
-        autoFocus={isMobile && expanded}
         style={{
+
           width: "100%",
           // One shared control height across the whole nav header.
           height: "var(--header-control-height, 36px)",
