@@ -4336,7 +4336,8 @@ export const MapboxHeatmap = ({
                       }
                     }}
                     placeholder="City or city, state"
-                    className="h-9 pl-10 pr-16 text-[13px] sm:text-sm rounded-lg bg-card/60 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-primary/50 placeholder:text-ellipsis placeholder:overflow-hidden placeholder:whitespace-nowrap"
+                    className="h-9 pr-16 text-[13px] sm:text-sm rounded-lg bg-card/60 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-primary/50 placeholder:text-ellipsis placeholder:overflow-hidden placeholder:whitespace-nowrap"
+                    style={{ paddingLeft: "40px" }}
                     aria-label="Search City"
                   />
                   <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
