@@ -86,9 +86,12 @@ export function useProfile(userId: string | undefined) {
   // Cross-device instant sync: any write to this user's profile row bumps the
   // heartbeat, so other open sessions refetch immediately.
   useProfilePulse((pulse) => {
-    if (!userId || pulse.profile_id !== userId) return;
+    if (!userId) return;
+    const isMine = pulse.profile_id === userId;
+    // A resync means the socket dropped and pulses were missed — refetch.
+    if (!isMine && pulse.event !== "resync") return;
     void queryClient.invalidateQueries({ queryKey: key });
-    if (pulse.event === "updated") {
+    if (isMine && pulse.event === "updated") {
       // Shared id keeps this from stacking with the settings "Settings saved"
       // toast or with a burst of heartbeats from a multi-field save.
       toast.success("Profile updated", {
@@ -97,6 +100,7 @@ export function useProfile(userId: string | undefined) {
       });
     }
   }, !!userId);
+
 
   const updateProfile = useMutation({
     mutationFn: async (input: UpdateProfileInput) => {
