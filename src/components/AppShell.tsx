@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import { useLocationTracker } from "@/hooks/useLocationTracker";
 import { useColdStartLocationFallback } from "@/hooks/useColdStartLocationFallback";
 import { CheckoutReturnHandler } from "@/components/CheckoutReturnHandler";
+import { AuthTokenFreshnessGuard } from "@/components/auth/AuthTokenFreshnessGuard";
 import { useMonetizationConfigSync } from "@/hooks/useMonetization";
 
 
@@ -70,6 +71,9 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
     <div className="app-wrapper">
       {/* Resumes / completes Stripe upgrade flows on any route */}
       <CheckoutReturnHandler />
+
+      {/* Validates Supabase token freshness after every auth redirect */}
+      <AuthTokenFreshnessGuard />
 
       {showChrome && (
         <>

@@ -12,6 +12,8 @@ type LinkExpiredSearch = {
   flow?: "recovery" | "signup";
   /** Prefills the resend form when we already know the address. */
   email?: string;
+  /** Same-origin path to return to after signing in again. */
+  returnTo?: string;
 };
 
 export const Route = createFileRoute("/link-expired")({
@@ -21,6 +23,11 @@ export const Route = createFileRoute("/link-expired")({
       ? { flow: search.flow }
       : {}),
     ...(typeof search.email === "string" ? { email: search.email } : {}),
+    ...(typeof search.returnTo === "string" &&
+    search.returnTo.startsWith("/") &&
+    !search.returnTo.startsWith("//")
+      ? { returnTo: search.returnTo }
+      : {}),
   }),
   head: () => ({
     meta: [
