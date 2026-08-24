@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { useNavigate, useLocation } from "@/lib/router-compat";
 
 export type NavTab =
@@ -15,31 +15,56 @@ interface UseBottomNavigationOptions {
  * Centralized navigation hook for BottomNav across all pages.
  * Ensures consistent navigation behavior and URL handling.
  */
+const TAB_PATHS: Record<Exclude<NavTab, "map">, string> = {
+  deals: "/deals",
+  notifications: "/alerts",
+  favorites: "/favorites",
+  social: "/social",
+};
+
+/** Reverse lookup: URL pathname -> tab. `/` is the map. */
+export function tabFromPathname(
+  pathname: string,
+  fallback: NavTab = "map",
+): NavTab {
+  if (pathname === "/") return "map";
+  const entry = (
+    Object.entries(TAB_PATHS) as [Exclude<NavTab, "map">, string][]
+  ).find(([, path]) => pathname === path || pathname.startsWith(`${path}/`));
+  return entry ? entry[0] : fallback;
+}
+
 export function useBottomNavigation(options: UseBottomNavigationOptions = {}) {
   const { defaultTab = "map", onBeforeNavigate } = options;
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Determine initial tab from URL or default
-  const getTabFromLocation = useCallback((): NavTab => {
-    // If we're on a dedicated page, use that as the tab
-    if (location.pathname === "/favorites") return "favorites";
-    if (location.pathname === "/social") return "social";
-    if (location.pathname === "/deals") return "deals";
-    if (location.pathname === "/alerts") return "notifications";
+  // The URL is the single source of truth for the active tab. Deriving it on
+  // every render (instead of mirroring it into state) keeps refresh, deep
+  // links, and back/forward from ever painting the wrong tab.
+  const activeTab = tabFromPathname(location.pathname, defaultTab);
 
-    return defaultTab;
-  }, [location.pathname, location.search, defaultTab]);
+  const buildTarget = useCallback(
+    (tab: NavTab) => {
+      // Preserve other query params (q, venue, layers, etc.) so search query,
+      // open JetCard, and map filters survive tab changes and remain shareable.
+      const params = new URLSearchParams(location.search);
+      // `tab` was the legacy Index sub-view param — never carry it forward.
+      params.delete("tab");
+      const search = params.toString();
+      const path = tab === "map" ? "/" : TAB_PATHS[tab];
+      return `${path}${search ? `?${search}` : ""}`;
+    },
+    [location.search],
+  );
 
-  const [activeTab, setActiveTab] = useState<NavTab>(getTabFromLocation);
-
-  // Sync activeTab with URL when navigating back/forward (browser history)
-  useEffect(() => {
-    const newTab = getTabFromLocation();
-    if (newTab !== activeTab) {
-      setActiveTab(newTab);
-    }
-  }, [location.pathname, location.search, getTabFromLocation]);
+  const goToTab = useCallback(
+    (tab: NavTab) => {
+      if (tab === activeTab) return;
+      navigate(buildTarget(tab));
+    },
+    [activeTab, buildTarget, navigate],
+  );
 
   const handleTabChange = useCallback(
     (tab: NavTab) => {
@@ -47,49 +72,16 @@ export function useBottomNavigation(options: UseBottomNavigationOptions = {}) {
       if (onBeforeNavigate && onBeforeNavigate(tab) === false) {
         return;
       }
-
-      setActiveTab(tab);
-
-      // Preserve other query params (q, venue, layers, etc.) so search query,
-      // open JetCard, and map filters survive tab changes and remain shareable.
-      const params = new URLSearchParams(location.search);
-      switch (tab) {
-        case "map":
-          params.delete("tab");
-          break;
-        case "deals":
-          // `tab` only addresses Index sub-tabs — don't drag it onto /deals.
-          params.delete("tab");
-          navigate(`/deals${params.toString() ? `?${params.toString()}` : ""}`);
-          return;
-        case "notifications":
-          // `tab` only addresses Index sub-tabs — don't drag it onto /alerts.
-          params.delete("tab");
-          navigate(`/alerts${params.toString() ? `?${params.toString()}` : ""}`);
-          return;
-        case "favorites":
-          // `tab` only addresses Index sub-tabs — don't drag it onto other pages.
-          params.delete("tab");
-          navigate(
-            `/favorites${params.toString() ? `?${params.toString()}` : ""}`,
-          );
-          return;
-        case "social":
-          params.delete("tab");
-          navigate(
-            `/social${params.toString() ? `?${params.toString()}` : ""}`,
-          );
-          return;
-      }
-      const search = params.toString();
-      navigate(`/${search ? `?${search}` : ""}`, { replace: true });
+      goToTab(tab);
     },
-    [navigate, onBeforeNavigate, location.search],
+    [goToTab, onBeforeNavigate],
   );
 
   return {
     activeTab,
-    setActiveTab,
+    /** Compat: switching "tabs" now means navigating to that tab's route. */
+    setActiveTab: goToTab,
     handleTabChange,
   };
 }
+
