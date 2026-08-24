@@ -101,7 +101,7 @@ interface Deal {
 }
 
 interface ExploreTabProps {
-  onVenueSelect?: (venueName: string) => void;
+  onVenueSelect?: (venue: { id?: string | null; name: string }) => void;
   deals?: Deal[];
   dealsLoading?: boolean;
   dealsError?: Error | null;
@@ -452,7 +452,9 @@ export const ExploreTab = ({
   const handleDealClick = (deal: Deal) => {
     setSelectedDeal(deal);
     if (onVenueSelect) {
-      onVenueSelect(deal.venue_name);
+      // Pass the stable merchant venue id when we have one; the display name
+      // is only a fallback for legacy rows without an id.
+      onVenueSelect({ id: deal.venue_id, name: deal.venue_name });
     }
   };
 
