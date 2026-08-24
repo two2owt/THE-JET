@@ -64,53 +64,87 @@ export function NotificationsTab({
   // Re-evaluate expiry on each minute boundary (shared app-wide clock, paused
   // while the tab is hidden) so an alert drops off without a reload.
   const hasExpiries = useMemo(
-    () => (deals ?? []).some((d) => Boolean(d?.expires_at)),
-    [deals],
+    () =>
+      (deals ?? []).some((d) => Boolean(d?.expires_at)) ||
+      Object.values(dealById).some((d) => Boolean(d?.expires_at)),
+    [deals, dealById],
   );
   const now = useMinuteClock(hasExpiries);
 
+  // Expiry / terms come from `dealById` (every alert's deal, expired included)
+  // and fall back to the live active-only deal sync.
+  const expiresAtOf = useMemo(() => {
+    const syncedById = new Map((deals ?? []).map((d) => [d.id, d]));
+    return (n: { dealId?: string }): string | null => {
+      if (!n?.dealId) return null;
+      return (
+        dealById[n.dealId]?.expires_at ??
+        syncedById.get(n.dealId)?.expires_at ??
+        null
+      );
+    };
+  }, [deals, dealById]);
 
   // Alerts tied to a deal that has passed its merchant `expires_at` are removed
-  // outright. Alerts with no linked deal (or a deal not in the synced list) are
-  // left alone — we can't prove those are stale.
+  // outright. Alerts with no linked deal (or an unknown deal) are left alone —
+  // we can't prove those are stale.
   //
   // Ordering is urgency-first: alerts whose deal expires soonest come first, so
   // the thing about to lapse is at the top. Alerts with no known expiry sort
   // after those, newest first, and sent time breaks any tie.
-  const live = useMemo(() => {
-    const dealById = new Map((deals ?? []).map((d) => [d.id, d]));
-    const expiryOf = (n: { dealId?: string }): number | null => {
-      const deal = n?.dealId ? dealById.get(n.dealId) : null;
-      if (!deal?.expires_at) return null;
-      const at = new Date(deal.expires_at).getTime();
-      return Number.isFinite(at) ? at : null;
+  const sortAlerts = useMemo(() => {
+    const timeOf = (n: { dealId?: string }): number | null => {
+      const at = expiresAtOf(n);
+      if (!at) return null;
+      const ms = new Date(at).getTime();
+      return Number.isFinite(ms) ? ms : null;
     };
-    const sentOf = (n: { sentAt?: string; timestamp?: string }): number => {
+    const sentOf = (n: { sentAt?: string }): number => {
       const at = n?.sentAt ? new Date(n.sentAt).getTime() : NaN;
       return Number.isFinite(at) ? at : 0;
     };
+    return (rows: any[]) =>
+      [...rows].sort((a, b) => {
+        const ea = timeOf(a);
+        const eb = timeOf(b);
+        if (ea !== null && eb !== null && ea !== eb) return ea - eb;
+        if (ea !== null && eb === null) return -1;
+        if (ea === null && eb !== null) return 1;
+        return sentOf(b) - sentOf(a);
+      });
+  }, [expiresAtOf]);
 
-    const kept = dealById.size
-      ? notifications.filter((n) => {
-          const deal = n?.dealId ? dealById.get(n.dealId) : null;
-          if (!deal) return true;
-          return !isDealExpired(deal.expires_at, now);
-        })
-      : notifications;
+  const live = useMemo(
+    () =>
+      sortAlerts(
+        notifications.filter((n) => {
+          const at = expiresAtOf(n);
+          return at ? !isDealExpired(at, now) : true;
+        }),
+      ),
+    [notifications, expiresAtOf, sortAlerts, now],
+  );
 
-    return [...kept].sort((a, b) => {
-      const ea = expiryOf(a);
-      const eb = expiryOf(b);
-      if (ea !== null && eb !== null && ea !== eb) return ea - eb;
-      if (ea !== null && eb === null) return -1;
-      if (ea === null && eb !== null) return 1;
-      return sentOf(b) - sentOf(a);
+  // Expired alerts are reviewable but never counted: most recently ended first.
+  const expired = useMemo(() => {
+    const endedOf = (n: any) => {
+      const at = expiresAtOf(n);
+      const ms = at ? new Date(at).getTime() : NaN;
+      return Number.isFinite(ms) ? ms : 0;
+    };
+    const fromLive = notifications.filter((n) => {
+      const at = expiresAtOf(n);
+      return at ? isDealExpired(at, now) : false;
     });
-  }, [notifications, deals, now]);
+    const byId = new Map<string, any>();
+    for (const n of [...expiredNotifications, ...fromLive]) byId.set(n.id, n);
+    return [...byId.values()].sort((a, b) => endedOf(b) - endedOf(a));
+  }, [expiredNotifications, notifications, expiresAtOf, now]);
 
-
+  // The badge and the chip counts only ever describe unexpired alerts.
   const unreadCount = live.filter((n) => !n.read).length;
   const readCount = live.length - unreadCount;
+
   const visible =
     filter === "unread"
       ? live.filter((n) => !n.read)
