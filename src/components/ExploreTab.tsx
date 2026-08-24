@@ -51,6 +51,14 @@ const DealDetailCard = lazy(() =>
   import("./DealDetailCard").then((m) => ({ default: m.DealDetailCard })),
 );
 
+/**
+ * Module-level last-known position. Survives unmounts, so switching away from
+ * /deals and back does not re-run a geolocation request before the list can
+ * show distances.
+ */
+const LOCATION_CACHE_TTL_MS = 5 * 60 * 1000;
+let lastKnownLocation: { lat: number; lng: number; at: number } | null = null;
+
 interface UserPreferences {
   categories?: string[];
   food?: {
@@ -253,6 +261,15 @@ export const ExploreTab = ({
   ]);
 
   const getUserLocation = async () => {
+    // A cached coarse fix is good enough for distance sorting, and it means a
+    // tab switch renders distances immediately instead of waiting on the GPS.
+    const cached = lastKnownLocation;
+    if (cached && Date.now() - cached.at < LOCATION_CACHE_TTL_MS) {
+      setUserLocation({ lat: cached.lat, lng: cached.lng });
+      setLocationError(null);
+      return;
+    }
+
     if (!navigator.geolocation) {
       setLocationError("Geolocation is not supported by your browser");
       return;
@@ -281,6 +298,11 @@ export const ExploreTab = ({
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        lastKnownLocation = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          at: Date.now(),
+        };
         setUserLocation({
           lat: position.coords.latitude,
           lng: position.coords.longitude,
@@ -297,9 +319,11 @@ export const ExploreTab = ({
         });
       },
       {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 300000, // Cache for 5 minutes
+        // Deals are sorted by neighbourhood distance, so a coarse fix is
+        // plenty — high accuracy costs seconds of spin-up for no benefit.
+        enableHighAccuracy: false,
+        timeout: 8000,
+        maximumAge: LOCATION_CACHE_TTL_MS,
       },
     );
   };

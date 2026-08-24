@@ -22,6 +22,27 @@ const TAB_PATHS: Record<Exclude<NavTab, "map">, string> = {
   social: "/social",
 };
 
+/**
+ * Query params each tab actually reads. `q` is the shared search term; the
+ * map owns venue/deal deep links and its layer + time-lapse state.
+ */
+const SHARED_PARAMS = ["q"];
+const ALLOWED_PARAMS: Record<NavTab, Set<string>> = {
+  map: new Set([
+    ...SHARED_PARAMS,
+    "venue",
+    "deal",
+    "layers",
+    "cat",
+    "pathTime",
+    "city",
+  ]),
+  deals: new Set([...SHARED_PARAMS, "deal", "cat"]),
+  notifications: new Set([...SHARED_PARAMS]),
+  favorites: new Set([...SHARED_PARAMS]),
+  social: new Set([...SHARED_PARAMS]),
+};
+
 /** Reverse lookup: URL pathname -> tab. `/` is the map. */
 export function tabFromPathname(
   pathname: string,
@@ -46,9 +67,15 @@ export function useBottomNavigation(options: UseBottomNavigationOptions = {}) {
 
   const buildTarget = useCallback(
     (tab: NavTab) => {
-      // Preserve other query params (q, venue, layers, etc.) so search query,
-      // open JetCard, and map filters survive tab changes and remain shareable.
+      // Carry only the params the DESTINATION understands. Dragging map-only
+      // state (venue, layers, pathTime, cat) onto /deals or /alerts made those
+      // routes boot with a deep link to resolve and re-resolve on the way
+      // back, which is what made tab switches feel like they lagged.
       const params = new URLSearchParams(location.search);
+      const allowed = ALLOWED_PARAMS[tab];
+      for (const key of Array.from(params.keys())) {
+        if (!allowed.has(key)) params.delete(key);
+      }
       // `tab` was the legacy Index sub-view param — never carry it forward.
       params.delete("tab");
       const search = params.toString();

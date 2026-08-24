@@ -1,5 +1,9 @@
-import { useEffect, useState, useCallback, useId, useRef } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type {
+  RealtimeChannel,
+  RealtimePostgresChangesPayload,
+} from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
 export type Deal = Database["public"]["Tables"]["deals"]["Row"];
@@ -104,6 +108,71 @@ async function fetchDealsWithNeighborhoods(
  * from the last known result and revalidate in the background.
  */
 const dealCache = new Map<string, DealWithNeighborhood[]>();
+/** When each cache key was last filled from the network. */
+const dealCacheAt = new Map<string, number>();
+/** In-flight fetch per cache key, so concurrent mounts share one request. */
+const inFlight = new Map<string, Promise<DealWithNeighborhood[]>>();
+/**
+ * How long a cached list is treated as fresh. Realtime keeps the list correct
+ * between mounts, so a remount inside this window needs no network round-trip
+ * at all — that is the difference between an instant tab switch and a spinner.
+ */
+const DEAL_CACHE_TTL_MS = 60_000;
+
+type DealChangePayload = RealtimePostgresChangesPayload<Deal>;
+type DealChangeListener = (payload: DealChangePayload) => void;
+
+/**
+ * ONE shared `deals` realtime channel for the whole app. Previously every
+ * mount opened its own channel, so each tab switch paid a subscribe/unsubscribe
+ * handshake before live updates resumed. Listeners fan out from the shared
+ * channel instead, and the channel lingers briefly after the last listener
+ * leaves so a quick tab round-trip reuses it.
+ */
+const dealListeners = new Set<DealChangeListener>();
+let sharedDealChannel: RealtimeChannel | null = null;
+let dealChannelTeardown: ReturnType<typeof setTimeout> | null = null;
+const CHANNEL_LINGER_MS = 15_000;
+
+function subscribeToDealChanges(listener: DealChangeListener): () => void {
+  dealListeners.add(listener);
+
+  if (dealChannelTeardown) {
+    clearTimeout(dealChannelTeardown);
+    dealChannelTeardown = null;
+  }
+
+  if (!sharedDealChannel) {
+    sharedDealChannel = supabase
+      .channel("deal-sync-shared")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "deals" },
+        (payload) => {
+          dealListeners.forEach((fn) => {
+            try {
+              fn(payload as DealChangePayload);
+            } catch (err) {
+              console.error("Deal realtime listener failed:", err);
+            }
+          });
+        },
+      )
+      .subscribe();
+  }
+
+  return () => {
+    dealListeners.delete(listener);
+    if (dealListeners.size > 0 || dealChannelTeardown) return;
+    dealChannelTeardown = setTimeout(() => {
+      dealChannelTeardown = null;
+      if (dealListeners.size === 0 && sharedDealChannel) {
+        void supabase.removeChannel(sharedDealChannel);
+        sharedDealChannel = null;
+      }
+    }, CHANNEL_LINGER_MS);
+  };
+}
 
 export function useDealSyncRealtime(options: DealSyncOptions = {}) {
   const { activeOnly = true, fetchOnMount = true, realtime = true } = options;
@@ -128,26 +197,46 @@ export function useDealSyncRealtime(options: DealSyncOptions = {}) {
   }, [cacheKey]);
   const [loading, setLoading] = useState(fetchOnMount && !cached);
   const [error, setError] = useState<Error | null>(null);
-  const channelId = useId().replace(/[^a-zA-Z0-9]/g, "");
 
   // Track in-flight single-deal fetches so bursts of realtime events don't
   // fire redundant requests.
   const pendingFetchRef = useRef<Set<string>>(new Set());
 
-  const fetchDeals = useCallback(async () => {
-    try {
-      // Only surface the skeleton when there is nothing cached to show;
-      // otherwise revalidate silently behind the existing list.
-      if (!dealCache.get(cacheKey)?.length) setLoading(true);
-      setError(null);
-      const data = await fetchDealsWithNeighborhoods(activeOnly);
-      setDeals(data);
-    } catch (err) {
-      if (!dealCache.get(cacheKey)?.length) setError(err as Error);
-    } finally {
-      setLoading(false);
-    }
-  }, [activeOnly, cacheKey, setDeals]);
+  const fetchDeals = useCallback(
+    async (opts: { force?: boolean } = {}) => {
+      const cachedList = dealCache.get(cacheKey);
+      const cachedAt = dealCacheAt.get(cacheKey) ?? 0;
+      const fresh = Date.now() - cachedAt < DEAL_CACHE_TTL_MS;
+
+      // Fresh cache + realtime patches already in place: nothing to do.
+      if (!opts.force && cachedList && fresh) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        // Only surface the skeleton when there is nothing cached to show;
+        // otherwise revalidate silently behind the existing list.
+        if (!cachedList?.length) setLoading(true);
+        setError(null);
+        // Coalesce parallel mounts (page + header) onto a single request.
+        let promise = inFlight.get(cacheKey);
+        if (!promise) {
+          promise = fetchDealsWithNeighborhoods(activeOnly);
+          inFlight.set(cacheKey, promise);
+          promise.finally(() => inFlight.delete(cacheKey));
+        }
+        const data = await promise;
+        dealCacheAt.set(cacheKey, Date.now());
+        setDeals(data);
+      } catch (err) {
+        if (!dealCache.get(cacheKey)?.length) setError(err as Error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [activeOnly, cacheKey, setDeals],
+  );
 
   useEffect(() => {
     if (fetchOnMount) {
@@ -185,57 +274,44 @@ export function useDealSyncRealtime(options: DealSyncOptions = {}) {
   useEffect(() => {
     if (!realtime) return undefined;
 
-    const channel = supabase
-      .channel(`deal-sync-${channelId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "deals",
-        },
-        (payload) => {
-          const event = payload.eventType;
+    return subscribeToDealChanges((payload) => {
+      const event = payload.eventType;
 
-          if (event === "INSERT") {
-            const newDeal = payload.new as Deal;
-            if (activeOnly && !isActiveDeal(newDeal)) return;
-            void applySingleDealUpdate(newDeal.id);
-            return;
-          }
+      if (event === "INSERT") {
+        const newDeal = payload.new as Deal;
+        if (activeOnly && !isActiveDeal(newDeal)) return;
+        void applySingleDealUpdate(newDeal.id);
+        return;
+      }
 
-          if (event === "UPDATE") {
-            const updated = payload.new as Deal;
+      if (event === "UPDATE") {
+        const updated = payload.new as Deal;
 
-            if (activeOnly && !isActiveDeal(updated)) {
-              // Treat deactivation the same as a delete.
-              setDeals((prev) => prev.filter((d) => d.id !== updated.id));
-              return;
-            }
+        if (activeOnly && !isActiveDeal(updated)) {
+          // Treat deactivation the same as a delete.
+          setDeals((prev) => prev.filter((d) => d.id !== updated.id));
+          return;
+        }
 
-            // Fetch the full deal with neighborhoods and patch it in place.
-            // If the deal was previously inactive, this also adds it to the list.
-            void applySingleDealUpdate(updated.id);
-            return;
-          }
+        // Fetch the full deal with neighborhoods and patch it in place.
+        // If the deal was previously inactive, this also adds it to the list.
+        void applySingleDealUpdate(updated.id);
+        return;
+      }
 
-          if (event === "DELETE") {
-            const deleted = payload.old as Deal;
-            setDeals((prev) => prev.filter((d) => d.id !== deleted.id));
-          }
-        },
-      )
-      .subscribe();
+      if (event === "DELETE") {
+        const deleted = payload.old as Deal;
+        setDeals((prev) => prev.filter((d) => d.id !== deleted.id));
+      }
+    });
+  }, [realtime, activeOnly, applySingleDealUpdate, setDeals]);
 
-    return () => {
-      void supabase.removeChannel(channel);
-    };
-  }, [realtime, activeOnly, channelId, applySingleDealUpdate]);
 
   return {
     deals,
     loading,
     error,
-    refresh: fetchDeals,
+    /** Pull-to-refresh and manual refresh bypass the freshness window. */
+    refresh: () => fetchDeals({ force: true }),
   };
 }
