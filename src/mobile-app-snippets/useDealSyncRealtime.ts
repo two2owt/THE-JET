@@ -104,6 +104,16 @@ async function fetchDealsWithNeighborhoods(
  * from the last known result and revalidate in the background.
  */
 const dealCache = new Map<string, DealWithNeighborhood[]>();
+/** When each cache key was last filled from the network. */
+const dealCacheAt = new Map<string, number>();
+/** In-flight fetch per cache key, so concurrent mounts share one request. */
+const inFlight = new Map<string, Promise<DealWithNeighborhood[]>>();
+/**
+ * How long a cached list is treated as fresh. Realtime keeps the list correct
+ * between mounts, so a remount inside this window needs no network round-trip
+ * at all — that is the difference between an instant tab switch and a spinner.
+ */
+const DEAL_CACHE_TTL_MS = 60_000;
 
 export function useDealSyncRealtime(options: DealSyncOptions = {}) {
   const { activeOnly = true, fetchOnMount = true, realtime = true } = options;
@@ -134,20 +144,41 @@ export function useDealSyncRealtime(options: DealSyncOptions = {}) {
   // fire redundant requests.
   const pendingFetchRef = useRef<Set<string>>(new Set());
 
-  const fetchDeals = useCallback(async () => {
-    try {
-      // Only surface the skeleton when there is nothing cached to show;
-      // otherwise revalidate silently behind the existing list.
-      if (!dealCache.get(cacheKey)?.length) setLoading(true);
-      setError(null);
-      const data = await fetchDealsWithNeighborhoods(activeOnly);
-      setDeals(data);
-    } catch (err) {
-      if (!dealCache.get(cacheKey)?.length) setError(err as Error);
-    } finally {
-      setLoading(false);
-    }
-  }, [activeOnly, cacheKey, setDeals]);
+  const fetchDeals = useCallback(
+    async (opts: { force?: boolean } = {}) => {
+      const cachedList = dealCache.get(cacheKey);
+      const cachedAt = dealCacheAt.get(cacheKey) ?? 0;
+      const fresh = Date.now() - cachedAt < DEAL_CACHE_TTL_MS;
+
+      // Fresh cache + realtime patches already in place: nothing to do.
+      if (!opts.force && cachedList && fresh) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        // Only surface the skeleton when there is nothing cached to show;
+        // otherwise revalidate silently behind the existing list.
+        if (!cachedList?.length) setLoading(true);
+        setError(null);
+        // Coalesce parallel mounts (page + header) onto a single request.
+        let promise = inFlight.get(cacheKey);
+        if (!promise) {
+          promise = fetchDealsWithNeighborhoods(activeOnly);
+          inFlight.set(cacheKey, promise);
+          promise.finally(() => inFlight.delete(cacheKey));
+        }
+        const data = await promise;
+        dealCacheAt.set(cacheKey, Date.now());
+        setDeals(data);
+      } catch (err) {
+        if (!dealCache.get(cacheKey)?.length) setError(err as Error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [activeOnly, cacheKey, setDeals],
+  );
 
   useEffect(() => {
     if (fetchOnMount) {
@@ -236,6 +267,7 @@ export function useDealSyncRealtime(options: DealSyncOptions = {}) {
     deals,
     loading,
     error,
-    refresh: fetchDeals,
+    /** Pull-to-refresh and manual refresh bypass the freshness window. */
+    refresh: () => fetchDeals({ force: true }),
   };
 }
