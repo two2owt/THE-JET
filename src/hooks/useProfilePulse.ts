@@ -39,7 +39,14 @@ export function useProfilePulse(
   enabled = true,
   /** Coalescing window in ms for bursts of edits on the same profile. */
   debounceMs = 400,
+  /**
+   * Narrows the realtime stream server-side to a single profile. Use it on
+   * surfaces that only render one person so the socket never carries other
+   * users' heartbeats. RLS still applies on top of this filter.
+   */
+  profileId?: string,
 ) {
+
   const instanceId = useId();
   const handlerRef = useRef(onPulse);
   handlerRef.current = onPulse;
@@ -116,7 +123,13 @@ export function useProfilePulse(
         .channel(`profile-pulse-${instanceId}-${attempt}`)
         .on(
           "postgres_changes",
-          { event: "*", schema: "public", table: "profile_pulse" },
+          {
+            event: "*",
+            schema: "public",
+            table: "profile_pulse",
+            ...(profileId ? { filter: `profile_id=eq.${profileId}` } : {}),
+          },
+
           (payload) => {
             const row = payload.new as Partial<ProfilePulse> | null;
             if (!row?.profile_id) return;
@@ -181,5 +194,5 @@ export function useProfilePulse(
       pending.clear();
       teardown();
     };
-  }, [enabled, instanceId, debounceMs]);
+  }, [enabled, instanceId, debounceMs, profileId]);
 }
