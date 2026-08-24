@@ -104,19 +104,10 @@ export function HeaderUserMenu({
         )}
       </Avatar>
       {userId && (
-        <span
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            bottom: "1px",
-            right: "1px",
-            width: "10px",
-            height: "10px",
-            borderRadius: "9999px",
-            background: "hsl(var(--cool, 142 76% 45%))",
-            border: "2px solid hsl(var(--background))",
-            boxShadow: "0 0 6px hsl(var(--cool, 142 76% 45%) / 0.6)",
-          }}
+        <PresenceDot
+          status={selfStatus}
+          size={12}
+          style={{ bottom: -1, right: -1 }}
         />
       )}
     </button>
