@@ -7,7 +7,9 @@ import {
   X,
   ExternalLink,
   Navigation,
+  QrCode,
 } from "lucide-react";
+
 import { Button } from "./ui/button";
 import { OptimizedImage } from "./ui/optimized-image";
 import { toast } from "sonner";
@@ -24,6 +26,10 @@ import type { Venue } from "@/types/venue";
 import { openExternalUrl } from "@/lib/open-external";
 
 const DirectionsDialog = lazy(() => import("./DirectionsDialog"));
+const RedemptionQRDialog = lazy(
+  () => import("./deals/RedemptionQRDialog"),
+);
+
 
 // Defer haptics import - only loaded when user interacts
 const triggerHaptic = async () => {
@@ -64,6 +70,8 @@ interface DealDetailCardProps {
 export const DealDetailCard = memo(({ deal, onClose }: DealDetailCardProps) => {
   const [user, setUser] = useState<any>(null);
   const [showDirections, setShowDirections] = useState(false);
+  const [showRedeem, setShowRedeem] = useState(false);
+
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -301,6 +309,18 @@ export const DealDetailCard = memo(({ deal, onClose }: DealDetailCardProps) => {
           </Button>
         </div>
 
+        {/* Redemption QR */}
+        {user && (
+          <Button
+            onClick={() => setShowRedeem(true)}
+            variant="outline"
+            className="w-full border-primary/40 hover:border-primary hover:bg-primary/5 font-semibold rounded-xl"
+          >
+            <QrCode className="w-4 h-4 mr-2" />
+            Show redemption QR
+          </Button>
+        )}
+
         {/* Website Link */}
         {deal.website_url && (
           <Button
@@ -321,6 +341,19 @@ export const DealDetailCard = memo(({ deal, onClose }: DealDetailCardProps) => {
           venue={directionsVenue}
         />
       </Suspense>
+
+      {showRedeem && (
+        <Suspense fallback={null}>
+          <RedemptionQRDialog
+            open={showRedeem}
+            onOpenChange={setShowRedeem}
+            dealId={deal.id}
+            dealTitle={deal.title}
+            venueName={deal.venue_name}
+          />
+        </Suspense>
+      )}
+
     </div>
   );
 });
