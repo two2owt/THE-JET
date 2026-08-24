@@ -4,7 +4,7 @@ import type { CSSProperties, ReactNode } from "react";
  * Variant presets for PageShell. Keeps spacing decisions centralized so tabs
  * stay visually consistent without duplicating layout values.
  * - `dense`   — tighter padding/gap for content-heavy tabs (lists, feeds).
- * - `default` — standard 16/16 used by Hot, Alerts, Saved, Crew.
+ * - `default` — standard 16/16 used by Hot, Alerts, Saved, Social.
  * - `relaxed` — generous spacing for hero/marketing-style tabs.
  */
 export type PageShellVariant = "dense" | "default" | "relaxed";
@@ -19,7 +19,7 @@ const VARIANT_PRESETS: Record<
 };
 
 /**
- * PageShell — shared inner layout for non-map tabs (Hot, Alerts, Saved, Crew).
+ * PageShell — shared inner layout for non-map tabs (Hot, Alerts, Saved, Social).
  * Centralizes max-width, horizontal padding, and vertical gap so every tab
  * matches the Hot/Alerts shell exactly.
  */
