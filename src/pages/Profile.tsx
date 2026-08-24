@@ -274,19 +274,66 @@ export default function Profile() {
         tiktok_url: form.tiktokUrl || "",
       });
 
-      const socialInputs: { platform: SocialPlatform; input: string }[] = [
-        { platform: "instagram", input: validatedSocial.instagram_url || "" },
-        { platform: "twitter", input: validatedSocial.twitter_url || "" },
-        { platform: "facebook", input: validatedSocial.facebook_url || "" },
-        { platform: "linkedin", input: validatedSocial.linkedin_url || "" },
-        { platform: "tiktok", input: validatedSocial.tiktok_url || "" },
+      const socialInputs: {
+        platform: SocialPlatform;
+        field: keyof ProfileEditFormValues;
+        input: string;
+      }[] = [
+        {
+          platform: "instagram",
+          field: "instagramUrl",
+          input: validatedSocial.instagram_url || "",
+        },
+        {
+          platform: "twitter",
+          field: "twitterUrl",
+          input: validatedSocial.twitter_url || "",
+        },
+        {
+          platform: "facebook",
+          field: "facebookUrl",
+          input: validatedSocial.facebook_url || "",
+        },
+        {
+          platform: "linkedin",
+          field: "linkedinUrl",
+          input: validatedSocial.linkedin_url || "",
+        },
+        {
+          platform: "tiktok",
+          field: "tiktokUrl",
+          input: validatedSocial.tiktok_url || "",
+        },
       ];
-      const normalizedHandles = socialInputs
-        .map(({ platform, input }) => ({
-          platform,
-          ...parseSocialInput(platform, input),
-        }))
-        .filter((h) => h.handle);
+
+      // Only normalized handles from a known platform host are stored. Anything
+      // else surfaces as an inline error instead of being silently saved.
+      const socialErrors: Record<string, string> = {};
+      const normalizedHandles: {
+        platform: SocialPlatform;
+        handle: string;
+        url: string;
+      }[] = [];
+      for (const { platform, field, input } of socialInputs) {
+        const parsed = parseSocialLink(platform, input);
+        if (parsed.status === "error") {
+          socialErrors[field] = parsed.error;
+        } else if (parsed.status === "ok") {
+          normalizedHandles.push({
+            platform,
+            handle: parsed.handle,
+            url: parsed.url,
+          });
+        }
+      }
+      if (Object.keys(socialErrors).length > 0) {
+        setFieldErrors((p) => ({ ...p, ...socialErrors }));
+        toast.error("Check your social links", {
+          description: "One or more handles couldn't be recognized.",
+        });
+        return;
+      }
+
 
       // Check unique display name
       const isUnique = await checkDisplayNameUnique(validatedData.display_name);
