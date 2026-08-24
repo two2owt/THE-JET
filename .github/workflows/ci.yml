@@ -20,10 +20,10 @@ jobs:
     name: Install, build, and test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Node.js 24
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '24'
 
@@ -93,10 +93,10 @@ jobs:
     name: Playwright smoke suite
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Node.js 24
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '24'
 
@@ -149,7 +149,7 @@ jobs:
           PLAYWRIGHT_CHROMIUM_PATH: ''
           PLAYWRIGHT_BASE_URL: http://localhost:8080
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: failure()
         with:
           name: playwright-report
