@@ -4409,6 +4409,20 @@ export const MapboxHeatmap = ({
                   }}
                 >
                   <div className="flex items-center gap-3 w-full min-w-0">
+                    {/* Pulsing live dot — signals the location fix is live. */}
+                    <span
+                      aria-hidden="true"
+                      className="flex-shrink-0"
+                      style={{
+                        width: 9,
+                        height: 9,
+                        borderRadius: "9999px",
+                        background:
+                          "radial-gradient(circle at 32% 28%, hsl(0 0% 100% / 0.6), hsl(var(--primary)) 65%)",
+                        boxShadow: "0 0 8px hsl(var(--primary) / 0.8)",
+                        animation: "pulse 1.8s ease-in-out infinite",
+                      }}
+                    />
                     <div className="flex flex-col min-w-0 flex-1">
                       <span
                         className="font-display font-bold text-sm text-foreground truncate"
@@ -6285,8 +6299,12 @@ export const MapboxHeatmap = ({
                           height: "8px",
                           flexShrink: 0,
                           borderRadius: "50%",
-                          background: tier.color,
-                          boxShadow: `0 0 0 1.5px ${casingFor(mapStyle === "light" || mapStyle === "streets")}`,
+                          // Glassmorphic tier dot: frosted highlight over the
+                          // tier colour plus an outer glow for legibility.
+                          background: `radial-gradient(circle at 32% 28%, hsl(0 0% 100% / 0.55), ${tier.color} 65%)`,
+                          backdropFilter: "blur(3px)",
+                          WebkitBackdropFilter: "blur(3px)",
+                          boxShadow: `0 0 0 1.5px ${casingFor(mapStyle === "light" || mapStyle === "streets")}, 0 0 8px ${tier.color}, inset 0 0 3px hsl(0 0% 100% / 0.35)`,
                         }}
                       />
                       <span

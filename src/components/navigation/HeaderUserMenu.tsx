@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "@/lib/router-compat";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { JET_MARK_SRC } from "@/lib/jet-mark";
+import { PresenceDot } from "@/components/ui/presence-dot";
+import { usePresence } from "@/hooks/usePresence";
 
 /**
  * Default avatar artwork — the JET mark. Served from `public/` so it doesn't
@@ -33,6 +35,7 @@ export function HeaderUserMenu({
 }: HeaderUserMenuProps) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const { selfStatus } = usePresence(userId);
   // Track whether the user's uploaded avatar failed to load. Only then do we
   // allow a fallback — a successfully uploaded image must never be replaced
   // by initials or the brand mark (including while it's still loading).
@@ -104,19 +107,10 @@ export function HeaderUserMenu({
         )}
       </Avatar>
       {userId && (
-        <span
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            bottom: "1px",
-            right: "1px",
-            width: "10px",
-            height: "10px",
-            borderRadius: "9999px",
-            background: "hsl(var(--cool, 142 76% 45%))",
-            border: "2px solid hsl(var(--background))",
-            boxShadow: "0 0 6px hsl(var(--cool, 142 76% 45%) / 0.6)",
-          }}
+        <PresenceDot
+          status={selfStatus}
+          size={12}
+          style={{ bottom: -1, right: -1 }}
         />
       )}
     </button>
