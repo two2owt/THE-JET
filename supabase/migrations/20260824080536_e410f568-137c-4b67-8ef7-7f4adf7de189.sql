@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.bump_profile_pulse() FROM PUBLIC, anon, authenticated;
