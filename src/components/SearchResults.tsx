@@ -8,6 +8,8 @@ import {
   Compass,
   LayoutGrid,
   Star,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
