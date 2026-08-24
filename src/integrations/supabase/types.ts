@@ -261,6 +261,68 @@ export type Database = {
           },
         ]
       }
+      deal_redemptions: {
+        Row: {
+          code: string
+          created_at: string
+          deal_active_at_issue: boolean
+          deal_active_at_redemption: boolean | null
+          deal_id: string
+          deal_title: string | null
+          id: string
+          issued_at: string
+          redeemed_at: string | null
+          redeemed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          venue_id: string | null
+          venue_name: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          deal_active_at_issue?: boolean
+          deal_active_at_redemption?: boolean | null
+          deal_id: string
+          deal_title?: string | null
+          id?: string
+          issued_at?: string
+          redeemed_at?: string | null
+          redeemed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          venue_id?: string | null
+          venue_name?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          deal_active_at_issue?: boolean
+          deal_active_at_redemption?: boolean | null
+          deal_id?: string
+          deal_title?: string | null
+          id?: string
+          issued_at?: string
+          redeemed_at?: string | null
+          redeemed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          venue_id?: string | null
+          venue_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_redemptions_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deal_shares: {
         Row: {
           deal_id: string
@@ -2257,6 +2319,18 @@ export type Database = {
           sensitivity: string
           table_name: string
           unscoped_select_policies: string[]
+        }[]
+      }
+      redeem_deal_code: {
+        Args: { _code: string }
+        Returns: {
+          code: string
+          deal_active: boolean
+          deal_id: string
+          deal_title: string
+          redeemed_at: string
+          status: string
+          venue_name: string
         }[]
       }
       social_people: {
