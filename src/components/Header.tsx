@@ -39,6 +39,11 @@ export const Header = () => {
   // debounce has caught up), an empty `searchQuery` must not wipe a `?q=`
   // that arrived via a deep link or redirect.
   const queryRestoredRef = useRef(false);
+  // Flipped the first time the user actually edits the field. Until then the
+  // URL sync below may only add `?q=` — never remove one, because an empty
+  // `searchQuery` at that stage just means the restore hasn't committed yet
+  // (effects in the mount commit run before the state they set is applied).
+  const userEditedQueryRef = useRef(false);
   useEffect(() => {
     try {
       const url = new URLSearchParams(window.location.search).get("q");
@@ -121,7 +126,7 @@ export const Header = () => {
     // The debounce lags state by 300ms, so an empty `debouncedQuery` while
     // `searchQuery` still holds text means the query hasn't settled yet —
     // clearing `?q=` here would eat a deep-linked query.
-    if (!debouncedQuery && searchQuery) return;
+    if (!debouncedQuery && (searchQuery || !userEditedQueryRef.current)) return;
     const next = new URLSearchParams(urlSearchParams);
     if (debouncedQuery) next.set("q", debouncedQuery);
     else next.delete("q");
@@ -220,6 +225,7 @@ export const Header = () => {
   // Debounced "save-to-history" — fires once typing pauses for 1s.
   const handleQueryChange = useCallback(
     (next: string) => {
+      userEditedQueryRef.current = true;
       setSearchQuery(next);
       setShowResults(next.trim().length > 0);
       if (historyDebounceRef.current) {
@@ -245,6 +251,7 @@ export const Header = () => {
 
   const handleCloseResults = useCallback(() => setShowResults(false), []);
   const handleClearSearch = useCallback(() => {
+    userEditedQueryRef.current = true;
     setSearchQuery("");
     setShowResults(false);
   }, []);
