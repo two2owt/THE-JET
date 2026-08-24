@@ -1,6 +1,8 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { isDealExpired } from "@/lib/dealExpiry";
+import { useMinuteClock } from "@/hooks/useMinuteClock";
 import { usePersistentViewState } from "@/hooks/usePersistentViewState";
+
 import { Bell } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 import { TabPageHeader } from "@/components/TabPageHeader";
@@ -40,12 +42,14 @@ export function NotificationsTab({
     "all",
   );
 
-  // Re-evaluate expiry every 30s so an alert drops off without a reload.
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 30_000);
-    return () => clearInterval(id);
-  }, []);
+  // Re-evaluate expiry on each minute boundary (shared app-wide clock, paused
+  // while the tab is hidden) so an alert drops off without a reload.
+  const hasExpiries = useMemo(
+    () => (deals ?? []).some((d) => Boolean(d?.expires_at)),
+    [deals],
+  );
+  const now = useMinuteClock(hasExpiries);
+
 
   // Alerts tied to a deal that has passed its merchant `expires_at` are removed
   // outright. Alerts with no linked deal (or a deal not in the synced list) are

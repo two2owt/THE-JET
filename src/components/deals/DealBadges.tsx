@@ -5,30 +5,27 @@
  * alert cards) uses these so the deal type, venue category and end-date state
  * look and read identically.
  */
-import { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
+import { useMinuteClock } from "@/hooks/useMinuteClock";
 import {
   getDealPresentation,
   type DealPresentation,
   type DealPresentationInput,
 } from "@/lib/dealPresentation";
 
-/** Re-renders every minute so countdowns stay live without a page refresh. */
+/**
+ * Re-renders on each wall-clock minute boundary so countdowns stay live.
+ * Uses the shared app clock: one timer for every badge on screen, paused while
+ * the tab is hidden, and skipped entirely for deals with no expiry.
+ */
 export const useDealPresentation = (
   deal: DealPresentationInput | null | undefined,
 ): DealPresentation | null => {
-  const [nowTs, setNowTs] = useState(() => Date.now());
-  const expiresAt = deal?.expires_at ?? null;
-
-  useEffect(() => {
-    if (!expiresAt) return;
-    const id = setInterval(() => setNowTs(Date.now()), 60_000);
-    return () => clearInterval(id);
-  }, [expiresAt]);
-
+  const nowTs = useMinuteClock(Boolean(deal?.expires_at));
   if (!deal) return null;
   return getDealPresentation(deal, nowTs);
 };
+
 
 const sizeClass = (size: "sm" | "md") =>
   size === "sm"
