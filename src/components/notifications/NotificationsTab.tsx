@@ -190,6 +190,7 @@ export function NotificationsTab({
                 deals={deals}
                 onVenueClick={onVenueClick}
                 onRead={() => markAsRead(notification.id)}
+                onMarkRead={() => markAsRead(notification.id)}
               />
             </Suspense>
           </div>
