@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { autoHandle } from "@/lib/display-name";
 import { useProfilePulse } from "@/hooks/useProfilePulse";
+import type { SocialHandle, SocialPlatform } from "@/lib/socialHandles";
 
 export interface Profile {
   id: string;
@@ -18,6 +19,7 @@ export interface Profile {
   facebook_url: string | null;
   linkedin_url: string | null;
   tiktok_url: string | null;
+  social_handles: SocialHandle[];
   preferences: Json | null;
 }
 
@@ -53,11 +55,13 @@ export function useProfile(userId: string | undefined) {
     enabled: !!userId,
     staleTime: 60_000,
     queryFn: async (): Promise<Profile> => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId!)
-        .single();
+      const [{ data, error }, { data: handles }] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", userId!).single(),
+        supabase
+          .from("social_handles")
+          .select("platform, handle, url")
+          .eq("user_id", userId!),
+      ]);
 
       if (error) {
         // Row missing — auto-create a minimal profile so the page can render.
@@ -74,11 +78,14 @@ export function useProfile(userId: string | undefined) {
             .select()
             .single();
           if (createErr) throw createErr;
-          return created as Profile;
+          return { ...(created as unknown as Profile), social_handles: [] };
         }
         throw error;
       }
-      return data as Profile;
+      return {
+        ...(data as unknown as Profile),
+        social_handles: (handles || []) as SocialHandle[],
+      };
     },
   });
 
@@ -107,6 +114,37 @@ export function useProfile(userId: string | undefined) {
       // Optimistically merge so the UI reflects the save without a refetch.
       queryClient.setQueryData<Profile | undefined>(key, (prev) =>
         prev ? { ...prev, ...input } : prev,
+      );
+      queryClient.invalidateQueries({ queryKey: key });
+    },
+  });
+
+  const updateSocialHandles = useMutation({
+    mutationFn: async (handles: SocialHandle[]) => {
+      if (!userId) throw new Error("No user");
+      // Upsert in a single batch: delete removed platforms, insert/update the rest.
+      const rows = handles
+        .filter((h) => h.handle)
+        .map((h) => ({
+          user_id: userId,
+          platform: h.platform,
+          handle: h.handle,
+          url: h.url,
+        }));
+      const { error: deleteErr } = await supabase
+        .from("social_handles")
+        .delete()
+        .eq("user_id", userId);
+      if (deleteErr) throw deleteErr;
+      if (rows.length) {
+        const { error } = await supabase.from("social_handles").insert(rows);
+        if (error) throw error;
+      }
+      return handles;
+    },
+    onSuccess: (handles) => {
+      queryClient.setQueryData<Profile | undefined>(key, (prev) =>
+        prev ? { ...prev, social_handles: handles } : prev,
       );
       queryClient.invalidateQueries({ queryKey: key });
     },
@@ -225,6 +263,8 @@ export function useProfile(userId: string | undefined) {
     isUploading: uploadAvatar.isPending,
     updatePreferences: updatePreferences.mutateAsync,
     isSavingPreferences: updatePreferences.isPending,
+    updateSocialHandles: updateSocialHandles.mutateAsync,
+    isSavingSocialHandles: updateSocialHandles.isPending,
     checkDisplayNameUnique,
   };
 }

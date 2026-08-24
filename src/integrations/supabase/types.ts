@@ -1498,6 +1498,39 @@ export type Database = {
         }
         Relationships: []
       }
+      social_handles: {
+        Row: {
+          created_at: string
+          handle: string
+          id: string
+          platform: Database["public"]["Enums"]["social_platform"]
+          updated_at: string
+          url: string | null
+          user_id: string
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          handle: string
+          id?: string
+          platform: Database["public"]["Enums"]["social_platform"]
+          updated_at?: string
+          url?: string | null
+          user_id: string
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          handle?: string
+          id?: string
+          platform?: Database["public"]["Enums"]["social_platform"]
+          updated_at?: string
+          url?: string | null
+          user_id?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       subscribers: {
         Row: {
           cancel_at_period_end: boolean
@@ -1914,6 +1947,14 @@ export type Database = {
         }
         Relationships: []
       }
+      social_profiles: {
+        Row: {
+          avatar_url: string | null
+          display_name: string | null
+          id: string | null
+        }
+        Relationships: []
+      }
       venue_reviews_public: {
         Row: {
           created_at: string | null
@@ -2188,6 +2229,23 @@ export type Database = {
           unscoped_select_policies: string[]
         }[]
       }
+      social_people: {
+        Args: { _limit?: number }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          id: string
+          preference_tags: string[]
+        }[]
+      }
+      social_profiles_rows: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          display_name: string
+          id: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
@@ -2197,6 +2255,12 @@ export type Database = {
         | "push_notifications"
         | "messaging_analytics"
         | "marketing_email"
+      social_platform:
+        | "instagram"
+        | "twitter"
+        | "facebook"
+        | "linkedin"
+        | "tiktok"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2331,6 +2395,13 @@ export const Constants = {
         "push_notifications",
         "messaging_analytics",
         "marketing_email",
+      ],
+      social_platform: [
+        "instagram",
+        "twitter",
+        "facebook",
+        "linkedin",
+        "tiktok",
       ],
     },
   },

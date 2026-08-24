@@ -63,7 +63,7 @@ export function DiscoverPeopleStrip({
     let cancelled = false;
     const load = async () => {
       try {
-        const { data, error } = await supabase.rpc("discoverable_people", {
+        const { data, error } = await supabase.rpc("social_people", {
           _limit: 30,
         });
         if (cancelled) return;
