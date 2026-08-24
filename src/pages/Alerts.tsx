@@ -26,8 +26,10 @@ export default function Alerts() {
 
   const handleVenueClick = useCallback(
     (venue: Venue | string) => {
-      const name = typeof venue === "string" ? venue : venue.name;
-      navigate(`/?venue=${encodeURIComponent(name)}`);
+      // Alert cards hand back the linked deal's venue id when known; only
+      // legacy alerts without a linked deal fall back to the display name.
+      const target = typeof venue === "string" ? venue : venue.id || venue.name;
+      navigate(`/?venue=${encodeURIComponent(target)}`);
     },
     [navigate],
   );

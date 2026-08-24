@@ -12,6 +12,8 @@ export interface Notification {
   title: string;
   message: string;
   venue?: string;
+  /** Stable venue id, when known. Preferred over the display name for links. */
+  venueId?: string;
   /** Deal this alert refers to, when known. */
   dealId?: string;
   timestamp: string;
@@ -42,6 +44,9 @@ export const NotificationCard = memo(
         title: linkedDeal.title || notification.title,
         message: linkedDeal.description || notification.message,
         venue: linkedDeal.venue_name || notification.venue,
+        // Prefer the merchant's stable venue id so deep links survive renames
+        // and duplicate venue names.
+        venueId: linkedDeal.venue_id || notification.venueId,
       };
     }, [notification, linkedDeal]);
 
@@ -53,8 +58,9 @@ export const NotificationCard = memo(
     const CategoryIcon = category?.Icon;
 
     const handleClick = () => {
-      if (enriched.venue && onVenueClick) {
-        onVenueClick(enriched.venue);
+      const target = enriched.venueId || enriched.venue;
+      if (target && onVenueClick) {
+        onVenueClick(target);
       }
       if (onRead && !enriched.read) {
         onRead();

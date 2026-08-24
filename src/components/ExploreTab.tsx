@@ -86,6 +86,9 @@ interface Deal {
   title: string;
   description: string;
   venue_name: string;
+  /** Stable merchant venue id — preferred for deep links. */
+  venue_id?: string | null;
+
   deal_type: string;
   expires_at: string;
   image_url: string | null;
@@ -101,7 +104,7 @@ interface Deal {
 }
 
 interface ExploreTabProps {
-  onVenueSelect?: (venueName: string) => void;
+  onVenueSelect?: (venue: { id?: string | null; name: string }) => void;
   deals?: Deal[];
   dealsLoading?: boolean;
   dealsError?: Error | null;
@@ -452,7 +455,9 @@ export const ExploreTab = ({
   const handleDealClick = (deal: Deal) => {
     setSelectedDeal(deal);
     if (onVenueSelect) {
-      onVenueSelect(deal.venue_name);
+      // Pass the stable merchant venue id when we have one; the display name
+      // is only a fallback for legacy rows without an id.
+      onVenueSelect({ id: deal.venue_id, name: deal.venue_name });
     }
   };
 

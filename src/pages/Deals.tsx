@@ -33,8 +33,11 @@ export default function Deals() {
   const { deals, loading, error } = useDealSyncRealtime();
 
   const handleVenueSelect = useCallback(
-    (venueName: string) => {
-      navigate(`/?venue=${encodeURIComponent(venueName)}`);
+    (venue: { id?: string | null; name: string }) => {
+      // Stable venue id first so renamed or duplicate-named venues still
+      // resolve to the right marker.
+      const target = venue.id || venue.name;
+      navigate(`/?venue=${encodeURIComponent(target)}`);
     },
     [navigate],
   );
