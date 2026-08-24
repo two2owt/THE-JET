@@ -259,6 +259,11 @@ export const JetCard = memo(
     // Single source of truth: the same tier boundaries and colours the map
     // markers and the Activity legend use, so a "Peak" marker can never read
     // as "Moderate" on its card. App chrome is dark-only -> dark tier variant.
+    // Shared taxonomy → the JetCard badge, the map marker glyph and the
+    // search chip all resolve from the same place.
+    const categoryDef = resolveVenueCategory(venue.category);
+    const CategoryIcon = categoryDef.Icon;
+
     const getActivityLevel = (activity: number) => {
       const tier = activityTier(activity);
       const emoji: Record<ActivityTierId, string> = {
