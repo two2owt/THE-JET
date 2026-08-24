@@ -10,6 +10,8 @@ import { SignedOutPreview } from "@/components/SignedOutPreview";
 import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 import { useConversations, type Conversation } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
+import { useProfilePulse } from "@/hooks/useProfilePulse";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,7 +53,12 @@ function DiscoverPeopleStrip({
   const [people, setPeople] = useState<DiscoverableProfile[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const reloadRef = useRef<() => void>(() => {});
+  // Instant refresh when anyone edits their profile or a new user signs up.
+  useProfilePulse(() => reloadRef.current?.(), !!userId);
+
   useEffect(() => {
+
     let cancelled = false;
     const load = async () => {
       try {
@@ -71,7 +78,11 @@ function DiscoverPeopleStrip({
         if (!cancelled) setLoading(false);
       }
     };
+    reloadRef.current = () => {
+      void load();
+    };
     void load();
+
     // New sign-ups should appear without a manual reload.
     const run = () => {
       if (typeof document !== "undefined" && document.hidden) return;

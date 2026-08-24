@@ -1138,6 +1138,24 @@ export type Database = {
           },
         ]
       }
+      profile_pulse: {
+        Row: {
+          event: string
+          profile_id: string
+          updated_at: string
+        }
+        Insert: {
+          event?: string
+          profile_id: string
+          updated_at?: string
+        }
+        Update: {
+          event?: string
+          profile_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
