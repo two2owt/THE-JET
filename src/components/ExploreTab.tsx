@@ -306,6 +306,7 @@ export const ExploreTab = ({
   const loadDeals = async () => {
     try {
       setIsLoading(true);
+      setDealsError(null);
       const { data, error } = await supabase
         .from("deals")
         .select(
@@ -341,14 +342,9 @@ export const ExploreTab = ({
       });
 
       setDeals(dealsWithDistance as unknown as Deal[]);
-
-      // Extract unique categories
-      const categories = [
-        ...new Set((data || []).map((d) => d.deal_type)),
-      ].sort();
-      setAvailableCategories(categories);
     } catch (error) {
       console.error("Error loading deals:", error);
+      setDealsError(error as Error);
       toast.error("Failed to load deals");
     } finally {
       setIsLoading(false);
