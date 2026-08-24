@@ -25,6 +25,10 @@ export function CategoryFilterBar({
   const available = CATEGORY_FILTER_IDS.filter(
     (id) => (counts[id] ?? 0) > 0 || id === value,
   );
+  const total = CATEGORY_FILTER_IDS.reduce(
+    (sum, id) => sum + (counts[id] ?? 0),
+    0,
+  );
   if (available.length === 0) return null;
 
   const select = (id: string | null) => {
@@ -50,6 +54,7 @@ export function CategoryFilterBar({
         type="button"
         onClick={() => select(null)}
         aria-pressed={value === null}
+        aria-label={`All categories — ${total} ${total === 1 ? "match" : "matches"}`}
         className="shrink-0 inline-flex items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition-colors active:scale-95 backdrop-blur-xl"
         style={{
           minHeight: "34px",
@@ -63,8 +68,24 @@ export function CategoryFilterBar({
             value === null ? "hsl(var(--primary))" : "hsl(var(--foreground))",
         }}
       >
-        All
+        <span>All</span>
+        <span
+          className="text-[10px] tabular-nums rounded-full px-1.5 py-0.5"
+          style={{
+            background:
+              value === null
+                ? "hsl(var(--primary) / 0.18)"
+                : "hsl(var(--muted) / 0.6)",
+            color:
+              value === null
+                ? "hsl(var(--primary))"
+                : "hsl(var(--muted-foreground))",
+          }}
+        >
+          {total}
+        </span>
       </button>
+
 
       {available.map((id) => {
         const def = getCategoryById(id);
