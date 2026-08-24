@@ -71,12 +71,12 @@ export function MapSurface({
   useEffect(() => {
     if (!hydrated || inView || typeof window === "undefined") return;
     const warm = () => void importMapboxHeatmap().catch(() => {});
-    const id =
-      "requestIdleCallback" in window
-        ? window.requestIdleCallback(warm, { timeout: 8000 })
-        : window.setTimeout(warm, 6000);
+    const idle = typeof window.requestIdleCallback === "function";
+    const id = idle
+      ? window.requestIdleCallback(warm, { timeout: 8000 })
+      : window.setTimeout(warm, 6000);
     return () => {
-      if ("cancelIdleCallback" in window) window.cancelIdleCallback(id);
+      if (idle) window.cancelIdleCallback(id);
       else window.clearTimeout(id);
     };
   }, [hydrated, inView]);
