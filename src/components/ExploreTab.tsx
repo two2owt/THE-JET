@@ -129,9 +129,14 @@ export const ExploreTab = ({
     "",
   );
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  const [deals, setDeals] = useState<Deal[]>([]);
+  const [deals, setDeals] = useState<Deal[]>(dealsProp || []);
   const [filteredDeals, setFilteredDeals] = useState<Deal[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(
+    dealsProp === undefined ? true : dealsLoadingProp ?? false,
+  );
+  const [dealsError, setDealsError] = useState<Error | null>(
+    dealsErrorProp || null,
+  );
   const [selectedCategories, setSelectedCategories] = usePersistentViewState<
     string[]
   >("deals:categories", []);
@@ -149,6 +154,21 @@ export const ExploreTab = ({
     usePersistentViewState("deals:prefFilter", true);
 
   const { isFavorite, toggleFavorite } = useFavorites(user?.id);
+
+  // Sync local deal state with the prop when provided (realtime hook).
+  useEffect(() => {
+    if (dealsProp !== undefined) {
+      setDeals(dealsProp);
+      setIsLoading(dealsLoadingProp ?? false);
+      setDealsError(dealsErrorProp || null);
+    }
+  }, [dealsProp, dealsLoadingProp, dealsErrorProp]);
+
+  // Update available categories whenever the deal list changes.
+  useEffect(() => {
+    const categories = [...new Set(deals.map((d) => d.deal_type))].sort();
+    setAvailableCategories(categories);
+  }, [deals]);
 
   const loadUserPreferences = useCallback(async (userId: string) => {
     try {
