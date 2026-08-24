@@ -29,6 +29,7 @@ interface NotificationsTabProps {
  */
 export function NotificationsTab({
   notifications,
+  deals,
   markAsRead,
   markAllAsRead,
   onVenueClick,
