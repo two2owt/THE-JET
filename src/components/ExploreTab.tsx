@@ -546,23 +546,61 @@ export const ExploreTab = ({
           >
             {(userLocation !== null || locationError !== null) && (
               <Badge
-                variant={userLocation ? "secondary" : "outline"}
+                variant={locationFilterEnabled ? "default" : userLocation ? "secondary" : "outline"}
+                role={userLocation ? "button" : undefined}
+                tabIndex={userLocation ? 0 : undefined}
+                aria-pressed={userLocation ? locationFilterEnabled : undefined}
+                title={
+                  userLocation
+                    ? "Toggle nearby-only filtering. Off shows every active merchant deal."
+                    : undefined
+                }
+                onClick={
+                  userLocation
+                    ? () => setLocationFilterEnabled(!locationFilterEnabled)
+                    : undefined
+                }
+                onKeyDown={
+                  userLocation
+                    ? (e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setLocationFilterEnabled(!locationFilterEnabled);
+                        }
+                      }
+                    : undefined
+                }
                 className={`text-xs flex items-center gap-1 ${
-                  userLocation ? "text-emerald-400 border-emerald-400/30" : "text-slate-400"
+                  userLocation
+                    ? `cursor-pointer ${locationFilterEnabled ? "" : "text-emerald-400 border-emerald-400/30"}`
+                    : "text-slate-400"
                 }`}
               >
                 <Navigation className="w-3 h-3" />
-                {userLocation ? "Location Active" : "Location Inactive"}
+                {!userLocation
+                  ? "Location Inactive"
+                  : locationFilterEnabled
+                    ? "Nearby Only"
+                    : "Location Active"}
               </Badge>
             )}
             {userPreferences?.categories &&
               userPreferences.categories.length > 0 && (
                 <Badge
                   variant={preferenceFilterEnabled ? "default" : "outline"}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={preferenceFilterEnabled}
                   className="text-xs flex items-center gap-1 cursor-pointer"
                   onClick={() =>
                     setPreferenceFilterEnabled(!preferenceFilterEnabled)
                   }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setPreferenceFilterEnabled(!preferenceFilterEnabled);
+                    }
+                  }}
                 >
                   <Sparkles className="w-3 h-3" />
                   {preferenceFilterEnabled ? "Personalized" : "Show All"}
