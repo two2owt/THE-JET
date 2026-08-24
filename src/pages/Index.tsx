@@ -133,8 +133,8 @@ const Index = () => {
     };
   }, []);
 
-  const { notifications, markAsRead, markAllAsRead } =
-    useNotifications(dataReady);
+  // Only the unread badge is needed here — the alerts list lives at /alerts.
+  const { notifications } = useNotifications(dataReady);
   const unreadNotifications = notifications.filter((n) => !n.read).length;
   useAutoScrapeVenueImages(dataReady);
   const {
