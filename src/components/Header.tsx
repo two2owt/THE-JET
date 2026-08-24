@@ -249,8 +249,7 @@ export const Header = () => {
   );
 
 
-  const showSearchBar = !hideSearch && (!isMobile || searchExpanded);
-  const showSearchIcon = !hideSearch && isMobile && !searchExpanded;
+  const showSearchBar = !hideSearch;
 
   // When the global search bar is hidden (e.g. /deals, /alerts, /favorites),
   // show a subtle page identifier in the header so the band doesn't look
@@ -326,51 +325,49 @@ export const Header = () => {
           overflow: "hidden",
         }}
       >
-        {/* Logo — always visible unless mobile search is expanded */}
-        {!(isMobile && searchExpanded) && (
-          <div
-            role="link"
-            aria-label="JET — go home"
-            onClick={() => navigate("/")}
+        {/* Logo — always visible */}
+        <div
+          role="link"
+          aria-label="JET — go home"
+          onClick={() => navigate("/")}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+            // Matches every other control in the row so the band reads level.
+            height: "var(--header-control-height, 36px)",
+            minWidth: "var(--header-control-height, 36px)",
+            padding: "0 2px",
+            cursor: "pointer",
+            userSelect: "none",
+            opacity: mounted ? 1 : 0,
+            transform: mounted ? "translateX(0)" : "translateX(-8px)",
+            transition: "opacity 0.4s ease-out, transform 0.4s ease-out",
+          }}
+        >
+          <span
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-              // Matches every other control in the row so the band reads level.
-              height: "var(--header-control-height, 36px)",
-              minWidth: "var(--header-control-height, 36px)",
-              padding: "0 2px",
-              cursor: "pointer",
-              userSelect: "none",
-              opacity: mounted ? 1 : 0,
-              transform: mounted ? "translateX(0)" : "translateX(-8px)",
-              transition: "opacity 0.4s ease-out, transform 0.4s ease-out",
+              fontSize: "var(--header-logo-size, 18px)",
+              lineHeight: 1,
+              fontWeight: 800,
+              letterSpacing: "-0.025em",
+              backgroundImage:
+                "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              color: "transparent",
+              whiteSpace: "nowrap",
             }}
           >
-            <span
-              style={{
-                fontSize: "var(--header-logo-size, 18px)",
-                lineHeight: 1,
-                fontWeight: 800,
-                letterSpacing: "-0.025em",
-                backgroundImage:
-                  "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                color: "transparent",
-                whiteSpace: "nowrap",
-              }}
-            >
             JET
-            </span>
-          </div>
-        )}
+          </span>
+        </div>
 
         {/* Page title — shown only when the global search is hidden so the
             header band stays informative on /deals, /alerts, /favorites, etc. */}
-        {pageTitle && !(isMobile && searchExpanded) && (
+        {pageTitle && (
           <div
             aria-hidden="true"
             style={{
@@ -399,63 +396,11 @@ export const Header = () => {
           </div>
         )}
 
-        {/* Search icon — mobile collapsed state */}
-        {showSearchIcon && (
-          <button
-            type="button"
-            aria-label="Open search"
-            onClick={() => setSearchExpanded(true)}
-            style={{
-              flex: "1 1 0%",
-              minWidth: 0,
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              height: "var(--header-control-height, 36px)",
-              padding: "0 14px",
-              borderRadius: "9999px",
-              border: "1.5px solid hsl(var(--border) / 0.5)",
-              background: "hsl(var(--muted) / 0.35)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-              color: "hsl(var(--muted-foreground))",
-              fontSize: "var(--header-font-size, 13px)",
-              textAlign: "left",
-              cursor: "pointer",
-              opacity: mounted ? 1 : 0,
-              transform: mounted ? "translateY(0)" : "translateY(-6px)",
-              transition:
-                "opacity 0.3s ease-out 0.15s, transform 0.3s ease-out 0.15s, background 0.2s, border-color 0.2s",
-            }}
-          >
-            <Search
-              style={{
-                width: "var(--header-icon-size, 16px)",
-                height: "var(--header-icon-size, 16px)",
-                color: "hsl(var(--muted-foreground) / 0.7)",
-                flexShrink: 0,
-              }}
-            />
-            <span
-              style={{
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                color: "hsl(var(--muted-foreground) / 0.7)",
-              }}
-            >
-              Search venues, deals…
-            </span>
-          </button>
-        )}
-
-
-        {/* Search bar — expands to fill remaining space */}
+        {/* Search bar — compact pill on mobile, full pill on desktop */}
         {showSearchBar && (
           <HeaderSearch
             mounted={mounted}
             isMobile={isMobile}
-            expanded={searchExpanded}
             query={debouncedQuery}
             showResults={showResults && debouncedQuery.trim().length > 0}
             venues={venues}
@@ -468,27 +413,21 @@ export const Header = () => {
             onQueryChange={handleQueryChange}
             onClear={handleClearSearch}
             onCloseResults={handleCloseResults}
-            onCollapse={handleCollapseSearch}
           />
         )}
 
-        {/* Spacer only when no search element is present — otherwise the
-            search pill already absorbs the free space (two flex:1 siblings
-            would split the row and shrink the pill to half width). */}
-        {(!isMobile || (!showSearchBar && !showSearchIcon)) && (
-          <div style={{ flex: "1 1 0%", minWidth: 0 }} />
-        )}
+        {/* Spacer pushes the sync indicator and avatar to the right when the
+            search bar is hidden; otherwise the search pill absorbs free space. */}
+        {!showSearchBar && <div style={{ flex: "1 1 0%", minWidth: 0 }} />}
 
         {/* Sync indicator — between search and avatar */}
-        {!(isMobile && searchExpanded) && (
-          <HeaderSyncIndicator
-            lastUpdated={lastUpdated ?? null}
-            onRefresh={onRefresh}
-            isLoading={isLoading}
-            mounted={mounted}
-            terminalAccent={location.pathname === "/"}
-          />
-        )}
+        <HeaderSyncIndicator
+          lastUpdated={lastUpdated ?? null}
+          onRefresh={onRefresh}
+          isLoading={isLoading}
+          mounted={mounted}
+          terminalAccent={location.pathname === "/"}
+        />
 
         {/* Avatar + dropdown menu (Profile / Settings / Admin / Sign out) */}
         <HeaderUserMenu
@@ -502,4 +441,5 @@ export const Header = () => {
       </div>
     </header>
   );
+
 };
