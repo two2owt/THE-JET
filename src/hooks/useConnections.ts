@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useProfilePulse } from "@/hooks/useProfilePulse";
 import { supabase } from "@/integrations/supabase/client";
 import { isRlsViolation, withRlsRetry } from "@/lib/rlsRetry";
 
@@ -31,6 +32,11 @@ export const useConnections = (userId?: string) => {
       setLoading(false);
     }
   }, [userId]);
+
+  // Friends' names/avatars come from their profile rows, so refresh the list
+  // the moment any profile is edited.
+  const fetchRef = useRef<() => void>(() => {});
+  useProfilePulse(() => fetchRef.current?.(), !!userId);
 
   const fetchConnections = async () => {
     try {
