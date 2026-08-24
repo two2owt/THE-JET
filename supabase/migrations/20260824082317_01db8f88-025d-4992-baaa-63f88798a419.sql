@@ -2,6 +2,7 @@
 -- who are allowed to see that profile at all.
 DROP POLICY IF EXISTS "Authenticated users can read profile pulse" ON public.profile_pulse;
 
+DROP POLICY IF EXISTS "Users read pulses for profiles they can see" ON public.profile_pulse;
 CREATE POLICY "Users read pulses for profiles they can see"
 ON public.profile_pulse
 FOR SELECT
@@ -27,6 +28,7 @@ GRANT SELECT ON public.profile_pulse TO authenticated;
 REVOKE ALL ON public.profile_pulse FROM anon;
 GRANT ALL ON public.profile_pulse TO service_role;
 
+-- idempotency-check: allow-dml
 UPDATE public.realtime_guard_allowlist
 SET sensitivity = 'private',
     note = 'Heartbeat only (profile id + created/updated flag + timestamp). Reads scoped to self, accepted connections and discoverable profiles.'

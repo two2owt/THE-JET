@@ -1,4 +1,4 @@
-CREATE TABLE public.profile_pulse (
+CREATE TABLE IF NOT EXISTS public.profile_pulse (
   profile_id uuid NOT NULL PRIMARY KEY,
   event text NOT NULL DEFAULT 'updated',
   updated_at timestamp with time zone NOT NULL DEFAULT now()
@@ -9,6 +9,7 @@ GRANT ALL ON public.profile_pulse TO service_role;
 
 ALTER TABLE public.profile_pulse ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated users can read profile pulse" ON public.profile_pulse;
 CREATE POLICY "Authenticated users can read profile pulse"
   ON public.profile_pulse FOR SELECT TO authenticated USING (true);
 
@@ -32,8 +33,18 @@ CREATE TRIGGER profiles_bump_pulse
 AFTER INSERT OR UPDATE ON public.profiles
 FOR EACH ROW EXECUTE FUNCTION public.bump_profile_pulse();
 
-ALTER PUBLICATION supabase_realtime ADD TABLE public.profile_pulse;
+DO $do$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'profile_pulse'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.profile_pulse;
+  END IF;
+END
+$do$;
 
+-- idempotency-check: allow-dml
 INSERT INTO public.realtime_guard_allowlist (table_name, sensitivity, note, allow_replica_identity_full)
 VALUES ('profile_pulse', 'public', 'Heartbeat only: profile id + created/updated flag + timestamp. No profile content.', false)
 ON CONFLICT (table_name) DO NOTHING;

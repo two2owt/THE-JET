@@ -57,9 +57,11 @@ REVOKE ALL ON FUNCTION public.social_people(integer) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.social_people(integer) TO authenticated;
 
 DROP POLICY IF EXISTS "Users read pulses for profiles they can see" ON public.profile_pulse;
+DROP POLICY IF EXISTS "Authenticated users can read profile pulse" ON public.profile_pulse;
 CREATE POLICY "Authenticated users can read profile pulse"
   ON public.profile_pulse FOR SELECT TO authenticated USING (true);
 
+-- idempotency-check: allow-dml
 UPDATE public.realtime_guard_allowlist
 SET sensitivity = 'private',
     note = 'Heartbeat only (profile id + created/updated flag + timestamp). All authenticated users can read because /social surfaces every signed-up user.'

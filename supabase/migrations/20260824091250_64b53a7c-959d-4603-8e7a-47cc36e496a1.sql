@@ -49,6 +49,7 @@ CREATE POLICY "Users can view social handles of visible profiles"
   );
 
 -- One-time migration: parse handles from existing profile URL columns.
+-- idempotency-check: allow-dml
 INSERT INTO public.social_handles (user_id, platform, handle, url)
 SELECT
   p.id,
