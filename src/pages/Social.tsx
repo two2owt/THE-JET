@@ -285,7 +285,7 @@ export default function Social() {
       <PageLayout defaultTab="social" headerConfig={headerConfig}>
         <PageShell>
           <SignedOutPreview
-            pageTitle="Crew"
+            pageTitle="Social"
             icon={Users}
             title="Sign in to connect"
             description="Create an account to find and connect with friends, share deals, and build your social network"
@@ -441,7 +441,7 @@ export default function Social() {
     >
       <PageShell>
         <TabPageHeader
-          title="Your Crew"
+          title="Your Social"
           subtitle="Friends, requests, and people to discover"
         />
         {/* Search users — only matches signed-up, discoverable end users. */}

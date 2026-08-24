@@ -59,7 +59,7 @@ export const BottomNav = ({
     { id: "deals" as NavItem, icon: Flame, label: "Deals" },
     { id: "notifications" as NavItem, icon: Bell, label: "Alerts" },
     { id: "favorites" as NavItem, icon: Heart, label: "Favorites" },
-    { id: "social" as NavItem, icon: Users2, label: "Crew" },
+    { id: "social" as NavItem, icon: Users2, label: "Social" },
   ];
 
   return (

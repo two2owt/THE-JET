@@ -260,7 +260,7 @@ export const Header = () => {
       "/deals": "Deals",
       "/alerts": "Alerts",
       "/favorites": "Saved",
-      "/social": "Crew",
+      "/social": "Social",
       "/messages": "Messages",
       "/profile": "Profile",
       "/admin": "Admin",
