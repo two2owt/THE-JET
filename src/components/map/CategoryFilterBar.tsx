@@ -98,7 +98,7 @@ export function CategoryFilterBar({
             type="button"
             onClick={() => select(active ? null : id)}
             aria-pressed={active}
-            aria-label={`${def.label}${counts[id] ? ` — ${counts[id]} on the map` : ""}`}
+            aria-label={`${def.label} — ${counts[id] ?? 0} ${(counts[id] ?? 0) === 1 ? "match" : "matches"}`}
             className="shrink-0 inline-flex items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition-colors active:scale-95 backdrop-blur-xl"
             style={{
               minHeight: "34px",
@@ -116,11 +116,18 @@ export function CategoryFilterBar({
               aria-hidden="true"
             />
             <span className="whitespace-nowrap">{def.label}</span>
-            {counts[id] ? (
-              <span className="text-[10px] tabular-nums text-muted-foreground">
-                {counts[id]}
-              </span>
-            ) : null}
+            <span
+              className="text-[10px] tabular-nums rounded-full px-1.5 py-0.5"
+              style={{
+                background: active
+                  ? `${def.dark}26`
+                  : "hsl(var(--muted) / 0.6)",
+                color: active ? def.dark : "hsl(var(--muted-foreground))",
+              }}
+            >
+              {counts[id] ?? 0}
+            </span>
+
           </button>
         );
       })}
