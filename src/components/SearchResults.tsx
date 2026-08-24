@@ -881,19 +881,57 @@ export const SearchResults = ({
             }`}
           >
 
-            {!hasResults && (
+            {hasError && (
+              <div className="text-center py-9 px-2">
+                <div className="w-12 h-12 rounded-full bg-destructive/10 border border-destructive/25 flex items-center justify-center mx-auto mb-3">
+                  <AlertTriangle className="w-5 h-5 text-destructive" />
+                </div>
+                <p className="text-sm font-semibold text-foreground">
+                  Search couldn’t reach the map data
+                </p>
+                <p className="text-xs text-muted-foreground mt-1 max-w-[34ch] mx-auto">
+                  {error}
+                </p>
+                {onRetry && (
+                  <button
+                    type="button"
+                    onClick={onRetry}
+                    className="mt-4 inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold transition-colors active:scale-95 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                  >
+                    <RotateCw className="w-3.5 h-3.5" />
+                    Try again
+                  </button>
+                )}
+              </div>
+            )}
+
+            {showSkeletons && (
+              <div className="space-y-3" role="status" aria-live="polite">
+                <span className="sr-only">Searching venues and deals…</span>
+                <div className="flex items-center gap-1.5 heading-luxe-eyebrow px-1">
+                  <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
+                  Searching
+                </div>
+                <ResultSkeletons rows={4} />
+              </div>
+            )}
+
+            {showEmpty && (
               <div className="text-center py-10">
                 <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3">
                   <SearchIcon className="w-5 h-5 text-muted-foreground" />
                 </div>
                 <p className="text-sm font-semibold text-foreground">
-                  No results found
+                  No matches for “{displayQuery}”
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Try a venue, area, category, or deal
+                  {venues.length === 0 && deals.length === 0
+                    ? "Nothing is loaded for this area yet — try another city or refresh."
+                    : "Try a venue, area, category, or deal"}
                 </p>
               </div>
             )}
+
 
             {/* JetCards — venues + deal-backed venues for direct card access */}
             {filteredJetcards.length > 0 && (
