@@ -1,7 +1,7 @@
 import { MapPinned, Flame, Bell, Heart, Users2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-type NavItem = "map" | "explore" | "notifications" | "favorites" | "social";
+type NavItem = "map" | "deals" | "notifications" | "favorites" | "social";
 
 interface BottomNavProps {
   activeTab: NavItem;
@@ -56,7 +56,7 @@ export const BottomNav = ({
 
   const navItems = [
     { id: "map" as NavItem, icon: MapPinned, label: "Map" },
-    { id: "explore" as NavItem, icon: Flame, label: "Hot" },
+    { id: "deals" as NavItem, icon: Flame, label: "Deals" },
     { id: "notifications" as NavItem, icon: Bell, label: "Alerts" },
     { id: "favorites" as NavItem, icon: Heart, label: "Favorites" },
     { id: "social" as NavItem, icon: Users2, label: "Crew" },

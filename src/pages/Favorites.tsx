@@ -353,7 +353,7 @@ export default function Favorites() {
             title="No favorites yet"
             description="Start exploring and save deals you love! Your favorite venues and offers will appear here."
             actionLabel="Explore Deals"
-            onAction={() => navigate("/?tab=explore")}
+            onAction={() => navigate("/deals")}
           />
         ) : (
           <div className="space-y-8">
