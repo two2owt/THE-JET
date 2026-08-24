@@ -4,6 +4,7 @@ import { Heart, Users, Bell, type LucideIcon } from "lucide-react";
 interface StatPill {
   icon: LucideIcon;
   label: string;
+  shortLabel: string;
   value: number;
   to: string;
 }
@@ -17,6 +18,7 @@ interface ProfileStatsPillsProps {
 /**
  * Modern horizontal pill row replacing the boxy 3-column stats grid.
  * Each pill: rounded icon chip + bold value + label, clickable to deep-link.
+ * Labels adapt by breakpoint (short on very narrow screens, full otherwise).
  */
 export function ProfileStatsPills({
   favoritesCount,
@@ -28,18 +30,21 @@ export function ProfileStatsPills({
     {
       icon: Heart,
       label: "Favorites",
+      shortLabel: "Saved",
       value: favoritesCount,
       to: "/favorites",
     },
     {
       icon: Users,
       label: "Connections",
+      shortLabel: "Crew",
       value: connectionsCount,
       to: "/social",
     },
     {
       icon: Bell,
       label: "Alerts",
+      shortLabel: "Alerts",
       value: unreadAlertsCount,
       to: "/alerts",
     },
@@ -47,7 +52,7 @@ export function ProfileStatsPills({
 
   return (
     <div className="profile-stat-pill-row" role="list">
-      {pills.map(({ icon: Icon, label, value, to }) => (
+      {pills.map(({ icon: Icon, label, shortLabel, value, to }) => (
         <button
           key={label}
           type="button"
@@ -61,7 +66,10 @@ export function ProfileStatsPills({
           </span>
           <span className="profile-stat-pill-text">
             <span className="profile-stat-pill-value">{value}</span>
-            <span className="profile-stat-pill-label">{label}</span>
+            <span className="profile-stat-pill-label" aria-hidden="true">
+              <span className="profile-stat-pill-label-full">{label}</span>
+              <span className="profile-stat-pill-label-short">{shortLabel}</span>
+            </span>
           </span>
         </button>
       ))}
