@@ -1,5 +1,7 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { MapPin, Clock, Gift, TrendingUp } from "lucide-react";
+import type { DealWithNeighborhood } from "@/mobile-app-snippets/useDealSyncRealtime";
+import type { Notification } from "@/hooks/useNotifications";
 
 export interface Notification {
   id: string;
