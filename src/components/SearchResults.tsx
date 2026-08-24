@@ -142,6 +142,70 @@ export const SearchResults = ({
     if (!shouldShow) setCollapsed(false);
   }, [shouldShow]);
 
+  // ---- Two-way list <-> map highlight sync -------------------------------
+  // Scrolling the list highlights the marker for the row at the top of the
+  // viewport; hovering/selecting a marker scrolls that row into view. A short
+  // suppression window on each side stops the two from ping-ponging.
+  const [highlightId, setHighlightId] = useState<string | null>(null);
+  const scrollTopRef = useRef(0);
+  const suppressListPublishUntil = useRef(0);
+  const suppressAutoScrollUntil = useRef(0);
+
+  const handleListScroll = useCallback(() => {
+    const list = listRef.current;
+    if (!list) return;
+    // Remember where we are so collapsing/expanding never loses the position.
+    scrollTopRef.current = list.scrollTop;
+    if (Date.now() < suppressListPublishUntil.current) return;
+    const listTop = list.getBoundingClientRect().top;
+    const rows = Array.from(
+      list.querySelectorAll<HTMLElement>("[data-result-venue-id]"),
+    );
+    const active =
+      rows.find((row) => row.getBoundingClientRect().bottom > listTop + 12) ??
+      rows[0];
+    const id = active?.dataset.resultVenueId ?? null;
+    if (!id) return;
+    suppressAutoScrollUntil.current = Date.now() + 350;
+    setHighlightId(id);
+    setMapHighlight(id, "list");
+  }, []);
+
+  useEffect(() => {
+    return subscribeMapHighlight(({ venueId, source }) => {
+      setHighlightId(venueId);
+      if (source !== "map" || !venueId) return;
+      if (Date.now() < suppressAutoScrollUntil.current) return;
+      const list = listRef.current;
+      if (!list || collapsed) return;
+      const row = list.querySelector<HTMLElement>(
+        `[data-result-venue-id="${CSS.escape(venueId)}"]`,
+      );
+      if (!row) return;
+      // "nearest" keeps the current scroll position when the row is already
+      // visible — no jump for rows the user is already looking at.
+      suppressListPublishUntil.current = Date.now() + 400;
+      row.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    });
+  }, [collapsed]);
+
+  // Restore the remembered offset after expanding (the list is `hidden` while
+  // collapsed, which zeroes scrollTop in some browsers).
+  useEffect(() => {
+    if (collapsed) return;
+    const list = listRef.current;
+    if (!list || scrollTopRef.current === 0) return;
+    list.scrollTop = scrollTopRef.current;
+  }, [collapsed]);
+
+  useEffect(() => {
+    scrollTopRef.current = 0;
+    setHighlightId(null);
+    setMapHighlight(null, "list");
+  }, [q]);
+
+
+
 
 
   // Keep the panel mounted through its closing transition, and only flip the
