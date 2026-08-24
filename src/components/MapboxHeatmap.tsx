@@ -4706,6 +4706,7 @@ export const MapboxHeatmap = ({
       {/* Layers Panel - Unified FAB + expandable panel */}
       {controlsReady && (
         <div
+          data-jet-map-layers=""
           style={{
             position: "absolute",
             // Anchored to the fixed nav-footer inset only: opening a JetCard must
