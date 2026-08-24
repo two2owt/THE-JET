@@ -30,6 +30,7 @@ import {
 import { useFavorites } from "@/hooks/useFavorites";
 import { useProfilePulse } from "@/hooks/useProfilePulse";
 import { hasConsent, subscribeConsent } from "@/lib/consent";
+import { dealMatchesPreferences } from "@/lib/dealCategory";
 
 import type { User } from "@supabase/supabase-js";
 
@@ -70,26 +71,9 @@ interface UserPreferences {
   activityInArea?: boolean;
 }
 
-// Map deal_type values to preference categories
-const dealTypeToCategory: Record<string, string> = {
-  food: "Food",
-  Food: "Food",
-  restaurant: "Food",
-  dining: "Food",
-  drinks: "Drinks",
-  Drinks: "Drinks",
-  bar: "Drinks",
-  cocktail: "Drinks",
-  coffee: "Drinks",
-  nightlife: "Nightlife",
-  Nightlife: "Nightlife",
-  club: "Nightlife",
-  lounge: "Nightlife",
-  events: "Events",
-  Events: "Events",
-  concert: "Events",
-  festival: "Events",
-};
+// Deal → preference bucket resolution lives in @/lib/dealCategory: merchant
+// deal_type is only "offer" / "event" / "special", so the bucket is inferred
+// from the venue taxonomy behind the deal's text.
 
 interface Deal {
   id: string;
@@ -390,13 +374,9 @@ export const ExploreTab = ({
       userPreferences?.categories &&
       userPreferences.categories.length > 0
     ) {
-      const filteredByPreference = filtered.filter((deal) => {
-        const dealCategory =
-          dealTypeToCategory[deal.deal_type] || deal.deal_type;
-        return userPreferences.categories!.some(
-          (cat) => cat.toLowerCase() === dealCategory.toLowerCase(),
-        );
-      });
+      const filteredByPreference = filtered.filter((deal) =>
+        dealMatchesPreferences(deal, userPreferences.categories),
+      );
 
       // Only apply preference filter if it leaves some results, otherwise show all
       if (filteredByPreference.length > 0) {

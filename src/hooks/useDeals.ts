@@ -1,6 +1,10 @@
 import { useEffect, useState, useCallback , useId } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfilePulse } from "@/hooks/useProfilePulse";
+import {
+  dealMatchesPreferences,
+  resolveDealPreferenceBucket,
+} from "@/lib/dealCategory";
 import type { Database } from "@/integrations/supabase/types";
 
 type Deal = Database["public"]["Tables"]["deals"]["Row"];
@@ -31,26 +35,6 @@ interface UserPreferences {
   activityInArea?: boolean;
 }
 
-// Map deal_type values to preference categories
-const dealTypeToCategory: Record<string, string> = {
-  food: "Food",
-  Food: "Food",
-  restaurant: "Food",
-  dining: "Food",
-  drinks: "Drinks",
-  Drinks: "Drinks",
-  bar: "Drinks",
-  cocktail: "Drinks",
-  coffee: "Drinks",
-  nightlife: "Nightlife",
-  Nightlife: "Nightlife",
-  club: "Nightlife",
-  lounge: "Nightlife",
-  events: "Events",
-  Events: "Events",
-  concert: "Events",
-  festival: "Events",
-};
 
 // Cache deals for offline page
 const cacheDealsForOffline = (deals: Deal[]) => {
@@ -124,15 +108,10 @@ export const useDeals = (
       const selectedCategories = prefs.categories;
 
       return allDeals.filter((deal) => {
-        const dealCategory =
-          dealTypeToCategory[deal.deal_type] || deal.deal_type;
+        const dealCategory = resolveDealPreferenceBucket(deal);
 
         // Check if deal matches any selected category
-        const matchesCategory = selectedCategories.some(
-          (cat) => cat.toLowerCase() === dealCategory.toLowerCase(),
-        );
-
-        if (!matchesCategory) return false;
+        if (!dealMatchesPreferences(deal, selectedCategories)) return false;
 
         // Additional filtering based on subcategory preferences
         const dealType = deal.deal_type.toLowerCase();
