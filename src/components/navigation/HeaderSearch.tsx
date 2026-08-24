@@ -129,11 +129,14 @@ export function HeaderSearch({
         // and avatar get squeezed out of the row.
         flex: "1 1 0%",
         minWidth: 0,
-        maxWidth: isMobile ? "100%" : "clamp(200px, 36vw, 460px)",
+        maxWidth: isMobile
+          ? "clamp(120px, 30vw, 200px)"
+          : "clamp(200px, 36vw, 460px)",
         opacity: mounted ? 1 : 0,
         transform: mounted ? "translateY(0)" : "translateY(-6px)",
         transition: "opacity 0.4s ease-out 0.1s, transform 0.4s ease-out 0.1s",
       }}
+
     >
       <div
         style={{
