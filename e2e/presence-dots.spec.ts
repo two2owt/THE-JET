@@ -19,7 +19,15 @@ type Status = "active" | "recent" | "away";
 async function gotoHarness(page: Page) {
   await page.goto(HARNESS);
   await page.waitForSelector('[data-presence-harness-ready="true"]');
-  await page.waitForFunction(() => "__jetPresence" in window);
+  // The presence module arrives with the hydrated client chunk, which can lag
+  // the SSR markup on a cold dev server.
+  await page.waitForFunction(
+    () =>
+      typeof (window as unknown as { __jetPresence?: unknown })
+        .__jetPresence === "object",
+    undefined,
+    { timeout: 30_000, polling: 200 },
+  );
 }
 
 async function setStatus(page: Page, userId: string, status: Status | null) {
