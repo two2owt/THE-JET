@@ -309,8 +309,12 @@ export default function VerificationSuccess() {
 
   return (
     <div
-      className="flex-1 flex items-center justify-center bg-background overflow-y-auto px-4 sm:px-6 md:px-8 lg:px-10"
-      style={{ WebkitOverflowScrolling: "touch" }}
+      className="flex-1 flex items-center justify-center bg-background overflow-y-auto"
+      style={{
+        WebkitOverflowScrolling: "touch",
+        paddingLeft: "var(--header-pad-x)",
+        paddingRight: "var(--header-pad-x)",
+      }}
     >
       <div className="max-w-md w-full text-center space-y-6">
         <div className="flex justify-center">

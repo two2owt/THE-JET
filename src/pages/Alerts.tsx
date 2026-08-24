@@ -1,6 +1,7 @@
 import { lazy, Suspense, useCallback, useMemo } from "react";
 import { useNavigate } from "@/lib/router-compat";
 import { PageLayout } from "@/components/PageLayout";
+import { PageShell } from "@/components/PageShell";
 import { NotificationsTabSkeleton } from "@/components/skeletons/PageSkeletons";
 import { useNotifications } from "@/hooks/useNotifications";
 import type { Venue } from "@/types/venue";
@@ -31,15 +32,17 @@ export default function Alerts() {
 
   return (
     <PageLayout defaultTab="notifications" headerConfig={headerConfig}>
-      <h1 className="sr-only">Your alerts</h1>
-      <Suspense fallback={<NotificationsTabSkeleton />}>
-        <NotificationsTab
-          notifications={notifications}
-          markAsRead={markAsRead}
-          markAllAsRead={markAllAsRead}
-          onVenueClick={handleVenueClick}
-        />
-      </Suspense>
+      <PageShell>
+        <h1 className="sr-only">Your alerts</h1>
+        <Suspense fallback={<NotificationsTabSkeleton />}>
+          <NotificationsTab
+            notifications={notifications}
+            markAsRead={markAsRead}
+            markAllAsRead={markAllAsRead}
+            onVenueClick={handleVenueClick}
+          />
+        </Suspense>
+      </PageShell>
     </PageLayout>
   );
 }
