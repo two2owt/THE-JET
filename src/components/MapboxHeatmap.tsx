@@ -2078,6 +2078,7 @@ export const MapboxHeatmap = ({
 
     return () => {
       unsubscribe();
+      unsubscribeHighlight();
       clearRing();
     };
   }, [mapLoaded]);
