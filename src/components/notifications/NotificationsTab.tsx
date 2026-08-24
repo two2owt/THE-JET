@@ -311,20 +311,27 @@ export function NotificationsTab({
           </p>
         </div>
       ) : (
-        visible.map((notification) => (
-          <div key={notification.id}>
-            <Suspense fallback={null}>
-              <NotificationCard
-                notification={notification}
-                deals={deals}
-                onVenueClick={onVenueClick}
-                onRead={() => markAsRead(notification.id)}
-                onMarkRead={() => markAsRead(notification.id)}
-              />
-            </Suspense>
-          </div>
-        ))
+        <>
+          {visibleLive.map((n) => renderCard(n, false))}
+          {visibleExpired.length > 0 && (
+            <>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mt-4 mb-2 px-1">
+                Expired
+              </p>
+              {visibleExpired.map((n) => renderCard(n, true))}
+            </>
+          )}
+        </>
       )}
+
+      <AlertDetailsDialog
+        open={detailsFor !== null}
+        onOpenChange={(open) => !open && setDetailsFor(null)}
+        notification={detailsFor}
+        deal={detailsFor?.dealId ? dealById[detailsFor.dealId] : undefined}
+        onVenueClick={onVenueClick}
+      />
     </PageShell>
   );
+
 }
