@@ -76,7 +76,7 @@ export function PageLayout({
   onPullToRefresh,
 }: PageLayoutProps) {
   const { activeTab, handleTabChange } = useBottomNavigation({ defaultTab });
-  const { notifications } = useNotifications();
+  const { unreadCount: unreadAlerts } = useNotifications();
   const { unreadCount: unreadMessages } = useUnreadMessages();
   const setHeaderConfig = useHeaderConfig();
   const mainRef = useRef<HTMLElement | null>(null);
@@ -90,7 +90,7 @@ export function PageLayout({
 
   // Use provided notification count or calculate from notifications
   const unreadCount =
-    notificationCount ?? notifications.filter((n) => !n.read).length;
+    notificationCount ?? unreadAlerts;
   const msgBadge = messageCount ?? unreadMessages;
 
   // Sync header config to context whenever it changes
