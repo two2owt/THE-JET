@@ -71,6 +71,9 @@ export const AppShell = memo(function AppShell({ children }: AppShellProps) {
       {/* Resumes / completes Stripe upgrade flows on any route */}
       <CheckoutReturnHandler />
 
+      {/* Validates Supabase token freshness after every auth redirect */}
+      <AuthTokenFreshnessGuard />
+
       {showChrome && (
         <>
           <Header />
