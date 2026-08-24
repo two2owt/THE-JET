@@ -1,5 +1,5 @@
 import { memo, useMemo } from "react";
-import { MapPin, Clock, Gift, TrendingUp } from "lucide-react";
+import { MapPin, Clock, Gift, TrendingUp, Check } from "lucide-react";
 import type { DealWithNeighborhood } from "@/mobile-app-snippets/useDealSyncRealtime";
 import {
   DealMetaBadges,
@@ -27,10 +27,18 @@ interface NotificationCardProps {
   deals?: DealWithNeighborhood[];
   onVenueClick?: (venue: string) => void;
   onRead?: () => void;
+  /** Explicit "mark as read" action, independent of opening the venue. */
+  onMarkRead?: () => void;
 }
 
 export const NotificationCard = memo(
-  ({ notification, deals, onVenueClick, onRead }: NotificationCardProps) => {
+  ({
+    notification,
+    deals,
+    onVenueClick,
+    onRead,
+    onMarkRead,
+  }: NotificationCardProps) => {
     // The deal this alert points at, when it is still live in the synced list.
     const linkedDeal = useMemo(() => {
       if (!notification.dealId || !deals?.length) return null;
@@ -175,6 +183,21 @@ export const NotificationCard = memo(
             >
               {enriched.timestamp}
             </time>
+            {!enriched.read && onMarkRead && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMarkRead();
+                }}
+                className="inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50"
+                style={{ width: "28px", height: "28px" }}
+                aria-label={`Mark "${enriched.title}" as read`}
+                title="Mark as read"
+              >
+                <Check className="w-4 h-4" aria-hidden="true" />
+              </button>
+            )}
             {!enriched.read && (
               <span
                 className="inline-block rounded-full bg-primary"
