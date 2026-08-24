@@ -9,6 +9,7 @@ import {
   type TileRetryController,
 } from "@/lib/mapTileRetry";
 import type * as MapboxGL from "mapbox-gl";
+import { markMapPainted } from "@/lib/mapPaintSignal";
 import type { FeatureCollection, Geometry } from "geojson";
 import {
   LAYER_KEYS as SHARED_LAYER_KEYS,
@@ -2459,6 +2460,9 @@ export const MapboxHeatmap = ({
             setMapInitializing(false);
             setLoadingStage("ready");
           }
+          // Unblocks deferred, non-critical work (permission prompts, idle
+          // prefetch) now that the above-the-fold hero has actually rendered.
+          markMapPainted();
           // Tiles are in: clear any pending backoff state.
           tileRetry.current?.notifySuccess();
         };

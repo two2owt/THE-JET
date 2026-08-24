@@ -1,13 +1,16 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import { Map as MapIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LocationStatusBanner } from "@/components/map/LocationStatusBanner";
 import { HeatmapSkeleton } from "@/components/skeletons/HeatmapSkeleton";
+import { useInViewAfterPaint } from "@/hooks/useInViewAfterPaint";
 import type { Venue } from "@/types/venue";
 import type { City } from "@/types/cities";
 
+const importMapboxHeatmap = () => import("@/components/MapboxHeatmap");
+
 const MapboxHeatmap = lazy(() =>
-  import("@/components/MapboxHeatmap").then((m) => ({
+  importMapboxHeatmap().then((m) => ({
     default: m.MapboxHeatmap,
   })),
 );
@@ -55,8 +58,32 @@ export function MapSurface({
   onNearestCityDetected,
   onDetectedLocationNameChange,
 }: MapSurfaceProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  // The ~500 kB GL chunk is only fetched once this surface is actually on
+  // screen, and never before the page load event — identical behaviour on
+  // mobile and desktop, both of which render this same surface.
+  const inView = useInViewAfterPaint(containerRef, {
+    enabled: hydrated && Boolean(mapboxToken),
+  });
+
+  // If the surface never comes into view, still warm the chunk during idle so
+  // a later scroll/tab switch renders instantly instead of waiting on network.
+  useEffect(() => {
+    if (!hydrated || inView || typeof window === "undefined") return;
+    const warm = () => void importMapboxHeatmap().catch(() => {});
+    const idle = typeof window.requestIdleCallback === "function";
+    const id = idle
+      ? window.requestIdleCallback(warm, { timeout: 8000 })
+      : window.setTimeout(warm, 6000);
+    return () => {
+      if (idle) window.cancelIdleCallback(id);
+      else window.clearTimeout(id);
+    };
+  }, [hydrated, inView]);
+
   return (
     <div
+      ref={containerRef}
       className="absolute inset-0 w-full h-full"
       style={{ zIndex: 0 }}
       data-map-container=""
@@ -64,7 +91,9 @@ export function MapSurface({
       {/* Paints on the very first frame (before hydration, before the token
           resolves, before the GL bundle downloads) so the viewport has a real
           LCP candidate instead of an empty box. The map canvas covers it. */}
-      {!(hydrated && mapboxToken) && !mapboxError && <HeatmapSkeleton />}
+      {!(hydrated && mapboxToken && inView) && !mapboxError && (
+        <HeatmapSkeleton />
+      )}
 
       {mapboxError && !mapboxLoading && (
         <div
@@ -102,7 +131,7 @@ export function MapSurface({
       )}
 
       <div className="absolute inset-0 w-full h-full">
-        {hydrated && mapboxToken && (
+        {hydrated && mapboxToken && inView && (
           <Suspense fallback={<HeatmapSkeleton />}>
             <MapboxHeatmap
               onVenueSelect={onVenueSelect}

@@ -22,6 +22,7 @@ import {
   shouldPromptForLocation,
 } from "@/lib/locationPromptPolicy";
 import { recordPromptOutcome } from "@/lib/locationDiagnostics";
+import { useDeferredPromptTrigger } from "@/hooks/useDeferredPromptTrigger";
 import { logGeoPermissionEvent } from "@/lib/locationPermissionLog";
 import {
   isPromptSuppressed,
@@ -59,8 +60,13 @@ export const LocationPermissionPrompt = () => {
   // Only ever render while this prompt owns the global dialog slot, so it can
   // never stack with the push / PWA prompts.
   const hasSlot = usePromptSlot("location", PROMPT_PRIORITY.location, open);
+  // Never ask on first load: wait until the map has painted AND the user has
+  // interacted for the first time. Keeps the dialog out of the LCP path and
+  // means the very first thing a visitor sees is the map, not a permission ask.
+  const triggerReady = useDeferredPromptTrigger();
 
   useEffect(() => {
+    if (!triggerReady) return;
     let cancelled = false;
 
     const maybeShow = async () => {
@@ -125,9 +131,10 @@ export const LocationPermissionPrompt = () => {
       // dismissals, embedded webview, etc.). Asking again does nothing, so we
       // stay quiet and let the map banner point at the settings flow instead.
       if (isPromptSuppressed()) return;
-      // Small delay so we don't compete with first paint / other prompts.
-      // Signed-in users get asked promptly so tracking can start right away.
-      const delay = userId ? 900 : 2500;
+      // The trigger already waited for paint + first interaction, so this is
+      // just enough of a beat to let that interaction (tap, scroll) finish
+      // before a dialog takes over the screen.
+      const delay = userId ? 400 : 900;
       const timer = window.setTimeout(() => {
         // Re-check at fire time: permission may have been granted during the
         // delay (map locate button, signup consent), which would otherwise
@@ -155,7 +162,7 @@ export const LocationPermissionPrompt = () => {
       cancelled = true;
       Promise.resolve(cleanup).then((fn) => typeof fn === "function" && fn());
     };
-  }, [signature, userId]);
+  }, [signature, userId, triggerReady]);
 
   const recordConsent = async (granted: boolean) => {
     if (!session?.user?.id) return;
