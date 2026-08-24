@@ -124,8 +124,10 @@ export function HeaderSyncIndicator({
       }}
     >
       <RefreshCw
-        size={12}
         style={{
+          width: "calc(var(--header-icon-size, 16px) - 3px)",
+          height: "calc(var(--header-icon-size, 16px) - 3px)",
+          flexShrink: 0,
           animation: isLoading ? "spin 1s linear infinite" : undefined,
           color: isLive ? neon : "hsl(var(--gold) / 0.9)",
         }}

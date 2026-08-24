@@ -140,11 +140,14 @@ function triggerStyle(
     position: "relative",
     flexShrink: 0,
     borderRadius: "9999px",
-    width: "clamp(38px, 5vw, 44px)",
-    height: "clamp(38px, 5vw, 44px)",
+    // Shares the nav header's single control height so the avatar never
+    // out-sizes the search pill or sync chip on any breakpoint.
+    width: "var(--header-control-height, 36px)",
+    height: "var(--header-control-height, 36px)",
     padding: "2.5px",
     overflow: "visible",
     boxSizing: "border-box",
+
 
     background:
       "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 50%, hsl(var(--primary-glow, var(--primary))) 100%)",
