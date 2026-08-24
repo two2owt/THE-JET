@@ -66,10 +66,16 @@ jobs:
       - name: Production build
         run: bun run build
         env:
+          VITE_APP_VERSION: ${{ github.sha }}
           VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
+          # Sentry source-map upload (gated on token presence; builds without it
+          # still generate maps locally but do not upload).
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: creative-breakroom-llc-s2
+          SENTRY_PROJECT: jet-around
 
       - name: Verify crash reporting is configured for release builds
         run: bun run scripts/verify-observability.mjs
