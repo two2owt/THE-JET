@@ -30,8 +30,8 @@ export function ProfileActions({
           onClick={onStartEdit}
           className="profile-action-btn profile-action-primary"
         >
-          <Edit2 className="w-4 h-4" />
-          Edit Profile
+          <Edit2 className="w-4 h-4" aria-hidden="true" />
+          Edit
         </button>
       ) : (
         <button
@@ -39,7 +39,7 @@ export function ProfileActions({
           onClick={onCancelEdit}
           className="profile-action-btn profile-action-secondary"
         >
-          <X className="w-4 h-4" />
+          <X className="w-4 h-4" aria-hidden="true" />
           Cancel
         </button>
       )}

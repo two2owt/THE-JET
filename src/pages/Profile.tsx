@@ -409,8 +409,6 @@ export default function Profile() {
           unclaimedName={needsDisplayNameClaim(profile)}
           onClaimName={() => setIsEditing(true)}
           avatarUrl={profile?.avatar_url}
-          pronouns={form.pronouns}
-          bio={form.bio}
           isEditing={isEditing}
           isUploading={isUploading}
           onAvatarSelected={handleAvatarUpload}
