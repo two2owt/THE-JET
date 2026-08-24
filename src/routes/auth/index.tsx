@@ -8,7 +8,7 @@ const description =
 
 const CANONICAL_URL = `${SITE_URL}/auth`;
 
-export const Route = createFileRoute("/auth")({
+export const Route = createFileRoute("/auth/")({
   head: () => ({
     meta: [
       { title },

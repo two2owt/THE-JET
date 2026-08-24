@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AlertsRouteImport } from './routes/alerts'
-import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DealsRouteImport } from './routes/deals'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as MessagesRouteImport } from './routes/messages'
@@ -28,6 +27,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SocialRouteImport } from './routes/social'
 import { Route as TermsOfServiceRouteImport } from './routes/terms-of-service'
 import { Route as VerificationSuccessRouteImport } from './routes/verification-success'
+import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as DevPresenceRouteImport } from './routes/dev/presence'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable/oauth/consent'
 import { Route as ApiPublicDeviceTokensRouteImport } from './routes/api/public/device-tokens'
@@ -52,11 +52,6 @@ const AdminRoute = AdminRouteImport.update({
 const AlertsRoute = AlertsRouteImport.update({
   id: '/alerts',
   path: '/alerts',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DealsRoute = DealsRouteImport.update({
@@ -134,6 +129,11 @@ const VerificationSuccessRoute = VerificationSuccessRouteImport.update({
   path: '/verification-success',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthIndexRoute = AuthIndexRouteImport.update({
+  id: '/auth/',
+  path: '/auth/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DevPresenceRoute = DevPresenceRouteImport.update({
   id: '/dev/presence',
   path: '/dev/presence',
@@ -193,7 +193,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/alerts': typeof AlertsRoute
-  '/auth': typeof AuthRoute
   '/deals': typeof DealsRoute
   '/favorites': typeof FavoritesRoute
   '/messages': typeof MessagesRoute
@@ -210,6 +209,7 @@ export interface FileRoutesByFullPath {
   '/terms-of-service': typeof TermsOfServiceRoute
   '/verification-success': typeof VerificationSuccessRoute
   '/dev/presence': typeof DevPresenceRoute
+  '/auth/': typeof AuthIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/device-tokens': typeof ApiPublicDeviceTokensRoute
   '/api/public/version': typeof ApiPublicVersionRoute
@@ -224,7 +224,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/alerts': typeof AlertsRoute
-  '/auth': typeof AuthRoute
   '/deals': typeof DealsRoute
   '/favorites': typeof FavoritesRoute
   '/messages': typeof MessagesRoute
@@ -241,6 +240,7 @@ export interface FileRoutesByTo {
   '/terms-of-service': typeof TermsOfServiceRoute
   '/verification-success': typeof VerificationSuccessRoute
   '/dev/presence': typeof DevPresenceRoute
+  '/auth': typeof AuthIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/device-tokens': typeof ApiPublicDeviceTokensRoute
   '/api/public/version': typeof ApiPublicVersionRoute
@@ -256,7 +256,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/alerts': typeof AlertsRoute
-  '/auth': typeof AuthRoute
   '/deals': typeof DealsRoute
   '/favorites': typeof FavoritesRoute
   '/messages': typeof MessagesRoute
@@ -273,6 +272,7 @@ export interface FileRoutesById {
   '/terms-of-service': typeof TermsOfServiceRoute
   '/verification-success': typeof VerificationSuccessRoute
   '/dev/presence': typeof DevPresenceRoute
+  '/auth/': typeof AuthIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/device-tokens': typeof ApiPublicDeviceTokensRoute
   '/api/public/version': typeof ApiPublicVersionRoute
@@ -289,7 +289,6 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/alerts'
-    | '/auth'
     | '/deals'
     | '/favorites'
     | '/messages'
@@ -306,6 +305,7 @@ export interface FileRouteTypes {
     | '/terms-of-service'
     | '/verification-success'
     | '/dev/presence'
+    | '/auth/'
     | '/.lovable/oauth/consent'
     | '/api/public/device-tokens'
     | '/api/public/version'
@@ -320,7 +320,6 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/alerts'
-    | '/auth'
     | '/deals'
     | '/favorites'
     | '/messages'
@@ -337,6 +336,7 @@ export interface FileRouteTypes {
     | '/terms-of-service'
     | '/verification-success'
     | '/dev/presence'
+    | '/auth'
     | '/.lovable/oauth/consent'
     | '/api/public/device-tokens'
     | '/api/public/version'
@@ -351,7 +351,6 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/alerts'
-    | '/auth'
     | '/deals'
     | '/favorites'
     | '/messages'
@@ -368,6 +367,7 @@ export interface FileRouteTypes {
     | '/terms-of-service'
     | '/verification-success'
     | '/dev/presence'
+    | '/auth/'
     | '/.lovable/oauth/consent'
     | '/api/public/device-tokens'
     | '/api/public/version'
@@ -383,7 +383,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   AlertsRoute: typeof AlertsRoute
-  AuthRoute: typeof AuthRoute
   DealsRoute: typeof DealsRoute
   FavoritesRoute: typeof FavoritesRoute
   MessagesRoute: typeof MessagesRoute
@@ -400,6 +399,7 @@ export interface RootRouteChildren {
   TermsOfServiceRoute: typeof TermsOfServiceRoute
   VerificationSuccessRoute: typeof VerificationSuccessRoute
   DevPresenceRoute: typeof DevPresenceRoute
+  AuthIndexRoute: typeof AuthIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   ApiPublicDeviceTokensRoute: typeof ApiPublicDeviceTokensRoute
   ApiPublicVersionRoute: typeof ApiPublicVersionRoute
@@ -432,13 +432,6 @@ declare module '@tanstack/react-router' {
       path: '/alerts'
       fullPath: '/alerts'
       preLoaderRoute: typeof AlertsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/deals': {
@@ -546,6 +539,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VerificationSuccessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/': {
+      id: '/auth/'
+      path: '/auth'
+      fullPath: '/auth/'
+      preLoaderRoute: typeof AuthIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dev/presence': {
       id: '/dev/presence'
       path: '/dev/presence'
@@ -623,7 +623,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AlertsRoute: AlertsRoute,
-  AuthRoute: AuthRoute,
   DealsRoute: DealsRoute,
   FavoritesRoute: FavoritesRoute,
   MessagesRoute: MessagesRoute,
@@ -640,6 +639,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsOfServiceRoute: TermsOfServiceRoute,
   VerificationSuccessRoute: VerificationSuccessRoute,
   DevPresenceRoute: DevPresenceRoute,
+  AuthIndexRoute: AuthIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   ApiPublicDeviceTokensRoute: ApiPublicDeviceTokensRoute,
   ApiPublicVersionRoute: ApiPublicVersionRoute,
