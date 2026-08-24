@@ -22,6 +22,7 @@ import {
   shouldPromptForLocation,
 } from "@/lib/locationPromptPolicy";
 import { recordPromptOutcome } from "@/lib/locationDiagnostics";
+import { useDeferredPromptTrigger } from "@/hooks/useDeferredPromptTrigger";
 import { logGeoPermissionEvent } from "@/lib/locationPermissionLog";
 import {
   isPromptSuppressed,
