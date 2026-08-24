@@ -189,6 +189,8 @@ import {
   kmToMiles,
 } from "@/types/cities";
 import { getCachedReverseGeocode } from "@/utils/reverseGeocode";
+import { searchUsCities, type GeocodedCity } from "@/utils/forwardGeocode";
+
 import locationPuckIcon from "@/assets/location-puck.png";
 
 // Re-export Venue type for backwards compatibility
