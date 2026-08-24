@@ -1,5 +1,5 @@
 import { SITE_URL } from "@/lib/seo";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import Index from "@/pages/Index";
 
 const TITLE = "JET — Find Live Deals & Events Near You";
@@ -9,6 +9,14 @@ const URL = SITE_URL;
 
 export const Route = createFileRoute("/")({
   component: HomeRoute,
+  // The deals feed used to live at `/?tab=explore`. Keep old links, shared
+  // URLs, and push payloads working by forwarding them to the real page.
+  beforeLoad: ({ search }) => {
+    if ((search as Record<string, unknown>)?.tab === "explore") {
+      const { tab: _tab, ...rest } = search as Record<string, unknown>;
+      throw redirect({ to: "/deals", search: rest, replace: true });
+    }
+  },
   head: () => ({
     meta: [
       { title: TITLE },

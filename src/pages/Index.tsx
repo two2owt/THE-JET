@@ -37,7 +37,6 @@ import { useCitySelection } from "@/hooks/useCitySelection";
 import { useVenueDeepLinks } from "@/hooks/useVenueDeepLinks";
 
 import { NotificationsTabSkeleton } from "@/components/skeletons/PageSkeletons";
-import { PageShell } from "@/components/PageShell";
 import { CityTransitionOverlay } from "@/components/CityTransitionOverlay";
 import { MapSurface } from "@/components/map/MapSurface";
 import { MapCardPortal } from "@/components/map/MapCardPortal";
