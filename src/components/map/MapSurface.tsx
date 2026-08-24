@@ -1,13 +1,16 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import { Map as MapIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LocationStatusBanner } from "@/components/map/LocationStatusBanner";
 import { HeatmapSkeleton } from "@/components/skeletons/HeatmapSkeleton";
+import { useInViewAfterPaint } from "@/hooks/useInViewAfterPaint";
 import type { Venue } from "@/types/venue";
 import type { City } from "@/types/cities";
 
+const importMapboxHeatmap = () => import("@/components/MapboxHeatmap");
+
 const MapboxHeatmap = lazy(() =>
-  import("@/components/MapboxHeatmap").then((m) => ({
+  importMapboxHeatmap().then((m) => ({
     default: m.MapboxHeatmap,
   })),
 );
