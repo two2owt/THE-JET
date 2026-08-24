@@ -29,6 +29,8 @@ import { useDeals } from "@/hooks/useDeals";
 import { useVenueActivity } from "@/hooks/useVenueActivity";
 import { useBottomNavigation } from "@/hooks/useBottomNavigation";
 import { useMapPanelInset } from "@/hooks/useMapPanelInset";
+import { useSearchParams } from "@/lib/router-compat";
+import { getCategoryById } from "@/lib/venue-categories";
 // Extracted concerns: onboarding gating, city launches, deep-link routing
 import { useOnboardingGate } from "@/hooks/useOnboardingGate";
 import { useCitySelection } from "@/hooks/useCitySelection";
@@ -155,6 +157,26 @@ const Index = () => {
     refresh: refreshVenues,
     lastUpdated: venuesLastUpdated,
   } = useVenueActivity(dataReady, selectedCity);
+  // Category filter lives in the URL (`?cat=bar`) so a chip tap, a search
+  // "Categories" chip and a shared link all land on the same filtered map.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const catParam = searchParams.get("cat");
+  const categoryFilter = catParam && getCategoryById(catParam) ? catParam : null;
+  const handleCategoryFilterChange = useCallback(
+    (next: string | null) => {
+      setSearchParams(
+        (prev) => {
+          const p = new URLSearchParams(prev);
+          if (next) p.set("cat", next);
+          else p.delete("cat");
+          return p;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
+
   const jetCardRef = useRef<HTMLDivElement>(null);
 
   const parkingCardRef = useRef<HTMLDivElement>(null);
@@ -320,6 +342,8 @@ const Index = () => {
             onCityChange={handleCityChange}
             onNearestCityDetected={handleNearestCityDetected}
             onDetectedLocationNameChange={handleDetectedLocationNameChange}
+            categoryFilter={categoryFilter}
+            onCategoryFilterChange={handleCategoryFilterChange}
           />
           {/* Location permission is asked from the map context only. */}
           <Suspense fallback={null}>

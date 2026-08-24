@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   categorySynonymScore,
   resolveVenueCategory,
+  resolveVenueCategoryFromPlace,
 } from "@/lib/venue-categories";
 import { getCategoryIcon, getCategoryFloral } from "@/components/map/markerStyles";
 import { categoryIconFor } from "@/lib/category-icon";
@@ -43,5 +44,28 @@ describe("venue category taxonomy", () => {
     });
     expect(categoryIconFor(category).accent).toBe(def.dark);
     expect(categoryIconFor(category).Icon).toBe(def.Icon);
+  });
+});
+
+describe("expanded taxonomy + google place types", () => {
+  it("splits drinks venues into their own buckets", () => {
+    expect(resolveVenueCategory("Brewery").id).toBe("brewery");
+    expect(resolveVenueCategory("Beer Garden").id).toBe("brewery");
+    expect(resolveVenueCategory("Cocktail Lounge").id).toBe("lounge");
+    expect(resolveVenueCategory("Speakeasy").id).toBe("lounge");
+    expect(resolveVenueCategory("Dive Bar").id).toBe("bar");
+    expect(resolveVenueCategory("Nightclub").id).toBe("nightlife");
+    expect(resolveVenueCategory("Concert Venue").id).toBe("concerts");
+    expect(resolveVenueCategory("Coffee Shop").id).toBe("coffee");
+    expect(resolveVenueCategory("Sports Venue").id).toBe("sports");
+    expect(resolveVenueCategory("Restaurant").id).toBe("food");
+  });
+
+  it("maps Google Places types onto the same buckets", () => {
+    expect(resolveVenueCategoryFromPlace({ types: ["night_club"] }).id).toBe("nightlife");
+    expect(resolveVenueCategoryFromPlace({ primaryType: "coffee_shop" }).id).toBe("coffee");
+    expect(resolveVenueCategoryFromPlace({ types: ["stadium"] }).id).toBe("sports");
+    expect(resolveVenueCategoryFromPlace({ types: ["italian_restaurant"] }).id).toBe("food");
+    expect(resolveVenueCategoryFromPlace({ types: [], category: "Taproom" }).id).toBe("brewery");
   });
 });

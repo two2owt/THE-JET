@@ -471,22 +471,14 @@ export const SearchResults = ({
     onClose();
   };
 
-  /** Pick the most active venue in a category and select it. */
+  /**
+   * Category chips filter the *map* (`?cat=<taxonomy id>`) instead of jumping
+   * straight to one venue. The JetCard only opens when the user then taps a
+   * marker that survived the filter.
+   */
   const handleCategorySelect = (categoryName: string) => {
-    const target = categoryName.toLowerCase();
-    const targetId = resolveVenueCategory(categoryName).id;
-    const match = venues
-      .filter(
-        (v) =>
-          v.category.toLowerCase() === target ||
-          // Deal types don't always mirror venue category strings; fall back
-          // to the shared taxonomy bucket so the chip always lands somewhere.
-          resolveVenueCategory(v.category).id === targetId,
-      )
-      .sort((a, b) => b.activity - a.activity)[0];
-    if (match) {
-      onVenueSelect(match);
-    }
+    const def = resolveVenueCategory(categoryName);
+    navigate(`/?cat=${def.id}`);
     onClose();
   };
 

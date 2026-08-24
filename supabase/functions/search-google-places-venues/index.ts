@@ -1060,13 +1060,45 @@ const CHARLOTTE_TOP_VENUES = [
 const NEARBY_TYPES = ["restaurant", "bar", "night_club", "cafe"] as const;
 
 // Friendly category labels derived from Google Place `types`.
+// Labels are picked so the client taxonomy (src/lib/venue-categories.ts)
+// resolves them into their own bucket — breweries, lounges, bars, clubs,
+// concert venues, coffee shops, sports venues and restaurants each keep a
+// distinct glyph instead of collapsing into a generic "Bar"/"Venue".
 function categoryFromTypes(types: readonly string[] = []): string {
-  if (types.includes("night_club")) return "Nightclub";
-  if (types.includes("bar")) return "Bar";
-  if (types.includes("cafe")) return "Cafe";
-  if (types.includes("bakery")) return "Bakery";
-  if (types.includes("meal_takeaway")) return "Takeout";
-  if (types.includes("restaurant")) return "Restaurant";
+  const has = (t: string) => types.includes(t);
+  if (has("brewery") || has("beer_garden")) return "Brewery";
+  if (has("hookah_bar")) return "Hookah Lounge";
+  if (has("wine_bar")) return "Wine Lounge";
+  if (has("night_club") || has("dance_hall")) return "Nightclub";
+  if (has("karaoke")) return "Karaoke Club";
+  if (has("concert_hall") || has("amphitheatre") || has("music_venue")) {
+    return "Concert Venue";
+  }
+  if (has("performing_arts_theater")) return "Live Music & Theater";
+  if (has("comedy_club")) return "Comedy Show";
+  if (has("stadium") || has("arena") || has("sports_complex")) {
+    return "Sports Venue";
+  }
+  if (has("bowling_alley")) return "Bowling";
+  if (has("golf_course")) return "Golf";
+  if (has("pub") || has("bar_and_grill")) return "Pub";
+  if (has("bar")) return "Bar";
+  if (has("coffee_shop") || has("cafe")) return "Coffee Shop";
+  if (has("tea_house")) return "Tea House";
+  if (has("bakery")) return "Bakery";
+  if (has("ice_cream_shop") || has("dessert_shop")) return "Dessert";
+  if (has("movie_theater")) return "Cinema";
+  if (has("art_gallery") || has("museum")) return "Arts & Culture";
+  if (has("meal_takeaway")) return "Takeout";
+  if (has("steak_house")) return "Steakhouse";
+  if (has("sushi_restaurant")) return "Sushi";
+  if (has("pizza_restaurant")) return "Pizza";
+  if (has("barbecue_restaurant")) return "BBQ";
+  if (has("seafood_restaurant")) return "Seafood";
+  if (has("ramen_restaurant")) return "Ramen";
+  if (has("restaurant") || has("food_court") || has("fast_food_restaurant")) {
+    return "Restaurant";
+  }
   return "Venue";
 }
 

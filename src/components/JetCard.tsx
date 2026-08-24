@@ -41,6 +41,7 @@ import { useVenuePhoto } from "@/hooks/useVenuePhoto";
 import { useLockMapWhileInteracting } from "@/lib/mapInteractionLock";
 import type { Venue as DirectionsVenue } from "@/types/venue";
 import { activityTier, type ActivityTierId } from "@/lib/activity-palette";
+import { resolveVenueCategory } from "@/lib/venue-categories";
 import { JET_MARK_SRC } from "@/lib/jet-mark";
 
 const DirectionsDialog = lazy(() => import("./DirectionsDialog"));
@@ -258,6 +259,11 @@ export const JetCard = memo(
     // Single source of truth: the same tier boundaries and colours the map
     // markers and the Activity legend use, so a "Peak" marker can never read
     // as "Moderate" on its card. App chrome is dark-only -> dark tier variant.
+    // Shared taxonomy → the JetCard badge, the map marker glyph and the
+    // search chip all resolve from the same place.
+    const categoryDef = resolveVenueCategory(venue.category);
+    const CategoryIcon = categoryDef.Icon;
+
     const getActivityLevel = (activity: number) => {
       const tier = activityTier(activity);
       const emoji: Record<ActivityTierId, string> = {
@@ -645,19 +651,28 @@ export const JetCard = memo(
               bottom: "8px",
               left: "8px",
               background: "rgba(0,0,0,0.55)",
-              border: "1px solid hsl(var(--silver) / 0.35)",
-              boxShadow: "0 0 10px hsl(var(--silver) / 0.12)",
+              border: `1px solid ${categoryDef.dark}59`,
+              boxShadow: `0 0 10px ${categoryDef.dark}26`,
               backdropFilter: "blur(12px)",
               WebkitBackdropFilter: "blur(12px)",
               padding: "3px 10px",
               borderRadius: "9999px",
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
             }}
           >
+            {/* Same glyph + accent the venue's map marker and its search chip
+                wear, so the three surfaces read as one thing. */}
+            <CategoryIcon
+              style={{ width: "11px", height: "11px", color: categoryDef.dark }}
+              aria-hidden="true"
+            />
             <span
               style={{
                 fontSize: "10px",
                 fontWeight: 600,
-                color: "hsl(var(--silver))",
+                color: categoryDef.dark,
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
               }}
