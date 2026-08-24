@@ -123,7 +123,13 @@ export function useProfilePulse(
         .channel(`profile-pulse-${instanceId}-${attempt}`)
         .on(
           "postgres_changes",
-          { event: "*", schema: "public", table: "profile_pulse" },
+          {
+            event: "*",
+            schema: "public",
+            table: "profile_pulse",
+            ...(profileId ? { filter: `profile_id=eq.${profileId}` } : {}),
+          },
+
           (payload) => {
             const row = payload.new as Partial<ProfilePulse> | null;
             if (!row?.profile_id) return;
