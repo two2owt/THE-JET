@@ -97,11 +97,36 @@ async function fetchDealsWithNeighborhoods(
  *
  * Designed to be mounted once per page that renders live deal data.
  */
+/**
+ * Module-level warm cache. Tab switches unmount this hook, and without a
+ * cache every remount fell back to an empty list + full skeleton while the
+ * network round-trip ran, which reads as lag. We now hydrate synchronously
+ * from the last known result and revalidate in the background.
+ */
+const dealCache = new Map<string, DealWithNeighborhood[]>();
+
 export function useDealSyncRealtime(options: DealSyncOptions = {}) {
   const { activeOnly = true, fetchOnMount = true, realtime = true } = options;
 
-  const [deals, setDeals] = useState<DealWithNeighborhood[]>([]);
-  const [loading, setLoading] = useState(fetchOnMount);
+  const cacheKey = activeOnly ? "active" : "all";
+  const cached = dealCache.get(cacheKey);
+
+  const [deals, setDealsState] = useState<DealWithNeighborhood[]>(
+    cached ?? [],
+  );
+  const setDeals = useCallback<typeof setDealsState>((update) => {
+    setDealsState((prev) => {
+      const next =
+        typeof update === "function"
+          ? (update as (p: DealWithNeighborhood[]) => DealWithNeighborhood[])(
+              prev,
+            )
+          : update;
+      dealCache.set(cacheKey, next);
+      return next;
+    });
+  }, [cacheKey]);
+  const [loading, setLoading] = useState(fetchOnMount && !cached);
   const [error, setError] = useState<Error | null>(null);
   const channelId = useId().replace(/[^a-zA-Z0-9]/g, "");
 
