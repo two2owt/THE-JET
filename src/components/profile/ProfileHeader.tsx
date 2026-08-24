@@ -4,8 +4,6 @@ import { Camera, Loader2, Sparkles, User } from "lucide-react";
 interface ProfileHeaderProps {
   displayName: string;
   avatarUrl: string | null | undefined;
-  pronouns: string;
-  bio: string;
   isEditing: boolean;
   isUploading: boolean;
   onAvatarSelected: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -15,14 +13,15 @@ interface ProfileHeaderProps {
 }
 
 /**
- * Profile identity header: avatar + name/pronouns/bio/email + action row.
+ * Profile identity header: avatar + name + action row.
+ * Pronouns, bio, and other about-section details are intentionally omitted
+ * here because they live in the About tab. Avatar upload is only exposed
+ * while the profile is in edit mode.
  * Stateless — parent owns edit state, avatar upload, share, and sign-out.
  */
 export function ProfileHeader({
   displayName,
   avatarUrl,
-  pronouns,
-  bio,
   isEditing,
   isUploading,
   onAvatarSelected,
@@ -46,7 +45,7 @@ export function ProfileHeader({
               )}
             </AvatarFallback>
           </Avatar>
-          {isEditing ? (
+          {isEditing && (
             <>
               <label
                 htmlFor="avatar-upload"
@@ -68,14 +67,6 @@ export function ProfileHeader({
                 className="sr-only"
               />
             </>
-          ) : (
-            /* Affordance so the avatar reads as editable outside edit mode. */
-            <span
-              className="profile-avatar-camera profile-avatar-camera-hint"
-              aria-hidden="true"
-            >
-              <Camera className="w-4 h-4" />
-            </span>
           )}
         </div>
 
@@ -95,12 +86,6 @@ export function ProfileHeader({
               Set your name
             </button>
           )}
-          {pronouns && (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full border-hairline bg-card/50 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              {pronouns}
-            </span>
-          )}
-          {bio && !isEditing && <p className="profile-bio">{bio}</p>}
         </div>
       </div>
     </header>
