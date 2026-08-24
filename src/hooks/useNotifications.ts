@@ -1,5 +1,7 @@
 import { devLog } from "@/lib/log";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
+import { isDealExpired } from "@/lib/dealExpiry";
+import { useMinuteClock } from "@/hooks/useMinuteClock";
 import { supabase } from "@/integrations/supabase/client";
 import { syncNotificationRead } from "@/lib/notificationRead";
 import {
