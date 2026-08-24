@@ -10,7 +10,7 @@
  * Reached from `/link-expired?reason=<supabase error_code>&flow=recovery|signup`.
  */
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { Clock, KeyRound, MailCheck, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,10 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { buildAuthRedirectUrl } from "@/lib/utils";
 import { logAuthRedirectEvent } from "@/lib/authRedirectLog";
+import {
+  peekPostAuthRedirect,
+  rememberPostAuthRedirect,
+} from "@/lib/postAuthRedirect";
 
 type Flow = "recovery" | "signup";
 
@@ -37,11 +41,16 @@ export default function LinkExpired() {
     reason?: string;
     flow?: string;
     email?: string;
+    returnTo?: string;
   };
   const flow: Flow = search.flow === "signup" ? "signup" : "recovery";
   const [email, setEmail] = useState(search.email ?? "");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+
+  // Where to send them once they're signed in again: an explicit ?returnTo,
+  // otherwise whatever was remembered before the auth detour.
+  const returnTo = search.returnTo ?? peekPostAuthRedirect() ?? null;
 
   const explanation = useMemo(
     () =>
@@ -129,6 +138,23 @@ export default function LinkExpired() {
           />
         </div>
 
+        <p
+          className="inline-flex items-center gap-1.5 mb-3 px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide"
+          style={{
+            background: "hsl(var(--muted) / 0.5)",
+            border: "1px solid hsl(var(--border) / 0.6)",
+            color: "hsl(var(--muted-foreground))",
+          }}
+          data-testid="link-expired-type"
+        >
+          {isRecovery ? (
+            <KeyRound className="w-3 h-3" aria-hidden="true" />
+          ) : (
+            <MailCheck className="w-3 h-3" aria-hidden="true" />
+          )}
+          {isRecovery ? "Password reset link" : "Email verification link"}
+        </p>
+
         <h1 className="font-display text-2xl font-bold text-foreground mb-2">
           {isRecovery ? "Reset link expired" : "Verification link expired"}
         </h1>
@@ -188,6 +214,7 @@ export default function LinkExpired() {
                 search: {
                   flow: isRecovery ? "signup" : "recovery",
                   ...(email.trim() ? { email: email.trim() } : {}),
+                  ...(returnTo ? { returnTo } : {}),
                 },
                 replace: true,
               })
@@ -198,8 +225,24 @@ export default function LinkExpired() {
               : "I need a password reset instead"}
           </Button>
 
-          <Button asChild variant="ghost" className="w-full">
-            <Link to="/signin">Back to sign in</Link>
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full"
+            data-testid="link-expired-signin"
+            onClick={() => {
+              // Keep the destination so sign-in lands them where they meant
+              // to go instead of dumping them on the home map.
+              if (returnTo) rememberPostAuthRedirect(returnTo);
+              navigate({ to: "/signin" });
+            }}
+          >
+            Back to sign in
+            {returnTo ? (
+              <span className="ml-1 text-xs text-muted-foreground">
+                (returns to {returnTo})
+              </span>
+            ) : null}
           </Button>
         </div>
       </div>
