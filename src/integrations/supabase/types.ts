@@ -1156,6 +1156,36 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_social_links: {
+        Row: {
+          created_at: string
+          handle: string
+          id: string
+          platform: string
+          updated_at: string
+          user_id: string
+          visibility: string
+        }
+        Insert: {
+          created_at?: string
+          handle: string
+          id?: string
+          platform: string
+          updated_at?: string
+          user_id: string
+          visibility?: string
+        }
+        Update: {
+          created_at?: string
+          handle?: string
+          id?: string
+          platform?: string
+          updated_at?: string
+          user_id?: string
+          visibility?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
