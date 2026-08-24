@@ -563,7 +563,11 @@ export default function Social() {
                               )}
                             </AvatarFallback>
                           </Avatar>
-                          <PresenceDot status={getStatus(profile.id)} size={13} />
+                          <PresenceDot
+                            status={getStatus(profile.id)}
+                            userId={profile.id}
+                            size={13}
+                          />
                         </span>
                         <div
                           style={{
@@ -803,7 +807,11 @@ export default function Social() {
                             )}
                           </AvatarFallback>
                         </Avatar>
-                        <PresenceDot status={getStatus(friendId)} size={13} />
+                        <PresenceDot
+                          status={getStatus(friendId)}
+                          userId={friendId}
+                          size={13}
+                        />
                       </span>
                       <div
                         style={{
@@ -945,7 +953,11 @@ export default function Social() {
                               )}
                             </AvatarFallback>
                           </Avatar>
-                          <PresenceDot status={getStatus(profile.id)} size={13} />
+                          <PresenceDot
+                            status={getStatus(profile.id)}
+                            userId={profile.id}
+                            size={13}
+                          />
                         </span>
                         <div
                           style={{

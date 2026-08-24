@@ -27,6 +27,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SocialRouteImport } from './routes/social'
 import { Route as TermsOfServiceRouteImport } from './routes/terms-of-service'
 import { Route as VerificationSuccessRouteImport } from './routes/verification-success'
+import { Route as DevPresenceRouteImport } from './routes/dev/presence'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable/oauth/consent'
 import { Route as ApiPublicDeviceTokensRouteImport } from './routes/api/public/device-tokens'
 import { Route as ApiPublicVersionRouteImport } from './routes/api/public/version'
@@ -127,6 +128,11 @@ const VerificationSuccessRoute = VerificationSuccessRouteImport.update({
   path: '/verification-success',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DevPresenceRoute = DevPresenceRouteImport.update({
+  id: '/dev/presence',
+  path: '/dev/presence',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
@@ -196,6 +202,7 @@ export interface FileRoutesByFullPath {
   '/social': typeof SocialRoute
   '/terms-of-service': typeof TermsOfServiceRoute
   '/verification-success': typeof VerificationSuccessRoute
+  '/dev/presence': typeof DevPresenceRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/device-tokens': typeof ApiPublicDeviceTokensRoute
   '/api/public/version': typeof ApiPublicVersionRoute
@@ -225,6 +232,7 @@ export interface FileRoutesByTo {
   '/social': typeof SocialRoute
   '/terms-of-service': typeof TermsOfServiceRoute
   '/verification-success': typeof VerificationSuccessRoute
+  '/dev/presence': typeof DevPresenceRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/device-tokens': typeof ApiPublicDeviceTokensRoute
   '/api/public/version': typeof ApiPublicVersionRoute
@@ -255,6 +263,7 @@ export interface FileRoutesById {
   '/social': typeof SocialRoute
   '/terms-of-service': typeof TermsOfServiceRoute
   '/verification-success': typeof VerificationSuccessRoute
+  '/dev/presence': typeof DevPresenceRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/api/public/device-tokens': typeof ApiPublicDeviceTokensRoute
   '/api/public/version': typeof ApiPublicVersionRoute
@@ -286,6 +295,7 @@ export interface FileRouteTypes {
     | '/social'
     | '/terms-of-service'
     | '/verification-success'
+    | '/dev/presence'
     | '/.lovable/oauth/consent'
     | '/api/public/device-tokens'
     | '/api/public/version'
@@ -315,6 +325,7 @@ export interface FileRouteTypes {
     | '/social'
     | '/terms-of-service'
     | '/verification-success'
+    | '/dev/presence'
     | '/.lovable/oauth/consent'
     | '/api/public/device-tokens'
     | '/api/public/version'
@@ -344,6 +355,7 @@ export interface FileRouteTypes {
     | '/social'
     | '/terms-of-service'
     | '/verification-success'
+    | '/dev/presence'
     | '/.lovable/oauth/consent'
     | '/api/public/device-tokens'
     | '/api/public/version'
@@ -374,6 +386,7 @@ export interface RootRouteChildren {
   SocialRoute: typeof SocialRoute
   TermsOfServiceRoute: typeof TermsOfServiceRoute
   VerificationSuccessRoute: typeof VerificationSuccessRoute
+  DevPresenceRoute: typeof DevPresenceRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   ApiPublicDeviceTokensRoute: typeof ApiPublicDeviceTokensRoute
   ApiPublicVersionRoute: typeof ApiPublicVersionRoute
@@ -513,6 +526,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VerificationSuccessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dev/presence': {
+      id: '/dev/presence'
+      path: '/dev/presence'
+      fullPath: '/dev/presence'
+      preLoaderRoute: typeof DevPresenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/.lovable/oauth/consent': {
       id: '/.lovable/oauth/consent'
       path: '/.lovable/oauth/consent'
@@ -598,6 +618,7 @@ const rootRouteChildren: RootRouteChildren = {
   SocialRoute: SocialRoute,
   TermsOfServiceRoute: TermsOfServiceRoute,
   VerificationSuccessRoute: VerificationSuccessRoute,
+  DevPresenceRoute: DevPresenceRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   ApiPublicDeviceTokensRoute: ApiPublicDeviceTokensRoute,
   ApiPublicVersionRoute: ApiPublicVersionRoute,
