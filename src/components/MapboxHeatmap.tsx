@@ -3762,6 +3762,7 @@ export const MapboxHeatmap = ({
           // Haptic feedback for venue selection
           triggerHaptic("medium");
 
+          setMapHighlight(String(venue.id ?? ""), "map");
           // Open venue card (use ref to avoid stale closure)
           onVenueSelectRef.current(venue);
         });
@@ -3776,6 +3777,8 @@ export const MapboxHeatmap = ({
       });
       markerIndexRef.current = nextIndex;
       markersRef.current = Array.from(nextIndex.values());
+      // Freshly created marker elements need the current highlight re-stamped.
+      applyMapHighlightToDom();
     }); // Close requestAnimationFrame
   };
 
