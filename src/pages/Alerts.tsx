@@ -22,6 +22,7 @@ export default function Alerts() {
   const navigate = useNavigate();
   const headerConfig = useMemo(() => ({ hideSearch: true }), []);
   const { notifications, markAsRead, markAllAsRead } = useNotifications(true);
+  const { deals } = useDealSyncRealtime();
 
   const handleVenueClick = useCallback(
     (venue: Venue | string) => {
@@ -38,6 +39,7 @@ export default function Alerts() {
         <Suspense fallback={<NotificationsTabSkeleton />}>
           <NotificationsTab
             notifications={notifications}
+            deals={deals}
             markAsRead={markAsRead}
             markAllAsRead={markAllAsRead}
             onVenueClick={handleVenueClick}
