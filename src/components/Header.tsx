@@ -152,9 +152,25 @@ export const Header = () => {
   // Reset search state when navigating to a different page so old queries
   // and dropdowns don't leak into the next view.
   const prevPathnameRef = useRef(location.pathname);
+  // A `?q=` present on the very first render came from a deep link (or a
+  // legacy `?tab=` redirect), not from typing — never clear that one.
+  const initialQueryRef = useRef<string | null>(null);
+  if (initialQueryRef.current === null) {
+    initialQueryRef.current =
+      typeof window !== "undefined"
+        ? (new URLSearchParams(window.location.search).get("q") ?? "")
+        : "";
+  }
   useEffect(() => {
     if (prevPathnameRef.current === location.pathname) return;
     prevPathnameRef.current = location.pathname;
+
+    const urlQuery = urlSearchParams.get("q") ?? "";
+    if (urlQuery && urlQuery === initialQueryRef.current) {
+      // Hydration/redirect settling on the deep-linked query — keep it.
+      return;
+    }
+    initialQueryRef.current = "";
 
     setSearchQuery("");
     setShowResults(false);
