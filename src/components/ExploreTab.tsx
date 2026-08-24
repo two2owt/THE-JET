@@ -351,6 +351,28 @@ export const ExploreTab = ({
     }
   };
 
+  const recalculateDealDistances = useCallback(() => {
+    if (!userLocation) return;
+    setDeals((prev) =>
+      prev.map((deal) => {
+        if (deal.neighborhoods) {
+          const distance = calculateDistance(
+            userLocation.lat,
+            userLocation.lng,
+            deal.neighborhoods.center_lat,
+            deal.neighborhoods.center_lng,
+          );
+          return { ...deal, distance };
+        }
+        return deal;
+      }),
+    );
+  }, [userLocation]);
+
+  useEffect(() => {
+    recalculateDealDistances();
+  }, [userLocation, recalculateDealDistances]);
+
   const filterDeals = () => {
     let filtered = [...deals];
 
