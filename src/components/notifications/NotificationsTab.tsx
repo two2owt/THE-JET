@@ -1,6 +1,8 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { isDealExpired } from "@/lib/dealExpiry";
+import { useMinuteClock } from "@/hooks/useMinuteClock";
 import { usePersistentViewState } from "@/hooks/usePersistentViewState";
+
 import { Bell } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 import { TabPageHeader } from "@/components/TabPageHeader";
