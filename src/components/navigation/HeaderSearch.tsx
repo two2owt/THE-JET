@@ -217,12 +217,12 @@ export function HeaderSearch({
           className="rounded-full hover:bg-muted/80 transition-colors"
           style={{
             position: "absolute",
-            right: "8px",
+            right: "6px",
             top: "50%",
             transform: "translateY(-50%)",
             zIndex: 10,
-            width: 28,
-            height: 28,
+            width: "calc(var(--header-control-height, 36px) - 10px)",
+            height: "calc(var(--header-control-height, 36px) - 10px)",
             background: "hsl(var(--muted) / 0.6)",
             border: "none",
             cursor: "pointer",
@@ -230,11 +230,12 @@ export function HeaderSearch({
         >
           <X
             style={{
-              width: 13,
-              height: 13,
+              width: "calc(var(--header-icon-size, 16px) - 3px)",
+              height: "calc(var(--header-icon-size, 16px) - 3px)",
               color: "hsl(var(--muted-foreground))",
             }}
           />
+
         </IconButton>
       )}
 
