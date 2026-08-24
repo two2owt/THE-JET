@@ -815,7 +815,33 @@ export const ExploreTab = ({
           ))}
         </div>
 
+        {/* Sync fallback — the list never blanks out while data refreshes. */}
+        {isLoading && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="flex items-center gap-2 rounded-xl border border-border/50 bg-card/70 px-3 py-2 text-xs text-muted-foreground backdrop-blur-sm"
+          >
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            {filteredDeals.length > 0
+              ? "Syncing latest deals…"
+              : "Loading live deals…"}
+          </div>
+        )}
+
+        {isLoading && filteredDeals.length === 0 && (
+          <div className="space-y-3" aria-hidden="true">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="h-[112px] animate-pulse rounded-xl border border-border/40 bg-card/60"
+              />
+            ))}
+          </div>
+        )}
+
         {/* No Results */}
+
         {!isLoading &&
           filteredDeals.length === 0 &&
           (searchQuery || selectedCategories.length > 0) && (
