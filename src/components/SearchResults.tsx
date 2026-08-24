@@ -53,7 +53,41 @@ interface SearchResultsProps {
   onVenueSelect: (venue: Venue) => void;
   onClose: () => void;
   isVisible: boolean;
+  /** Underlying venue/deal data is still loading. */
+  isLoading?: boolean;
+  /** The user is still typing (query hasn't settled through the debounce). */
+  isSearching?: boolean;
+  /** Data fetch failed — shows the error state with a retry affordance. */
+  error?: string | null;
+  /** Retry handler for the error state (usually the header's refresh). */
+  onRetry?: () => void;
 }
+
+/** Placeholder rows shown while the venue/deal dataset is still loading. */
+const ResultSkeletons = ({ rows = 4 }: { rows?: number }) => (
+  <div className="space-y-1.5" aria-hidden="true">
+    {Array.from({ length: rows }).map((_, i) => (
+      <div
+        key={i}
+        className="flex items-center gap-3 p-2.5 rounded-xl bg-secondary/30 animate-pulse"
+        style={{ animationDelay: `${i * 70}ms` }}
+      >
+        <div className="w-12 h-12 rounded-lg bg-muted/60 flex-shrink-0" />
+        <div className="flex-1 min-w-0 space-y-2">
+          <div
+            className="h-3 rounded-full bg-muted/60"
+            style={{ width: `${70 - i * 8}%` }}
+          />
+          <div
+            className="h-2.5 rounded-full bg-muted/40"
+            style={{ width: `${45 - i * 5}%` }}
+          />
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
 
 /** Lightweight relevance score: 3 = exact, 2 = prefix, 1 = substring, 0 = no match. */
 const matchScore = (haystack: string | null | undefined, q: string): number => {
