@@ -263,6 +263,15 @@ const Index = () => {
         ...resolved,
         imageUrl: getVenueImage(resolved.name) || resolved.imageUrl,
       });
+      // Conversion step: did a category-filtered view lead to a JetCard tap?
+      if (categoryFilter.length > 0) {
+        analytics.categoryFilteredVenueOpened(
+          resolved.id,
+          resolved.name,
+          resolveVenueCategory(resolved.category).id,
+          categoryFilter,
+        );
+      }
       // Always surface the JetCard on the map so the marker context lines up
       // with the card (and the card isn't obscured by other tabs' chrome).
       setActiveTab("map");
@@ -270,7 +279,7 @@ const Index = () => {
         description: `${resolved.activity}% active in ${resolved.neighborhood}`,
       });
     },
-    [venues, getVenueImage, setActiveTab, setSelectedVenue],
+    [venues, getVenueImage, setActiveTab, setSelectedVenue, categoryFilter],
   );
 
   const handleParkingSelect = useCallback(
