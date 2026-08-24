@@ -162,10 +162,10 @@ export default function Social() {
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  // Debounced search across discoverable end-user profiles.
-  // Uses the `discoverable_profiles` view so RLS + discoverability
-  // rules apply — only real signed-up users that opted into discovery
-  // are searchable, and the current user is excluded server-side.
+  // Debounced search across all signed-up end-user profiles.
+  // Uses the `social_profiles` view so every authenticated user is
+  // searchable on /social, regardless of their public discoverability
+  // setting. The current user is excluded server-side.
   useEffect(() => {
     const q = debouncedSearchQuery.trim();
     if (!user || q.length < 2) {
@@ -179,7 +179,7 @@ export default function Social() {
     (async () => {
       try {
         const { data, error } = await supabase
-          .from("discoverable_profiles")
+          .from("social_profiles")
           .select("id, display_name, avatar_url")
           .ilike("display_name", `%${q}%`)
           .neq("id", user.id)
@@ -208,7 +208,7 @@ export default function Social() {
     try {
       setProfilesError(false);
       const { data, error } = await supabase
-        .from("discoverable_profiles")
+        .from("social_profiles")
         .select("id, display_name, avatar_url")
         .neq("id", user?.id ?? "")
         .limit(200);
@@ -216,8 +216,8 @@ export default function Social() {
       if (error) throw error;
       // Exclude the current user, accepted connections, anyone with a
       // pending request in either direction, and profiles the user just
-      // sent a request to. Discover should only surface signed-up,
-      // discoverable users that the viewer is NOT already connected to.
+      // sent a request to. The list should surface all signed-up users
+      // that the viewer is NOT already connected to.
       const excludedIds = new Set<string>();
       if (user?.id) excludedIds.add(user.id);
       for (const c of connections) {

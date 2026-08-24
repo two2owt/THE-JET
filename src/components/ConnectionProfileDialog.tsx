@@ -41,11 +41,7 @@ interface SecureProfile {
   birthdate: string | null;
   gender: string | null;
   pronouns: string | null;
-  instagram_url: string | null;
-  twitter_url: string | null;
-  facebook_url: string | null;
-  linkedin_url: string | null;
-  tiktok_url: string | null;
+  social_handles: { platform: string; handle: string; url: string | null }[];
 }
 
 export function ConnectionProfileDialog({
@@ -86,13 +82,22 @@ export function ConnectionProfileDialog({
       const { data, error } = await supabase
         .from("discoverable_profiles")
         .select(
-          "id, display_name, avatar_url, bio, birthdate, gender, pronouns, instagram_url, twitter_url, facebook_url, linkedin_url, tiktok_url",
+          "id, display_name, avatar_url, bio, birthdate, gender, pronouns",
         )
         .eq("id", connectionId)
         .maybeSingle();
 
+      const { data: handles } = await supabase
+        .from("social_handles")
+        .select("platform, handle, url")
+        .eq("user_id", connectionId);
+
       if (error) throw error;
-      setProfile((data as unknown as SecureProfile | null) ?? null);
+      const base = (data as Record<string, unknown> | null) || {};
+      setProfile({
+        ...base,
+        social_handles: (handles || []) as SecureProfile["social_handles"],
+      } as unknown as SecureProfile);
     } catch (error) {
       console.error("Error fetching profile:", error);
     } finally {
@@ -106,23 +111,27 @@ export function ConnectionProfileDialog({
   const socialLinks = filteredProfile
     ? [
         {
-          url: filteredProfile.instagram_url,
+          platform: "instagram",
           icon: Instagram,
           label: "Instagram",
         },
-        { url: filteredProfile.twitter_url, icon: Twitter, label: "Twitter" },
-        {
-          url: filteredProfile.facebook_url,
-          icon: Facebook,
-          label: "Facebook",
-        },
-        {
-          url: filteredProfile.linkedin_url,
-          icon: Linkedin,
-          label: "LinkedIn",
-        },
-        { url: filteredProfile.tiktok_url, icon: TikTokIcon, label: "TikTok" },
-      ].filter((link) => link.url)
+        { platform: "twitter", icon: Twitter, label: "Twitter" },
+        { platform: "facebook", icon: Facebook, label: "Facebook" },
+        { platform: "linkedin", icon: Linkedin, label: "LinkedIn" },
+        { platform: "tiktok", icon: TikTokIcon, label: "TikTok" },
+      ]
+        .map((link) => {
+          const handle = filteredProfile.social_handles.find(
+            (h) => h.platform === link.platform,
+          );
+          return handle ? { ...link, url: handle.url } : null;
+        })
+        .filter(Boolean) as {
+        platform: string;
+        icon: typeof Instagram;
+        label: string;
+        url: string;
+      }[]
     : [];
 
   const formatBirthdate = (dateStr: string | null) => {

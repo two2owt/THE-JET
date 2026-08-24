@@ -77,27 +77,32 @@ export function ProfileEditForm({
     {
       key: "instagramUrl" as const,
       icon: Instagram,
-      placeholder: "Instagram profile URL",
+      label: "Instagram",
+      placeholder: "@handle or profile URL",
     },
     {
       key: "twitterUrl" as const,
       icon: Twitter,
-      placeholder: "Twitter/X profile URL",
+      label: "Twitter / X",
+      placeholder: "@handle or profile URL",
     },
     {
       key: "facebookUrl" as const,
       icon: Facebook,
-      placeholder: "Facebook profile URL",
+      label: "Facebook",
+      placeholder: "@handle or profile URL",
     },
     {
       key: "linkedinUrl" as const,
       icon: Linkedin,
-      placeholder: "LinkedIn profile URL",
+      label: "LinkedIn",
+      placeholder: "@handle or profile URL",
     },
     {
       key: "tiktokUrl" as const,
       icon: Video,
-      placeholder: "TikTok profile URL",
+      label: "TikTok",
+      placeholder: "@handle or profile URL",
     },
   ];
 
@@ -249,16 +254,23 @@ export function ProfileEditForm({
         <div className="flex flex-col" style={{ gap: "var(--space-sm)" }}>
           <div className="flex items-center gap-2">
             <span className="dot-gold shrink-0" />
-            <span className="heading-luxe-eyebrow">Social Media Links</span>
+            <span className="heading-luxe-eyebrow">Social Media Handles</span>
           </div>
-          {socialFields.map(({ key, icon: Icon, placeholder }) => (
+          {socialFields.map(({ key, icon: Icon, label, placeholder }) => (
             <div key={key} className="profile-social-row">
-              <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
+              <span
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground shrink-0"
+                style={{ minWidth: "92px" }}
+              >
+                <Icon className="w-4 h-4" />
+                {label}
+              </span>
               <Input
                 value={values[key]}
                 onChange={(e) => setValue(key, e.target.value)}
                 placeholder={placeholder}
                 className="profile-input w-full"
+                aria-label={`${label} handle or URL`}
               />
             </div>
           ))}

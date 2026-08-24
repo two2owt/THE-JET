@@ -51,6 +51,10 @@ import {
   ProfileEditForm,
   type ProfileEditFormValues,
 } from "@/components/profile/ProfileEditForm";
+import {
+  parseSocialInput,
+  type SocialPlatform,
+} from "@/lib/socialHandles";
 
 const profileSchema = z.object({
   display_name: z
@@ -68,31 +72,31 @@ const socialMediaSchema = z.object({
   instagram_url: z
     .string()
     .trim()
-    .url("Invalid Instagram URL")
+    .max(160, "Instagram handle or URL is too long")
     .optional()
     .or(z.literal("")),
   twitter_url: z
     .string()
     .trim()
-    .url("Invalid Twitter/X URL")
+    .max(160, "Twitter/X handle or URL is too long")
     .optional()
     .or(z.literal("")),
   facebook_url: z
     .string()
     .trim()
-    .url("Invalid Facebook URL")
+    .max(160, "Facebook handle or URL is too long")
     .optional()
     .or(z.literal("")),
   linkedin_url: z
     .string()
     .trim()
-    .url("Invalid LinkedIn URL")
+    .max(160, "LinkedIn handle or URL is too long")
     .optional()
     .or(z.literal("")),
   tiktok_url: z
     .string()
     .trim()
-    .url("Invalid TikTok URL")
+    .max(160, "TikTok handle or URL is too long")
     .optional()
     .or(z.literal("")),
 });
@@ -148,6 +152,7 @@ export default function Profile() {
     profile,
     isLoading: isProfileLoading,
     updateProfile,
+    updateSocialHandles,
     isSaving,
     uploadAvatar,
     isUploading,
@@ -190,16 +195,19 @@ export default function Profile() {
   // a fresh profile object arrives from the cache/network.
   useEffect(() => {
     if (!profile) return;
+    const handleFor = (platform: SocialPlatform) =>
+      profile.social_handles.find((h) => h.platform === platform)?.handle ??
+      "";
     setForm({
       displayName: profile.display_name || "",
       bio: profile.bio || "",
       gender: profile.gender || "",
       pronouns: profile.pronouns || "",
-      instagramUrl: profile.instagram_url || "",
-      twitterUrl: profile.twitter_url || "",
-      facebookUrl: profile.facebook_url || "",
-      linkedinUrl: profile.linkedin_url || "",
-      tiktokUrl: profile.tiktok_url || "",
+      instagramUrl: handleFor("instagram"),
+      twitterUrl: handleFor("twitter"),
+      facebookUrl: handleFor("facebook"),
+      linkedinUrl: handleFor("linkedin"),
+      tiktokUrl: handleFor("tiktok"),
     });
   }, [profile]);
 
@@ -266,6 +274,20 @@ export default function Profile() {
         tiktok_url: form.tiktokUrl || "",
       });
 
+      const socialInputs: { platform: SocialPlatform; input: string }[] = [
+        { platform: "instagram", input: validatedSocial.instagram_url || "" },
+        { platform: "twitter", input: validatedSocial.twitter_url || "" },
+        { platform: "facebook", input: validatedSocial.facebook_url || "" },
+        { platform: "linkedin", input: validatedSocial.linkedin_url || "" },
+        { platform: "tiktok", input: validatedSocial.tiktok_url || "" },
+      ];
+      const normalizedHandles = socialInputs
+        .map(({ platform, input }) => ({
+          platform,
+          ...parseSocialInput(platform, input),
+        }))
+        .filter((h) => h.handle);
+
       // Check unique display name
       const isUnique = await checkDisplayNameUnique(validatedData.display_name);
       if (!isUnique) {
@@ -283,12 +305,13 @@ export default function Profile() {
           bio: validatedData.bio || null,
           gender: form.gender,
           pronouns: form.pronouns || null,
-          instagram_url: validatedSocial.instagram_url || null,
-          twitter_url: validatedSocial.twitter_url || null,
-          facebook_url: validatedSocial.facebook_url || null,
-          linkedin_url: validatedSocial.linkedin_url || null,
-          tiktok_url: validatedSocial.tiktok_url || null,
+          instagram_url: null,
+          twitter_url: null,
+          facebook_url: null,
+          linkedin_url: null,
+          tiktok_url: null,
         });
+        await updateSocialHandles(normalizedHandles);
       } catch (err: any) {
         if (err?.code === "23505") {
           setFieldErrors({
