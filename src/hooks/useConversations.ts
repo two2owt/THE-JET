@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback , useId } from "react";
+import { useState, useEffect, useCallback, useId, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useProfilePulse } from "@/hooks/useProfilePulse";
 
 export interface Conversation {
   friendId: string;
@@ -123,6 +124,12 @@ export const useConversations = (userId?: string) => {
       setLoading(false);
     }
   }, [userId]);
+
+  // Instant refresh when a friend edits their profile (name/avatar).
+  useProfilePulse(() => fetchConversationsRef.current?.(), !!userId);
+
+  const fetchConversationsRef = useRef(fetchConversations);
+  fetchConversationsRef.current = fetchConversations;
 
   useEffect(() => {
     fetchConversations();

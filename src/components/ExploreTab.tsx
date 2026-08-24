@@ -27,6 +27,7 @@ import {
   formatDistance,
 } from "@/utils/geospatialUtils";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useProfilePulse } from "@/hooks/useProfilePulse";
 import { hasConsent, subscribeConsent } from "@/lib/consent";
 
 import type { User } from "@supabase/supabase-js";
@@ -149,6 +150,11 @@ export const ExploreTab = ({ onVenueSelect }: ExploreTabProps) => {
       console.error("Error loading user preferences:", err);
     }
   }, []);
+
+  // Preference edits propagate instantly to the deals list.
+  useProfilePulse(() => {
+    if (user?.id) void loadUserPreferences(user.id);
+  }, !!user?.id);
 
   useEffect(() => {
     void getUserLocation();

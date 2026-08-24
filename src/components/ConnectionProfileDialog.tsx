@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useProfilePulse } from "@/hooks/useProfilePulse";
 import {
   Dialog,
   DialogContent,
@@ -60,6 +61,11 @@ export function ConnectionProfileDialog({
       fetchProfile();
     }
   }, [connectionId, isOpen]);
+
+  // Live-update the open profile when that user edits it.
+  useProfilePulse((pulse) => {
+    if (pulse.profile_id === connectionId) void fetchProfile();
+  }, isOpen && !!connectionId);
 
   const fetchProfile = async () => {
     if (!connectionId) return;
