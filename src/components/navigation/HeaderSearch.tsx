@@ -20,8 +20,6 @@ export interface HeaderSearchProps {
   mounted: boolean;
   /** True when the viewport is mobile-sized. */
   isMobile: boolean;
-  /** Mobile: whether the input is expanded (full-width) vs. icon-only. */
-  expanded: boolean;
   /** Current query string (controlled by parent). */
   query: string;
   /** Whether the results dropdown is visible. */
@@ -42,8 +40,8 @@ export interface HeaderSearchProps {
   onQueryChange: (next: string) => void;
   onClear: () => void;
   onCloseResults: () => void;
-  onCollapse: () => void;
 }
+
 
 /**
  * Header search pill — pure presentation. All state lives in the parent
@@ -53,7 +51,6 @@ export interface HeaderSearchProps {
 export function HeaderSearch({
   mounted,
   isMobile,
-  expanded,
   query,
   showResults,
   venues,
@@ -66,8 +63,8 @@ export function HeaderSearch({
   onQueryChange,
   onClear,
   onCloseResults,
-  onCollapse,
 }: HeaderSearchProps) {
+
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -105,25 +102,22 @@ export function HeaderSearch({
     e.preventDefault();
     if (query) {
       onClear();
-    } else if (isMobile && expanded) {
-      onCollapse();
     } else {
       e.currentTarget.blur();
     }
   };
 
   const hasQuery = query.length > 0;
-  const canCollapse = isMobile && expanded;
-  // A single trailing dismiss control — it clears the query first, then closes
-  // the expanded search, matching the Escape key behaviour above.
-  const showDismiss = hasQuery || canCollapse;
-  const dismissLabel = hasQuery ? "Clear search" : "Close search";
-  const handleDismiss = hasQuery ? onClear : onCollapse;
+  // Dismiss control only clears the query; the pill never collapses.
+  const showDismiss = hasQuery;
+  const dismissLabel = "Clear search";
+  const handleDismiss = onClear;
 
   // Reserve room for the trailing control so the caret never sits under it.
   const paddingRight = showDismiss
     ? "calc(var(--header-control-height, 36px) + 8px)"
     : "16px";
+
 
   return (
     <div
@@ -135,11 +129,14 @@ export function HeaderSearch({
         // and avatar get squeezed out of the row.
         flex: "1 1 0%",
         minWidth: 0,
-        maxWidth: isMobile ? "100%" : "clamp(200px, 36vw, 460px)",
+        maxWidth: isMobile
+          ? "clamp(120px, 30vw, 200px)"
+          : "clamp(200px, 36vw, 460px)",
         opacity: mounted ? 1 : 0,
         transform: mounted ? "translateY(0)" : "translateY(-6px)",
         transition: "opacity 0.4s ease-out 0.1s, transform 0.4s ease-out 0.1s",
       }}
+
     >
       <div
         style={{
@@ -195,8 +192,8 @@ export function HeaderSearch({
         autoCorrect="off"
         spellCheck={false}
         inputMode="search"
-        autoFocus={isMobile && expanded}
         style={{
+
           width: "100%",
           // One shared control height across the whole nav header.
           height: "var(--header-control-height, 36px)",
