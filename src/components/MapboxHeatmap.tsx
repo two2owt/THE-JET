@@ -6,6 +6,11 @@ import { GEO_GRANTED_EVENT } from "@/lib/geolocationGrantEvent";
 import { subscribeMapInteractionLock } from "@/lib/mapInteractionLock";
 import { subscribeMapFocus } from "@/lib/mapFocusBus";
 import {
+  applyMapHighlightToDom,
+  setMapHighlight,
+  subscribeMapHighlight,
+} from "@/lib/mapHighlightBus";
+import {
   verifyMapboxVersion,
   EXPECTED_MAPBOX_VERSION,
 } from "@/lib/mapbox-version";
@@ -2030,6 +2035,13 @@ export const MapboxHeatmap = ({
       ringTimer = window.setTimeout(clearRing, 2900);
     };
 
+    // List -> map highlight: re-stamp the marker DOM whenever the highlighted
+    // venue changes (the bus applies it directly; this covers late mounts).
+    const unsubscribeHighlight = subscribeMapHighlight(() => {
+      applyMapHighlightToDom();
+    });
+    applyMapHighlightToDom();
+
     const unsubscribe = subscribeMapFocus((request) => {
       const m = map.current;
       if (!m) return;
@@ -2066,6 +2078,7 @@ export const MapboxHeatmap = ({
 
     return () => {
       unsubscribe();
+      unsubscribeHighlight();
       clearRing();
     };
   }, [mapLoaded]);
@@ -3682,6 +3695,8 @@ export const MapboxHeatmap = ({
         // synthetic mouseenter/mouseleave that would compete with touchstart.
         el.addEventListener("pointerenter", (e) => {
           if ((e as PointerEvent).pointerType !== "mouse") return;
+          // Publish so the search results list scrolls this venue into view.
+          setMapHighlight(String(venue.id ?? ""), "map");
           el.style.zIndex = "300";
           pinEl.style.transform = isSelected ? "scale(1.2)" : "scale(1.15)";
           teardropEl.style.boxShadow = `
@@ -3755,6 +3770,7 @@ export const MapboxHeatmap = ({
           // Haptic feedback for venue selection
           triggerHaptic("medium");
 
+          setMapHighlight(String(venue.id ?? ""), "map");
           // Open venue card (use ref to avoid stale closure)
           onVenueSelectRef.current(venue);
         });
@@ -3769,6 +3785,8 @@ export const MapboxHeatmap = ({
       });
       markerIndexRef.current = nextIndex;
       markersRef.current = Array.from(nextIndex.values());
+      // Freshly created marker elements need the current highlight re-stamped.
+      applyMapHighlightToDom();
     }); // Close requestAnimationFrame
   };
 

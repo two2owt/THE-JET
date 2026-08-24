@@ -12,7 +12,14 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { createPortal } from "react-dom";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useNavigate } from "@/lib/router-compat";
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -20,6 +27,11 @@ import type { Venue } from "./MapboxHeatmap";
 import type { Database } from "@/integrations/supabase/types";
 import { useLockMapWhileInteracting } from "@/lib/mapInteractionLock";
 import { requestMapFocus } from "@/lib/mapFocusBus";
+import {
+  setMapHighlight,
+  subscribeMapHighlight,
+  type MapHighlight,
+} from "@/lib/mapHighlightBus";
 import { activityTier } from "@/lib/activity-palette";
 import { categoryIconFor } from "@/lib/category-icon";
 import {
@@ -141,6 +153,70 @@ export const SearchResults = ({
   useEffect(() => {
     if (!shouldShow) setCollapsed(false);
   }, [shouldShow]);
+
+  // ---- Two-way list <-> map highlight sync -------------------------------
+  // Scrolling the list highlights the marker for the row at the top of the
+  // viewport; hovering/selecting a marker scrolls that row into view. A short
+  // suppression window on each side stops the two from ping-ponging.
+  const [highlightId, setHighlightId] = useState<string | null>(null);
+  const scrollTopRef = useRef(0);
+  const suppressListPublishUntil = useRef(0);
+  const suppressAutoScrollUntil = useRef(0);
+
+  const handleListScroll = useCallback(() => {
+    const list = listRef.current;
+    if (!list) return;
+    // Remember where we are so collapsing/expanding never loses the position.
+    scrollTopRef.current = list.scrollTop;
+    if (Date.now() < suppressListPublishUntil.current) return;
+    const listTop = list.getBoundingClientRect().top;
+    const rows = Array.from(
+      list.querySelectorAll<HTMLElement>("[data-result-venue-id]"),
+    );
+    const active =
+      rows.find((row) => row.getBoundingClientRect().bottom > listTop + 12) ??
+      rows[0];
+    const id = active?.dataset.resultVenueId ?? null;
+    if (!id) return;
+    suppressAutoScrollUntil.current = Date.now() + 350;
+    setHighlightId(id);
+    setMapHighlight(id, "list");
+  }, []);
+
+  useEffect(() => {
+    return subscribeMapHighlight(({ venueId, source }: MapHighlight) => {
+      setHighlightId(venueId);
+      if (source !== "map" || !venueId) return;
+      if (Date.now() < suppressAutoScrollUntil.current) return;
+      const list = listRef.current;
+      if (!list || collapsed) return;
+      const row = list.querySelector<HTMLElement>(
+        `[data-result-venue-id="${CSS.escape(venueId)}"]`,
+      );
+      if (!row) return;
+      // "nearest" keeps the current scroll position when the row is already
+      // visible — no jump for rows the user is already looking at.
+      suppressListPublishUntil.current = Date.now() + 400;
+      row.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    });
+  }, [collapsed]);
+
+  // Restore the remembered offset after expanding (the list is `hidden` while
+  // collapsed, which zeroes scrollTop in some browsers).
+  useEffect(() => {
+    if (collapsed) return;
+    const list = listRef.current;
+    if (!list || scrollTopRef.current === 0) return;
+    list.scrollTop = scrollTopRef.current;
+  }, [collapsed]);
+
+  useEffect(() => {
+    scrollTopRef.current = 0;
+    setHighlightId(null);
+    setMapHighlight(null, "list");
+  }, [q]);
+
+
 
 
 
@@ -730,6 +806,7 @@ export const SearchResults = ({
           <CardContent
             ref={listRef}
             id="jet-search-results-list"
+            onScroll={handleListScroll}
             hidden={collapsed}
             className={`p-3 sm:p-4 pb-4 space-y-4 overflow-y-auto overscroll-contain flex-1 min-h-0 ${
               collapsed ? "hidden" : ""
@@ -764,12 +841,20 @@ export const SearchResults = ({
                   {filteredJetcards.map((venue) => (
                     <button
                       data-search-option="true"
+                      data-result-venue-id={String(venue.id)}
                       key={venue.id}
+                      onPointerEnter={() =>
+                        setMapHighlight(String(venue.id), "list")
+                      }
                       onClick={() => {
                         selectVenueWithFocus(venue);
                         onClose();
                       }}
-                      className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-hidden focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"
+                      className={`w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-hidden focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group ${
+                        highlightId === String(venue.id)
+                          ? "bg-primary/10 ring-1 ring-primary/40"
+                          : ""
+                      }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <ResultThumb
@@ -918,12 +1003,20 @@ export const SearchResults = ({
                   {filteredVenues.map((venue) => (
                     <button
                       data-search-option="true"
+                      data-result-venue-id={String(venue.id)}
                       key={venue.id}
+                      onPointerEnter={() =>
+                        setMapHighlight(String(venue.id), "list")
+                      }
                       onClick={() => {
                         selectVenueWithFocus(venue);
                         onClose();
                       }}
-                      className="w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-hidden focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group"
+                      className={`w-full text-left p-2.5 rounded-xl hover:bg-primary/5 focus-visible:outline-hidden focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/40 transition-colors group ${
+                        highlightId === String(venue.id)
+                          ? "bg-primary/10 ring-1 ring-primary/40"
+                          : ""
+                      }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <ResultThumb
