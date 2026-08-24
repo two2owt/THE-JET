@@ -173,16 +173,48 @@ export const SearchResults = ({
         ? Math.max(0, viewportH + vvTop - navRect.top)
         : 0;
 
+      const viewportW = vv?.width ?? window.innerWidth;
+      const isWide = viewportW >= 640;
+
+      // Right-hand map overlays we must not cover: the top-right map control
+      // stack (zoom/compass) sets our ceiling, the bottom-right layers FAB
+      // cluster sets our floor. Both are measured live so the panel adapts to
+      // whatever is actually rendered on this device.
+      const topCtrl = document.querySelector<HTMLElement>(
+        ".mapboxgl-ctrl-top-right .mapboxgl-ctrl",
+      );
+      const topCtrlRect = topCtrl?.getBoundingClientRect();
+      const layersEl = document.querySelector<HTMLElement>(
+        "[data-jet-map-layers]",
+      );
+      const layersRect = layersEl?.getBoundingClientRect();
+
       // Clear the header's hairline divider and any focus ring on the search
       // pill, so the panel never visually touches or covers the header.
       const GAP_TOP = 12;
       const GAP_BOTTOM = 12;
+      const GAP_CTRL = 10;
       // Round to whole pixels: sub-pixel churn from rubber-band scrolling or
       // safe-area settling would otherwise re-render the panel every frame.
       // Hard floor at the measured header bottom: even if a measurement is
       // stale mid-transition, the panel can never render over the header.
-      const top = Math.round(Math.max(headerBottom + GAP_TOP, GAP_TOP));
-      const bottom = Math.round(navHeight + GAP_BOTTOM);
+      const top = Math.round(
+        Math.max(
+          headerBottom + GAP_TOP,
+          GAP_TOP,
+          isWide && topCtrlRect && topCtrlRect.height > 0
+            ? topCtrlRect.bottom + GAP_CTRL
+            : 0,
+        ),
+      );
+      const bottom = Math.round(
+        Math.max(
+          navHeight + GAP_BOTTOM,
+          isWide && layersRect && layersRect.height > 0
+            ? viewportH + vvTop - layersRect.top + GAP_CTRL
+            : 0,
+        ),
+      );
       const available = Math.max(160, viewportH - top - bottom);
       // Keep the map visible around the panel on tall screens, but never
       // exceed the space actually left between header and footer nav.
@@ -190,13 +222,34 @@ export const SearchResults = ({
         Math.min(available, Math.max(240, viewportH * 0.52), 480),
       );
 
+      // Align the panel's right edge with the map control gutter so the
+      // stack (controls -> results -> layers) reads as one column.
+      const gutter =
+        isWide && layersRect
+          ? Math.max(8, Math.round(viewportW - layersRect.right))
+          : 16;
+      const right = isWide ? gutter : 8;
+      // Adaptive width: never eat more than ~38% of a wide viewport so the
+      // map stays readable beside the results.
+      const width = isWide
+        ? Math.round(
+            Math.min(
+              420,
+              Math.max(300, viewportW * 0.38),
+              Math.max(280, viewportW - gutter * 2 - 24),
+            ),
+          )
+        : null;
+
       setBox((prev) =>
         prev &&
         prev.top === top &&
         prev.bottom === bottom &&
-        prev.maxHeight === maxHeight
+        prev.maxHeight === maxHeight &&
+        prev.right === right &&
+        prev.width === width
           ? prev
-          : { top, bottom, maxHeight },
+          : { top, bottom, maxHeight, right, width },
       );
     };
 
