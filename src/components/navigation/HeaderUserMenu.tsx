@@ -110,10 +110,11 @@ export function HeaderUserMenu({
         <PresenceDot
           status={selfStatus}
           userId={userId}
-          size={12}
-          style={{ bottom: -1, right: -1 }}
+          size={11}
+          style={{ bottom: 0, right: 0 }}
         />
       )}
+
     </button>
   );
 }
