@@ -12,7 +12,14 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { createPortal } from "react-dom";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useNavigate } from "@/lib/router-compat";
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -20,6 +27,11 @@ import type { Venue } from "./MapboxHeatmap";
 import type { Database } from "@/integrations/supabase/types";
 import { useLockMapWhileInteracting } from "@/lib/mapInteractionLock";
 import { requestMapFocus } from "@/lib/mapFocusBus";
+import {
+  setMapHighlight,
+  subscribeMapHighlight,
+  type MapHighlight,
+} from "@/lib/mapHighlightBus";
 import { activityTier } from "@/lib/activity-palette";
 import { categoryIconFor } from "@/lib/category-icon";
 import {
