@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { QrCode, RefreshCw, TicketCheck } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { formatDistanceToNow } from "date-fns";
 import {
   getRedemptionAnalytics,
@@ -46,6 +47,13 @@ export function RedemptionsPanel() {
             <TicketCheck className="h-4 w-4 text-primary" />
             Redemptions
           </CardTitle>
+          <div className="flex items-center gap-2">
+          <Button size="sm" variant="secondary" asChild>
+            <Link to="/redeem">
+              <QrCode className="mr-2 h-4 w-4" />
+              Open scanner
+            </Link>
+          </Button>
           <Button
             size="sm"
             variant="outline"
@@ -57,6 +65,7 @@ export function RedemptionsPanel() {
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
+          </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {error && <p className="text-sm text-destructive">{error}</p>}
