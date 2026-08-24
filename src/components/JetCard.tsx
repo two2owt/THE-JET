@@ -41,6 +41,7 @@ import { useVenuePhoto } from "@/hooks/useVenuePhoto";
 import { useLockMapWhileInteracting } from "@/lib/mapInteractionLock";
 import type { Venue as DirectionsVenue } from "@/types/venue";
 import { activityTier, type ActivityTierId } from "@/lib/activity-palette";
+import { resolveVenueCategory } from "@/lib/venue-categories";
 import { JET_MARK_SRC } from "@/lib/jet-mark";
 
 const DirectionsDialog = lazy(() => import("./DirectionsDialog"));
@@ -645,19 +646,28 @@ export const JetCard = memo(
               bottom: "8px",
               left: "8px",
               background: "rgba(0,0,0,0.55)",
-              border: "1px solid hsl(var(--silver) / 0.35)",
-              boxShadow: "0 0 10px hsl(var(--silver) / 0.12)",
+              border: `1px solid ${categoryDef.dark}59`,
+              boxShadow: `0 0 10px ${categoryDef.dark}26`,
               backdropFilter: "blur(12px)",
               WebkitBackdropFilter: "blur(12px)",
               padding: "3px 10px",
               borderRadius: "9999px",
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
             }}
           >
+            {/* Same glyph + accent the venue's map marker and its search chip
+                wear, so the three surfaces read as one thing. */}
+            <CategoryIcon
+              style={{ width: "11px", height: "11px", color: categoryDef.dark }}
+              aria-hidden="true"
+            />
             <span
               style={{
                 fontSize: "10px",
                 fontWeight: 600,
-                color: "hsl(var(--silver))",
+                color: categoryDef.dark,
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
               }}
