@@ -2128,14 +2128,21 @@ All colors MUST be HSL.
     color: hsl(var(--foreground));
   }
   .profile-stat-pill-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
     font-size: 12px;
     font-weight: 500;
     color: hsl(var(--muted-foreground));
     letter-spacing: 0.01em;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
+  .profile-stat-pill-label-short { display: none; }
+  .profile-stat-pill-label-full { display: inline; }
   .profile-stat-pill-text {
     display: inline-flex;
-    align-items: baseline;
+    align-items: center;
     gap: 6px;
     min-width: 0;
   }
@@ -2151,10 +2158,6 @@ All colors MUST be HSL.
     padding-left: 10px;
     padding-right: 12px;
     min-width: 0;
-  }
-  .profile-stat-pill-label {
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
   @media (min-width: 640px) {
     .profile-stat-pill-row { gap: 10px; }
@@ -2188,8 +2191,14 @@ All colors MUST be HSL.
       flex-direction: column;
       align-items: flex-start;
       line-height: 1.15;
+      gap: 2px;
       min-width: 0;
     }
+  }
+  /* Very narrow screens: swap to shorter labels so text never clip */
+  @media (max-width: 359px) {
+    .profile-stat-pill-label-full { display: none; }
+    .profile-stat-pill-label-short { display: inline; }
   }
 
   /* ====================================================================

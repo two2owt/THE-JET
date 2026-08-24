@@ -279,6 +279,23 @@ export const Header = () => {
   const showSearchBar = !hideSearch && (!isMobile || searchExpanded);
   const showSearchIcon = !hideSearch && isMobile && !searchExpanded;
 
+  // When the global search bar is hidden (e.g. /deals, /alerts, /favorites),
+  // show a subtle page identifier in the header so the band doesn't look
+  // empty and users always know which tab they are on.
+  const pageTitle = useMemo(() => {
+    if (!hideSearch) return null;
+    const titles: Record<string, string> = {
+      "/deals": "Deals",
+      "/alerts": "Alerts",
+      "/favorites": "Saved",
+      "/social": "Crew",
+      "/messages": "Messages",
+      "/profile": "Profile",
+      "/admin": "Admin",
+    };
+    return titles[location.pathname] || null;
+  }, [hideSearch, location.pathname]);
+
   return (
     <header
       className="fixed top-0 left-0 right-0 z-[60]"
@@ -373,7 +390,38 @@ export const Header = () => {
                 whiteSpace: "nowrap",
               }}
             >
-              JET
+            JET
+            </span>
+          </div>
+        )}
+
+        {/* Page title — shown only when the global search is hidden so the
+            header band stays informative on /deals, /alerts, /favorites, etc. */}
+        {pageTitle && !(isMobile && searchExpanded) && (
+          <div
+            aria-hidden="true"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              flexShrink: 0,
+              height: "var(--header-control-height, 36px)",
+              padding: "0 2px",
+              opacity: mounted ? 1 : 0,
+              transform: mounted ? "translateX(0)" : "translateX(-6px)",
+              transition: "opacity 0.4s ease-out, transform 0.4s ease-out",
+            }}
+          >
+            <span
+              style={{
+                fontSize: "var(--header-font-size, 13px)",
+                fontWeight: 600,
+                lineHeight: 1,
+                color: "hsl(var(--foreground))",
+                letterSpacing: "-0.01em",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {pageTitle}
             </span>
           </div>
         )}
