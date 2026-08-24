@@ -33,6 +33,12 @@ interface PageShellProps {
   gap?: string;
   className?: string;
   style?: CSSProperties;
+  /**
+   * Fill the parent height and skip bottom-nav clearance for full-bleed tabs
+   * (e.g. chat). Horizontal padding still tracks the global header so the
+   * content edges align with header controls.
+   */
+  fullHeight?: boolean;
 }
 
 export function PageShell({
@@ -42,6 +48,7 @@ export function PageShell({
   gap,
   className,
   style,
+  fullHeight = false,
 }: PageShellProps) {
   const preset = VARIANT_PRESETS[variant];
   const resolvedPadding = padding ?? preset.padding;
@@ -52,7 +59,9 @@ export function PageShell({
   // up cleanly with the header controls after the search bar is removed.
   // Bottom padding also clears the fixed footer nav so trailing content is never
   // hidden behind it on any screen size.
-  const safePadding = `calc(${resolvedPadding} + env(safe-area-inset-top, 0px)) calc(var(--header-pad-x, ${resolvedPadding}) + env(safe-area-inset-right, 0px)) calc(${resolvedPadding} + var(--bottom-nav-total-height, calc(60px + env(safe-area-inset-bottom, 0px))) + 8px) calc(var(--header-pad-x, ${resolvedPadding}) + env(safe-area-inset-left, 0px))`;
+  const safePadding = fullHeight
+    ? `0 calc(var(--header-pad-x, ${resolvedPadding}) + env(safe-area-inset-right, 0px)) 0 calc(var(--header-pad-x, ${resolvedPadding}) + env(safe-area-inset-left, 0px))`
+    : `calc(${resolvedPadding} + env(safe-area-inset-top, 0px)) calc(var(--header-pad-x, ${resolvedPadding}) + env(safe-area-inset-right, 0px)) calc(${resolvedPadding} + var(--bottom-nav-total-height, calc(60px + env(safe-area-inset-bottom, 0px))) + 8px) calc(var(--header-pad-x, ${resolvedPadding}) + env(safe-area-inset-left, 0px))`;
   return (
     <div
       className={`w-full max-w-7xl mx-auto${className ? ` ${className}` : ""}`}
@@ -60,7 +69,9 @@ export function PageShell({
         padding: safePadding,
         display: "flex",
         flexDirection: "column",
-        gap: resolvedGap,
+        gap: fullHeight ? 0 : resolvedGap,
+        boxSizing: "border-box",
+        ...(fullHeight ? { flex: "1 1 0%", minHeight: 0, height: "100%" } : {}),
         ...style,
       }}
     >
