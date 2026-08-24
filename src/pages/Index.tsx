@@ -298,23 +298,30 @@ const Index = () => {
       {/* FULL-SCREEN MAP LAYER - only on map tab */}
 
       {activeTab === "map" && (
-        <MapSurface
-          mapboxToken={mapboxToken}
-          mapboxLoading={mapboxLoading}
-          mapboxError={mapboxError}
-          hydrated={hydrated}
-          venues={venues}
-          venuesLoading={venuesLoading}
-          selectedVenue={selectedVenue}
-          selectedCity={selectedCity}
-          resetUIKey={mapUIResetKey}
-          onVenueSelect={handleVenueSelect}
-          onParkingSelect={handleParkingSelect}
-          onCityChange={handleCityChange}
-          onNearestCityDetected={handleNearestCityDetected}
-          onDetectedLocationNameChange={handleDetectedLocationNameChange}
-        />
+        <>
+          <MapSurface
+            mapboxToken={mapboxToken}
+            mapboxLoading={mapboxLoading}
+            mapboxError={mapboxError}
+            hydrated={hydrated}
+            venues={venues}
+            venuesLoading={venuesLoading}
+            selectedVenue={selectedVenue}
+            selectedCity={selectedCity}
+            resetUIKey={mapUIResetKey}
+            onVenueSelect={handleVenueSelect}
+            onParkingSelect={handleParkingSelect}
+            onCityChange={handleCityChange}
+            onNearestCityDetected={handleNearestCityDetected}
+            onDetectedLocationNameChange={handleDetectedLocationNameChange}
+          />
+          {/* Location permission is asked from the map context only. */}
+          <Suspense fallback={null}>
+            <LocationPermissionPrompt />
+          </Suspense>
+        </>
       )}
+
 
       {/* Plane takeoff/landing animation triggered by city changes */}
       {typeof document !== "undefined" &&
