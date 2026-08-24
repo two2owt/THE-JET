@@ -115,13 +115,17 @@ export const Header = () => {
 
   // Sync debounced query to the URL so results don't churn while typing.
   useEffect(() => {
+    if (!queryRestoredRef.current) return;
     const current = urlSearchParams.get("q") ?? "";
     if (current === debouncedQuery) return;
+    // Deep-linked `?q=` arriving before the debounce settles: adopt it instead
+    // of clearing it.
+    if (!debouncedQuery && current && current !== searchQuery) return;
     const next = new URLSearchParams(urlSearchParams);
     if (debouncedQuery) next.set("q", debouncedQuery);
     else next.delete("q");
     setUrlSearchParams(next, { replace: true });
-  }, [debouncedQuery, urlSearchParams, setUrlSearchParams]);
+  }, [debouncedQuery, urlSearchParams, setUrlSearchParams, searchQuery]);
 
   // React to external URL changes (back/forward, deep links) by syncing the
   // query state in the opposite direction.
