@@ -48,7 +48,10 @@ export default function Alerts() {
         <Suspense fallback={<NotificationsTabSkeleton />}>
           <NotificationsTab
             notifications={notifications}
+            expiredNotifications={expiredNotifications}
+            dealById={dealById}
             deals={deals}
+
             markAsRead={markAsRead}
             markAllAsRead={markAllAsRead}
             onVenueClick={handleVenueClick}
