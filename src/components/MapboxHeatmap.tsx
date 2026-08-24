@@ -2459,6 +2459,9 @@ export const MapboxHeatmap = ({
             setMapInitializing(false);
             setLoadingStage("ready");
           }
+          // Unblocks deferred, non-critical work (permission prompts, idle
+          // prefetch) now that the above-the-fold hero has actually rendered.
+          markMapPainted();
           // Tiles are in: clear any pending backoff state.
           tileRetry.current?.notifySuccess();
         };
