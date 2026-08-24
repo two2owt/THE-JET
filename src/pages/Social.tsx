@@ -150,6 +150,13 @@ export default function Social() {
     };
   }, [user]);
 
+  // Instant: a profile edit or a brand-new sign-up anywhere bumps the
+  // profile heartbeat, so Discover refreshes without waiting for the poll.
+  useProfilePulse(() => {
+    fetchProfilesRef.current?.();
+  }, !!user);
+
+
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
