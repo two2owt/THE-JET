@@ -58,6 +58,11 @@ export default defineConfig({
     define: {
       __APP_BUILD_ID__: JSON.stringify(buildId),
       "import.meta.env.VITE_APP_VERSION": JSON.stringify(releaseVersion),
+      ...(supabaseKey
+        ? {
+            "import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY": JSON.stringify(supabaseKey),
+          }
+        : {}),
     },
     build: {
       // Generate source maps for production so Sentry can symbolicate stacks.
