@@ -331,7 +331,7 @@ export const DealManagement = () => {
             onChange={(e) => updateFilters({ q: e.target.value })}
             placeholder="Search deals by title, venue, description…"
             aria-label="Search deals"
-            style={{ paddingLeft: 36 }}
+            style={{ paddingLeft: 40, textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}
           />
         </div>
         <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
