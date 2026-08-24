@@ -189,7 +189,9 @@ export function HeaderSearch({
           maxHeight: "calc(var(--header-height, 52px) - 12px)",
           minHeight: 0,
           boxSizing: "border-box",
-          paddingLeft: "34px",
+          // Extra left padding keeps the placeholder text clear of the
+          // magnifying-glass icon on narrow mobile viewports.
+          paddingLeft: "40px",
           paddingRight,
           borderRadius: "9999px",
           border: "1.5px solid hsl(var(--border) / 0.5)",
@@ -197,6 +199,10 @@ export function HeaderSearch({
           fontSize: "clamp(13px, 3.4vw, 14px)",
           color: "hsl(var(--foreground))",
           outline: "none",
+          // Prevent long placeholders from visually running under the icon.
+          textOverflow: "ellipsis",
+          overflow: "hidden",
+          whiteSpace: "nowrap",
           transition: "background 0.2s, border-color 0.3s, box-shadow 0.3s",
         }}
       />
