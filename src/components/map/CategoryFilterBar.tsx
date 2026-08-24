@@ -2,9 +2,9 @@ import { CATEGORY_FILTER_IDS, getCategoryById } from "@/lib/venue-categories";
 import { triggerHaptic } from "@/lib/haptics";
 
 interface CategoryFilterBarProps {
-  /** Active category id, or null when every venue is shown. */
-  value: string | null;
-  onChange: (next: string | null) => void;
+  /** Active category ids; an empty array shows every venue. */
+  value: string[];
+  onChange: (next: string[]) => void;
   /** Venue counts per category id, used to hide empty chips and show totals. */
   counts: Record<string, number>;
 }
@@ -23,17 +23,25 @@ export function CategoryFilterBar({
   counts,
 }: CategoryFilterBarProps) {
   const available = CATEGORY_FILTER_IDS.filter(
-    (id) => (counts[id] ?? 0) > 0 || id === value,
+    (id) => (counts[id] ?? 0) > 0 || value.includes(id),
   );
+  const allActive = value.length === 0;
   const total = CATEGORY_FILTER_IDS.reduce(
     (sum, id) => sum + (counts[id] ?? 0),
     0,
   );
   if (available.length === 0) return null;
 
+  /** Toggle one bucket in/out of the multi-select; null clears everything. */
   const select = (id: string | null) => {
     triggerHaptic("light");
-    onChange(id);
+    if (id === null) {
+      onChange([]);
+      return;
+    }
+    onChange(
+      value.includes(id) ? value.filter((v) => v !== id) : [...value, id],
+    );
   };
 
   return (
@@ -53,19 +61,19 @@ export function CategoryFilterBar({
       <button
         type="button"
         onClick={() => select(null)}
-        aria-pressed={value === null}
+        aria-pressed={allActive}
         aria-label={`All categories — ${total} ${total === 1 ? "match" : "matches"}`}
         className="shrink-0 inline-flex items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition-colors active:scale-95 backdrop-blur-xl"
         style={{
           minHeight: "34px",
           borderColor:
-            value === null ? "hsl(var(--primary))" : "hsl(var(--border) / 0.6)",
+            allActive ? "hsl(var(--primary))" : "hsl(var(--border) / 0.6)",
           background:
-            value === null
+            allActive
               ? "hsl(var(--primary) / 0.18)"
               : "hsl(var(--card) / 0.7)",
           color:
-            value === null ? "hsl(var(--primary))" : "hsl(var(--foreground))",
+            allActive ? "hsl(var(--primary))" : "hsl(var(--foreground))",
         }}
       >
         <span>All</span>
@@ -73,11 +81,11 @@ export function CategoryFilterBar({
           className="text-[10px] tabular-nums rounded-full px-1.5 py-0.5"
           style={{
             background:
-              value === null
+              allActive
                 ? "hsl(var(--primary) / 0.18)"
                 : "hsl(var(--muted) / 0.6)",
             color:
-              value === null
+              allActive
                 ? "hsl(var(--primary))"
                 : "hsl(var(--muted-foreground))",
           }}
@@ -91,12 +99,12 @@ export function CategoryFilterBar({
         const def = getCategoryById(id);
         if (!def) return null;
         const Icon = def.Icon;
-        const active = value === id;
+        const active = value.includes(id);
         return (
           <button
             key={id}
             type="button"
-            onClick={() => select(active ? null : id)}
+            onClick={() => select(id)}
             aria-pressed={active}
             aria-label={`${def.label} — ${counts[id] ?? 0} ${(counts[id] ?? 0) === 1 ? "match" : "matches"}`}
             className="shrink-0 inline-flex items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition-colors active:scale-95 backdrop-blur-xl"

@@ -35,8 +35,8 @@ interface MapSurfaceProps {
   onCityChange: (city: City) => void;
   onNearestCityDetected: (city: City) => void;
   onDetectedLocationNameChange: (name: string | null) => void;
-  categoryFilter: string | null;
-  onCategoryFilterChange: (next: string | null) => void;
+  categoryFilter: string[];
+  onCategoryFilterChange: (next: string[]) => void;
 }
 
 /**
