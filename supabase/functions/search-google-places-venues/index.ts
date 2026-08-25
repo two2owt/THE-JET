@@ -5,6 +5,7 @@ import {
 } from "../_shared/cors.ts";
 import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
 import { fallbackVenuesForLocation } from "../_shared/city-fallback-venues.ts";
+import { withGoogleKeyRotation } from "../_shared/places-provider.ts";
 
 const FUNCTION_NAME = "search-google-places-venues";
 logVersion(FUNCTION_NAME);
