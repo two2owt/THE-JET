@@ -5,6 +5,10 @@ import {
 } from "../_shared/cors.ts";
 import { internalError, invalidInput } from "../_shared/http.ts";
 import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
+import {
+  findNearbyParking,
+  googleKeys,
+} from "../_shared/places-provider.ts";
 
 const FUNCTION_NAME = "get-parking-details";
 logVersion(FUNCTION_NAME);
@@ -76,25 +80,34 @@ Deno.serve(async (req) => {
       return invalidInput("lat and lng are required numbers");
     }
 
-    const apiKey = Deno.env.get("GOOGLE_PLACES_API_KEY");
+    const apiKey = googleKeys()[0];
 
     if (!apiKey) {
-      console.warn("GOOGLE_PLACES_API_KEY not set, returning minimal data");
+      // No Google key configured at all — fall back to the alternate
+      // provider chain (Mapbox, then OpenStreetMap) so the card still
+      // resolves a real nearby lot instead of showing "unavailable".
+      const { results, provider } = await findNearbyParking(lat, lng, 300);
+      const best = results[0];
       return new Response(
         JSON.stringify({
-          name: name || "Parking Lot",
-          address: "Address unavailable",
-          lat,
-          lng,
-          rating: null,
+          name: best?.name || name || "Parking Lot",
+          address: best?.address || "Address unavailable",
+          lat: best?.lat ?? lat,
+          lng: best?.lng ?? lng,
+          rating: best?.rating ?? null,
           totalRatings: 0,
-          isOpen: null,
+          isOpen: best?.isOpen ?? null,
           openingHours: [],
           priceLevel: null,
+          priceLabel: best?.priceLabel ?? null,
+          priceDetail: best?.priceDetail ?? null,
+          placeId: best?.placeId ?? null,
+          provider,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
+
 
     // Use Nearby Search to find the parking lot
     const searchQuery = name ? `${name} parking` : "parking";
@@ -124,21 +137,30 @@ Deno.serve(async (req) => {
       const broadData = await broadResponse.json();
 
       if (broadData.status !== "OK" || !broadData.results?.length) {
+        // Google returned nothing usable (no results, suspended key, quota) —
+        // fall through to the alternate provider chain.
+        const { results, provider } = await findNearbyParking(lat, lng, 300);
+        const best = results[0];
         return new Response(
           JSON.stringify({
-            name: name || "Parking",
-            address: "Address unavailable",
-            lat,
-            lng,
-            rating: null,
+            name: best?.name || name || "Parking",
+            address: best?.address || "Address unavailable",
+            lat: best?.lat ?? lat,
+            lng: best?.lng ?? lng,
+            rating: best?.rating ?? null,
             totalRatings: 0,
-            isOpen: null,
+            isOpen: best?.isOpen ?? null,
             openingHours: [],
             priceLevel: null,
+            priceLabel: best?.priceLabel ?? null,
+            priceDetail: best?.priceDetail ?? null,
+            placeId: best?.placeId ?? null,
+            provider,
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
+
 
       searchData.results = broadData.results;
     }
