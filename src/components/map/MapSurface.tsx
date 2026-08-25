@@ -75,14 +75,18 @@ export function MapSurface({
   useEffect(() => {
     if (!hydrated || inView || typeof window === "undefined") return;
     const warm = () => void importMapboxHeatmap().catch(() => {});
+    // Safari has neither API; some environments polyfill only the scheduler
+    // half, so the canceller is checked independently.
     const idle = typeof window.requestIdleCallback === "function";
     const id = idle
       ? window.requestIdleCallback(warm, { timeout: 8000 })
       : window.setTimeout(warm, 6000);
     return () => {
-      if (idle) window.cancelIdleCallback(id);
+      if (idle && typeof window.cancelIdleCallback === "function")
+        window.cancelIdleCallback(id);
       else window.clearTimeout(id);
     };
+
   }, [hydrated, inView]);
 
   return (
