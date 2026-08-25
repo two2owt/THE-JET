@@ -261,6 +261,13 @@ function AppLayout() {
         }, options?.timeout || 1);
       };
     }
+    // Safari ships neither, and callers that feature-detect only
+    // requestIdleCallback would then call an undefined canceller.
+    if (!("cancelIdleCallback" in window)) {
+      (window as any).cancelIdleCallback = (id: number) =>
+        window.clearTimeout(id);
+    }
+
 
     const yieldToMain = (): Promise<void> =>
       new Promise((resolve) => {
