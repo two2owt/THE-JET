@@ -31,7 +31,11 @@ import {
 import { useFavorites } from "@/hooks/useFavorites";
 import { useProfilePulse } from "@/hooks/useProfilePulse";
 import { hasConsent, subscribeConsent } from "@/lib/consent";
-import { dealMatchesPreferences } from "@/lib/dealCategory";
+import {
+  dealMatchesPreferences,
+  resolveDealCategory,
+} from "@/lib/dealCategory";
+import { VENUE_CATEGORIES, getCategoryById } from "@/lib/venue-categories";
 import { getDealPresentation } from "@/lib/dealPresentation";
 import {
   DealCategoryBadge,
@@ -181,6 +185,16 @@ export const ExploreTab = ({
     string[]
   >("deals:categories", []);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  // Drop any legacy deal_type selections ("offer"/"special") left in storage,
+  // otherwise the list filters down to nothing after this taxonomy change.
+  useEffect(() => {
+    setSelectedCategories((prev) =>
+      prev.every((id) => getCategoryById(id))
+        ? prev
+        : prev.filter((id) => getCategoryById(id)),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // Seed from the persisted fix so a cold load / deep-link entry can render
   // distances immediately instead of blocking on a GPS round-trip.
   const [userLocation, setUserLocation] = useState<{
@@ -243,10 +257,15 @@ export const ExploreTab = ({
   }, [dealsProp, dealsLoadingProp, dealsErrorProp]);
 
 
-  // Update available categories whenever the deal list changes.
+  // Available category chips. Merchants only send a coarse deal_type
+  // ("offer" / "event" / "special"), which is meaningless as a filter, so the
+  // chips are the resolved venue taxonomy (Food, Bars, Nightlife, …) derived
+  // from every merchant deal currently in the list.
   useEffect(() => {
-    const categories = [...new Set(deals.map((d) => d.deal_type))].sort();
-    setAvailableCategories(categories);
+    const ids = new Set(deals.map((d) => resolveDealCategory(d).id));
+    setAvailableCategories(
+      VENUE_CATEGORIES.filter((def) => ids.has(def.id)).map((def) => def.id),
+    );
   }, [deals]);
 
   const loadUserPreferences = useCallback(async (userId: string) => {
@@ -507,23 +526,27 @@ export const ExploreTab = ({
       });
     }
 
-    // Apply category filter (manual override)
+    // Apply category filter (manual override) against the resolved taxonomy.
     if (selectedCategories.length > 0) {
       filtered = filtered.filter((deal) =>
-        selectedCategories.includes(deal.deal_type),
+        selectedCategories.includes(resolveDealCategory(deal).id),
       );
     }
 
     // Apply search filter
     if (debouncedSearchQuery.trim()) {
       const query = debouncedSearchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (deal) =>
+      filtered = filtered.filter((deal) => {
+        const category = resolveDealCategory(deal);
+        return (
           deal.title.toLowerCase().includes(query) ||
           deal.description.toLowerCase().includes(query) ||
           deal.venue_name.toLowerCase().includes(query) ||
-          deal.deal_type.toLowerCase().includes(query),
-      );
+          deal.deal_type.toLowerCase().includes(query) ||
+          category.label.toLowerCase().includes(query) ||
+          category.synonyms.some((s) => s.includes(query))
+        );
+      });
     }
 
     setFilteredDeals(filtered);
@@ -746,21 +769,30 @@ export const ExploreTab = ({
               )}
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {availableCategories.map((category) => (
-                <Badge
-                  key={category}
-                  variant={
-                    selectedCategories.includes(category)
-                      ? "default"
-                      : "outline"
-                  }
-                  className="cursor-pointer hover-scale"
-                  onClick={() => toggleCategory(category)}
-                >
-                  {category}
-                </Badge>
-              ))}
+              {availableCategories.map((categoryId) => {
+                const def = getCategoryById(categoryId);
+                if (!def) return null;
+                const Icon = def.Icon;
+                const selected = selectedCategories.includes(categoryId);
+                const count = deals.filter(
+                  (d) => resolveDealCategory(d).id === categoryId,
+                ).length;
+                return (
+                  <Badge
+                    key={categoryId}
+                    variant={selected ? "default" : "outline"}
+                    className="cursor-pointer hover-scale gap-1.5 py-1.5 px-3"
+                    aria-pressed={selected}
+                    onClick={() => toggleCategory(categoryId)}
+                  >
+                    <Icon className="w-3.5 h-3.5" aria-hidden="true" />
+                    {def.label}
+                    <span className="opacity-70">{count}</span>
+                  </Badge>
+                );
+              })}
             </div>
+
           </div>
         )}
 
