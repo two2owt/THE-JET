@@ -185,6 +185,16 @@ export const ExploreTab = ({
     string[]
   >("deals:categories", []);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  // Drop any legacy deal_type selections ("offer"/"special") left in storage,
+  // otherwise the list filters down to nothing after this taxonomy change.
+  useEffect(() => {
+    setSelectedCategories((prev) =>
+      prev.every((id) => getCategoryById(id))
+        ? prev
+        : prev.filter((id) => getCategoryById(id)),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // Seed from the persisted fix so a cold load / deep-link entry can render
   // distances immediately instead of blocking on a GPS round-trip.
   const [userLocation, setUserLocation] = useState<{
