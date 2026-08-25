@@ -31,7 +31,11 @@ import {
 import { useFavorites } from "@/hooks/useFavorites";
 import { useProfilePulse } from "@/hooks/useProfilePulse";
 import { hasConsent, subscribeConsent } from "@/lib/consent";
-import { dealMatchesPreferences } from "@/lib/dealCategory";
+import {
+  dealMatchesPreferences,
+  resolveDealCategory,
+} from "@/lib/dealCategory";
+import { VENUE_CATEGORIES, getCategoryById } from "@/lib/venue-categories";
 import { getDealPresentation } from "@/lib/dealPresentation";
 import {
   DealCategoryBadge,
