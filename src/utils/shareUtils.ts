@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { getAppUrl } from "@/lib/utils";
 import type { Venue } from "@/types/venue";
 
 interface Deal {
@@ -12,6 +13,18 @@ interface Deal {
  * Build a share URL with an optional referral attribution param so growth
  * analytics can credit the sharer for downstream sign-ups / opens.
  */
+/**
+ * Shared links must always point at the public site, never at whatever
+ * preview / localhost / lovable.app origin the sharer happens to be on —
+ * otherwise recipients hit a login wall or an ephemeral URL that expires.
+ */
+const shareOrigin = () => {
+  const base = getAppUrl();
+  // getAppUrl() keeps you on an allowed lovable.app/preview host when that's
+  // where you are; for shares we force the public custom domain.
+  return base.includes("jet-around.com") ? base : "https://jet-around.com";
+};
+
 const withRef = (url: string, referrerId?: string | null) => {
   if (!referrerId) return url;
   const sep = url.includes("?") ? "&" : "?";
@@ -55,7 +68,7 @@ export const copyTextToClipboard = async (text: string): Promise<boolean> => {
 
 export const shareDeal = async (deal: Deal, userId: string | undefined) => {
   const shareUrl = withRef(
-    `${window.location.origin}/?deal=${deal.id}`,
+    `${shareOrigin()}/?deal=${deal.id}`,
     userId,
   );
   const shareText = `Check out this deal: ${deal.title} at ${deal.venue_name}`;
@@ -100,7 +113,7 @@ export const shareVenue = async (
   referrerId?: string | null,
 ) => {
   const shareUrl = withRef(
-    `${window.location.origin}/?venue=${encodeURIComponent(venue.id)}`,
+    `${shareOrigin()}/?venue=${encodeURIComponent(venue.id)}`,
     referrerId,
   );
   const shareText = `Check out ${venue.name} on JET!`;
@@ -129,7 +142,7 @@ export const shareVenue = async (
 // Generate a deep link URL for a deal. Optional referrerId attributes the
 // share to a specific user so ?ref= can be tracked in analytics.
 export const getDealDeepLink = (dealId: string, referrerId?: string | null) => {
-  return withRef(`${window.location.origin}/?deal=${dealId}`, referrerId);
+  return withRef(`${shareOrigin()}/?deal=${dealId}`, referrerId);
 };
 
 // Generate a deep link URL for a venue. Uses the stable venue id so links
@@ -139,7 +152,7 @@ export const getVenueDeepLink = (
   referrerId?: string | null,
 ) => {
   return withRef(
-    `${window.location.origin}/?venue=${encodeURIComponent(venueId)}`,
+    `${shareOrigin()}/?venue=${encodeURIComponent(venueId)}`,
     referrerId,
   );
 };
