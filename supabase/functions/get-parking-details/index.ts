@@ -133,21 +133,30 @@ Deno.serve(async (req) => {
       const broadData = await broadResponse.json();
 
       if (broadData.status !== "OK" || !broadData.results?.length) {
+        // Google returned nothing usable (no results, suspended key, quota) —
+        // fall through to the alternate provider chain.
+        const { results, provider } = await findNearbyParking(lat, lng, 300);
+        const best = results[0];
         return new Response(
           JSON.stringify({
-            name: name || "Parking",
-            address: "Address unavailable",
-            lat,
-            lng,
-            rating: null,
+            name: best?.name || name || "Parking",
+            address: best?.address || "Address unavailable",
+            lat: best?.lat ?? lat,
+            lng: best?.lng ?? lng,
+            rating: best?.rating ?? null,
             totalRatings: 0,
-            isOpen: null,
+            isOpen: best?.isOpen ?? null,
             openingHours: [],
             priceLevel: null,
+            priceLabel: best?.priceLabel ?? null,
+            priceDetail: best?.priceDetail ?? null,
+            placeId: best?.placeId ?? null,
+            provider,
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
+
 
       searchData.results = broadData.results;
     }
