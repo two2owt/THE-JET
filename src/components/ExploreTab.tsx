@@ -759,21 +759,30 @@ export const ExploreTab = ({
               )}
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {availableCategories.map((category) => (
-                <Badge
-                  key={category}
-                  variant={
-                    selectedCategories.includes(category)
-                      ? "default"
-                      : "outline"
-                  }
-                  className="cursor-pointer hover-scale"
-                  onClick={() => toggleCategory(category)}
-                >
-                  {category}
-                </Badge>
-              ))}
+              {availableCategories.map((categoryId) => {
+                const def = getCategoryById(categoryId);
+                if (!def) return null;
+                const Icon = def.Icon;
+                const selected = selectedCategories.includes(categoryId);
+                const count = deals.filter(
+                  (d) => resolveDealCategory(d).id === categoryId,
+                ).length;
+                return (
+                  <Badge
+                    key={categoryId}
+                    variant={selected ? "default" : "outline"}
+                    className="cursor-pointer hover-scale gap-1.5 py-1.5 px-3"
+                    aria-pressed={selected}
+                    onClick={() => toggleCategory(categoryId)}
+                  >
+                    <Icon className="w-3.5 h-3.5" aria-hidden="true" />
+                    {def.label}
+                    <span className="opacity-70">{count}</span>
+                  </Badge>
+                );
+              })}
             </div>
+
           </div>
         )}
 
