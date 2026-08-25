@@ -84,9 +84,24 @@ export const NeighborhoodForm = ({
       onSuccess();
     },
     onError: (error) => {
-      toast.error("Failed to save neighborhood");
+      // A generic toast hid the real cause (RLS rejects non-admin sessions),
+      // so surface the underlying reason instead.
+      const err = error as { code?: string; message?: string };
+      if (
+        err?.code === "42501" ||
+        /row-level security/i.test(err?.message ?? "")
+      ) {
+        toast.error(
+          "Your account doesn't have admin permission to save neighborhoods.",
+        );
+      } else if (error instanceof z.ZodError) {
+        toast.error(error.issues[0]?.message ?? "Invalid neighborhood details");
+      } else {
+        toast.error(err?.message || "Failed to save neighborhood");
+      }
       console.error("Save error:", error);
     },
+
   });
 
   const handleSubmit = (e: React.FormEvent) => {

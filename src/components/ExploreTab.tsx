@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
 import { usePersistentViewState } from "@/hooks/usePersistentViewState";
 import { supabase } from "@/integrations/supabase/client";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -206,14 +206,42 @@ export const ExploreTab = ({
 
   const { isFavorite, toggleFavorite } = useFavorites(user?.id);
 
+  // Keeps the latest fix available to the sync effect without making it
+  // re-run (and re-stamp) on every location update.
+  const userLocationRef = useRef(userLocation);
+  userLocationRef.current = userLocation;
+
   // Sync local deal state with the prop when provided (realtime hook).
+  // Distances are stamped here too: the list can arrive/revalidate long after
+  // userLocation is already set, and the recalculate effect only fires on
+  // location changes — without this the rows keep `distance === undefined`,
+  // which kills the nearest-first sort, hides the distance chip and empties
+  // the "Nearby Only" filter.
   useEffect(() => {
     if (dealsProp !== undefined) {
-      setDeals(dealsProp);
+      const loc = userLocationRef.current;
+      setDeals(
+        loc
+          ? dealsProp.map((deal) =>
+              deal.neighborhoods
+                ? {
+                    ...deal,
+                    distance: calculateDistance(
+                      loc.lat,
+                      loc.lng,
+                      deal.neighborhoods.center_lat,
+                      deal.neighborhoods.center_lng,
+                    ),
+                  }
+                : deal,
+            )
+          : dealsProp,
+      );
       setIsLoading(dealsLoadingProp ?? false);
       setDealsError(dealsErrorProp || null);
     }
   }, [dealsProp, dealsLoadingProp, dealsErrorProp]);
+
 
   // Update available categories whenever the deal list changes.
   useEffect(() => {
