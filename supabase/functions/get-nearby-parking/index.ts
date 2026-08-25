@@ -1,5 +1,5 @@
 import { corsHeaders, logVersion } from "../_shared/cors.ts";
-import { internalError, invalidInput, unauthorized } from "../_shared/http.ts";
+import { internalError, invalidInput } from "../_shared/http.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const FUNCTION_NAME = "get-nearby-parking";
