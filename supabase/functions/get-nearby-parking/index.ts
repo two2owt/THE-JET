@@ -1,5 +1,5 @@
 import { corsHeaders, logVersion } from "../_shared/cors.ts";
-import { internalError, invalidInput, unauthorized } from "../_shared/http.ts";
+import { internalError, invalidInput } from "../_shared/http.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const FUNCTION_NAME = "get-nearby-parking";
@@ -11,19 +11,19 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Public POI lookup: an auth token is optional. Signed-out users still
+    // get parking results (same policy as the venue search function).
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return unauthorized();
+    if (authHeader?.startsWith("Bearer ")) {
+      const authClient = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      );
+      await authClient.auth
+        .getClaims(authHeader.replace("Bearer ", ""))
+        .catch(() => null);
     }
-    const authClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-    );
-    const { data: claimsData, error: claimsError } =
-      await authClient.auth.getClaims(authHeader.replace("Bearer ", ""));
-    if (claimsError || !claimsData?.claims) {
-      return unauthorized();
-    }
+
 
     const { lat, lng, radius = 500 } = await req.json().catch(() => ({}) as any);
 
