@@ -5,6 +5,10 @@ import {
 } from "../_shared/cors.ts";
 import { internalError, invalidInput } from "../_shared/http.ts";
 import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
+import {
+  findNearbyParking,
+  googleKeys,
+} from "../_shared/places-provider.ts";
 
 const FUNCTION_NAME = "get-parking-details";
 logVersion(FUNCTION_NAME);
