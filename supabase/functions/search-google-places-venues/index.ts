@@ -1165,10 +1165,31 @@ Deno.serve(async (req) => {
       return curatedFor("fallback_anonymous");
     }
 
-    const apiKey = Deno.env.get("GOOGLE_PLACES_API_KEY");
-
     // Requested city center; Charlotte only when the caller sent nothing.
     const searchCenter = location || { lat: 35.2271, lng: -80.8431 };
+
+    // Pick the first configured Google key that actually answers. Suspended /
+    // quota-exhausted keys are skipped so a single bad key doesn't drop the
+    // whole city to the curated fallback list.
+    const apiKey = await withGoogleKeyRotation<string>(
+      "venue-search",
+      async (key) => {
+        const probe = new URL(
+          "https://maps.googleapis.com/maps/api/place/nearbysearch/json",
+        );
+        probe.searchParams.set(
+          "location",
+          `${searchCenter.lat},${searchCenter.lng}`,
+        );
+        probe.searchParams.set("radius", "8000");
+        probe.searchParams.set("type", "bar");
+        probe.searchParams.set("key", key);
+        const r = await fetch(probe.toString());
+        const j = await r.json().catch(() => null);
+        if (j?.status === "OK" || j?.status === "ZERO_RESULTS") return key;
+        throw new Error(j?.status ?? `http_${r.status}`);
+      },
+    );
 
     // === Primary path: live Google Places Nearby Search ===
     if (apiKey) {
