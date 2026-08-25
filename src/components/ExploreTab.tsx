@@ -516,23 +516,27 @@ export const ExploreTab = ({
       });
     }
 
-    // Apply category filter (manual override)
+    // Apply category filter (manual override) against the resolved taxonomy.
     if (selectedCategories.length > 0) {
       filtered = filtered.filter((deal) =>
-        selectedCategories.includes(deal.deal_type),
+        selectedCategories.includes(resolveDealCategory(deal).id),
       );
     }
 
     // Apply search filter
     if (debouncedSearchQuery.trim()) {
       const query = debouncedSearchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (deal) =>
+      filtered = filtered.filter((deal) => {
+        const category = resolveDealCategory(deal);
+        return (
           deal.title.toLowerCase().includes(query) ||
           deal.description.toLowerCase().includes(query) ||
           deal.venue_name.toLowerCase().includes(query) ||
-          deal.deal_type.toLowerCase().includes(query),
-      );
+          deal.deal_type.toLowerCase().includes(query) ||
+          category.label.toLowerCase().includes(query) ||
+          category.synonyms.some((s) => s.includes(query))
+        );
+      });
     }
 
     setFilteredDeals(filtered);
