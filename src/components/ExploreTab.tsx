@@ -243,10 +243,15 @@ export const ExploreTab = ({
   }, [dealsProp, dealsLoadingProp, dealsErrorProp]);
 
 
-  // Update available categories whenever the deal list changes.
+  // Available category chips. Merchants only send a coarse deal_type
+  // ("offer" / "event" / "special"), which is meaningless as a filter, so the
+  // chips are the resolved venue taxonomy (Food, Bars, Nightlife, …) derived
+  // from every merchant deal currently in the list.
   useEffect(() => {
-    const categories = [...new Set(deals.map((d) => d.deal_type))].sort();
-    setAvailableCategories(categories);
+    const ids = new Set(deals.map((d) => resolveDealCategory(d).id));
+    setAvailableCategories(
+      VENUE_CATEGORIES.filter((def) => ids.has(def.id)).map((def) => def.id),
+    );
   }, [deals]);
 
   const loadUserPreferences = useCallback(async (userId: string) => {
