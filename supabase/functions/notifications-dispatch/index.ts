@@ -35,6 +35,64 @@ const json = jsonResponse;
 const tokenTail = (token: string) =>
   token ? `…${token.replace(/^fcm:/, "").slice(-8)}` : null;
 
+const b64urlToBytes = (s: string): Uint8Array => {
+  const norm = s.replace(/-/g, "+").replace(/_/g, "/");
+  const bin = atob(norm + "=".repeat((4 - (norm.length % 4)) % 4));
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+};
+
+const bytesToB64url = (b: Uint8Array): string =>
+  btoa(String.fromCharCode(...b))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+
+/**
+ * True when `priv` is the mathematical pair of `pub`. Push providers reject
+ * a mismatched VAPID JWT with 403 ("invalid JWT provided" / "BadJwtToken"),
+ * so we detect the mismatch locally instead of burning a delivery attempt.
+ */
+async function vapidPairs(pub: string, priv: string): Promise<boolean> {
+  try {
+    const p = b64urlToBytes(pub);
+    if (p.length !== 65 || p[0] !== 4) return false;
+    const x = bytesToB64url(p.slice(1, 33));
+    const y = bytesToB64url(p.slice(33, 65));
+    const d = priv.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    const alg = { name: "ECDSA", namedCurve: "P-256" } as const;
+    const privKey = await crypto.subtle.importKey(
+      "jwk",
+      { kty: "EC", crv: "P-256", x, y, d, ext: true },
+      alg,
+      false,
+      ["sign"],
+    );
+    const pubKey = await crypto.subtle.importKey(
+      "jwk",
+      { kty: "EC", crv: "P-256", x, y, ext: true },
+      alg,
+      false,
+      ["verify"],
+    );
+    const msg = new TextEncoder().encode("vapid-pair-check");
+    const sig = await crypto.subtle.sign(
+      { name: "ECDSA", hash: "SHA-256" },
+      privKey,
+      msg,
+    );
+    return await crypto.subtle.verify(
+      { name: "ECDSA", hash: "SHA-256" },
+      pubKey,
+      sig,
+      msg,
+    );
+  } catch {
+    return false;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS")
     return new Response(null, { headers: corsHeaders });
