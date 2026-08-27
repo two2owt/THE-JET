@@ -7,6 +7,7 @@ import {
   writeCachedOnboardingStatus,
   isOnboardingSnoozed,
 } from "@/lib/onboardingStatus";
+import { rememberPostAuthRedirect } from "@/lib/postAuthRedirect";
 
 
 /**
@@ -36,6 +37,9 @@ export function useOnboardingGate() {
     const cached = readCachedOnboardingStatus(uid);
     if (cached === true) return;
     if (cached === false) {
+      // Preserve the deep link (e.g. /?venue=abc) so finishing onboarding
+      // returns the user to where they were headed instead of bare "/".
+      rememberPostAuthRedirect();
       navigate("/onboarding", { replace: true });
       return;
     }
@@ -50,6 +54,7 @@ export function useOnboardingGate() {
       if (cancelled || !profile) return;
       writeCachedOnboardingStatus(uid, !!profile.onboarding_completed);
       if (!profile.onboarding_completed && !isOnboardingSnoozed(uid)) {
+        rememberPostAuthRedirect();
         navigate("/onboarding", { replace: true });
       }
     })();
