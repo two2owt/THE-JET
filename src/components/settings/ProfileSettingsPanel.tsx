@@ -36,6 +36,7 @@ import { ReportIssueDialog } from "@/components/ReportIssueDialog";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useWebPushNotifications } from "@/hooks/useWebPushNotifications";
 import { NotificationCategorySettings } from "@/components/notifications/NotificationCategorySettings";
+import { PushEnablementGuide } from "@/components/settings/PushEnablementGuide";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useMonetization } from "@/hooks/useMonetization";
 import { isNativeApp } from "@/lib/platform";
@@ -527,6 +528,13 @@ export function ProfileSettingsPanel({
                   className="flex-shrink-0"
                 />
               </div>
+              <PushEnablementGuide
+                isSupported={isWebPushSupported}
+                isSubscribed={isWebPushSubscribed}
+                permission={webPushPermission}
+                isLoading={isWebPushLoading}
+                onEnable={() => void handleWebPushToggle(true)}
+              />
             </>
           )}
           <Separator className="my-2" />
