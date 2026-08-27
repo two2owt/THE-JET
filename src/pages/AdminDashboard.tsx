@@ -483,7 +483,8 @@ export default function AdminDashboard() {
                     <UserAnalytics />
                     <PermissionPromptPanel />
                     <UnverifiedNudgePanel />
-                    <DisplayNameBackfillPanel />
+                    <InactiveNudgePanel />
+
                   </div>
                 </Suspense>
               )}
