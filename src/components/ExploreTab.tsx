@@ -266,7 +266,16 @@ export const ExploreTab = ({
     setAvailableCategories(
       VENUE_CATEGORIES.filter((def) => ids.has(def.id)).map((def) => def.id),
     );
-  }, [deals]);
+    // Selections are persisted across sessions, so a category that disappears
+    // after a merchant sync (or a Places refresh) would otherwise stay active
+    // and silently empty the list with no chip left to un-toggle.
+    if (deals.length > 0) {
+      setSelectedCategories((prev) =>
+        prev.every((id) => ids.has(id)) ? prev : prev.filter((id) => ids.has(id)),
+      );
+    }
+  }, [deals, setSelectedCategories]);
+
 
   const loadUserPreferences = useCallback(async (userId: string) => {
     try {
