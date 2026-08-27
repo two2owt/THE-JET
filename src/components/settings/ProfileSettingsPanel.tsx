@@ -527,6 +527,13 @@ export function ProfileSettingsPanel({
                   className="flex-shrink-0"
                 />
               </div>
+              <PushEnablementGuide
+                isSupported={isWebPushSupported}
+                isSubscribed={isWebPushSubscribed}
+                permission={webPushPermission}
+                isLoading={isWebPushLoading}
+                onEnable={() => void handleWebPushToggle(true)}
+              />
             </>
           )}
           <Separator className="my-2" />
