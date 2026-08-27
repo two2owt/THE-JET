@@ -109,6 +109,11 @@ const UnverifiedNudgePanel = lazy(() =>
     default: m.UnverifiedNudgePanel,
   })),
 );
+const SyncStatusPanel = lazy(() =>
+  import("@/components/admin/SyncStatusPanel").then((m) => ({
+    default: m.SyncStatusPanel,
+  })),
+);
 const InactiveNudgePanel = lazy(() =>
   import("@/components/admin/InactiveNudgePanel").then((m) => ({
     default: m.InactiveNudgePanel,
@@ -480,6 +485,7 @@ export default function AdminDashboard() {
                     className="flex flex-col"
                     style={{ gap: "var(--space-md)" }}
                   >
+                    <SyncStatusPanel />
                     <UserAnalytics />
                     <PermissionPromptPanel />
                     <UnverifiedNudgePanel />

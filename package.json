@@ -20,6 +20,8 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "test:e2e:preview": "PLAYWRIGHT_BASE_URL=https://id-preview--dafac772-7908-4bdb-873c-58a805d7581e.lovable.app playwright test e2e/critical-flows.spec.ts",
+    "test:e2e:live": "PLAYWRIGHT_BASE_URL=https://jet-around.com playwright test e2e/critical-flows.spec.ts",
     "test:smoke:density": "deno test --allow-env --allow-net --allow-read supabase/functions/get-location-density/index.test.ts",
     "format": "prettier --write .",
     "test:integration": "vitest run --config vitest.integration.config.ts",
