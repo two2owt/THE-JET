@@ -92,9 +92,38 @@ export const useWebPushNotifications = () => {
     try {
       const registration = await getPushRegistrationIfExists();
       if (registration && currentPermission === "granted") {
-        const existingSubscription = await (
+        let existingSubscription = await (
           registration as any
         ).pushManager.getSubscription();
+
+        // Key rotation: a subscription created with a retired VAPID key is
+        // rejected by every push service (403 / VapidPkHashMismatch). Rebuild
+        // it against the key the backend actually signs with.
+        if (existingSubscription) {
+          const serverKey = await getVapidPublicKey();
+          const boundKey = subscriptionServerKey(existingSubscription);
+          if (serverKey && boundKey && boundKey !== serverKey) {
+            const staleEndpoint = existingSubscription.endpoint;
+            try {
+              await existingSubscription.unsubscribe();
+              await supabase
+                .from("push_notifications")
+                .update({ active: false })
+                .eq("endpoint", staleEndpoint);
+              existingSubscription = await (
+                registration as any
+              ).pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(
+                  serverKey,
+                ) as BufferSource,
+              });
+            } catch (rotateError) {
+              console.error("Push key rotation failed:", rotateError);
+            }
+          }
+        }
+
         setSubscription(existingSubscription);
         setIsSubscribed(!!existingSubscription);
 
