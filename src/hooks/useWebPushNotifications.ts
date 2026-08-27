@@ -5,11 +5,12 @@ import { requireConsent } from "@/lib/consent";
 
 // VAPID public key for web push authentication.
 // The key lives as a backend secret, so Vite cannot inline it at build time.
-// Fall back to the edge function that serves the public half of the key pair.
+// The backend is authoritative: it serves the public half that actually pairs
+// with the signing key, so a half-finished key rotation can't strand devices.
 const BUILD_TIME_VAPID_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || "";
 /** Last web push endpoint stored for this browser — detects rotation. */
 const WEB_ENDPOINT_KEY = "jet:web-push-endpoint";
-let cachedVapidKey: string | null = BUILD_TIME_VAPID_KEY || null;
+let cachedVapidKey: string | null = null;
 
 async function getVapidPublicKey(): Promise<string> {
   if (cachedVapidKey) return cachedVapidKey;
@@ -24,7 +25,7 @@ async function getVapidPublicKey(): Promise<string> {
   } catch (err) {
     console.error("Failed to fetch VAPID public key:", err);
   }
-  return "";
+  return BUILD_TIME_VAPID_KEY;
 }
 
 // Keep web-push SW isolated from the app SW to avoid scope conflicts.
@@ -43,6 +44,22 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   }
   return outputArray;
 }
+
+/** base64url of the key this subscription was created with, or null. */
+function subscriptionServerKey(sub: PushSubscription): string | null {
+  const raw = (sub.options as PushSubscriptionOptions | undefined)
+    ?.applicationServerKey;
+  if (!raw) return null;
+  const bytes = new Uint8Array(raw as ArrayBuffer);
+  let bin = "";
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return window
+    .btoa(bin)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
 
 const getPushRegistrationIfExists =
   async (): Promise<ServiceWorkerRegistration | null> => {
