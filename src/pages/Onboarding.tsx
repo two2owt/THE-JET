@@ -24,6 +24,7 @@ import {
 import PreferencesStep, {
   PreferencesData,
 } from "@/components/onboarding/PreferencesStep";
+import PushPermissionStep from "@/components/onboarding/PushPermissionStep";
 import { Json } from "@/integrations/supabase/types";
 import jetLogo from "@/assets/jet-auth-logo-48.webp";
 import { consumePostAuthRedirect } from "@/lib/postAuthRedirect";
