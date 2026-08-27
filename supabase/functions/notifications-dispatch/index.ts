@@ -318,7 +318,7 @@ Deno.serve(async (req) => {
                 nativeAudit.push({
                   ...auditBase(sub),
                   status: "failed",
-                  error: String(err?.message ?? err).slice(0, 500),
+                  error: detail.slice(0, 500),
                 });
               }
               deliveries.push({
@@ -327,7 +327,7 @@ Deno.serve(async (req) => {
                 subscription_id: sub.id,
                 channel: isNative ? "native" : "web",
                 status: "failed",
-                error: String(err?.message ?? err).slice(0, 400),
+                error: detail.slice(0, 400),
               });
             }
           }),
