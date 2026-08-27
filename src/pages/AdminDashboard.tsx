@@ -109,6 +109,12 @@ const UnverifiedNudgePanel = lazy(() =>
     default: m.UnverifiedNudgePanel,
   })),
 );
+const InactiveNudgePanel = lazy(() =>
+  import("@/components/admin/InactiveNudgePanel").then((m) => ({
+    default: m.InactiveNudgePanel,
+  })),
+);
+
 const SecurityFindingsPanel = lazy(() =>
   import("@/components/admin/SecurityFindingsPanel").then((m) => ({
     default: m.SecurityFindingsPanel,
@@ -477,7 +483,10 @@ export default function AdminDashboard() {
                     <UserAnalytics />
                     <PermissionPromptPanel />
                     <UnverifiedNudgePanel />
+                    <InactiveNudgePanel />
                     <DisplayNameBackfillPanel />
+
+
                   </div>
                 </Suspense>
               )}
