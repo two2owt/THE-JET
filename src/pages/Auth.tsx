@@ -723,6 +723,9 @@ const Auth = () => {
         toast.error("Invalid credentials", {
           description: "The email or password you entered is incorrect.",
         });
+        // Toasts auto-dismiss; keep a persistent inline message so the user
+        // is never left staring at a form that looks like nothing happened.
+        setFormError("The email or password you entered is incorrect.");
         return;
       }
       if (msg.includes("Email not confirmed")) {
@@ -730,6 +733,9 @@ const Auth = () => {
           description:
             'Your verification link may have expired. Tap "Resend Verification Email" below to get a fresh one.',
         });
+        setFormError(
+          'Your email isn\'t verified yet. Tap "Resend Verification Email" below to get a fresh link.',
+        );
         localStorage.setItem(
           "jet_verification_email",
           email.trim().toLowerCase(),
