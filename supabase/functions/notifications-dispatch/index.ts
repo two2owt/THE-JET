@@ -300,6 +300,16 @@ Deno.serve(async (req) => {
                 status: "sent",
               });
             } catch (err: any) {
+              // web-push throws WebPushError with statusCode/body; the bare
+              // message ("Received unexpected response code") is undiagnosable
+              // on its own, so fold the transport detail into the audit row.
+              const detail = [
+                String(err?.message ?? err),
+                err?.statusCode ? `status=${err.statusCode}` : "",
+                err?.body ? `body=${String(err.body).slice(0, 200)}` : "",
+              ]
+                .filter(Boolean)
+                .join(" | ");
               if (err?.statusCode === 404 || err?.statusCode === 410)
                 invalid.push(sub.id);
               // Native failures thrown before sendFcmV1 returned (e.g. OAuth
