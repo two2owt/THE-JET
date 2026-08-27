@@ -35,6 +35,64 @@ const json = jsonResponse;
 const tokenTail = (token: string) =>
   token ? `…${token.replace(/^fcm:/, "").slice(-8)}` : null;
 
+const b64urlToBytes = (s: string): Uint8Array => {
+  const norm = s.replace(/-/g, "+").replace(/_/g, "/");
+  const bin = atob(norm + "=".repeat((4 - (norm.length % 4)) % 4));
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+};
+
+const bytesToB64url = (b: Uint8Array): string =>
+  btoa(String.fromCharCode(...b))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+
+/**
+ * True when `priv` is the mathematical pair of `pub`. Push providers reject
+ * a mismatched VAPID JWT with 403 ("invalid JWT provided" / "BadJwtToken"),
+ * so we detect the mismatch locally instead of burning a delivery attempt.
+ */
+async function vapidPairs(pub: string, priv: string): Promise<boolean> {
+  try {
+    const p = b64urlToBytes(pub);
+    if (p.length !== 65 || p[0] !== 4) return false;
+    const x = bytesToB64url(p.slice(1, 33));
+    const y = bytesToB64url(p.slice(33, 65));
+    const d = priv.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    const alg = { name: "ECDSA", namedCurve: "P-256" } as const;
+    const privKey = await crypto.subtle.importKey(
+      "jwk",
+      { kty: "EC", crv: "P-256", x, y, d, ext: true },
+      alg,
+      false,
+      ["sign"],
+    );
+    const pubKey = await crypto.subtle.importKey(
+      "jwk",
+      { kty: "EC", crv: "P-256", x, y, ext: true },
+      alg,
+      false,
+      ["verify"],
+    );
+    const msg = new TextEncoder().encode("vapid-pair-check");
+    const sig = await crypto.subtle.sign(
+      { name: "ECDSA", hash: "SHA-256" },
+      privKey,
+      msg,
+    );
+    return await crypto.subtle.verify(
+      { name: "ECDSA", hash: "SHA-256" },
+      pubKey,
+      sig,
+      msg,
+    );
+  } catch {
+    return false;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS")
     return new Response(null, { headers: corsHeaders });
@@ -48,12 +106,29 @@ Deno.serve(async (req) => {
     } catch {
       /* no body — normal cron invocation */
     }
-    if (mode === "fcm_config") {
+    if (mode === "fcm_config" || mode === "vapid_config") {
       const auth = req.headers.get("Authorization") ?? "";
       if (auth.replace(/^Bearer\s+/i, "") !== getServiceRoleKey()) {
         return json({ ok: false, error: "Unauthorized" }, 401);
       }
-      return json({ ok: true, fcm: await describeFcmConfig() });
+      if (mode === "fcm_config") {
+        return json({ ok: true, fcm: await describeFcmConfig() });
+      }
+      const priv = Deno.env.get("VAPID_PRIVATE_KEY") ?? "";
+      const vite = Deno.env.get("VITE_VAPID_PUBLIC_KEY") ?? "";
+      const legacy = Deno.env.get("VAPID_PUBLIC_KEY") ?? "";
+      return json({
+        ok: true,
+        vapid: {
+          hasPrivate: !!priv,
+          hasVitePublic: !!vite,
+          hasLegacyPublic: !!legacy,
+          viteEqualsLegacy: !!vite && vite === legacy,
+          privatePairsVite: priv && vite ? await vapidPairs(vite, priv) : false,
+          privatePairsLegacy:
+            priv && legacy ? await vapidPairs(legacy, priv) : false,
+        },
+      });
     }
   }
 
@@ -62,8 +137,24 @@ Deno.serve(async (req) => {
     getServiceRoleKey(),
   );
 
-  const vapidPublic = Deno.env.get("VITE_VAPID_PUBLIC_KEY");
   const vapidPrivate = Deno.env.get("VAPID_PRIVATE_KEY");
+  const vitePublic = Deno.env.get("VITE_VAPID_PUBLIC_KEY");
+  const legacyPublic = Deno.env.get("VAPID_PUBLIC_KEY");
+  // Prefer the client-facing key, but fall back to the legacy secret when the
+  // private key actually pairs with that one — a half-finished key rotation
+  // otherwise 403s every single web push.
+  let vapidPublic = vitePublic;
+  if (vapidPrivate && vitePublic && legacyPublic && vitePublic !== legacyPublic) {
+    if (
+      !(await vapidPairs(vitePublic, vapidPrivate)) &&
+      (await vapidPairs(legacyPublic, vapidPrivate))
+    ) {
+      console.warn(
+        `[${FUNCTION_NAME}] VAPID mismatch: signing with legacy VAPID_PUBLIC_KEY`,
+      );
+      vapidPublic = legacyPublic;
+    }
+  }
   if (vapidPublic && vapidPrivate) {
     webpush.setVapidDetails(
       "mailto:support@jet-around.com",
@@ -300,6 +391,16 @@ Deno.serve(async (req) => {
                 status: "sent",
               });
             } catch (err: any) {
+              // web-push throws WebPushError with statusCode/body; the bare
+              // message ("Received unexpected response code") is undiagnosable
+              // on its own, so fold the transport detail into the audit row.
+              const detail = [
+                String(err?.message ?? err),
+                err?.statusCode ? `status=${err.statusCode}` : "",
+                err?.body ? `body=${String(err.body).slice(0, 200)}` : "",
+              ]
+                .filter(Boolean)
+                .join(" | ");
               if (err?.statusCode === 404 || err?.statusCode === 410)
                 invalid.push(sub.id);
               // Native failures thrown before sendFcmV1 returned (e.g. OAuth
@@ -308,7 +409,7 @@ Deno.serve(async (req) => {
                 nativeAudit.push({
                   ...auditBase(sub),
                   status: "failed",
-                  error: String(err?.message ?? err).slice(0, 500),
+                  error: detail.slice(0, 500),
                 });
               }
               deliveries.push({
@@ -317,7 +418,7 @@ Deno.serve(async (req) => {
                 subscription_id: sub.id,
                 channel: isNative ? "native" : "web",
                 status: "failed",
-                error: String(err?.message ?? err).slice(0, 400),
+                error: detail.slice(0, 400),
               });
             }
           }),

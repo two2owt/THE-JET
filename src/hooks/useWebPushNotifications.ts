@@ -5,11 +5,12 @@ import { requireConsent } from "@/lib/consent";
 
 // VAPID public key for web push authentication.
 // The key lives as a backend secret, so Vite cannot inline it at build time.
-// Fall back to the edge function that serves the public half of the key pair.
+// The backend is authoritative: it serves the public half that actually pairs
+// with the signing key, so a half-finished key rotation can't strand devices.
 const BUILD_TIME_VAPID_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || "";
 /** Last web push endpoint stored for this browser — detects rotation. */
 const WEB_ENDPOINT_KEY = "jet:web-push-endpoint";
-let cachedVapidKey: string | null = BUILD_TIME_VAPID_KEY || null;
+let cachedVapidKey: string | null = null;
 
 async function getVapidPublicKey(): Promise<string> {
   if (cachedVapidKey) return cachedVapidKey;
@@ -24,7 +25,7 @@ async function getVapidPublicKey(): Promise<string> {
   } catch (err) {
     console.error("Failed to fetch VAPID public key:", err);
   }
-  return "";
+  return BUILD_TIME_VAPID_KEY;
 }
 
 // Keep web-push SW isolated from the app SW to avoid scope conflicts.
@@ -43,6 +44,22 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   }
   return outputArray;
 }
+
+/** base64url of the key this subscription was created with, or null. */
+function subscriptionServerKey(sub: PushSubscription): string | null {
+  const raw = (sub.options as PushSubscriptionOptions | undefined)
+    ?.applicationServerKey;
+  if (!raw) return null;
+  const bytes = new Uint8Array(raw as ArrayBuffer);
+  let bin = "";
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return window
+    .btoa(bin)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
 
 const getPushRegistrationIfExists =
   async (): Promise<ServiceWorkerRegistration | null> => {
@@ -75,9 +92,38 @@ export const useWebPushNotifications = () => {
     try {
       const registration = await getPushRegistrationIfExists();
       if (registration && currentPermission === "granted") {
-        const existingSubscription = await (
+        let existingSubscription = await (
           registration as any
         ).pushManager.getSubscription();
+
+        // Key rotation: a subscription created with a retired VAPID key is
+        // rejected by every push service (403 / VapidPkHashMismatch). Rebuild
+        // it against the key the backend actually signs with.
+        if (existingSubscription) {
+          const serverKey = await getVapidPublicKey();
+          const boundKey = subscriptionServerKey(existingSubscription);
+          if (serverKey && boundKey && boundKey !== serverKey) {
+            const staleEndpoint = existingSubscription.endpoint;
+            try {
+              await existingSubscription.unsubscribe();
+              await supabase
+                .from("push_notifications")
+                .update({ active: false })
+                .eq("endpoint", staleEndpoint);
+              existingSubscription = await (
+                registration as any
+              ).pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(
+                  serverKey,
+                ) as BufferSource,
+              });
+            } catch (rotateError) {
+              console.error("Push key rotation failed:", rotateError);
+            }
+          }
+        }
+
         setSubscription(existingSubscription);
         setIsSubscribed(!!existingSubscription);
 
