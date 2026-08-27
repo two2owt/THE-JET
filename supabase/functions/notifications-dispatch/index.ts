@@ -106,12 +106,29 @@ Deno.serve(async (req) => {
     } catch {
       /* no body — normal cron invocation */
     }
-    if (mode === "fcm_config") {
+    if (mode === "fcm_config" || mode === "vapid_config") {
       const auth = req.headers.get("Authorization") ?? "";
       if (auth.replace(/^Bearer\s+/i, "") !== getServiceRoleKey()) {
         return json({ ok: false, error: "Unauthorized" }, 401);
       }
-      return json({ ok: true, fcm: await describeFcmConfig() });
+      if (mode === "fcm_config") {
+        return json({ ok: true, fcm: await describeFcmConfig() });
+      }
+      const priv = Deno.env.get("VAPID_PRIVATE_KEY") ?? "";
+      const vite = Deno.env.get("VITE_VAPID_PUBLIC_KEY") ?? "";
+      const legacy = Deno.env.get("VAPID_PUBLIC_KEY") ?? "";
+      return json({
+        ok: true,
+        vapid: {
+          hasPrivate: !!priv,
+          hasVitePublic: !!vite,
+          hasLegacyPublic: !!legacy,
+          viteEqualsLegacy: !!vite && vite === legacy,
+          privatePairsVite: priv && vite ? await vapidPairs(vite, priv) : false,
+          privatePairsLegacy:
+            priv && legacy ? await vapidPairs(legacy, priv) : false,
+        },
+      });
     }
   }
 
@@ -120,8 +137,24 @@ Deno.serve(async (req) => {
     getServiceRoleKey(),
   );
 
-  const vapidPublic = Deno.env.get("VITE_VAPID_PUBLIC_KEY");
   const vapidPrivate = Deno.env.get("VAPID_PRIVATE_KEY");
+  const vitePublic = Deno.env.get("VITE_VAPID_PUBLIC_KEY");
+  const legacyPublic = Deno.env.get("VAPID_PUBLIC_KEY");
+  // Prefer the client-facing key, but fall back to the legacy secret when the
+  // private key actually pairs with that one — a half-finished key rotation
+  // otherwise 403s every single web push.
+  let vapidPublic = vitePublic;
+  if (vapidPrivate && vitePublic && legacyPublic && vitePublic !== legacyPublic) {
+    if (
+      !(await vapidPairs(vitePublic, vapidPrivate)) &&
+      (await vapidPairs(legacyPublic, vapidPrivate))
+    ) {
+      console.warn(
+        `[${FUNCTION_NAME}] VAPID mismatch: signing with legacy VAPID_PUBLIC_KEY`,
+      );
+      vapidPublic = legacyPublic;
+    }
+  }
   if (vapidPublic && vapidPrivate) {
     webpush.setVapidDetails(
       "mailto:support@jet-around.com",
