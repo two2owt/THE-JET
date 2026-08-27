@@ -907,7 +907,11 @@ const Onboarding = () => {
                     )}
                   </div>
                 )}
+
+                {/* Deal-alert opt-in: primed here so the OS popup is expected. */}
+                <PushPermissionStep />
               </div>
+
 
               <Button
                 onClick={handleComplete}
