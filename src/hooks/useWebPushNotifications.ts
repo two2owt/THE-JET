@@ -254,7 +254,7 @@ export const useWebPushNotifications = () => {
       return false;
     }
 
-    const vapidPublicKey = await getVapidPublicKey();
+    const { key: vapidPublicKey } = await getVapidPublicKey();
     if (!vapidPublicKey) {
       console.error("VAPID public key not configured");
       toast.error("Push notification service not configured");
