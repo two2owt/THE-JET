@@ -12,20 +12,28 @@ const BUILD_TIME_VAPID_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || "";
 const WEB_ENDPOINT_KEY = "jet:web-push-endpoint";
 let cachedVapidKey: string | null = null;
 
-async function getVapidPublicKey(): Promise<string> {
-  if (cachedVapidKey) return cachedVapidKey;
+/**
+ * `authoritative` is true only when the key came from the backend. A build-time
+ * fallback must never be used to judge an existing subscription stale: a single
+ * failed edge call would otherwise destroy a working registration.
+ */
+async function getVapidPublicKey(): Promise<{
+  key: string;
+  authoritative: boolean;
+}> {
+  if (cachedVapidKey) return { key: cachedVapidKey, authoritative: true };
   try {
     const { data, error } = await supabase.functions.invoke("get-vapid-key");
     if (error) throw error;
     const key = (data as { publicKey?: string } | null)?.publicKey;
     if (key) {
       cachedVapidKey = key;
-      return key;
+      return { key, authoritative: true };
     }
   } catch (err) {
     console.error("Failed to fetch VAPID public key:", err);
   }
-  return BUILD_TIME_VAPID_KEY;
+  return { key: BUILD_TIME_VAPID_KEY, authoritative: false };
 }
 
 // Keep web-push SW isolated from the app SW to avoid scope conflicts.
