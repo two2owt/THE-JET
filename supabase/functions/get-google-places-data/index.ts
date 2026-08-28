@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
     const fieldsParam = validatedFields.join(",");
     const encodedPlaceId = encodeURIComponent(placeId);
 
-    const data = await withGoogleKeyRotation<Record<string, unknown>>(
+    const data = await withGoogleKeyRotation<any>(
       FUNCTION_NAME,
       async (apiKey) => {
         const url = `https://places.googleapis.com/v1/places/${encodedPlaceId}?fields=${fieldsParam}&key=${apiKey}`;
