@@ -108,9 +108,11 @@ export const useWebPushNotifications = () => {
         // rejected by every push service (403 / VapidPkHashMismatch). Rebuild
         // it against the key the backend actually signs with.
         if (existingSubscription) {
-          const serverKey = await getVapidPublicKey();
+          const { key: serverKey, authoritative } = await getVapidPublicKey();
           const boundKey = subscriptionServerKey(existingSubscription);
-          if (serverKey && boundKey && boundKey !== serverKey) {
+          // Only rotate against a key the backend confirmed. A build-time
+          // fallback (edge call failed) must leave the registration alone.
+          if (authoritative && serverKey && boundKey && boundKey !== serverKey) {
             const staleEndpoint = existingSubscription.endpoint;
             try {
               await existingSubscription.unsubscribe();
