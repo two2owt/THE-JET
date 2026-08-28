@@ -14,11 +14,6 @@ export interface Profile {
   bio: string | null;
   gender: string | null;
   pronouns: string | null;
-  instagram_url: string | null;
-  twitter_url: string | null;
-  facebook_url: string | null;
-  linkedin_url: string | null;
-  tiktok_url: string | null;
   social_handles: SocialHandle[];
   preferences: Json | null;
 }
@@ -29,11 +24,6 @@ export interface UpdateProfileInput {
   bio: string | null;
   gender: string | null;
   pronouns: string | null;
-  instagram_url: string | null;
-  twitter_url: string | null;
-  facebook_url: string | null;
-  linkedin_url: string | null;
-  tiktok_url: string | null;
 }
 
 export const profileQueryKey = (userId?: string) =>

@@ -349,11 +349,6 @@ export default function Profile() {
           bio: validatedData.bio || null,
           gender: form.gender,
           pronouns: form.pronouns || null,
-          instagram_url: null,
-          twitter_url: null,
-          facebook_url: null,
-          linkedin_url: null,
-          tiktok_url: null,
         });
         await updateSocialHandles(normalizedHandles);
       } catch (err: any) {
@@ -425,11 +420,11 @@ export default function Profile() {
         bio: profile.bio || "",
         gender: profile.gender || "",
         pronouns: profile.pronouns || "",
-        instagramUrl: profile.instagram_url || "",
-        twitterUrl: profile.twitter_url || "",
-        facebookUrl: profile.facebook_url || "",
-        linkedinUrl: profile.linkedin_url || "",
-        tiktokUrl: profile.tiktok_url || "",
+        instagramUrl: handleValue("instagram"),
+        twitterUrl: handleValue("twitter"),
+        facebookUrl: handleValue("facebook"),
+        linkedinUrl: handleValue("linkedin"),
+        tiktokUrl: handleValue("tiktok"),
       });
     }
     setFieldErrors({});
