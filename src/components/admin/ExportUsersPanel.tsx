@@ -297,6 +297,150 @@ export function ExportUsersPanel() {
         </Button>
       </div>
 
+      <div className="mt-5 rounded-xl border border-border/50 bg-background/30 p-4 space-y-4">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Filters {filtersActive(filters) && "· active"}
+          </p>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="gap-1.5"
+            onClick={() => setFilters(defaultExportFilters)}
+            disabled={loading || !filtersActive(filters)}
+          >
+            <FilterX className="h-3.5 w-3.5" />
+            Reset
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Onboarding</Label>
+            <Select
+              value={filters.onboarding}
+              onValueChange={(v) =>
+                setFilters((f) => ({ ...f, onboarding: v as TriState }))
+              }
+              disabled={loading}
+            >
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All users</SelectItem>
+                <SelectItem value="yes">Completed</SelectItem>
+                <SelectItem value="no">Not completed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Email confirmed</Label>
+            <Select
+              value={filters.emailConfirmed}
+              onValueChange={(v) =>
+                setFilters((f) => ({ ...f, emailConfirmed: v as TriState }))
+              }
+              disabled={loading}
+            >
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="yes">Confirmed</SelectItem>
+                <SelectItem value="no">Unconfirmed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="export-lastsignin-from" className="text-xs text-muted-foreground">
+              Last sign-in from
+            </Label>
+            <Input
+              id="export-lastsignin-from"
+              type="date"
+              value={filters.lastSignInFrom}
+              onChange={(e) =>
+                setFilters((f) => ({ ...f, lastSignInFrom: e.target.value }))
+              }
+              disabled={loading || filters.neverSignedIn}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="export-lastsignin-to" className="text-xs text-muted-foreground">
+              Last sign-in to
+            </Label>
+            <Input
+              id="export-lastsignin-to"
+              type="date"
+              value={filters.lastSignInTo}
+              onChange={(e) =>
+                setFilters((f) => ({ ...f, lastSignInTo: e.target.value }))
+              }
+              disabled={loading || filters.neverSignedIn}
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          <label
+            htmlFor="export-never-signed-in"
+            className="flex items-center gap-2 text-sm cursor-pointer"
+          >
+            <Checkbox
+              id="export-never-signed-in"
+              checked={filters.neverSignedIn}
+              disabled={loading}
+              onCheckedChange={(v) =>
+                setFilters((f) => ({
+                  ...f,
+                  neverSignedIn: v === true,
+                  ...(v === true
+                    ? { lastSignInFrom: "", lastSignInTo: "" }
+                    : {}),
+                }))
+              }
+            />
+            <span>Never signed in only</span>
+          </label>
+
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground">Tier:</span>
+            {TIER_OPTIONS.map((tier) => {
+              const id = `export-tier-${tier}`;
+              const checked = filters.tiers.includes(tier);
+              return (
+                <label
+                  key={tier}
+                  htmlFor={id}
+                  className="flex items-center gap-1.5 text-sm cursor-pointer"
+                >
+                  <Checkbox
+                    id={id}
+                    checked={checked}
+                    disabled={loading}
+                    onCheckedChange={(v) =>
+                      setFilters((f) => ({
+                        ...f,
+                        tiers:
+                          v === true
+                            ? [...f.tiers, tier]
+                            : f.tiers.filter((t) => t !== tier),
+                      }))
+                    }
+                  />
+                  <span>{TIER_LABELS[tier]}</span>
+                </label>
+              );
+            })}
+            <span className="text-[10px] text-muted-foreground">
+              (none selected = all tiers)
+            </span>
+          </div>
+        </div>
+      </div>
+
       <div className="mt-5 space-y-3">
         <div className="flex items-center justify-between gap-2">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
