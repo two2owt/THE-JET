@@ -83,37 +83,45 @@ export const InactiveNudgePanel = () => {
 
   const dormant = data ?? [];
 
+  /** Sends exactly one activation email to one recipient. */
+  const sendOne = async (row: DirectoryRow): Promise<boolean> => {
+    const email = row.email;
+    if (!email) return false;
+    const { data: res, error } = await supabase.functions.invoke(
+      "admin-bulk-provision-users",
+      {
+        body: {
+          // One recipient per invocation — no list looping server-side.
+          users: [
+            {
+              email,
+              display_name: row.display_name ?? undefined,
+              method: "resend",
+            },
+          ],
+          inviteTemplate: {
+            subject: ACTIVATION_SUBJECT.replace("{{site_name}}", SITE_NAME),
+            html: ACTIVATION_HTML,
+            redirectTo: ACTIVATION_REDIRECT,
+          },
+        },
+      },
+    );
+    if (error) throw error;
+    const results = (res?.results ?? []) as NudgeResult[];
+    const failure = results.find((r) => r.status === "error");
+    if (failure) throw new Error(failure.error ?? "Send failed");
+    setSent((prev) => ({ ...prev, [email]: Date.now() }));
+    return true;
+  };
+
   const sendActivation = async (row: DirectoryRow) => {
     const email = row.email;
     if (!email) return;
     setBusy(email);
     try {
-      const { data: res, error } = await supabase.functions.invoke(
-        "admin-bulk-provision-users",
-        {
-          body: {
-            // One recipient per invocation — no list looping.
-            users: [
-              {
-                email,
-                display_name: row.display_name ?? undefined,
-                method: "resend",
-              },
-            ],
-            inviteTemplate: {
-              subject: ACTIVATION_SUBJECT.replace("{{site_name}}", SITE_NAME),
-              html: ACTIVATION_HTML,
-              redirectTo: ACTIVATION_REDIRECT,
-            },
-          },
-        },
-      );
-      if (error) throw error;
-      const results = (res?.results ?? []) as NudgeResult[];
-      const failure = results.find((r) => r.status === "error");
-      if (failure) throw new Error(failure.error ?? "Send failed");
+      await sendOne(row);
       toast.success(`Activation email sent to ${email}`);
-      setSent((prev) => ({ ...prev, [email]: Date.now() }));
       refetch();
     } catch (e) {
       toast.error(
@@ -122,6 +130,44 @@ export const InactiveNudgePanel = () => {
     } finally {
       setBusy(null);
     }
+  };
+
+  /**
+   * Walks every confirmed never-signed-in account and sends each person their
+   * own activation email, one request at a time with a short pause between
+   * sends. Accounts already nudged in this session are skipped.
+   */
+  const sendToAllRemaining = async () => {
+    const queue = dormant.filter((u) => !!u.email && !sent[u.email]);
+    if (queue.length === 0) {
+      toast.info("Every listed account has already been sent an email.");
+      return;
+    }
+    setRunAll({ done: 0, total: queue.length });
+    let ok = 0;
+    const failed: string[] = [];
+    for (const row of queue) {
+      setBusy(row.email);
+      try {
+        await sendOne(row);
+        ok++;
+      } catch (e) {
+        failed.push(row.email!);
+        console.error("Activation send failed", row.email, e);
+      }
+      setRunAll((prev) => (prev ? { ...prev, done: prev.done + 1 } : prev));
+      await new Promise((r) => setTimeout(r, 600));
+    }
+    setBusy(null);
+    setRunAll(null);
+    if (failed.length) {
+      toast.warning(
+        `Sent ${ok} activation email(s); ${failed.length} failed (${failed.slice(0, 3).join(", ")}${failed.length > 3 ? "…" : ""})`,
+      );
+    } else {
+      toast.success(`Sent ${ok} activation email(s)`);
+    }
+    refetch();
   };
 
   return (
