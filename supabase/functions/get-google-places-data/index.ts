@@ -4,6 +4,7 @@ import {
   EDGE_FUNCTION_VERSION,
 } from "../_shared/cors.ts";
 import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
+import { googleKeys, withGoogleKeyRotation } from "../_shared/places-provider.ts";
 
 const FUNCTION_NAME = "get-google-places-data";
 logVersion(FUNCTION_NAME);
