@@ -1310,36 +1310,6 @@ export type Database = {
         }
         Relationships: []
       }
-      profile_social_links: {
-        Row: {
-          created_at: string
-          handle: string
-          id: string
-          platform: string
-          updated_at: string
-          user_id: string
-          visibility: string
-        }
-        Insert: {
-          created_at?: string
-          handle: string
-          id?: string
-          platform: string
-          updated_at?: string
-          user_id: string
-          visibility?: string
-        }
-        Update: {
-          created_at?: string
-          handle?: string
-          id?: string
-          platform?: string
-          updated_at?: string
-          user_id?: string
-          visibility?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1351,19 +1321,14 @@ export type Database = {
           discoverable: boolean | null
           display_name: string | null
           display_name_claimed: boolean
-          facebook_url: string | null
           gender: string | null
           id: string
-          instagram_url: string | null
-          linkedin_url: string | null
           location_consent_date: string | null
           location_consent_given: boolean | null
           onboarding_completed: boolean | null
           preferences: Json | null
           privacy_settings: Json | null
           pronouns: string | null
-          tiktok_url: string | null
-          twitter_url: string | null
           updated_at: string
           welcome_email_1_sent: boolean | null
           welcome_email_2_sent: boolean | null
@@ -1379,19 +1344,14 @@ export type Database = {
           discoverable?: boolean | null
           display_name?: string | null
           display_name_claimed?: boolean
-          facebook_url?: string | null
           gender?: string | null
           id: string
-          instagram_url?: string | null
-          linkedin_url?: string | null
           location_consent_date?: string | null
           location_consent_given?: boolean | null
           onboarding_completed?: boolean | null
           preferences?: Json | null
           privacy_settings?: Json | null
           pronouns?: string | null
-          tiktok_url?: string | null
-          twitter_url?: string | null
           updated_at?: string
           welcome_email_1_sent?: boolean | null
           welcome_email_2_sent?: boolean | null
@@ -1407,19 +1367,14 @@ export type Database = {
           discoverable?: boolean | null
           display_name?: string | null
           display_name_claimed?: boolean
-          facebook_url?: string | null
           gender?: string | null
           id?: string
-          instagram_url?: string | null
-          linkedin_url?: string | null
           location_consent_date?: string | null
           location_consent_given?: boolean | null
           onboarding_completed?: boolean | null
           preferences?: Json | null
           privacy_settings?: Json | null
           pronouns?: string | null
-          tiktok_url?: string | null
-          twitter_url?: string | null
           updated_at?: string
           welcome_email_1_sent?: boolean | null
           welcome_email_2_sent?: boolean | null
@@ -2118,15 +2073,10 @@ export type Database = {
           created_at: string | null
           discoverable: boolean | null
           display_name: string | null
-          facebook_url: string | null
           gender: string | null
           id: string | null
-          instagram_url: string | null
-          linkedin_url: string | null
           onboarding_completed: boolean | null
           pronouns: string | null
-          tiktok_url: string | null
-          twitter_url: string | null
           updated_at: string | null
         }
         Relationships: []
@@ -2375,15 +2325,10 @@ export type Database = {
           created_at: string
           discoverable: boolean
           display_name: string
-          facebook_url: string
           gender: string
           id: string
-          instagram_url: string
-          linkedin_url: string
           onboarding_completed: boolean
           pronouns: string
-          tiktok_url: string
-          twitter_url: string
           updated_at: string
         }[]
       }

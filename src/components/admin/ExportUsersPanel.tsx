@@ -37,11 +37,6 @@ const COLUMNS = [
   "location_consent_date",
   "data_processing_consent",
   "data_processing_consent_date",
-  "instagram_url",
-  "twitter_url",
-  "facebook_url",
-  "linkedin_url",
-  "tiktok_url",
 ] as const;
 
 type Column = (typeof COLUMNS)[number];
