@@ -1,5 +1,10 @@
 import { useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  getAdminUserDirectory,
+  type AdminDirectoryRow,
+} from "@/lib/admin-directory.functions";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -10,11 +15,13 @@ const COLUMNS = [
   "id",
   "email",
   "display_name",
-  "bio",
+  "last_sign_in_at",
+  "email_confirmed_at",
   "created_at",
   "updated_at",
   "onboarding_completed",
   "discoverable",
+  "bio",
   "birthdate",
   "gender",
   "pronouns",
@@ -31,6 +38,14 @@ const COLUMNS = [
 
 type Column = (typeof COLUMNS)[number];
 
+// Auth-directory fields come from the admin-only directory RPC (auth.users
+// join); everything else comes from public.profiles.
+const DIRECTORY_COLS: ReadonlySet<Column> = new Set([
+  "email",
+  "last_sign_in_at",
+  "email_confirmed_at",
+]);
+
 // `id` is always included so exported rows remain identifiable.
 const REQUIRED: Column[] = ["id"];
 const DEFAULT_SELECTED: Column[] = [
@@ -38,6 +53,7 @@ const DEFAULT_SELECTED: Column[] = [
   "email",
   "display_name",
   "created_at",
+  "last_sign_in_at",
   "onboarding_completed",
 ];
 
@@ -53,6 +69,7 @@ function toCsv(rows: Record<string, unknown>[], cols: Column[]): string {
 }
 
 export function ExportUsersPanel() {
+  const fetchDirectory = useServerFn(getAdminUserDirectory);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<Set<Column>>(
     () => new Set(DEFAULT_SELECTED),
@@ -77,54 +94,56 @@ export function ExportUsersPanel() {
   const selectNone = () => setSelected(new Set(REQUIRED));
 
   const handleExport = async () => {
-    if (
-      selectedCols.length <= REQUIRED.length &&
-      !selectedCols.some((c) => !REQUIRED.includes(c))
-    ) {
+    if (!selectedCols.some((c) => !REQUIRED.includes(c))) {
       toast.error("Pick at least one field to export");
       return;
     }
     setLoading(true);
     try {
-      const wantsEmail = selected.has("email");
-      const profileCols = selectedCols.filter((c) => c !== "email");
-      // Always fetch id so we can join emails and dedupe by user.
-      if (!profileCols.includes("id")) profileCols.unshift("id");
+      // Authoritative account list (every auth user, even without a profile).
+      const directory = await fetchDirectory();
 
-      const pageSize = 1000;
-      let from = 0;
-      const all: Record<string, unknown>[] = [];
-      // Paginate to avoid PostgREST 1000-row cap.
-
-      while (true) {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select(profileCols.join(","))
-          .order("created_at", { ascending: false })
-          .range(from, from + pageSize - 1);
-        if (error) throw error;
-        if (!data || data.length === 0) break;
-        all.push(...(data as unknown as Record<string, unknown>[]));
-        if (data.length < pageSize) break;
-        from += pageSize;
-      }
-
-      // Attach emails from auth.users via admin-only RPC when requested.
-      if (wantsEmail) {
-        const { data: emailRows, error: emailErr } = await supabase.rpc(
-          "admin_list_user_emails",
+      const wantsProfiles = selectedCols.some((c) => !DIRECTORY_COLS.has(c));
+      const profileById = new Map<string, Record<string, unknown>>();
+      if (wantsProfiles) {
+        const profileCols = selectedCols.filter(
+          (c) => !DIRECTORY_COLS.has(c) && c !== "id",
         );
-        if (emailErr) throw emailErr;
-        const emailById = new Map<string, string>(
-          (emailRows ?? []).map((r: { id: string; email: string | null }) => [
-            r.id,
-            r.email ?? "",
-          ]),
-        );
-        for (const row of all) {
-          row.email = emailById.get(row.id as string) ?? "";
+        // Always fetch id so we can join directory rows by user.
+        const select = ["id", ...profileCols].join(",");
+        const pageSize = 1000;
+        let from = 0;
+        // Paginate to avoid PostgREST 1000-row cap.
+        while (true) {
+          const { data, error } = await supabase
+            .from("profiles")
+            .select(select)
+            .range(from, from + pageSize - 1);
+          if (error) throw error;
+          if (!data || data.length === 0) break;
+          for (const row of data as unknown as Record<string, unknown>[]) {
+            profileById.set(row.id as string, row);
+          }
+          if (data.length < pageSize) break;
+          from += pageSize;
         }
       }
+
+      // Merge: one row per auth user, profile fields attached when present.
+      const all = directory.map((u: AdminDirectoryRow) => {
+        const profile = profileById.get(u.id) ?? {};
+        return {
+          ...profile,
+          id: u.id,
+          email: u.email,
+          last_sign_in_at: u.last_sign_in_at,
+          email_confirmed_at: u.email_confirmed_at,
+          display_name: u.display_name ?? profile.display_name,
+          onboarding_completed:
+            u.onboarding_completed ?? profile.onboarding_completed,
+          created_at: u.created_at ?? profile.created_at,
+        };
+      });
 
       const csv = toCsv(all, selectedCols);
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -154,7 +173,8 @@ export function ExportUsersPanel() {
         <div>
           <h2 className="text-lg font-semibold">Export users</h2>
           <p className="text-sm text-muted-foreground">
-            Pick which fields to include, then download as CSV.
+            Pick which fields to include, then download as CSV. Includes every
+            registered account — even ones that never finished onboarding.
           </p>
         </div>
         <Button onClick={handleExport} disabled={loading} className="gap-2">
