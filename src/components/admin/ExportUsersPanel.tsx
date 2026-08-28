@@ -212,6 +212,19 @@ export function ExportUsersPanel() {
         }
       }
 
+      // Tier lookup — only fetched when a tier filter is active. Admins
+      // bypass RLS on `subscribers`; everyone resolves to their own row.
+      const tierById = new Map<string, Tier>();
+      if (filters.tiers.length) {
+        const { data, error } = await supabase
+          .from("subscribers")
+          .select("user_id, tier, subscribed, subscription_end");
+        if (error) throw error;
+        for (const row of data ?? []) {
+          tierById.set(row.user_id, effectiveTier(row));
+        }
+      }
+
       // Merge: one row per auth user, profile fields attached when present.
       const all = directory.map((u: AdminDirectoryRow) => {
         const profile = profileById.get(u.id) ?? {};
@@ -225,10 +238,24 @@ export function ExportUsersPanel() {
           onboarding_completed:
             u.onboarding_completed ?? profile.onboarding_completed,
           created_at: u.created_at ?? profile.created_at,
+          _tier: tierById.get(u.id) ?? "free",
         };
       });
 
-      const csv = toCsv(all, selectedCols);
+      const filtered = filtersActive(filters)
+        ? all.filter((r) => passesFilters(r, filters))
+        : all;
+
+      // Surface the tier as a real column whenever the tier filter is used.
+      const exportCols: string[] = filters.tiers.length
+        ? [...selectedCols, "tier"]
+        : [...selectedCols];
+      const rowsForCsv = filtered.map(({ _tier, ...rest }) => ({
+        ...rest,
+        ...(filters.tiers.length ? { tier: _tier } : {}),
+      }));
+
+      const csv = toCsv(rowsForCsv, exportCols);
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -240,7 +267,7 @@ export function ExportUsersPanel() {
       a.remove();
       URL.revokeObjectURL(url);
       toast.success(
-        `Exported ${all.length} user${all.length === 1 ? "" : "s"}`,
+        `Exported ${filtered.length} of ${all.length} user${all.length === 1 ? "" : "s"}`,
       );
     } catch (err) {
       console.error("Export users failed", err);
