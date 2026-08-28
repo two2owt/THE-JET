@@ -1,6 +1,7 @@
 import { corsHeaders, logVersion } from "../_shared/cors.ts";
 import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
 import { internalError, unauthorized } from "../_shared/http.ts";
+import { googleKeys } from "../_shared/places-provider.ts";
 
 const FUNCTION_NAME = "get-network-location";
 logVersion(FUNCTION_NAME);
