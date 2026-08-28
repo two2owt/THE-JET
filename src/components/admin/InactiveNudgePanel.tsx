@@ -184,7 +184,26 @@ export const InactiveNudgePanel = () => {
               activation email with a sign-in link
             </CardDescription>
           </div>
-          <Badge variant="secondary">{dormant.length} account(s)</Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary">{dormant.length} account(s)</Badge>
+            <Button
+              size="sm"
+              disabled={busy !== null || runAll !== null || dormant.length === 0}
+              onClick={sendToAllRemaining}
+            >
+              {runAll ? (
+                <>
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  Sending {runAll.done}/{runAll.total}
+                </>
+              ) : (
+                <>
+                  <Send className="mr-1.5 h-3.5 w-3.5" />
+                  Send to all remaining
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
