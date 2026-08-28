@@ -413,8 +413,12 @@ export default function Profile() {
   };
   const handleCancelEdit = () => {
     setIsEditing(false);
-    // Restore form from latest profile.
+    // Restore form from latest profile (social_handles is the single source).
     if (profile) {
+      const handleValue = (platform: SocialPlatform) =>
+        profile.social_handles.find((h) => h.platform === platform)?.handle ??
+        "";
+
       setForm({
         displayName: profile.display_name || "",
         bio: profile.bio || "",
