@@ -486,6 +486,7 @@ export default function AdminDashboard() {
                     style={{ gap: "var(--space-md)" }}
                   >
                     <SyncStatusPanel />
+                    <ExportUsersPanel />
                     <UserAnalytics />
                     <PermissionPromptPanel />
                     <UnverifiedNudgePanel />
@@ -551,10 +552,6 @@ export default function AdminDashboard() {
                   <Suspense fallback={<AdminTabFallback />}>
                     <MapSyncLatencyPanel />
                   </Suspense>
-                  <Suspense fallback={<AdminTabFallback />}>
-                    <ExportUsersPanel />
-                  </Suspense>
-
                   <Suspense fallback={<AdminTabFallback />}>
                     <BulkUserProvisionPanel />
                   </Suspense>
