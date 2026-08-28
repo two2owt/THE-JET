@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getAdminUserDirectory } from "@/lib/admin-directory.functions";
@@ -12,8 +12,30 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, UserRoundX, Send } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Loader2, UserRoundX, Send, Download, FlaskConical } from "lucide-react";
 import { toast } from "sonner";
+import {
+  COOLDOWN_OPTIONS,
+  buildNudgeCsv,
+  cooldownRemainingMs,
+  downloadCsv,
+  formatCooldownRemaining,
+  readCooldownHours,
+  readNudgeLedger,
+  recordNudgeSent,
+  writeCooldownHours,
+  type NudgeLedger,
+} from "@/lib/nudgeCooldown";
+
 
 type DirectoryRow = {
   id: string;
@@ -67,6 +89,11 @@ export const InactiveNudgePanel = () => {
   const [runAll, setRunAll] = useState<{ done: number; total: number } | null>(
     null,
   );
+  const [ledger, setLedger] = useState<NudgeLedger>(() => readNudgeLedger());
+  const [cooldownHours, setCooldownHours] = useState<number>(() =>
+    readCooldownHours(),
+  );
+  const [dryRun, setDryRun] = useState(false);
 
   const fetchDirectory = useServerFn(getAdminUserDirectory);
 
@@ -81,7 +108,36 @@ export const InactiveNudgePanel = () => {
     },
   });
 
-  const dormant = data ?? [];
+  const dormant = useMemo(() => data ?? [], [data]);
+
+  /** Recipients past their cooldown window — the audience an actual run hits. */
+  const eligible = useMemo(
+    () =>
+      dormant.filter(
+        (u) => cooldownRemainingMs(u.email, ledger, cooldownHours) === 0,
+      ),
+    [dormant, ledger, cooldownHours],
+  );
+
+  const cooledDownCount = dormant.length - eligible.length;
+
+  const applyCooldownHours = (hours: number) => {
+    setCooldownHours(hours);
+    writeCooldownHours(hours);
+  };
+
+  const exportCsv = () => {
+    if (dormant.length === 0) {
+      toast.info("No accounts to export.");
+      return;
+    }
+    const stamp = new Date().toISOString().slice(0, 10);
+    downloadCsv(
+      `jet-never-signed-in-${stamp}.csv`,
+      buildNudgeCsv(dormant, ledger, cooldownHours),
+    );
+    toast.success(`Exported ${dormant.length} recipient(s) to CSV`);
+  };
 
   /** Sends exactly one activation email to one recipient. */
   const sendOne = async (row: DirectoryRow): Promise<boolean> => {
@@ -111,13 +167,26 @@ export const InactiveNudgePanel = () => {
     const results = (res?.results ?? []) as NudgeResult[];
     const failure = results.find((r) => r.status === "error");
     if (failure) throw new Error(failure.error ?? "Send failed");
-    setSent((prev) => ({ ...prev, [email]: Date.now() }));
+    const at = Date.now();
+    setSent((prev) => ({ ...prev, [email]: at }));
+    setLedger(recordNudgeSent(email, at));
     return true;
   };
 
   const sendActivation = async (row: DirectoryRow) => {
     const email = row.email;
     if (!email) return;
+    if (dryRun) {
+      toast.info(`Dry run — would send an activation email to ${email}`);
+      return;
+    }
+    const remaining = cooldownRemainingMs(email, ledger, cooldownHours);
+    if (remaining > 0) {
+      toast.warning(
+        `${email} was nudged recently — eligible again in ${formatCooldownRemaining(remaining)}`,
+      );
+      return;
+    }
     setBusy(email);
     try {
       await sendOne(row);
@@ -133,14 +202,28 @@ export const InactiveNudgePanel = () => {
   };
 
   /**
-   * Walks every confirmed never-signed-in account and sends each person their
-   * own activation email, one request at a time with a short pause between
-   * sends. Accounts already nudged in this session are skipped.
+   * Walks every confirmed never-signed-in account that is past its resend
+   * cooldown and sends each person their own activation email, one request at
+   * a time with a short pause between sends. In dry-run mode nothing is sent —
+   * the panel only reports who would be contacted.
    */
   const sendToAllRemaining = async () => {
-    const queue = dormant.filter((u) => !!u.email && !sent[u.email]);
+    const queue = eligible.filter((u) => !!u.email);
     if (queue.length === 0) {
-      toast.info("Every listed account has already been sent an email.");
+      toast.info(
+        cooledDownCount > 0
+          ? "Every listed account is still inside the resend cooldown."
+          : "There are no accounts to email.",
+      );
+      return;
+    }
+    if (dryRun) {
+      toast.info(
+        `Dry run — would email ${queue.length} account(s): ${queue
+          .slice(0, 3)
+          .map((u) => u.email)
+          .join(", ")}${queue.length > 3 ? "…" : ""}`,
+      );
       return;
     }
     setRunAll({ done: 0, total: queue.length });
@@ -184,10 +267,16 @@ export const InactiveNudgePanel = () => {
               activation email with a sign-in link
             </CardDescription>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Badge variant="secondary">{dormant.length} account(s)</Badge>
+            <Badge variant="outline">{eligible.length} eligible</Badge>
+            <Button size="sm" variant="outline" onClick={exportCsv}>
+              <Download className="mr-1.5 h-3.5 w-3.5" />
+              Export CSV
+            </Button>
             <Button
               size="sm"
+              variant={dryRun ? "outline" : "default"}
               disabled={busy !== null || runAll !== null || dormant.length === 0}
               onClick={sendToAllRemaining}
             >
@@ -198,12 +287,54 @@ export const InactiveNudgePanel = () => {
                 </>
               ) : (
                 <>
-                  <Send className="mr-1.5 h-3.5 w-3.5" />
-                  Send to all remaining
+                  {dryRun ? (
+                    <FlaskConical className="mr-1.5 h-3.5 w-3.5" />
+                  ) : (
+                    <Send className="mr-1.5 h-3.5 w-3.5" />
+                  )}
+                  {dryRun ? "Preview all remaining" : "Send to all remaining"}
                 </>
               )}
             </Button>
           </div>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-4 rounded-lg border border-border/50 bg-background/40 p-3">
+          <div className="flex items-center gap-2">
+            <Switch
+              id="nudge-dry-run"
+              checked={dryRun}
+              onCheckedChange={setDryRun}
+              disabled={runAll !== null}
+            />
+            <Label htmlFor="nudge-dry-run" className="text-xs">
+              Dry run (no emails sent)
+            </Label>
+          </div>
+          <div className="flex items-center gap-2">
+            <Label htmlFor="nudge-cooldown" className="text-xs">
+              Resend cooldown
+            </Label>
+            <Select
+              value={String(cooldownHours)}
+              onValueChange={(v) => applyCooldownHours(Number(v))}
+            >
+              <SelectTrigger id="nudge-cooldown" className="h-8 w-[140px] text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {COOLDOWN_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={String(opt.value)}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {cooledDownCount > 0 ? (
+            <span className="text-xs text-muted-foreground">
+              {cooledDownCount} account(s) waiting out the cooldown
+            </span>
+          ) : null}
         </div>
       </CardHeader>
       <CardContent>
@@ -217,45 +348,70 @@ export const InactiveNudgePanel = () => {
           </p>
         ) : (
           <ul className="flex flex-col gap-2">
-            {dormant.map((u) => (
-              <li
-                key={u.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/50 p-3"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{u.email}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Created {daysAgo(u.created_at)}d ago · never signed in
-                    {u.display_name ? ` · ${u.display_name}` : ""}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {sent[u.email!] ? (
-                    <Badge
+            {dormant.map((u) => {
+              const remaining = cooldownRemainingMs(
+                u.email,
+                ledger,
+                cooldownHours,
+              );
+              const lastSent = u.email
+                ? ledger[u.email.toLowerCase()]
+                : undefined;
+              return (
+                <li
+                  key={u.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/50 p-3"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{u.email}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Created {daysAgo(u.created_at)}d ago · never signed in
+                      {u.display_name ? ` · ${u.display_name}` : ""}
+                      {lastSent
+                        ? ` · last nudged ${new Date(lastSent).toLocaleDateString()}`
+                        : ""}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {remaining > 0 ? (
+                      <Badge variant="outline" className="text-muted-foreground">
+                        Cooldown {formatCooldownRemaining(remaining)}
+                      </Badge>
+                    ) : sent[u.email!] ? (
+                      <Badge
+                        variant="outline"
+                        className="border-emerald-500/40 text-emerald-400"
+                      >
+                        Sent
+                      </Badge>
+                    ) : null}
+                    <Button
+                      size="sm"
                       variant="outline"
-                      className="border-emerald-500/40 text-emerald-400"
+                      disabled={busy !== null || (!dryRun && remaining > 0)}
+                      onClick={() => sendActivation(u)}
                     >
-                      Sent
-                    </Badge>
-                  ) : null}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={busy !== null}
-                    onClick={() => sendActivation(u)}
-                  >
-                    {busy === u.email ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Send className="mr-1.5 h-3.5 w-3.5" />
-                        {sent[u.email!] ? "Send again" : "Send activation"}
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </li>
-            ))}
+                      {busy === u.email ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          {dryRun ? (
+                            <FlaskConical className="mr-1.5 h-3.5 w-3.5" />
+                          ) : (
+                            <Send className="mr-1.5 h-3.5 w-3.5" />
+                          )}
+                          {dryRun
+                            ? "Preview"
+                            : lastSent
+                              ? "Send again"
+                              : "Send activation"}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </CardContent>
