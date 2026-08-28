@@ -1,7 +1,15 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getAdminUserDirectory } from "@/lib/admin-directory.functions";
+import {
+  cancelNudgeJob,
+  enqueueNudgeJob,
+  getNudgeJobStatus,
+  previewNudgeEmail,
+  type NudgeEmailPreview,
+  type NudgeJobStatus,
+} from "@/lib/nudge-jobs.functions";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Card,
@@ -14,6 +22,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -21,8 +37,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, UserRoundX, Send, Download, FlaskConical } from "lucide-react";
+import {
+  Loader2,
+  UserRoundX,
+  Send,
+  Download,
+  FlaskConical,
+  Eye,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
+import {
+  ACTIVATION_HTML,
+  ACTIVATION_REDIRECT,
+  ACTIVATION_SUBJECT,
+  SITE_NAME,
+} from "@/lib/nudgeTemplate";
 import {
   COOLDOWN_OPTIONS,
   buildNudgeCsv,
@@ -36,7 +66,6 @@ import {
   type NudgeLedger,
 } from "@/lib/nudgeCooldown";
 
-
 type DirectoryRow = {
   id: string;
   email: string | null;
@@ -48,54 +77,36 @@ type DirectoryRow = {
 
 type NudgeResult = { email: string; status: string; error?: string };
 
-const SITE_NAME = "JET";
-const ACTIVATION_REDIRECT = "https://jet-around.com/";
-
 const daysAgo = (iso: string) =>
   Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000));
 
-/** Branded one-to-one activation email. Sent per recipient, never as a blast. */
-const ACTIVATION_SUBJECT = "Your {{site_name}} account is ready — sign in";
-const ACTIVATION_HTML = `<div style="font-family:Arial,Helvetica,sans-serif;background:#ffffff;padding:32px 24px;color:#111111">
-  <h1 style="font-size:22px;margin:0 0 12px">Your {{site_name}} account is ready, {{display_name}}</h1>
-  <p style="font-size:15px;line-height:1.6;color:#55575d;margin:0 0 20px">
-    We created an account for {{email}} but you haven't signed in yet. Tap below to
-    open {{site_name}} and see the live deals and events happening near you right now.
-  </p>
-  <a href="{{invite_url}}"
-     style="display:inline-block;background:#C9A961;color:#0A0A0A;text-decoration:none;font-weight:600;padding:12px 22px;border-radius:10px">
-    Sign in to {{site_name}}
-  </a>
-  <p style="font-size:12px;color:#8a8d93;margin:24px 0 0">
-    If the button doesn't work, copy this link into your browser:<br />{{invite_url}}
-  </p>
-  <p style="font-size:12px;color:#8a8d93;margin:12px 0 0">
-    This sign-in link is single-use and expires shortly.
-  </p>
-</div>`;
+const ACTIVE_JOB_STATUSES = ["queued", "running"];
 
 /**
  * Accounts that exist and are email-confirmed but have never signed in
  * (the "Last sign-in: N/A" rows in the user directory).
  *
- * Each row gets its own send button: one trigger, one recipient, one
- * account-activation email. There is deliberately no "send to everyone"
- * action — a blast to this list would be a re-engagement campaign, which
- * belongs in the newsletter audience, not the app email pipeline.
+ * Each recipient gets their own activation email. Bulk runs are handed to a
+ * persisted background job, so sending continues even if this page is closed;
+ * the panel just polls the job for live progress.
  */
 export const InactiveNudgePanel = () => {
   const [busy, setBusy] = useState<string | null>(null);
   const [sent, setSent] = useState<Record<string, number>>({});
-  const [runAll, setRunAll] = useState<{ done: number; total: number } | null>(
-    null,
-  );
   const [ledger, setLedger] = useState<NudgeLedger>(() => readNudgeLedger());
   const [cooldownHours, setCooldownHours] = useState<number>(() =>
     readCooldownHours(),
   );
   const [dryRun, setDryRun] = useState(false);
+  const [preview, setPreview] = useState<NudgeEmailPreview | null>(null);
+  const [previewLoading, setPreviewLoading] = useState<string | null>(null);
+  const [enqueuing, setEnqueuing] = useState(false);
 
   const fetchDirectory = useServerFn(getAdminUserDirectory);
+  const runPreview = useServerFn(previewNudgeEmail);
+  const runEnqueue = useServerFn(enqueueNudgeJob);
+  const runJobStatus = useServerFn(getNudgeJobStatus);
+  const runCancel = useServerFn(cancelNudgeJob);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["admin", "never-signed-in-accounts"],
@@ -107,6 +118,22 @@ export const InactiveNudgePanel = () => {
         .sort((a, b) => a.created_at.localeCompare(b.created_at));
     },
   });
+
+  const { data: job, refetch: refetchJob } = useQuery<NudgeJobStatus | null>({
+    queryKey: ["admin", "nudge-job"],
+    queryFn: async () => (await runJobStatus()) ?? null,
+    refetchInterval: (q) =>
+      q.state.data && ACTIVE_JOB_STATUSES.includes(q.state.data.status)
+        ? 3_000
+        : false,
+  });
+
+  const jobActive = !!job && ACTIVE_JOB_STATUSES.includes(job.status);
+
+  // Refresh the directory once a background run finishes.
+  useEffect(() => {
+    if (job && !ACTIVE_JOB_STATUSES.includes(job.status)) refetch();
+  }, [job?.status]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const dormant = useMemo(() => data ?? [], [data]);
 
@@ -137,6 +164,24 @@ export const InactiveNudgePanel = () => {
       buildNudgeCsv(dormant, ledger, cooldownHours),
     );
     toast.success(`Exported ${dormant.length} recipient(s) to CSV`);
+  };
+
+  /** Shows the exact subject, body and personalized link — sends nothing. */
+  const openPreview = async (row: DirectoryRow) => {
+    if (!row.email) return;
+    setPreviewLoading(row.email);
+    try {
+      const result = await runPreview({
+        data: { email: row.email, displayName: row.display_name },
+      });
+      setPreview(result);
+    } catch (e) {
+      toast.error(
+        e instanceof Error ? e.message : "Could not build the email preview",
+      );
+    } finally {
+      setPreviewLoading(null);
+    }
   };
 
   /** Sends exactly one activation email to one recipient. */
@@ -202,10 +247,8 @@ export const InactiveNudgePanel = () => {
   };
 
   /**
-   * Walks every confirmed never-signed-in account that is past its resend
-   * cooldown and sends each person their own activation email, one request at
-   * a time with a short pause between sends. In dry-run mode nothing is sent —
-   * the panel only reports who would be contacted.
+   * Queues every eligible account into the background job. The worker keeps
+   * sending one email per recipient even if this page is closed.
    */
   const sendToAllRemaining = async () => {
     const queue = eligible.filter((u) => !!u.email);
@@ -226,31 +269,42 @@ export const InactiveNudgePanel = () => {
       );
       return;
     }
-    setRunAll({ done: 0, total: queue.length });
-    let ok = 0;
-    const failed: string[] = [];
-    for (const row of queue) {
-      setBusy(row.email);
-      try {
-        await sendOne(row);
-        ok++;
-      } catch (e) {
-        failed.push(row.email!);
-        console.error("Activation send failed", row.email, e);
-      }
-      setRunAll((prev) => (prev ? { ...prev, done: prev.done + 1 } : prev));
-      await new Promise((r) => setTimeout(r, 600));
-    }
-    setBusy(null);
-    setRunAll(null);
-    if (failed.length) {
-      toast.warning(
-        `Sent ${ok} activation email(s); ${failed.length} failed (${failed.slice(0, 3).join(", ")}${failed.length > 3 ? "…" : ""})`,
+    setEnqueuing(true);
+    try {
+      await runEnqueue({
+        data: {
+          recipients: queue.map((u) => ({
+            email: u.email!,
+            display_name: u.display_name,
+          })),
+        },
+      });
+      const at = Date.now();
+      let next = ledger;
+      for (const u of queue) next = recordNudgeSent(u.email!, at);
+      setLedger(next);
+      toast.success(
+        `Queued ${queue.length} activation email(s) — sending continues in the background`,
       );
-    } else {
-      toast.success(`Sent ${ok} activation email(s)`);
+      refetchJob();
+    } catch (e) {
+      toast.error(
+        e instanceof Error ? e.message : "Could not queue the activation emails",
+      );
+    } finally {
+      setEnqueuing(false);
     }
-    refetch();
+  };
+
+  const cancelJob = async () => {
+    if (!job) return;
+    try {
+      await runCancel({ data: { jobId: job.id } });
+      toast.success("Background send canceled");
+      refetchJob();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not cancel the job");
+    }
   };
 
   return (
@@ -277,13 +331,15 @@ export const InactiveNudgePanel = () => {
             <Button
               size="sm"
               variant={dryRun ? "outline" : "default"}
-              disabled={busy !== null || runAll !== null || dormant.length === 0}
+              disabled={
+                busy !== null || enqueuing || jobActive || dormant.length === 0
+              }
               onClick={sendToAllRemaining}
             >
-              {runAll ? (
+              {enqueuing ? (
                 <>
                   <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                  Sending {runAll.done}/{runAll.total}
+                  Queueing…
                 </>
               ) : (
                 <>
@@ -298,13 +354,45 @@ export const InactiveNudgePanel = () => {
             </Button>
           </div>
         </div>
+
+        {job ? (
+          <div className="mt-3 rounded-lg border border-border/50 bg-background/40 p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-xs font-medium">
+                Background send · {job.status}
+                {job.total > 0
+                  ? ` · ${job.processed}/${job.total} processed`
+                  : ""}
+                {job.failed > 0 ? ` · ${job.failed} failed` : ""}
+              </span>
+              {jobActive ? (
+                <Button size="sm" variant="ghost" onClick={cancelJob}>
+                  <X className="mr-1.5 h-3.5 w-3.5" />
+                  Cancel
+                </Button>
+              ) : null}
+            </div>
+            <Progress
+              className="mt-2 h-1.5"
+              value={
+                job.total > 0
+                  ? Math.round((job.processed / job.total) * 100)
+                  : 0
+              }
+            />
+            {job.last_error ? (
+              <p className="mt-2 text-xs text-destructive">{job.last_error}</p>
+            ) : null}
+          </div>
+        ) : null}
+
         <div className="mt-3 flex flex-wrap items-center gap-4 rounded-lg border border-border/50 bg-background/40 p-3">
           <div className="flex items-center gap-2">
             <Switch
               id="nudge-dry-run"
               checked={dryRun}
               onCheckedChange={setDryRun}
-              disabled={runAll !== null}
+              disabled={jobActive}
             />
             <Label htmlFor="nudge-dry-run" className="text-xs">
               Dry run (no emails sent)
@@ -387,8 +475,25 @@ export const InactiveNudgePanel = () => {
                     ) : null}
                     <Button
                       size="sm"
+                      variant="ghost"
+                      disabled={previewLoading !== null}
+                      onClick={() => openPreview(u)}
+                    >
+                      {previewLoading === u.email ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Eye className="mr-1.5 h-3.5 w-3.5" />
+                          Preview email
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      size="sm"
                       variant="outline"
-                      disabled={busy !== null || (!dryRun && remaining > 0)}
+                      disabled={
+                        busy !== null || jobActive || (!dryRun && remaining > 0)
+                      }
                       onClick={() => sendActivation(u)}
                     >
                       {busy === u.email ? (
@@ -415,6 +520,30 @@ export const InactiveNudgePanel = () => {
           </ul>
         )}
       </CardContent>
+
+      <Dialog open={!!preview} onOpenChange={(o) => !o && setPreview(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-base">
+              Email preview · {preview?.email}
+            </DialogTitle>
+            <DialogDescription className="break-all">
+              Subject: {preview?.subject}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[55vh] overflow-auto rounded-lg border border-border/50 bg-white">
+            <iframe
+              title="Activation email preview"
+              className="h-[420px] w-full"
+              sandbox=""
+              srcDoc={preview?.html ?? ""}
+            />
+          </div>
+          <p className="break-all text-xs text-muted-foreground">
+            Personalized sign-in link: {preview?.inviteUrl}
+          </p>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };

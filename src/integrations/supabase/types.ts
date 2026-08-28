@@ -14,6 +14,98 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_nudge_job_items: {
+        Row: {
+          attempts: number
+          created_at: string
+          display_name: string | null
+          email: string
+          error: string | null
+          id: string
+          job_id: string
+          processed_at: string | null
+          status: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          display_name?: string | null
+          email: string
+          error?: string | null
+          id?: string
+          job_id: string
+          processed_at?: string | null
+          status?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          display_name?: string | null
+          email?: string
+          error?: string | null
+          id?: string
+          job_id?: string
+          processed_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_nudge_job_items_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "admin_nudge_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_nudge_jobs: {
+        Row: {
+          consecutive_failures: number
+          created_at: string
+          created_by: string | null
+          failed: number
+          finished_at: string | null
+          id: string
+          last_error: string | null
+          lease_expires_at: string | null
+          processed: number
+          status: string
+          succeeded: number
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          consecutive_failures?: number
+          created_at?: string
+          created_by?: string | null
+          failed?: number
+          finished_at?: string | null
+          id?: string
+          last_error?: string | null
+          lease_expires_at?: string | null
+          processed?: number
+          status?: string
+          succeeded?: number
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          consecutive_failures?: number
+          created_at?: string
+          created_by?: string | null
+          failed?: number
+          finished_at?: string | null
+          id?: string
+          last_error?: string | null
+          lease_expires_at?: string | null
+          processed?: number
+          status?: string
+          succeeded?: number
+          total?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       admin_security_finding_acks: {
         Row: {
           acknowledged_at: string
@@ -2079,6 +2171,8 @@ export type Database = {
       }
     }
     Functions: {
+      admin_cancel_nudge_job: { Args: { _job_id: string }; Returns: undefined }
+      admin_enqueue_nudge_job: { Args: { _recipients: Json }; Returns: string }
       admin_list_user_emails: {
         Args: never
         Returns: {
@@ -2262,6 +2356,8 @@ export type Database = {
         }
         Returns: number
       }
+      nudge_queue_dispatch: { Args: never; Returns: undefined }
+      nudge_queue_endpoint: { Args: never; Returns: string }
       obfuscate_coordinates: {
         Args: { lat: number; lng: number }
         Returns: {

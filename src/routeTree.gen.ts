@@ -52,6 +52,7 @@ import { Route as ApiPublicVersionRouteImport } from './routes/api/public/versio
 import { Route as ApiPublicHooksNudgeIncompleteOnboardingRouteImport } from './routes/api/public/hooks/nudge-incomplete-onboarding'
 import { Route as ApiPublicHooksResendMarketingEventsRouteImport } from './routes/api/public/hooks/resend-marketing-events'
 import { Route as ApiPublicHooksSyncResendAudienceRouteImport } from './routes/api/public/hooks/sync-resend-audience'
+import { Route as ApiPublicNudgeQueueProcessRouteImport } from './routes/api/public/nudge-queue/process'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -275,6 +276,12 @@ const ApiPublicHooksSyncResendAudienceRoute =
     path: '/api/public/hooks/sync-resend-audience',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicNudgeQueueProcessRoute =
+  ApiPublicNudgeQueueProcessRouteImport.update({
+    id: '/api/public/nudge-queue/process',
+    path: '/api/public/nudge-queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
   id: '/lovable/email/auth/preview',
   path: '/lovable/email/auth/preview',
@@ -336,6 +343,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/nudge-incomplete-onboarding': typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
   '/api/public/hooks/resend-marketing-events': typeof ApiPublicHooksResendMarketingEventsRoute
   '/api/public/hooks/sync-resend-audience': typeof ApiPublicHooksSyncResendAudienceRoute
+  '/api/public/nudge-queue/process': typeof ApiPublicNudgeQueueProcessRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -384,6 +392,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/nudge-incomplete-onboarding': typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
   '/api/public/hooks/resend-marketing-events': typeof ApiPublicHooksResendMarketingEventsRoute
   '/api/public/hooks/sync-resend-audience': typeof ApiPublicHooksSyncResendAudienceRoute
+  '/api/public/nudge-queue/process': typeof ApiPublicNudgeQueueProcessRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -433,6 +442,7 @@ export interface FileRoutesById {
   '/api/public/hooks/nudge-incomplete-onboarding': typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
   '/api/public/hooks/resend-marketing-events': typeof ApiPublicHooksResendMarketingEventsRoute
   '/api/public/hooks/sync-resend-audience': typeof ApiPublicHooksSyncResendAudienceRoute
+  '/api/public/nudge-queue/process': typeof ApiPublicNudgeQueueProcessRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -483,6 +493,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/nudge-incomplete-onboarding'
     | '/api/public/hooks/resend-marketing-events'
     | '/api/public/hooks/sync-resend-audience'
+    | '/api/public/nudge-queue/process'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -531,6 +542,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/nudge-incomplete-onboarding'
     | '/api/public/hooks/resend-marketing-events'
     | '/api/public/hooks/sync-resend-audience'
+    | '/api/public/nudge-queue/process'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -579,6 +591,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/nudge-incomplete-onboarding'
     | '/api/public/hooks/resend-marketing-events'
     | '/api/public/hooks/sync-resend-audience'
+    | '/api/public/nudge-queue/process'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -628,6 +641,7 @@ export interface RootRouteChildren {
   ApiPublicHooksNudgeIncompleteOnboardingRoute: typeof ApiPublicHooksNudgeIncompleteOnboardingRoute
   ApiPublicHooksResendMarketingEventsRoute: typeof ApiPublicHooksResendMarketingEventsRoute
   ApiPublicHooksSyncResendAudienceRoute: typeof ApiPublicHooksSyncResendAudienceRoute
+  ApiPublicNudgeQueueProcessRoute: typeof ApiPublicNudgeQueueProcessRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -936,6 +950,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksSyncResendAudienceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/nudge-queue/process': {
+      id: '/api/public/nudge-queue/process'
+      path: '/api/public/nudge-queue/process'
+      fullPath: '/api/public/nudge-queue/process'
+      preLoaderRoute: typeof ApiPublicNudgeQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/auth/preview': {
       id: '/lovable/email/auth/preview'
       path: '/lovable/email/auth/preview'
@@ -1006,6 +1027,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksResendMarketingEventsRoute:
     ApiPublicHooksResendMarketingEventsRoute,
   ApiPublicHooksSyncResendAudienceRoute: ApiPublicHooksSyncResendAudienceRoute,
+  ApiPublicNudgeQueueProcessRoute: ApiPublicNudgeQueueProcessRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
