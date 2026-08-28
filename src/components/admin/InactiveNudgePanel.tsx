@@ -64,6 +64,9 @@ const ACTIVATION_HTML = `<div style="font-family:Arial,Helvetica,sans-serif;back
 export const InactiveNudgePanel = () => {
   const [busy, setBusy] = useState<string | null>(null);
   const [sent, setSent] = useState<Record<string, number>>({});
+  const [runAll, setRunAll] = useState<{ done: number; total: number } | null>(
+    null,
+  );
 
   const fetchDirectory = useServerFn(getAdminUserDirectory);
 
