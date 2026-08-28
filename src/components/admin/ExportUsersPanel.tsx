@@ -65,6 +65,80 @@ const DEFAULT_SELECTED: Column[] = [
   "onboarding_completed",
 ];
 
+// --- Export filters -------------------------------------------------------
+
+type TriState = "all" | "yes" | "no";
+type Tier = "free" | "jet_plus" | "jetx";
+const TIER_OPTIONS: Tier[] = ["free", "jet_plus", "jetx"];
+const TIER_LABELS: Record<Tier, string> = {
+  free: "Free",
+  jet_plus: "JET+",
+  jetx: "JETx",
+};
+
+interface ExportFilters {
+  onboarding: TriState;
+  emailConfirmed: TriState;
+  lastSignInFrom: string; // YYYY-MM-DD
+  lastSignInTo: string; // YYYY-MM-DD
+  neverSignedIn: boolean;
+  tiers: Tier[]; // empty = all tiers
+}
+
+const defaultExportFilters: ExportFilters = {
+  onboarding: "all",
+  emailConfirmed: "all",
+  lastSignInFrom: "",
+  lastSignInTo: "",
+  neverSignedIn: false,
+  tiers: [],
+};
+
+function filtersActive(f: ExportFilters): boolean {
+  return (
+    f.onboarding !== "all" ||
+    f.emailConfirmed !== "all" ||
+    f.lastSignInFrom !== "" ||
+    f.lastSignInTo !== "" ||
+    f.neverSignedIn ||
+    f.tiers.length > 0
+  );
+}
+
+/** Derive an effective tier: active paid subscriptions win, else free. */
+function effectiveTier(sub: { tier: string; subscribed: boolean; subscription_end: string | null } | undefined): Tier {
+  if (!sub || !sub.subscribed) return "free";
+  if (sub.subscription_end && new Date(sub.subscription_end) < new Date())
+    return "free";
+  return sub.tier === "jetx" || sub.tier === "jet_plus" ? sub.tier : "free";
+}
+
+function passesFilters(
+  row: Record<string, unknown>,
+  f: ExportFilters,
+): boolean {
+  if (f.onboarding !== "all") {
+    const done = row.onboarding_completed === true;
+    if (f.onboarding === "yes" ? !done : done) return false;
+  }
+  if (f.emailConfirmed !== "all") {
+    const confirmed = Boolean(row.email_confirmed_at);
+    if (f.emailConfirmed === "yes" ? !confirmed : confirmed) return false;
+  }
+  const lastSignIn = row.last_sign_in_at ? String(row.last_sign_in_at) : null;
+  if (f.neverSignedIn && lastSignIn) return false;
+  if (f.lastSignInFrom) {
+    if (!lastSignIn || new Date(lastSignIn) < new Date(f.lastSignInFrom))
+      return false;
+  }
+  if (f.lastSignInTo) {
+    if (!lastSignIn || new Date(lastSignIn) > new Date(`${f.lastSignInTo}T23:59:59`))
+      return false;
+  }
+  if (f.tiers.length && !f.tiers.includes(row._tier as Tier)) return false;
+  return true;
+}
+
 function toCsv(rows: Record<string, unknown>[], cols: Column[]): string {
   const esc = (v: unknown) => {
     if (v === null || v === undefined) return "";
@@ -82,6 +156,7 @@ export function ExportUsersPanel() {
   const [selected, setSelected] = useState<Set<Column>>(
     () => new Set(DEFAULT_SELECTED),
   );
+  const [filters, setFilters] = useState<ExportFilters>(defaultExportFilters);
 
   const selectedCols = useMemo<Column[]>(
     () => COLUMNS.filter((c) => selected.has(c)),
