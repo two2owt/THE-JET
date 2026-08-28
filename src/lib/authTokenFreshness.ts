@@ -65,9 +65,10 @@ export const readAuthRedirectContext = (
     q.get("error") ??
     null;
 
+  const typeFlow = flowFromType(h.get("type")) ?? flowFromType(q.get("type"));
+
   const flow =
-    flowFromType(h.get("type")) ??
-    flowFromType(q.get("type")) ??
+    typeFlow ??
     (q.get("reset") === "true" || pathname === "/reset-password"
       ? "recovery"
       : pathname === "/verification-success" || pathname === "/email-confirmed"
@@ -77,7 +78,12 @@ export const readAuthRedirectContext = (
           : null);
 
   return {
-    isAuthRedirect: hasTokens || !!errorCode || flow !== null,
+    // Landing on an auth page is NOT by itself an auth redirect: the Supabase
+    // SDK strips the hash after a successful exchange, and users can open
+    // /verification-success directly. Only URL material (tokens, an explicit
+    // ?type=, or a reported error) means a hand-off was actually attempted —
+    // otherwise the guard reports a false "link is broken" failure.
+    isAuthRedirect: hasTokens || !!errorCode || typeFlow !== null,
     flow,
     hasTokens,
     urlAccessToken: h.get("access_token") ?? null,

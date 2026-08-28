@@ -4,6 +4,7 @@ import {
   EDGE_FUNCTION_VERSION,
 } from "../_shared/cors.ts";
 import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
+import { googleKeys, withGoogleKeyRotation } from "../_shared/places-provider.ts";
 
 const FUNCTION_NAME = "get-google-places-data";
 logVersion(FUNCTION_NAME);
@@ -76,32 +77,37 @@ Deno.serve(async (req) => {
           "current_opening_hours",
         ];
 
-    const apiKey = Deno.env.get("GOOGLE_PLACES_API_KEY");
-    if (!apiKey) {
+    if (googleKeys().length === 0) {
       throw new Error("GOOGLE_PLACES_API_KEY not configured");
     }
 
     console.log(`Fetching Google Places data for place ID: ${placeId}`);
 
-    // Use Google Places API (New) - Place Details
+    // Use Google Places API (New) - Place Details.
+    // Rotate through every configured key so a suspended / over-quota key
+    // falls through to the next one instead of failing the request.
     const fieldsParam = validatedFields.join(",");
     const encodedPlaceId = encodeURIComponent(placeId);
-    const url = `https://places.googleapis.com/v1/places/${encodedPlaceId}?fields=${fieldsParam}&key=${apiKey}`;
 
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
+    const data = await withGoogleKeyRotation<any>(
+      FUNCTION_NAME,
+      async (apiKey) => {
+        const url = `https://places.googleapis.com/v1/places/${encodedPlaceId}?fields=${fieldsParam}&key=${apiKey}`;
+        const response = await fetch(url, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Google Places API error ${response.status}: ${errorText}`);
+        }
+        return await response.json();
       },
-    });
+    );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Google Places API error:", response.status, errorText);
-      throw new Error(`Google Places API error: ${response.status}`);
+    if (!data) {
+      throw new Error("All Google Places API keys failed");
     }
-
-    const data = await response.json();
 
     console.log(`Successfully fetched data for place ${placeId}`);
 

@@ -1,6 +1,7 @@
 import { corsHeaders, logVersion } from "../_shared/cors.ts";
 import { getAuthenticatedUserId } from "../_shared/require-auth.ts";
 import { internalError, unauthorized } from "../_shared/http.ts";
+import { googleKeys } from "../_shared/places-provider.ts";
 
 const FUNCTION_NAME = "get-network-location";
 logVersion(FUNCTION_NAME);
@@ -28,8 +29,9 @@ Deno.serve(async (req) => {
     const userId = await getAuthenticatedUserId(req);
     if (!userId) return unauthorized();
 
-    const apiKey = Deno.env.get("GOOGLE_PLACES_API_KEY");
-    if (!apiKey) return json({ location: null, error: "not_configured" });
+    const keys = googleKeys();
+    if (keys.length === 0)
+      return json({ location: null, error: "not_configured" });
 
     const body = await req.json().catch(() => ({}) as Record<string, unknown>);
 
@@ -42,16 +44,22 @@ Deno.serve(async (req) => {
       payload.cellTowers = body.cellTowers.slice(0, 10);
     }
 
-    const res = await fetch(
-      `https://www.googleapis.com/geolocation/v1/geolocate?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      },
-    );
-
-    const data = await res.json().catch(() => null);
+    // Try every configured key: a suspended / restricted key must fall through
+    // to the next one instead of taking coarse location down entirely.
+    let res!: Response;
+    let data: any = null;
+    for (const apiKey of keys) {
+      res = await fetch(
+        `https://www.googleapis.com/geolocation/v1/geolocate?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
+      data = await res.json().catch(() => null);
+      if (res.ok) break;
+    }
 
     if (!res.ok) {
       const reason =
