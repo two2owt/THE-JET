@@ -7,8 +7,16 @@ import {
 } from "@/lib/admin-directory.functions";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Download, Loader2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Download, FilterX, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const COLUMNS = [
@@ -57,7 +65,81 @@ const DEFAULT_SELECTED: Column[] = [
   "onboarding_completed",
 ];
 
-function toCsv(rows: Record<string, unknown>[], cols: Column[]): string {
+// --- Export filters -------------------------------------------------------
+
+type TriState = "all" | "yes" | "no";
+type Tier = "free" | "jet_plus" | "jetx";
+const TIER_OPTIONS: Tier[] = ["free", "jet_plus", "jetx"];
+const TIER_LABELS: Record<Tier, string> = {
+  free: "Free",
+  jet_plus: "JET+",
+  jetx: "JETx",
+};
+
+interface ExportFilters {
+  onboarding: TriState;
+  emailConfirmed: TriState;
+  lastSignInFrom: string; // YYYY-MM-DD
+  lastSignInTo: string; // YYYY-MM-DD
+  neverSignedIn: boolean;
+  tiers: Tier[]; // empty = all tiers
+}
+
+const defaultExportFilters: ExportFilters = {
+  onboarding: "all",
+  emailConfirmed: "all",
+  lastSignInFrom: "",
+  lastSignInTo: "",
+  neverSignedIn: false,
+  tiers: [],
+};
+
+function filtersActive(f: ExportFilters): boolean {
+  return (
+    f.onboarding !== "all" ||
+    f.emailConfirmed !== "all" ||
+    f.lastSignInFrom !== "" ||
+    f.lastSignInTo !== "" ||
+    f.neverSignedIn ||
+    f.tiers.length > 0
+  );
+}
+
+/** Derive an effective tier: active paid subscriptions win, else free. */
+function effectiveTier(sub: { tier: string; subscribed: boolean; subscription_end: string | null } | undefined): Tier {
+  if (!sub || !sub.subscribed) return "free";
+  if (sub.subscription_end && new Date(sub.subscription_end) < new Date())
+    return "free";
+  return sub.tier === "jetx" || sub.tier === "jet_plus" ? sub.tier : "free";
+}
+
+function passesFilters(
+  row: Record<string, unknown>,
+  f: ExportFilters,
+): boolean {
+  if (f.onboarding !== "all") {
+    const done = row.onboarding_completed === true;
+    if (f.onboarding === "yes" ? !done : done) return false;
+  }
+  if (f.emailConfirmed !== "all") {
+    const confirmed = Boolean(row.email_confirmed_at);
+    if (f.emailConfirmed === "yes" ? !confirmed : confirmed) return false;
+  }
+  const lastSignIn = row.last_sign_in_at ? String(row.last_sign_in_at) : null;
+  if (f.neverSignedIn && lastSignIn) return false;
+  if (f.lastSignInFrom) {
+    if (!lastSignIn || new Date(lastSignIn) < new Date(f.lastSignInFrom))
+      return false;
+  }
+  if (f.lastSignInTo) {
+    if (!lastSignIn || new Date(lastSignIn) > new Date(`${f.lastSignInTo}T23:59:59`))
+      return false;
+  }
+  if (f.tiers.length && !f.tiers.includes(row._tier as Tier)) return false;
+  return true;
+}
+
+function toCsv(rows: Record<string, unknown>[], cols: readonly string[]): string {
   const esc = (v: unknown) => {
     if (v === null || v === undefined) return "";
     const s = typeof v === "object" ? JSON.stringify(v) : String(v);
@@ -74,6 +156,7 @@ export function ExportUsersPanel() {
   const [selected, setSelected] = useState<Set<Column>>(
     () => new Set(DEFAULT_SELECTED),
   );
+  const [filters, setFilters] = useState<ExportFilters>(defaultExportFilters);
 
   const selectedCols = useMemo<Column[]>(
     () => COLUMNS.filter((c) => selected.has(c)),
@@ -129,6 +212,19 @@ export function ExportUsersPanel() {
         }
       }
 
+      // Tier lookup — only fetched when a tier filter is active. Admins
+      // bypass RLS on `subscribers`; everyone resolves to their own row.
+      const tierById = new Map<string, Tier>();
+      if (filters.tiers.length) {
+        const { data, error } = await supabase
+          .from("subscribers")
+          .select("user_id, tier, subscribed, subscription_end");
+        if (error) throw error;
+        for (const row of data ?? []) {
+          tierById.set(row.user_id, effectiveTier(row));
+        }
+      }
+
       // Merge: one row per auth user, profile fields attached when present.
       const all = directory.map((u: AdminDirectoryRow) => {
         const profile = profileById.get(u.id) ?? {};
@@ -142,10 +238,24 @@ export function ExportUsersPanel() {
           onboarding_completed:
             u.onboarding_completed ?? profile.onboarding_completed,
           created_at: u.created_at ?? profile.created_at,
+          _tier: tierById.get(u.id) ?? "free",
         };
       });
 
-      const csv = toCsv(all, selectedCols);
+      const filtered = filtersActive(filters)
+        ? all.filter((r) => passesFilters(r, filters))
+        : all;
+
+      // Surface the tier as a real column whenever the tier filter is used.
+      const exportCols: string[] = filters.tiers.length
+        ? [...selectedCols, "tier"]
+        : [...selectedCols];
+      const rowsForCsv = filtered.map(({ _tier, ...rest }) => ({
+        ...rest,
+        ...(filters.tiers.length ? { tier: _tier } : {}),
+      }));
+
+      const csv = toCsv(rowsForCsv, exportCols);
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -157,7 +267,7 @@ export function ExportUsersPanel() {
       a.remove();
       URL.revokeObjectURL(url);
       toast.success(
-        `Exported ${all.length} user${all.length === 1 ? "" : "s"}`,
+        `Exported ${filtered.length} of ${all.length} user${all.length === 1 ? "" : "s"}`,
       );
     } catch (err) {
       console.error("Export users failed", err);
@@ -185,6 +295,150 @@ export function ExportUsersPanel() {
           )}
           {loading ? "Exporting…" : "Export CSV"}
         </Button>
+      </div>
+
+      <div className="mt-5 rounded-xl border border-border/50 bg-background/30 p-4 space-y-4">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Filters {filtersActive(filters) && "· active"}
+          </p>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="gap-1.5"
+            onClick={() => setFilters(defaultExportFilters)}
+            disabled={loading || !filtersActive(filters)}
+          >
+            <FilterX className="h-3.5 w-3.5" />
+            Reset
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Onboarding</Label>
+            <Select
+              value={filters.onboarding}
+              onValueChange={(v) =>
+                setFilters((f) => ({ ...f, onboarding: v as TriState }))
+              }
+              disabled={loading}
+            >
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All users</SelectItem>
+                <SelectItem value="yes">Completed</SelectItem>
+                <SelectItem value="no">Not completed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Email confirmed</Label>
+            <Select
+              value={filters.emailConfirmed}
+              onValueChange={(v) =>
+                setFilters((f) => ({ ...f, emailConfirmed: v as TriState }))
+              }
+              disabled={loading}
+            >
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="yes">Confirmed</SelectItem>
+                <SelectItem value="no">Unconfirmed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="export-lastsignin-from" className="text-xs text-muted-foreground">
+              Last sign-in from
+            </Label>
+            <Input
+              id="export-lastsignin-from"
+              type="date"
+              value={filters.lastSignInFrom}
+              onChange={(e) =>
+                setFilters((f) => ({ ...f, lastSignInFrom: e.target.value }))
+              }
+              disabled={loading || filters.neverSignedIn}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="export-lastsignin-to" className="text-xs text-muted-foreground">
+              Last sign-in to
+            </Label>
+            <Input
+              id="export-lastsignin-to"
+              type="date"
+              value={filters.lastSignInTo}
+              onChange={(e) =>
+                setFilters((f) => ({ ...f, lastSignInTo: e.target.value }))
+              }
+              disabled={loading || filters.neverSignedIn}
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          <label
+            htmlFor="export-never-signed-in"
+            className="flex items-center gap-2 text-sm cursor-pointer"
+          >
+            <Checkbox
+              id="export-never-signed-in"
+              checked={filters.neverSignedIn}
+              disabled={loading}
+              onCheckedChange={(v) =>
+                setFilters((f) => ({
+                  ...f,
+                  neverSignedIn: v === true,
+                  ...(v === true
+                    ? { lastSignInFrom: "", lastSignInTo: "" }
+                    : {}),
+                }))
+              }
+            />
+            <span>Never signed in only</span>
+          </label>
+
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground">Tier:</span>
+            {TIER_OPTIONS.map((tier) => {
+              const id = `export-tier-${tier}`;
+              const checked = filters.tiers.includes(tier);
+              return (
+                <label
+                  key={tier}
+                  htmlFor={id}
+                  className="flex items-center gap-1.5 text-sm cursor-pointer"
+                >
+                  <Checkbox
+                    id={id}
+                    checked={checked}
+                    disabled={loading}
+                    onCheckedChange={(v) =>
+                      setFilters((f) => ({
+                        ...f,
+                        tiers:
+                          v === true
+                            ? [...f.tiers, tier]
+                            : f.tiers.filter((t) => t !== tier),
+                      }))
+                    }
+                  />
+                  <span>{TIER_LABELS[tier]}</span>
+                </label>
+              );
+            })}
+            <span className="text-[10px] text-muted-foreground">
+              (none selected = all tiers)
+            </span>
+          </div>
+        </div>
       </div>
 
       <div className="mt-5 space-y-3">
