@@ -139,7 +139,7 @@ function passesFilters(
   return true;
 }
 
-function toCsv(rows: Record<string, unknown>[], cols: Column[]): string {
+function toCsv(rows: Record<string, unknown>[], cols: readonly string[]): string {
   const esc = (v: unknown) => {
     if (v === null || v === undefined) return "";
     const s = typeof v === "object" ? JSON.stringify(v) : String(v);
