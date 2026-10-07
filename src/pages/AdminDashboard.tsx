@@ -150,6 +150,11 @@ const RealtimeGuardPanel = lazy(() =>
     default: m.RealtimeGuardPanel,
   })),
 );
+const SearchToVisitPanel = lazy(() =>
+  import("@/components/admin/SearchToVisitPanel").then((m) => ({
+    default: m.SearchToVisitPanel,
+  })),
+);
 const PermissionPromptPanel = lazy(() =>
   import("@/components/admin/PermissionPromptPanel").then((m) => ({
     default: m.PermissionPromptPanel,
@@ -488,6 +493,7 @@ export default function AdminDashboard() {
                     <SyncStatusPanel />
                     <ExportUsersPanel />
                     <UserAnalytics />
+                    <SearchToVisitPanel />
                     <PermissionPromptPanel />
                     <UnverifiedNudgePanel />
                     <InactiveNudgePanel />
