@@ -16,6 +16,7 @@ ON public.app_config FOR SELECT TO anon
 USING (key IN ('monetization_enabled'));
 
 -- 3. deal_redemptions: explicit deny of deletes (immutable audit trail)
+DROP POLICY IF EXISTS "Redemptions cannot be deleted" ON public.deal_redemptions;
 CREATE POLICY "Redemptions cannot be deleted"
 ON public.deal_redemptions AS RESTRICTIVE FOR DELETE TO authenticated, anon
 USING (false);
