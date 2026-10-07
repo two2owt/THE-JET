@@ -30,6 +30,7 @@ import PreferencesEditor from "@/components/settings/PreferencesEditor";
 import PrivacySettings from "@/components/settings/PrivacySettings";
 import { refreshConsents, setConsent } from "@/lib/consent";
 import { AccountSection } from "@/components/settings/AccountSection";
+import { MerchantPortalCard } from "@/components/settings/MerchantPortalCard";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { ReportIssueDialog } from "@/components/ReportIssueDialog";
 
@@ -779,6 +780,7 @@ export function ProfileSettingsPanel({
       </Card>
 
       {/* Account */}
+      <MerchantPortalCard />
       <AccountSection userId={userId} currentEmail={userEmail ?? undefined} />
 
       {/* Support */}
