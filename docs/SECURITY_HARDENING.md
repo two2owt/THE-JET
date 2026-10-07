@@ -71,7 +71,8 @@ Definer functions currently following this rule: `has_role`,
 `cleanup_old_search_history`, `cleanup_old_security_audit_logs`,
 `dispatch_ending_soon_favorites`, `invoke_favorite_update_notify`,
 `notify_favorite_deal_change`, `notify_admin_of_new_deal`,
-`enqueue_email`, `delete_email`, `read_email_batch`, `move_to_dlq`,
+`profile_pulse_visible`, `enqueue_email`, `delete_email`,
+`read_email_batch`, `move_to_dlq`,
 `update_updated_at_column`.
 
 ---
