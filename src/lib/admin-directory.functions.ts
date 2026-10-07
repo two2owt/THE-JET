@@ -49,6 +49,7 @@ export const getAdminUserDirectory = createServerFn({ method: "GET" })
     );
     const { data, error } = await supabaseAdmin.rpc(
       "admin_user_directory" as never,
+      { _user_id: context.userId } as never,
     );
     if (error) throw new Error(error.message);
     return (data ?? []) as unknown as AdminDirectoryRow[];
@@ -64,6 +65,7 @@ export const getAdminUserSyncStatus = createServerFn({ method: "GET" })
     );
     const { data, error } = await supabaseAdmin.rpc(
       "admin_user_sync_status" as never,
+      { _user_id: context.userId } as never,
     );
     if (error) throw new Error(error.message);
     const row = (Array.isArray(data) ? data[0] : data) as

@@ -2131,7 +2131,7 @@ export type Database = {
         }[]
       }
       admin_user_directory: {
-        Args: never
+        Args: { _user_id: string }
         Returns: {
           created_at: string
           display_name: string
@@ -2144,7 +2144,7 @@ export type Database = {
         }[]
       }
       admin_user_sync_status: {
-        Args: never
+        Args: { _user_id: string }
         Returns: {
           auth_users: number
           missing_preferences: number
