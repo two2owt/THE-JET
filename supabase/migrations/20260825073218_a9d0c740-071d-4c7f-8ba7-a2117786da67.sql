@@ -5,10 +5,12 @@ GRANT EXECUTE ON FUNCTION public.redeem_deal_code(text) TO authenticated, servic
 -- 2. Restrict app_config reads: signed-out users only see the public monetization flag
 DROP POLICY IF EXISTS "app_config readable by everyone" ON public.app_config;
 
+DROP POLICY IF EXISTS "app_config readable by authenticated" ON public.app_config;
 CREATE POLICY "app_config readable by authenticated"
 ON public.app_config FOR SELECT TO authenticated
 USING (true);
 
+DROP POLICY IF EXISTS "app_config public keys readable by anon" ON public.app_config;
 CREATE POLICY "app_config public keys readable by anon"
 ON public.app_config FOR SELECT TO anon
 USING (key IN ('monetization_enabled'));
