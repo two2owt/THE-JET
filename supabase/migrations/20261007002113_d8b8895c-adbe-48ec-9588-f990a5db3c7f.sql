@@ -35,6 +35,7 @@ REVOKE EXECUTE ON FUNCTION public.profile_pulse_visible(uuid) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.profile_pulse_visible(uuid) TO authenticated, service_role;
 
 DROP POLICY IF EXISTS "Authenticated users can read profile pulse" ON public.profile_pulse;
+DROP POLICY IF EXISTS "Profile pulse readable for visible profiles" ON public.profile_pulse;
 CREATE POLICY "Profile pulse readable for visible profiles"
 ON public.profile_pulse
 FOR SELECT
