@@ -1,4 +1,3 @@
-public.deal_shares: missing GRANT statement (first defined in 20251124024042_954375b9-5576-474e-a8bf-e1e769cbcc1d.sql). See SECURITY_HARDENING.md §2.
 public.deals: missing GRANT statement (first defined in 20251115132440_3934bfd3-34c9-4b6a-9db1-9860d9dccd27.sql). See SECURITY_HARDENING.md §2.
 public.email_send_state: missing GRANT statement (first defined in 20260503080138_email_infra.sql). See SECURITY_HARDENING.md §2.
 public.email_unsubscribe_tokens: missing GRANT statement (first defined in 20260503080138_email_infra.sql). See SECURITY_HARDENING.md §2.

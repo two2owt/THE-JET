@@ -71,7 +71,8 @@ Definer functions currently following this rule: `has_role`,
 `cleanup_old_search_history`, `cleanup_old_security_audit_logs`,
 `dispatch_ending_soon_favorites`, `invoke_favorite_update_notify`,
 `notify_favorite_deal_change`, `notify_admin_of_new_deal`,
-`enqueue_email`, `delete_email`, `read_email_batch`, `move_to_dlq`,
+`profile_pulse_visible`, `enqueue_email`, `delete_email`,
+`read_email_batch`, `move_to_dlq`,
 `update_updated_at_column`.
 
 ---
@@ -105,6 +106,16 @@ classic "Security Definer View" finding, treated as a regression.
 - `deals` is readable by `authenticated` when `active = true`; writes
   are admin-only via `public.has_role(auth.uid(), 'admin')`.
 - `user_roles` reads are restricted; role mutations are admin-only.
+- `profile_pulse` SELECT is limited to the viewer's own profile plus
+  discoverable/connected profiles via `public.profile_pulse_visible` —
+  the same visibility model as `discoverable_profiles`. The table is
+  consumed over realtime only (surfaces refetch profile data through the
+  RLS-scoped view); never widen it back to a tautology policy.
+- `app_config` is readable by `authenticated` by design (global flags
+  such as `monetization_enabled`); `anon` may read only explicitly
+  whitelisted keys. No user-personal data is stored there.
+- `map_data_pulse` holds aggregate counters only (no per-user rows) and
+  is readable by `authenticated` by design.
 - `security_audit_logs` is `service_role`-only.
 - `admin_security_findings*` are admin-only via `has_role`.
 

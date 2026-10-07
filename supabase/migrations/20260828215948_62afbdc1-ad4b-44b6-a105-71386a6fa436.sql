@@ -1,4 +1,5 @@
 -- 1) Backfill social handles from legacy profile URL columns before removing them.
+-- idempotency-check: allow-dml
 INSERT INTO public.social_handles (user_id, platform, handle, url)
 SELECT p.id, s.platform::public.social_platform,
        NULLIF(regexp_replace(regexp_replace(s.url, '^https?://[^/]+/', ''), '[/?].*$', ''), ''),
@@ -36,7 +37,7 @@ ALTER TABLE public.profiles
   DROP COLUMN IF EXISTS tiktok_url;
 
 -- 5) Recreate the helper without the removed columns.
-CREATE FUNCTION public.profiles_visible()
+CREATE OR REPLACE FUNCTION public.profiles_visible()
 RETURNS TABLE(
   id uuid, created_at timestamptz, updated_at timestamptz,
   onboarding_completed boolean, discoverable boolean, birthdate date,
