@@ -10,6 +10,12 @@ Window: October 15, 2026 00:00 UTC through October 28, 2026 10:32 UTC (partial l
 
 These are requested-credit amounts for recorded usage, not a cash bill or a measured savings result. Environment attribution is unavailable from the usage lookup.
 
+### Refreshed measurement — 10:45 UTC
+
+Recorded database usage is now 213.06672 requested credits for 172 XL instance-hours over the same October 15–28 recording dates. Other running categories remain about 0.12745 requested credits. The extra recorded hour may reflect recording delay; it does not measure the effect of the notification change.
+
+Fresh health snapshot remains at 6% memory, 30/240 connections and 30% disk, with no recent exhaustion alerts. This second snapshot still does not supply representative peak load history for downsizing. No additional database/index/capacity changes were justified by the refreshed measurements.
+
 ## Runtime evidence
 
 - Database is up; memory 6%, connections 30/240, pool clients 1/1000, disk 30%, database 2.06 GB.
