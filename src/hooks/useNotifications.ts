@@ -1,4 +1,5 @@
 import { devLog } from "@/lib/log";
+import { notificationReads } from "@/lib/inflightReads";
 import { useEffect, useId, useMemo, useState } from "react";
 import { isDealExpired } from "@/lib/dealExpiry";
 import { useMinuteClock } from "@/hooks/useMinuteClock";
@@ -115,22 +116,22 @@ export const useNotifications = (enabled: boolean = true) => {
       }
 
       const [logsRes, deliveriesRes] = await Promise.all([
-        supabase
+        notificationReads(`${session.user.id}:logs`, () => supabase
           .from("notification_logs")
           .select("*")
           .eq("user_id", session.user.id)
           .order("sent_at", { ascending: false })
-          .limit(30),
+          .limit(30)),
         // Push receipts: what was actually delivered to this user, joined to
         // the queued alert content.
-        supabase
+        notificationReads(`${session.user.id}:deliveries`, () => supabase
           .from("notification_deliveries")
           .select(
             "id, status, opened_at, created_at, queue_id, notification_queue(title, body, category, venue_id, deal_id)",
           )
           .eq("user_id", session.user.id)
           .order("created_at", { ascending: false })
-          .limit(30),
+          .limit(30)),
       ]);
 
       if (logsRes.error) throw logsRes.error;
@@ -211,12 +212,13 @@ export const useNotifications = (enabled: boolean = true) => {
         new Set(merged.map((n) => n.dealId).filter(Boolean) as string[]),
       );
       if (dealIds.length) {
-        const { data: dealRows } = await supabase
+        const { data: dealRows } = await notificationReads(
+          `${session.user.id}:deals:${[...dealIds].sort().join(",")}`, () => supabase
           .from("deals")
           .select(
             "id, title, description, deal_type, venue_id, venue_name, venue_address, starts_at, expires_at, active_days, website_url",
           )
-          .in("id", dealIds);
+          .in("id", dealIds));
         const next: Record<string, AlertDeal> = {};
         for (const row of (dealRows ?? []) as AlertDeal[]) next[row.id] = row;
         setDealById(next);
@@ -352,8 +354,11 @@ export const useNotifications = (enabled: boolean = true) => {
     // Reload when auth state changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(() => {
-      loadNotifications();
+    } = supabase.auth.onAuthStateChange((event) => {
+      // Initial load is already scheduled; token renewals don't change alerts.
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
+        loadNotifications();
+      }
     });
 
     // Foreground push arrived while the app was open — refresh immediately.
