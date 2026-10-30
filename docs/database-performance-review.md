@@ -43,6 +43,13 @@ This is an observed 75% reduction in these reads for the tested opening flow, no
 
 ## Next measurements / constraints
 
+### User-requested capacity reduction — 10:51 UTC
+
+- Refreshed October 15–28 usage: 213.06672 requested database credits from 172 XL instance-hours; all other running categories total about 0.12745 requested credits. Build usage is separate.
+- The resize control reported a switch to **Mini** in progress. No Mini rate was returned by the cost lookup, so no credit-savings estimate is asserted.
+- Pre-switch health: 6% memory, 30/240 connections, no recent exhaustion alerts. Sustained peak-load history remains unavailable; this does not establish Mini capacity suitability.
+- Preserve all monitoring, retention, sign-in and alert behavior. Verify post-resize health and representative authenticated reads, then compare ingested compute usage before claiming reduced credits.
+
 - Collect representative peak CPU, memory, connections and latency history before recommending a smaller instance. XL capacity is the largest recorded running driver, but a smaller size is not yet justified by sustained evidence.
 - Obtain supported schedule and execution-history diagnostics before changing background cadence or managed history retention. Do not weaken monitoring or change data retention implicitly.
 - Compare recorded instance-hours/credits after publishing and billing ingestion before claiming credit savings. No publishing occurred; the user's publishing permission is conditional on preserving the admin alert and finishing the stopped email update.
