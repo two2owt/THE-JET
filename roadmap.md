@@ -3,7 +3,8 @@
 - [ ] Build in-app JET Bridge business submission, approval, venue/deal management and map publishing — blocked on business-verification connection; Middesk was declined, so do not retry without a new request.
 - [x] Measure database performance and recorded running usage; reduce verified duplicate notification reads and validate results.
 - [x] Refresh database measurements after the repeated optimization request; reuse the verified query/index investigation without changing capacity or monitoring cadence.
-- [ ] Evaluate database downsizing and managed execution-history cleanup — blocked on sustained load history and supported schedule/history controls.
+- [ ] Verify the user-requested XL → Mini resize — resize started, but health metrics and a bounded database read are unavailable during the transition; confirm recovery and representative peak load before claiming suitability or credit savings.
+- [ ] Evaluate managed execution-history cleanup — blocked on supported schedule/history controls.
 - [ ] Fix activation-email cooldowns being applied before successful sends — bulk re-engagement sending is not supported by the app-email rules; do not extend that sender.
 - [ ] Move admin map-sync alert sending into the app and update admin settings — blocked: the database change that lets scheduled checks securely wake the app was refused by this project's agent access restrictions; current database alerts remain unchanged.
 - [ ] Restart the stopped email update and publish after its prerequisites — blocked on restart consent, alert continuity and a completed update for review.

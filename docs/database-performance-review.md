@@ -49,6 +49,7 @@ This is an observed 75% reduction in these reads for the tested opening flow, no
 - The resize control reported a switch to **Mini** in progress. No Mini rate was returned by the cost lookup, so no credit-savings estimate is asserted.
 - Pre-switch health: 6% memory, 30/240 connections, no recent exhaustion alerts. Sustained peak-load history remains unavailable; this does not establish Mini capacity suitability.
 - Preserve all monitoring, retention, sign-in and alert behavior. Verify post-resize health and representative authenticated reads, then compare ingested compute usage before claiming reduced credits.
+- Immediate post-request health metrics were unavailable, and a bounded threshold-count read reported the database inaccessible. Resize completion and authenticated flows remain unverified during the transition.
 
 - Collect representative peak CPU, memory, connections and latency history before recommending a smaller instance. XL capacity is the largest recorded running driver, but a smaller size is not yet justified by sustained evidence.
 - Obtain supported schedule and execution-history diagnostics before changing background cadence or managed history retention. Do not weaken monitoring or change data retention implicitly.
